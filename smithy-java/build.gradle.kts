@@ -16,17 +16,11 @@ repositories {
 subprojects {
     val subproject = this
 
-    if (subproject.name != "smithy-swift-codegen-test") {
+    if (subproject.name != "smithy-java-codegen-test") {
         apply(plugin = "java-library")
         apply(plugin = "kotlin")
-
         dependencies {
             implementation(kotlin("stdlib-jdk8"))
-        }
-
-        repositories {
-            mavenCentral()
-            mavenLocal()
         }
 
         tasks {
@@ -38,6 +32,7 @@ subprojects {
             }
         }
     }
+
 }
 
 
