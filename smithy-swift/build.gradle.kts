@@ -8,6 +8,9 @@ allprojects {
     version = "0.1.0"
 }
 
+// The root project doesn't produce a JAR.
+tasks["jar"].enabled = false
+
 repositories {
     mavenCentral()
     mavenLocal()
@@ -22,6 +25,12 @@ subprojects {
 
         dependencies {
             implementation(kotlin("stdlib-jdk8"))
+        }
+
+        // Reusable license copySpec
+        val licenseSpec = copySpec {
+            from("${project.rootDir}/LICENSE")
+            from("${project.rootDir}/NOTICE")
         }
 
         repositories {
