@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
    s.source       = { :git => 'https://github.com/aws/aws-sdk-ios.git',
                       :tag => s.version}
    s.requires_arc = true
-   s.dependency 'Core', '1'
+   s.dependency 'AWSCore', '2.12.7'
    s.source_files = 'Weather/*.swift'
 end
