@@ -1,5 +1,7 @@
 # Kotlin Smithy SDK 
 
+# Core Spec
+
 Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
 
 ## Identifiers and Naming
@@ -440,6 +442,7 @@ Not processed
 
 #### `length` trait
 **TODO**
+**QUESTION** I don't even see where these constraints (length, range, pattern, etc) are processed in the smithy-typescript/smithy-go code generators. Are they not implemented?
 
 #### `pattern` trait
 **TODO**
@@ -508,16 +511,112 @@ This trait influences errors, see the `error` trait for how it will be handled.
 
 #### `paginated` trait
 
+Not processed
+
+**QUESTION** If I understood correctly the members targeted by `inputToken`/`outputToken`/`items` all MUST be defined in the input/output structures. As in the generator isn't expected to create those members if they don't exist?
+**QUESTION** Would it be useful to process the trait for documentation purposes on those class members or is it expected that those fields would already have attached documentation traits?
+
+### Resource traits
+
+#### `references` trait
+Not processed
+
+#### `resourceIdentifier` trait
+Not processed
+
+### Protocol traits
+
+#### `protocols` trait
+
+Inspected to see if the protocol is supported by the code generator/client-runtime. If no protocol is supported codegen will fail.
+
+The `auth` peroperty of this trait will be inspected just to confirm at least one of the authentication schemes is supported.
+
+All of the built-in HTTP authentication schemes will be supported by being able to customize the request headers
+
+**TODO** I
+
+**QUESTION** Should we have codegen validate the request has one of the auth schemes expected for a particular operation before sending the request? 
+    * (AJT) - I think this would be nice but not necessary, at least out the gate, presumably we'll get an error response from the server that will make sense.
+
+
+#### `auth` trait
+
+Processed the same as the `auth` property of the `protocols` trait. 
+
+#### `jsonName` trait
+
+The generated class member will have the `@SerialName("...")` annotation added to the property. 
+
+* **TODO**: Assumes we utilize kotlinx.serialization to handle JSON serialization.
+
+#### `mediaType` trait
+
+The media type trait SHOULD influence the HTTP Content-Type header if not already set.
+
+**QUESTION** Can we ship an initial version without supporting this (as long as the client has the ability to set the Content-Type header)? 
+
+
+#### `timestampFormat` trait
+
+**TODO** - This depends on the datetime lib we use and how we plug serde into everything. Roughly this just affects the serde step of any `timestamp` shape.
+
+
+### Documentation traits
+
+#### `documentation` trait
+
+All top level classes, enums, and their members will be generated with the given documentation.
+
+#### `examples` trait
+
+Not processed
+
+**FUTURE** We probably should process this but I think it's ok to put it lower priority
+
+#### `externalDocumentation` trait
+
+Processed the same as the `documentation` trait. The link will be processed appropriately for the target documentation engine (e.g. [dokka](https://github.com/Kotlin/dokka)).
+
+#### `sensitive` trait
+
+Not processed
+
+#### `since` trait
+
+Not processed
+
+**FUTURE** We should probably process this into the generated documentation.
+
+#### `tags` trait
+
+Not processed
+
+#### `title` trait
+
+Combined with the generated documentation as the first text to show up for a service or resource.
+
+
+### Endpoint traits
+
+#### `endpoint` trait
+**TODO**
+
+#### `hostLabel` trait
 **TODO**
 
 
-## Appendix
+# HTTP Protocol Bindings
 
-### Exceptions
+**TODO**
+
+# Appendix
+
+## Exceptions
 
 The client runtime lib will expose the common exception types that all generated service/operation errors will be translated to (and inherit from).
 
-#### Background: Current aws-sdk-android exception hierarchy
+### Background: Current aws-sdk-android exception hierarchy
 
 ```
 java.lang.Object
@@ -617,7 +716,7 @@ void 	setStatusCode(int statusCode)
 
 
 
-#### New Client Runtime Exception Hierarchy 
+### New Client Runtime Exception Hierarchy 
 
 One of the problems is that the `smithy-LANG` packages are supposed to be AWS agnostic. They generate code for a target language and set of protocols supported. As such we really shouldn't introduce things like `AmazonException` into such a package. That is the point of the higher level codegen package to decorate and specialize codegen for AWS specific behaviors.
 
@@ -765,6 +864,10 @@ open class AmazonServiceException: ServiceException {
 **QUESTION** Can we actually make the exceptions backwards compatible or will the package rearrangement make that impossible? If it's not impossible what does the inheritance need to look like to make it work out? I believe it would be something like `RuntimeException <- SdkBaseException <- ClientException <- AmazonClientException <- ServiceException <- AmazonServiceException`. This all depends on what the split looks like for the runtime libraries. These needs more thought...
 
 
-### Marshalling/Unmarshalling
+## Marshalling/Unmarshalling
 
 **TODO** - Need to define how types will be marshalled and interact with the client runtime package.
+
+## Project Structure
+
+**TODO** Document what the generated project structure is (and how smithy namespaces are processed)
