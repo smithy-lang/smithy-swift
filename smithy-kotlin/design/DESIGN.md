@@ -1,5 +1,7 @@
 # Kotlin Smithy SDK 
 
+# Core Spec
+
 Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
 
 ## Core Spec
@@ -185,7 +187,185 @@ data class Foo(val foo: String): MyUnion()
 
 ### Service types
 
+Services will generate both an interface as well as a concrete client implementation.
+
+Each operation will generate a method with the given operation name and the `input` and `output` shapes of that operation.
+
+
+The following example from the Smithy quickstart has been abbreviated. All input/output operation structure bodies have been omitted as they aren't important to how a service is defined.
+
+```
+service Weather {
+    version: "2006-03-01",
+    resources: [City],
+    operations: [GetCurrentTime]
+}
+
+@readonly
+operation GetCurrentTime {
+    output: GetCurrentTimeOutput
+}
+
+structure GetCurrentTimeOutput {
+    @required
+    time: Timestamp
+}
+
+resource City {
+    identifiers: { cityId: CityId },
+    read: GetCity,
+    list: ListCities,
+    resources: [Forecast],
+}
+
+resource Forecast {
+    identifiers: { cityId: CityId },
+    read: GetForecast,
+}
+
+// "pattern" is a trait.
+@pattern("^[A-Za-z0-9 ]+$")
+string CityId
+
+@readonly
+operation GetCity {
+    input: GetCityInput,
+    output: GetCityOutput,
+    errors: [NoSuchResource]
+}
+
+structure GetCityInput { ... }
+
+structure GetCityOutput { ...  }
+
+@error("client")
+structure NoSuchResource { ... } 
+
+@readonly
+@paginated(items: "items")
+operation ListCities {
+    input: ListCitiesInput,
+    output: ListCitiesOutput
+}
+
+structure ListCitiesInput { ... }
+
+structure ListCitiesOutput { ... }
+
+@readonly
+operation GetForecast {
+    input: GetForecastInput,
+    output: GetForecastOutput
+}
+
+structure GetForecastInput { ... }
+structure GetForecastOutput { ... }
+```
+
+
+```kotlin
+interface Weather {
+    suspend fun getCurrentTime(): GetCurrentTimeOutput
+
+    /**
+     * ...
+     * 
+     * @throws NoSuchResource
+     */
+    suspend fun getCity(input: GetCityInput): GetCityOutput
+
+
+    suspend fun listCities(input: ListCitiesInput): ListCitiesOutput
+
+
+    suspend fun getForecast(input: GetForecastInput): GetForecastOutput
+}
+
+class WeatherClient : Weather {
+
+    suspend fun getCurrentTime(): GetCurrentTimeOutput { ... }
+
+    suspend fun getCity(input: GetCityInput): GetCityOutput { ... }
+
+    suspend fun listCities(input: ListCitiesInput): ListCitiesOutput { ... }
+
+    suspend fun getForecast(input: GetForecastInput): GetForecastOutput { ... }
+}
+
+```
+
+
+#### Considerations
+
+1. Why `suspend` functions? 
+
+All service operations are expected to be async operations under the hood since they imply a network call. Making this explicit in the interface sets expectations up front.
+
+As of Kotlin 1.3 Coroutines are marked stable, they are shipped by default with the stdlib, and it is our belief that Coroutines are the future of async programming in Kotlin.
+
+As Coroutines become the default choice for async in Kotlin our customers will expect a coroutine compatible API. Deviating from this with normal threading models is generally incompatible and will create friction.
+
+As such choosing a Coroutine compatible API is "Customer Obsessed" as we strive to provide the most idiomatic API for the target ecosystem. This design is also "Think Big" as we define a bold direction for the Android SDK. 
+
+2. Why not provide both synchronous and asynchronous interfaces?
+
+Coroutines take a different mindset because they are not heavyweight like threads. They have much easier ways to compose them and share results. One of the design philosophies to follow is `let the caller decide`. What this means is when you design an API that is inherently async you let the caller decide how to handle concurrency. Perhaps they want to process results in the background, or maybe they want to launch several requests and wait for all of them to complete before continuing, and of course possibly they want to block on each call. You can't account for each scenario and by the nature of Coroutines in Kotlin we don't have to decide up front. 
+
+
+As an example to turn our async client call to a synchronous one in Kotlin is very easy
+
+```
+
+val service = WeatherService()
+
+runBlocking {
+    val forecast = service.getForecast(input)
+}
+
+```
+
+Here is another example where the `getForecast()` and `getCity()` operations happen concurrently and we wait for both results to complete. 
+
+```
+val service = WeatherService()
+
+runBlocking {
+    val forecastDef = async { service.getForecast(forecastInput) }
+    val cityDef = async { service.getCity(cityInput) } 
+
+    val forecast = forecastDef.await()
+    val cityDef = forecastDef.await()
+}
+
+```
+
+
+By providing Coroutine compatible API we can let the caller decide what kind of concurrency makes sense for their use case/application and compose results as needed. 
+
+
+See [Composing Suspend Functions](https://kotlinlang.org/docs/reference/coroutines/composing-suspending-functions.html) for more details.
+
+
+3. Backwards Compatibility
+
+
+This design choice would be a breaking change with the existing `aws-sdk-android` service definitions that are generated. The current SDK generates an interface and concrecte client implementation of that interface as proposed here. The difference is it generates both synchronous and an asyncronous version. The asyncronous version is based on Java's [Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) and uses a thread pool executor to run the request to completion in the background.
+
+We could provide a generated syncronous API that matches the existing by doing the `runBlocking` call for the consumer but there is little value in doing so. The asyncronous version cannot be made to match if we are to support Coroutines though.
+
+The recommendation would be to make the breaking change and embrace Coroutines for the reasons outlined since this is a new SDK.
+
+
 ### Resource types
+
+Each resources will be processed for each of the corresponding lifecycle operations as well as the non-lifecycle operations. 
+
+Every operation, both lifecycle and non-lifecycle, will generate a method on the service class to which the resource belongs. 
+
+This will happen recursively since resources can have child resources. 
+
+See the Service section which has a detailed example of how resources show up on a service.
+
 
 ### Traits
 
@@ -440,6 +620,7 @@ Not processed
 
 #### `length` trait
 **TODO**
+**QUESTION** I don't even see where these constraints (length, range, pattern, etc) are processed in the smithy-typescript/smithy-go code generators. Are they not implemented?
 
 #### `pattern` trait
 **TODO**
@@ -508,9 +689,104 @@ This trait influences errors, see the `error` trait for how it will be handled.
 
 #### `paginated` trait
 
+Not processed
+
+**QUESTION** If I understood correctly the members targeted by `inputToken`/`outputToken`/`items` all MUST be defined in the input/output structures. As in the generator isn't expected to create those members if they don't exist?
+**QUESTION** Would it be useful to process the trait for documentation purposes on those class members or is it expected that those fields would already have attached documentation traits?
+
+### Resource traits
+
+#### `references` trait
+Not processed
+
+#### `resourceIdentifier` trait
+Not processed
+
+### Protocol traits
+
+#### `protocols` trait
+
+Inspected to see if the protocol is supported by the code generator/client-runtime. If no protocol is supported codegen will fail.
+
+The `auth` peroperty of this trait will be inspected just to confirm at least one of the authentication schemes is supported.
+
+All of the built-in HTTP authentication schemes will be supported by being able to customize the request headers
+
+**TODO** I
+
+**QUESTION** Should we have codegen validate the request has one of the auth schemes expected for a particular operation before sending the request? 
+    * (AJT) - I think this would be nice but not necessary, at least out the gate, presumably we'll get an error response from the server that will make sense.
+
+
+#### `auth` trait
+
+Processed the same as the `auth` property of the `protocols` trait. 
+
+#### `jsonName` trait
+
+The generated class member will have the `@SerialName("...")` annotation added to the property. 
+
+* **TODO**: Assumes we utilize kotlinx.serialization to handle JSON serialization.
+
+#### `mediaType` trait
+
+The media type trait SHOULD influence the HTTP Content-Type header if not already set.
+
+**QUESTION** Can we ship an initial version without supporting this (as long as the client has the ability to set the Content-Type header)? 
+
+
+#### `timestampFormat` trait
+
+**TODO** - This depends on the datetime lib we use and how we plug serde into everything. Roughly this just affects the serde step of any `timestamp` shape.
+
+
+### Documentation traits
+
+#### `documentation` trait
+
+All top level classes, enums, and their members will be generated with the given documentation.
+
+#### `examples` trait
+
+Not processed
+
+**FUTURE** We probably should process this but I think it's ok to put it lower priority
+
+#### `externalDocumentation` trait
+
+Processed the same as the `documentation` trait. The link will be processed appropriately for the target documentation engine (e.g. [dokka](https://github.com/Kotlin/dokka)).
+
+#### `sensitive` trait
+
+Not processed
+
+#### `since` trait
+
+Not processed
+
+**FUTURE** We should probably process this into the generated documentation.
+
+#### `tags` trait
+
+Not processed
+
+#### `title` trait
+
+Combined with the generated documentation as the first text to show up for a service or resource.
+
+
+### Endpoint traits
+
+#### `endpoint` trait
+**TODO**
+
+#### `hostLabel` trait
 **TODO**
 
 
+# HTTP Protocol Bindings
+
+**TODO**
 
 ## Event Stream Spec
 
@@ -665,13 +941,13 @@ fun main() {
 ```
 
 
-## Appendix
+# Appendix
 
-### Exceptions
+## Exceptions
 
 The client runtime lib will expose the common exception types that all generated service/operation errors will be translated to (and inherit from).
 
-#### Background: Current aws-sdk-android exception hierarchy
+### Background: Current aws-sdk-android exception hierarchy
 
 ```
 java.lang.Object
@@ -771,7 +1047,7 @@ void 	setStatusCode(int statusCode)
 
 
 
-#### New Client Runtime Exception Hierarchy 
+### New Client Runtime Exception Hierarchy 
 
 One of the problems is that the `smithy-LANG` packages are supposed to be AWS agnostic. They generate code for a target language and set of protocols supported. As such we really shouldn't introduce things like `AmazonException` into such a package. That is the point of the higher level codegen package to decorate and specialize codegen for AWS specific behaviors.
 
@@ -919,7 +1195,10 @@ open class AmazonServiceException: ServiceException {
 **QUESTION** Can we actually make the exceptions backwards compatible or will the package rearrangement make that impossible? If it's not impossible what does the inheritance need to look like to make it work out? I believe it would be something like `RuntimeException <- SdkBaseException <- ClientException <- AmazonClientException <- ServiceException <- AmazonServiceException`. This all depends on what the split looks like for the runtime libraries. These needs more thought...
 
 
-### Marshalling/Unmarshalling
+## Marshalling/Unmarshalling
 
 **TODO** - Need to define how types will be marshalled and interact with the client runtime package. Middleware?
 
+## Project Structure
+
+**TODO** Document what the generated project structure is (and how smithy namespaces are processed)
