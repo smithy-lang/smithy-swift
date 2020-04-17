@@ -1,10 +1,8 @@
 # Kotlin Smithy SDK 
 
-# Core Spec
+## Core Spec
 
 Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
-
-## Core Spec
 
 ### Identifiers and Naming
 Kotlin keywords can be found [here](https://kotlinlang.org/docs/reference/keyword-reference.html). Kotlin has both hard keywords and soft keywords (context sensitive).
@@ -309,7 +307,7 @@ As such choosing a Coroutine compatible API is "Customer Obsessed" as we strive 
 
 2. Why not provide both synchronous and asynchronous interfaces?
 
-Coroutines take a different mindset because they are not heavyweight like threads. They have much easier ways to compose them and share results. One of the design philosophies to follow is `let the caller decide`. What this means is when you design an API that is inherently async you let the caller decide how to handle concurrency. Perhaps they want to process results in the background, or maybe they want to launch several requests and wait for all of them to complete before continuing, and of course possibly they want to block on each call. You can't account for each scenario and by the nature of Coroutines in Kotlin we don't have to decide up front. 
+Coroutines take a different mindset because they are not heavyweight like threads. They have much easier ways to compose them and share results. One of the design philosophies to follow (w.r.t coroutiens) is `let the caller decide`. What this means is when you design an API that is inherently async you let the caller decide how to handle concurrency. Perhaps they want to process results in the background, or maybe they want to launch several requests and wait for all of them to complete before continuing, and of course possibly they want to block on each call. You can't account for each scenario and by the nature of Coroutines in Kotlin we don't have to decide up front. 
 
 
 As an example to turn our async client call to a synchronous one in Kotlin is very easy
@@ -349,7 +347,7 @@ See [Composing Suspend Functions](https://kotlinlang.org/docs/reference/coroutin
 3. Backwards Compatibility
 
 
-This design choice would be a breaking change with the existing `aws-sdk-android` service definitions that are generated. The current SDK generates an interface and concrecte client implementation of that interface as proposed here. The difference is it generates both synchronous and an asyncronous version. The asyncronous version is based on Java's [Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) and uses a thread pool executor to run the request to completion in the background.
+This design choice would be a breaking change with the existing `aws-sdk-android` service definitions that are generated. The current SDK generates an interface and concrete client implementation of that interface as proposed here. The difference is it generates both synchronous and an asyncronous version. The asyncronous version is based on Java's [Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) and uses a thread pool executor to run the request to completion in the background.
 
 We could provide a generated syncronous API that matches the existing by doing the `runBlocking` call for the consumer but there is little value in doing so. The asyncronous version cannot be made to match if we are to support Coroutines though.
 
@@ -515,7 +513,7 @@ Kotlin has first class support for enums and the SDK should make use of them to 
 
 When no `name` is provided the enum name will be the same as the value, otherwise the Kotlin SDK will use the provided enum name.
 
-The value will be stored as an additional property on the enum and passed in the constructor. This allows enums to be applied to other types in the future if Smithy evolves to allow it.
+The value will be stored as an additional property on the enum and passed in the constructor. This allows enums to be applied to other types in the future if Smithy [evolves to allow it](https://github.com/awslabs/smithy/issues/98).
 
 
 ```
@@ -710,13 +708,11 @@ Inspected to see if the protocol is supported by the code generator/client-runti
 
 The `auth` peroperty of this trait will be inspected just to confirm at least one of the authentication schemes is supported.
 
-All of the built-in HTTP authentication schemes will be supported by being able to customize the request headers
+All of the built-in HTTP authentication schemes will be supported by being able to customize the request headers.
 
-**TODO** I
 
 **QUESTION** Should we have codegen validate the request has one of the auth schemes expected for a particular operation before sending the request? 
     * (AJT) - I think this would be nice but not necessary, at least out the gate, presumably we'll get an error response from the server that will make sense.
-
 
 #### `auth` trait
 
@@ -738,7 +734,6 @@ The media type trait SHOULD influence the HTTP Content-Type header if not alread
 #### `timestampFormat` trait
 
 **TODO** - This depends on the datetime lib we use and how we plug serde into everything. Roughly this just affects the serde step of any `timestamp` shape.
-
 
 ### Documentation traits
 
@@ -764,7 +759,7 @@ Not processed
 
 Not processed
 
-**FUTURE** We should probably process this into the generated documentation.
+**FUTURE** We should probably process this into the generated documentation at least.
 
 #### `tags` trait
 
@@ -788,17 +783,17 @@ Combined with the generated documentation as the first text to show up for a ser
 
 **TODO**
 
-## Event Stream Spec
+# Event Stream Spec
 
 Reference to the (Event Stream spec)[https://awslabs.github.io/smithy/spec/event-streams.html] which builds on top of the Core spec
 
-### What is an Event Stream?
+## What is an Event Stream?
 
 An event stream is an abstraction that allows multiple messages to be sent asynchronously between a client and server.  Serialization and format of message sent are defined by the protocol in the smithy model.
 
 The operation input or output can be marked with an **`eventStream`** trait. A member that targets a structure is a single-event event stream, and a member that targets a union is a multi-event event stream.
 
-### Single Event Stream Behavior
+## Single Event Stream Behavior
 
 Clients that send or receive single-event event streams are expected to provide an abstraction to end-users that allows values to be produced or consumed asynchronously for the targeted event structure.
 
@@ -1202,3 +1197,121 @@ open class AmazonServiceException: ServiceException {
 ## Project Structure
 
 **TODO** Document what the generated project structure is (and how smithy namespaces are processed)
+
+
+## Pipeline (Request/Response Orchestration)
+
+Other SDK's call this "middleware". The name isn't terribly important at the moment and we can change it, right now we are referring to it as a pipeline though. What is presented is a very early rough draft.
+
+Ktor (which is our target HTTP client ATM) actually has a (generic) pipeline concept baked in. There are a few problems with using this out of the box though. One there doesn't seem to be a way to do per-request pipelines. The pipeline is attached at the [HttpClient](https://api.ktor.io/1.3.2/io.ktor.client/-http-client/index.html) level and is used for all requests sent by the client. This is useful for static things perhaps like setting a known `User-Agent` header but not for customizing individual requests and responses. We don't want to necessarily create a new HttpClient per request either since a client consumes resources. It is conceivable that we may want to share a client across multiple HTTP requests which is supported by Ktor. The second issue is we don't necessarily want to expose a library type we don't have control of. There are also concerns with the use of `suspend` in the function signature of [intercept](https://api.ktor.io/1.3.2/io.ktor.util.pipeline/-pipeline/intercept.html) which may not play well with iOS. 
+
+[Ktor Generic Pipeline](https://github.com/ktorio/ktor/blob/d940855ac493aaadeeec4cd3c41b1c8de044311a/ktor-utils/common/src/io/ktor/util/pipeline/Pipeline.kt)
+[Ktor HttpRequest Pipeline](https://github.com/ktorio/ktor/blob/master/ktor-client/ktor-client-core/common/src/io/ktor/client/request/HttpRequestPipeline.kt)
+[Ktor HttpResponse Pipleine](https://github.com/ktorio/ktor/blob/3ce3906c2bfa3c86238d40e9b67006b2b020bdaf/ktor-client/ktor-client-core/common/src/io/ktor/client/statement/HttpResponsePipeline.kt)
+
+
+That being said the design of the Ktor pipeline abstraction is _almost_ exactly what we want to define.  I think we can build heavily off this design with a few modifications such as making the interception points synchronous and tailored to our specific use case.
+
+
+**TODO** We probably want to define the way phases proceed from one to the next as well as ways for a phase to fail and stop execution. When the intercept `block` runs to completion obviously it will move onto the next interceptor or phase. As example, Ktor allows a phase to modify the type being passed to the next phase with `proceedWith()`. 
+
+```kotlin
+class PipelinePhase(val name: String)
+
+/**
+ * Represents an execution pipeline for extensible computations in a defined sequence.
+ */
+open class Pipeline<TSubject: Any, TContext: Any> {
+    constructor(vararg phases: PipelinePhase)
+
+    fun addPhase(phase: PipelinePhase)
+    fun insertPhaseAfter(target: PipelinePhase, phase: PipelinePhase)
+    fun insertPhaseBefore(target: PipelinePhase, phase: PipelinePhase)
+
+    fun intercept(phase: PipelinePhase, block: PipelineContext.(TSubject) -> Unit)
+
+    fun execute(context: TContext, subject: TSubject): TSubject
+}
+
+
+class HttpRequestPipeline : Pipeline<Any, HttpRequestBuilder>(Before, Build, Transform, Finalize) {
+
+    companion object Phases {
+
+        /**
+         * Execute any tasks before any starting transformations and building the request (e.g. input validation)
+         */
+        val Before = PipelinePhase("Before")
+
+        /**
+         * Modify the outgoing request properties (e.g. set headers)
+         */
+        val Build = PipelinePhase("Build")
+
+        /**
+         * Transform the input to a request body in the expected format (e.g. JSON)
+         */
+        val Transform = PipelinePhase("Transform")
+
+        /**
+         * Perform final preparations before sending the message (e.g. SigV4 request signing)
+         */
+        val Finalize = PipelinePhase("Finalize")
+    }
+}
+
+
+/**
+ * Wrapper class containing a single HTTP request/response pair representing a single round-trip.
+ */
+data class HttpCall(val request: HttpRequest, val response: HttpResponse)
+
+class HttpResponsePipeline : Pipeline<Any, HttpCall>(Receive, Transform, Finalize) {
+
+    companion object Phases {
+        /**
+         * Execute any tasks before starting transformations on the response (e.g. inspect HTTP response headers)
+         */
+        val Receive = PipelinePhase("Receive")
+
+        /**
+         * Transform the response body to the expected format
+         */
+        val Transform = PipelinePhase("Transform")
+
+        /**
+         * Perform any final modifications to the response
+         */
+        val Finalize = PipelinePhase("Finalize")
+    }
+}
+
+
+```
+
+
+Possible usage:
+
+```kotlin
+
+class FooService {
+    suspend fun getFoos(input: FooInput): FooOutput {
+        var reqPipeline = HttpRequestPipeline()
+        val respPipeline = HttpResponsePipeline()
+
+        reqPipeline.intercept(HttpRequestPipeline.Before, input.validate)
+        reqPipeline.intercept(HttpRequestPipeline.Build, setDefaults)
+        reqPipeline.intercept(HttpRequestPipeline.Transform, input.serialize)
+        respPipeline.intercept(HttpResponsePipeline.Transform, input.deserialize)
+
+        return roundTrip<FooOutput>(input, reqPipeline, respPipeline)
+        
+    }
+}
+
+```
+
+**TODO** This isn't really how we want to expose it since the client won't have access to customize the pipeline. This needs quite a bit more thought put into it but hopefully this gives a rough idea of where we might land.
+**QUESTION** Should a pipeline be per request/response? The Go middleware indicates `A stack will use the ordered list of middleware to decorate a underlying handler. A handler could be something like an HTTP Client that round trips an API operation over HTTP.`. This is more typical of middleware I've seen (and how Ktor) works. As far as I can tell the Typescript SDK creates a new stack per command structure and inserts that types serialize/deserialize steps, etc.
+
+
