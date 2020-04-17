@@ -790,7 +790,7 @@ Combined with the generated documentation as the first text to show up for a ser
 
 ## Event Stream Spec
 
-Reference to the (Event Stream spec)[https://awslabs.github.io/smithy/spec/event-streams.html] which builds on top of the Core spec
+Reference to the [Event Stream spec](https://awslabs.github.io/smithy/spec/event-streams.html) which builds on top of the Core spec
 
 ### What is an Event Stream?
 
@@ -895,7 +895,7 @@ structure Movement {
 }
 ```
 
-our code would differ in that it would use a produce to send so that it could receive from that channel asynchronously. Produce is a coroutine builder that simplifies the process of creating a coroutine and a channel. It will create a new Receieve Channel
+our code would differ in that it would use a produce to send so that it could receive from that channel asynchronously. Produce is a coroutine builder that simplifies the process of creating a coroutine and a channel. It will create a new Receieve Channel and launch a coroutine within a ProducerScope to send values on the channel. When there’s nothing left to send, the channel is implicitly closed and the coroutine resource is released.
 
 ```kotlin
 class Movement {
@@ -919,7 +919,7 @@ class FooService {
         }
     }
 
-    fun CoroutineScope.receiveMovements():          ReceiveChannel<SubscribeToMovementsOutput>> = produce {
+    fun CoroutineScope.receiveMovements(): ReceiveChannel<SubscribeToMovementsOutput>> = produce {
             subscribeToMovements()
     }
 
@@ -940,6 +940,56 @@ fun main() {
 
 ```
 
+### Multi Event Stream Behavior
+
+A multi-event event stream is an event stream that streams any number of named event structure shapes defined by a union. It is formed when the eventStream trait is applied to a member that targets a union. Each member of the targeted union MUST target a structure shape. The member names of the union define the name that is used to identify each event that is sent over the event stream.
+
+Given this structure where `@eventStream` is on the input of a structure:
+
+```
+namespace smithy.example
+
+operation PublishMessages {
+    input: PublishMessagesInput
+}
+
+structure PublishMessagesInput {
+    room: String,
+
+    @eventStream
+    messages: PublishEvents,
+}
+
+union PublishEvents {
+    message: Message,
+    leave: LeaveEvent,
+}
+
+structure Message {
+    message: String,
+}
+
+structure LeaveEvent {}
+```
+
+Our code might look something like this:
+
+```kotlin
+class PublishMessagesInput {
+    val room: String
+    val messages: Channel<PublishEvents>
+}
+
+sealed class PublishEvents
+
+class Message: PublishEvents {
+    val message: String
+}
+
+class LeaveEvent: PublishEvents {}
+
+
+```
 
 # Appendix
 
