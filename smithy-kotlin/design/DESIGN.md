@@ -1562,7 +1562,8 @@ open class AmazonServiceException: ServiceException {
 
 ## Marshalling/Unmarshalling
 
-**TODO** - Need to define how types will be marshalled and interact with the client runtime package. Middleware?
+**TODO** - See the `serialization.md` doc for some discussion.
+
 
 ## Project Structure
 
