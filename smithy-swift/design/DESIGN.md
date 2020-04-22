@@ -606,7 +606,7 @@ protocol Exception {
 
 Swift has first class support for enums and the SDK should make use of them to provide a type safe interface.
 
-When no `name` is provided the enum name will be the same as the value, otherwise the Swift SDK will use the provided enum name.
+When no `name` is provided the enum name will be the same as the value albeit lowercased (as this is idiomatic), otherwise the Swift SDK will use the provided enum name.
 
 
 ```
