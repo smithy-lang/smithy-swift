@@ -790,13 +790,11 @@ struct Foo {
 }
 ```
 
-##### ALTERNATIVE 1
-
 All members marked `required` should show up in the class as nonoptional
 
 ```swift
 struct Foo {
-    let bar: Sttring
+    let bar: String
 }
 ```
 
