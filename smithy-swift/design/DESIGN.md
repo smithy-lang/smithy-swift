@@ -130,8 +130,7 @@ The list of reserved keywords that shouldn't be used as identifiers in Swift is:
 The `document` type is an  untyped JSON-like value that can take on the following types: null, boolean, string, byte, short, integer, long, float, double, an array of these types, or a map of these types where the key is string.
 
 
-This type is best represented as an enum type. Here we would use the magic of enums in Swift with associated types. The best example of this is from the package [SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON/blob/master/Source/SwiftyJSON/SwiftyJSON.swift). We can import this file as our own and just use it in code like JSON
-
+This type is best represented as an enum type. Here we would use the JSONValue type created in the Amplify project which is an enum with an associated type and an extension on that enum that uses the Codable protocol for serialization/deserialization.
 
 ```swift
 
@@ -141,44 +140,125 @@ This type is best represented as an enum type. Here we would use the magic of en
  * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
  */
 
-public enum Document {
-    //protocol that all smithy types inherit form to check for nil
-    protocol SmithyType {
-        public let isNil: Boolean {
-            get {
-                self == nil
-            }
+/// A utility type that allows us to represent an arbitrary JSON structure
+public enum JSONValue {
+    case array([JSONValue])
+    case boolean(Bool)
+    case number(Double)
+    case object([String: JSONValue])
+    case string(String)
+    case null
+}
+
+extension JSONValue: Codable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode([String: JSONValue].self) {
+            self = .object(value)
+        } else if let value = try? container.decode([JSONValue].self) {
+            self = .array(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .boolean(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else {
+            self = .null
         }
     }
 
-    /**
-     * struct representing document `bool` type
-    */
-    struct SmithyBool : SmithyType {
-        public let value: Bool
-    }
-    /**
-    * struct representing document `string` type
-    */
-    struct SmithyString : SmithyType {
-        public let value: String
-    }
-    /**
-    * struct representing document `null` type.
-    */
-    struct SmithyNull : SmithyType {
-        public let value: nil
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .array(let value):
+            try container.encode(value)
+        case .boolean(let value):
+            try container.encode(value)
+        case .number(let value):
+            try container.encode(value)
+        case .object(let value):
+            try container.encode(value)
+        case .string(let value):
+            try container.encode(value)
+        case .null:
+            try container.encodeNil()
+        }
     }
 
+}
 
+extension JSONValue: Equatable { }
 
-	case number
-	case string(SmithyString)
-	case bool (SmithyBool)
-	case array
-	case dictionary
-	case null(SmithyNull)
-	case unknown
+extension JSONValue: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: JSONValue...) {
+        self = .array(elements)
+    }
+}
+
+extension JSONValue: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: Bool) {
+        self = .boolean(value)
+    }
+}
+
+extension JSONValue: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, JSONValue)...) {
+        let dictionary = elements.reduce([String: JSONValue]()) { acc, curr in
+            var newValue = acc
+            newValue[curr.0] = curr.1
+            return newValue
+        }
+        self = .object(dictionary)
+    }
+}
+
+extension JSONValue: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+}
+
+extension JSONValue: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self = .number(Double(value))
+    }
+}
+
+extension JSONValue: ExpressibleByNilLiteral {
+    public init(nilLiteral: ()) {
+        self = .null
+    }
+}
+
+extension JSONValue: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+}
+
+//extension to use subscribts to get the values from objects/arrays as normal
+public extension JSONValue {
+
+    subscript(_ key: String) -> JSONValue? {
+        guard case .object(let object) = self else {
+            return nil
+        }
+        return object[key]
+    }
+
+    subscript(_ key: Int) -> JSONValue? {
+        switch self {
+        case .array(let array):
+            return array[key]
+        case .object(let object):
+            return object["\(key)"]
+        default:
+            return nil
+        }
+    }
 }
 
 ```
@@ -187,25 +267,25 @@ Example usage of building a doc or processing one
 
 ```swift
 func foo() {
-    let doc = Document.string(SmithyString(value: "a string"))
-    print(doc)
-
-    processDoc(doc: doc)
+    let sourceString = #"{"stringValue": "a string", "numberValue": 123.45, "booleanValue": true}"#
+    let json = processDoc(source: sourceString)
+    /** prints an object that looks like below:
+    [
+        "booleanValue": true,
+        "numberValue": 123.45,
+        "stringValue": "a string"
+    ] **/
+    print(json) 
 }
 
-func processDoc(doc: Document) {
-    switch(doc) {
-        case string(let smithyString):
-            print(smithyString.value)
-        case bool(let smithyBool):
-            print(smithyBool.value)
-        //....and on and on and on
-    }
+func processDoc(source: String) -> JSONValue {
+    let decoder = JSONDecoder()
+    let sourceData = source.data(using: .utf8)
+    let decodedObject = try decoder.decode(JSONValue.self, from: sourceData!)
+
 }
 
 ```
-
-
 
 ### Aggregate types
 
@@ -760,7 +840,7 @@ extension Material: UnknownCaseRepresentable {
 }
 
 //then when you instantiate like this
-Material(rawValue: "stone") // -> .other
+Material(rawValue: "stone") // -> .unknown
 ```
  I think alternative 2 might be the best option here to capture both the decoding of the unknonw values in enums in smithy and also the instantiation of them but not sure what is important here for these unknown values. The quesiton is what is happening to these ennums with unknown values being returned from a service? Are we just deserializing them? Are we taking some action that needs to be handled first?
 
