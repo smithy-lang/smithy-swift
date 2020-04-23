@@ -471,23 +471,6 @@ structure GetForecastOutput { ... }
 
 ```swift
 protocol Weather {
-    func getCurrentTime() -> GetCurrentTimeOutput
-
-    /**
-     * ...
-     * 
-     * @throws NoSuchResource
-     */
-    func getCity(input: GetCityInput) -> GetCityOutput
-
-
-    func listCities(input: ListCitiesInput) -> ListCitiesOutput
-
-
-    func getForecast(input: GetForecastInput) -> GetForecastOutput
-}
-
-class WeatherClient : Weather {
 
     typealias GetCurrentTimeOutputCompletion = (GetCurrentTimeOutput) -> Void
 
@@ -497,23 +480,34 @@ class WeatherClient : Weather {
 
     typealias GetForecastOutputCompletion = (GetForecaseOutput) -> Void
 
-    func getCurrentTime(completion: GetCurrentTimeOutputCompletion) { 
+    func getCurrentTime(completion: @escaping GetCurrentTimeOutputCompletion)
+
+    func getCity(input: GetCityInput, completion: @escaping GetCityOutputCompletion)
+
+    func listCities(input: ListCitiesInput, completion: @escaping ListCitiesOutputCompletion)
+
+    func getForecast(input: GetForecastInput, completion: @escaping GetForecastOutputCompletion)
+}
+
+class WeatherClient : Weather {
+
+    func getCurrentTime(completion: @escaping GetCurrentTimeOutputCompletion) { 
         ... 
         let result = //calls to server
         completion(result)
     }
 
-    func getCity(input: GetCityInput, completion: GetCityOutputCompletion) { 
+    func getCity(input: GetCityInput, completion: @escaping GetCityOutputCompletion) { 
         ...
         let result = //calls to server
         completion(result)
     }
 
-    func listCities(input: ListCitiesInput, completion: ListCitiesOutputCompletion) { 
+    func listCities(input: ListCitiesInput, completion: @escaping ListCitiesOutputCompletion) { 
         ... 
     }
 
-    func getForecast(input: GetForecastInput, completion: GetForecastOutputCompletion){ 
+    func getForecast(input: GetForecastInput, completion: @escaping GetForecastOutputCompletion){ 
         ... 
     }
 }
@@ -528,11 +522,24 @@ class WeatherClient : Weather {
 All service operations are expected to be async operations under the hood since they imply a network call. Making this explicit in the interface with closures sets expectations up front.
 
 
-2. OperationQueues. how will we use them to send concurrent requests?
+2. OperationQueues. If we build the client runtime package in swift we can do something similar to Amplify with establishing an Asynchronous Operation and adding service requests to the queue. If we go with Kotlin MPP, not sure how this will work for iOS?
 
 
+3. Backwards Compatibility. Slight breaking change as completion handlers in current sdk are after you call `continueWith`
 
-3. Backwards Compatibility
+```swift
+//old way
+let service = FooService()
+service.getForecast(input: GetForecaseInput()).continueWith { output in
+
+}
+
+//new way
+let service = FooService()
+service.getForecast(input: GetForecaseInput()){ output in
+
+}
+```
 
 
 
@@ -951,8 +958,6 @@ struct Employee: Codable {
 
 The media type trait SHOULD influence the HTTP Content-Type header if not already set.
 
-
-
 #### `timestampFormat` trait
 
 We will use the `Date` type in swift. I presume we will need some Date extensions to handle various date formats.
@@ -963,6 +968,15 @@ We will use the `Date` type in swift. I presume we will need some Date extension
 
 All top level classes, enums, and their members will be generated with the given documentation.
 
+This will use the 3 slashes or /** syntax for block documentation like so:
+
+```swift
+///this is documentation
+/** this is also documentation */
+func fooService() {
+
+}
+```
 #### `examples` trait
 
 Not processed
