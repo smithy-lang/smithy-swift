@@ -849,7 +849,7 @@ extension Material: UnknownCaseRepresentable {
 //then when you instantiate like this
 Material(rawValue: "stone") // -> .unknown
 ```
- I think alternative 2 might be the best option here to capture both the decoding of the unknonw values in enums in smithy and also the instantiation of them but not sure what is important here for these unknown values. The quesiton is what is happening to these ennums with unknown values being returned from a service? Are we just deserializing them? Are we taking some action that needs to be handled first?
+ I think alternative 2 might be the best option here to capture both the deserialization of the unknown values in enums in smithy and also the instantiation of them but not sure what is important here for these unknown values. The question is what is happening to these enums with unknown values being returned from a service? Are we just deserializing them? Are we taking some action that needs to be handled first?
 
 
 #### `idRef` trait
