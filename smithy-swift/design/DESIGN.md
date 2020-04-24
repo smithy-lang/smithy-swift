@@ -530,7 +530,7 @@ All service operations are expected to be async operations under the hood since 
 ```swift
 //old way
 let service = FooService()
-service.getForecast(input: GetForecaseInput()).continueWith { output in
+service.getForecast(input: GetForecaseInput()).continueWith { (task) -> Any? in
 
 }
 
