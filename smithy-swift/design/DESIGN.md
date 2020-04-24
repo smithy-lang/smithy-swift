@@ -514,7 +514,6 @@ class WeatherClient : Weather {
 
 ```
 
-
 #### Considerations
 
 1. Closures. Closures in swift are how we can represent async operations.
@@ -540,9 +539,6 @@ service.getForecast(input: GetForecaseInput()){ output in
 
 }
 ```
-
-
-
 
 ### Resource types
 
