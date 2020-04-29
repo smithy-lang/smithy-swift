@@ -606,18 +606,24 @@ struct Foo {
 
 #### `deprecated` trait
 
-Will generate the equivalent code for the shape annotated with Swifts's `@available` attribute and pass in the deprecated and message arguments with the version and message.
+Will generate the equivalent code for the shape annotated with Swifts's `@available` attribute and pass in the deprecated and message arguments with the version and message if available or just pass the argument name without the colon and value as demonstrated below.
 
 ```
 @deprecated
 structure Foo
 
 @deprecated(message: "no longer used", since: "1.3")
+structure Bar
+```
+
+```swift
+@available(deprecated)
+class Foo {}
 ```
 
 ```swift
 @available(deprecated: 1.3, message: "no longer used")
-class Foo {}
+class Bar {}
 
 ```
 
