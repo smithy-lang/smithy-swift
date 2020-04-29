@@ -14,7 +14,7 @@
 //
 
 struct CitySummary {
-    public let case: String?
+    public let caseValue: String?
     public let cityId: String
     public let name: String
     public let number: String?
