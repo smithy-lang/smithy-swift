@@ -14,5 +14,5 @@
 //
 
 struct GetForecastOutput {
-    public let chanceOfRain: Int?
+    public let chanceOfRain: Float?
 }

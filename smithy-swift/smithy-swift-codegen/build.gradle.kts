@@ -4,5 +4,5 @@ extra["displayName"] = "Smithy :: Swift :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.swift.codegen"
 
 dependencies {
-    api("software.amazon.smithy:smithy-codegen-core:0.9.7")
+    api("software.amazon.smithy:smithy-codegen-core:0.9.9")
 }

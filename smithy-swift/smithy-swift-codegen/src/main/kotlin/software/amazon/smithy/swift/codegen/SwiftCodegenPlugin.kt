@@ -6,15 +6,17 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 
 class SwiftCodegenPlugin : SmithyBuildPlugin {
-    override fun getName(): String {
-        return "swift-codegen"
+
+    companion object {
+        fun createSymbolProvider(model: Model):SymbolProvider = SymbolVisitor(model)
+
     }
+
+    override fun getName(): String = "swift-codegen"
 
     override fun execute(context: PluginContext?) {
-        print("not executed yet")
-    }
+        println("executing swift codegen")
 
-    fun createSymbolProvider(model: Model): SymbolProvider {
-        return SymbolVisitor(model)
+        CodegenVisitor(context!!).execute()
     }
 }

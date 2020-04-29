@@ -1,2 +1,4 @@
 Manifest-Version: 1.0
+Smithy-Tags: software.amazon.smithy, software.amazon.smithy:smithy-swift
+ -codegen-test, software.amazon.smithy:smithy-swift-codegen-test:0.1.0
 
