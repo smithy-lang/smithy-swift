@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.utils.StringUtils
 import java.util.*
+import java.util.function.Function
 import java.util.logging.Logger
 
 // PropertyBag keys
@@ -57,14 +58,16 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
         // Load reserved words from a new-line delimited file.
         val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
         val reservedWords = ReservedWordsBuilder()
-            .loadWords(resource)
+            .loadWords(resource, ::escapeReservedWords)
             .build()
 
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
+            .memberReservedWords(reservedWords)
             // prevent escaping intentional references to built-in types.
-            .escapePredicate { _, symbol: Symbol -> !symbol.definitionFile.isEmpty() }
+            .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
             .buildEscaper()
+
 
         // TODO: Get each structure that's used an error.
 //        val operationIndex = model.getKnowledge(OperationIndex::class.java)
@@ -74,6 +77,9 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
 //            }
 
     }
+
+    private fun escapeReservedWords(word: String): String =  "`${word}`"
+
 
     override fun toSymbol(shape: Shape): Symbol {
         val symbol = shape.accept(this)
@@ -209,3 +215,4 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
         return "$fileName.swift"
     }
 }
+
