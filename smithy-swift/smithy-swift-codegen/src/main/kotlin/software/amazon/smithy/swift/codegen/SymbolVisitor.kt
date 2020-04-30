@@ -1,15 +1,13 @@
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
+import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.utils.StringUtils
-import java.util.*
-import java.util.function.Function
-import java.util.logging.Logger
 
 // PropertyBag keys
 
@@ -44,15 +42,14 @@ fun Symbol.defaultValue(): String? {
     return if (default.isPresent) default.get() else null
 }
 
-//fun Shape.defaultPropertyName(): String = StringUtils.uncapitalize(this.memberName)
 fun Shape.defaultStructName(): String = StringUtils.capitalize(this.id.name)
 
-class SymbolVisitor(private val model: Model): SymbolProvider,
+class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
     ShapeVisitor<Symbol> {
 
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
     private var escaper: Escaper
-    //private val errorShapes: Set<StructureShape> = HashSet()
+    // private val errorShapes: Set<StructureShape> = HashSet()
 
     init {
         // Load reserved words from a new-line delimited file.
@@ -68,22 +65,19 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
             .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
             .buildEscaper()
 
-
         // TODO: Get each structure that's used an error.
 //        val operationIndex = model.getKnowledge(OperationIndex::class.java)
 //        model.shapes(OperationShape::class.java)
 //            .forEach { operationShape: OperationShape? ->
 //                errorShapes.plus(operationIndex.getErrors(operationShape))
 //            }
-
     }
 
-    private fun escapeReservedWords(word: String): String =  "`${word}`"
-
+    private fun escapeReservedWords(word: String): String = "`$word`"
 
     override fun toSymbol(shape: Shape): Symbol {
         val symbol = shape.accept(this)
-        this.logger.fine("Creating symbol from $shape: $symbol" )
+        this.logger.fine("Creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
 
@@ -91,35 +85,36 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
         return escaper.escapeMemberName(shape.memberName)
     }
 
-    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int")
+    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int", "0")
 
-    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0.0")
 
-    override fun longShape(shape: LongShape): Symbol  = numberShape(shape, "Int")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Int", "0")
 
-    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double")
+    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
     override fun bigDecimalShape(shape: BigDecimalShape): Symbol = numberShape(shape, "NSDecimal")
 
-    override fun byteShape(shape: ByteShape): Symbol  = numberShape(shape, "Int8")
+    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Int8", "0")
 
-    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16")
+    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    //TODO: support BigInt type via apple prototype or third party
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = numberShape(shape, "Int")
+    // TODO: support BigInt type via apple prototype or third party
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = numberShape(shape, "Int", "0")
 
     override fun stringShape(shape: StringShape): Symbol {
-        return createSymbolBuilder(shape, "String", true).build();
+        return createSymbolBuilder(shape, "String", true).build()
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool").putProperty(DEFAULT_VALUE_KEY, "false").build();
+        return createSymbolBuilder(shape, "Bool").putProperty(DEFAULT_VALUE_KEY, "false").build()
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultStructName()
-        //TODO: handle error types
-        return createSymbolBuilder(shape, name, boxed = true).definitionFile("./models/${toFilename(shape.id.name)}").build()
+        val namespace = "./$rootNamespace/models/"
+        // TODO: handle error types
+        return createSymbolBuilder(shape, name, boxed = true).definitionFile("${namespace}${toFilename(shape.id.name)}").build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
@@ -134,13 +129,13 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>")
+        return createSymbolBuilder(shape, "Set<${reference.name}>", true)
             .build()
     }
 
     override fun resourceShape(shape: ResourceShape): Symbol {
-        //TODO create resource type
-        return createSymbolBuilder(shape, "Any", true).build();
+        // TODO create resource type
+        return createSymbolBuilder(shape, "Any", true).build()
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
@@ -150,25 +145,25 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", true).build();
+        return createSymbolBuilder(shape, "Date", true).build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {
-        return createSymbolBuilder(shape, "enum").build();
+        return createSymbolBuilder(shape, "enum").build()
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
-        //TODO create operation type
-        return createSymbolBuilder(shape, "func").build();
+        // TODO create operation type
+        return createSymbolBuilder(shape, "func").build()
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return createSymbolBuilder(shape, "Data", true).build();
+        return createSymbolBuilder(shape, "Data", true).build()
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        //TODO create document type
-        return createSymbolBuilder(shape, "Any", true).build();
+        // TODO create document type
+        return createSymbolBuilder(shape, "Any", true).build()
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
@@ -215,4 +210,3 @@ class SymbolVisitor(private val model: Model): SymbolProvider,
         return "$fileName.swift"
     }
 }
-

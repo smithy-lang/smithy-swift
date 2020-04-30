@@ -1,24 +1,24 @@
 package software.amazon.smithy.swift.codegen
 
+import java.nio.file.Paths
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
-import java.nio.file.Paths
-
 
 /**
  * Manages writers for Swift files.
  */
-class SwiftDelegator(private val settings: SwiftSettings,
-                      private val model: Model,
-                      private val fileManifest: FileManifest,
-                      private val symbolProvider: SymbolProvider){
+class SwiftDelegator(
+    private val settings: SwiftSettings,
+    private val model: Model,
+    private val fileManifest: FileManifest,
+    private val symbolProvider: SymbolProvider
+) {
 
     private val writers: MutableMap<String, SwiftWriter> = mutableMapOf()
-
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -71,5 +71,4 @@ class SwiftDelegator(private val settings: SwiftSettings,
         }
         return writer
     }
-
 }

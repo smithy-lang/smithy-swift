@@ -6,11 +6,12 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 
-
-class StructureGenerator(private val model: Model,
-                         private val symbolProvider: SymbolProvider,
-                         private val writer: SwiftWriter,
-                         private val shape: StructureShape) {
+class StructureGenerator(
+    private val model: Model,
+    private val symbolProvider: SymbolProvider,
+    private val writer: SwiftWriter,
+    private val shape: StructureShape
+) {
     fun render() {
         if (!shape.hasTrait(ErrorTrait::class.java)) {
             renderStructure()
@@ -24,7 +25,7 @@ class StructureGenerator(private val model: Model,
      */
     private fun renderStructure() {
         val symbol: Symbol = symbolProvider.toSymbol(shape)
-        //writer.writeShapeDocs(shape)
+        // writer.writeShapeDocs(shape)
         writer.openBlock("public struct \$L {", symbol.name)
         for (member in shape.allMembers.values) {
             val memberName = symbolProvider.toMemberName(member)

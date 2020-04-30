@@ -1,15 +1,14 @@
 package software.amazon.smithy.swift.codegen
 
+import java.util.function.BiFunction
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.utils.CodeWriter
-import java.util.function.BiFunction
-import software.amazon.smithy.codegen.core.CodegenException
 
-
-class SwiftWriter(private val fullPackageName: String): CodeWriter() {
+class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()
         trimTrailingSpaces()
@@ -20,17 +19,14 @@ class SwiftWriter(private val fullPackageName: String): CodeWriter() {
     internal val imports: ImportDeclarations = ImportDeclarations()
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
 
-
     fun addImport(symbol: Symbol, packageName: String) {
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
-
-
     }
 
-    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption){
-        symbol.references.forEach {reference ->
-            for(option in options) {
+    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
+        symbol.references.forEach { reference ->
+            for (option in options) {
                 if (reference.hasOption(option)) {
                     addImport(reference.symbol, reference.alias)
                     break
@@ -63,9 +59,9 @@ class SwiftWriter(private val fullPackageName: String): CodeWriter() {
     /**
      * Implements Swift symbol formatting for the `$T` formatter
      */
-    private class SwiftSymbolFormatter: BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
-            when(type) {
+            when (type) {
                 is Symbol -> {
                     var formatted = type.name
                     if (type.isBoxed()) {
@@ -83,5 +79,4 @@ class SwiftWriter(private val fullPackageName: String): CodeWriter() {
             }
         }
     }
-
 }

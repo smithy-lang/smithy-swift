@@ -1,17 +1,17 @@
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.utils.StringUtils
-import java.util.*
 
-
-class EnumGenerator(private val symbolProvider: SymbolProvider?,
-                    private val writer: SwiftWriter?,
-                    private val shape: UnionShape) {
-
+class EnumGenerator(
+    private val symbolProvider: SymbolProvider?,
+    private val writer: SwiftWriter?,
+    private val shape: UnionShape
+) {
 
     fun render() {
         val symbol: Symbol = symbolProvider!!.toSymbol(shape)
@@ -24,7 +24,7 @@ class EnumGenerator(private val symbolProvider: SymbolProvider?,
                     labelBuilder.append(StringUtils.capitalize(part.toLowerCase(Locale.US)))
                 }
                 val label = labelBuilder.toString()
-                //definition.getDocumentation().ifPresent(writer::writeDocs)
+                // definition.getDocumentation().ifPresent(writer::writeDocs)
                 writer.write("case ", label, "=", definition.value)
             }
         }.write("")

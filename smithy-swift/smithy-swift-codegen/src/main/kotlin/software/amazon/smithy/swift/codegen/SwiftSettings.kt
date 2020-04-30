@@ -1,5 +1,8 @@
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
+import java.util.logging.Logger
+import kotlin.streams.toList
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.ObjectNode
@@ -7,9 +10,6 @@ import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import java.util.*
-import java.util.logging.Logger
-import kotlin.streams.toList
 
 private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
@@ -50,14 +50,14 @@ companion object {
         when {
             services.isEmpty() -> {
                 throw CodegenException(
-                    "Cannot infer a service to generate because the model does not "
-                            + "contain any service shapes"
+                    "Cannot infer a service to generate because the model does not " +
+                            "contain any service shapes"
                 )
             }
             services.size > 1 -> {
                 throw CodegenException(
-                    "Cannot infer service to generate because the model contains "
-                            + "multiple service shapes: " + services
+                    "Cannot infer service to generate because the model contains " +
+                            "multiple service shapes: " + services
                 )
             }
             else -> {

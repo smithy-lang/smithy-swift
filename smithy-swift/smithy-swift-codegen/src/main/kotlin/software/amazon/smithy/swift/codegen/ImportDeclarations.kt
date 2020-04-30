@@ -1,12 +1,11 @@
 package software.amazon.smithy.swift.codegen
 
-
 class ImportDeclarations {
     private val imports = setOf(String)
 
     fun addImport(packageName: String): ImportDeclarations {
         imports.plus(packageName)
-        return this;
+        return this
     }
 
     override fun toString(): String {
@@ -21,5 +20,4 @@ class ImportDeclarations {
 
         return builder.toString()
     }
-
 }

@@ -16,16 +16,13 @@
 extra["displayName"] = "Smithy :: Swift :: Codegen :: Test"
 extra["moduleName"] = "software.amazon.smithy.swift.codegen.test"
 
+tasks["jar"].enabled = false
 
 plugins {
-    id("software.amazon.smithy").version("0.4.1")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
+    id("software.amazon.smithy").version("0.4.3")
 }
 
 dependencies {
     implementation(project(":smithy-swift-codegen"))
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:0.9.9")
 }
