@@ -1,5 +1,10 @@
 version: 2.1
 
+general:
+  branches:
+    only: 
+      - circleci-setup
+
 commands:
   with_cache:
     description: |
