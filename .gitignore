@@ -1,12 +1,6 @@
 .DS_Store
 **/.idea/shelf
-/confluence/target
-/dependencies/repo
-/android.tests.dependencies
-/dependencies/android.tests.dependencies
 /dist
-/local
-/gh-pages
 /ideaSDK
 /clionSDK
 /android-studio/sdk
@@ -14,11 +8,7 @@ out/
 /tmp
 workspace.xml
 *.versionsBackup
-/idea/testData/debugger/tinyApp/classes*
-/jps-plugin/testData/kannotator
-/js/js.translator/testData/out/
-/js/js.translator/testData/out-min/
-/js/js.translator/testData/out-pir/
+**/idea/testData/debugger/tinyApp/classes*
 .gradle/
 **/build/
 !**/src/**/build
@@ -51,6 +41,4 @@ workspace.xml
 **/.idea/artifacts/kotlin_compiler_client_embeddable_jar.xml
 **/.idea/artifacts/kotlin_reflect_jar.xml
 **/.idea/jarRepositories.xml
-libraries/tools/kotlin-test-js-runner/lib/
-libraries/tools/kotlin-source-map-loader/lib/
-local.properties
+**/local.properties
