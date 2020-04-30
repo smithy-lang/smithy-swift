@@ -9,7 +9,7 @@ out/
 workspace.xml
 *.versionsBackup
 **/idea/testData/debugger/tinyApp/classes*
-.gradle/
+**/.gradle/
 **/build/
 !**/src/**/build
 !**/test/**/build
