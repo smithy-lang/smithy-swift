@@ -40,6 +40,55 @@ commands:
         - ~/.gradle/caches
         - ~/.gradle/wrapper
 
+  collect_test_results:
+    description: |
+      Store test reports to build artifacts.
+      Locate any JUnit test reports and store them as build artifacts and test results.
+      Store the HTML build report to build artifacts.
+    parameters:
+      reports_path:
+        default: build/reports/
+        description: Artifacts to be published
+        type: string
+      test_results_path:
+        default: build/test-results/
+        description: Results to be published
+        type: string
+    steps:
+    - when:
+        condition: <<parameters.test_results_path>>
+        steps:
+        - store_test_results:
+            path: <<parameters.test_results_path>>
+        - store_artifacts:
+            destination: Results
+            path: <<parameters.test_results_path>>
+    - unless:
+        condition: <<parameters.test_results_path>>
+        steps:
+        - run:
+            command: |
+              mkdir -p /tmp/test_results/junit
+              find . -name '*TEST-*.xml' -exec cp -v {} /tmp/test_results/junit \;
+            name: Gather Test Results
+        - store_test_results:
+            path: /tmp/test_results
+        - store_artifacts:
+            destination: Results
+            path: /tmp/test_results
+    - when:
+        condition: <<parameters.reports_path>>
+        steps:
+        - store_artifacts:
+            destination: Reports
+            path: <<parameters.reports_path>>
+    - unless:
+        condition: <<parameters.reports_path>>
+        steps:
+        - store_artifacts:
+            destination: Reports
+            path: build/reports/tests/test/
+
 jobs:
   build:
     environment:
@@ -63,7 +112,6 @@ jobs:
                   - smithy-kotlin/*/build
                   - smithy-kotlin/client-runtime/*/build
   test_smithy_kotlin:
-    # Remove if parallelism is not desired
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -81,6 +129,9 @@ jobs:
                 name: Run tests
                 command: |
                   ./gradlew test
+      - collect_test_results:
+          test_results_path: ""
+          reports_path: ""
 
   lint_smithy_kotlin:
     # Remove if parallelism is not desired
