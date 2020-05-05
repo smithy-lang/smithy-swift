@@ -15,9 +15,8 @@ class StructureGenerator(
     fun render() {
         if (!shape.hasTrait(ErrorTrait::class.java)) {
             renderStructure()
-        } else {
-           // renderErrorStructure()
         }
+        // TODO: render error structure
     }
 
     /**
@@ -29,7 +28,7 @@ class StructureGenerator(
         writer.openBlock("public struct \$L {", symbol.name)
         for (member in shape.allMembers.values) {
             val memberName = symbolProvider.toMemberName(member)
-           // writer.writeMemberDocs(model, member)
+            // writer.writeMemberDocs(model, member)
             writer.write("public let \$L: \$T", memberName, symbolProvider.toSymbol(member))
         }
         writer.closeBlock("}").write("")
