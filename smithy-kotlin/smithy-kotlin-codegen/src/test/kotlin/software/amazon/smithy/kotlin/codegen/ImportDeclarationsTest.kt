@@ -42,4 +42,15 @@ class ImportDeclarationsTest {
         val expected = "import com.test.Foo"
         assertEquals(expected, statements)
     }
+
+    @Test
+    fun `it renders without alias when symbol matches`() {
+        val decls = ImportDeclarations()
+
+        decls.addImport("com.test", "Foo", "Foo")
+
+        val statements = decls.toString()
+        val expected = "import com.test.Foo"
+        assertEquals(expected, statements)
+    }
 }

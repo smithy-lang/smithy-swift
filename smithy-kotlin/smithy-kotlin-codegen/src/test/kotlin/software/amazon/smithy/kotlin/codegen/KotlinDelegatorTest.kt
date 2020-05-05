@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -68,5 +69,7 @@ class KotlinDelegatorTest {
 
         val contents = manifest.getFileString("src/main/kotlin/example/model/GetFooInput.kt").get()
         contents.shouldContain("import java.math.BigInteger")
+        // ensure symbol wasn't imported as an alias by default
+        contents.shouldNotContain("as BigInteger")
     }
 }

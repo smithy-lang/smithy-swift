@@ -41,7 +41,7 @@ class ImportDeclarations {
 private data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {
     val statement: String
     get() {
-        return if (alias != "") {
+        return if (alias != "" && alias != symbolName) {
             "import $packageName.$symbolName as $alias"
         } else {
             "import $packageName.$symbolName"

@@ -182,7 +182,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             val memberSymbol = toSymbol(it)
             val ref = SymbolReference.builder()
                 .symbol(memberSymbol)
-                .alias("")
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
