@@ -62,7 +62,7 @@ enum class Baz(val value: String) {
     }
 }
 """
-    
+
         contents.shouldContain(expectedEnumDecl)
     }
 

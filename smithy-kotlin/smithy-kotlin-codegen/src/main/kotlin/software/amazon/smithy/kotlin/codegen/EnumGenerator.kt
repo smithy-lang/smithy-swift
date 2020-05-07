@@ -66,7 +66,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                 .values
                 .entries
                 .sortedBy { it.value.name.orElse(it.key) }
-                .forEach{
+                .forEach {
                     generateEnumConstant(it.key, it.value)
                 }
 
