@@ -14,7 +14,8 @@
  */
 package software.amazon.smithy.swift.codegen
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
@@ -42,9 +43,9 @@ class SwiftDelegatorTests : TestsBase() {
 
         SwiftCodegenPlugin().execute(context)
 
-        Assertions.assertTrue(manifest.hasFile("example/models/GetFooInput.swift"))
-        Assertions.assertTrue(manifest.hasFile("example/models/GetFooOutput.swift"))
-        Assertions.assertTrue(manifest.hasFile("example/models/GetFooError.swift"))
+        assertTrue(manifest.hasFile("example/models/GetFooInput.swift"))
+        assertTrue(manifest.hasFile("example/models/GetFooOutput.swift"))
+        assertTrue(manifest.hasFile("example/models/GetFooError.swift"))
     }
 
     @Test
@@ -70,8 +71,8 @@ class SwiftDelegatorTests : TestsBase() {
 
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
-        Assertions.assertEquals(SwiftWriter.staticHeader + "Hello!\n",
-                                manifest.getFileString("example/models/GetFooInput.swift").get())
+        assertEquals(SwiftWriter.staticHeader + "Hello!\n",
+            manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 
     @Test
@@ -98,7 +99,7 @@ class SwiftDelegatorTests : TestsBase() {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
-        Assertions.assertEquals(SwiftWriter.staticHeader + "Hello!\n\nGoodbye!\n",
-                                manifest.getFileString("example/models/GetFooInput.swift").get())
+        assertEquals(SwiftWriter.staticHeader + "Hello!\n\nGoodbye!\n",
+            manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 }

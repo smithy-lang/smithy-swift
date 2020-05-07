@@ -37,13 +37,12 @@ class StructureGeneratorTests : TestsBase() {
 
         contents.shouldContain(SwiftWriter.staticHeader)
 
-        val expectedGeneratedStructure = """
-public struct MyStruct {
-    public let bar: Int = 0
-    public let baz: Int? = nil
-    public let foo: String? = nil
-}
-"""
+        val expectedGeneratedStructure = "" +
+                "public struct MyStruct {\n" +
+                "    public let bar: Int = 0\n" +
+                "    public let baz: Int? = nil\n" +
+                "    public let foo: String? = nil\n" +
+                "}\n"
 
         contents.shouldContain(expectedGeneratedStructure)
     }
