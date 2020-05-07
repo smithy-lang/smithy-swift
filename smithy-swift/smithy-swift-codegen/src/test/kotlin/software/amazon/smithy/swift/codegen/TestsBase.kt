@@ -1,11 +1,11 @@
 package software.amazon.smithy.swift.codegen
 
+import java.net.URL
+import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
-import java.net.URL
-import java.util.logging.Logger
 
 open class TestsBase {
 
@@ -31,5 +31,4 @@ open class TestsBase {
     private fun getSmithyResource(smithyTestResourceName: String): URL? {
         return TestsBase::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/$smithyTestResourceName")
     }
-
 }
