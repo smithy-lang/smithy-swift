@@ -95,7 +95,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     fun dokka(block: KotlinWriter.() -> Unit) {
         pushState()
         write("/**")
-        setNewlinePrefix("*")
+        setNewlinePrefix(" * ")
         block(this)
         popState()
         write(" */")

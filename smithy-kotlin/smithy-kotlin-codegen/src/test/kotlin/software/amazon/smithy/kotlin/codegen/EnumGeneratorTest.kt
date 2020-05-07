@@ -49,9 +49,20 @@ class EnumGeneratorTest {
         val expectedEnumDecl = """
 enum class Baz(val value: String) {
     BAR("BAR"),
-    FOO("FOO");
+    FOO("FOO"),
+    SDK_UNKNOWN("SDK_UNKNOWN");
+
+    override fun toString(): String = value
+
+    companion object {
+        /**
+         * Convert a raw value to an enum constant using using either the constant name or raw value
+         */
+        fun fromValue(str: String): Baz = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN
+    }
 }
 """
+    
         contents.shouldContain(expectedEnumDecl)
     }
 
@@ -81,7 +92,17 @@ enum class Baz(val value: String) {
         val expectedEnumDecl = """
 enum class Baz(val value: String) {
     T2_MICRO("t2.micro"),
-    T2_NANO("t2.nano");
+    T2_NANO("t2.nano"),
+    SDK_UNKNOWN("SDK_UNKNOWN");
+
+    override fun toString(): String = value
+
+    companion object {
+        /**
+         * Convert a raw value to an enum constant using using either the constant name or raw value
+         */
+        fun fromValue(str: String): Baz = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN
+    }
 }
 """
         contents.shouldContain(expectedEnumDecl)

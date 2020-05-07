@@ -36,13 +36,15 @@ import software.amazon.smithy.model.traits.EnumTrait
  *
  * ```
  * enum class SimpleYesNo(val value: String) {
- *     YES("YES")
- *     NO("NO")
+ *     YES("YES"),
+ *     NO("NO"),
+ *     SDK_UNKNOWN("SDK_UNKNOWN");
  * }
  *
  * enum class TypedYesNo(val value: String) {
- *     YES("Yes")
- *     NO("No")
+ *     YES("Yes"),
+ *     NO("No"),
+ *     SDK_UNKNOWN("SDK_UNKNOWN");
  * }
  * ```
  */
@@ -59,23 +61,34 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     fun render() {
         // TODO - write docs for shape
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
-        writer.pushState()
         writer.withBlock("enum class ${symbol.name}(val value: String) {", "}") {
-            val totalConstants = enumTrait.values.size
             enumTrait
                 .values
                 .entries
                 .sortedBy { it.value.name.orElse(it.key) }
-                .forEachIndexed { index, entry ->
-                    generateEnumConstant(entry.key, entry.value, index == totalConstants - 1)
+                .forEach{
+                    generateEnumConstant(it.key, it.value)
                 }
+
+            // generate the unknown which will always be last
+            writer.write("SDK_UNKNOWN(\"SDK_UNKNOWN\");\n")
+
+            // override to string to use the enum constant value
+            writer.write("override fun toString(): String = value\n")
+
+            // generate the fromValue() static method
+            withBlock("companion object {", "}") {
+                writer.dokka {
+                    write("Convert a raw value to an enum constant using using either the constant name or raw value")
+                }
+                write("fun fromValue(str: String): \$L = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN", symbol.name)
+            }
         }
     }
 
-    fun generateEnumConstant(value: String, body: EnumConstantBody, isLast: Boolean) {
+    fun generateEnumConstant(value: String, body: EnumConstantBody) {
         // TODO - write constant documentation (body.documentation)
         val constName = body.name.orElse(value.toUpperCase())
-        val terminator = if (isLast) ";" else ","
-        writer.write("$constName(\"$value\")$terminator")
+        writer.write("$constName(\"$value\"),")
     }
 }
