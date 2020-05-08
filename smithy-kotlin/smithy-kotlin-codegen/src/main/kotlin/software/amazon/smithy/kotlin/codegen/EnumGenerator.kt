@@ -88,7 +88,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
 
     fun generateEnumConstant(definition: EnumDefinition) {
         // TODO - write constant documentation (body.documentation)
-        val constName = definition.name.orElseGet{
+        val constName = definition.name.orElseGet {
                 CaseUtils.toSnakeCase(definition.value).replace(".", "_")
             }.toUpperCase()
         writer.write("$constName(\"${definition.value}\"),")
