@@ -15,8 +15,17 @@ private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
 private const val MODULE_DESCRIPTION = "moduleDescription"
 private const val MODULE_VERSION = "moduleVersion"
+private const val GIT_REPO = "gitRepo"
+private const val HOMEPAGE = "homepage"
+private const val AUTHOR = "author"
 
-class SwiftSettings(val service: ShapeId, val moduleName: String, val moduleVersion: String, val moduleDescription: String) {
+class SwiftSettings(val service: ShapeId,
+                    val moduleName: String,
+                    val moduleVersion: String,
+                    val moduleDescription: String,
+                    val author: String,
+                    val homepage: String,
+                    val gitRepo: String) {
 
 companion object {
     private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
@@ -29,7 +38,7 @@ companion object {
      * @return Returns the extracted settings
      */
     fun from(model: Model, config: ObjectNode): SwiftSettings {
-        config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION))
+        config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, HOMEPAGE, GIT_REPO))
 
         val service = config.getStringMember(SERVICE)
             .map(StringNode::expectShapeId)
@@ -38,7 +47,10 @@ companion object {
         val moduleName = config.expectStringMember(MODULE_NAME).value
         val version = config.expectStringMember(MODULE_VERSION).value
         val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
-        return SwiftSettings(service, moduleName, version, desc)
+        val homepage = config.expectStringMember(HOMEPAGE).value
+        val author = config.expectStringMember(AUTHOR).value
+        val gitRepo = config.expectStringMember(GIT_REPO).value
+        return SwiftSettings(service, moduleName, version, desc, author, homepage, gitRepo)
     }
     // infer the service to generate from a model
     private fun inferService(model: Model): ShapeId {

@@ -5,6 +5,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
+import kotlin.text.StringBuilder
 
 class StructureGenerator(
     private val model: Model,
@@ -26,11 +27,30 @@ class StructureGenerator(
         val symbol: Symbol = symbolProvider.toSymbol(shape)
         // writer.writeShapeDocs(shape)
         writer.openBlock("public struct \$L {", symbol.name)
+
+        //write structure properties as let properties for immutability
         for (member in shape.allMembers.values) {
             val memberName = symbolProvider.toMemberName(member)
             // writer.writeMemberDocs(model, member)
             writer.write("public let \$L: \$T", memberName, symbolProvider.toSymbol(member))
         }
+        writer.write("")
+        //write struct constructor
+        writer.openBlock("public init (", ")") {
+            shape.allMembers.values.forEachIndexed { index, member ->
+                val terminator = if (index == shape.allMembers.values.count() - 1) "" else ","
+                writer.write("\$L: \$D$terminator", symbolProvider.toMemberName(member), symbolProvider.toSymbol(member))
+
+            }
+        }
+
+        writer.openBlock("{", "}") {
+            for (member in shape.allMembers.values) {
+                val memberName = symbolProvider.toMemberName(member)
+                writer.write("self.\$1L = \$1L", memberName)
+            }
+        }
+
         writer.closeBlock("}").write("")
     }
 }
