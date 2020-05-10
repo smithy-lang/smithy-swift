@@ -39,9 +39,19 @@ class StructureGeneratorTests : TestsBase() {
 
         val expectedGeneratedStructure = "" +
                 "public struct MyStruct {\n" +
-                "    public let bar: Int = 0\n" +
-                "    public let baz: Int? = nil\n" +
-                "    public let foo: String? = nil\n" +
+                "    public let bar: Int\n" +
+                "    public let baz: Int?\n" +
+                "    public let foo: String?\n\n" +
+                "    public init (\n" +
+                "        bar: Int = 0,\n" +
+                "        baz: Int? = nil,\n" +
+                "        foo: String? = nil\n" +
+                "    )\n" +
+                "    {\n" +
+                "        self.bar = bar\n" +
+                "        self.baz = baz\n" +
+                "        self.foo = foo\n" +
+                "    }\n" +
                 "}\n"
 
         contents.shouldContain(expectedGeneratedStructure)
