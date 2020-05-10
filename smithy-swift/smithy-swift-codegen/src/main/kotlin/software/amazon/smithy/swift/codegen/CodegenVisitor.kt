@@ -29,9 +29,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
 
         println("Generating swift podspec file")
-        // TODO: Generate podspec file
-        // val dependencies = this.writers.dependencies
-        // PodSpecGenerator.writePodspec(settings, fileManifest, SymbolDependency.gatherDependencies(dependencies.stream()))
+        val dependencies = writers.dependencies
+        writePodspec(settings, fileManifest, dependencies)
+
+        println("Generating info plist")
+        writeInfoPlist(settings, fileManifest)
     }
 
     override fun getDefault(shape: Shape?): Void? {

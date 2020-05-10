@@ -3,8 +3,11 @@
   "plugins": {
     "swift-codegen": {
       "service": "example.weather#Weather",
-      "module": "weather",
-      "moduleVersion": "0.0.1"
+      "module": "Weather",
+      "moduleVersion": "0.0.1",
+      "gitRepo": "https://github.com/aws-amplify/amplify-codegen.git",
+      "author": "Amazon Web Services",
+      "homepage": "https://docs.amplify.aws/"
     }
   }
 }

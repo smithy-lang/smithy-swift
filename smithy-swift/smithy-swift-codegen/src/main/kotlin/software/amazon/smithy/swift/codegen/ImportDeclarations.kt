@@ -1,23 +1,27 @@
 package software.amazon.smithy.swift.codegen
 
 class ImportDeclarations {
-    private val imports = setOf(String)
+    private val imports = mutableSetOf<ImportStatement>()
 
-    fun addImport(packageName: String): ImportDeclarations {
-        imports.plus(packageName)
-        return this
+    fun addImport(packageName: String) {
+        imports.add(ImportStatement(packageName))
     }
 
     override fun toString(): String {
         if (imports.isEmpty()) {
             return ""
         }
-        val builder = StringBuilder("")
-        for (entry in imports) {
-            builder.append("import $entry")
-            builder.append('\n')
-        }
 
-        return builder.toString()
+        return imports
+            .map(ImportStatement::statement)
+            .sorted()
+            .joinToString(separator = "\n")
     }
+}
+
+private data class ImportStatement(val packageName: String) {
+    val statement: String
+        get() { return  "import $packageName" }
+
+    override fun toString(): String = statement
 }

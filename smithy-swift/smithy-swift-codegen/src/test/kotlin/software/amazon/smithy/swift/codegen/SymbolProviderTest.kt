@@ -94,8 +94,8 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+
+        assertEquals("Foundation", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 

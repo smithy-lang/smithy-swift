@@ -67,6 +67,8 @@ structure CityCoordinates {
 
     @required
     longitude: Float,
+
+    testInt: BigInteger
 }
 
 /// Error encountered when no resource could be found.
