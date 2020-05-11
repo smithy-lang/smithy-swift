@@ -32,7 +32,7 @@ fun writeInfoPlist(settings: SwiftSettings, manifest: FileManifest) {
     writer.openBlock("<plist version=\"1.0\">")
     writer.write("<dict>")
     writer.openBlock("<dict>", "</dict>") {
-       writer.write( "<key>CFBundleDevelopmentRegion</key>")
+        writer.write("<key>CFBundleDevelopmentRegion</key>")
         writer.write("<string>en</string>")
         writer.write("<key>CFBundleExecutable</key>")
         writer.write("<string>\$$(EXECUTABLE_NAME)</string>")
