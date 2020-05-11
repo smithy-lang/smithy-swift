@@ -123,6 +123,27 @@ class SymbolProviderTest {
         assertEquals("Date", memberSymbol.name)
     }
 
+    @Test fun `creates big ints`() {
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#BigInteger").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val memberSymbol = provider.toSymbol(member)
+
+        assertEquals("BigNumber", memberSymbol.namespace)
+        assertEquals("0", memberSymbol.defaultValue())
+        assertEquals(false, memberSymbol.isBoxed())
+
+        assertEquals("BInt", memberSymbol.name)
+    }
+
     @Test fun `creates lists`() {
         val struct = StructureShape.builder().id("foo.bar#Record").build()
         val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
