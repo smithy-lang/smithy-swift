@@ -19,13 +19,15 @@ private const val GIT_REPO = "gitRepo"
 private const val HOMEPAGE = "homepage"
 private const val AUTHOR = "author"
 
-class SwiftSettings(val service: ShapeId,
-                    val moduleName: String,
-                    val moduleVersion: String,
-                    val moduleDescription: String,
-                    val author: String,
-                    val homepage: String,
-                    val gitRepo: String) {
+class SwiftSettings(
+    val service: ShapeId,
+    val moduleName: String,
+    val moduleVersion: String,
+    val moduleDescription: String,
+    val author: String,
+    val homepage: String,
+    val gitRepo: String
+) {
 
 companion object {
     private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)

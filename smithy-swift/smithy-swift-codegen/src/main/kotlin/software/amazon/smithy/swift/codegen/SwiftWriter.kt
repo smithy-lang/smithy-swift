@@ -66,7 +66,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         val contents = super.toString()
         val imports = "${imports}\n\n"
         return staticHeader + imports + contents
-
     }
 
     /**

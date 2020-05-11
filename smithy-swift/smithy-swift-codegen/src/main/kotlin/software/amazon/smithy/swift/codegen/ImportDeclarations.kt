@@ -21,7 +21,7 @@ class ImportDeclarations {
 
 private data class ImportStatement(val packageName: String) {
     val statement: String
-        get() { return  "import $packageName" }
+        get() { return "import $packageName" }
 
     override fun toString(): String = statement
 }
