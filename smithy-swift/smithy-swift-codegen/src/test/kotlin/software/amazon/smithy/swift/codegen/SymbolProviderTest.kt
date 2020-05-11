@@ -102,6 +102,27 @@ class SymbolProviderTest {
         assertEquals("Data", memberSymbol.name)
     }
 
+    @Test fun `creates dates`() {
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#Timestamp").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val memberSymbol = provider.toSymbol(member)
+
+        assertEquals("Foundation", memberSymbol.namespace)
+        assertEquals("nil", memberSymbol.defaultValue())
+        assertEquals(true, memberSymbol.isBoxed())
+
+        assertEquals("Date", memberSymbol.name)
+    }
+
     @Test fun `creates lists`() {
         val struct = StructureShape.builder().id("foo.bar#Record").build()
         val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
