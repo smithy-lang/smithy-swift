@@ -26,7 +26,7 @@ fun writePodspec(settings: SwiftSettings, fileManifest: FileManifest, dependenci
         for (dependency in dependencies) {
             writer.write("spec.dependency '${dependency.packageName}', '${dependency.version}'")
         }
-        writer.write("spec.source_files       = '${settings.moduleName}/*.swift'")
+        writer.write("spec.source_files = '${settings.moduleName}/*.swift'")
     }
 
     val contents = writer.toString()

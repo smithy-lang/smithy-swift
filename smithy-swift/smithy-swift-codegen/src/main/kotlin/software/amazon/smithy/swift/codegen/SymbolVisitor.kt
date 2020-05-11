@@ -103,6 +103,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     private fun createBigSymbol(shape: Shape?, symbolName: String, defaultValue: String): Symbol {
         return createSymbolBuilder(shape, symbolName, namespace = "BigNumber")
+            .addDependency(SwiftDependency.BIG)
             .putProperty(DEFAULT_VALUE_KEY, defaultValue)
             .build()
     }

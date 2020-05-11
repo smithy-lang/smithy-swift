@@ -6,6 +6,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.codegen.core.SymbolDependency;
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
@@ -25,11 +26,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
 
         println("Flushing swift writers")
-
+        val dependencies = writers.dependencies
         writers.flushWriters()
 
         println("Generating swift podspec file")
-        val dependencies = writers.dependencies
         writePodspec(settings, fileManifest, dependencies)
 
         println("Generating info plist")
