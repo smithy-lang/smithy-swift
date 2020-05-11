@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 
 class UnionGeneratorTest {
@@ -28,15 +29,21 @@ class UnionGeneratorTest {
         val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").build()
         val member2 = MemberShape.builder().id("com.test#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
         val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
+        val member4 = MemberShape.builder().id("com.test#MyStruct\$qux").target("smithy.api#String").build()
 
+        val struct = StructureShape.builder()
+                .id("com.test#MyStruct")
+                .addMember(member4)
+                .build()
         val union = UnionShape.builder()
                 .id("com.test#MyUnion")
                 .addMember(member1)
                 .addMember(member2)
                 .addMember(member3)
+                .addMember(struct.defaultName(), struct.id)
                 .build()
         val model = Model.assembler()
-                .addShapes(union, member1, member2, member3)
+                .addShapes(union, struct, member1, member2, member3, member4)
                 .assemble()
                 .unwrap()
 
@@ -50,6 +57,7 @@ class UnionGeneratorTest {
 
         val expectedClassDecl = """
 sealed class MyUnion {
+    data class MyStruct(val myStruct: MyStruct) : MyUnion()
     data class Bar(val bar: Integer) : MyUnion()
     data class Baz(val baz: Integer) : MyUnion()
     data class Foo(val foo: String) : MyUnion()

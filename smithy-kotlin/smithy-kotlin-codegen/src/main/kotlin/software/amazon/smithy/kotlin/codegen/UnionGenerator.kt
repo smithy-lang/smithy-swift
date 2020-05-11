@@ -22,10 +22,10 @@ import software.amazon.smithy.model.shapes.UnionShape
  * Renders Smithy union shapes
  */
 class UnionGenerator(
-        val model: Model,
-        private val symbolProvider: SymbolProvider,
-        private val writer: KotlinWriter,
-        private val shape: UnionShape
+    val model: Model,
+    private val symbolProvider: SymbolProvider,
+    private val writer: KotlinWriter,
+    private val shape: UnionShape
 ) {
 
     fun render() {
@@ -40,7 +40,7 @@ class UnionGenerator(
         writer.openBlock("sealed class \$L {", symbol.name)
         shape.allMembers.values.forEach {
             val memberName = symbolProvider.toMemberName(it)
-            writer.write("data class \$L(val \$L: \$L) : \$L()", memberName.capitalize(), memberName, symbolProvider.toSymbol(it), symbol.name)
+            writer.write("data class \$L(val \$L: \$L) : \$L()", memberName.capitalize(), memberName, symbolProvider.toSymbol(it).name, symbol.name)
         }
         writer.closeBlock("}").write("")
     }
