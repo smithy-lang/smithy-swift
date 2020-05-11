@@ -14,6 +14,7 @@ open class TestsBase {
     protected fun createModelFromSmithy(smithyTestResourceName: String): Model {
         return Model.assembler()
             .addImport(getSmithyResource(smithyTestResourceName = smithyTestResourceName))
+            .discoverModels()
             .assemble()
             .unwrap()
     }

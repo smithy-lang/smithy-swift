@@ -23,7 +23,7 @@ class SwiftSettingsTest : TestsBase() {
     @Test fun `infers default service`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service.smithy")
 
-        val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
+        val settings = SwiftSettings.from(model!!, Node.objectNodeBuilder()
             .withMember("module", Node.from("example"))
             .withMember("moduleVersion", Node.from("1.0.0"))
             .withMember("homepage", Node.from("https://docs.amplify.aws/"))

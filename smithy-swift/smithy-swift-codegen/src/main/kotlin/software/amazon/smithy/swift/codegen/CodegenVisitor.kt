@@ -59,16 +59,18 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 
-    override fun unionShape(shape: UnionShape): Void? {
-        writers.useShapeWriter(
-            shape
-        ) { writer: SwiftWriter? -> EnumGenerator(symbolProvider, writer, shape).render() }
-        return null
-    }
+//    override fun unionShape(shape: UnionShape): Void? {
+//        writers.useShapeWriter(
+//            shape
+//        ) { writer: SwiftWriter? -> EnumGenerator(symbolProvider, writer, shape).render() }
+//        return null
+//    }
 
     override fun serviceShape(shape: ServiceShape?): Void? {
         // TODO: implement client generation
-        writers.useShapeWriter(shape) { writer: SwiftWriter? -> }
+        writers.useShapeWriter(shape) {
+            // TODO:: Generate Service Client
+        }
         return null
     }
 }
