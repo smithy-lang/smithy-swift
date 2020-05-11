@@ -1,9 +1,14 @@
-$version: "0.4.0"
+$version: "1.0"
 namespace example.weather
 
+use smithy.test#httpRequestTests
+use smithy.test#httpResponseTests
+use aws.protocols#awsJson1_1
+
+
 /// Provides weather forecasts.
-@protocols([{name: "aws.rest-json-1.1"}])
 @paginated(inputToken: "nextToken", outputToken: "nextToken", pageSize: "pageSize")
+@awsJson1_1
 service Weather {
     version: "2006-03-01",
     resources: [City],
@@ -38,6 +43,58 @@ operation GetCity {
     output: GetCityOutput,
     errors: [NoSuchResource]
 }
+
+// Tests that HTTP protocol tests are generated.
+apply GetCity @httpRequestTests([
+    {
+        id: "WriteGetCityAssertions",
+        documentation: "Does something",
+        protocol: "aws.protocols#awsJson1_1",
+        method: "GET",
+        uri: "/cities/123",
+        body: "",
+        params: {
+            cityId: "123"
+        }
+    }
+])
+
+apply GetCity @httpResponseTests([
+    {
+        id: "WriteGetCityResponseAssertions",
+        documentation: "Does something",
+        protocol: "aws.protocols#awsJson1_1",
+        code: 200,
+        body: """
+            {
+                "name": "Seattle",
+                "coordinates": {
+                    "latitude": 12.34,
+                    "longitude": -56.78
+                },
+                "city": {
+                    "cityId": "123",
+                    "name": "Seattle",
+                    "number": "One",
+                    "case": "Upper"
+                }
+            }""",
+        bodyMediaType: "application/json",
+        params: {
+            name: "Seattle",
+            coordinates: {
+                latitude: 12.34,
+                longitude: -56.78
+            },
+            city: {
+                cityId: "123",
+                name: "Seattle",
+                number: "One",
+                case: "Upper"
+            }
+        }
+    }
+])
 
 /// The input used to get a city.
 structure GetCityInput {
@@ -80,6 +137,25 @@ structure NoSuchResource {
     message: String,
 }
 
+apply NoSuchResource @httpResponseTests([
+    {
+        id: "WriteNoSuchResourceAssertions",
+        documentation: "Does something",
+        protocol: "aws.protocols#awsJson1_1",
+        code: 404,
+        body: """
+            {
+                "resourceType": "City",
+                "message": "Your custom message"
+            }""",
+        bodyMediaType: "application/json",
+        params: {
+            resourceType: "City",
+            message: "Your custom message"
+        }
+    }
+])
+
 // The paginated trait indicates that the operation may
 // return truncated results.
 @readonly
@@ -89,6 +165,22 @@ operation ListCities {
     input: ListCitiesInput,
     output: ListCitiesOutput
 }
+
+apply ListCities @httpRequestTests([
+    {
+        id: "WriteListCitiesAssertions",
+        documentation: "Does something",
+        protocol: "aws.protocols#awsJson1_1",
+        method: "GET",
+        uri: "/cities",
+        body: "",
+        queryParams: ["pageSize=50"],
+        forbidQueryParams: ["nextToken"],
+        params: {
+            pageSize: 50
+        }
+    }
+])
 
 structure ListCitiesInput {
     @httpQuery("nextToken")
@@ -166,10 +258,10 @@ union Precipitation {
 
 structure OtherStructure {}
 
-@enum("YES": {}, "NO": {})
+@enum([{value: "YES"}, {value: "NO"}])
 string SimpleYesNo
 
-@enum("YES": {name: "YES"}, "NO": {name: "NO"})
+@enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
 string TypedYesNo
 
 map StringMap {
@@ -191,9 +283,9 @@ structure GetCityImageInput {
 }
 
 structure GetCityImageOutput {
-    @streaming
     @httpPayload
     image: CityImageData,
 }
 
+@streaming
 blob CityImageData
