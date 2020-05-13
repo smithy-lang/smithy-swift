@@ -16,11 +16,10 @@ package software.amazon.smithy.swift.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
-class SwiftSettingsTest: TestsBase() {
+class SwiftSettingsTest : TestsBase() {
     @Test fun `infers default service`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service.smithy")
 
