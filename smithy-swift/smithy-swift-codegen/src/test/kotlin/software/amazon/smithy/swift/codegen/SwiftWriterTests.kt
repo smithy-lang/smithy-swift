@@ -12,12 +12,13 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package software.amazon.smithy.swift.codegen
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class KotlinWriterTest {
+class SwiftWriterTests {
 
     @Test fun `writes doc strings`() {
         val writer = SwiftWriter("MockPackage")
@@ -35,8 +36,8 @@ class KotlinWriterTest {
         Assertions.assertTrue(result.contains(createDocComment(docs)))
     }
 
-    private fun createDocComment(docs: String) : String {
-        var docComment = docs.replace("\n", "\n * ")
+    private fun createDocComment(docs: String): String {
+        val docComment = docs.replace("\n", "\n * ")
         return "/**\n * " + docComment + "\n */\n"
     }
 }

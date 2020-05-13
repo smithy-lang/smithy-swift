@@ -12,16 +12,15 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 
 class UnionGeneratorTests : TestsBase() {
@@ -203,7 +202,7 @@ class UnionGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedEnum)
     }
 
-    private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape) : UnionShape.Builder {
+    private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape): UnionShape.Builder {
         val unionShapeBuilder = UnionShape.builder()
         unionShapeBuilder.id("smithy.example#MyUnion").addTrait(DocumentationTrait("Documentation for MyUnion"))
         for (memberShape in memberShapes) {
