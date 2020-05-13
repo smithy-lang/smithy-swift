@@ -54,7 +54,7 @@ class SwiftDelegatorTests : TestsBase() {
     @Test
     fun `it vends writers for shapes`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service-with-operation.smithy")
-        val getFooInputShape = model!!.expectShape(ShapeId.from("smithy.example#GetFooInput"))
+        val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = PluginContext.builder()
             .model(model)
@@ -84,7 +84,7 @@ class SwiftDelegatorTests : TestsBase() {
     @Test
     fun `it uses opened writer separating with newline`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service-with-operation.smithy")
-        val getFooInputShape = model!!.expectShape(ShapeId.from("smithy.example#GetFooInput"))
+        val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = PluginContext.builder()
             .model(model)
