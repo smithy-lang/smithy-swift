@@ -20,13 +20,9 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
-class SwiftSettingsTest {
+class SwiftSettingsTest: TestsBase() {
     @Test fun `infers default service`() {
-        val smithy = SwiftSettingsTest::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/simple-service.smithy")
-        val model = Model.assembler()
-            .addImport(smithy)
-            .assemble()
-            .unwrap()
+        val model = createModelFromSmithy(smithyTestResourceName = "simple-service.smithy")
 
         val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
             .withMember("module", Node.from("example"))

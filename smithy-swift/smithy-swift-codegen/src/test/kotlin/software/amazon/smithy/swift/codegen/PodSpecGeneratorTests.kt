@@ -1,0 +1,61 @@
+/*
+ *
+ *  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License").
+ *  * You may not use this file except in compliance with the License.
+ *  * A copy of the License is located at
+ *  *
+ *  *  http://aws.amazon.com/apache2.0
+ *  *
+ *  * or in the "license" file accompanying this file. This file is distributed
+ *  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ *  * express or implied. See the License for the specific language governing
+ *  * permissions and limitations under the License.
+ *
+ */
+
+package software.amazon.smithy.swift.codegen
+
+import io.kotest.matchers.string.shouldContain
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.codegen.core.SymbolDependency
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.StructureShape
+import org.junit.jupiter.api.Assertions.assertNotNull
+import kotlin.streams.toList
+
+class PodSpecGeneratorTests : TestsBase() {
+
+    @Test
+    fun `it renders podspec with dependencies` () {
+        val model = createModelFromSmithy("simple-service-with-operation.smithy")
+        val homepage = "https://docs.amplify.aws/"
+        val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
+            .withMember("module", Node.from("example"))
+            .withMember("moduleVersion", Node.from("1.0.0"))
+            .withMember("homepage", Node.from(homepage))
+            .withMember("author", Node.from("Amazon Web Services"))
+            .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
+            .build())
+        
+        val manifest = MockManifest()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "example")
+
+        val mockDependencies = mutableListOf<SymbolDependency>()
+        val member = model.shapes().filter { it.isBigIntegerShape }.toList().first()
+
+        mockDependencies.addAll(provider.toSymbol(member).dependencies)
+
+        writePodspec(settings, manifest, mockDependencies)
+        val podspec = manifest.getFileString("/example.podspec").get()
+        assertNotNull(podspec)
+        podspec.shouldContain("spec.dependency 'BigNumber', '2.0'")
+        podspec.shouldContain("spec.homepage     = '$homepage'")
+    }
+}
