@@ -22,6 +22,7 @@ import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -57,7 +58,7 @@ fun Symbol.defaultValue(): String? {
     return if (default.isPresent) default.get() else null
 }
 
-fun Shape.defaultStructName(): String = StringUtils.capitalize(this.id.name)
+fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
     ShapeVisitor<Symbol> {
@@ -123,7 +124,18 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun stringShape(shape: StringShape): Symbol {
-        return createSymbolBuilder(shape, "String", true).build()
+        val enumTrait = shape.getTrait(EnumTrait::class.java)
+        if (enumTrait.isPresent) {
+            return createEnumSymbol(shape)
+        }
+        return createSymbolBuilder(shape, "String", boxed = true).build()
+    }
+
+    fun createEnumSymbol(shape: Shape): Symbol {
+        val name = shape.defaultName()
+        return createSymbolBuilder(shape, name, boxed = true)
+            .definitionFile(formatModuleName(shape.type, name))
+            .build()
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
@@ -131,7 +143,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
-        val name = shape.defaultStructName()
+        val name = shape.defaultName()
         // TODO: handle error types
 
         val builder = createSymbolBuilder(shape, name, boxed = true)
@@ -181,7 +193,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun unionShape(shape: UnionShape): Symbol {
-        return createSymbolBuilder(shape, "enum").build()
+        return createEnumSymbol(shape)
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
@@ -199,7 +211,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val name = shape.defaultStructName()
+        val name = shape.defaultName()
         return createSymbolBuilder(shape, "Client").definitionFile(formatModuleName(shape.type, name)).build()
     }
 

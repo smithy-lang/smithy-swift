@@ -1,11 +1,14 @@
 package software.amazon.smithy.swift.codegen
 
-import java.net.URL
-import java.util.logging.Logger
+import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.loader.ModelAssembler
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.utils.CodeWriter
+import java.net.URL
+import java.util.logging.Logger
 
 open class TestsBase {
 
@@ -32,4 +35,27 @@ open class TestsBase {
     private fun getSmithyResource(smithyTestResourceName: String): URL? {
         return TestsBase::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/$smithyTestResourceName")
     }
+
+    protected fun createModelFromShapes(vararg shapes: Shape): Model {
+        return Model.assembler()
+                    .addShapes(*shapes)
+                    .assemble()
+                    .unwrap()
+    }
+
+
+//    @Test
+//    fun testCodeWriter() {
+//        val writer: CodeWriter = CodeWriter.createDefault()
+//        writer.openBlock("arr{", "}") {
+//            writer.openBlock("return [", "]") {
+//                writer.write(".A\n.B")
+//            }
+//        }
+////        writer.pushState()
+////        writer.write("Hello, \$L", "there! how di")
+////        print(writer.toString())
+////        writer.popState()
+//        print(writer.toString())
+//    }
 }
