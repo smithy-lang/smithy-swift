@@ -104,7 +104,7 @@ class UnionGenerator(
     var initFromDecoderBlockBuilder: MutableList<String> = mutableListOf<String>()
 
     fun render() {
-        // TODO - write docs for shape
+        writer.writeShapeDocs(shape)
         writer.openBlock("enum ${unionSymbol.name} {", "}\n") {
             createUnionWriterContexts()
             // add the unknown case which will always be last
@@ -133,7 +133,7 @@ class UnionGenerator(
     }
 
     fun addEnumCaseToEnum(memberShape: MemberShape) {
-        // TODO - write constant documentation (body.documentation)
+        writer.writeMemberDocs(model, memberShape)
         val enumName = getEnumNameFromMemberShape(memberShape = memberShape)
         val associatedValueType = getValueTypeFromMemberShape(memberShape = memberShape)
         writer.write("case $enumName($associatedValueType)")

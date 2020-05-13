@@ -39,13 +39,13 @@ class StructureGenerator(
      */
     private fun renderStructure() {
         val symbol: Symbol = symbolProvider.toSymbol(shape)
-        // writer.writeShapeDocs(shape)
+        writer.writeShapeDocs(shape)
         writer.openBlock("public struct \$L {", symbol.name)
 
         // write structure properties as let properties for immutability
         for (member in shape.allMembers.values) {
             val memberName = symbolProvider.toMemberName(member)
-            // writer.writeMemberDocs(model, member)
+            writer.writeMemberDocs(model, member)
             writer.write("public let \$L: \$T", memberName, symbolProvider.toSymbol(member))
         }
         writer.write("")

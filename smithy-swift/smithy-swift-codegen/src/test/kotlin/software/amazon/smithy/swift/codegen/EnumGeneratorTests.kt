@@ -18,6 +18,7 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 
@@ -28,7 +29,7 @@ class EnumGeneratorTests : TestsBase() {
 
         val stringShapeWithEnumTrait = createStringWithEnumTrait(
             EnumDefinition.builder().value("FOO").build(),
-            EnumDefinition.builder().value("BAR").build()
+            EnumDefinition.builder().value("BAR").documentation("Documentation for BAR").build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
 
@@ -43,7 +44,13 @@ class EnumGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
 
         val expectedGeneratedEnum = "" +
+                "/**\n" +
+                " * Documentation for the enum\n" +
+                " */\n" +
                 "enum MyEnum {\n" +
+                "    /**\n" +
+                "     * Documentation for BAR\n" +
+                "     */\n" +
                 "    case BAR\n" +
                 "    case FOO\n" +
                 "    case UNKNOWN(String)\n" +
@@ -81,7 +88,14 @@ class EnumGeneratorTests : TestsBase() {
     fun `generates named enums`() {
         val stringShapeWithEnumTrait = createStringWithEnumTrait(
             EnumDefinition.builder().value("t2.nano").name("T2_NANO").build(),
-            EnumDefinition.builder().value("t2.micro").name("T2_MICRO").build()
+            EnumDefinition.builder().value("t2.micro")
+                                    .name("T2_MICRO")
+                                    .documentation("\"\"\"\n" +
+                                        "T2 instances are Burstable Performance\n" +
+                                        "Instances that provide a baseline level of CPU\n" +
+                                        "performance with the ability to burst above the\n" +
+                                        "baseline.\"\"\"")
+                                    .build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
 
@@ -96,7 +110,17 @@ class EnumGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
 
         val expectedGeneratedEnum = "" +
+                "/**\n" +
+                " * Documentation for the enum\n" +
+                " */\n" +
                 "enum MyEnum {\n" +
+                "    /**\n" +
+                "     * ${"\"\"\""}\n" +
+                "     * T2 instances are Burstable Performance\n" +
+                "     * Instances that provide a baseline level of CPU\n" +
+                "     * performance with the ability to burst above the\n" +
+                "     * baseline.${"\"\"\""}\n" +
+                "     */\n" +
                 "    case T2_MICRO\n" +
                 "    case T2_NANO\n" +
                 "    case UNKNOWN(String)\n" +
@@ -140,6 +164,7 @@ class EnumGeneratorTests : TestsBase() {
         val shape = StringShape.builder()
             .id("smithy.example#MyEnum")
             .addTrait(enumTraitBuilder.build())
+            .addTrait(DocumentationTrait("Documentation for the enum"))
             .build()
 
         return shape

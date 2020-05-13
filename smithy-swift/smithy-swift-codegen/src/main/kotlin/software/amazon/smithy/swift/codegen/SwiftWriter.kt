@@ -15,13 +15,18 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.function.BiFunction
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
+import java.util.function.BiFunction
 
 class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     init {
@@ -104,6 +109,82 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 //            is SymbolReference -> println("symbol ref")
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
             }
+        }
+    }
+
+    /**
+     * Configures the writer with the appropriate opening/closing doc comment lines and calls the [block]
+     * with this writer. Any calls to `write()` inside of block will be escaped appropriately.
+     * On return the writer's original state is restored.
+     *
+     * e.g.
+     * ```
+     * writer.writeDocs(){
+     *     write("This is a doc comment")
+     * }
+     * ```
+     *
+     * would output
+     *
+     * ```
+     * /**
+     *  * This is a doc comment
+     *  */
+     * ```
+     */
+    fun writeDocs(block: SwiftWriter.() -> Unit) {
+        pushState("docs")
+        write("/**")
+        setNewlinePrefix(" * ")
+        block(this)
+        popState()
+        write(" */")
+    }
+
+    /**
+     * Writes documentation comments from a doc string.
+     * @param docs Documentation to write.
+     * @return Returns the writer.
+     */
+    fun writeDocs(docs: String) {
+        writeDocs {
+            write(sanitizeDocumentation(docs))
+        }
+    }
+
+    /**
+     * This function escapes "$" characters so formatters are not run.
+     */
+    private fun sanitizeDocumentation(doc: String): String {
+        return doc.replace("\$", "\$\$")
+    }
+
+    /**
+     * Writes shape documentation comments if docs are present.
+     */
+    fun writeShapeDocs(shape: Shape) {
+        shape.getTrait(DocumentationTrait::class.java).ifPresent {
+            writeDocs(it.value)
+        }
+    }
+
+    /**
+     * Writes member shape documentation comments if docs are present.
+     */
+    fun writeMemberDocs(model: Model, member: MemberShape) {
+        if (member.getTrait(DocumentationTrait::class.java).isPresent) {
+            writeDocs(member.getTrait(DocumentationTrait::class.java).get().value)
+        } else if (member.getMemberTrait(model, DocumentationTrait::class.java).isPresent) {
+            writeDocs(member.getMemberTrait(model, DocumentationTrait::class.java).get().value)
+        }
+    }
+
+    /**
+     * Writes documentation comments for Enum Definitions if present.
+     */
+    fun writeEnumDefinitionDocs(enumDefinition: EnumDefinition) {
+        enumDefinition.documentation.ifPresent {
+            writeDocs(it)
         }
     }
 }
