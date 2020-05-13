@@ -21,6 +21,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 
 class StructureGeneratorTests : TestsBase() {
     @Test
@@ -36,10 +37,15 @@ class StructureGeneratorTests : TestsBase() {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.staticHeader)
-
         val expectedGeneratedStructure = "" +
+                "/**\n" +
+                " * This *is* documentation about the shape.\n" +
+                " */\n" +
                 "public struct MyStruct {\n" +
                 "    public let bar: Int\n" +
+                "    /**\n" +
+                "     * This *is* documentation about the member.\n" +
+                "     */\n"
                 "    public let baz: Int?\n" +
                 "    public let foo: String?\n\n" +
                 "    public init (\n" +
@@ -60,13 +66,17 @@ class StructureGeneratorTests : TestsBase() {
     private fun createStructureWithoutErrorTrait(): StructureShape {
         val member1 = MemberShape.builder().id("smithy.example#MyStruct\$foo").target("smithy.api#String").build()
         val member2 = MemberShape.builder().id("smithy.example#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
-        val member3 = MemberShape.builder().id("smithy.example#MyStruct\$baz").target("smithy.api#Integer").build()
+        val member3 = MemberShape.builder().id("smithy.example#MyStruct\$baz")
+            .target("smithy.api#Integer")
+            .addTrait(DocumentationTrait("This *is* documentation about the member."))
+            .build()
 
         return StructureShape.builder()
             .id("smithy.example#MyStruct")
             .addMember(member1)
             .addMember(member2)
             .addMember(member3)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
             .build()
     }
 

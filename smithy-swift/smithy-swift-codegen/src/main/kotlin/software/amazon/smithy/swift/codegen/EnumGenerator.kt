@@ -121,7 +121,7 @@ class EnumGenerator(
     var rawValuesBuilder: MutableList<String> = mutableListOf<String>()
 
     fun render() {
-        // TODO - write docs for shape
+        writer.writeShapeDocs(shape)
         writer.openBlock("enum ${enumSymbol.name} {", "}\n") {
             createEnumWriterContexts()
             // add the unknown case which will always be last
@@ -151,7 +151,7 @@ class EnumGenerator(
     }
 
     fun addEnumCaseToEnum(definition: EnumDefinition) {
-        // TODO - write constant documentation (body.documentation)
+        writer.writeEnumDefinitionDocs(enumDefinition = definition)
         val enumName = getEnumNameFromEnumDefinition(definition = definition)
         writer.write("case $enumName")
     }

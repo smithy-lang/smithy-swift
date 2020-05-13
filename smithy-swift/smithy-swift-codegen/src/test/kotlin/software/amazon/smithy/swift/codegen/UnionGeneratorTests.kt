@@ -22,6 +22,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 
 class UnionGeneratorTests : TestsBase() {
 
@@ -30,8 +31,11 @@ class UnionGeneratorTests : TestsBase() {
 
         val simpleUnionShapeBuilder = createUnionShapeBuilderWithMembers(
             MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.api#String").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$baz").target("smithy.api#Integer").build()
+            MemberShape.builder().id("smithy.example#MyUnion\$baz").target("smithy.api#Integer").build(),
+            MemberShape.builder().id("smithy.example#MyUnion\$bar")
+                .target("smithy.api#PrimitiveInteger")
+                .addTrait(DocumentationTrait("Documentation for bar"))
+                .build()
         )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
@@ -47,7 +51,13 @@ class UnionGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
 
         val expectedGeneratedEnum = "" +
+                "/**\n" +
+                " * Documentation for MyUnion\n" +
+                " */\n" +
                 "enum MyUnion {\n" +
+                "    /**\n" +
+                "     * Documentation for bar\n" +
+                "     */\n" +
                 "    case bar(Int)\n" +
                 "    case baz(Int)\n" +
                 "    case foo(String)\n" +
@@ -112,7 +122,10 @@ class UnionGeneratorTests : TestsBase() {
 
         val unionShapeBuilder = createUnionShapeBuilderWithMembers(
             MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.api#String").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
+            MemberShape.builder().id("smithy.example#MyUnion\$bar")
+                .target("smithy.api#PrimitiveInteger")
+                .addTrait(DocumentationTrait("Documentation for bar"))
+                .build()
         )
         unionShapeBuilder.addMember("myStruct", struct.id)
         val unionShapeWithStructMember = unionShapeBuilder.build()
@@ -129,7 +142,13 @@ class UnionGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
 
         val expectedGeneratedEnum = "" +
+                "/**\n" +
+                " * Documentation for MyUnion\n" +
+                " */\n" +
                 "enum MyUnion {\n" +
+                "    /**\n" +
+                "     * Documentation for bar\n" +
+                "     */\n" +
                 "    case bar(Int)\n" +
                 "    case foo(String)\n" +
                 "    case myStruct(MyStruct)\n" +
@@ -186,7 +205,7 @@ class UnionGeneratorTests : TestsBase() {
 
     private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape) : UnionShape.Builder {
         val unionShapeBuilder = UnionShape.builder()
-        unionShapeBuilder.id("smithy.example#MyUnion")
+        unionShapeBuilder.id("smithy.example#MyUnion").addTrait(DocumentationTrait("Documentation for MyUnion"))
         for (memberShape in memberShapes) {
             unionShapeBuilder.addMember(memberShape)
         }
