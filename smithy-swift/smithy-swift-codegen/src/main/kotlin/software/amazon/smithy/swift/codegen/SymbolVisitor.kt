@@ -112,14 +112,13 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "BInt", "0")
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "BInt")
 
-    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "BDouble", "0.0")
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "BDouble")
 
-    private fun createBigSymbol(shape: Shape?, symbolName: String, defaultValue: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, namespace = "BigNumber")
+    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
+        return createSymbolBuilder(shape, symbolName, namespace = "BigNumber", boxed = true)
             .addDependency(SwiftDependency.BIG)
-            .putProperty(DEFAULT_VALUE_KEY, defaultValue)
             .build()
     }
 

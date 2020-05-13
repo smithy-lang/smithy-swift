@@ -9,7 +9,8 @@ service Example {
 
 operation GetFoo(GetFooInput) -> GetFooOutput errors [GetFooError]
 structure GetFooInput {
-    inputString: String
+    inputString: String,
+    largeInt: BigInteger
 }
 structure GetFooOutput {}
 
