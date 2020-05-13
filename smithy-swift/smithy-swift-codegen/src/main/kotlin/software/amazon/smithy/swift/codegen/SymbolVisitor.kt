@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package software.amazon.smithy.swift.codegen
 
 import java.util.*
@@ -93,14 +108,19 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = numberShape(shape, "NSDecimal")
-
     override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Int8", "0")
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    // TODO: support BigInt type via apple prototype or third party
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = numberShape(shape, "Int", "0")
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "BInt")
+
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "BDouble")
+
+    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
+        return createSymbolBuilder(shape, symbolName, namespace = "BigNumber", boxed = true)
+            .addDependency(SwiftDependency.BIG)
+            .build()
+    }
 
     override fun stringShape(shape: StringShape): Symbol {
         return createSymbolBuilder(shape, "String", true).build()
@@ -112,9 +132,21 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultStructName()
-        val namespace = "./$rootNamespace/models/"
         // TODO: handle error types
-        return createSymbolBuilder(shape, name, boxed = true).definitionFile("${namespace}${toFilename(shape.id.name)}").build()
+
+        val builder = createSymbolBuilder(shape, name, boxed = true)
+            .definitionFile(formatModuleName(shape.type, name))
+
+        // add a reference to each member symbol
+        shape.allMembers.values.forEach {
+            val memberSymbol = toSymbol(it)
+            val ref = SymbolReference.builder()
+                .symbol(memberSymbol)
+                .options(SymbolReference.ContextOption.DECLARE)
+                .build()
+            builder.addReference(ref)
+        }
+        return builder.build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
@@ -145,7 +177,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", true).build()
+        return createSymbolBuilder(shape, "Date", "Foundation", true).build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {
@@ -158,7 +190,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return createSymbolBuilder(shape, "Data", true).build()
+        return createSymbolBuilder(shape, "Data", "Foundation", true).build()
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
@@ -168,26 +200,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = shape.defaultStructName()
-        return createSymbolBuilder(shape, "Client").definitionFile("./${name}Client.swift").build()
+        return createSymbolBuilder(shape, "Client").definitionFile(formatModuleName(shape.type, name)).build()
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
         return createSymbolBuilder(shape, typeName).putProperty(DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
-//    private fun addFoundationImport(builder: Symbol.Builder, name: String): Symbol.Builder {
-//        val importSymbol =
-//            Symbol.builder()
-//                .name(name)
-//                .namespace("Foundation", "")
-//                .build()
-//        val reference = SymbolReference.builder()
-//            .symbol(importSymbol)
-//            .options(SymbolReference.ContextOption.DECLARE)
-//            .build()
-//        return builder.addReference(reference)
-//    }
-
+    /**
+     * Creates a symbol builder for the shape with the given type name in the root namespace.
+     */
     private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
         val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
@@ -197,16 +219,37 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return builder
     }
 
+    /**
+     * Creates a symbol builder for the shape with the given type name in a child namespace relative
+     * to the root namespace e.g. `relativeNamespace = bar` with a root namespace of `foo` would set
+     * the namespace (and ultimately the package name) to `foo.bar` for the symbol.
+     */
+    private fun createSymbolBuilder(
+        shape: Shape?,
+        typeName: String,
+        namespace: String,
+        boxed: Boolean = false
+    ): Symbol.Builder {
+        return createSymbolBuilder(shape, typeName, boxed)
+            .namespace(namespace, ".")
+    }
+
+    // Create a reference to the given symbol from the dependency
+    fun createNamespaceReference(dependency: SwiftDependency, symbolName: String): SymbolReference {
+        val namespace = dependency.namespace
+        val nsSymbol = Symbol.builder()
+            .name(symbolName)
+            .namespace(namespace, ".")
+            .build()
+        return SymbolReference.builder().symbol(nsSymbol).options(SymbolReference.ContextOption.DECLARE).build()
+    }
+
     private fun formatModuleName(shapeType: ShapeType, name: String): String? {
         // All shapes except for the service and operations are stored in models.
         return when (shapeType) {
-            ShapeType.SERVICE -> "./$name"
-            ShapeType.OPERATION -> "./operations/$name"
-            else -> "./models/$name"
+            ShapeType.SERVICE -> "./$rootNamespace/$name.swift"
+            ShapeType.OPERATION -> "./$rootNamespace/operations/$name.swift"
+            else -> "./$rootNamespace/models/$name.swift"
         }
-    }
-
-    private fun toFilename(fileName: String): String? {
-        return "$fileName.swift"
     }
 }

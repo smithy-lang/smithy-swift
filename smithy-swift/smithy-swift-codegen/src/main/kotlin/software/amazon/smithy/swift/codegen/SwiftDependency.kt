@@ -15,28 +15,18 @@
 
 package software.amazon.smithy.swift.codegen
 
-class ImportDeclarations {
-    private val imports = mutableSetOf<ImportStatement>()
+import software.amazon.smithy.codegen.core.SymbolDependency
+import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
-    fun addImport(packageName: String) {
-        imports.add(ImportStatement(packageName))
+enum class SwiftDependency(val type: String, val namespace: String, val version: String) : SymbolDependencyContainer {
+    BIG("pod", "BigNumber", "2.0");
+
+    override fun getDependencies(): List<SymbolDependency> {
+        val dependency = SymbolDependency.builder()
+            .dependencyType(type)
+            .packageName(namespace)
+            .version(version)
+            .build()
+        return listOf(dependency)
     }
-
-    override fun toString(): String {
-        if (imports.isEmpty()) {
-            return ""
-        }
-
-        return imports
-            .map(ImportStatement::statement)
-            .sorted()
-            .joinToString(separator = "\n")
-    }
-}
-
-private data class ImportStatement(val packageName: String) {
-    val statement: String
-        get() { return "import $packageName" }
-
-    override fun toString(): String = statement
 }

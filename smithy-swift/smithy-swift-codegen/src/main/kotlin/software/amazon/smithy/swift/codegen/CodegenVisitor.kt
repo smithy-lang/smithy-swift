@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.build.FileManifest
@@ -25,13 +40,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
 
         println("Flushing swift writers")
-
+        val dependencies = writers.dependencies
         writers.flushWriters()
 
         println("Generating swift podspec file")
-        // TODO: Generate podspec file
-        // val dependencies = this.writers.dependencies
-        // PodSpecGenerator.writePodspec(settings, fileManifest, SymbolDependency.gatherDependencies(dependencies.stream()))
+        writePodspec(settings, fileManifest, dependencies)
+
+        println("Generating info plist")
+        writeInfoPlist(settings, fileManifest)
     }
 
     override fun getDefault(shape: Shape?): Void? {

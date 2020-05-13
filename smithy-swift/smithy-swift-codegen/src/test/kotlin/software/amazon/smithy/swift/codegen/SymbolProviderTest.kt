@@ -94,12 +94,52 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+
+        assertEquals("Foundation", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 
         assertEquals("Data", memberSymbol.name)
+    }
+
+    @Test fun `creates dates`() {
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#Timestamp").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val memberSymbol = provider.toSymbol(member)
+
+        assertEquals("Foundation", memberSymbol.namespace)
+        assertEquals("nil", memberSymbol.defaultValue())
+        assertEquals(true, memberSymbol.isBoxed())
+
+        assertEquals("Date", memberSymbol.name)
+    }
+
+    @Test fun `creates big ints`() {
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#BigInteger").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val memberSymbol = provider.toSymbol(member)
+
+        assertEquals("BigNumber", memberSymbol.namespace)
+        assertEquals(true, memberSymbol.isBoxed())
+        assertEquals("BInt", memberSymbol.name)
     }
 
     @Test fun `creates lists`() {

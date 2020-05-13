@@ -37,6 +37,9 @@ class SwiftDelegatorTests : TestsBase() {
                     .withMember("service", Node.from("smithy.example#Example"))
                     .withMember("module", Node.from("example"))
                     .withMember("moduleVersion", Node.from("0.1.0"))
+                    .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+                    .withMember("author", Node.from("Amazon Web Services"))
+                    .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
                     .build()
             )
             .build()
@@ -51,7 +54,7 @@ class SwiftDelegatorTests : TestsBase() {
     @Test
     fun `it vends writers for shapes`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service-with-operation.smithy")
-        val getFooInputShape = model!!.expectShape(ShapeId.from("smithy.example#GetFooInput"))
+        val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = PluginContext.builder()
             .model(model)
@@ -61,6 +64,9 @@ class SwiftDelegatorTests : TestsBase() {
                     .withMember("service", Node.from("smithy.example#Example"))
                     .withMember("module", Node.from("example"))
                     .withMember("moduleVersion", Node.from("0.1.0"))
+                    .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+                    .withMember("author", Node.from("Amazon Web Services"))
+                    .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
                     .build()
             )
             .build()
@@ -71,14 +77,14 @@ class SwiftDelegatorTests : TestsBase() {
 
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
-        assertEquals(SwiftWriter.staticHeader + "Hello!\n",
+        assertEquals(SwiftWriter.staticHeader + "\n\nHello!\n",
             manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 
     @Test
     fun `it uses opened writer separating with newline`() {
         val model = createModelFromSmithy(smithyTestResourceName = "simple-service-with-operation.smithy")
-        val getFooInputShape = model!!.expectShape(ShapeId.from("smithy.example#GetFooInput"))
+        val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = PluginContext.builder()
             .model(model)
@@ -88,6 +94,9 @@ class SwiftDelegatorTests : TestsBase() {
                     .withMember("service", Node.from("smithy.example#Example"))
                     .withMember("module", Node.from("example"))
                     .withMember("moduleVersion", Node.from("0.1.0"))
+                    .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+                    .withMember("author", Node.from("Amazon Web Services"))
+                    .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
                     .build()
             )
             .build()
@@ -99,7 +108,7 @@ class SwiftDelegatorTests : TestsBase() {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
-        assertEquals(SwiftWriter.staticHeader + "Hello!\n\nGoodbye!\n",
+        assertEquals(SwiftWriter.staticHeader + "\n\nHello!\n\nGoodbye!\n",
             manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 }

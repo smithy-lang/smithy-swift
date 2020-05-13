@@ -11,7 +11,7 @@ open class TestsBase {
 
     protected val LOGGER: Logger = Logger.getLogger(TestsBase::class.java.name)
 
-    protected fun createModelFromSmithy(smithyTestResourceName: String): Model? {
+    protected fun createModelFromSmithy(smithyTestResourceName: String): Model {
         return Model.assembler()
             .addImport(getSmithyResource(smithyTestResourceName = smithyTestResourceName))
             .assemble()
