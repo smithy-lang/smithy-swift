@@ -18,22 +18,18 @@
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
-import org.junit.jupiter.api.Assertions
+import kotlin.streams.toList
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StructureShape
-import org.junit.jupiter.api.Assertions.assertNotNull
-import kotlin.streams.toList
+import software.amazon.smithy.model.node.Node
 
 class PodSpecGeneratorTests : TestsBase() {
 
     @Test
-    fun `it renders podspec with dependencies` () {
+    fun `it renders podspec with dependencies`() {
         val model = createModelFromSmithy("simple-service-with-operation.smithy")
         val homepage = "https://docs.amplify.aws/"
         val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
@@ -43,7 +39,7 @@ class PodSpecGeneratorTests : TestsBase() {
             .withMember("author", Node.from("Amazon Web Services"))
             .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
             .build())
-        
+
         val manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "example")
 
