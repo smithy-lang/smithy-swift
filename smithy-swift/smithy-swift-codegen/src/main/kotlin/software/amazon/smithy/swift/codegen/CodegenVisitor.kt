@@ -21,6 +21,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.EnumTrait
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
@@ -59,12 +60,17 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 
-//    override fun unionShape(shape: UnionShape): Void? {
-//        writers.useShapeWriter(
-//            shape
-//        ) { writer: SwiftWriter? -> EnumGenerator(symbolProvider, writer, shape).render() }
-//        return null
-//    }
+    override fun stringShape(shape: StringShape): Void? {
+        if (shape.hasTrait(EnumTrait::class.java)) {
+            writers.useShapeWriter(shape) { writer: SwiftWriter -> EnumGenerator(model, symbolProvider, writer, shape).render() }
+        }
+        return null
+    }
+
+    override fun unionShape(shape: UnionShape): Void? {
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> UnionGenerator(model, symbolProvider, writer, shape).render() }
+        return null
+    }
 
     override fun serviceShape(shape: ServiceShape?): Void? {
         // TODO: implement client generation
