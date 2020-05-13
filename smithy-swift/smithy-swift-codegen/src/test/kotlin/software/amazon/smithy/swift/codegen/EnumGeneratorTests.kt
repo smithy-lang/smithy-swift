@@ -12,6 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
@@ -154,8 +155,7 @@ class EnumGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedEnum)
     }
 
-
-    private fun createStringWithEnumTrait(vararg enumDefinitions: EnumDefinition) : StringShape {
+    private fun createStringWithEnumTrait(vararg enumDefinitions: EnumDefinition): StringShape {
         val enumTraitBuilder = EnumTrait.builder()
         for (enumDefinition in enumDefinitions) {
             enumTraitBuilder.addEnum(enumDefinition)

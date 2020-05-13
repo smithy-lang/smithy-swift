@@ -12,19 +12,14 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.utils.CaseUtils
 
 /**
  * Generates an appropriate Swift type for a Smithy union shape
@@ -116,7 +111,7 @@ class UnionGenerator(
             // Generate Coding Keys for serialization/deserialization
             generateCodingKeysEnumBlock()
 
-            //Generate custom encoder
+            // Generate custom encoder
             generateEncodeBlock()
 
             // Generate custom decoder
