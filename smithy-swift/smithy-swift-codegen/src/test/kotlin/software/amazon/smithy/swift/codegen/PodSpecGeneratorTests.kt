@@ -30,7 +30,7 @@ class PodSpecGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders podspec with dependencies`() {
-        val model = createModelFromSmithy("simple-service-with-operation.smithy")
+        val model = createModelFromSmithy("simple-service-with-operation-and-dependency.smithy")
         val homepage = "https://docs.amplify.aws/"
         val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
             .withMember("module", Node.from("example"))

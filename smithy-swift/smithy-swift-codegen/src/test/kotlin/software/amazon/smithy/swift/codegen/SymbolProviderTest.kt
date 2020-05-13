@@ -138,9 +138,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals("BigNumber", memberSymbol.namespace)
-        assertEquals("0", memberSymbol.defaultValue())
-        assertEquals(false, memberSymbol.isBoxed())
-
+        assertEquals(true, memberSymbol.isBoxed())
         assertEquals("BInt", memberSymbol.name)
     }
 
