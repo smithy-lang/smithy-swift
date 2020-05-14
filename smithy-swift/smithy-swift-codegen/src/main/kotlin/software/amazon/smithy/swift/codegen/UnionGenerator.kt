@@ -42,14 +42,14 @@ import software.amazon.smithy.model.shapes.UnionShape
  * enum Attacker {
  *     case lion(Lion)
  *     case bear(Bear)
- *     case unknown(String)
+ *     case sdkUnknown(String)
  * }
  *
  * extension Attacker : Equatable, Codable {
  *     enum CodingKeys : String, CodingKey {
  *         case lion
  *         case bear
- *         case unknown
+ *         case sdkUnknown
  *     }
  *
  *     func encode(to encoder: Encoder) throws {
@@ -59,8 +59,8 @@ import software.amazon.smithy.model.shapes.UnionShape
  *         try container.encode(value, forKey: .lion)
  *         case let .bear(value):
  *         try container.encode(value, forKey: .bear)
- *         case let .unknown(value):
- *         try container.encode(value, forKey: .unknown)
+ *         case let .sdkUnknown(value):
+ *         try container.encode(value, forKey: .sdkUnknown)
  *         }
  *     }
  *
@@ -73,7 +73,7 @@ import software.amazon.smithy.model.shapes.UnionShape
  *             self = .bear(value)
  *             return
  *         } else {
- *             self = .unknown("")
+ *             self = .sdkUnknown("")
  *             return
  *         }
  *     }
@@ -100,8 +100,8 @@ class UnionGenerator(
         writer.writeShapeDocs(shape)
         writer.openBlock("enum \$union.name:L {", "}\n") {
             createUnionWriterContexts()
-            // add the unknown case which will always be last
-            writer.write("case unknown(String)")
+            // add the sdkUnknown case which will always be last
+            writer.write("case sdkUnknown(String)")
         }
 
         writer.openBlock("extension \$union.name:L : Codable, Equatable { ", "}") {
@@ -117,33 +117,21 @@ class UnionGenerator(
         }
     }
 
-    fun getEnumNameFromMemberShape(memberShape: MemberShape): String {
-        return symbolProvider.toMemberName(memberShape)
-    }
-
-    fun getValueTypeFromMemberShape(memberShape: MemberShape): String {
-        return symbolProvider.toSymbol(memberShape).name
-    }
-
     fun addEnumCaseToEnum(memberShape: MemberShape) {
         writer.writeMemberDocs(model, memberShape)
-        val enumName = getEnumNameFromMemberShape(memberShape = memberShape)
-        val associatedValueType = getValueTypeFromMemberShape(memberShape = memberShape)
-        writer.write("case $enumName($associatedValueType)")
+        writer.write("case ${memberShape.swiftEnumCaseName()}(${memberShape.swiftEnumAssociatedValueType()})")
     }
 
     fun addEnumCaseToCodingKeysEnum(memberShape: MemberShape) {
-        val enumName = getEnumNameFromMemberShape(memberShape = memberShape)
-        codingKeysBuilder.add("case $enumName")
+        codingKeysBuilder.add("case ${memberShape.swiftEnumCaseName()}")
     }
 
     fun addEnumCaseToEncodeBlock(memberShape: MemberShape) {
-        val enumName = getEnumNameFromMemberShape(memberShape = memberShape)
-        encodeBlockBuilder.add("case let .$enumName(value):\n    try container.encode(value, forKey: .$enumName)")
+        encodeBlockBuilder.add("case let .${memberShape.swiftEnumCaseName()}(value):\n    try container.encode(value, forKey: .${memberShape.swiftEnumCaseName()})")
     }
 
     fun addEnumCaseToInitFromDecoderBlock(memberShape: MemberShape) {
-        val enumName = getEnumNameFromMemberShape(memberShape = memberShape)
+        val enumName = memberShape.swiftEnumCaseName()
         initFromDecoderBlockBuilder.add(
                 "if let value = try? container.decode(String.self, forKey: .$enumName) {\n" +
                 "    self = .$enumName(value)\n" +
@@ -161,14 +149,14 @@ class UnionGenerator(
     }
 
     fun generateCodingKeysEnumBlock() {
-        codingKeysBuilder.add("case unknown")
+        codingKeysBuilder.add("case sdkUnknown")
         writer.openBlock("enum CodingKeys: String, CodingKey {", "}") {
             writer.write(codingKeysBuilder.joinToString("\n"))
         }
     }
 
     fun generateEncodeBlock() {
-        encodeBlockBuilder.add("case let .unknown(value):\n    try container.encode(value, forKey: .unknown)")
+        encodeBlockBuilder.add("case let .sdkUnknown(value):\n    try container.encode(value, forKey: .sdkUnknown)")
         writer.openBlock("func encode(to encoder: Encoder) throws {", "}") {
             writer.write("var container = encoder.container(keyedBy: CodingKeys.self)")
             writer.write("switch self {")
@@ -180,7 +168,7 @@ class UnionGenerator(
     fun generateInitFromDecoderBlock() {
         initFromDecoderBlockBuilder.add(
             "else {\n" +
-            "    self = .unknown(\"\")\n" +
+            "    self = .sdkUnknown(\"\")\n" +
             "    return\n" +
             "}")
 
@@ -188,5 +176,13 @@ class UnionGenerator(
             writer.write("let container = try decoder.container(keyedBy: CodingKeys.self)")
             writer.write(initFromDecoderBlockBuilder.joinToString("\n"))
         }
+    }
+
+    fun MemberShape.swiftEnumCaseName(): String {
+        return symbolProvider.toMemberName(this)
+    }
+
+    fun MemberShape.swiftEnumAssociatedValueType(): String {
+        return symbolProvider.toSymbol(this).name
     }
 }

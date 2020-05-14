@@ -27,7 +27,8 @@ import software.amazon.smithy.utils.CaseUtils
  * <p>For example, given the following Smithy model:
  *
  * ```
- * @enum("YES": {name: "YEP"}, "NO": {name: "NOPE"})
+ * @enum([{ value: "YES", name: "YEP"},
+ *        { value: "NO", name: "NOPE"}])
  * string TypedYesNo
  * ```
  *
@@ -37,32 +38,32 @@ import software.amazon.smithy.utils.CaseUtils
  * enum TypedYesNo {
  *     case yep
  *     case nope
- *     case unknown(String)
+ *     case sdkUnknown(String)
  * }
  *
  *
  * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
  *     static var allCases: [TypedYesNo] {
- *         return [.yep, .nope, .unknown("")]
+ *         return [.yep, .nope, .sdkUnknown("")]
  *     }
  *
  *     init?(rawValue: String) {
  *         let value = Self.allCases.first(where: { $0.rawValue == rawValue })
- *         self = value ?? Self.unknown(rawValue)
+ *         self = value ?? Self.sdkUnknown(rawValue)
  *     }
  *
  *     var rawValue: String {
  *         switch self {
  *         case .yep: return "YES"
  *         case .no: return "NO"
- *         case let .unknown(s): return s
+ *         case let .sdkUnknown(s): return s
  *         }
  *     }
  *
  *     init(from decoder: Decoder) throws {
  *         let container = try decoder.singleValueContainer()
  *         let rawValue = try container.decode(RawValue.self)
- *         self = TypedYesNo(rawValue: rawValue) ?? TypedYesNo.unknown(rawValue)
+ *         self = TypedYesNo(rawValue: rawValue) ?? TypedYesNo.sdkUnknown(rawValue)
  *     }
  * }
  * ```
@@ -70,7 +71,8 @@ import software.amazon.smithy.utils.CaseUtils
  * Another Example, given the following Smithy model:
  *
  * ```
- * @enum("YES": {}, "NO": {})
+ * @enum([{ value: "YES" },
+ *        { value: "NO" }])
  * string SimpleYesNo
  * ```
  *
@@ -80,32 +82,32 @@ import software.amazon.smithy.utils.CaseUtils
  * enum SimpleYesNo {
  *     case yes
  *     case no
- *     case unknown(String)
+ *     case sdkUnknown(String)
  * }
  *
  *
  * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
  *     static var allCases: [SimpleYesNo] {
- *         return [.yes, .no, .unknown("")]
+ *         return [.yes, .no, .sdkUnknown("")]
  *     }
  *
  *     init?(rawValue: String) {
  *         let value = Self.allCases.first(where: { $0.rawValue == rawValue })
- *         self = value ?? Self.unknown(rawValue)
+ *         self = value ?? Self.sdkUnknown(rawValue)
  *     }
  *
  *     var rawValue: String {
  *         switch self {
  *         case .yes: return "YES"
  *         case .no: return "NO"
- *         case let .unknown(s): return s
+ *         case let .sdkUnknown(s): return s
  *         }
  *     }
  *
  *     init(from decoder: Decoder) throws {
  *         let container = try decoder.singleValueContainer()
  *         let rawValue = try container.decode(RawValue.self)
- *         self = SimpleYesNo(rawValue: rawValue) ?? SimpleYesNo.unknown(rawValue)
+ *         self = SimpleYesNo(rawValue: rawValue) ?? SimpleYesNo.sdkUnknown(rawValue)
  *     }
  * }
  * ```
@@ -132,8 +134,8 @@ class EnumGenerator(
         writer.writeShapeDocs(shape)
         writer.openBlock("enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
-            // add the unknown case which will always be last
-            writer.write("case unknown(String)")
+            // add the sdkUnknown case which will always be last
+            writer.write("case sdkUnknown(String)")
         }
 
         writer.openBlock("extension \$enum.name:L : Equatable, RawRepresentable, Codable, CaseIterable { ", "}") {
@@ -152,26 +154,17 @@ class EnumGenerator(
         }
     }
 
-    fun getEnumNameFromEnumDefinition(definition: EnumDefinition): String {
-        return definition.name.orElseGet {
-            definition.value.replace("[^a-zA-Z0-9_]", "")
-        }.toLowerCase()
-    }
-
     fun addEnumCaseToEnum(definition: EnumDefinition) {
-        writer.writeEnumDefinitionDocs(enumDefinition = definition)
-        val enumName = getEnumNameFromEnumDefinition(definition = definition)
-        writer.write("case $enumName")
+        writer.writeEnumDefinitionDocs(definition)
+        writer.write("case ${definition.swiftEnumCaseName()}")
     }
 
     fun addEnumCaseToAllCases(definition: EnumDefinition) {
-        val enumName = getEnumNameFromEnumDefinition(definition = definition)
-        allCasesBuilder.add(".$enumName")
+        allCasesBuilder.add(".${definition.swiftEnumCaseName()}")
     }
 
     fun addEnumCaseToRawValuesEnum(definition: EnumDefinition) {
-        val enumName = getEnumNameFromEnumDefinition(definition = definition)
-        rawValuesBuilder.add("case .$enumName: return \"${definition.value}\"")
+        rawValuesBuilder.add("case .${definition.swiftEnumCaseName()}: return \"${definition.value}\"")
     }
 
     fun createEnumWriterContexts() {
@@ -187,7 +180,7 @@ class EnumGenerator(
     }
 
     fun generateAllCasesBlock() {
-        allCasesBuilder.add(".unknown(\"\")")
+        allCasesBuilder.add(".sdkUnknown(\"\")")
         writer.openBlock("static var allCases: [\$enum.name:L] {", "}") {
             writer.openBlock("return [", "]") {
                 writer.write(allCasesBuilder.joinToString(",\n"))
@@ -198,12 +191,12 @@ class EnumGenerator(
     fun generateInitFromRawValueBlock() {
         writer.openBlock("init?(rawValue: String) {", "}") {
             writer.write("let value = Self.allCases.first(where: { \$\$0.rawValue == rawValue })")
-            writer.write("self = value ?? Self.unknown(rawValue)")
+            writer.write("self = value ?? Self.sdkUnknown(rawValue)")
         }
     }
 
     fun generateRawValueEnumBlock() {
-        rawValuesBuilder.add("case let .unknown(s): return s")
+        rawValuesBuilder.add("case let .sdkUnknown(s): return s")
         writer.openBlock("var rawValue: String {", "}") {
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
@@ -215,7 +208,13 @@ class EnumGenerator(
         writer.openBlock("init(from decoder: Decoder) throws {", "}") {
             writer.write("let container = try decoder.singleValueContainer()")
             writer.write("let rawValue = try container.decode(RawValue.self)")
-            writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.unknown(rawValue)")
+            writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")
         }
+    }
+
+    fun EnumDefinition.swiftEnumCaseName(): String {
+        return CaseUtils.toCamelCase(name.orElseGet {
+            value
+        }.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
     }
 }

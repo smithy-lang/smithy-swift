@@ -15,8 +15,9 @@
 
 package software.amazon.smithy.swift.codegen
 
-import org.junit.jupiter.api.Assertions
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.utils.CodeWriter
 
 class SwiftWriterTests {
 
@@ -25,7 +26,7 @@ class SwiftWriterTests {
         val docs = "This is a big doc string.\nMore."
         writer.writeDocs(docs)
         val result = writer.toString()
-        Assertions.assertTrue(result.contains(createDocComment(docs)))
+        result.shouldContain(createMultiLineDocComment(docs))
     }
 
     @Test fun `escapes $ in doc strings`() {
@@ -33,11 +34,15 @@ class SwiftWriterTests {
         val docs = "This is $ valid documentation."
         writer.writeDocs(docs)
         val result = writer.toString()
-        Assertions.assertTrue(result.contains(createDocComment(docs)))
+        result.shouldContain(createSingleLineDocComment(docs))
     }
 
-    private fun createDocComment(docs: String): String {
+    private fun createMultiLineDocComment(docs: String): String {
         val docComment = docs.replace("\n", "\n ")
         return "/**\n " + docComment + "\n */\n"
+    }
+
+    private fun createSingleLineDocComment(docs: String): String {
+        return "/// " + docs
     }
 }

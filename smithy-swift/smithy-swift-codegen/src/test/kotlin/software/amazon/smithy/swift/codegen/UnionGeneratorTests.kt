@@ -51,16 +51,15 @@ class UnionGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
+                " Really long multi-line\n" +
                 " Documentation for MyUnion\n" +
                 " */\n" +
                 "enum MyUnion {\n" +
-                "    /**\n" +
-                "     Documentation for bar\n" +
-                "     */\n" +
+                "    /// Documentation for bar\n" +
                 "    case bar(Int)\n" +
                 "    case baz(Int)\n" +
                 "    case foo(String)\n" +
-                "    case unknown(String)\n" +
+                "    case sdkUnknown(String)\n" +
                 "}\n" +
                 "\n" +
                 "extension MyUnion : Codable, Equatable {\n" +
@@ -68,7 +67,7 @@ class UnionGeneratorTests : TestsBase() {
                 "        case bar\n" +
                 "        case baz\n" +
                 "        case foo\n" +
-                "        case unknown\n" +
+                "        case sdkUnknown\n" +
                 "    }\n" +
                 "    func encode(to encoder: Encoder) throws {\n" +
                 "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
@@ -79,8 +78,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            try container.encode(value, forKey: .baz)\n" +
                 "        case let .foo(value):\n" +
                 "            try container.encode(value, forKey: .foo)\n" +
-                "        case let .unknown(value):\n" +
-                "            try container.encode(value, forKey: .unknown)\n" +
+                "        case let .sdkUnknown(value):\n" +
+                "            try container.encode(value, forKey: .sdkUnknown)\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
@@ -98,7 +97,7 @@ class UnionGeneratorTests : TestsBase() {
                 "            return\n" +
                 "        }\n" +
                 "        else {\n" +
-                "            self = .unknown(\"\")\n" +
+                "            self = .sdkUnknown(\"\")\n" +
                 "            return\n" +
                 "        }\n" +
                 "    }\n" +
@@ -138,16 +137,15 @@ class UnionGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
+                " Really long multi-line\n" +
                 " Documentation for MyUnion\n" +
                 " */\n" +
                 "enum MyUnion {\n" +
-                "    /**\n" +
-                "     Documentation for bar\n" +
-                "     */\n" +
+                "    /// Documentation for bar\n" +
                 "    case bar(Int)\n" +
                 "    case foo(String)\n" +
                 "    case myStruct(MyStruct)\n" +
-                "    case unknown(String)\n" +
+                "    case sdkUnknown(String)\n" +
                 "}\n" +
                 "\n" +
                 "extension MyUnion : Codable, Equatable {\n" +
@@ -155,7 +153,7 @@ class UnionGeneratorTests : TestsBase() {
                 "        case bar\n" +
                 "        case foo\n" +
                 "        case myStruct\n" +
-                "        case unknown\n" +
+                "        case sdkUnknown\n" +
                 "    }\n" +
                 "    func encode(to encoder: Encoder) throws {\n" +
                 "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
@@ -166,8 +164,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            try container.encode(value, forKey: .foo)\n" +
                 "        case let .myStruct(value):\n" +
                 "            try container.encode(value, forKey: .myStruct)\n" +
-                "        case let .unknown(value):\n" +
-                "            try container.encode(value, forKey: .unknown)\n" +
+                "        case let .sdkUnknown(value):\n" +
+                "            try container.encode(value, forKey: .sdkUnknown)\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
@@ -185,7 +183,7 @@ class UnionGeneratorTests : TestsBase() {
                 "            return\n" +
                 "        }\n" +
                 "        else {\n" +
-                "            self = .unknown(\"\")\n" +
+                "            self = .sdkUnknown(\"\")\n" +
                 "            return\n" +
                 "        }\n" +
                 "    }\n" +
@@ -196,7 +194,8 @@ class UnionGeneratorTests : TestsBase() {
 
     private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape): UnionShape.Builder {
         val unionShapeBuilder = UnionShape.builder()
-        unionShapeBuilder.id("smithy.example#MyUnion").addTrait(DocumentationTrait("Documentation for MyUnion"))
+        unionShapeBuilder.id("smithy.example#MyUnion").addTrait(DocumentationTrait("Really long multi-line\n" +
+                "Documentation for MyUnion"))
         for (memberShape in memberShapes) {
             unionShapeBuilder.addMember(memberShape)
         }
