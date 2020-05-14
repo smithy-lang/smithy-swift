@@ -16,8 +16,6 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
@@ -56,7 +54,7 @@ import software.amazon.smithy.utils.CaseUtils
  *     var rawValue: String {
  *         switch self {
  *         case .yep: return "YES"
- *         case .no: return "no"
+ *         case .no: return "NO"
  *         case let .unknown(s): return s
  *         }
  *     }
@@ -80,8 +78,8 @@ import software.amazon.smithy.utils.CaseUtils
  *
  * ```
  * enum SimpleYesNo {
- *     case yes,
- *     case no,
+ *     case yes
+ *     case no
  *     case unknown(String)
  * }
  *
