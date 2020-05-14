@@ -17,7 +17,6 @@ package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.utils.CodeWriter
 
 class SwiftWriterTests {
 

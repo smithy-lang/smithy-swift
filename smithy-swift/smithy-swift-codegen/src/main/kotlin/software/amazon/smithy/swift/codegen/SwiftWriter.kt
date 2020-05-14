@@ -167,7 +167,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         popState()
     }
 
-
     /**
      * Writes documentation comments from a doc string.
      */
