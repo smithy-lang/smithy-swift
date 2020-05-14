@@ -119,7 +119,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      *
      * e.g.
      * ```
-     * writer.writeDocs(){
+     * writer.writeDocs() {
      *     write("This is a doc comment")
      * }
      * ```
@@ -128,14 +128,14 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      *
      * ```
      * /**
-     *  * This is a doc comment
+     *  This is a doc comment
      *  */
      * ```
      */
     fun writeDocs(block: SwiftWriter.() -> Unit) {
         pushState("docs")
         write("/**")
-        setNewlinePrefix(" * ")
+        setNewlinePrefix(" ")
         block(this)
         popState()
         write(" */")
@@ -143,8 +143,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 
     /**
      * Writes documentation comments from a doc string.
-     * @param docs Documentation to write.
-     * @return Returns the writer.
      */
     fun writeDocs(docs: String) {
         writeDocs {

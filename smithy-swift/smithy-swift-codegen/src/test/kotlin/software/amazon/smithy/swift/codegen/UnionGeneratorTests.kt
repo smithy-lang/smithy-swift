@@ -51,16 +51,16 @@ class UnionGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
-                " * Documentation for MyUnion\n" +
+                " Documentation for MyUnion\n" +
                 " */\n" +
                 "enum MyUnion {\n" +
                 "    /**\n" +
-                "     * Documentation for bar\n" +
+                "     Documentation for bar\n" +
                 "     */\n" +
                 "    case bar(Int)\n" +
                 "    case baz(Int)\n" +
                 "    case foo(String)\n" +
-                "    case UNKNOWN(String)\n" +
+                "    case unknown(String)\n" +
                 "}\n" +
                 "\n" +
                 "extension MyUnion : Codable, Equatable {\n" +
@@ -68,7 +68,7 @@ class UnionGeneratorTests : TestsBase() {
                 "        case bar\n" +
                 "        case baz\n" +
                 "        case foo\n" +
-                "        case UNKNOWN\n" +
+                "        case unknown\n" +
                 "    }\n" +
                 "    func encode(to encoder: Encoder) throws {\n" +
                 "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
@@ -79,8 +79,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            try container.encode(value, forKey: .baz)\n" +
                 "        case let .foo(value):\n" +
                 "            try container.encode(value, forKey: .foo)\n" +
-                "        case let .UNKNOWN(value):\n" +
-                "            try container.encode(value, forKey: .UNKNOWN)\n" +
+                "        case let .unknown(value):\n" +
+                "            try container.encode(value, forKey: .unknown)\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
@@ -97,12 +97,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            self = .foo(value)\n" +
                 "            return\n" +
                 "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .UNKNOWN) {\n" +
-                "            self = .UNKNOWN(value)\n" +
-                "            return\n" +
-                "        }\n" +
                 "        else {\n" +
-                "            self = .UNKNOWN(\"\")\n" +
+                "            self = .unknown(\"\")\n" +
                 "            return\n" +
                 "        }\n" +
                 "    }\n" +
@@ -142,16 +138,16 @@ class UnionGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
-                " * Documentation for MyUnion\n" +
+                " Documentation for MyUnion\n" +
                 " */\n" +
                 "enum MyUnion {\n" +
                 "    /**\n" +
-                "     * Documentation for bar\n" +
+                "     Documentation for bar\n" +
                 "     */\n" +
                 "    case bar(Int)\n" +
                 "    case foo(String)\n" +
                 "    case myStruct(MyStruct)\n" +
-                "    case UNKNOWN(String)\n" +
+                "    case unknown(String)\n" +
                 "}\n" +
                 "\n" +
                 "extension MyUnion : Codable, Equatable {\n" +
@@ -159,7 +155,7 @@ class UnionGeneratorTests : TestsBase() {
                 "        case bar\n" +
                 "        case foo\n" +
                 "        case myStruct\n" +
-                "        case UNKNOWN\n" +
+                "        case unknown\n" +
                 "    }\n" +
                 "    func encode(to encoder: Encoder) throws {\n" +
                 "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
@@ -170,8 +166,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            try container.encode(value, forKey: .foo)\n" +
                 "        case let .myStruct(value):\n" +
                 "            try container.encode(value, forKey: .myStruct)\n" +
-                "        case let .UNKNOWN(value):\n" +
-                "            try container.encode(value, forKey: .UNKNOWN)\n" +
+                "        case let .unknown(value):\n" +
+                "            try container.encode(value, forKey: .unknown)\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
@@ -188,12 +184,8 @@ class UnionGeneratorTests : TestsBase() {
                 "            self = .myStruct(value)\n" +
                 "            return\n" +
                 "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .UNKNOWN) {\n" +
-                "            self = .UNKNOWN(value)\n" +
-                "            return\n" +
-                "        }\n" +
                 "        else {\n" +
-                "            self = .UNKNOWN(\"\")\n" +
+                "            self = .unknown(\"\")\n" +
                 "            return\n" +
                 "        }\n" +
                 "    }\n" +

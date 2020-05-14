@@ -62,7 +62,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun stringShape(shape: StringShape): Void? {
         if (shape.hasTrait(EnumTrait::class.java)) {
-            writers.useShapeWriter(shape) { writer: SwiftWriter -> EnumGenerator(model, symbolProvider, writer, shape).render() }
+            writers.useShapeWriter(shape) { writer: SwiftWriter -> EnumGenerator(symbolProvider.toSymbol(shape), writer, shape).render() }
         }
         return null
     }

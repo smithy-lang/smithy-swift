@@ -37,7 +37,7 @@ class EnumGeneratorTests : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
         generator.render()
 
         val contents = writer.toString()
@@ -46,39 +46,39 @@ class EnumGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
-                " * Documentation for the enum\n" +
+                " Documentation for the enum\n" +
                 " */\n" +
                 "enum MyEnum {\n" +
                 "    /**\n" +
-                "     * Documentation for BAR\n" +
+                "     Documentation for BAR\n" +
                 "     */\n" +
-                "    case BAR\n" +
-                "    case FOO\n" +
-                "    case UNKNOWN(String)\n" +
+                "    case bar\n" +
+                "    case foo\n" +
+                "    case unknown(String)\n" +
                 "}\n\n" +
                 "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
                 "    static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
-                "            .BAR,\n" +
-                "            .FOO,\n" +
-                "            .UNKNOWN(\"\")\n" +
+                "            .bar,\n" +
+                "            .foo,\n" +
+                "            .unknown(\"\")\n" +
                 "        ]\n" +
                 "    }\n" +
                 "    init?(rawValue: String) {\n" +
                 "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-                "        self = value ?? Self.UNKNOWN(rawValue)\n" +
+                "        self = value ?? Self.unknown(rawValue)\n" +
                 "    }\n" +
                 "    var rawValue: String {\n" +
                 "        switch self {\n" +
-                "        case .BAR: return \"BAR\"\n" +
-                "        case .FOO: return \"FOO\"\n" +
-                "        case let .UNKNOWN(s): return s\n" +
+                "        case .bar: return \"BAR\"\n" +
+                "        case .foo: return \"FOO\"\n" +
+                "        case let .unknown(s): return s\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
                 "        let container = try decoder.singleValueContainer()\n" +
                 "        let rawValue = try container.decode(RawValue.self)\n" +
-                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.UNKNOWN(rawValue)\n" +
+                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.unknown(rawValue)\n" +
                 "    }\n" +
                 "}\n"
 
@@ -103,7 +103,7 @@ class EnumGeneratorTests : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
         generator.render()
 
         val contents = writer.toString()
@@ -112,43 +112,43 @@ class EnumGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
-                " * Documentation for the enum\n" +
+                " Documentation for the enum\n" +
                 " */\n" +
                 "enum MyEnum {\n" +
                 "    /**\n" +
-                "     * ${"\"\"\""}\n" +
-                "     * T2 instances are Burstable Performance\n" +
-                "     * Instances that provide a baseline level of CPU\n" +
-                "     * performance with the ability to burst above the\n" +
-                "     * baseline.${"\"\"\""}\n" +
+                "     ${"\"\"\""}\n" +
+                "     T2 instances are Burstable Performance\n" +
+                "     Instances that provide a baseline level of CPU\n" +
+                "     performance with the ability to burst above the\n" +
+                "     baseline.${"\"\"\""}\n" +
                 "     */\n" +
-                "    case T2_MICRO\n" +
-                "    case T2_NANO\n" +
-                "    case UNKNOWN(String)\n" +
+                "    case t2_micro\n" +
+                "    case t2_nano\n" +
+                "    case unknown(String)\n" +
                 "}\n\n" +
                 "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
                 "    static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
-                "            .T2_MICRO,\n" +
-                "            .T2_NANO,\n" +
-                "            .UNKNOWN(\"\")\n" +
+                "            .t2_micro,\n" +
+                "            .t2_nano,\n" +
+                "            .unknown(\"\")\n" +
                 "        ]\n" +
                 "    }\n" +
                 "    init?(rawValue: String) {\n" +
                 "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-                "        self = value ?? Self.UNKNOWN(rawValue)\n" +
+                "        self = value ?? Self.unknown(rawValue)\n" +
                 "    }\n" +
                 "    var rawValue: String {\n" +
                 "        switch self {\n" +
-                "        case .T2_MICRO: return \"t2.micro\"\n" +
-                "        case .T2_NANO: return \"t2.nano\"\n" +
-                "        case let .UNKNOWN(s): return s\n" +
+                "        case .t2_micro: return \"t2.micro\"\n" +
+                "        case .t2_nano: return \"t2.nano\"\n" +
+                "        case let .unknown(s): return s\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
                 "        let container = try decoder.singleValueContainer()\n" +
                 "        let rawValue = try container.decode(RawValue.self)\n" +
-                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.UNKNOWN(rawValue)\n" +
+                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.unknown(rawValue)\n" +
                 "    }\n" +
                 "}\n"
 
