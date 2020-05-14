@@ -42,14 +42,14 @@ import software.amazon.smithy.model.shapes.UnionShape
  * enum Attacker {
  *     case lion(Lion)
  *     case bear(Bear)
- *     case UNKNOWN(String)
+ *     case unknown(String)
  * }
  *
  * extension Attacker : Equatable, Codable {
  *     enum CodingKeys : String, CodingKey {
  *         case lion
  *         case bear
- *         case UNKNOWN
+ *         case unknown
  *     }
  *
  *     func encode(to encoder: Encoder) throws {
@@ -59,8 +59,8 @@ import software.amazon.smithy.model.shapes.UnionShape
  *         try container.encode(value, forKey: .lion)
  *         case let .bear(value):
  *         try container.encode(value, forKey: .bear)
- *         case let .UNKNOWN(value):
- *         try container.encode(value, forKey: .UNKNOWN)
+ *         case let .unknown(value):
+ *         try container.encode(value, forKey: .unknown)
  *         }
  *     }
  *
@@ -72,11 +72,8 @@ import software.amazon.smithy.model.shapes.UnionShape
  *         } else if let value = try? container.decode(Int.self, forKey: .bear) {
  *             self = .bear(value)
  *             return
- *         } else if let value = try? container.decode(Int.self, forKey: .UNKNOWN) {
- *             self = .UNKNOWN(value)
- *             return
  *         } else {
- *             self = .UNKNOWN("")
+ *             self = .unknown("")
  *             return
  *         }
  *     }
@@ -99,14 +96,15 @@ class UnionGenerator(
     var initFromDecoderBlockBuilder: MutableList<String> = mutableListOf<String>()
 
     fun render() {
+        writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("enum ${unionSymbol.name} {", "}\n") {
+        writer.openBlock("enum \$union.name:L {", "}\n") {
             createUnionWriterContexts()
             // add the unknown case which will always be last
-            writer.write("case UNKNOWN(String)")
+            writer.write("case unknown(String)")
         }
 
-        writer.openBlock("extension ${unionSymbol.name} : Codable, Equatable { ", "}") {
+        writer.openBlock("extension \$union.name:L : Codable, Equatable { ", "}") {
 
             // Generate Coding Keys for serialization/deserialization
             generateCodingKeysEnumBlock()
@@ -163,14 +161,14 @@ class UnionGenerator(
     }
 
     fun generateCodingKeysEnumBlock() {
-        codingKeysBuilder.add("case UNKNOWN")
+        codingKeysBuilder.add("case unknown")
         writer.openBlock("enum CodingKeys: String, CodingKey {", "}") {
             writer.write(codingKeysBuilder.joinToString("\n"))
         }
     }
 
     fun generateEncodeBlock() {
-        encodeBlockBuilder.add("case let .UNKNOWN(value):\n    try container.encode(value, forKey: .UNKNOWN)")
+        encodeBlockBuilder.add("case let .unknown(value):\n    try container.encode(value, forKey: .unknown)")
         writer.openBlock("func encode(to encoder: Encoder) throws {", "}") {
             writer.write("var container = encoder.container(keyedBy: CodingKeys.self)")
             writer.write("switch self {")
@@ -181,14 +179,8 @@ class UnionGenerator(
 
     fun generateInitFromDecoderBlock() {
         initFromDecoderBlockBuilder.add(
-            "if let value = try? container.decode(String.self, forKey: .UNKNOWN) {\n" +
-            "    self = .UNKNOWN(value)\n" +
-            "    return\n" +
-            "}")
-
-        initFromDecoderBlockBuilder.add(
             "else {\n" +
-            "    self = .UNKNOWN(\"\")\n" +
+            "    self = .unknown(\"\")\n" +
             "    return\n" +
             "}")
 

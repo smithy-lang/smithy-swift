@@ -37,7 +37,7 @@ class SwiftWriterTests {
     }
 
     private fun createDocComment(docs: String): String {
-        val docComment = docs.replace("\n", "\n * ")
-        return "/**\n * " + docComment + "\n */\n"
+        val docComment = docs.replace("\n", "\n ")
+        return "/**\n " + docComment + "\n */\n"
     }
 }

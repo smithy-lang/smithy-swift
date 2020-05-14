@@ -37,34 +37,34 @@ import software.amazon.smithy.utils.CaseUtils
  *
  * ```
  * enum TypedYesNo {
- *     case YEP,
- *     case NOPE,
- *     case UNKNOWN(String)
+ *     case yep
+ *     case nope
+ *     case unknown(String)
  * }
  *
  *
  * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
  *     static var allCases: [TypedYesNo] {
- *         return [.YEP, .NOPE, .UNKNOWN("")]
+ *         return [.yep, .nope, .unknown("")]
  *     }
  *
  *     init?(rawValue: String) {
  *         let value = Self.allCases.first(where: { $0.rawValue == rawValue })
- *         self = value ?? Self.UNKNOWN(rawValue)
+ *         self = value ?? Self.unknown(rawValue)
  *     }
  *
  *     var rawValue: String {
  *         switch self {
- *         case .YEP: return "YES"
- *         case .NOPE: return "NOPE"
- *         case let .UNKNOWN(s): return s
+ *         case .yep: return "YES"
+ *         case .no: return "no"
+ *         case let .unknown(s): return s
  *         }
  *     }
  *
  *     init(from decoder: Decoder) throws {
  *         let container = try decoder.singleValueContainer()
  *         let rawValue = try container.decode(RawValue.self)
- *         self = TypedYesNo(rawValue: rawValue) ?? TypedYesNo.UNKNOWN(rawValue)
+ *         self = TypedYesNo(rawValue: rawValue) ?? TypedYesNo.unknown(rawValue)
  *     }
  * }
  * ```
@@ -80,41 +80,40 @@ import software.amazon.smithy.utils.CaseUtils
  *
  * ```
  * enum SimpleYesNo {
- *     case YES,
- *     case NO,
- *     case UNKNOWN(String)
+ *     case yes,
+ *     case no,
+ *     case unknown(String)
  * }
  *
  *
  * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
  *     static var allCases: [SimpleYesNo] {
- *         return [.YES, .NO, .UNKNOWN("")]
+ *         return [.yes, .no, .unknown("")]
  *     }
  *
  *     init?(rawValue: String) {
  *         let value = Self.allCases.first(where: { $0.rawValue == rawValue })
- *         self = value ?? Self.UNKNOWN(rawValue)
+ *         self = value ?? Self.unknown(rawValue)
  *     }
  *
  *     var rawValue: String {
  *         switch self {
- *         case .YES: return "YES"
- *         case .NO: return "NO"
- *         case let .UNKNOWN(s): return s
+ *         case .yes: return "YES"
+ *         case .no: return "NO"
+ *         case let .unknown(s): return s
  *         }
  *     }
  *
  *     init(from decoder: Decoder) throws {
  *         let container = try decoder.singleValueContainer()
  *         let rawValue = try container.decode(RawValue.self)
- *         self = SimpleYesNo(rawValue: rawValue) ?? SimpleYesNo.UNKNOWN(rawValue)
+ *         self = SimpleYesNo(rawValue: rawValue) ?? SimpleYesNo.unknown(rawValue)
  *     }
  * }
  * ```
  */
 class EnumGenerator(
-    private val model: Model,
-    private val symbolProvider: SymbolProvider,
+    private val symbol: Symbol,
     private val writer: SwiftWriter,
     private val shape: StringShape
 ) {
@@ -127,22 +126,19 @@ class EnumGenerator(
         shape.getTrait(EnumTrait::class.java).get()
     }
 
-    val enumSymbol: Symbol by lazy {
-        symbolProvider.toSymbol(shape)
-    }
-
     var allCasesBuilder: MutableList<String> = mutableListOf<String>()
     var rawValuesBuilder: MutableList<String> = mutableListOf<String>()
 
     fun render() {
+        writer.putContext("enum.name", symbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("enum ${enumSymbol.name} {", "}\n") {
+        writer.openBlock("enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
             // add the unknown case which will always be last
-            writer.write("case UNKNOWN(String)")
+            writer.write("case unknown(String)")
         }
 
-        writer.openBlock("extension ${enumSymbol.name} : Equatable, RawRepresentable, Codable, CaseIterable { ", "}") {
+        writer.openBlock("extension \$enum.name:L : Equatable, RawRepresentable, Codable, CaseIterable { ", "}") {
 
             // Generate allCases static array
             generateAllCasesBlock()
@@ -161,7 +157,7 @@ class EnumGenerator(
     fun getEnumNameFromEnumDefinition(definition: EnumDefinition): String {
         return definition.name.orElseGet {
             CaseUtils.toSnakeCase(definition.value).replace(".", "_")
-        }.toUpperCase()
+        }.toLowerCase()
     }
 
     fun addEnumCaseToEnum(definition: EnumDefinition) {
@@ -193,8 +189,8 @@ class EnumGenerator(
     }
 
     fun generateAllCasesBlock() {
-        allCasesBuilder.add(".UNKNOWN(\"\")")
-        writer.openBlock("static var allCases: [${enumSymbol.name}] {", "}") {
+        allCasesBuilder.add(".unknown(\"\")")
+        writer.openBlock("static var allCases: [\$enum.name:L] {", "}") {
             writer.openBlock("return [", "]") {
                 writer.write(allCasesBuilder.joinToString(",\n"))
             }
@@ -204,12 +200,12 @@ class EnumGenerator(
     fun generateInitFromRawValueBlock() {
         writer.openBlock("init?(rawValue: String) {", "}") {
             writer.write("let value = Self.allCases.first(where: { \$\$0.rawValue == rawValue })")
-            writer.write("self = value ?? Self.UNKNOWN(rawValue)")
+            writer.write("self = value ?? Self.unknown(rawValue)")
         }
     }
 
     fun generateRawValueEnumBlock() {
-        rawValuesBuilder.add("case let .UNKNOWN(s): return s")
+        rawValuesBuilder.add("case let .unknown(s): return s")
         writer.openBlock("var rawValue: String {", "}") {
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
@@ -221,7 +217,7 @@ class EnumGenerator(
         writer.openBlock("init(from decoder: Decoder) throws {", "}") {
             writer.write("let container = try decoder.singleValueContainer()")
             writer.write("let rawValue = try container.decode(RawValue.self)")
-            writer.write("self = ${enumSymbol.name}(rawValue: rawValue) ?? ${enumSymbol.name}.UNKNOWN(rawValue)")
+            writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.unknown(rawValue)")
         }
     }
 }

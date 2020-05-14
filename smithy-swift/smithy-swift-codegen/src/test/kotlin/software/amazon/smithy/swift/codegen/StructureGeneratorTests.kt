@@ -40,12 +40,12 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
         val expectedGeneratedStructure = "" +
                 "/**\n" +
-                " * This *is* documentation about the shape.\n" +
+                " This *is* documentation about the shape.\n" +
                 " */\n" +
                 "public struct MyStruct {\n" +
                 "    public let bar: Int\n" +
                 "    /**\n" +
-                "     * This *is* documentation about the member.\n" +
+                "     This *is* documentation about the member.\n" +
                 "     */\n"
                 "    public let baz: Int?\n" +
                 "    public let foo: String?\n\n" +
