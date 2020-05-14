@@ -31,9 +31,7 @@ import software.amazon.smithy.utils.CaseUtils
  *        { value: "NO", name: "NOPE"}])
  * string TypedYesNo
  * ```
- *
  * We will generate the following:
- *
  * ```
  * enum TypedYesNo {
  *     case yep
@@ -75,9 +73,7 @@ import software.amazon.smithy.utils.CaseUtils
  *        { value: "NO" }])
  * string SimpleYesNo
  * ```
- *
  * We will generate the following:
- *
  * ```
  * enum SimpleYesNo {
  *     case yes
