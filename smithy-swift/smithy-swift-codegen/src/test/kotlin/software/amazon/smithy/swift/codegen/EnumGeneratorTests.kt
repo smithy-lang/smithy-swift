@@ -29,7 +29,7 @@ class EnumGeneratorTests : TestsBase() {
     fun `generates unnamed enums`() {
 
         val stringShapeWithEnumTrait = createStringWithEnumTrait(
-            EnumDefinition.builder().value("FOO").build(),
+            EnumDefinition.builder().value("FOO_BAZ@-. XAP - . ").build(),
             EnumDefinition.builder().value("BAR").documentation("Documentation for BAR").build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
@@ -46,39 +46,38 @@ class EnumGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
+                " Really long multi-line\n" +
                 " Documentation for the enum\n" +
                 " */\n" +
                 "enum MyEnum {\n" +
-                "    /**\n" +
-                "     Documentation for BAR\n" +
-                "     */\n" +
+                "    /// Documentation for BAR\n" +
                 "    case bar\n" +
-                "    case foo\n" +
-                "    case unknown(String)\n" +
+                "    case fooBazXap\n" +
+                "    case sdkUnknown(String)\n" +
                 "}\n\n" +
                 "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
                 "    static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
                 "            .bar,\n" +
-                "            .foo,\n" +
-                "            .unknown(\"\")\n" +
+                "            .fooBazXap,\n" +
+                "            .sdkUnknown(\"\")\n" +
                 "        ]\n" +
                 "    }\n" +
                 "    init?(rawValue: String) {\n" +
                 "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-                "        self = value ?? Self.unknown(rawValue)\n" +
+                "        self = value ?? Self.sdkUnknown(rawValue)\n" +
                 "    }\n" +
                 "    var rawValue: String {\n" +
                 "        switch self {\n" +
                 "        case .bar: return \"BAR\"\n" +
-                "        case .foo: return \"FOO\"\n" +
-                "        case let .unknown(s): return s\n" +
+                "        case .fooBazXap: return \"FOO_BAZ@-. XAP - . \"\n" +
+                "        case let .sdkUnknown(s): return s\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
                 "        let container = try decoder.singleValueContainer()\n" +
                 "        let rawValue = try container.decode(RawValue.self)\n" +
-                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.unknown(rawValue)\n" +
+                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)\n" +
                 "    }\n" +
                 "}\n"
 
@@ -112,6 +111,7 @@ class EnumGeneratorTests : TestsBase() {
 
         val expectedGeneratedEnum = "" +
                 "/**\n" +
+                " Really long multi-line\n" +
                 " Documentation for the enum\n" +
                 " */\n" +
                 "enum MyEnum {\n" +
@@ -122,33 +122,33 @@ class EnumGeneratorTests : TestsBase() {
                 "     performance with the ability to burst above the\n" +
                 "     baseline.${"\"\"\""}\n" +
                 "     */\n" +
-                "    case t2_micro\n" +
-                "    case t2_nano\n" +
-                "    case unknown(String)\n" +
+                "    case t2Micro\n" +
+                "    case t2Nano\n" +
+                "    case sdkUnknown(String)\n" +
                 "}\n\n" +
                 "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
                 "    static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
-                "            .t2_micro,\n" +
-                "            .t2_nano,\n" +
-                "            .unknown(\"\")\n" +
+                "            .t2Micro,\n" +
+                "            .t2Nano,\n" +
+                "            .sdkUnknown(\"\")\n" +
                 "        ]\n" +
                 "    }\n" +
                 "    init?(rawValue: String) {\n" +
                 "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-                "        self = value ?? Self.unknown(rawValue)\n" +
+                "        self = value ?? Self.sdkUnknown(rawValue)\n" +
                 "    }\n" +
                 "    var rawValue: String {\n" +
                 "        switch self {\n" +
-                "        case .t2_micro: return \"t2.micro\"\n" +
-                "        case .t2_nano: return \"t2.nano\"\n" +
-                "        case let .unknown(s): return s\n" +
+                "        case .t2Micro: return \"t2.micro\"\n" +
+                "        case .t2Nano: return \"t2.nano\"\n" +
+                "        case let .sdkUnknown(s): return s\n" +
                 "        }\n" +
                 "    }\n" +
                 "    init(from decoder: Decoder) throws {\n" +
                 "        let container = try decoder.singleValueContainer()\n" +
                 "        let rawValue = try container.decode(RawValue.self)\n" +
-                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.unknown(rawValue)\n" +
+                "        self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)\n" +
                 "    }\n" +
                 "}\n"
 
@@ -164,7 +164,7 @@ class EnumGeneratorTests : TestsBase() {
         val shape = StringShape.builder()
             .id("smithy.example#MyEnum")
             .addTrait(enumTraitBuilder.build())
-            .addTrait(DocumentationTrait("Documentation for the enum"))
+            .addTrait(DocumentationTrait("Really long multi-line\nDocumentation for the enum"))
             .build()
 
         return shape

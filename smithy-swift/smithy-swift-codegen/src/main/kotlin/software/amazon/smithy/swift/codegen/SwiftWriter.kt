@@ -113,14 +113,14 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     /**
-     * Configures the writer with the appropriate opening/closing doc comment lines and calls the [block]
+     * Configures the writer with the appropriate opening/closing multi-line doc comments and calls the [block]
      * with this writer. Any calls to `write()` inside of block will be escaped appropriately.
      * On return the writer's original state is restored.
      *
      * e.g.
      * ```
-     * writer.writeDocs() {
-     *     write("This is a doc comment")
+     * writer.writeMultiLineDocs() {
+     *     write("This is a multi-line \n doc comment")
      * }
      * ```
      *
@@ -128,12 +128,13 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      *
      * ```
      * /**
-     *  This is a doc comment
+     *  This is a multi-line
+     *  doc comment
      *  */
      * ```
      */
-    fun writeDocs(block: SwiftWriter.() -> Unit) {
-        pushState("docs")
+    fun writeMultiLineDocs(block: SwiftWriter.() -> Unit) {
+        pushState("multiLineDocs")
         write("/**")
         setNewlinePrefix(" ")
         block(this)
@@ -142,11 +143,43 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     /**
+     * Configures the writer with the appropriate single-line doc comment and calls the [block]
+     * with this writer. Any calls to `write()` inside of block will be escaped appropriately.
+     * On return the writer's original state is restored.
+     *
+     * e.g.
+     * ```
+     * writer.writeSingleLineDocs() {
+     *     write("This is a single-line doc comment")
+     * }
+     * ```
+     *
+     * would output
+     *
+     * ```
+     * /// This is a single-line doc comment
+     * ```
+     */
+    fun writeSingleLineDocs(block: SwiftWriter.() -> Unit) {
+        pushState("singleLineDocs")
+        setNewlinePrefix("/// ")
+        block(this)
+        popState()
+    }
+
+
+    /**
      * Writes documentation comments from a doc string.
      */
     fun writeDocs(docs: String) {
-        writeDocs {
-            write(sanitizeDocumentation(docs))
+        if (docs.contains("\n")) {
+            writeMultiLineDocs {
+                write(sanitizeDocumentation(docs))
+            }
+        } else {
+            writeSingleLineDocs {
+                write(sanitizeDocumentation(docs))
+            }
         }
     }
 
