@@ -154,7 +154,7 @@ class EnumGenerator(
 
     fun getEnumNameFromEnumDefinition(definition: EnumDefinition): String {
         return definition.name.orElseGet {
-            CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+            definition.value.replace("[^a-zA-Z0-9_]", "")
         }.toLowerCase()
     }
 
