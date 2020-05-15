@@ -208,6 +208,11 @@ class EnumGenerator(
         }
     }
 
+    /**
+     * Creates an idiomatic name for swift enum cases from Smithy EnumDefinition.
+     * Uses either name or value attributes of EnumDefinition in that order and formats
+     * them to camelCase after removing chars except alphanumeric, space and underscore.
+     */
     fun EnumDefinition.swiftEnumCaseName(): String {
         return CaseUtils.toCamelCase(name.orElseGet {
             value
