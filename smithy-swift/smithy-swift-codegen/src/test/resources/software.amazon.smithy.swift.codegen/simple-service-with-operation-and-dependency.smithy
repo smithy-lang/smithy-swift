@@ -17,7 +17,8 @@ operation GetFoo {
 
 structure GetFooInput {
     inputString: String,
-    largeInt: BigInteger
+    largeInt: BigInteger,
+    jsonString: Document
 }
 structure GetFooOutput {}
 

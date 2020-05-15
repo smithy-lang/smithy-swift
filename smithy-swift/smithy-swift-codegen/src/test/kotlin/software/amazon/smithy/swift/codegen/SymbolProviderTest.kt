@@ -21,11 +21,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.Node.assertEquals
 import software.amazon.smithy.model.shapes.*
 
-class SymbolProviderTest: TestsBase() {
+class SymbolProviderTest : TestsBase() {
     @Test fun `escapes reserved member names`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
         val struct = StructureShape.builder()
@@ -41,24 +39,24 @@ class SymbolProviderTest: TestsBase() {
     @DisplayName("Creates primitives")
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @CsvSource(
-        "String, String, nil, true",
-        "Integer, Int, nil, true",
-        "PrimitiveInteger, Int, 0, false",
-        "Short, Int16, nil, true",
-        "PrimitiveShort, Int16, 0, false",
-        "Long, Int, nil, true",
-        "PrimitiveLong, Int, 0, false",
-        "Byte, Int8, nil, true",
-        "PrimitiveByte, Int8, 0, false",
-        "Float, Float, nil, true",
-        "PrimitiveFloat, Float, 0.0, false",
-        "Double, Double, nil, true",
-        "PrimitiveDouble, Double, 0.0, false",
-        "Boolean, Bool, nil, true",
-        "PrimitiveBoolean, Bool, false, false",
-        "Document, JSONValue, nil, true"
+        "String, String, nil, true,",
+        "Integer, Int, nil, true,",
+        "PrimitiveInteger, Int, 0, false,",
+        "Short, Int16, nil, true,",
+        "PrimitiveShort, Int16, 0, false,",
+        "Long, Int, nil, true,",
+        "PrimitiveLong, Int, 0, false,",
+        "Byte, Int8, nil, true,",
+        "PrimitiveByte, Int8, 0, false,",
+        "Float, Float, nil, true,",
+        "PrimitiveFloat, Float, 0.0, false,",
+        "Double, Double, nil, true,",
+        "PrimitiveDouble, Double, 0.0, false,",
+        "Boolean, Bool, nil, true,",
+        "PrimitiveBoolean, Bool, false, false,",
+        "Document, JSONValue, nil, true, ClientRuntime"
     )
-    fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean) {
+    fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$primitiveType").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
@@ -68,7 +66,7 @@ class SymbolProviderTest: TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("", memberSymbol.namespace)
+        assertEquals(namespace ?: "", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
         assertEquals(boxed, memberSymbol.isBoxed())
 
