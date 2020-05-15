@@ -206,8 +206,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        // TODO create document type
-        return createSymbolBuilder(shape, "Any", true).build()
+        return createSymbolBuilder(shape, "JSONValue", true).build()
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
