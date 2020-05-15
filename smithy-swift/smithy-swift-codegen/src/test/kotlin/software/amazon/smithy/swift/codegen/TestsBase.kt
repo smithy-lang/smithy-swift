@@ -15,10 +15,10 @@
 
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.build.PluginContext
 import java.net.URL
 import java.util.logging.Logger
+import software.amazon.smithy.build.FileManifest
+import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -58,11 +58,7 @@ open class TestsBase {
                     .unwrap()
     }
 
-    protected fun buildPluginContext(model: Model,
-                                     manifest: FileManifest,
-                                     serviceShapeId: String,
-                                     moduleName: String,
-                                     moduleVersion: String): PluginContext {
+    protected fun buildPluginContext(model: Model, manifest: FileManifest, serviceShapeId: String, moduleName: String, moduleVersion: String): PluginContext {
         val context = PluginContext.builder()
             .model(model)
             .fileManifest(manifest)

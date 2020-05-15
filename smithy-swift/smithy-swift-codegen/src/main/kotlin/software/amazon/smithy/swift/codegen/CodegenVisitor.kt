@@ -36,9 +36,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     fun execute() { // Generate models that are connected to the service being generated.
         println("Walking shapes from " + service.id + " to find shapes to generate")
         val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
-        var documentShapePresent: Boolean = false
         for (shape in serviceShapes) {
-            documentShapePresent = shape.isDocumentShape || documentShapePresent
             shape.accept(this)
         }
 
@@ -51,11 +49,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
         println("Generating info plist")
         writeInfoPlist(settings, fileManifest)
-
-        if (documentShapePresent) {
-            println("Generating enum to represent document type")
-            DocumentTypeGenerator(settings, fileManifest).generateDocumentTypeDefinition()
-        }
     }
 
     override fun getDefault(shape: Shape?): Void? {

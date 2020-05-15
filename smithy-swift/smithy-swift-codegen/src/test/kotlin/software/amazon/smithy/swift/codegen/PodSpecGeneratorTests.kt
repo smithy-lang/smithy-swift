@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 
 class PodSpecGeneratorTests : TestsBase() {
@@ -42,16 +43,25 @@ class PodSpecGeneratorTests : TestsBase() {
 
         val manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "example")
-
-        val mockDependencies = mutableListOf<SymbolDependency>()
-        val member = model.shapes().filter { it.isBigIntegerShape }.toList().first()
-
-        mockDependencies.addAll(provider.toSymbol(member).dependencies)
+        val mockDependencies = getMockDependenciesFromModel(model, provider)
 
         writePodspec(settings, manifest, mockDependencies)
         val podspec = manifest.getFileString("/example.podspec").get()
         assertNotNull(podspec)
         podspec.shouldContain("spec.dependency 'BigNumber', '2.0'")
+        podspec.shouldContain("spec.dependency 'ClientRuntime', '0.1.0'")
         podspec.shouldContain("spec.homepage     = '$homepage'")
+    }
+
+    fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {
+        val mockDependencies = mutableListOf<SymbolDependency>()
+
+        // BigInteger and Document types have dependencies on other packages
+        val bigIntTypeMember = model.shapes().filter { it.isBigIntegerShape }.toList().first()
+        mockDependencies.addAll(symbolProvider.toSymbol(bigIntTypeMember).dependencies)
+
+        val documentTypeMember = model.shapes().filter { it.isDocumentShape }.toList().first()
+        mockDependencies.addAll(symbolProvider.toSymbol(documentTypeMember).dependencies)
+        return mockDependencies
     }
 }

@@ -19,7 +19,8 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
 enum class SwiftDependency(val type: String, val namespace: String, val version: String) : SymbolDependencyContainer {
-    BIG("pod", "BigNumber", "2.0");
+    BIG("pod", "BigNumber", "2.0"),
+    CLIENT_RUNTIME("pod", "ClientRuntime", "0.1.0");
 
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()

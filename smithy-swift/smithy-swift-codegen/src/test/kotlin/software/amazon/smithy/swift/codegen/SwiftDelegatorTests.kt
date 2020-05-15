@@ -19,9 +19,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
 class SwiftDelegatorTests : TestsBase() {
