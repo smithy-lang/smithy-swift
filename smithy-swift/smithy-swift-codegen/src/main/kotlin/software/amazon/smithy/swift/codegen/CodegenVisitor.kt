@@ -52,8 +52,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         println("Generating info plist")
         writeInfoPlist(settings, fileManifest)
 
-        println("Generating enum to represent document type")
-        DocumentTypeGenerator(settings, fileManifest).generateDocumentTypeDefinition()
+        if (documentShapePresent) {
+            println("Generating enum to represent document type")
+            DocumentTypeGenerator(settings, fileManifest).generateDocumentTypeDefinition()
+        }
     }
 
     override fun getDefault(shape: Shape?): Void? {
