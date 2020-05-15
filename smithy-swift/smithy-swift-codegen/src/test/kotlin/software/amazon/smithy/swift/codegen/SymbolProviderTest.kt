@@ -25,18 +25,14 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node.assertEquals
 import software.amazon.smithy.model.shapes.*
 
-class SymbolProviderTest {
+class SymbolProviderTest: TestsBase() {
     @Test fun `escapes reserved member names`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
             .addMember(member)
             .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, member)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val actual = provider.toMemberName(member)
         assertEquals("`class`", actual)
@@ -59,7 +55,8 @@ class SymbolProviderTest {
         "Double, Double, nil, true",
         "PrimitiveDouble, Double, 0.0, false",
         "Boolean, Bool, nil, true",
-        "PrimitiveBoolean, Bool, false, false"
+        "PrimitiveBoolean, Bool, false, false",
+        "Document, JSONValue, nil, true"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean) {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$primitiveType").build()
@@ -67,11 +64,7 @@ class SymbolProviderTest {
             .id("foo.bar#MyStruct")
             .addMember(member)
             .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, member)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
@@ -88,11 +81,7 @@ class SymbolProviderTest {
             .id("foo.bar#MyStruct")
             .addMember(member)
             .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, member)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
@@ -109,11 +98,7 @@ class SymbolProviderTest {
             .id("foo.bar#MyStruct")
             .addMember(member)
             .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, member)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
@@ -130,11 +115,7 @@ class SymbolProviderTest {
             .id("foo.bar#MyStruct")
             .addMember(member)
             .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, member)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
@@ -150,11 +131,7 @@ class SymbolProviderTest {
             .id("foo.bar#Records")
             .member(listMember)
             .build()
-        val model = Model.assembler()
-            .addShapes(list, listMember, struct)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, list, listMember)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val listSymbol = provider.toSymbol(list)
 
@@ -170,11 +147,7 @@ class SymbolProviderTest {
             .id("foo.bar#Records")
             .member(setMember)
             .build()
-        val model = Model.assembler()
-            .addShapes(set, setMember, struct)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, set, setMember)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val setSymbol = provider.toSymbol(set)
 
@@ -192,11 +165,7 @@ class SymbolProviderTest {
             .key(keyMember)
             .value(valueMember)
             .build()
-        val model = Model.assembler()
-            .addShapes(map, keyMember, valueMember, struct)
-            .assemble()
-            .unwrap()
-
+        val model = createModelFromShapes(struct, map, keyMember, valueMember)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val mapSymbol = provider.toSymbol(map)
 

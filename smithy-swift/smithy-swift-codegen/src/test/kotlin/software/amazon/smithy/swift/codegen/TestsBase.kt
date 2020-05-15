@@ -15,11 +15,14 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.build.FileManifest
+import software.amazon.smithy.build.PluginContext
 import java.net.URL
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.Shape
 
 open class TestsBase {
@@ -28,7 +31,7 @@ open class TestsBase {
 
     protected fun createModelFromSmithy(smithyTestResourceName: String): Model {
         return Model.assembler()
-            .addImport(getSmithyResource(smithyTestResourceName = smithyTestResourceName))
+            .addImport(getSmithyResource(smithyTestResourceName))
             .discoverModels()
             .assemble()
             .unwrap()
@@ -53,5 +56,31 @@ open class TestsBase {
                     .addShapes(*shapes)
                     .assemble()
                     .unwrap()
+    }
+
+    protected fun buildPluginContext(model: Model,
+                                     manifest: FileManifest,
+                                     serviceShapeId: String,
+                                     moduleName: String,
+                                     moduleVersion: String): PluginContext {
+        val context = PluginContext.builder()
+            .model(model)
+            .fileManifest(manifest)
+            .settings(
+                Node.objectNodeBuilder()
+                    .withMember("service", Node.from(serviceShapeId))
+                    .withMember("module", Node.from(moduleName))
+                    .withMember("moduleVersion", Node.from(moduleVersion))
+                    .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+                    .withMember("author", Node.from("Amazon Web Services"))
+                    .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
+                    .build()
+            )
+            .build()
+        return context
+    }
+
+    protected fun buildMockPluginContext(model: Model, manifest: FileManifest): PluginContext {
+        return buildPluginContext(model, manifest, "smithy.example#Example", "example", "0.0.1")
     }
 }
