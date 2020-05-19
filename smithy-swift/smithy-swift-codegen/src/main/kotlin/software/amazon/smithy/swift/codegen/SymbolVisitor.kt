@@ -23,6 +23,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -144,8 +145,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
-        // TODO: handle error types
-
         val builder = createSymbolBuilder(shape, name, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
@@ -157,6 +156,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
+        }
+
+        if (shape.getTrait(ErrorTrait::class.java).isPresent) {
+            builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
         }
         return builder.build()
     }
