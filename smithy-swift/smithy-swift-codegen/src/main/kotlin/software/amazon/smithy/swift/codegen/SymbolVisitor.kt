@@ -160,6 +160,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
         if (shape.getTrait(ErrorTrait::class.java).isPresent) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
+            builder.namespace("ClientRuntime", ".")
         }
         return builder.build()
     }

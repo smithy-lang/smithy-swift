@@ -18,14 +18,15 @@ package software.amazon.smithy.swift.codegen
 import io.kotest.matchers.string.shouldContain
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
-import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
 class StructureGeneratorTests : TestsBase() {
@@ -94,6 +95,44 @@ class StructureGeneratorTests : TestsBase() {
                 "    )\n" +
                 "    {\n" +
                 "        self.baz = baz\n" +
+                "        self.message = message\n" +
+                "    }\n" +
+                "}\n"
+
+        contents.shouldContain(expectedGeneratedStructure)
+    }
+
+    @Test
+    fun `it imports ClientRuntime dependency`() {
+        val model = createModelFromSmithy("error-test-optional-message.smithy")
+        val errorStructureShape = model.expectShape(ShapeId.from("smithy.example#Err"))
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
+        val symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        val delegator: SwiftDelegator = SwiftDelegator(settings, model, manifest, symbolProvider)
+
+        delegator.useShapeWriter(errorStructureShape) {
+            writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer,
+            errorStructureShape as StructureShape, settings.service.name).render()
+        }
+        delegator.flushWriters()
+
+        val contents = manifest.getFileString("example/models/Err.swift").get()
+
+        val expectedGeneratedStructure = "" +
+                "import ClientRuntime\n" +
+                "\n" +
+                "public struct Err: Exception {\n" +
+                "    public let errorType = .client\n" +
+                "    public let isRetryable = false\n" +
+                "    public let serviceName = Example\n" +
+                "    public let message: String?\n" +
+                "\n" +
+                "    public init (\n" +
+                "        message: String? = nil\n" +
+                "    )\n" +
+                "    {\n" +
                 "        self.message = message\n" +
                 "    }\n" +
                 "}\n"

@@ -19,13 +19,12 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
-class StructureGenerator (
+class StructureGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
@@ -162,7 +161,7 @@ class StructureGenerator (
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
-        //writer.addImport(structSymbol)
+        writer.addImport(structSymbol)
 
         writer.openBlock("public struct \$struct.name:L: Exception {")
             .call { generateStructMembersForErrorTrait() }
