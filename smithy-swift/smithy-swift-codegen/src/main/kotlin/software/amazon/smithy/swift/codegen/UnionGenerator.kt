@@ -115,6 +115,7 @@ class UnionGenerator(
             // Generate custom decoder
             generateInitFromDecoderBlock()
         }
+        writer.removeContext("union.name")
     }
 
     fun addEnumCaseToEnum(memberShape: MemberShape) {

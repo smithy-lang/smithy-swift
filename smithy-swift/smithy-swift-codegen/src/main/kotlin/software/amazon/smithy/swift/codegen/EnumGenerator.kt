@@ -148,6 +148,7 @@ class EnumGenerator(
             // Generate deserializer
             generateInitFromDecoderBlock()
         }
+        writer.removeContext("enum.name")
     }
 
     fun addEnumCaseToEnum(definition: EnumDefinition) {

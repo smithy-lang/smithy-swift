@@ -23,16 +23,20 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.HttpErrorTrait
+import software.amazon.smithy.model.traits.RequiredTrait
+import software.amazon.smithy.model.traits.RetryableTrait
 
 class StructureGeneratorTests : TestsBase() {
     @Test
-    fun `it renders structures`() {
+    fun `it renders non-error structures`() {
 
         val struct: StructureShape = createStructureWithoutErrorTrait()
-        val model: Model = createModelWithStructureShape(struct = struct)
+        val model: Model = createModelWithStructureShape(struct)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val writer = SwiftWriter("MockPackage")
-        val generator = StructureGenerator(model, provider, writer, struct)
+        val generator = StructureGenerator(model, provider, writer, struct, "Example")
         generator.render()
 
         val contents = writer.toString()
@@ -60,6 +64,43 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedStructure)
     }
 
+    @Test
+    fun `it renders error structures`() {
+
+        val struct: StructureShape = createStructureWithOptionalErrorMessage()
+        val model: Model = createModelWithStructureShape(struct)
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = SwiftWriter("MockPackage")
+        val generator = StructureGenerator(model, provider, writer, struct, "Example")
+        generator.render()
+
+        val contents = writer.toString()
+
+        contents.shouldContain(SwiftWriter.staticHeader)
+        val expectedGeneratedStructure = "" +
+                "/// This *is* documentation about the shape.\n" +
+                "public struct MyError: Exception {\n" +
+                "    public let errorType = .client\n" +
+                "    public let httpErrorCode = 429\n" +
+                "    public let isRetryable = true\n" +
+                "    public let serviceName = Example\n" +
+                "    /// This *is* documentation about the member.\n" +
+                "    public let baz: Int?\n" +
+                "    public let message: String?\n" +
+                "\n" +
+                "    public init (\n" +
+                "        baz: Int? = nil,\n" +
+                "        message: String? = nil\n" +
+                "    )\n" +
+                "    {\n" +
+                "        self.baz = baz\n" +
+                "        self.message = message\n" +
+                "    }\n" +
+                "}\n"
+
+        contents.shouldContain(expectedGeneratedStructure)
+    }
+
     private fun createStructureWithoutErrorTrait(): StructureShape {
         val member1 = MemberShape.builder().id("smithy.example#MyStruct\$foo").target("smithy.api#String").build()
         val member2 = MemberShape.builder().id("smithy.example#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
@@ -74,6 +115,26 @@ class StructureGeneratorTests : TestsBase() {
             .addMember(member2)
             .addMember(member3)
             .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
+    }
+
+    private fun createStructureWithOptionalErrorMessage(): StructureShape {
+        val member1 = MemberShape.builder().id("smithy.example#MyError\$message")
+            .target("smithy.api#String")
+            .build()
+        val member2 = MemberShape.builder().id("smithy.example#MyError\$baz")
+            .target("smithy.api#Integer")
+            .addTrait(DocumentationTrait("This *is* documentation about the member."))
+            .build()
+
+        return StructureShape.builder()
+            .id("smithy.example#MyError")
+            .addMember(member1)
+            .addMember(member2)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .addTrait(ErrorTrait("client"))
+            .addTrait(RetryableTrait.builder().build())
+            .addTrait(HttpErrorTrait(429))
             .build()
     }
 
