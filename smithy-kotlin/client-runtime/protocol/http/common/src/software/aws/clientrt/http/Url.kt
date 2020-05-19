@@ -15,9 +15,7 @@
 package software.aws.clientrt.http
 
 /**
- * Represents a URL e.g. `https://mydomain.com/api?foo=baz&bar=11
- *
- * General form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
+ * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
  *
  * @property scheme The wire protocol (e.g. http, https, ws, wss, etc)
  * @property host hostname
@@ -82,3 +80,33 @@ data class Url(
  * URL username and password
  */
 data class UserInfo(val username: String, val password: String)
+
+/**
+ * Construct a URL by it's individual components
+ */
+class UrlBuilder {
+    var scheme = Protocol.HTTPS
+    var host: String = ""
+    var port: Int? = null
+    var path: String = ""
+    var parameters: QueryParametersBuilder = QueryParametersBuilder()
+    var fragment: String? = null
+    var userInfo: UserInfo? = null
+    var forceQuery: Boolean = false
+
+    companion object {
+        operator fun invoke(block: UrlBuilder.() -> Unit): Url = UrlBuilder().apply(block).build()
+    }
+
+    fun build(): Url = Url(
+        scheme,
+        host,
+        port ?: scheme.defaultPort,
+        path,
+        if (parameters.isEmpty()) null else parameters.build(),
+        fragment,
+        userInfo,
+        forceQuery)
+}
+
+fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)

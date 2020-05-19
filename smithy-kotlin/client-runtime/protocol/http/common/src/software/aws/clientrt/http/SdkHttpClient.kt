@@ -14,8 +14,31 @@
  */
 package software.aws.clientrt.http
 
-// com.amazonaws
+import software.aws.clientrt.http.engine.HttpClientEngine
 
-interface SdkHttpClient {
-    // TODO
+/**
+ * An HTTP client capable of round tripping requests and responses
+ *
+ * **NOTE**: This is not a general purpose HTTP client. It is meant for generated SDK use.
+ */
+class SdkHttpClient(
+    val engine: HttpClientEngine
+) {
+
+    /**
+     * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [HttpRequest]
+     */
+    val requestPipeline = HttpRequestPipeline()
+
+    /**
+     * Response pipeline. Responsible for transforming [HttpResponse] to the expected type
+     */
+    val responsePipeline = HttpResponsePipeline()
+
+    /**
+     * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
+     */
+    fun close() {
+        engine.close()
+    }
 }

@@ -10,6 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":client-runtime:utils"))
+                implementation(project(":client-runtime:io"))
                 // for Pipeline abstraction which already supports suspend functions
                 implementation("io.ktor:ktor-utils:$ktorVersion")
             }
@@ -18,7 +19,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation("io.ktor:ktor-utils-jvm:$ktorVersion")
-                implementation("io.ktor:ktor-io-jvm:$ktorVersion")
             }
         }
     }

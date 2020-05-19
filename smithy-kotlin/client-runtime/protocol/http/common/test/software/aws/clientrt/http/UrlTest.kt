@@ -33,12 +33,11 @@ class UrlTest {
     @Test
     fun `force retain query`() {
         val expected = "https://test.aws.com/kotlin?"
-        val url = Url(
-            Protocol.HTTPS,
-            "test.aws.com",
-            path = "/kotlin",
+        val url = UrlBuilder {
+            host = "test.aws.com"
+            path = "/kotlin"
             forceQuery = true
-        )
+        }
         assertEquals(expected, url.toString())
     }
 
@@ -98,22 +97,64 @@ class UrlTest {
     @Test
     fun `userinfo no password`() {
         val expected = "https://user@test.aws.com"
-        val url = Url(
-            Protocol.HTTPS,
-            "test.aws.com",
+        val url = UrlBuilder {
+            scheme = Protocol.HTTPS
+            host = "test.aws.com"
             userInfo = UserInfo("user", "")
-        )
+        }
         assertEquals(expected, url.toString())
     }
 
     @Test
     fun `full userinfo`() {
         val expected = "https://user:password@test.aws.com"
-        val url = Url(
-            Protocol.HTTPS,
-            "test.aws.com",
+        val url = UrlBuilder {
+            scheme = Protocol.HTTPS
+            host = "test.aws.com"
             userInfo = UserInfo("user", "password")
-        )
+        }
+        assertEquals(expected, url.toString())
+    }
+
+    @Test
+    fun `it builds`() {
+        val builder = UrlBuilder()
+        builder.scheme = Protocol.HTTP
+        builder.host = "test.aws.com"
+        builder.path = "/kotlin"
+        val url = builder.build()
+        val expected = "http://test.aws.com/kotlin"
+        assertEquals(expected, url.toString())
+        assertEquals(Protocol.HTTP, builder.scheme)
+        assertEquals("test.aws.com", builder.host)
+        assertEquals(null, builder.port)
+        assertEquals(null, builder.fragment)
+        assertEquals(null, builder.userInfo)
+    }
+
+    @Test
+    fun `it builds with non default port`() {
+        val url = UrlBuilder {
+            scheme = Protocol.HTTP
+            host = "test.aws.com"
+            path = "/kotlin"
+            port = 3000
+        }
+        val expected = "http://test.aws.com:3000/kotlin"
+        assertEquals(expected, url.toString())
+    }
+
+    @Test
+    fun `it builds with parameters`() {
+        val url = UrlBuilder {
+            scheme = Protocol.HTTP
+            host = "test.aws.com"
+            path = "/kotlin"
+            parameters {
+                append("foo", "baz")
+            }
+        }
+        val expected = "http://test.aws.com/kotlin?foo=baz"
         assertEquals(expected, url.toString())
     }
 }
