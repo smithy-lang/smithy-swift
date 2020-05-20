@@ -21,15 +21,13 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
 class StructureGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: StructureShape,
-    private val serviceId: String
+    private val shape: StructureShape
 ) {
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
@@ -142,12 +140,11 @@ class StructureGenerator(
      * ```
      * We will generate the following:
      * ```
-     * public struct ThrottlingError: Exception {
-     *     public let isRetryable = true
-     *     public let errorType = .client
-     *     public let serviceName = "Example"
-     *     public let httpErrorCode = 429
-     *     public let message: String
+     * public struct ThrottlingError: HttpOperationError {
+     *     public var httpResponse: HttpResponse
+     *     public var retryable = true
+     *     public var type = .client
+     *     public var message: String
      *
      *     public init (
      *         message: String
@@ -163,27 +160,27 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        writer.openBlock("public struct \$struct.name:L: Exception {")
-            .call { generateStructMembersForErrorTrait() }
-            .call { generateStructMembers() }
+        writer.openBlock("public struct \$struct.name:L: HttpOperationError {")
+            .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
             .closeBlock("}")
             .write("")
     }
 
-    private fun generateStructMembersForErrorTrait() {
+    private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
-        writer.write("public let errorType = .\$L", errorTrait.value)
-
-        if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            val httpErrorCode = shape.getTrait(HttpErrorTrait::class.java).get().code
-            writer.write("public let httpErrorCode = \$L", httpErrorCode)
-        }
+        writer.write("public var httpResponse: HttpResponse")
 
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
-        writer.write("public let isRetryable = \$L", isRetryable)
+        writer.write("public var retryable = \$L", isRetryable)
 
-        writer.write("public let serviceName = \$L", serviceId)
+        writer.write("public var type = .\$L", errorTrait.value)
+
+        sortedMembers.forEach {
+            val (memberName, memberSymbol) = byMemberShape[it]!!
+            writer.writeMemberDocs(model, it)
+            writer.write("public var \$L: \$T", memberName, memberSymbol)
+        }
     }
 }
