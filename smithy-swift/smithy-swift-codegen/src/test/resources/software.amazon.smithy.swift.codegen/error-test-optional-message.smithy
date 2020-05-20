@@ -14,5 +14,5 @@ operation DoSomething {
 
 @error("client")
 structure Err {
-    message: String,
+    message: String
 }
