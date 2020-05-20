@@ -98,7 +98,7 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         sortedMembers.forEach {
-            val (memberName, memberSymbol) = byMemberShape[it]!!
+            val (memberName, memberSymbol) = byMemberShape.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             writer.write("public let \$L: \$T", memberName, memberSymbol)
         }
@@ -107,7 +107,8 @@ class StructureGenerator(
     private fun generateInitializerForStructure() {
         writer.openBlock("public init (", ")") {
             for ((index, member) in sortedMembers.withIndex()) {
-                val (memberName, memberSymbol) = byMemberShape[member]!!
+                val (memberName, memberSymbol) = byMemberShape.getOrElse(member) { Pair(null, null) }
+                if (memberName == null || memberSymbol == null) continue
                 val terminator = if (index == sortedMembers.size - 1) "" else ","
                 writer.write("\$L: \$D$terminator", memberName, memberSymbol)
             }
@@ -115,7 +116,7 @@ class StructureGenerator(
 
         writer.openBlock("{", "}") {
             sortedMembers.forEach {
-                val (memberName, _) = byMemberShape[it]!!
+                val (memberName, _) = byMemberShape.getOrElse(it) { return@forEach }
                 writer.write("self.\$1L = \$1L", memberName)
             }
         }
@@ -178,7 +179,7 @@ class StructureGenerator(
         writer.write("public var type = .\$L", errorTrait.value)
 
         sortedMembers.forEach {
-            val (memberName, memberSymbol) = byMemberShape[it]!!
+            val (memberName, memberSymbol) = byMemberShape.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
