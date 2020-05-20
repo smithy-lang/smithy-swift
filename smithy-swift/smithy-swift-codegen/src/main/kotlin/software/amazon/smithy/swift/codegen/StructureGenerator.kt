@@ -21,6 +21,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
 class StructureGenerator(
@@ -30,14 +31,14 @@ class StructureGenerator(
     private val shape: StructureShape
 ) {
 
-    private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
-    private var byMemberShape: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
+    private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
+    private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
 
     init {
-        for (member in sortedMembers) {
+        for (member in membersSortedByName) {
             val memberName = symbolProvider.toMemberName(member)
             val memberSymbol = symbolProvider.toSymbol(member)
-            byMemberShape[member] = Pair(memberName, memberSymbol)
+            memberShapeDataContainer[member] = Pair(memberName, memberSymbol)
         }
     }
 
@@ -97,8 +98,8 @@ class StructureGenerator(
     }
 
     private fun generateStructMembers() {
-        sortedMembers.forEach {
-            val (memberName, memberSymbol) = byMemberShape.getOrElse(it) { return@forEach }
+        membersSortedByName.forEach {
+            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             writer.write("public let \$L: \$T", memberName, memberSymbol)
         }
@@ -106,17 +107,17 @@ class StructureGenerator(
 
     private fun generateInitializerForStructure() {
         writer.openBlock("public init (", ")") {
-            for ((index, member) in sortedMembers.withIndex()) {
-                val (memberName, memberSymbol) = byMemberShape.getOrElse(member) { Pair(null, null) }
+            for ((index, member) in membersSortedByName.withIndex()) {
+                val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                 if (memberName == null || memberSymbol == null) continue
-                val terminator = if (index == sortedMembers.size - 1) "" else ","
+                val terminator = if (index == membersSortedByName.size - 1) "" else ","
                 writer.write("\$L: \$D$terminator", memberName, memberSymbol)
             }
         }
 
         writer.openBlock("{", "}") {
-            sortedMembers.forEach {
-                val (memberName, _) = byMemberShape.getOrElse(it) { return@forEach }
+            membersSortedByName.forEach {
+                val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                 writer.write("self.\$1L = \$1L", memberName)
             }
         }
@@ -161,25 +162,36 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        writer.openBlock("public struct \$struct.name:L: HttpOperationError {")
+        var errorProtocol = "UnknwonError" // just a placeholder for now
+        if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
+            errorProtocol = "HttpOperationError"
+        }
+        writer.putContext("error.protocol", errorProtocol)
+
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
             .closeBlock("}")
             .write("")
+
+        writer.removeContext("error.protocol")
     }
 
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
-        writer.write("public var httpResponse: HttpResponse")
+
+        if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
+            writer.write("public var httpResponse: HttpResponse")
+        }
 
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
         writer.write("public var retryable = \$L", isRetryable)
 
         writer.write("public var type = .\$L", errorTrait.value)
 
-        sortedMembers.forEach {
-            val (memberName, memberSymbol) = byMemberShape.getOrElse(it) { return@forEach }
+        membersSortedByName.forEach {
+            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
