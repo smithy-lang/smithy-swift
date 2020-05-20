@@ -29,5 +29,5 @@ interface HttpClientEngine {
     /**
      * Shutdown and cleanup any resources
      */
-    fun close()
+    fun close() { return }
 }

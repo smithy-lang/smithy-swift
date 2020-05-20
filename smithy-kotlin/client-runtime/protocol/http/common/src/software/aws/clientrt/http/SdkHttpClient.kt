@@ -22,8 +22,14 @@ import software.aws.clientrt.http.engine.HttpClientEngine
  * **NOTE**: This is not a general purpose HTTP client. It is meant for generated SDK use.
  */
 class SdkHttpClient(
-    val engine: HttpClientEngine
+    val engine: HttpClientEngine,
+    val config: HttpClientConfig
 ) {
+
+    init {
+        // wire up the features
+        config.install(this)
+    }
 
     /**
      * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [HttpRequest]
