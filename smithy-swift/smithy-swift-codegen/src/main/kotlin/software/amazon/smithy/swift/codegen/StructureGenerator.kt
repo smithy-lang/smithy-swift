@@ -162,7 +162,7 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        var errorProtocol = "UnknwonError" // just a placeholder for now
+        var errorProtocol = "OperationError" // just a placeholder for now
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
             errorProtocol = "HttpOperationError"
         }
