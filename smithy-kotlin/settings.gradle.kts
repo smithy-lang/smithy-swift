@@ -9,3 +9,5 @@ include(":client-runtime:client-rt-core")
 include(":client-runtime:utils")
 include(":client-runtime:io")
 include(":client-runtime:protocol:http")
+
+include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")

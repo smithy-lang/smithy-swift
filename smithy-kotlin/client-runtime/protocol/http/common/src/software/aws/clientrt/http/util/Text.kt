@@ -44,7 +44,6 @@ const val upperHex: String = "0123456789ABCDEF"
 
 // $2.1 Percent-Encoding
 private fun Byte.percentEncode(): String = buildString(3) {
-    // 0xFF
     val code = toInt() and 0xff
     append('%')
     append(upperHex[code shr 4])

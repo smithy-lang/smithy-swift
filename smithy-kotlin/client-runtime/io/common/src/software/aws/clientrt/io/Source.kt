@@ -33,9 +33,9 @@ interface Source {
     val isClosedForWrite: Boolean
 
     /**
-     * Removes at least 1, and up to [requested] bytes from this and appends them to sink. Returns the number of bytes read, or -1 if this source is exhausted.
+     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream into memory.
      */
-    suspend fun read(sink: ByteArray, requested: Int): Int
+    suspend fun readAll(): ByteArray
 
     /**
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough bytes available.
