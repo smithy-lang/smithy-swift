@@ -18,6 +18,8 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.response.HttpResponse
 
 class TestFeature(val name: String) : Feature {
 

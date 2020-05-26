@@ -19,6 +19,12 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequestPipeline
+import software.aws.clientrt.http.request.PreparedHttpRequest
+import software.aws.clientrt.http.request.ResponseTransformFailed
+import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.HttpResponsePipeline
 
 class PreparedHttpRequestTest {
 

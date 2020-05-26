@@ -12,8 +12,12 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.http
+package software.aws.clientrt.http.request
 import kotlin.reflect.KClass
+import software.aws.clientrt.http.SdkHttpClient
+import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.HttpResponseContext
+import software.aws.clientrt.http.response.TypeInfo
 
 /**
  * A prepared HTTP request for a client to execute. This does nothing until the [execute] method is called.

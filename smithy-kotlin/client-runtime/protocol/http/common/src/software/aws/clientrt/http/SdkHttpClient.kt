@@ -15,6 +15,10 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequestPipeline
+import software.aws.clientrt.http.request.PreparedHttpRequest
+import software.aws.clientrt.http.response.HttpResponsePipeline
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it

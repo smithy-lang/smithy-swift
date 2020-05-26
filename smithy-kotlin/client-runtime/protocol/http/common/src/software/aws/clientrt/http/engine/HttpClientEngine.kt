@@ -14,8 +14,8 @@
  */
 package software.aws.clientrt.http.engine
 
-import software.aws.clientrt.http.HttpRequestBuilder
-import software.aws.clientrt.http.HttpResponse
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.response.HttpResponse
 
 /**
  * Functionality a real HTTP client must provide

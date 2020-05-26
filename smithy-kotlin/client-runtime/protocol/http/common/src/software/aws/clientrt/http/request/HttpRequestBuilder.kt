@@ -12,7 +12,12 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.http
+package software.aws.clientrt.http.request
+
+import software.aws.clientrt.http.HeadersBuilder
+import software.aws.clientrt.http.HttpBody
+import software.aws.clientrt.http.HttpMethod
+import software.aws.clientrt.http.UrlBuilder
 
 /**
  * Used to construct an HTTP request

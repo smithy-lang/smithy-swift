@@ -14,12 +14,19 @@
  */
 package software.aws.clientrt.http
 
+import io.ktor.util.pipeline.PipelineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequestPipeline
+import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.HttpResponseContext
+import software.aws.clientrt.http.response.HttpResponsePipeline
+import software.aws.clientrt.http.response.TypeInfo
 
 // Coroutine builders like `runBlocking` are only available on a specific platform
-class MiddlewareTest {
+class PipelineTest {
 
     @Test
     fun `request pipeline runs`() = runBlocking {
@@ -46,5 +53,23 @@ class MiddlewareTest {
         )
         val result = pipeline.execute(HttpResponseContext(response, TypeInfo(Int::class)), 0)
         assertEquals(3, result as Int)
+    }
+
+    @Test
+    fun `free functions can be used`() = runBlocking {
+        val pipeline = HttpResponsePipeline()
+
+        suspend fun freeFunc(ctx: PipelineContext<Any, HttpResponseContext>) {
+            ctx.proceedWith((ctx.subject as Int) + 1)
+        }
+        pipeline.interceptFn(HttpResponsePipeline.Receive, ::freeFunc)
+        val response = HttpResponse(
+            HttpStatusCode.OK,
+            Headers {},
+            HttpBody.Empty,
+            HttpRequestBuilder().build()
+        )
+        val result = pipeline.execute(HttpResponseContext(response, TypeInfo(Int::class)), 0)
+        assertEquals(1, result as Int)
     }
 }

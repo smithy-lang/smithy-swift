@@ -23,10 +23,10 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.readBytes
 import io.ktor.utils.io.readRemaining
 import software.aws.clientrt.http.HttpBody
-import software.aws.clientrt.http.HttpRequest
-import software.aws.clientrt.http.HttpRequestBuilder
-import software.aws.clientrt.http.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.http.HttpStatusCode
+import software.aws.clientrt.http.request.HttpRequest
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.io.Source
 
 // convert Sdk Http request buidler to equivalent Ktor abstraction

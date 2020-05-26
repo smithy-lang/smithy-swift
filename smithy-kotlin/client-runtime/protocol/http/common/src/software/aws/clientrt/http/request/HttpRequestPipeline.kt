@@ -12,10 +12,10 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.http
+package software.aws.clientrt.http.request
 
-import software.aws.clientrt.http.util.MiddlewareStack
 import software.aws.clientrt.http.util.Phase
+import software.aws.clientrt.http.util.Pipeline
 
 /**
  * Request pipeline that can be hooked into to transform an input into an [HttpRequestBuilder] instance
@@ -24,7 +24,7 @@ import software.aws.clientrt.http.util.Phase
  * The subject always starts as the input to transform to an outgoing [HttpRequest]. It is the expectation
  * that the pipeline is configured in a way to make the desired transformation happen.
  */
-class HttpRequestPipeline : MiddlewareStack<Any, HttpRequestBuilder>(Initialize, Transform, Finalize) {
+class HttpRequestPipeline : Pipeline<Any, HttpRequestBuilder>(Initialize, Transform, Finalize) {
     companion object {
         /**
          * Any pre-flight checks. Validate inputs, set defaults, etc.

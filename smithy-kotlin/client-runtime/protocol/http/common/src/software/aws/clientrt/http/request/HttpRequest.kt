@@ -12,26 +12,19 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.http
+package software.aws.clientrt.http.request
+
+import software.aws.clientrt.http.Headers
+import software.aws.clientrt.http.HttpBody
+import software.aws.clientrt.http.HttpMethod
+import software.aws.clientrt.http.Url
 
 /**
- * Immutable container for an HTTP response
- *
- * @property [status] response status code
- * @property [headers] response headers
- * @property [body] response body content
- * @property [request] the original request
+ * Immutable representation of an HTTP request
  */
-data class HttpResponse(
-    val status: HttpStatusCode,
+data class HttpRequest(
+    val method: HttpMethod,
+    val url: Url,
     val headers: Headers,
-    val body: HttpBody,
-    val request: HttpRequest
-) {
-    // TODO -
-    // val responseTime: Date
-    //     get() = ...
-
-    // val requestTime: Date
-    //     get() = ...
-}
+    val body: HttpBody
+)

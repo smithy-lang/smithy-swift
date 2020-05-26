@@ -14,7 +14,7 @@
  */
 package software.aws.clientrt.http.util
 
-import io.ktor.util.pipeline.Pipeline
+import io.ktor.util.pipeline.Pipeline as KtorPipeline
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelinePhase
 
@@ -24,7 +24,7 @@ typealias Phase = PipelinePhase
 /**
  *
  */
-open class MiddlewareStack<TSubject : Any, TContext : Any>(vararg phases: PipelinePhase) : Pipeline<TSubject, TContext>(*phases) {
+open class Pipeline<TSubject : Any, TContext : Any>(vararg phases: PipelinePhase) : KtorPipeline<TSubject, TContext>(*phases) {
 
     /**
      * Extension to intercept using a free function rather than a lambda with receiver

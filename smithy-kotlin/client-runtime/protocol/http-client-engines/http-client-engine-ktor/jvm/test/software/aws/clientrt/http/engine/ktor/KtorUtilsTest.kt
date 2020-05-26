@@ -31,6 +31,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.content.ByteArrayContent
+import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.header
+import software.aws.clientrt.http.request.headers
+import software.aws.clientrt.http.request.url
 
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall

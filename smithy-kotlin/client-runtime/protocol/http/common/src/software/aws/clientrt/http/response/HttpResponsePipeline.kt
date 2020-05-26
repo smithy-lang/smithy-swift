@@ -12,11 +12,11 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.http
+package software.aws.clientrt.http.response
 
 import kotlin.reflect.KClass
-import software.aws.clientrt.http.util.MiddlewareStack
 import software.aws.clientrt.http.util.Phase
+import software.aws.clientrt.http.util.Pipeline
 
 /**
  * Container for desired output type info
@@ -40,7 +40,7 @@ data class HttpResponseContext(val response: HttpResponse, val want: TypeInfo, v
  * The subject always starts as the response. It is the expectation that the pipeline is configured
  * in a way to make the desired transformation happen.
  */
-class HttpResponsePipeline : MiddlewareStack<Any, HttpResponseContext>(Receive, Transform, Finalize) {
+class HttpResponsePipeline : Pipeline<Any, HttpResponseContext>(Receive, Transform, Finalize) {
 
     companion object {
         /**
