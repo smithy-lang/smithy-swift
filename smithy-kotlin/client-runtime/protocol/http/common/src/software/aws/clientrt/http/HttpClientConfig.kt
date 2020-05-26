@@ -14,8 +14,6 @@
  */
 package software.aws.clientrt.http
 
-import software.aws.clientrt.http.engine.HttpClientEngine
-
 /**
  * Dsl marker for [SdkHttpClient] dsl.
  */
@@ -47,16 +45,4 @@ class HttpClientConfig {
     fun install(client: SdkHttpClient) {
         features.values.forEach { it.install(client) }
     }
-}
-
-/**
- * Create an [SdkHttpClient] and configure it
- */
-@HttpClientDsl
-fun sdkHttpClient(
-    engine: HttpClientEngine,
-    configure: HttpClientConfig.() -> Unit
-): SdkHttpClient {
-    val config = HttpClientConfig().apply(configure)
-    return SdkHttpClient(engine, config)
 }

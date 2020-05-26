@@ -14,8 +14,24 @@
  */
 package software.aws.clientrt.http
 
+import kotlin.reflect.KClass
 import software.aws.clientrt.http.util.MiddlewareStack
 import software.aws.clientrt.http.util.Phase
+
+/**
+ * Container for desired output type info
+ */
+data class TypeInfo(val classz: KClass<*>)
+
+/**
+ * A container for the HttpResponsePipeline context parameter
+ *
+ * @property response The raw HTTP response container
+ * @property want Type information about the desired output type
+ * @property userContext (Optional) user data passed to the response pipeline that features can choose to take
+ * advantage of.
+ */
+data class HttpResponseContext(val response: HttpResponse, val want: TypeInfo, val userContext: Any? = null)
 
 /**
  * Response pipeline that can be hooked into to transform an [HttpResponse] into an instance
@@ -24,7 +40,7 @@ import software.aws.clientrt.http.util.Phase
  * The subject always starts as the response. It is the expectation that the pipeline is configured
  * in a way to make the desired transformation happen.
  */
-class HttpResponsePipeline : MiddlewareStack<Any, HttpResponse>(Receive, Transform, Finalize) {
+class HttpResponsePipeline : MiddlewareStack<Any, HttpResponseContext>(Receive, Transform, Finalize) {
 
     companion object {
         /**

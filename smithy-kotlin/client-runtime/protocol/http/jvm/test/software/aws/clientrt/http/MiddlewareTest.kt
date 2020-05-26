@@ -44,7 +44,7 @@ class MiddlewareTest {
             HttpBody.Empty,
             HttpRequestBuilder().build()
         )
-        val result = pipeline.execute(response, 0)
+        val result = pipeline.execute(HttpResponseContext(response, TypeInfo(Int::class)), 0)
         assertEquals(3, result as Int)
     }
 }

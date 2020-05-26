@@ -17,6 +17,18 @@ package software.aws.clientrt.http
 import software.aws.clientrt.http.engine.HttpClientEngine
 
 /**
+ * Create an [SdkHttpClient] with the given engine, and optionally configure it
+ */
+@HttpClientDsl
+fun sdkHttpClient(
+    engine: HttpClientEngine,
+    configure: HttpClientConfig.() -> Unit = {}
+): SdkHttpClient {
+    val config = HttpClientConfig().apply(configure)
+    return SdkHttpClient(engine, config)
+}
+
+/**
  * An HTTP client capable of round tripping requests and responses
  *
  * **NOTE**: This is not a general purpose HTTP client. It is meant for generated SDK use.
@@ -48,3 +60,17 @@ class SdkHttpClient(
         engine.close()
     }
 }
+
+/**
+ * Make an HTTP request with the given input type. The input type is expected to be transformable by the request
+ * pipeline. The output type [TResponse] is expected to be producible by the response pipeline.
+ */
+suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(input: Any, responseContext: Any? = null): TResponse =
+    PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).execute()
+
+/**
+ * Make an HTTP request using the given [HttpRequestBuilder]. The body of the request builder will be used as the
+ * subject of the request pipeline.
+ */
+suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(builder: HttpRequestBuilder, responseContext: Any? = null): TResponse =
+    PreparedHttpRequest(this, builder, userContext = responseContext).execute()
