@@ -12,13 +12,13 @@ kotlin {
                 implementation(project(":client-runtime:utils"))
                 implementation(project(":client-runtime:io"))
                 // for Pipeline abstraction which already supports suspend functions
-                implementation("io.ktor:ktor-utils:$ktorVersion")
+                api("io.ktor:ktor-utils:$ktorVersion")
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("io.ktor:ktor-utils-jvm:$ktorVersion")
+                api("io.ktor:ktor-utils-jvm:$ktorVersion")
             }
         }
     }

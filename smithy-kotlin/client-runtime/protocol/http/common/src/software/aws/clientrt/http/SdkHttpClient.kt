@@ -42,11 +42,6 @@ class SdkHttpClient(
     val config: HttpClientConfig
 ) {
 
-    init {
-        // wire up the features
-        config.install(this)
-    }
-
     /**
      * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [HttpRequest]
      */
@@ -56,6 +51,11 @@ class SdkHttpClient(
      * Response pipeline. Responsible for transforming [HttpResponse] to the expected type
      */
     val responsePipeline = HttpResponsePipeline()
+
+    init {
+        // wire up the features
+        config.install(this)
+    }
 
     /**
      * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
