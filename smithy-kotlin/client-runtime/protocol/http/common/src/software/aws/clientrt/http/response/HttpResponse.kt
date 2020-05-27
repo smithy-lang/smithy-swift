@@ -33,7 +33,7 @@ data class HttpResponse(
     val body: HttpBody,
     val request: HttpRequest
 ) {
-    // TODO -
+    // TODO - can't implement until we decide on a datetime implementation
     // val responseTime: Date
     //     get() = ...
 

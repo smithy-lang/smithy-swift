@@ -52,11 +52,4 @@ interface Source {
      */
     fun cancel(cause: Throwable?): Boolean
 
-    companion object {
-        /**
-         * Creates an empty byte stream Source
-         */
-        // FIXME - need actual implementation
-//        val Empty: Source by lazy { BufferChannel() }
-    }
 }
