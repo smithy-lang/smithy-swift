@@ -51,5 +51,4 @@ interface Source {
      * Close channel with optional cause cancellation
      */
     fun cancel(cause: Throwable?): Boolean
-
 }
