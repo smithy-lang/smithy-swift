@@ -29,7 +29,7 @@ import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.io.Source
 
-// convert Sdk Http request buidler to equivalent Ktor abstraction
+// convert Sdk HttpRequestBuilder to equivalent Ktor abstraction
 fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
