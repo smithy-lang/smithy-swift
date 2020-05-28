@@ -68,7 +68,9 @@ class PreparedHttpRequestTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
                 val req = requestBuilder.build()
-                val headers = Headers {}
+                val headers = Headers {
+                    append("x-foo", "bar")
+                }
                 val body = HttpBody.Empty
                 return HttpResponse(
                     HttpStatusCode.OK,
@@ -94,6 +96,7 @@ class PreparedHttpRequestTest {
         } catch (ex: ResponseTransformFailed) {
             ex.message.shouldContain("Response transform failed: class kotlin.Int -> class")
             ex.message.shouldContain("200: OK")
+            ex.message.shouldContain("x-foo: [bar]")
         }
 
         return@runBlocking Unit
