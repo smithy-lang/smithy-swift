@@ -24,11 +24,13 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.close
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.io.Source
 
 // streaming buffer size. The SDK stream is copied in chunks of this size to the output Ktor ByteReadChannel.
 // Too small and we risk too many context switches, too large and we waste memory and (if large enough) become
@@ -79,23 +81,32 @@ internal class KtorRequestAdapter(
                 val channel = ByteChannel()
 
                 // launch a coroutine to deal with filling the channel, it will be tied to the `callContext`
-                GlobalScope.launch(callContext + Dispatchers.IO) {
-                    // TODO - consider a buffer pool here
-                    val buffer = ByteBuffer.allocate(BUFFER_SIZE)
-                    while (!source.isClosedForRead) {
-                        // fill the buffer by reading chunks from the underlying source
-                        while (source.readAvailable(buffer) != -1 && buffer.remaining() > 0) {}
-                        buffer.flip()
-
-                        // propagate it to the channel
-                        channel.writeFully(buffer)
-                        channel.flush()
-                        buffer.clear()
+                val ctx = callContext + Dispatchers.IO + CoroutineName("sdk-to-ktor-stream-proxy")
+                GlobalScope.launch(ctx) {
+                    try {
+                        forwardSource(channel, source)
+                        channel.close()
+                    } catch (ex: Exception) {
+                        // propagate the cause
+                        channel.close(ex)
                     }
-
-                    channel.close()
                 }
                 return channel
+            }
+
+            private suspend fun forwardSource(dst: ByteChannel, source: Source) {
+                // TODO - consider a buffer pool here
+                val buffer = ByteBuffer.allocate(BUFFER_SIZE)
+                while (!source.isClosedForRead) {
+                    // fill the buffer by reading chunks from the underlying source
+                    while (source.readAvailable(buffer) != -1 && buffer.remaining() > 0) {}
+                    buffer.flip()
+
+                    // propagate it to the channel
+                    dst.writeFully(buffer)
+                    dst.flush()
+                    buffer.clear()
+                }
             }
         }
     }
