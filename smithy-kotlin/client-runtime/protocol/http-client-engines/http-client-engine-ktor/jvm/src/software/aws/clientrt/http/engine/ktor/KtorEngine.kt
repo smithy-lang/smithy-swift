@@ -15,9 +15,11 @@
 package software.aws.clientrt.http.engine.ktor
 
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.callContext
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
+import kotlin.coroutines.coroutineContext
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.request.HttpRequestBuilder
@@ -36,7 +38,8 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     }
 
     override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): SdkHttpResponse {
-        val builder = requestBuilder.toKtorRequestBuilder()
+        val callContext = coroutineContext
+        val builder = KtorRequestAdapter(requestBuilder, callContext).toBuilder()
         // FIXME - this will not handle streaming bodies correctly. We will have to make a call based off
         // the expected response and figure out what to do from there. Likely wrapping the response in a coroutine
         // that reads from the underlying stream and forwards it to our own stream. Or always attempting to get a streaming

@@ -13,12 +13,10 @@
  * permissions and limitations under the License.
  */
 package software.aws.clientrt.http.engine.ktor
-import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.statement.HttpResponse
-import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 import io.ktor.http.*
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
@@ -30,9 +28,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.request.header
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
 
@@ -80,29 +76,6 @@ class KtorUtilsTest {
         actual.url.parameters.getAll("baz")!!.shouldContainAll("qux", "waldo")
         assertEquals("v1", actual.headers["h1"]!!)
         actual.headers.getAll("h2")!!.shouldContainAll("v2", "v3")
-    }
-
-    @Test
-    fun `it strips Content-Type header`() {
-        val builder = HttpRequestBuilder()
-        builder.url { host = "test.aws.com" }
-        builder.header("Content-Type", "application/json")
-        val actual = builder.toKtorRequestBuilder().build()
-        actual.headers.contains("Content-Type").shouldBeFalse()
-    }
-
-    @Test
-    fun `it converts HttpBody variant Bytes`() {
-        val builder = HttpRequestBuilder()
-        builder.url { host = "test.aws.com" }
-        builder.header("Content-Type", "application/json")
-        val content = "testing".toByteArray()
-        builder.body = ByteArrayContent(content)
-        val actual = builder.toKtorRequestBuilder().build()
-        actual.headers.contains("Content-Type").shouldBeFalse()
-        assertEquals(ContentType.Application.Json, actual.body.contentType)
-        val convertedBody = actual.body as KtorByteArrayContent
-        assertEquals(content, convertedBody.bytes())
     }
 
     @Test
