@@ -29,7 +29,7 @@ class JsonSerializerTest {
 
     @Test
     fun `check close is idempotent`() {
-        val writer = JsonSerializer()
+        val writer = JsonStreamWriter()
         writer.beginObject()
         writer.writeName("id")
         writer.writeValue(912345678901)
@@ -44,11 +44,11 @@ val expectedIdempotent = """{
 }"""
 
 fun writeJsonStream(messages: List<Message>): ByteArray {
-    val writer = JsonSerializer()
+    val writer = JsonStreamWriter()
     return writeMessagesArray(writer, messages)
 }
 
-fun writeMessagesArray(writer: JsonSerializer, messages: List<Message>): ByteArray {
+fun writeMessagesArray(writer: JsonStreamWriter, messages: List<Message>): ByteArray {
     writer.beginArray()
     for (message in messages) {
         writeMessage(writer, message)
@@ -57,7 +57,7 @@ fun writeMessagesArray(writer: JsonSerializer, messages: List<Message>): ByteArr
     return writer.bytes
 }
 
-fun writeMessage(writer: JsonSerializer, message: Message) {
+fun writeMessage(writer: JsonStreamWriter, message: Message) {
     writer.beginObject()
     writer.writeName("id")
     writer.writeValue(message.id)
@@ -75,7 +75,7 @@ fun writeMessage(writer: JsonSerializer, message: Message) {
     writer.endObject()
 }
 
-fun writeUser(writer: JsonSerializer, user: User) {
+fun writeUser(writer: JsonStreamWriter, user: User) {
     writer.beginObject()
     writer.writeName("name")
     writer.writeValue(user.name)
@@ -84,7 +84,7 @@ fun writeUser(writer: JsonSerializer, user: User) {
     writer.endObject()
 }
 
-fun writeDoublesArray(writer: JsonSerializer, doubles: Array<Double>?) {
+fun writeDoublesArray(writer: JsonStreamWriter, doubles: Array<Double>?) {
     writer.beginArray()
     if (doubles != null) {
         for (value in doubles) {
