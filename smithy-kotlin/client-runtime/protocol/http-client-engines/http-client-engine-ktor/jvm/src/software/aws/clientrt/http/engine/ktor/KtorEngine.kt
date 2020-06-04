@@ -66,16 +66,26 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
                     requestBuilder.build()
                 )
 
+                println("(${Thread.currentThread().name}) ktor engine: signalling response")
                 // signal that the resp is now ready and can be forwarded to the sdk client
                 waiter.signal()
 
+                // FIXME - this whole setup might need rethought, this has the potential to easily leak coroutines
+                //         if the response body isn't consumed completely and triggers the onClose() of KtorContentStream to be called
+                //         Not to mention some responses don't have a response body in which case how do we signal? and
+                //         what if you read the body BEFORE consuming things that come from HttpResponse (e.g. headers).
+                //         (the HttpResponse instance is only valid until the end of the block as well).
+                println("(${Thread.currentThread().name}) ktor engine: waiting on body to be consumed")
                 // wait for the receiving end to finish with these resources
                 waiter.wait()
+                println("(${Thread.currentThread().name}) ktor engine: request done")
             }
         }
 
         // wait for the response to be available, the content will be read as a stream
+        println("(${Thread.currentThread().name}) ktor engine: waiting on response to be available")
         waiter.wait()
+        println("(${Thread.currentThread().name}) ktor engine: response is available continuing")
 
         return resp!!
     }

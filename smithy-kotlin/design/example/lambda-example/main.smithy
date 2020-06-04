@@ -6,7 +6,6 @@ use smithy.test#httpResponseTests
 use aws.protocols#awsJson1_1
 
 
-@paginated(inputToken: "nextToken", outputToken: "nextToken", pageSize: "pageSize")
 @awsJson1_1
 service Lambda {
     version: "2015-03-31",

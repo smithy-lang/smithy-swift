@@ -78,7 +78,7 @@ fun Application.module() {
             call.respondText(responsePayload, ContentType.Application.Json)
         }
 
-        post("/putObject/{bucket}/{key}") {
+        put("/putObject/{bucket}/{key}") {
             val bucket = call.parameters["bucket"]
             val key = call.parameters["key"]
             println("putObject - bucket: $bucket; key: $key")
@@ -87,6 +87,12 @@ fun Application.module() {
             val content = stream.bufferedReader().use { it.readText() }
             println("received: $content")
             stream.close()
+            call.response.headers.apply {
+                append("ETag", "e-tag")
+                append("X-Amz-Expiration", "2022-08-22")
+                append("X-Amz-Request-Charged", "request charged")
+                append("x-amz-version-id", "2")
+            }
             call.respond(HttpStatusCode.OK)
         }
 

@@ -22,12 +22,17 @@ import com.amazonaws.service.s3.model.GetObjectRequest
 import com.amazonaws.service.s3.model.GetObjectResponse
 import com.amazonaws.service.s3.model.PutObjectRequest
 import com.amazonaws.service.s3.model.PutObjectResponse
+import com.amazonaws.service.s3.transform.PutObjectRequestSerializer
+import com.amazonaws.service.s3.transform.PutObjectResponseDeserializer
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import software.aws.clientrt.content.ByteStream
 import software.aws.clientrt.http.Protocol
 import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.request.HttpRequestPipeline
+import software.aws.clientrt.http.roundTrip
 import software.aws.clientrt.http.sdkHttpClient
 
 
@@ -45,13 +50,14 @@ class S3Client: SdkClient {
             }
         }
         client.requestPipeline.intercept(HttpRequestPipeline.Initialize) {
-            context.url.scheme = Protocol.HTTPS
-            context.url.host = "8tc2zgzns1.execute-api.us-east-2.amazonaws.com"
+            context.url.scheme = Protocol.HTTP
+            context.url.host = "127.0.0.1"
+            context.url.port = 8000
         }
     }
 
     suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
-        TODO()
+        return client.roundTrip(PutObjectRequestSerializer(input), PutObjectResponseDeserializer())
     }
 
 
@@ -107,6 +113,19 @@ class S3Client: SdkClient {
 fun main() = runBlocking{
 
     val service = S3Client()
-
-    val request = GetObjectRequest {}
+    val putRequest = PutObjectRequest{
+        body = ByteStream.fromString("my bucket content") 
+        bucket = "my-bucket"
+        key = "config.txt"
+        contentType = "application/text"
+    }
+    val job = launch {
+        val putObjResp = service.putObject(putRequest)
+        println("PutObjectResponse")
+        println(putObjResp)
+    }
+    
+    job.join()
+    
+    println("exiting main")
 }
