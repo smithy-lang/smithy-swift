@@ -18,7 +18,7 @@ import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class JsonSerializerTest {
+class JsonStreamWriterTest {
 
     @Test
     fun `check json serializes correctly with wrapper`() {
@@ -29,7 +29,7 @@ class JsonSerializerTest {
 
     @Test
     fun `check close is idempotent`() {
-        val writer = HumanReadableJsonStreamWriter()
+        val writer = JsonStreamWriter(true)
         writer.beginObject()
         writer.writeName("id")
         writer.writeValue(912345678901)
@@ -56,7 +56,7 @@ val expectedIdempotent = """{
 val expectedNoIndent = """{"id":912345678901}"""
 
 fun writeJsonStream(messages: List<Message>): ByteArray? {
-    val writer = HumanReadableJsonStreamWriter()
+    val writer = JsonStreamWriter(true)
     return writeMessagesArray(writer, messages)
 }
 
