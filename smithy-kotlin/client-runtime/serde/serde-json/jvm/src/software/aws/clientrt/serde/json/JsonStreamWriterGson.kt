@@ -25,7 +25,7 @@ import software.aws.clientrt.serde.json.exception.JsonGenerationException
  * Thin wrapper around Gson's JSON generator. Uses the gson.stream library's JsonWriter.
  * https://www.javadoc.io/doc/com.google.code.gson/gson/latest/com.google.gson/com/google/gson/stream/JsonWriter.html
  */
-private class JsonStreamWriterGson(pretty : Boolean) : JsonStreamWriter {
+private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
     private val DEFAULT_BUFFER_SIZE = 1024
     private val baos: ByteArrayOutputStream = ByteArrayOutputStream(DEFAULT_BUFFER_SIZE)
 
