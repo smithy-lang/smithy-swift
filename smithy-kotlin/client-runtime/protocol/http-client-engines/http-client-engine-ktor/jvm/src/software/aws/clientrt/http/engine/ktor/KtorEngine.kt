@@ -18,16 +18,22 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
+import software.aws.clientrt.http.Headers
+import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
+import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
+import software.aws.clientrt.http.response.HttpResponsePipeline
 
 /**
  * JVM [HttpClientEngine] backed by Ktor
@@ -43,55 +49,91 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
 
     override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): SdkHttpResponse {
         val callContext = coroutineContext
-        val builder = KtorRequestAdapter(requestBuilder, callContext).toBuilder()
 
-        val waiter = Waiter()
-        var resp: SdkHttpResponse? = null
+        val respChannel = Channel<SdkHttpResponse>(Channel.RENDEZVOUS)
 
-        // run the request in another coroutine
+        // run the request in another coroutine to allow streaming body to be handled
         GlobalScope.launch(callContext + Dispatchers.IO) {
-            client.request<HttpStatement>(builder).execute { httpResp ->
-                // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
-                // until the end of this block. We don't know if the consumer wants to read the content fully or
-                // stream it. We need to wait until the entire content has been read before leaving the block and
-                // releasing the underlying network resources...
-
-                // when the body has been read fully we will signal again which allows the block to exit
-                val body = KtorHttpBody(httpResp.content) { waiter.signal() }
-
-                resp = SdkHttpResponse(
-                    HttpStatusCode.fromValue(httpResp.status.value),
-                    KtorHeaders(httpResp.headers),
-                    body,
-                    requestBuilder.build()
-                )
-
-                println("(${Thread.currentThread().name}) ktor engine: signalling response")
-                // signal that the resp is now ready and can be forwarded to the sdk client
-                waiter.signal()
-
-                // FIXME - this whole setup might need rethought, this has the potential to easily leak coroutines
-                //         if the response body isn't consumed completely and triggers the onClose() of KtorContentStream to be called
-                //         Not to mention some responses don't have a response body in which case how do we signal? and
-                //         what if you read the body BEFORE consuming things that come from HttpResponse (e.g. headers).
-                //         (the HttpResponse instance is only valid until the end of the block as well).
-                println("(${Thread.currentThread().name}) ktor engine: waiting on body to be consumed")
-                // wait for the receiving end to finish with these resources
-                waiter.wait()
-                println("(${Thread.currentThread().name}) ktor engine: request done")
+            try {
+                execute(callContext, requestBuilder, respChannel)
+            } catch (ex: Exception) {
+                // signal the HTTP response isn't coming
+                respChannel.close(ex)
             }
         }
 
         // wait for the response to be available, the content will be read as a stream
         println("(${Thread.currentThread().name}) ktor engine: waiting on response to be available")
-        waiter.wait()
-        println("(${Thread.currentThread().name}) ktor engine: response is available continuing")
 
-        return resp!!
+        try {
+            val resp = respChannel.receive()
+            println("(${Thread.currentThread().name}) ktor engine: response is available continuing")
+            return resp
+        } catch (ex: Exception) {
+            println(ex)
+            throw ex
+        }
+    }
+
+    private suspend fun execute(
+        callContext: CoroutineContext,
+        sdkBuilder: HttpRequestBuilder,
+        channel: SendChannel<SdkHttpResponse>
+    ) {
+        val builder = KtorRequestAdapter(sdkBuilder, callContext).toBuilder()
+        val waiter = Waiter()
+        client.request<HttpStatement>(builder).execute { httpResp ->
+            // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
+            // until the end of this block. We don't know if the consumer wants to read the content fully or
+            // stream it. We need to wait until the entire content has been read before leaving the block and
+            // releasing the underlying network resources...
+
+            // when the body has been read fully we will signal which allows the current block to exit
+            val body = KtorHttpBody(httpResp.content) { waiter.signal() }
+
+            // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
+            // outside of the body content (which will signal once read that it is safe to exit the block)
+            val headers = Headers { appendAll(KtorHeaders(httpResp.headers)) }
+
+            val resp = SdkHttpResponse(
+                HttpStatusCode.fromValue(httpResp.status.value),
+                headers,
+                body,
+                sdkBuilder.build()
+            )
+
+            println("(${Thread.currentThread().name}) ktor engine: signalling response")
+            channel.send(resp)
+
+            println("(${Thread.currentThread().name}) ktor engine: waiting on body to be consumed")
+            // wait for the receiving end to finish with the HTTP body
+            waiter.wait()
+            println("(${Thread.currentThread().name}) ktor engine: request done")
+        }
     }
 
     override fun close() {
         client.close()
+    }
+
+    override fun install(client: SdkHttpClient) {
+        super.install(client)
+        client.responsePipeline.intercept(HttpResponsePipeline.Finalize) {
+            // ensure the response body is consumed and resources are released
+            val body = context.response.body
+            when (body) {
+                is HttpBody.Streaming -> {
+                    val source = body.readFrom()
+                    if (source.isClosedForRead) {
+                        // If the response is a streaming body the end user is responsible for ensuring it gets read and closed.
+                        // This either happens by reading the content or explicit cancellation. If the source
+                        // is closed we just ensure that it is cancelled (which could happen if there was no content to read).
+                        // This releases the ktor client coroutine if it was waiting for a body to be consumed
+                        source.cancel(null)
+                    }
+                }
+            }
+        }
     }
 }
 

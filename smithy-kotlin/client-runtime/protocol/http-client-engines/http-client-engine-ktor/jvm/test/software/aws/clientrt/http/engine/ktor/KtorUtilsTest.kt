@@ -116,6 +116,25 @@ class KtorUtilsTest {
     }
 
     @Test
+    fun `ktor headers are copied`() {
+        val respHeaders = Headers.build {
+            append("foo", "bar")
+            append("baz", "quux")
+            append("baz", "quz")
+        }
+
+        val wrapped = KtorHeaders(respHeaders)
+        val converted = software.aws.clientrt.http.Headers { appendAll(wrapped) }
+        assertEquals(true, converted.caseInsensitiveName)
+        assertEquals("bar", converted["foo"])
+        assertEquals(listOf("bar"), converted.getAll("foo"))
+        assertFalse(converted.isEmpty())
+        assertEquals(setOf("foo", "baz"), converted.names())
+        assertEquals(true, converted.contains("baz", "quz"))
+        assertEquals(true, converted.contains("baz"))
+    }
+
+    @Test
     fun `KtorContentStream notifies on readAll`() = runBlocking {
         val channel = ByteChannel(true)
         var called = false

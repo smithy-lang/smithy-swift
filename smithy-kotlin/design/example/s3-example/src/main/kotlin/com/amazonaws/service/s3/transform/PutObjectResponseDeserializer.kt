@@ -17,26 +17,11 @@ package com.amazonaws.service.s3.transform
 import com.amazonaws.service.runtime.Deserializer
 import com.amazonaws.service.runtime.HttpDeserialize
 import com.amazonaws.service.s3.model.PutObjectResponse
-import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.response.HttpResponse
 
 
 class PutObjectResponseDeserializer : HttpDeserialize {
     override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): Any {
-        println(response.headers.entries())
-        println(response.body.contentLength)
-        val body = response.body
-        
-        when(body) {
-            is HttpBody.Streaming -> {
-                val source = body.readFrom()
-                println(source.isClosedForRead)
-                // FIXME - without reading the content (even empty body) the ktor (sdk) engine won't exit it's waiting state
-                // source.cancel(null)
-            }
-        }
-        
-        
         return PutObjectResponse {
             eTag = response.headers["ETag"]
             expiration = response.headers["X-Amz-Expiration"]
