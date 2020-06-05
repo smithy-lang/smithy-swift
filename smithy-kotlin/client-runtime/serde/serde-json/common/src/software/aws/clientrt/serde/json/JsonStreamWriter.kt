@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.serde
+package software.aws.clientrt.serde.json
 
 /**
  * Interface for serialization. Specific formats should implement this interface according to their
@@ -99,5 +99,8 @@ interface JsonStreamWriter {
      */
     fun writeValue(value: Byte)
 
+    /**
+     * Json content will be constructed in this UTF-8 encoded byte array.
+     */
     val bytes: ByteArray?
 }

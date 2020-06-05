@@ -19,14 +19,13 @@ import java.io.BufferedWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
-import software.aws.clientrt.serde.JsonStreamWriter
 import software.aws.clientrt.serde.json.exception.JsonGenerationException
 
 /**
  * Thin wrapper around Gson's JSON generator. Uses the gson.stream library's JsonWriter.
  * https://www.javadoc.io/doc/com.google.code.gson/gson/latest/com.google.gson/com/google/gson/stream/JsonWriter.html
  */
-class JsonStreamWriter : JsonStreamWriter {
+private class JsonStreamWriterGson(humanReadable : Boolean = false) : JsonStreamWriter {
     private val DEFAULT_BUFFER_SIZE = 1024
     private val baos: ByteArrayOutputStream = ByteArrayOutputStream(DEFAULT_BUFFER_SIZE)
 
@@ -39,7 +38,9 @@ class JsonStreamWriter : JsonStreamWriter {
              */
             val bufferedWriter = BufferedWriter(OutputStreamWriter(baos, "UTF-8"))
             var jsonWriter = JsonWriter(bufferedWriter)
-            jsonWriter.setIndent("    ")
+            if (humanReadable) {
+                jsonWriter.setIndent("    ")
+            }
             jsonStreamWriter = jsonWriter
         } catch (e: IOException) {
             throw JsonGenerationException(e)
@@ -185,6 +186,8 @@ class JsonStreamWriter : JsonStreamWriter {
 }
 
 /*
-* Creates JsonStreamWriter to write Json.
+* Creates JsonStreamWriter to write Json using Gson in the background.
 */
-fun constructJsonStreamWriter(): software.aws.clientrt.serde.JsonStreamWriter = JsonStreamWriter()
+fun JsonStreamWriter(): JsonStreamWriter = JsonStreamWriterGson()
+
+fun HumanReadableJsonStreamWriter(): JsonStreamWriter = JsonStreamWriterGson(true)

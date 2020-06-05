@@ -14,6 +14,6 @@
  */
 package software.aws.clientrt.serde.json.exception
 
-import software.aws.clientrt.serde.exception.SerializationException
+import software.aws.clientrt.serde.json.exception.SerializationException
 
 class JsonGenerationException(t: Throwable) : SerializationException(t)

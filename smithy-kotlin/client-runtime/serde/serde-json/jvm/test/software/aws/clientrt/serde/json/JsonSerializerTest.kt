@@ -24,18 +24,28 @@ class JsonSerializerTest {
     fun `check json serializes correctly with wrapper`() {
         val msg1 = Message(912345678901, "How do I stream JSON in Java?", null, user1)
         val msg2 = Message(912345678902, "@json_newb just use JsonWriter!", arrayOf(50.454722, -104.606667), user2)
-        assertEquals(expected, String(writeJsonStream(listOf(msg1, msg2)), Charset.defaultCharset()))
+        assertEquals(expected, writeJsonStream(listOf(msg1, msg2))?.let { String(it, Charset.defaultCharset()) })
     }
 
     @Test
     fun `check close is idempotent`() {
+        val writer = HumanReadableJsonStreamWriter()
+        writer.beginObject()
+        writer.writeName("id")
+        writer.writeValue(912345678901)
+        writer.endObject()
+        assertEquals(expectedIdempotent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
+        assertEquals(expectedIdempotent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
+    }
+
+    @Test
+    fun `check non human readable`() {
         val writer = JsonStreamWriter()
         writer.beginObject()
         writer.writeName("id")
         writer.writeValue(912345678901)
         writer.endObject()
-        assertEquals(expectedIdempotent, String(writer.bytes, Charset.defaultCharset()))
-        assertEquals(expectedIdempotent, String(writer.bytes, Charset.defaultCharset()))
+        assertEquals(expectedNoIndent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
     }
 }
 
@@ -43,12 +53,14 @@ val expectedIdempotent = """{
     "id": 912345678901
 }"""
 
-fun writeJsonStream(messages: List<Message>): ByteArray {
-    val writer = JsonStreamWriter()
+val expectedNoIndent = """{"id":912345678901}"""
+
+fun writeJsonStream(messages: List<Message>): ByteArray? {
+    val writer = HumanReadableJsonStreamWriter()
     return writeMessagesArray(writer, messages)
 }
 
-fun writeMessagesArray(writer: JsonStreamWriter, messages: List<Message>): ByteArray {
+fun writeMessagesArray(writer: JsonStreamWriter, messages: List<Message>): ByteArray? {
     writer.beginArray()
     for (message in messages) {
         writeMessage(writer, message)
