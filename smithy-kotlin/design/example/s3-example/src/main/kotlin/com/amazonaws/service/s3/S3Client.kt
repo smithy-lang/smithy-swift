@@ -135,7 +135,7 @@ fun main() = runBlocking{
     }
     println("\n\n")
     println("GetObjectRequest::Alternative 1")
-    val getObjResp1 = service.getObjectAlt1(getRequest) {
+    service.getObjectAlt1(getRequest) {
         // do whatever you need to do with resp / body
         val bytes = it.body?.toByteArray()
         println("content length: ${bytes?.size}")
