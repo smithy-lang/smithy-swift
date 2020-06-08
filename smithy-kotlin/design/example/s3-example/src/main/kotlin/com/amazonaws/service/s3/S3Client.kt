@@ -14,14 +14,13 @@
  */
 package com.amazonaws.service.s3
 
-import com.amazonaws.service.runtime.HttpSerde
-import com.amazonaws.service.runtime.JsonDeserializer
-import com.amazonaws.service.runtime.JsonSerializer
-import com.amazonaws.service.runtime.SdkClient
+import com.amazonaws.service.runtime.*
 import com.amazonaws.service.s3.model.GetObjectRequest
 import com.amazonaws.service.s3.model.GetObjectResponse
 import com.amazonaws.service.s3.model.PutObjectRequest
 import com.amazonaws.service.s3.model.PutObjectResponse
+import com.amazonaws.service.s3.transform.GetObjectRequestSerializer
+import com.amazonaws.service.s3.transform.GetObjectResponseDeserializer
 import com.amazonaws.service.s3.transform.PutObjectRequestSerializer
 import com.amazonaws.service.s3.transform.PutObjectResponseDeserializer
 import kotlinx.coroutines.launch
@@ -34,6 +33,7 @@ import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.roundTrip
 import software.aws.clientrt.http.sdkHttpClient
+import kotlin.text.decodeToString
 
 
 class S3Client: SdkClient {
@@ -60,7 +60,6 @@ class S3Client: SdkClient {
         return client.roundTrip(PutObjectRequestSerializer(input), PutObjectResponseDeserializer())
     }
 
-
     suspend fun getObjectAlt1(input: GetObjectRequest, block: suspend (GetObjectResponse) -> Unit) {
         // The advantage of this approach is clear lifetime of when the stream will be closed.
         // This is what Ktor is moving to, but to be fair their use case is a bit lower level.
@@ -79,7 +78,13 @@ class S3Client: SdkClient {
         //     field1 = "blah"
         //     field2 = "blerg"
         // }
-        TODO()
+        val response: GetObjectResponse = client.roundTrip(GetObjectRequestSerializer(input), GetObjectResponseDeserializer())
+        try {
+            block(response)
+        } finally {
+            // perform cleanup / release network resources
+            response.body?.cancel()
+        }
     }
 
     suspend fun getObjectAlt2(input: GetObjectRequest): GetObjectResponse {
@@ -97,7 +102,7 @@ class S3Client: SdkClient {
         // There will always be the (small) chance of misuse with this interface. However, I think this is my
         // personal preference to implement. It will make the entire API feel uniform vs having stream responses
         // stick out as distinct.
-        TODO()
+        return client.roundTrip(GetObjectRequestSerializer(input), GetObjectResponseDeserializer())
     }
 
     interface ResponseTransformer
@@ -119,13 +124,38 @@ fun main() = runBlocking{
         key = "config.txt"
         contentType = "application/text"
     }
-    val job = launch {
-        val putObjResp = service.putObject(putRequest)
-        println("PutObjectResponse")
-        println(putObjResp)
+
+    val putObjResp = service.putObject(putRequest)
+    println("PutObjectResponse")
+    println(putObjResp)
+
+    val getRequest = GetObjectRequest {
+        bucket = "my-bucket"
+        key = "lorem-ipsum"
     }
-    
-    job.join()
-    
+    println("\n\n")
+    println("GetObjectRequest::Alternative 1")
+    val getObjResp1 = service.getObjectAlt1(getRequest) {
+        // do whatever you need to do with resp / body
+        val bytes = it.body?.toByteArray()
+        println("content length: ${bytes?.size}")
+    }  // the response will no longer be valid at the end of this block though
+
+    println("\n\n")
+    println("GetObjectRequest::Alternative 2")
+
+    val getObjResp = service.getObjectAlt2(getRequest)
+    println("GetObjectResponse")
+
+    println("""
+    Content-Length: ${getObjResp.contentLength}
+    Content-Type: ${getObjResp.contentType}
+    Version-ID: ${getObjResp.versionId}
+    ...
+    """.trimIndent())
+
+    println("body:")
+    println(getObjResp.body?.decodeToString())
+
     println("exiting main")
 }

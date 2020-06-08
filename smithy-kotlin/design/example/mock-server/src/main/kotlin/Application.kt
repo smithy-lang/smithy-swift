@@ -41,12 +41,19 @@ fun Application.module() {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
 
-        post("/getObject") {
-            val lorenIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n"
-            val times = 5
+        get("/getObject/{Bucket}/{Key}") {
+            val bucket = call.parameters["Bucket"]
+            val key = call.parameters["Key"]
+            println("retrieving key: $key from bucket: $bucket")
+            val loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n"
+            val n = 50
+
+//            call.response.headers.apply {
+//                append("Content-Length", (n * loremIpsum.length).toString())
+//            }
             call.respondTextWriter {
-                repeat(times) {
-                    write(lorenIpsum)
+                repeat(n) {
+                    write(loremIpsum)
                     flush()
                 }
             }
