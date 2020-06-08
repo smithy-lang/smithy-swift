@@ -115,6 +115,7 @@ class S3Client: SdkClient {
 }
 
 
+@OptIn(ExperimentalStdlibApi::class)
 fun main() = runBlocking{
 
     val service = S3Client()
@@ -156,6 +157,26 @@ fun main() = runBlocking{
 
     println("body:")
     println(getObjResp.body?.decodeToString())
+
+
+    // example of reading the response body as a stream (without going through one of the
+    // provided transforms e.g. decodeToString(), toByteArray(), toFile(), etc)
+    val getObjResp2 = service.getObjectAlt2(getRequest)
+    getObjResp2.body?.let { body ->
+        val stream = body as ByteStream.Reader
+        val source = stream.readFrom()
+        // read (up to) 64 bytes at a time
+        val buffer = ByteArray(64)
+        var bytesRead = 0
+
+        while(!source.isClosedForRead) {
+            val read = source.readAvailable(buffer, 0, buffer.size)
+            val contents = buffer.decodeToString()
+            println("read: $contents")
+            if (read > 0) bytesRead += read
+        }
+        println("read total of $bytesRead bytes")
+    }
 
     println("exiting main")
 }
