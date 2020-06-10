@@ -1,0 +1,363 @@
+//
+//  XMLKeyedDecodingContainer.swift
+//  XMLCoder
+//
+// TODO:: Add copyrights
+//
+
+import Foundation
+
+// MARK: Decoding Containers
+
+struct XMLKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
+    
+    typealias Key = K
+    typealias KeyedContainer = XMLSharedContainer<XMLKeyBasedContainer>
+    typealias UnkeyedContainer = XMLSharedContainer<XMLArrayBasedContainer>
+
+    // MARK: Properties
+
+    /// A reference to the decoder we're reading from.
+    private let decoder: XMLDecoderImplementation
+
+    /// A reference to the container we're reading from.
+    private let container: KeyedContainer
+
+    /// The path of coding keys taken to get to this point in decoding.
+    public private(set) var codingPath: [CodingKey]
+
+    // MARK: - Initialization
+
+    /// Initializes `self` by referencing the given decoder and container.
+    init(
+        referencing decoder: XMLDecoderImplementation,
+        wrapping container: KeyedContainer
+    ) {
+        self.decoder = decoder
+        container.withShared {
+            $0.elements = .init($0.elements.map { (decoder.keyTransform($0), $1) })
+            $0.attributes = .init($0.attributes.map { (decoder.keyTransform($0), $1) })
+        }
+        self.container = container
+        codingPath = decoder.codingPath
+    }
+
+    // MARK: - KeyedDecodingContainerProtocol Methods
+
+    public var allKeys: [Key] {
+        let elementKeys = container.withShared { keyedBox in
+            keyedBox.elements.keys.compactMap { Key(stringValue: $0) }
+        }
+
+        let attributeKeys = container.withShared { keyedBox in
+            keyedBox.attributes.keys.compactMap { Key(stringValue: $0) }
+        }
+
+        return attributeKeys + elementKeys
+    }
+
+    public func contains(_ key: Key) -> Bool {
+        let elements = container.withShared { keyedBox in
+            keyedBox.elements[key.stringValue]
+        }
+
+        let attributes = container.withShared { keyedBox in
+            keyedBox.attributes[key.stringValue]
+        }
+
+        return !elements.isEmpty || !attributes.isEmpty
+    }
+
+    public func decodeNil(forKey key: Key) throws -> Bool {
+        let elements = container.withShared { keyedBox in
+            keyedBox.elements[key.stringValue]
+        }
+
+        let attributes = container.withShared { keyedBox in
+            keyedBox.attributes[key.stringValue]
+        }
+
+        let box = elements.first ?? attributes.first
+
+        if box is XMLSimpleKeyBasedContainer {
+            return false
+        }
+
+        return box?.isNull ?? true
+    }
+
+    public func decode<T: Decodable>(
+        _ type: T.Type, forKey key: Key
+    ) throws -> T {
+        let attributeFound = container.withShared { keyedBox in
+            !keyedBox.attributes[key.stringValue].isEmpty
+        }
+
+        let elementFound = container.withShared { keyedBox in
+            !keyedBox.elements[key.stringValue].isEmpty || keyedBox.value != nil
+        }
+
+        if let type = type as? XMLAnySequence.Type,
+            !attributeFound,
+            !elementFound,
+            let result = type.init() as? T {
+            return result
+        }
+
+        return try decodeConcrete(type, forKey: key)
+    }
+
+    public func nestedContainer<NestedKey>(
+        keyedBy _: NestedKey.Type, forKey key: Key
+    ) throws -> KeyedDecodingContainer<NestedKey> {
+        decoder.codingPath.append(key)
+        defer { decoder.codingPath.removeLast() }
+
+        let elements = self.container.withShared { keyedBox in
+            keyedBox.elements[key.stringValue]
+        }
+
+        let attributes = self.container.withShared { keyedBox in
+            keyedBox.attributes[key.stringValue]
+        }
+
+        guard let value = elements.first ?? attributes.first else {
+            throw DecodingError.keyNotFound(key, DecodingError.Context(
+                codingPath: codingPath,
+                debugDescription:
+                """
+                Cannot get \(KeyedDecodingContainer<NestedKey>.self) -- \
+                no value found for key \"\(key.stringValue)\"
+                """
+            ))
+        }
+
+        let container: XMLKeyedDecodingContainer<NestedKey>
+        if let keyedContainer = value as? KeyedContainer {
+            container = XMLKeyedDecodingContainer<NestedKey>(
+                referencing: decoder,
+                wrapping: keyedContainer
+            )
+        } else if let keyedContainer = value as? XMLKeyBasedContainer {
+            container = XMLKeyedDecodingContainer<NestedKey>(
+                referencing: decoder,
+                wrapping: XMLSharedContainer(keyedContainer)
+            )
+        } else {
+            throw DecodingError.typeMismatch(
+                at: codingPath,
+                expectation: [String: Any].self,
+                reality: value
+            )
+        }
+
+        return KeyedDecodingContainer(container)
+    }
+
+    public func nestedUnkeyedContainer(
+        forKey key: Key
+    ) throws -> UnkeyedDecodingContainer {
+        decoder.codingPath.append(key)
+        defer { decoder.codingPath.removeLast() }
+
+        let elements = container.unboxed.elements[key.stringValue]
+
+        if let containsKeyed = elements as? [XMLKeyBasedContainer], containsKeyed.count == 1, let keyed = containsKeyed.first {
+            return XMLUnkeyedDecodingContainer(
+                referencing: decoder,
+                wrapping: XMLSharedContainer(keyed.elements.map(XMLSimpleKeyBasedContainer.init))
+            )
+        } else {
+            return XMLUnkeyedDecodingContainer(
+                referencing: decoder,
+                wrapping: XMLSharedContainer(elements)
+            )
+        }
+    }
+
+    public func superDecoder() throws -> Decoder {
+        return try _superDecoder(forKey: XMLKey.super)
+    }
+
+    public func superDecoder(forKey key: Key) throws -> Decoder {
+        return try _superDecoder(forKey: key)
+    }
+}
+
+/// Private functions
+extension XMLKeyedDecodingContainer {
+    private func _errorDescription(of key: CodingKey) -> String {
+        switch decoder.options.keyDecodingStrategy {
+        case .convertFromSnakeCase:
+            // In this case we can attempt to recover the original value by
+            // reversing the transform
+//            let original = key.stringValue
+//            let converted = XMLEncoder.KeyEncodingStrategy
+//                ._convertToSnakeCase(original)
+//            if converted == original {
+//                return "\(key) (\"\(original)\")"
+//            } else {
+//                return "\(key) (\"\(original)\"), converted to \(converted)"
+//            }
+            return "TODO"
+        default:
+            // Otherwise, just report the converted string
+            return "\(key) (\"\(key.stringValue)\")"
+        }
+    }
+
+    private func decodeSignedInteger<T>(_ type: T.Type,
+                                        forKey key: Key) throws -> T
+        where T: BinaryInteger & SignedInteger & Decodable {
+        return try decodeConcrete(type, forKey: key)
+    }
+
+    private func decodeUnsignedInteger<T>(_ type: T.Type,
+                                          forKey key: Key) throws -> T
+        where T: BinaryInteger & UnsignedInteger & Decodable {
+        return try decodeConcrete(type, forKey: key)
+    }
+
+    private func decodeFloatingPoint<T>(_ type: T.Type,
+                                        forKey key: Key) throws -> T
+        where T: BinaryFloatingPoint & Decodable {
+        return try decodeConcrete(type, forKey: key)
+    }
+
+    private func decodeConcrete<T: Decodable>(
+        _ type: T.Type,
+        forKey key: Key
+    ) throws -> T {
+        guard let strategy = decoder.nodeDecodings.last else {
+            preconditionFailure(
+                """
+                Attempt to access node decoding strategy from empty stack.
+                """
+            )
+        }
+
+        let elements = container
+            .withShared { keyedBox -> [XMLContainer] in
+                keyedBox.elements[key.stringValue].map {
+                    if let singleKeyed = $0 as? XMLSimpleKeyBasedContainer {
+                        return singleKeyed.element.isNull ? singleKeyed : singleKeyed.element
+                    } else {
+                        return $0
+                    }
+                }
+            }
+
+        let attributes = container.withShared { keyedBox in
+            keyedBox.attributes[key.stringValue]
+        }
+
+        decoder.codingPath.append(key)
+        let nodeDecodings = decoder.options.nodeDecodingStrategy.nodeDecodings(
+            forType: T.self,
+            with: decoder
+        )
+        decoder.nodeDecodings.append(nodeDecodings)
+        defer {
+            _ = decoder.nodeDecodings.removeLast()
+            decoder.codingPath.removeLast()
+        }
+        let box: XMLContainer
+
+        // You can't decode sequences from attributes, but other strategies
+        // need special handling for empty sequences.
+        if strategy(key) != .attribute && elements.isEmpty,
+            let empty = (type as? XMLAnySequence.Type)?.init() as? T {
+            return empty
+        }
+
+        // If we are looking at a coding key value intrinsic where the expected type is `String` and
+        // the value is empty, return `""`.
+        if strategy(key) != .attribute, elements.isEmpty, attributes.isEmpty, type == String.self, key.stringValue == "", let emptyString = "" as? T {
+            return emptyString
+        }
+
+        switch strategy(key) {
+        case .attribute:
+            guard
+                let attributeBox = attributes.first
+            else {
+                throw DecodingError.keyNotFound(key, DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription:
+                    """
+                    No attribute found for key \(_errorDescription(of: key)).
+                    """
+                ))
+            }
+            box = attributeBox
+        case .element:
+            box = elements
+        case .elementOrAttribute:
+            guard
+                let anyBox = elements.isEmpty ? attributes.first : elements as XMLContainer?
+            else {
+                throw DecodingError.keyNotFound(key, DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription:
+                    """
+                    No attribute or element found for key \
+                    \(_errorDescription(of: key)).
+                    """
+                ))
+            }
+            box = anyBox
+        }
+
+        let value: T?
+        if !(type is XMLAnySequence.Type), let unkeyedBox = box as? XMLArrayBasedContainer,
+            let first = unkeyedBox.first {
+            // Handle case where we have held onto a `SingleKeyedBox`
+            if let singleKeyed = first as? XMLSimpleKeyBasedContainer {
+                if singleKeyed.element.isNull {
+                    value = try decoder.unbox(singleKeyed)
+                } else {
+                    value = try decoder.unbox(singleKeyed.element)
+                }
+            } else {
+                value = try decoder.unbox(first)
+            }
+        } else {
+            value = try decoder.unbox(box)
+        }
+
+        if value == nil, let type = type as? XMLAnyOptional.Type,
+            let result = type.init() as? T {
+            return result
+        }
+
+        guard let unwrapped = value else {
+            throw DecodingError.valueNotFound(type, DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription:
+                "Expected \(type) value but found null instead."
+            ))
+        }
+        return unwrapped
+    }
+
+    private func _superDecoder(forKey key: CodingKey) throws -> Decoder {
+        decoder.codingPath.append(key)
+        defer { decoder.codingPath.removeLast() }
+
+        let elements = container.withShared { keyedBox in
+            keyedBox.elements[key.stringValue]
+        }
+
+        let attributes = container.withShared { keyedBox in
+            keyedBox.attributes[key.stringValue]
+        }
+
+        let box: XMLContainer = elements.first ?? attributes.first ?? XMLNullContainer()
+        return XMLDecoderImplementation(
+            referencing: box,
+            options: decoder.options,
+            nodeDecodings: decoder.nodeDecodings,
+            codingPath: decoder.codingPath
+        )
+    }
+}
