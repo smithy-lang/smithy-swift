@@ -1,23 +1,20 @@
 //
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+//  StreamingProvider.swift
 //
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
+//  Created by Stone, Nicki on 5/29/20.
+//  Copyright © 2020 Stone, Nicki. All rights reserved.
 //
 
 import Foundation
 
 public class StreamingProvider: NSObject, StreamDelegate {
     
-    var streamResponse: ((StreamEvents, Stream, OutputStream?, StreamErrors?) -> Void)?
+     public typealias streamClosure = (StreamEvents, Stream, OutputStream?, StreamErrors?) -> Void
+     var streamResponse: streamClosure?
+    
+    public func stream(closure: @escaping streamClosure) {
+        streamResponse = closure
+    }
     
     struct Streams {
         let input: InputStream

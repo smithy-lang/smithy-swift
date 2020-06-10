@@ -15,8 +15,6 @@
 
 import Foundation
 
-
-
 extension InputStream {
     public func readData(maxLength length: Int) throws -> Data {
         var buffer = [UInt8](repeating: 0, count: length)

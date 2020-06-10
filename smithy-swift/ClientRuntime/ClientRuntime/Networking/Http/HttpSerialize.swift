@@ -17,11 +17,9 @@ import Foundation
 
 public protocol HttpSerialize {
   func encode() throws -> HttpRequest?
-  
-  func encodeBody<T: Encodable>(_ obj: T, encoder: RequestEncoder) throws -> HttpBody
 }
 
-extension HttpSerialize {
+public extension HttpSerialize {
     /// Convenience function to encode an `Encodable` type as the request body, using the encoder provided.
     /// - Parameter obj: The value to encode
     /// - Parameter encoder: Instance of a RequestEncoder

@@ -22,7 +22,7 @@
 		43DD77062491533C0038F7AB /* DataNetworkOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76AD2491533B0038F7AB /* DataNetworkOperation.swift */; };
 		43DD77072491533C0038F7AB /* ResponseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76AE2491533B0038F7AB /* ResponseType.swift */; };
 		43DD77082491533C0038F7AB /* HttpSerialize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B02491533B0038F7AB /* HttpSerialize.swift */; };
-		43DD77092491533C0038F7AB /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B12491533B0038F7AB /* Stream.swift */; };
+		43DD77092491533C0038F7AB /* Stream+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B12491533B0038F7AB /* Stream+Extensions.swift */; };
 		43DD770A2491533C0038F7AB /* ProtocolType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B22491533B0038F7AB /* ProtocolType.swift */; };
 		43DD770B2491533C0038F7AB /* HttpRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B32491533B0038F7AB /* HttpRequest.swift */; };
 		43DD770C2491533C0038F7AB /* HttpResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76B42491533B0038F7AB /* HttpResponse.swift */; };
@@ -88,6 +88,7 @@
 		43DD77482491533C0038F7AB /* XMLFloatingPointTypesContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76FA2491533C0038F7AB /* XMLFloatingPointTypesContainer.swift */; };
 		43DD77492491533C0038F7AB /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76FC2491533C0038F7AB /* String+Extensions.swift */; };
 		43DD774A2491533C0038F7AB /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD76FE2491533C0038F7AB /* Log.swift */; };
+		958620AD24917D7A00EAE3FA /* SessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 958620AC24917D7A00EAE3FA /* SessionDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,7 +120,7 @@
 		43DD76AD2491533B0038F7AB /* DataNetworkOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataNetworkOperation.swift; sourceTree = "<group>"; };
 		43DD76AE2491533B0038F7AB /* ResponseType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResponseType.swift; sourceTree = "<group>"; };
 		43DD76B02491533B0038F7AB /* HttpSerialize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpSerialize.swift; sourceTree = "<group>"; };
-		43DD76B12491533B0038F7AB /* Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
+		43DD76B12491533B0038F7AB /* Stream+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Stream+Extensions.swift"; sourceTree = "<group>"; };
 		43DD76B22491533B0038F7AB /* ProtocolType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtocolType.swift; sourceTree = "<group>"; };
 		43DD76B32491533B0038F7AB /* HttpRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpRequest.swift; sourceTree = "<group>"; };
 		43DD76B42491533B0038F7AB /* HttpResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpResponse.swift; sourceTree = "<group>"; };
@@ -185,6 +186,7 @@
 		43DD76FA2491533C0038F7AB /* XMLFloatingPointTypesContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XMLFloatingPointTypesContainer.swift; sourceTree = "<group>"; };
 		43DD76FC2491533C0038F7AB /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		43DD76FE2491533C0038F7AB /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		958620AC24917D7A00EAE3FA /* SessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -259,23 +261,24 @@
 		43DD76A52491533B0038F7AB /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				958620AE24917DF200EAE3FA /* Extensions */,
+				43DD76BF2491533C0038F7AB /* Mqtt */,
+				43DD76AF2491533B0038F7AB /* Http */,
 				43DD76A62491533B0038F7AB /* NetworkOperation.swift */,
 				43DD76A72491533B0038F7AB /* StreamingProvider.swift */,
 				43DD76A82491533B0038F7AB /* SdkResult.swift */,
 				43DD76A92491533B0038F7AB /* OperationError.swift */,
 				43DD76AA2491533B0038F7AB /* OperationQueue+Extension.swift */,
 				43DD76AB2491533B0038F7AB /* ResponsePayload.swift */,
-				43DD76AC2491533B0038F7AB /* HttpBody.swift */,
 				43DD76AD2491533B0038F7AB /* DataNetworkOperation.swift */,
 				43DD76AE2491533B0038F7AB /* ResponseType.swift */,
-				43DD76AF2491533B0038F7AB /* Http */,
 				43DD76BD2491533B0038F7AB /* StreamErrors.swift */,
 				43DD76BE2491533C0038F7AB /* ClientError.swift */,
-				43DD76BF2491533C0038F7AB /* Mqtt */,
 				43DD76C32491533C0038F7AB /* SdkError.swift */,
 				43DD76C42491533C0038F7AB /* StreamEvents.swift */,
 				43DD76C52491533C0038F7AB /* StreamingNetworkOperation.swift */,
 				43DD76C62491533C0038F7AB /* Endpoint.swift */,
+				958620AC24917D7A00EAE3FA /* SessionDelegate.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -283,8 +286,8 @@
 		43DD76AF2491533B0038F7AB /* Http */ = {
 			isa = PBXGroup;
 			children = (
+				43DD76AC2491533B0038F7AB /* HttpBody.swift */,
 				43DD76B02491533B0038F7AB /* HttpSerialize.swift */,
-				43DD76B12491533B0038F7AB /* Stream.swift */,
 				43DD76B22491533B0038F7AB /* ProtocolType.swift */,
 				43DD76B32491533B0038F7AB /* HttpRequest.swift */,
 				43DD76B42491533B0038F7AB /* HttpResponse.swift */,
@@ -440,6 +443,14 @@
 			path = Logging;
 			sourceTree = "<group>";
 		};
+		958620AE24917DF200EAE3FA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				43DD76B12491533B0038F7AB /* Stream+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -557,7 +568,7 @@
 				43DD77212491533C0038F7AB /* JSONDecoder+Extensions.swift in Sources */,
 				43DD772E2491533C0038F7AB /* XMLEncodingError.swift in Sources */,
 				43DD77362491533C0038F7AB /* XMLKeyedDecodingContainer.swift in Sources */,
-				43DD77092491533C0038F7AB /* Stream.swift in Sources */,
+				43DD77092491533C0038F7AB /* Stream+Extensions.swift in Sources */,
 				43DD772F2491533C0038F7AB /* XMLEncodingStorage.swift in Sources */,
 				43DD772C2491533C0038F7AB /* XMLUnkeyedEncodingContainer.swift in Sources */,
 				43DD77032491533C0038F7AB /* OperationQueue+Extension.swift in Sources */,
@@ -625,6 +636,7 @@
 				43DD77432491533C0038F7AB /* XMLStringContainer.swift in Sources */,
 				43DD77482491533C0038F7AB /* XMLFloatingPointTypesContainer.swift in Sources */,
 				43DD77042491533C0038F7AB /* ResponsePayload.swift in Sources */,
+				958620AD24917D7A00EAE3FA /* SessionDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

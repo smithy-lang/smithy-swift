@@ -15,36 +15,34 @@
 
 import Foundation
 
-//public class HttpClient {
-//    
-//    let session: URLSession
-//    let operationQueue: OperationQueue
-//    
-//    public init(config: HttpClientConfiguration) {
-//        self.operationQueue = config.operationQueue
-//        let delegate = SessionDelegate(operationQueue: config.operationQueue)
-//        self.session = URLSession(configuration: config.toUrlSessionConfig(), delegate: delegate, delegateQueue: config.operationQueue)
-//    }
-//    
-//    public func execute(request: HttpRequest,  completion: @escaping NetworkResult) -> StreamingProvider? {
-//        
-//
-//            switch request.body {
-//            case .data, .file, .none :
-//                let operation = DataNetworkOperation(session: session, request: request, completion: completion)
-//                operationQueue.addOperation(operation)
-//            case .stream:
-//                let streamingProvider = StreamingProvider()
-//                let operation = StreamingNetworkOperation(session: session, request: request, streamingProvider: streamingProvider, completion: completion)
-//                operationQueue.addOperation(operation)
-//                return streamingProvider
-//            case .some(.bodyDictionary(_)):
-//                break
-//        }
-//        return nil
-//    }
-//    
-//}
+public class HttpClient {
+    
+    let session: URLSession
+    let operationQueue: OperationQueue
+    
+    public init(config: HttpClientConfiguration) {
+        self.operationQueue = config.operationQueue
+        let delegate = SessionDelegate(operationQueue: config.operationQueue)
+        self.session = URLSession(configuration: config.toUrlSessionConfig(), delegate: delegate, delegateQueue: config.operationQueue)
+    }
+    
+    public func execute(request: HttpRequest,  completion: @escaping NetworkResult) -> StreamingProvider? {
+        
+
+            switch request.body {
+            case .data, .file, .none :
+                let operation = DataNetworkOperation(session: session, request: request, completion: completion)
+                operationQueue.addOperation(operation)
+            case .stream:
+                let streamingProvider = StreamingProvider()
+                let operation = StreamingNetworkOperation(session: session, request: request, streamingProvider: streamingProvider, completion: completion)
+                operationQueue.addOperation(operation)
+                return streamingProvider
+        }
+        return nil
+    }
+    
+}
 
 
 
