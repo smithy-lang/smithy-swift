@@ -62,6 +62,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
             }
         }
 
+        // TODO - convert to trace/debug logging when available
         // wait for the response to be available, the content will be read as a stream
         println("(${Thread.currentThread().name}) ktor engine: waiting on response to be available")
 
@@ -119,18 +120,6 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     override fun install(client: SdkHttpClient) {
         super.install(client)
         client.responsePipeline.intercept(HttpResponsePipeline.Finalize) {
-            // FIXME - this doesn't handle the case where the end user doesn't consume the stream
-            // In the case of a streaming body we could argue it is their fault and a misuse of the API.
-            // They should use one of the provided transforms (e.g. decodeToString()/toByteArray()/toFile(), etc)
-            // or ensure that they close the stream manually if they are doing something that doesn't fit the "normal"
-            // use cases/transforms provided.
-            //
-            // There are other corner cases though, e.g. what if on a non-streaming response deserialization
-            // fails and an exception is thrown and the content wasn't read fully? We likely need to consider
-            // this being handled directly in the PreparedHttpRequest or as a "default feature" always installed
-            // The feature route suffers the same problem though if an exception is thrown before it reaches that
-            // interception point...
-
             // ensure the response body is consumed and resources are released
             val body = context.response.body
             when (body) {
