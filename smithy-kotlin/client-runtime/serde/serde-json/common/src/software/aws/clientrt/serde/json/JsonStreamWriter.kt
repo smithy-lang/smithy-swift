@@ -52,7 +52,7 @@ interface JsonStreamWriter {
      *
      * @param name the name of the forthcoming value. May not be null.
      */
-    fun writeName(fieldName: String)
+    fun writeName(name: String)
 
     /**
      * Encodes {@code value}.
