@@ -18,7 +18,7 @@ import Foundation
 class DataNetworkOperation: NetworkOperation {
     
     
-    init(session: URLSession, request: HttpRequest, completion: @escaping NetworkResult) {
+    init(session: URLSessionProtocol, request: HttpRequest, completion: @escaping NetworkResult) {
         super.init()
         self.completion = completion
         do {
@@ -28,7 +28,6 @@ class DataNetworkOperation: NetworkOperation {
         catch {
             completion(.failure(ClientError.serializationFailed("Serialization failed due to malformed url")))
         }
-        
     }
     
     override func receiveData(data: Data) {

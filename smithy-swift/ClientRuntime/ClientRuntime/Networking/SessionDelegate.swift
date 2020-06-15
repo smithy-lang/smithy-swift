@@ -23,7 +23,7 @@ class SessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate, URL
     init(operationQueue: OperationQueue) {
         self.operationQueue = operationQueue
         super.init()
-        startRunLoop()
+//        startRunLoop()
     }
     
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {

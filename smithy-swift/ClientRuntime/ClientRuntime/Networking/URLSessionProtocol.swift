@@ -13,21 +13,16 @@
 // permissions and limitations under the License.
 //
 
-import XCTest
-@testable import ClientRuntime
+import Foundation
 
-class ClientRuntimeTests: XCTestCase {
+protocol URLSessionProtocol {
+    typealias DataTaskResult = (Data?, URLResponse?, Error?) -> Void
+    
+    func dataTask(with request: URLRequest, completionHandler: @escaping DataTaskResult) -> URLSessionDataTaskProtocol
+    func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol
+    func uploadTask(withStreamedRequest request: URLRequest) -> URLSessionUploadTask
+}
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
+protocol URLSessionDataTaskProtocol: URLSessionTask {
+    func resume()
 }

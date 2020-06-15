@@ -15,8 +15,14 @@
 
 import Foundation
 
-extension JSONEncoder: RequestEncoder {
-    public func encode<T>(_ value: T) throws -> Data where T : Encodable {
-        return try encode(value)
+extension URLSession: URLSessionProtocol {
+    func dataTask(with request: URLRequest, completionHandler: @escaping URLSessionProtocol.DataTaskResult) -> URLSessionDataTaskProtocol {
+        return dataTask(with: request, completionHandler: completionHandler) as URLSessionDataTask
+    }
+    
+    func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol {
+        return dataTask(with: request) as URLSessionDataTask
     }
 }
+
+extension URLSessionDataTask: URLSessionDataTaskProtocol {}
