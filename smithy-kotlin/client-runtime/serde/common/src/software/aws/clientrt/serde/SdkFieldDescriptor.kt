@@ -15,13 +15,11 @@
 package software.aws.clientrt.serde
 
 /**
- * Holds the attributes and properties of an object being serialized. When XML is added, tag attributes
- * might be added here. They do not exist in JSON so we currently only have serialName as a proptery in
- * the descriptor.
+ * SdkFieldDescriptor is metadata that may influence how a field is serialized and deserialized.
  *
- * @property serialName In JSON, this is the key when serializing.
+ * @property name In JSON, this is the key when serializing.
  * @property writeFieldName This is used to determine whether a field name should be written
  * for the given value that is being serialized. in JSON, the main container's name is not
  * written.
  */
-class SdkFieldDescriptor(val serialName: String, val writeFieldName: Boolean = true)
+class SdkFieldDescriptor(val name: String)

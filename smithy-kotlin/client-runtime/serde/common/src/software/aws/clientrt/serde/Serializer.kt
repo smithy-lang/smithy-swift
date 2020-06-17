@@ -15,34 +15,31 @@
 package software.aws.clientrt.serde
 
 interface Serializer : PrimitiveSerializer {
-    // TODO: enum, time related structs, bigInteger, bigDecimal, union, set
+    // TODO: time related structs, bigInteger, bigDecimal, set. bigInteger/bigDecimal will have to be JVM specific.
 
     /**
-     * Begins a struct. In JSON this looks like a '{'.
-     * Also creates a StructSerializer so that it can be used to serialize contents.
+     * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the structure's fields.
      *
      * @param descriptor
      * @return StructSerializer
      */
-    fun beginStructure(descriptor: SdkFieldDescriptor): StructSerializer
+    fun beginStructure(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false): StructSerializer
 
     /**
-     * Begins a list. In JSON this looks like a '['.
-     * Also creates a ListSerializer so that it can be used to serialize contents.
+     * Begin a list (i.e. in JSON this would be a '[') and return a [ListSerializer] that can be used to serialize the list's elements.
      *
      * @param descriptor
      * @return ListSerializer
      */
-    fun beginList(descriptor: SdkFieldDescriptor): ListSerializer
+    fun beginList(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false): ListSerializer
 
     /**
-     * Begins a map. In JSON this looks like a '{'.
-     * Also creates a MapSerializer so that it can be used to serialize contents.
+     * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
      *
      * @param descriptor
      * @return MapSerializer
      */
-    fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
+    fun beginMap(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false): MapSerializer
 }
 
 interface StructSerializer : PrimitiveSerializer {
@@ -138,7 +135,7 @@ interface StructSerializer : PrimitiveSerializer {
     fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
 
     /**
-     * Ends the structure that was started. In JSON this looks like a '}'.
+     * Ends the structure that was started (i.e. in JSON this would be a '}').
      */
     fun endStructure()
 }
@@ -149,7 +146,7 @@ interface StructSerializer : PrimitiveSerializer {
 interface ListSerializer : PrimitiveSerializer {
 
     /**
-     * Ends the structure that was started. In JSON this looks like a ']'.
+     * Ends the list that was started (i.e. in JSON this would be a ']').
      */
     fun endList()
 }
@@ -163,94 +160,94 @@ interface MapSerializer : PrimitiveSerializer {
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Boolean)
+    fun entry(key: String, value: Boolean)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Byte)
+    fun entry(key: String, value: Byte)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Short)
+    fun entry(key: String, value: Short)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Char)
+    fun entry(key: String, value: Char)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Int)
+    fun entry(key: String, value: Int)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Long)
+    fun entry(key: String, value: Long)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Float)
+    fun entry(key: String, value: Float)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: Double)
+    fun entry(key: String, value: Double)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: String)
+    fun entry(key: String, value: String)
 
     /**
      * Writes the key given in the descriptor, and then
      * serializes value.
      *
-     * @param descriptor
+     * @param key
      * @param value
      */
-    fun pair(descriptor: SdkFieldDescriptor, value: SdkSerializable)
+    fun entry(key: String, value: SdkSerializable)
 
     /**
-     * Ends the map that was started. In JSON this looks like a '}'.
+     * Ends the map that was started (i.e. in JSON this would be a '}').
      */
     fun endMap()
 }
@@ -341,8 +338,8 @@ interface PrimitiveSerializer {
 /**
  * All components of a struct are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeStructure(descriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
-    val struct = beginStructure(descriptor)
+inline fun Serializer.serializeStructure(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false, crossinline block: StructSerializer.() -> Unit) {
+    val struct = beginStructure(descriptor, writeFieldName)
     struct.block()
     struct.endStructure()
 }
@@ -350,8 +347,8 @@ inline fun Serializer.serializeStructure(descriptor: SdkFieldDescriptor, crossin
 /**
  * All elements of a list are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeList(descriptor: SdkFieldDescriptor, crossinline block: ListSerializer.() -> Unit) {
-    val list = beginList(descriptor)
+inline fun Serializer.serializeList(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false, crossinline block: ListSerializer.() -> Unit) {
+    val list = beginList(descriptor, writeFieldName)
     list.block()
     list.endList()
 }
@@ -359,8 +356,8 @@ inline fun Serializer.serializeList(descriptor: SdkFieldDescriptor, crossinline 
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeMap(descriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
-    val map = beginMap(descriptor)
+inline fun Serializer.serializeMap(descriptor: SdkFieldDescriptor, writeFieldName: Boolean = false, crossinline block: MapSerializer.() -> Unit) {
+    val map = beginMap(descriptor, writeFieldName)
     map.block()
     map.endMap()
 }

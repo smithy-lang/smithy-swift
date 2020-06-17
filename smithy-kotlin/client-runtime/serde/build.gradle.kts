@@ -2,13 +2,3 @@ description = "Serialization and deserialization for Smithy services generated b
 extra["displayName"] = "Smithy :: Kotlin :: Serde"
 extra["moduleName"] = "software.aws.clientrt.serde"
 
-kotlin {
-    sourceSets {
-        jvmMain {
-            dependencies {
-                implementation(project(":client-runtime:serde:serde-json"))
-            }
-        }
-    }
-}
-

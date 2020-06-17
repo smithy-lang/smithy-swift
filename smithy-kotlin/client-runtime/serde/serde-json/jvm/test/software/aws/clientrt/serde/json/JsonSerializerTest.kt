@@ -12,14 +12,15 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.serde
+package software.aws.clientrt.serde.json
 
+import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SerializerTest {
+@OptIn(ExperimentalStdlibApi::class)
+class JsonSerializerTest {
 
-    @ExperimentalStdlibApi
     @Test
     fun `can serialize class with class field`() {
         val a = A(B(2))
@@ -30,7 +31,7 @@ class SerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorA: SdkFieldDescriptor = SdkFieldDescriptor("A", false)
+            val descriptorA: SdkFieldDescriptor = SdkFieldDescriptor("A")
             val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b")
         }
 
@@ -44,7 +45,7 @@ class SerializerTest {
     data class B(private val value: Int) : SdkSerializable {
         companion object {
             // Since B is a field of A, its name was written in A's serialize method in the field(descriptorB, b) call.
-            val descriptorB = SdkFieldDescriptor("b", false)
+            val descriptorB = SdkFieldDescriptor("b")
             val descriptorValue = SdkFieldDescriptor("value")
         }
 
@@ -55,11 +56,10 @@ class SerializerTest {
         }
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `can serialize list of classes`() {
         val obj = listOf(B(1), B(2), B(3))
-        val desc = SdkFieldDescriptor("b1", false)
+        val desc = SdkFieldDescriptor("b1")
         val json = JsonSerializer()
         json.serializeList(desc) {
             for (value in obj) {
@@ -69,27 +69,25 @@ class SerializerTest {
         assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.jsonWriter.bytes!!.decodeToString())
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `can serialize map`() {
-        val objs = mapOf(Pair("A1", A(B(1))), Pair("A2", A(B(2))), Pair("A3", A(B(3))))
-        val desc = SdkFieldDescriptor("map of as", false)
+        val objs = mapOf("A1" to A(B(1)), "A2" to A(B(2)), "A3" to A(B(3)))
+        val desc = SdkFieldDescriptor("map of as")
         val json = JsonSerializer()
         json.serializeMap(desc) {
             for (obj in objs) {
-                pair(SdkFieldDescriptor(obj.key), obj.value)
+                entry(obj.key, obj.value)
             }
         }
         assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.jsonWriter.bytes!!.decodeToString())
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `can serialize all primitives`() {
         val json = JsonSerializer()
         data.serialize(json)
 
-        assertEquals("""{"unit":null,"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","unitNullable":null,"listInt":[1,2,3]}""", json.jsonWriter.bytes!!.decodeToString())
+        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.jsonWriter.bytes!!.decodeToString())
     }
 }
 
@@ -108,7 +106,7 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptor = SdkFieldDescriptor("Types", false)
+        val descriptor = SdkFieldDescriptor("Types")
         val descriptorUnit = SdkFieldDescriptor("unit")
         val descriptorBoolean = SdkFieldDescriptor("boolean")
         val descriptorByte = SdkFieldDescriptor("byte")
@@ -136,7 +134,7 @@ data class Primitives(
             field(descriptorChar, char)
             field(descriptorString, string)
             serializeNull(descriptorUnitNullable)
-            serializer.serializeList(descriptorListInt) {
+            serializer.serializeList(descriptorListInt, true) {
                 for (value in listInt) {
                     serializeInt(value)
                 }
