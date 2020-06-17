@@ -152,4 +152,29 @@ class JsonStreamReaderTest {
         val y = reader.nextToken() as JsonToken.Name
         assertEquals("y", y.value)
     }
+
+    @Test
+    fun `it skips simple values`() {
+        val payload = """
+        {
+            "x": 1,
+            "z": "unknown",
+            "y": 2
+        }
+        """.trimIndent().toByteArray()
+        val reader = JsonStreamReader(payload)
+        // skip x
+        reader.apply {
+            nextToken() // begin obj
+            nextToken() // x
+        }
+        reader.skipNext()
+
+        val name = reader.nextToken() as JsonToken.Name
+        assertEquals("z", name.value)
+        reader.skipNext()
+
+        val y = reader.nextToken() as JsonToken.Name
+        assertEquals("y", y.value)
+    }
 }

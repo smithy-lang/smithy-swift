@@ -23,39 +23,52 @@ private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charse
     private val reader = JsonReader(payload.inputStream().reader(charset))
 
     override fun nextToken(): JsonToken {
-        val token = when (reader.peek()) {
-            RawToken.BEGIN_ARRAY -> {
+        return when (peek()) {
+            RawJsonToken.BeginArray -> {
                 reader.beginArray()
                 JsonToken.BeginArray
             }
-            RawToken.END_ARRAY -> {
+            RawJsonToken.EndArray -> {
                 reader.endArray()
                 JsonToken.EndArray
             }
-            RawToken.BEGIN_OBJECT -> {
+            RawJsonToken.BeginObject -> {
                 reader.beginObject()
                 JsonToken.BeginObject
             }
-            RawToken.END_OBJECT -> {
+            RawJsonToken.EndObject -> {
                 reader.endObject()
                 JsonToken.EndObject
             }
-            RawToken.NAME -> JsonToken.Name(reader.nextName())
-            RawToken.STRING -> JsonToken.String(reader.nextString())
-            RawToken.NUMBER -> JsonToken.Number(reader.nextDouble())
-            RawToken.BOOLEAN -> JsonToken.Bool(reader.nextBoolean())
-            RawToken.NULL -> {
+            RawJsonToken.Name -> JsonToken.Name(reader.nextName())
+            RawJsonToken.String -> JsonToken.String(reader.nextString())
+            RawJsonToken.Number -> JsonToken.Number(reader.nextDouble())
+            RawJsonToken.Bool -> JsonToken.Bool(reader.nextBoolean())
+            RawJsonToken.Null -> {
                 reader.nextNull()
                 JsonToken.Null
             }
-            RawToken.END_DOCUMENT -> JsonToken.EndDocument
-            else -> throw DeserializationException("unknown JSON token encountered during deserialization")
+            RawJsonToken.EndDocument -> JsonToken.EndDocument
         }
-
-        return token
     }
 
     override fun skipNext() = reader.skipValue()
+
+    override fun peek(): RawJsonToken {
+        return when (reader.peek()) {
+            RawToken.BEGIN_ARRAY -> RawJsonToken.BeginArray
+            RawToken.END_ARRAY -> RawJsonToken.EndArray
+            RawToken.BEGIN_OBJECT -> RawJsonToken.BeginObject
+            RawToken.END_OBJECT -> RawJsonToken.EndObject
+            RawToken.NAME -> RawJsonToken.Name
+            RawToken.STRING -> RawJsonToken.String
+            RawToken.NUMBER -> RawJsonToken.Number
+            RawToken.BOOLEAN -> RawJsonToken.Bool
+            RawToken.NULL -> RawJsonToken.Null
+            RawToken.END_DOCUMENT -> RawJsonToken.EndDocument
+            else -> throw DeserializationException("unknown JSON token encountered during deserialization")
+        }
+    }
 }
 
 /*
