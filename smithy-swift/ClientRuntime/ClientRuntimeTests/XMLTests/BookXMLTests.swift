@@ -177,7 +177,7 @@ private struct Book: Codable, Equatable, DynamicNodeEncoding {
         case publishDate = "publish_date"
     }
 
-    static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+    static func nodeEncoding(for key: CodingKey) -> XMLEncoder.NodeEncoding {
         switch key {
         case CodingKeys.id:
             return .attribute

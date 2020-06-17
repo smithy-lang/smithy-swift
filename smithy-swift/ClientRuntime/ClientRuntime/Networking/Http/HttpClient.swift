@@ -17,7 +17,7 @@ import Foundation
 
 public class HttpClient {
     
-    let session: URLSessionProtocol
+    let session: SessionProtocol
     let operationQueue: OperationQueue
     
     public init(config: HttpClientConfiguration) {
@@ -26,7 +26,7 @@ public class HttpClient {
         self.session = URLSession(configuration: config.toUrlSessionConfig(), delegate: delegate, delegateQueue: config.operationQueue)
     }
     
-    init(session: URLSessionProtocol, config: HttpClientConfiguration) {
+    init(session: SessionProtocol, config: HttpClientConfiguration) {
         self.session = session
         self.operationQueue = config.operationQueue
     }

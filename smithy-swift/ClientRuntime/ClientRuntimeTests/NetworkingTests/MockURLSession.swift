@@ -16,7 +16,7 @@
 import Foundation
 @testable import ClientRuntime
 
-class MockURLSession: URLSessionProtocol {
+class MockURLSession: SessionProtocol {
     var nextDataTask = MockURLSessionDataTask()
     var nextData: Data?
     var nextError: Error?
