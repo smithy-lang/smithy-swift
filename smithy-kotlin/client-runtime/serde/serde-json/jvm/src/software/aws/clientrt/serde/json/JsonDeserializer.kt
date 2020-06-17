@@ -39,8 +39,19 @@ private fun JsonToken.number(): Double? = when (this) {
     else -> null
 }
 
-class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator {
+private enum class IteratorMode {
+    LIST,
+    MAP,
+}
+
+class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator, Deserializer.EntryIterator {
     private val reader = JsonStreamReader(payload)
+
+    private var iteratorMode = IteratorMode.LIST
+
+    private fun switchIterationMode(mode: IteratorMode) {
+        iteratorMode = mode
+    }
 
     // return the next token and require that it be of type [TExpected] or else throw an exception
     private inline fun <reified TExpected> nextToken(): JsonToken {
@@ -114,10 +125,42 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeList(): Deserializer.ElementIterator {
         nextToken<JsonToken.BeginArray>()
+        switchIterationMode(IteratorMode.LIST)
         return this
     }
 
+    override fun deserializeMap(): Deserializer.EntryIterator {
+        nextToken<JsonToken.BeginObject>()
+        switchIterationMode(IteratorMode.MAP)
+        return this
+    }
+
+    override fun key(): String {
+        val token = nextToken<JsonToken.Name>()
+        return (token as JsonToken.Name).value
+    }
+
+    // next has to work for different modes of iteration (list vs map entries)
     override fun next(): Int {
+        return when (iteratorMode) {
+            IteratorMode.LIST -> nextList()
+            IteratorMode.MAP -> nextMap()
+        }
+    }
+
+    private fun nextMap(): Int {
+        return when (reader.peek()) {
+            RawJsonToken.EndObject -> {
+                // consume the token
+                nextToken<JsonToken.EndObject>()
+                Deserializer.EntryIterator.EXHAUSTED
+            }
+            RawJsonToken.EndDocument -> Deserializer.EntryIterator.EXHAUSTED
+            else -> 0
+        }
+    }
+
+    private fun nextList(): Int {
         return when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token

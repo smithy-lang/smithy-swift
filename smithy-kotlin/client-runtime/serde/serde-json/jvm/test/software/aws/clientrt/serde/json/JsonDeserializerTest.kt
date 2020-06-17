@@ -15,8 +15,9 @@
 package software.aws.clientrt.serde.json
 
 import io.kotest.matchers.collections.shouldContainExactly
-import java.lang.Math.abs
+import io.kotest.matchers.maps.shouldContainExactly
 import java.lang.RuntimeException
+import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Test
@@ -88,6 +89,26 @@ class JsonDeserializerTest {
             return@deserializeList list
         }
         val expected = listOf(1, 2, 3)
+        actual.shouldContainExactly(expected)
+    }
+
+    @Test
+    fun `it handles maps`() {
+        val payload = """
+            {
+                "key1": 1,
+                "key2": 2
+            }
+        """.trimIndent().toByteArray()
+        val deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeMap {
+            val map = mutableMapOf<String, Int>()
+            while (next() != Deserializer.EntryIterator.EXHAUSTED) {
+                map[key()] = deserializeInt()
+            }
+            return@deserializeMap map
+        }
+        val expected = mapOf("key1" to 1, "key2" to 2)
         actual.shouldContainExactly(expected)
     }
 
@@ -170,7 +191,7 @@ class JsonDeserializerTest {
                 val struct = deserializer.deserializeStruct(null)
                 val nested2 = Nested2()
                 loop@ while (true) {
-                    when (struct.nextField(Nested2.OBJ_DESCRIPTOR)) {
+                    when (struct.nextField(OBJ_DESCRIPTOR)) {
                         LIST2_FIELD_DESCRIPTOR.index -> nested2.list2 = deserializer.deserializeList() {
                             val list = mutableListOf<String>()
                             while (next() != Deserializer.ElementIterator.EXHAUSTED) {
@@ -178,7 +199,9 @@ class JsonDeserializerTest {
                             }
                             return@deserializeList list
                         }
-                        INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializer.deserializeInt()
+                        INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = struct.deserializeInt()
+                        // deeply nested unknown field
+                        Deserializer.FieldIterator.UNKNOWN_FIELD -> struct.skipValue()
                         Deserializer.FieldIterator.EXHAUSTED -> break@loop
                         else -> throw RuntimeException("unexpected field during test")
                     }
@@ -226,6 +249,7 @@ class JsonDeserializerTest {
         var doubleField: Double? = null
         var nestedField: Nested? = null
         var floatField: Float? = null
+        var mapField: Map<String, String>? = null
 
         companion object {
             val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor("int")
@@ -237,6 +261,7 @@ class JsonDeserializerTest {
             val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double")
             val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested")
             val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float")
+            val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map")
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(INT_FIELD_DESCRIPTOR)
@@ -248,6 +273,7 @@ class JsonDeserializerTest {
                 field(DOUBLE_FIELD_DESCRIPTOR)
                 field(NESTED_FIELD_DESCRIPTOR)
                 field(FLOAT_FIELD_DESCRIPTOR)
+                field(MAP_FIELD_DESCRIPTOR)
             }
         }
     }
@@ -266,11 +292,24 @@ class JsonDeserializerTest {
             "nested": {
                 "nested2": {
                     "list2": ["x", "y"],
+                    "unknown": {
+                        "a": "a",
+                        "b": "b",
+                        "c": ["d", "e", "f"],
+                        "g": {
+                            "h": "h",
+                            "i": "i"
+                        }
+                     },
                     "int2": 4
                 },
                 "bool2": true
             },
-            "float": 0.2
+            "float": 0.2,
+            "map": {
+                "key1": "value1",
+                "key2": "value2"
+            }
         }
         """.trimIndent().toByteArray()
 
@@ -294,9 +333,32 @@ class JsonDeserializerTest {
                 KitchenSinkTest.DOUBLE_FIELD_DESCRIPTOR.index -> sink.doubleField = struct.deserializeDouble()
                 KitchenSinkTest.NESTED_FIELD_DESCRIPTOR.index -> sink.nestedField = Nested.deserialize(deserializer)
                 KitchenSinkTest.FLOAT_FIELD_DESCRIPTOR.index -> sink.floatField = struct.deserializeFloat()
+                KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index -> sink.mapField = deserializer.deserializeMap() {
+                    val map = mutableMapOf<String, String>()
+                    while (next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        map[key()] = deserializeString()
+                    }
+                    return@deserializeMap map
+                }
                 Deserializer.FieldIterator.EXHAUSTED -> break@loop
                 else -> throw RuntimeException("unexpected field during test")
             }
         }
+
+        assertEquals(1, sink.intField)
+        assertEquals(2L, sink.longField)
+        assertEquals(3.toShort(), sink.shortField)
+        assertEquals(false, sink.boolField)
+        assertEquals("a string", sink.strField)
+        sink.listField.shouldContainExactly(listOf(10, 11, 12))
+        assertTrue(abs(sink.doubleField!! - 7.5) <= 0.0001)
+
+        assertEquals(sink.nestedField!!.nested2!!.int2, 4)
+        sink.nestedField!!.nested2!!.list2.shouldContainExactly(listOf("x", "y"))
+        assertEquals(sink.nestedField!!.bool2, true)
+
+        assertTrue(abs(sink.floatField!! - 0.2f) <= 0.0001f)
+        val expectedMap = mapOf("key1" to "value1", "key2" to "value2")
+        sink.mapField!!.shouldContainExactly(expectedMap)
     }
 }

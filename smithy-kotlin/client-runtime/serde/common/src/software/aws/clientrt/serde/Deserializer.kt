@@ -14,12 +14,71 @@
  */
 package software.aws.clientrt.serde
 
+/**
+ * Deserializer is a format agnostic deserialization interface. Specific formats (e.g. JSON, XML, etc) implement
+ * this interface and handle the underlying raw decoding process and deal with details specific to that format.
+ *
+ * This allows the same deserialization process to work between formats which is useful for code generation.
+ *
+ * ### Deserializing Structured Types
+ *
+ * A Kotlin class is represented as a structure with fields. The order the fields present themselves may not
+ * be guaranteed or consistent in some formats (e.g. JSON and XML). This requires deserialization to iterate
+ * over the fields found in the underlying stream and the deserializer will tell you which field was encountered.
+ * This is done by giving the serializer an [SdkObjectDescriptor] which describes the fields expected.
+ *
+ * ```
+ * data class Point(val x: Int, val y: Int)
+ *
+ * val struct = deserializer.deserializeStruct()
+ * val x: Int? = null
+ * val y: Int? = null
+ *
+ * val X_DESCRIPTOR = SdkFieldDescriptor("x")
+ * val Y_DESCRIPTOR = SdkFieldDescriptor("x")
+ * val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+ *     field(X_DESCRIPTOR)
+ *     field(Y_DESCRIPTOR)
+ * }
+ * loop@while(true) {
+ *     when(struct.nextField(OBJ_DESCRIPTOR)) {
+ *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
+ *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()
+ *         Deserializer.FieldIterator.EXHAUSTED -> break@loop
+ *         else -> struct.skipValue()
+ *     }
+ * }
+ * requireNotNull(x)
+ * requireNotNull(y)
+ * val myPoint = Point(x!!, y!!)
+ * ```
+ *
+ *
+ * ### Deserializing Collections
+ *
+ * Collections such as List and Map work almost the same as deserializing a structured type except iteration
+ * is over elements (or entries) instead of fields. Deserialization implementations should drive the iterator
+ * until it is exhausted and for each element/entry call the appropriate `deserialize*` methods.
+ *
+ */
 interface Deserializer : PrimitiveDeserializer {
+    /**
+     * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
+     * the deserialization process of the struct to completion.
+     */
     fun deserializeStruct(descriptor: SdkFieldDescriptor?): FieldIterator
 
-//    fun deserializeMap(descriptor: SdkFieldDescriptor)
-
+    /**
+     * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
+     * the deserialization process of the list to completion.
+     */
     fun deserializeList(): ElementIterator
+
+    /**
+     * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
+     * the deserialization process of the map to completion.
+     */
+    fun deserializeMap(): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
@@ -35,7 +94,30 @@ interface Deserializer : PrimitiveDeserializer {
             /**
              * The iterator has been exhausted, no more fields will be returned by [next]
              */
-            val EXHAUSTED = -1
+            const val EXHAUSTED = -1
+        }
+    }
+
+    /**
+     * Iterator over map entries
+     */
+    interface EntryIterator : PrimitiveDeserializer {
+        /**
+         * Advance to the next element. Returns [EXHAUSTED] when no more elements are in the map
+         * or the document has been read completely.
+         */
+        fun next(): Int
+
+        /**
+         * Read the next key
+         */
+        fun key(): String
+
+        companion object {
+            /**
+             * The iterator has been exhausted, no more fields will be returned by [next]
+             */
+            const val EXHAUSTED = -1
         }
     }
 
@@ -55,14 +137,14 @@ interface Deserializer : PrimitiveDeserializer {
 
         companion object {
             /**
-             * An unknown field was encountered
-             */
-            const val UNKNOWN_FIELD = -1
-
-            /**
              * The iterator has been exhausted, no more fields will be returned by [nextField]
              */
-            const val EXHAUSTED = -2
+            const val EXHAUSTED = -1
+
+            /**
+             * An unknown field was encountered
+             */
+            const val UNKNOWN_FIELD = -2
         }
     }
 }
@@ -74,6 +156,12 @@ fun Deserializer.deserializeStruct(descriptor: SdkFieldDescriptor?, block: Deser
 
 fun <T> Deserializer.deserializeList(block: Deserializer.ElementIterator.() -> T): T {
     val deserializer = deserializeList()
+    val result = block(deserializer)
+    return result
+}
+
+fun <T> Deserializer.deserializeMap(block: Deserializer.EntryIterator.() -> T): T {
+    val deserializer = deserializeMap()
     val result = block(deserializer)
     return result
 }
@@ -121,8 +209,4 @@ interface PrimitiveDeserializer {
      * Deserialize and return the next token as a [Boolean]
      */
     fun deserializeBool(): Boolean
-
-    // TODO
-    // deserializeBigInt(): BigInteger
-    // deserializeBigDecimal(): BigDecimal
 }
