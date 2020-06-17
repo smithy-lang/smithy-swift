@@ -14,12 +14,12 @@
  */
 package software.aws.clientrt.serde.json
 
-import software.aws.clientrt.serde.Serializer
 import software.aws.clientrt.serde.ListSerializer
 import software.aws.clientrt.serde.MapSerializer
-import software.aws.clientrt.serde.StructSerializer
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SdkSerializable
+import software.aws.clientrt.serde.Serializer
+import software.aws.clientrt.serde.StructSerializer
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
 
