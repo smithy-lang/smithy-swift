@@ -34,11 +34,6 @@ class DeserializerStateException : DeserializationException {
     constructor(cause: Throwable?) : super(cause)
 }
 
-private fun JsonToken.number(): Double? = when (this) {
-    is JsonToken.Number -> this.value
-    else -> null
-}
-
 private enum class IteratorMode {
     LIST,
     MAP,
@@ -81,8 +76,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeDouble(): Double {
         val token = nextToken<JsonToken.Number>()
-        val result = token.number()
-        return result!!
+        return (token as JsonToken.Number).value
     }
 
     override fun deserializeString(): String {
