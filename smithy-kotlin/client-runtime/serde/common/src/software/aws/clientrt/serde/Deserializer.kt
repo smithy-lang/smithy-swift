@@ -31,11 +31,11 @@ package software.aws.clientrt.serde
  * data class Point(val x: Int, val y: Int)
  *
  * val struct = deserializer.deserializeStruct()
- * val x: Int? = null
- * val y: Int? = null
+ * var x: Int? = null
+ * var y: Int? = null
  *
  * val X_DESCRIPTOR = SdkFieldDescriptor("x")
- * val Y_DESCRIPTOR = SdkFieldDescriptor("x")
+ * val Y_DESCRIPTOR = SdkFieldDescriptor("y")
  * val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
  *     field(X_DESCRIPTOR)
  *     field(Y_DESCRIPTOR)
