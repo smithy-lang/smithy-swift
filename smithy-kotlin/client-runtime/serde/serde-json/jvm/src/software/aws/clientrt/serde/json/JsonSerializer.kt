@@ -14,42 +14,32 @@
  */
 package software.aws.clientrt.serde.json
 
-import software.aws.clientrt.serde.ListSerializer
-import software.aws.clientrt.serde.MapSerializer
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkSerializable
-import software.aws.clientrt.serde.Serializer
-import software.aws.clientrt.serde.StructSerializer
+import software.aws.clientrt.serde.*
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
 
-    val jsonWriter = JsonStreamWriter()
+    private val jsonWriter = JsonStreamWriter()
 
-    override fun beginStructure(descriptor: SdkFieldDescriptor, writeFieldName: Boolean): StructSerializer {
-        if (writeFieldName) {
-            jsonWriter.writeName(descriptor.name)
-        }
+    fun getBytes(): ByteArray? {
+        return jsonWriter.bytes
+    }
+
+    override fun beginStruct(): StructSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun beginList(descriptor: SdkFieldDescriptor, writeFieldName: Boolean): ListSerializer {
-        if (writeFieldName) {
-            jsonWriter.writeName(descriptor.name)
-        }
+    override fun beginList(): ListSerializer {
         jsonWriter.beginArray()
         return this
     }
 
-    override fun beginMap(descriptor: SdkFieldDescriptor, writeFieldName: Boolean): MapSerializer {
-        if (writeFieldName) {
-            jsonWriter.writeName(descriptor.name)
-        }
+    override fun beginMap(): MapSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun endStructure() {
+    override fun endStruct() {
         jsonWriter.endObject()
     }
 
@@ -109,6 +99,21 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
         jsonWriter.writeName(descriptor.name)
         serializeChar(value)
+    }
+
+    override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
+        jsonWriter.writeName(descriptor.name)
+        serializeStruct(block)
+    }
+
+    override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+        jsonWriter.writeName(descriptor.name)
+        serializeList(block)
+    }
+
+    override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+        jsonWriter.writeName(descriptor.name)
+        serializeMap(block)
     }
 
     override fun entry(key: String, value: Int) {

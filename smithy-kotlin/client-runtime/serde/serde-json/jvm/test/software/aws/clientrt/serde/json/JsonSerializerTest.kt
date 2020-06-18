@@ -26,17 +26,16 @@ class JsonSerializerTest {
         val a = A(B(2))
         val json = JsonSerializer()
         a.serialize(json)
-        assertEquals("""{"b":{"value":2}}""", json.jsonWriter.bytes!!.decodeToString())
+        assertEquals("""{"b":{"value":2}}""", json.getBytes()!!.decodeToString())
     }
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorA: SdkFieldDescriptor = SdkFieldDescriptor("A")
             val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStructure(descriptorA) {
+            serializer.serializeStruct {
                 field(descriptorB, b)
             }
         }
@@ -44,13 +43,11 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            // Since B is a field of A, its name was written in A's serialize method in the field(descriptorB, b) call.
-            val descriptorB = SdkFieldDescriptor("b")
             val descriptorValue = SdkFieldDescriptor("value")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStructure(descriptorB) {
+            serializer.serializeStruct {
                 field(descriptorValue, value)
             }
         }
@@ -59,27 +56,25 @@ class JsonSerializerTest {
     @Test
     fun `can serialize list of classes`() {
         val obj = listOf(B(1), B(2), B(3))
-        val desc = SdkFieldDescriptor("b1")
         val json = JsonSerializer()
-        json.serializeList(desc) {
+        json.serializeList {
             for (value in obj) {
                 value.serialize(json)
             }
         }
-        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.jsonWriter.bytes!!.decodeToString())
+        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.getBytes()!!.decodeToString())
     }
 
     @Test
     fun `can serialize map`() {
         val objs = mapOf("A1" to A(B(1)), "A2" to A(B(2)), "A3" to A(B(3)))
-        val desc = SdkFieldDescriptor("map of as")
         val json = JsonSerializer()
-        json.serializeMap(desc) {
+        json.serializeMap {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
         }
-        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.jsonWriter.bytes!!.decodeToString())
+        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.getBytes()!!.decodeToString())
     }
 
     @Test
@@ -87,7 +82,7 @@ class JsonSerializerTest {
         val json = JsonSerializer()
         data.serialize(json)
 
-        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.jsonWriter.bytes!!.decodeToString())
+        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.getBytes()!!.decodeToString())
     }
 }
 
@@ -106,7 +101,6 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptor = SdkFieldDescriptor("Types")
         val descriptorUnit = SdkFieldDescriptor("unit")
         val descriptorBoolean = SdkFieldDescriptor("boolean")
         val descriptorByte = SdkFieldDescriptor("byte")
@@ -122,7 +116,7 @@ data class Primitives(
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStructure(descriptor) {
+        serializer.serializeStruct {
             serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)
@@ -134,7 +128,7 @@ data class Primitives(
             field(descriptorChar, char)
             field(descriptorString, string)
             serializeNull(descriptorUnitNullable)
-            serializer.serializeList(descriptorListInt, true) {
+            listField(descriptorListInt) {
                 for (value in listInt) {
                     serializeInt(value)
                 }

@@ -18,8 +18,5 @@ package software.aws.clientrt.serde
  * SdkFieldDescriptor is metadata that may influence how a field is serialized and deserialized.
  *
  * @property name In JSON, this is the key when serializing.
- * @property writeFieldName This is used to determine whether a field name should be written
- * for the given value that is being serialized. in JSON, the main container's name is not
- * written.
  */
 class SdkFieldDescriptor(val name: String)
