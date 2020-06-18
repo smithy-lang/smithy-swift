@@ -90,7 +90,6 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     override fun deserializeStruct(descriptor: SdkFieldDescriptor?): Deserializer.FieldIterator {
-        // TODO - have to handle root object vs nested object
         nextToken<JsonToken.BeginObject>()
         return this
     }
