@@ -16,6 +16,7 @@
 import Foundation
 import Network
 
+/*
 class MqttClient {
     let connection: NWConnection
     
@@ -88,3 +89,4 @@ class MqttClient {
        // Stream.getStreamsToHost(withName: "Mqtt", port: 8883, inputStream: InputStream(), outputStream: OutputStream())
     }
 }
+*/

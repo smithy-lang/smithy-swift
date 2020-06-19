@@ -15,9 +15,13 @@
 
 import Foundation
 
-/*
-public protocol MqttResponse {
-    //content
-    //headers
+protocol SessionProtocol {
+    typealias DataTaskResult = (Data?, URLResponse?, Error?) -> Void
+    
+    func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol
+    func uploadTask(withStreamedRequest request: URLRequest) -> URLSessionUploadTask
 }
-*/
+
+protocol URLSessionDataTaskProtocol: URLSessionTask {
+    func resume()
+}

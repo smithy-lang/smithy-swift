@@ -15,9 +15,9 @@
 
 import Foundation
 
-class HttpClientDelegate: NSObject, URLSessionDownloadDelegate {
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        //TODO: implement
-    }
-
-}
+//class HttpClientDelegate: NSObject, URLSessionDownloadDelegate {
+//    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+//        //TODO: implement
+//    }
+//
+//}

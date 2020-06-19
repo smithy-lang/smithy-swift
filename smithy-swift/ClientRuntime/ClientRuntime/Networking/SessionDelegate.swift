@@ -23,7 +23,6 @@ class SessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate, URL
     init(operationQueue: OperationQueue) {
         self.operationQueue = operationQueue
         super.init()
-        startRunLoop()
     }
     
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
@@ -63,7 +62,7 @@ class SessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate, URL
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         print("did complete")
-        startRunLoop()
+        CFRunLoopStop(CFRunLoopGetCurrent())
         let operation = self.operationQueue.networkOperations.first(where: {$0.task == task})
         guard let error = error else {
             //completed with error but error is nil? what to do here
@@ -79,12 +78,6 @@ class SessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate, URL
         let operation = self.operationQueue.networkOperations.first(where: {$0.task == task})
         let streamingOperation = operation as! StreamingNetworkOperation
         completionHandler(streamingOperation.streamingProvider?.boundStreams.input)
-        startRunLoop(isRunning: true)
-    }
-    
-    public func startRunLoop(isRunning: Bool = false) {
-        repeat {
-        RunLoop.current.run(mode: .default, before: .distantFuture)
-        } while (isRunning)
+        CFRunLoopRun()
     }
 }

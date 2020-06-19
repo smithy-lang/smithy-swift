@@ -17,7 +17,7 @@ import Foundation
 
 public class HttpClient {
     
-    let session: URLSession
+    let session: SessionProtocol
     let operationQueue: OperationQueue
     
     public init(config: HttpClientConfiguration) {
@@ -26,36 +26,22 @@ public class HttpClient {
         self.session = URLSession(configuration: config.toUrlSessionConfig(), delegate: delegate, delegateQueue: config.operationQueue)
     }
     
+    init(session: SessionProtocol, config: HttpClientConfiguration) {
+        self.session = session
+        self.operationQueue = config.operationQueue
+    }
+    
     public func execute(request: HttpRequest,  completion: @escaping NetworkResult) -> StreamingProvider? {
-        
-
-            switch request.body {
-            case .data, .file, .none :
-                let operation = DataNetworkOperation(session: session, request: request, completion: completion)
-                operationQueue.addOperation(operation)
-            case .stream:
-                let streamingProvider = StreamingProvider()
-                let operation = StreamingNetworkOperation(session: session, request: request, streamingProvider: streamingProvider, completion: completion)
-                operationQueue.addOperation(operation)
-                return streamingProvider
+        switch request.body {
+        case .data, .file, .none :
+            let operation = DataNetworkOperation(session: session, request: request, completion: completion)
+            operationQueue.addOperation(operation)
+        case .stream:
+            let streamingProvider = StreamingProvider()
+            let operation = StreamingNetworkOperation(session: session, request: request, streamingProvider: streamingProvider, completion: completion)
+            operationQueue.addOperation(operation)
+            return streamingProvider
         }
         return nil
     }
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
