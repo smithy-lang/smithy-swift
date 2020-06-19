@@ -28,7 +28,7 @@ class JsonSerializerTest {
         )
         val json = JsonSerializer()
         a.serialize(json)
-        assertEquals("""{"b":{"value":2}}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"b":{"value":2}}""", json.toByteArray().decodeToString())
     }
 
     class A(private val b: B) : SdkSerializable {
@@ -68,7 +68,7 @@ class JsonSerializerTest {
                 value.serialize(json)
             }
         }
-        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.getBytes()!!.decodeToString())
+        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.toByteArray().decodeToString())
     }
 
     @Test
@@ -91,7 +91,7 @@ class JsonSerializerTest {
                 entry(obj.key, obj.value)
             }
         }
-        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.toByteArray().decodeToString())
     }
 
     @Test
@@ -99,7 +99,7 @@ class JsonSerializerTest {
         val json = JsonSerializer()
         data.serialize(json)
 
-        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
     }
 }
 

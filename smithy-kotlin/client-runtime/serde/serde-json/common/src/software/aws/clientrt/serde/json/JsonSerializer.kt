@@ -20,8 +20,8 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
 
     private val jsonWriter = jsonStreamWriter()
 
-    fun getBytes(): ByteArray? {
-        return jsonWriter.bytes
+    override fun toByteArray(): ByteArray {
+        return jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
     }
 
     override fun beginStruct(): StructSerializer {
