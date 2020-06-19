@@ -20,7 +20,7 @@ class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
     var streamingProvider: StreamingProvider?
     
     
-    init(session: URLSession, request: HttpRequest, streamingProvider: StreamingProvider, completion: @escaping NetworkResult) {
+    init(session: SessionProtocol, request: HttpRequest, streamingProvider: StreamingProvider, completion: @escaping NetworkResult) {
         super.init()
         self.completion = completion
         self.streamingProvider = streamingProvider

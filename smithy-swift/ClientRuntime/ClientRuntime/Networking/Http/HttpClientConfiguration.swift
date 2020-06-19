@@ -16,16 +16,21 @@
 import Foundation
 
 public class HttpClientConfiguration {
-    public let protocolType: ProtocolType = .https
+    public var protocolType: ProtocolType
     //initialize with default headers
-    public let defaultHeaders: HttpHeaders = HttpHeaders()
+    public var defaultHeaders: HttpHeaders
     
-    public let operationQueue: OperationQueue = OperationQueue()
+    public var operationQueue: OperationQueue
+    
+    public var protocolClasses: [AnyClass]?
     
     //add any other properties here you want to give the service operations control over to be mappted to the urlsessionconfig below
 
-    public init() {
-       
+    public init(protocolType: ProtocolType = .https, defaultHeaders: HttpHeaders = HttpHeaders(), operationQueue: OperationQueue = OperationQueue(), protocolClasses: [AnyClass]? = nil) {
+        self.protocolType = protocolType
+        self.defaultHeaders = defaultHeaders
+        self.operationQueue = operationQueue
+        self.protocolClasses = protocolClasses
     }
 }
 
@@ -41,6 +46,9 @@ extension HttpClientConfiguration {
         config.operationQueue = self.operationQueue
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         
+        if let protocolClasses = self.protocolClasses {
+            config.protocolClasses = protocolClasses
+        }
         
         return config
         

@@ -15,7 +15,9 @@
 
 import Foundation
 
+/*
 public protocol MqttOperationError: OperationError {
     var mqttResponse: MqttResponse {get set}
     
 }
+*/

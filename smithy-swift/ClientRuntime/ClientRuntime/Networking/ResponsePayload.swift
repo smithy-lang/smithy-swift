@@ -26,7 +26,7 @@ public struct ResponsePayload {
     
     public func decode<T: Decodable>() -> Result<T, ClientError> {
         do {
-            let result: T = try decoder.decode(responseBody: body)
+            let result: T = try decoder.decodeResponse(responseBody: body)
             return .success(result)
         } catch let jsonErr {
             return .failure(ClientError.deserializationFailed(jsonErr))
