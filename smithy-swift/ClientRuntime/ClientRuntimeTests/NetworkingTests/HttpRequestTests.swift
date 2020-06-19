@@ -17,60 +17,40 @@ import XCTest
 import ClientRuntime
 
 
-class HttpRequestTests: XCTestCase {
-    
-    let path = "/path/to/endpoint"
-    var host = "myapi.host.com"
-    var queryItems = [URLQueryItem]()
-    var endpoint: Endpoint!
-    var headers = HttpHeaders()
-    var body: String!
-    var bodyAsData:String!
-    var bodyAsStream: InputStream!
-    
+class HttpRequestTests: NetworkingTestUtils {
+        
     override func setUp() {
-        queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
-        endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
-        headers.add(name: "header-item-name", value: "header-item-value")
-        body = "{parameter:value}"
+        super.setUp()
     }
 
     func testHttpDataRequestToUrlRequest() {
-        let httpBody = HttpBody.data(body.data(using: .utf8))
-        let httpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
-        let urlRequest = try? httpDataRequest.toUrlRequest()
+        let urlRequest = try? mockHttpDataRequest.toUrlRequest()
         
         XCTAssertNotNil(urlRequest)
         
-        XCTAssertEqual(urlRequest!.headers.dictionary, headers.dictionary)
+        XCTAssertEqual(urlRequest!.headers.dictionary, mockHttpDataRequest.headers.dictionary)
         XCTAssertEqual(urlRequest!.httpMethod, "GET")
-        XCTAssertEqual(String(data: urlRequest!.httpBody!, encoding: .utf8), body)
-        XCTAssertEqual(urlRequest!.url, URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value"))
+        XCTAssertEqual(urlRequest?.httpBody, expectedMockRequestData)
+        XCTAssertEqual(urlRequest!.url, expectedMockRequestURL)
     }
     
     func testHttpStreamRequestToUrlRequest() {
-        let httpBody = HttpBody.stream(InputStream(data: body.data(using: .utf8)!))
-        let httpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
-        let urlRequest = try? httpDataRequest.toUrlRequest()
+        let urlRequest = try? mockHttpStreamRequest.toUrlRequest()
         
         XCTAssertNotNil(urlRequest)
         
-        XCTAssertEqual(urlRequest!.headers.dictionary, headers.dictionary)
+        XCTAssertEqual(urlRequest!.headers.dictionary, mockHttpStreamRequest.headers.dictionary)
         XCTAssertEqual(urlRequest!.httpMethod, "GET")
         
         let dataFromStream = try? Data(reading: urlRequest!.httpBodyStream!)
         XCTAssertNotNil(dataFromStream)
         
-        XCTAssertEqual(String(data: dataFromStream!, encoding: .utf8), body)
-        XCTAssertEqual(urlRequest!.url, URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value"))
+        XCTAssertEqual(dataFromStream, expectedMockRequestData)
+        XCTAssertEqual(urlRequest!.url, expectedMockRequestURL)
     }
     
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // TODO:: When is the endpoint invalid or endpoint.url nil?
-        endpoint = Endpoint(host: "", path: "", protocolType: nil)
-        
-        let httpBody = HttpBody.data(body.data(using: .utf8))
-        let httpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
-        
+        let _ = Endpoint(host: "", path: "", protocolType: nil)
     }
 }

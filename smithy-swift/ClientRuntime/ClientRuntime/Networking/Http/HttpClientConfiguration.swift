@@ -26,7 +26,10 @@ public class HttpClientConfiguration {
     
     //add any other properties here you want to give the service operations control over to be mappted to the urlsessionconfig below
 
-    public init(protocolType: ProtocolType = .https, defaultHeaders: HttpHeaders = HttpHeaders(), operationQueue: OperationQueue = OperationQueue(), protocolClasses: [AnyClass]? = nil) {
+    public init(protocolType: ProtocolType = .https,
+                defaultHeaders: HttpHeaders = HttpHeaders(),
+                operationQueue: OperationQueue = OperationQueue(),
+                protocolClasses: [AnyClass]? = nil) {
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
         self.operationQueue = operationQueue

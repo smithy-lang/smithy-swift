@@ -18,14 +18,13 @@ import XCTest
 
 class URLSessionDelegateTests: NetworkingTestUtils {
 
-    var httpClientConfiguration: HttpClientConfiguration!
     var httpClient: HttpClient!
     var expectedResponsePayload: Data!
     
     override func setUp() {
         super.setUp()
-        httpClientConfiguration = HttpClientConfiguration(operationQueue: mockOperationQueue, protocolClasses: [MockURLProtocol.self])
-        httpClient = HttpClient(config: httpClientConfiguration!)
+        let httpClientConfiguration = HttpClientConfiguration(operationQueue: mockOperationQueue, protocolClasses: [MockURLProtocol.self])
+        httpClient = HttpClient(config: httpClientConfiguration)
         expectedResponsePayload = "{resultKey: resultValue}".data(using: .utf8)!
     }
     
