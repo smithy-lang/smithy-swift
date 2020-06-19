@@ -20,6 +20,7 @@ import XCTest
 class NetworkingTestUtils: XCTestCase {
     
     var mockHttpDataRequest: HttpRequest!
+    var mockHttpStreamRequest: HttpRequest!
     var expectedMockRequestURL: URL!
     var expectedMockRequestData: Data!
     var mockOperationQueue: OperationQueue!
@@ -32,24 +33,43 @@ class NetworkingTestUtils: XCTestCase {
         mockOperationQueue = OperationQueue()
         mockOperationQueue.name = "mock-operation-queue"
         setMockHttpDataRequest()
+        setMockHttpStreamRequest()
     }
     
     /*
      Create a mock HttpRequest with valid data payload
      */
     func setMockHttpDataRequest() {
-        let path = "/path/to/endpoint"
-        let host = "myapi.host.com"
-        var queryItems = [URLQueryItem]()
-        var endpoint: Endpoint!
+        let endpoint = getMockEndpoint()
         var headers = HttpHeaders()
         
-        queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
-        endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
         headers.add(name: "header-item-name", value: "header-item-value")
         
         let httpBody = HttpBody.data(expectedMockRequestData)
         mockHttpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+    }
+    
+    /*
+     Create a mock HttpRequest with valid InputStream
+     */
+    func setMockHttpStreamRequest() {
+        let endpoint = getMockEndpoint()
+        var headers = HttpHeaders()
+        headers.add(name: "header-item-name", value: "header-item-value")
+        
+        let httpBody = HttpBody.stream(InputStream(data: expectedMockRequestData))
+        mockHttpStreamRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+    }
+    
+    func getMockEndpoint() -> Endpoint {
+        let path = "/path/to/endpoint"
+        let host = "myapi.host.com"
+        var queryItems = [URLQueryItem]()
+        let endpoint: Endpoint!
+        
+        queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
+        endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        return endpoint
     }
     
     func testHttpStatusCodeDescriptionWorks() {

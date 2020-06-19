@@ -18,14 +18,13 @@ import XCTest
 
 class HttpClientTests: NetworkingTestUtils {
     
-    var httpClientConfiguration: HttpClientConfiguration!
     var httpClient: HttpClient!
     let mockSession = MockURLSession()
     
     override func setUp() {
         super.setUp()
-        httpClientConfiguration = HttpClientConfiguration(operationQueue: mockOperationQueue)
-        httpClient = HttpClient(session: mockSession, config: httpClientConfiguration!)
+        let httpClientConfiguration = HttpClientConfiguration(operationQueue: mockOperationQueue)
+        httpClient = HttpClient(session: mockSession, config: httpClientConfiguration)
     }
     
     override func tearDown() {

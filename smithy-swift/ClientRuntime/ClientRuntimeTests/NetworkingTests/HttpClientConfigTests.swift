@@ -21,7 +21,6 @@ class HttpClientConfigTests: NetworkingTestUtils {
     
     var protocolType: ProtocolType!
     var headers: HttpHeaders = HttpHeaders()
-    var operationQueue: OperationQueue!
     var protocolClasses: [AnyClass]!
 
     override func setUp() {
