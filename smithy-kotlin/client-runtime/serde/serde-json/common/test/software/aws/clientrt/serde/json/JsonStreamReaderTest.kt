@@ -14,10 +14,10 @@
  */
 package software.aws.clientrt.serde.json
 
-import java.lang.Math.abs
+import kotlin.math.abs
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.Test
 
 fun JsonStreamReader.allTokens(): List<JsonToken> {
     val tokens = mutableListOf<JsonToken>()
@@ -48,6 +48,7 @@ fun assertTokensAreEqual(expected: List<JsonToken>, actual: List<JsonToken>) {
     }
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 class JsonStreamReaderTest {
     @Test
     fun `it deserializes objects`() {
@@ -56,8 +57,8 @@ class JsonStreamReaderTest {
                 "x": 1,
                 "y": "2"
             }
-        """.trimIndent().toByteArray()
-        val actual = JsonStreamReader(payload).allTokens()
+        """.trimIndent().encodeToByteArray()
+        val actual = jsonStreamReader(payload).allTokens()
 
         val expected = listOf(
             JsonToken.BeginObject,
@@ -89,30 +90,36 @@ class JsonStreamReaderTest {
             },
             "null": null
         }
-        """.trimIndent().toByteArray()
-        val actual = JsonStreamReader(payload).allTokens()
+        """.trimIndent().encodeToByteArray()
+        val actual = jsonStreamReader(payload).allTokens()
         val expected = listOf(
             JsonToken.BeginObject,
-                JsonToken.Name("num"), JsonToken.Number(1.0),
-                JsonToken.Name("str"), JsonToken.String("string"),
-                JsonToken.Name("list"),
-                JsonToken.BeginArray,
-                    JsonToken.Number(1.0),
-                    JsonToken.Number(2.3456),
-                    JsonToken.String("3"),
-                JsonToken.EndArray,
-                JsonToken.Name("nested"),
-                JsonToken.BeginObject,
-                    JsonToken.Name("l2"),
-                    JsonToken.BeginArray,
-                        JsonToken.BeginObject,
-                            JsonToken.Name("x"), JsonToken.String("x"),
-                            JsonToken.Name("bool"), JsonToken.Bool(true),
-                        JsonToken.EndObject,
-                    JsonToken.EndArray,
-                    JsonToken.Name("falsey"), JsonToken.Bool(false),
-                JsonToken.EndObject,
-                JsonToken.Name("null"), JsonToken.Null,
+            JsonToken.Name("num"),
+            JsonToken.Number(1.0),
+            JsonToken.Name("str"),
+            JsonToken.String("string"),
+            JsonToken.Name("list"),
+            JsonToken.BeginArray,
+            JsonToken.Number(1.0),
+            JsonToken.Number(2.3456),
+            JsonToken.String("3"),
+            JsonToken.EndArray,
+            JsonToken.Name("nested"),
+            JsonToken.BeginObject,
+            JsonToken.Name("l2"),
+            JsonToken.BeginArray,
+            JsonToken.BeginObject,
+            JsonToken.Name("x"),
+            JsonToken.String("x"),
+            JsonToken.Name("bool"),
+            JsonToken.Bool(true),
+            JsonToken.EndObject,
+            JsonToken.EndArray,
+            JsonToken.Name("falsey"),
+            JsonToken.Bool(false),
+            JsonToken.EndObject,
+            JsonToken.Name("null"),
+            JsonToken.Null,
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
@@ -136,8 +143,8 @@ class JsonStreamReaderTest {
              },
             "y": 2
         }
-        """.trimIndent().toByteArray()
-        val reader = JsonStreamReader(payload)
+        """.trimIndent().encodeToByteArray()
+        val reader = jsonStreamReader(payload)
         // skip x
         reader.apply {
             nextToken() // begin obj
@@ -161,8 +168,8 @@ class JsonStreamReaderTest {
             "z": "unknown",
             "y": 2
         }
-        """.trimIndent().toByteArray()
-        val reader = JsonStreamReader(payload)
+        """.trimIndent().encodeToByteArray()
+        val reader = jsonStreamReader(payload)
         // skip x
         reader.apply {
             nextToken() // begin obj

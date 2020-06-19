@@ -23,7 +23,9 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize class with class field`() {
-        val a = A(B(2))
+        val a = A(
+            B(2)
+        )
         val json = JsonSerializer()
         a.serialize(json)
         assertEquals("""{"b":{"value":2}}""", json.getBytes()!!.decodeToString())
@@ -55,7 +57,11 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize list of classes`() {
-        val obj = listOf(B(1), B(2), B(3))
+        val obj = listOf(
+            B(1),
+            B(2),
+            B(3)
+        )
         val json = JsonSerializer()
         json.serializeList {
             for (value in obj) {
@@ -67,7 +73,18 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize map`() {
-        val objs = mapOf("A1" to A(B(1)), "A2" to A(B(2)), "A3" to A(B(3)))
+        val objs = mapOf("A1" to A(
+            B(1)
+        ), "A2" to A(
+            B(
+                2
+            )
+        ), "A3" to A(
+            B(
+                3
+            )
+        )
+        )
         val json = JsonSerializer()
         json.serializeMap {
             for (obj in objs) {
@@ -138,6 +155,6 @@ data class Primitives(
 }
 
 val data = Primitives(
-        Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-        null, listOf(1, 2, 3)
+    Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
+    null, listOf(1, 2, 3)
 )

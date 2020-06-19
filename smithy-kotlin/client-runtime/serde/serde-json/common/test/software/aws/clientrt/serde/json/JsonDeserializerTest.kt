@@ -16,17 +16,17 @@ package software.aws.clientrt.serde.json
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
-import java.lang.RuntimeException
 import kotlin.math.abs
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.Test
 import software.aws.clientrt.serde.*
 
+@OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
     @Test
     fun `it handles doubles`() {
-        val payload = "1.2".toByteArray()
+        val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeDouble()
         val expected = 1.2
@@ -35,7 +35,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles floats`() {
-        val payload = "1.2".toByteArray()
+        val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeFloat()
         val expected = 1.2f
@@ -44,7 +44,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles int`() {
-        val payload = "1.2".toByteArray()
+        val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeInt()
         val expected = 1
@@ -53,7 +53,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles short`() {
-        val payload = "1.2".toByteArray()
+        val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeShort()
         val expected: Short = 1
@@ -62,7 +62,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles long`() {
-        val payload = "1.2".toByteArray()
+        val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeLong()
         val expected = 1L
@@ -71,7 +71,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles bool`() {
-        val payload = "true".toByteArray()
+        val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeBool()
         assertTrue(actual)
@@ -79,7 +79,7 @@ class JsonDeserializerTest {
 
     @Test
     fun `it handles lists`() {
-        val payload = "[1,2,3]".toByteArray()
+        val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList {
             val list = mutableListOf<Int>()
@@ -99,7 +99,7 @@ class JsonDeserializerTest {
                 "key1": 1,
                 "key2": 2
             }
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeMap {
             val map = mutableMapOf<String, Int>()
@@ -130,7 +130,7 @@ class JsonDeserializerTest {
             "x": 1,
             "y": 2
         }
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val deserializer = JsonDeserializer(payload)
         var x: Int? = null
@@ -156,7 +156,7 @@ class JsonDeserializerTest {
             "z": "unknown field",
             "y": 2
         }
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val deserializer = JsonDeserializer(payload)
         val struct = deserializer.deserializeStruct(null)
@@ -228,7 +228,10 @@ class JsonDeserializerTest {
                 val nested = Nested()
                 loop@ while (true) {
                     when (struct.nextField(OBJ_DESCRIPTOR)) {
-                        NESTED2_FIELD_DESCRIPTOR.index -> nested.nested2 = Nested2.deserialize(deserializer)
+                        NESTED2_FIELD_DESCRIPTOR.index -> nested.nested2 =
+                            Nested2.deserialize(
+                                deserializer
+                            )
                         BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializer.deserializeBool()
                         Deserializer.FieldIterator.EXHAUSTED -> break@loop
                         else -> throw RuntimeException("unexpected field during test")
@@ -311,7 +314,7 @@ class JsonDeserializerTest {
                 "key2": "value2"
             }
         }
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val deserializer = JsonDeserializer(payload)
         val struct = deserializer.deserializeStruct(null)
@@ -331,7 +334,10 @@ class JsonDeserializerTest {
                     return@deserializeList list
                 }
                 KitchenSinkTest.DOUBLE_FIELD_DESCRIPTOR.index -> sink.doubleField = struct.deserializeDouble()
-                KitchenSinkTest.NESTED_FIELD_DESCRIPTOR.index -> sink.nestedField = Nested.deserialize(deserializer)
+                KitchenSinkTest.NESTED_FIELD_DESCRIPTOR.index -> sink.nestedField =
+                    Nested.deserialize(
+                        deserializer
+                    )
                 KitchenSinkTest.FLOAT_FIELD_DESCRIPTOR.index -> sink.floatField = struct.deserializeFloat()
                 KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index -> sink.mapField = deserializer.deserializeMap() {
                     val map = mutableMapOf<String, String>()

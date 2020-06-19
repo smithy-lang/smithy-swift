@@ -186,6 +186,6 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
 }
 
 /*
-* Creates JsonStreamWriter to write Json using Gson in the background.
+* Creates a [JsonStreamWriter] instance to write JSON
 */
-fun JsonStreamWriter(pretty: Boolean = false): JsonStreamWriter = JsonStreamWriterGson(pretty)
+internal actual fun jsonStreamWriter(pretty: Boolean): JsonStreamWriter = JsonStreamWriterGson(pretty)

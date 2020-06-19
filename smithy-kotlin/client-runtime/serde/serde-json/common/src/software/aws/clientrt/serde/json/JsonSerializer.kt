@@ -18,7 +18,7 @@ import software.aws.clientrt.serde.*
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
 
-    private val jsonWriter = JsonStreamWriter()
+    private val jsonWriter = jsonStreamWriter()
 
     fun getBytes(): ByteArray? {
         return jsonWriter.bytes

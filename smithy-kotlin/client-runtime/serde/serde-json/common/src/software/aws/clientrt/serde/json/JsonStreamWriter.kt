@@ -104,3 +104,8 @@ interface JsonStreamWriter {
      */
     val bytes: ByteArray?
 }
+
+/*
+* Creates a [JsonStreamWriter] instance to write JSON
+*/
+internal expect fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter

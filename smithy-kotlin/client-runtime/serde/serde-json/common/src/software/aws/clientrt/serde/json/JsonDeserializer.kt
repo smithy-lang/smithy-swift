@@ -25,7 +25,7 @@ private enum class IteratorMode {
 }
 
 class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator, Deserializer.EntryIterator {
-    private val reader = JsonStreamReader(payload)
+    private val reader = jsonStreamReader(payload)
 
     private var iteratorMode = IteratorMode.LIST
 

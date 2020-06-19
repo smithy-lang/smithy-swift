@@ -33,3 +33,8 @@ interface JsonStreamReader {
      */
     fun peek(): RawJsonToken
 }
+
+/*
+* Creates a [JsonStreamReader] instance
+*/
+internal expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader
