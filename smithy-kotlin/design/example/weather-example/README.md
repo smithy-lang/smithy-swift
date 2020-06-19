@@ -1,0 +1,1 @@
+This sample is to work out the codegen for service interactions that involve basic request/response interactions.  It is based on a variation on the Smith weather example.

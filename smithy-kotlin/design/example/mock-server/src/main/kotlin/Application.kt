@@ -50,6 +50,45 @@ fun Application.module() {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
 
+        // This is for weather-example.
+        get("/current-time") {
+            call.respondText(contentType = ContentType.Application.Json) {
+                """
+                    { "time" : ${System.currentTimeMillis()} }
+                """.trimIndent()
+            }
+        }
+
+        get("/cities/{cityId}") {
+            val cityId = call.parameters["cityId"]
+
+            call.respondText(contentType = ContentType.Application.JavaScript) {
+                """
+                    {
+                        "city": {
+                            "case": "somecase",
+                            "cityId": "$cityId",
+                            "name": "$cityId has a name",
+                            "number": "one"
+                        },
+                        "coordinates": {
+                            "latitude": 3.23423,
+                            "longitude": 1.234234
+                        },
+                        "name": "$cityId has a name" 
+                    }
+                """.trimIndent()
+            }
+        }
+
+        get("/cities/{cityId}/image") {
+            val cityId = call.parameters["cityId"]
+
+            call.respondBytes(contentType = ContentType.Image.JPEG) {
+                "here are some bytes".toByteArray()
+            }
+        }
+
         get("/getObject/{Bucket}/{Key}") {
             val bucket = call.parameters["Bucket"]
             val key = call.parameters["Key"]
