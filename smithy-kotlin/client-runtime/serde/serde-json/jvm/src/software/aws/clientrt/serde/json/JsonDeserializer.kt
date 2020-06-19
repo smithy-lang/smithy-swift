@@ -14,25 +14,10 @@
  */
 package software.aws.clientrt.serde.json
 
-import software.aws.clientrt.serde.DeserializationException
 import software.aws.clientrt.serde.Deserializer
+import software.aws.clientrt.serde.DeserializerStateException
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SdkObjectDescriptor
-
-/**
- * Exception thrown when the tokenent deserializer state does not meet the expected
- * state for the last operation requested (e.g. attempting to deserialize a struct
- * when the next token is a property name or number).
- */
-class DeserializerStateException : DeserializationException {
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
-}
 
 private enum class IteratorMode {
     LIST,

@@ -19,7 +19,6 @@ import java.io.BufferedWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
-import software.aws.clientrt.serde.json.exception.JsonGenerationException
 
 /**
  * Thin wrapper around Gson's JSON generator. Uses the gson.stream library's JsonWriter.
