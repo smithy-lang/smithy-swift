@@ -16,7 +16,6 @@
 import XCTest
 import ClientRuntime
 
-
 class HttpRequestTests: NetworkingTestUtils {
         
     override func setUp() {
