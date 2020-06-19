@@ -52,6 +52,15 @@ class JsonDeserializerTest {
     }
 
     @Test
+    fun `it handles byte as number`() {
+        val payload = "1".encodeToByteArray()
+        val deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeByte()
+        val expected: Byte = 1
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun `it handles short`() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)

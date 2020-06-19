@@ -34,10 +34,10 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     // return the next token and require that it be of type [TExpected] or else throw an exception
-    private inline fun <reified TExpected> nextToken(): JsonToken {
+    private inline fun <reified TExpected : JsonToken> nextToken(): TExpected {
         val token = reader.nextToken()
         requireToken<TExpected>(token)
-        return token
+        return token as TExpected
     }
 
     // require that the given token be of type [TExpected] or else throw an exception
@@ -47,9 +47,10 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         }
     }
 
-    override fun deserializeByte(): Byte {
-        TODO("Not yet implemented")
-    }
+    // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
+    // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
+    // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
+    override fun deserializeByte(): Byte = deserializeDouble().toByte()
 
     override fun deserializeInt(): Int = deserializeDouble().toInt()
 
@@ -61,7 +62,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeDouble(): Double {
         val token = nextToken<JsonToken.Number>()
-        return (token as JsonToken.Number).value
+        return token.value
     }
 
     override fun deserializeString(): String {
@@ -71,7 +72,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeBool(): Boolean {
         val token = nextToken<JsonToken.Bool>()
-        return (token as JsonToken.Bool).value
+        return token.value
     }
 
     override fun deserializeStruct(descriptor: SdkFieldDescriptor?): Deserializer.FieldIterator {
@@ -89,7 +90,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             RawJsonToken.EndDocument -> Deserializer.FieldIterator.EXHAUSTED
             else -> {
                 val token = nextToken<JsonToken.Name>()
-                val propertyName = (token as JsonToken.Name).value
+                val propertyName = token.value
                 val field = descriptor.fields.find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
@@ -115,7 +116,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun key(): String {
         val token = nextToken<JsonToken.Name>()
-        return (token as JsonToken.Name).value
+        return token.value
     }
 
     // next has to work for different modes of iteration (list vs map entries)
