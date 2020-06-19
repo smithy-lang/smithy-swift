@@ -113,12 +113,29 @@ class JsonDeserializerTest {
     }
 
     class BasicStructTest {
+        var x: Int? = null
+        var y: Int? = null
         companion object {
             val X_DESCRIPTOR = SdkFieldDescriptor("x")
             val Y_DESCRIPTOR = SdkFieldDescriptor("y")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
+            }
+
+            fun deserialize(deserializer: Deserializer): BasicStructTest {
+                val result = BasicStructTest()
+                deserializer.deserializeStruct(null) {
+                    loop@ while (true) {
+                        when (nextField(OBJ_DESCRIPTOR)) {
+                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                            else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
+                        }
+                    }
+                }
+                return result
             }
         }
     }
@@ -146,6 +163,35 @@ class JsonDeserializerTest {
         }
         assertEquals(1, x)
         assertEquals(2, y)
+    }
+
+    @Test
+    fun `it handles list of objects`() {
+        val payload = """
+        [
+            {
+                "x": 1,
+                "y": 2
+            },
+            {
+                "x": 3,
+                "y": 4
+            }
+        ]
+        """.trimIndent().encodeToByteArray()
+        val deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeList {
+            val list = mutableListOf<BasicStructTest>()
+            while (next() != Deserializer.ElementIterator.EXHAUSTED) {
+                list.add(BasicStructTest.deserialize(deserializer))
+            }
+            return@deserializeList list
+        }
+        assertEquals(2, actual.size)
+        assertEquals(1, actual[0].x)
+        assertEquals(2, actual[0].y)
+        assertEquals(3, actual[1].x)
+        assertEquals(4, actual[1].y)
     }
 
     @Test
