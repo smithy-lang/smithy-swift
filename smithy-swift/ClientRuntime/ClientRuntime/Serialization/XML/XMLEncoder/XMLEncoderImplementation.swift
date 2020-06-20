@@ -16,7 +16,7 @@ class XMLEncoderImplementation: Encoder {
     /// The path to the current point in encoding.
     public var codingPath: [CodingKey]
 
-    public var nodeEncodings: [(CodingKey) -> NodeEncoding]
+    public var nodeEncodings: [(CodingKey) -> XMLEncoder.NodeEncoding]
 
     /// Contextual user-provided information for use during encoding.
     public var userInfo: [CodingUserInfoKey: Any] {
@@ -28,7 +28,7 @@ class XMLEncoderImplementation: Encoder {
     /// Initializes `self` with the given top-level encoder options.
     init(
         options: XMLEncoderOptions,
-        nodeEncodings: [(CodingKey) -> NodeEncoding],
+        nodeEncodings: [(CodingKey) -> XMLEncoder.NodeEncoding],
         codingPath: [CodingKey] = []
     ) {
         self.options = options

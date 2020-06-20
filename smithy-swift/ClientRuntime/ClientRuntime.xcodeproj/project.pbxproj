@@ -116,6 +116,7 @@
 		43DD778E249AB23D0038F7AB /* XMLKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD778D249AB23D0038F7AB /* XMLKeyTests.swift */; };
 		43DD7791249AB2FA0038F7AB /* XMLTreeParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7790249AB2FA0038F7AB /* XMLTreeParserTests.swift */; };
 		43DD7793249BED370038F7AB /* HttpSerializeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7792249BED370038F7AB /* HttpSerializeTests.swift */; };
+		43DD7796249D6FE00038F7AB /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7795249D6FE00038F7AB /* Data+Extensions.swift */; };
 		958620AD24917D7A00EAE3FA /* SessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 958620AC24917D7A00EAE3FA /* SessionDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -242,6 +243,7 @@
 		43DD778D249AB23D0038F7AB /* XMLKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLKeyTests.swift; sourceTree = "<group>"; };
 		43DD7790249AB2FA0038F7AB /* XMLTreeParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLTreeParserTests.swift; sourceTree = "<group>"; };
 		43DD7792249BED370038F7AB /* HttpSerializeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpSerializeTests.swift; sourceTree = "<group>"; };
+		43DD7795249D6FE00038F7AB /* Data+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		958620AC24917D7A00EAE3FA /* SessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -492,6 +494,7 @@
 		43DD76FB2491533C0038F7AB /* PrimitiveTypeExtensions */ = {
 			isa = PBXGroup;
 			children = (
+				43DD7795249D6FE00038F7AB /* Data+Extensions.swift */,
 				43DD76FC2491533C0038F7AB /* String+Extensions.swift */,
 			);
 			path = PrimitiveTypeExtensions;
@@ -753,6 +756,7 @@
 				43DD77082491533C0038F7AB /* HttpSerialize.swift in Sources */,
 				43DD77112491533C0038F7AB /* HttpUrlResponse.swift in Sources */,
 				43DD77322491533C0038F7AB /* XMLAnySequence.swift in Sources */,
+				43DD7796249D6FE00038F7AB /* Data+Extensions.swift in Sources */,
 				43DD772A2491533C0038F7AB /* XMLEncoderOptions.swift in Sources */,
 				43DD7764249701950038F7AB /* SessionProtocol.swift in Sources */,
 				43DD77312491533C0038F7AB /* XMLAttributeRepresentable.swift in Sources */,
