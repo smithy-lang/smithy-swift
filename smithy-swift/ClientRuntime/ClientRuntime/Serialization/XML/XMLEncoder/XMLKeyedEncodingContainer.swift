@@ -41,25 +41,25 @@ struct XMLKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProtocol {
         case .useDefaultKeys:
             return key
         case .convertToSnakeCase:
-            let newKeyString = KeyEncodingStrategy
+            let newKeyString = XMLEncoder.KeyEncodingStrategy
                 ._convertToSnakeCase(key.stringValue)
             return XMLKey(stringValue: newKeyString, intValue: key.intValue)
         case .convertToKebabCase:
-            let newKeyString = KeyEncodingStrategy
+            let newKeyString = XMLEncoder.KeyEncodingStrategy
                 ._convertToKebabCase(key.stringValue)
             return XMLKey(stringValue: newKeyString, intValue: key.intValue)
         case let .custom(converter):
             return converter(codingPath + [key])
         case .capitalized:
-            let newKeyString = KeyEncodingStrategy
+            let newKeyString = XMLEncoder.KeyEncodingStrategy
                 ._convertToCapitalized(key.stringValue)
             return XMLKey(stringValue: newKeyString, intValue: key.intValue)
         case .uppercased:
-            let newKeyString = KeyEncodingStrategy
+            let newKeyString = XMLEncoder.KeyEncodingStrategy
                 ._convertToUppercased(key.stringValue)
             return XMLKey(stringValue: newKeyString, intValue: key.intValue)
         case .lowercased:
-            let newKeyString = KeyEncodingStrategy
+            let newKeyString = XMLEncoder.KeyEncodingStrategy
                 ._convertToLowercased(key.stringValue)
             return XMLKey(stringValue: newKeyString, intValue: key.intValue)
         }

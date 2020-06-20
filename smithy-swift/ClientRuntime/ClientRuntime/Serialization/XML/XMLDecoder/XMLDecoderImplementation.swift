@@ -14,7 +14,7 @@ class XMLDecoderImplementation: Decoder {
     var storage: XMLDecodingStorage = XMLDecodingStorage()
 
     /// Options set on the top-level decoder.
-    let options: XMLDecoder.Options
+    let options: XMLDecoderOptions
 
     /// The path to the current point in encoding.
     public internal(set) var codingPath: [CodingKey]
@@ -34,7 +34,7 @@ class XMLDecoderImplementation: Decoder {
     /// Initializes `self` with the given top-level container and options.
     init(
         referencing container: XMLContainer,
-        options: XMLDecoder.Options,
+        options: XMLDecoderOptions,
         nodeDecodings: [(CodingKey) -> XMLDecoder.NodeDecoding],
         codingPath: [CodingKey] = []
     ) {

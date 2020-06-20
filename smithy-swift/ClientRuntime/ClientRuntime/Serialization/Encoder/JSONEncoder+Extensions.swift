@@ -16,8 +16,7 @@
 import Foundation
 
 extension JSONEncoder: RequestEncoder {
-    
-    public func encode<T>(_ value: T) throws -> Data where T : Encodable {
+    public func encodeRequest<T>(_ value: T) throws -> Data where T : Encodable {
         return try encode(value)
     }
 }

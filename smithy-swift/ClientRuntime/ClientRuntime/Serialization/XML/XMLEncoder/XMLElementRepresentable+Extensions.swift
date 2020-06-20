@@ -15,7 +15,7 @@ extension XMLElementRepresentable {
     ]
     
     func toXMLString(with header: XMLHeader? = nil,
-                     formatting: OutputFormatting) -> String {
+                     formatting: XMLEncoder.OutputFormatting) -> String {
         if let header = header, let headerXML = header.toXML() {
             return headerXML + _toXMLString(formatting: formatting)
         }
@@ -25,7 +25,7 @@ extension XMLElementRepresentable {
     private func formatUnsortedXMLElements(
         _ string: inout String,
         _ level: Int,
-        _ formatting: OutputFormatting,
+        _ formatting: XMLEncoder.OutputFormatting,
         _ prettyPrinted: Bool
     ) {
         formatXMLElements(
@@ -40,7 +40,7 @@ extension XMLElementRepresentable {
     fileprivate func elementString(
         for element: XMLElementRepresentable,
         at level: Int,
-        formatting: OutputFormatting,
+        formatting: XMLEncoder.OutputFormatting,
         prettyPrinted: Bool
     ) -> String {
         if let stringValue = element.stringValue {
@@ -58,7 +58,7 @@ extension XMLElementRepresentable {
     fileprivate func formatSortedXMLElements(
         _ string: inout String,
         _ level: Int,
-        _ formatting: OutputFormatting,
+        _ formatting: XMLEncoder.OutputFormatting,
         _ prettyPrinted: Bool
     ) {
         formatXMLElements(from: elements.sorted { $0.key < $1.key },
@@ -85,7 +85,7 @@ extension XMLElementRepresentable {
         from elements: [XMLElementRepresentable],
         into string: inout String,
         at level: Int,
-        formatting: OutputFormatting,
+        formatting: XMLEncoder.OutputFormatting,
         prettyPrinted: Bool
     ) {
         for element in elements {
@@ -107,7 +107,7 @@ extension XMLElementRepresentable {
     }
 
     private func formatXMLAttributes(
-        _ formatting: OutputFormatting,
+        _ formatting: XMLEncoder.OutputFormatting,
         _ string: inout String
     ) {
         if formatting.contains(.sortedKeys) {
@@ -118,7 +118,7 @@ extension XMLElementRepresentable {
     }
 
     private func formatXMLElements(
-        _ formatting: OutputFormatting,
+        _ formatting: XMLEncoder.OutputFormatting,
         _ string: inout String,
         _ level: Int,
         _ prettyPrinted: Bool
@@ -136,7 +136,7 @@ extension XMLElementRepresentable {
 
     private func _toXMLString(
         indented level: Int = 0,
-        formatting: OutputFormatting
+        formatting: XMLEncoder.OutputFormatting
     ) -> String {
         let prettyPrinted = formatting.contains(.prettyPrinted)
         let indentation = String(

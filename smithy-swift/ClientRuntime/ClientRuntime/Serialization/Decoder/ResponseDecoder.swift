@@ -16,5 +16,5 @@
 import Foundation
 
 public protocol ResponseDecoder {
-    func decode <T: Decodable>(responseBody: Data) throws -> T
+    func decodeResponse<T: Decodable>(responseBody: Data) throws -> T
 }

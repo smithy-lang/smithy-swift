@@ -297,35 +297,39 @@ open class XMLDecoder {
      and newlines from the end and the beginning of string values. The default
      value is `true`.
      */
-    open var trimValueWhitespaces: Bool
-
-    /// Options set on the top-level encoder to pass down the decoding hierarchy.
-    struct Options {
-        let dateDecodingStrategy: DateDecodingStrategy
-        let dataDecodingStrategy: DataDecodingStrategy
-        let nonConformingFloatDecodingStrategy: NonConformingFloatDecodingStrategy
-        let keyDecodingStrategy: KeyDecodingStrategy
-        let nodeDecodingStrategy: NodeDecodingStrategy
-        let userInfo: [CodingUserInfoKey: Any]
-    }
+    open var trimValueWhitespaces: Bool = true
 
     /// The options set on the top-level decoder.
-    var options: Options {
-        return Options(
+    var options: XMLDecoderOptions {
+        return XMLDecoderOptions(
             dateDecodingStrategy: dateDecodingStrategy,
             dataDecodingStrategy: dataDecodingStrategy,
             nonConformingFloatDecodingStrategy: nonConformingFloatDecodingStrategy,
             keyDecodingStrategy: keyDecodingStrategy,
             nodeDecodingStrategy: nodeDecodingStrategy,
-            userInfo: userInfo
+            userInfo: userInfo,
+            errorContextLength: errorContextLength,
+            shouldProcessNamespaces: shouldProcessNamespaces,
+            trimValueWhitespaces: trimValueWhitespaces
         )
     }
 
     // MARK: - Constructing a XML Decoder
 
     /// Initializes `self` with default strategies.
-    public init(trimValueWhitespaces: Bool = true) {
-        self.trimValueWhitespaces = trimValueWhitespaces
+    public init() {}
+    
+    /// Initializes `self` with given `XMLDecoderOptions`
+    public init(options: XMLDecoderOptions) {
+        dateDecodingStrategy = options.dateDecodingStrategy
+        dataDecodingStrategy = options.dataDecodingStrategy
+        nonConformingFloatDecodingStrategy = options.nonConformingFloatDecodingStrategy
+        keyDecodingStrategy = options.keyDecodingStrategy
+        nodeDecodingStrategy = options.nodeDecodingStrategy
+        userInfo = options.userInfo
+        errorContextLength = options.errorContextLength
+        shouldProcessNamespaces = options.shouldProcessNamespaces
+        trimValueWhitespaces = options.trimValueWhitespaces
     }
 
     // MARK: - Decoding Values
