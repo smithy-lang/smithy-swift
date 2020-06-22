@@ -14,7 +14,7 @@
 //
 
 import XCTest
-import ClientRuntime
+@testable import ClientRuntime
 
 class HttpRequestTests: NetworkingTestUtils {
         
