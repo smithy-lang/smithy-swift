@@ -64,7 +64,7 @@ class XMLTreeParserTests: XCTestCase {
 
         XCTAssertThrowsError(try parser.parse(
             with: xmlData,
-            errorContextLength: 0,
+            errorContextLength: 1,
             shouldProcessNamespaces: false
         ))
     }
