@@ -84,6 +84,15 @@ commands:
             destination: Reports
             path: build/reports/tests/test/
 
+  pre_start_iOS_simulator:
+    description: >-
+      Pre-start iOS Simulator, as the build may fail if it takes too long to start up during that step
+    steps:
+      - run:
+          name: Pre-start iOS Simulator
+          command: |
+            bash CircleciScripts/pre_start_iOS_simulator.sh
+
 jobs:
   build:
     environment:
@@ -115,6 +124,32 @@ jobs:
                 paths:
                   - smithy-swift/build
                   - smithy-swift/*/build
+  
+  build_swift_client_runtime:
+    macos:
+      xcode: "11.4.1"
+    steps:
+      - checkout
+      - pre_start_iOS_simulator
+      - run:
+          name: Build ClientRuntime
+          working_directory: ~/project/smithy-swift/ClientRuntime
+          command: |
+            xcodebuild build -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
+  
+  unittest_swift_client_runtime:
+    macos:
+      xcode: "11.4.1"
+    steps:
+      - checkout
+      - pre_start_iOS_simulator
+      - run:
+          name: Unit Test ClientRuntime
+          working_directory: ~/project/smithy-swift/ClientRuntime
+          command: |
+            xcodebuild test -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
+            bash <(curl -s https://codecov.io/bash)
+
   test_smithy_kotlin:
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
@@ -154,6 +189,7 @@ jobs:
           name: Run ktlint
           command: |
             ./gradlew ktlint
+  
   test_smithy_swift:
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
@@ -196,7 +232,8 @@ jobs:
 
 workflows:
   version: 2
-  workflow:
+
+  build_and_test_codegen:
     jobs:
     - build
     - test_smithy_kotlin:
@@ -207,3 +244,18 @@ workflows:
         requires:
           - build
     - lint_smithy_swift
+
+  build_and_test_swift_client_runtime:
+    jobs:
+    - build_swift_client_runtime:
+        filters:
+            branches:
+              only:
+                - swift-client-runtime-circleci-setup
+    - unittest_swift_client_runtime:
+        requires:
+          - build_swift_client_runtime
+        filters:
+            branches:
+              only:
+                - swift-client-runtime-circleci-setup
