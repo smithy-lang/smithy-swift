@@ -17,7 +17,7 @@ import XCTest
 @testable import ClientRuntime
 
 
-class URLTests: SimpleTypesTestsUtils {
+class URLTests: XMLSimpleTypesTestsUtils {
 
     let values: [(URL, String)] = [
         (URL(string: "file:///")!, "file:///"),

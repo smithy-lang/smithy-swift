@@ -97,7 +97,7 @@
 		43DD776C24973AF60038F7AB /* NetworkingTestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD776B24973AF60038F7AB /* NetworkingTestUtils.swift */; };
 		43DD7771249892A10038F7AB /* BoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7770249892A10038F7AB /* BoolTests.swift */; };
 		43DD7773249936740038F7AB /* DateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7772249936740038F7AB /* DateTests.swift */; };
-		43DD7777249957000038F7AB /* SimpleTypesTestsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7776249957000038F7AB /* SimpleTypesTestsUtils.swift */; };
+		43DD7777249957000038F7AB /* XMLSimpleTypesTestsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD7776249957000038F7AB /* XMLSimpleTypesTestsUtils.swift */; };
 		43DD77792499576C0038F7AB /* XMLDecoderOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD77782499576C0038F7AB /* XMLDecoderOptions.swift */; };
 		43DD777B249964250038F7AB /* FloatFamilyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD777A249964250038F7AB /* FloatFamilyTests.swift */; };
 		43DD777D249976EA0038F7AB /* IntFamilyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DD777C249976EA0038F7AB /* IntFamilyTests.swift */; };
@@ -236,7 +236,7 @@
 		43DD776D24981F860038F7AB /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		43DD7770249892A10038F7AB /* BoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoolTests.swift; sourceTree = "<group>"; };
 		43DD7772249936740038F7AB /* DateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTests.swift; sourceTree = "<group>"; };
-		43DD7776249957000038F7AB /* SimpleTypesTestsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleTypesTestsUtils.swift; sourceTree = "<group>"; };
+		43DD7776249957000038F7AB /* XMLSimpleTypesTestsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLSimpleTypesTestsUtils.swift; sourceTree = "<group>"; };
 		43DD77782499576C0038F7AB /* XMLDecoderOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLDecoderOptions.swift; sourceTree = "<group>"; };
 		43DD777A249964250038F7AB /* FloatFamilyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatFamilyTests.swift; sourceTree = "<group>"; };
 		43DD777C249976EA0038F7AB /* IntFamilyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntFamilyTests.swift; sourceTree = "<group>"; };
@@ -560,7 +560,7 @@
 			children = (
 				43DD7770249892A10038F7AB /* BoolTests.swift */,
 				43DD7772249936740038F7AB /* DateTests.swift */,
-				43DD7776249957000038F7AB /* SimpleTypesTestsUtils.swift */,
+				43DD7776249957000038F7AB /* XMLSimpleTypesTestsUtils.swift */,
 				43DD777A249964250038F7AB /* FloatFamilyTests.swift */,
 				43DD777C249976EA0038F7AB /* IntFamilyTests.swift */,
 				43DD777E24997CB20038F7AB /* StringTests.swift */,
@@ -845,7 +845,7 @@
 				43DD776C24973AF60038F7AB /* NetworkingTestUtils.swift in Sources */,
 				43DD778A249AA8820038F7AB /* XMLElementRepresentableTests.swift in Sources */,
 				43DD7773249936740038F7AB /* DateTests.swift in Sources */,
-				43DD7777249957000038F7AB /* SimpleTypesTestsUtils.swift in Sources */,
+				43DD7777249957000038F7AB /* XMLSimpleTypesTestsUtils.swift in Sources */,
 				43DD7799249FD7550038F7AB /* XMLBoolContainerTests.swift in Sources */,
 				43DD778E249AB23D0038F7AB /* XMLKeyTests.swift in Sources */,
 				43DD775B2492B7940038F7AB /* StreamExtensionsTests.swift in Sources */,

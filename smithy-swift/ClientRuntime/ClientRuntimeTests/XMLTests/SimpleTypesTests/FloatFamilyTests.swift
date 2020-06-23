@@ -17,7 +17,7 @@ import XCTest
 @testable import ClientRuntime
 
 
-class FloatFamilyTests: SimpleTypesTestsUtils {
+class FloatFamilyTests: XMLSimpleTypesTestsUtils {
     
     let decimalValues: [(Decimal, String)] = [
         (Decimal(-12.34), "-12.34"),

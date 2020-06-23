@@ -16,8 +16,7 @@
 import XCTest
 @testable import ClientRuntime
 
-
-class BoolTests: SimpleTypesTestsUtils {
+class BoolTests: XMLSimpleTypesTestsUtils {
 
     let values: [(Bool, String)] = [
         (false, "false"),
@@ -63,5 +62,4 @@ class BoolTests: SimpleTypesTestsUtils {
             XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
         }
     }
-
 }

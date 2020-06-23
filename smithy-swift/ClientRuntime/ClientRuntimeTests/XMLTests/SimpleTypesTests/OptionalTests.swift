@@ -17,7 +17,7 @@ import XCTest
 @testable import ClientRuntime
 
 
-class OptionalTests: SimpleTypesTestsUtils {
+class OptionalTests: XMLSimpleTypesTestsUtils {
     
     private struct ContainerWithOptionalStringMember: Codable, Equatable {
         var optional: String?

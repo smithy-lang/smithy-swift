@@ -16,9 +16,8 @@
 import XCTest
 @testable import ClientRuntime
 
-class DictionaryTests: SimpleTypesTestsUtils {
+class DictionaryTests: XMLSimpleTypesTestsUtils {
     
-        
     func testCodingDictionary() {
         let value = ["bar": 1, "foo": 2]
         let xmlString =

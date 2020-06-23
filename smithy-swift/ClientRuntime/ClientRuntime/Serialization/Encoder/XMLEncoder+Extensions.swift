@@ -15,8 +15,4 @@
 
 import Foundation
 
-extension XMLEncoder: RequestEncoder {
-    public func encodeRequest<T>(_ value: T) throws -> Data where T : Encodable {
-        return try encode(value)
-    }
-}
+extension XMLEncoder: RequestEncoder {}
