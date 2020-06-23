@@ -16,7 +16,7 @@
 import Foundation
 
 extension JSONDecoder: ResponseDecoder {
-    public func decodeResponse<T>(responseBody: Data) throws -> T where T : Decodable {
+    public func decode<T>(responseBody: Data) throws -> T where T : Decodable {
         return try decode(T.self, from: responseBody)
     }
 }

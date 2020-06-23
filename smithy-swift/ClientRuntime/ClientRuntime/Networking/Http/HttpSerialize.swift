@@ -30,7 +30,7 @@ public extension HttpSerialize {
         }
         else {
             do {
-                let data = try encoder.encodeRequest(obj)
+                let data = try encoder.encode(obj)
                 return HttpBody.data(data)
             }
             catch {

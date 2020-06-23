@@ -16,7 +16,7 @@
 import XCTest
 @testable import ClientRuntime
 
-class ArrayTests: SimpleTypesTestsUtils {
+class ArrayTests: XMLSimpleTypesTestsUtils {
 
     struct ContainerWithArray<T: Codable & Equatable>: Codable, Equatable {
         let value: [T]
@@ -25,7 +25,6 @@ class ArrayTests: SimpleTypesTestsUtils {
     struct ContainerWithOptionalArray<T: Codable & Equatable>: Codable, Equatable {
         let value: [T]?
     }
-    
     
     /* A non-optional array of any type is initialized to the default [] if the value is absent.
        This behavior is similar to Dictionary.

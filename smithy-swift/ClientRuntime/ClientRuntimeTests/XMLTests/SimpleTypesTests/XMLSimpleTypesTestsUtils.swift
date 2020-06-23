@@ -16,7 +16,7 @@
 import XCTest
 @testable import ClientRuntime
 
-class SimpleTypesTestsUtils: XCTestCase {
+class XMLSimpleTypesTestsUtils: XCTestCase {
     
     var decoder: XMLDecoder!
     var encoder: XMLEncoder!

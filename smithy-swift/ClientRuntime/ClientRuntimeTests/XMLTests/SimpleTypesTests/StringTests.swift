@@ -17,7 +17,7 @@ import XCTest
 @testable import ClientRuntime
 
 
-class StringTests: SimpleTypesTestsUtils {
+class StringTests: XMLSimpleTypesTestsUtils {
 
     let values: [(String, String)] = [
         ("false", "false"),

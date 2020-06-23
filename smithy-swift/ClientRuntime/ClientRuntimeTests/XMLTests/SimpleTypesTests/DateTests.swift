@@ -16,7 +16,7 @@
 import XCTest
 @testable import ClientRuntime
 
-class DateTests: SimpleTypesTestsUtils {
+class DateTests: XMLSimpleTypesTestsUtils {
 
     let values: [(Date, String)] = [
         (Date(timeIntervalSince1970: 0.0), "0.0"),

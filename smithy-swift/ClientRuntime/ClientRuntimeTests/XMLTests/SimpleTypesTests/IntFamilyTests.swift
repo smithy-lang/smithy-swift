@@ -17,7 +17,7 @@ import XCTest
 @testable import ClientRuntime
 
 
-class IntFamilyTests: SimpleTypesTestsUtils {
+class IntFamilyTests: XMLSimpleTypesTestsUtils {
     
     let intValues: [(Int, String)] = [
         (-4, "-4"),
