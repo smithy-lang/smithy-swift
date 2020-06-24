@@ -233,7 +233,6 @@
 		43DD7767249702C70038F7AB /* MockURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockURLProtocol.swift; sourceTree = "<group>"; };
 		43DD776924973A7A0038F7AB /* URLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDelegateTests.swift; sourceTree = "<group>"; };
 		43DD776B24973AF60038F7AB /* NetworkingTestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkingTestUtils.swift; sourceTree = "<group>"; };
-		43DD776D24981F860038F7AB /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		43DD7770249892A10038F7AB /* BoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoolTests.swift; sourceTree = "<group>"; };
 		43DD7772249936740038F7AB /* DateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTests.swift; sourceTree = "<group>"; };
 		43DD7776249957000038F7AB /* XMLSimpleTypesTestsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLSimpleTypesTestsUtils.swift; sourceTree = "<group>"; };
@@ -541,7 +540,6 @@
 				43DD7767249702C70038F7AB /* MockURLProtocol.swift */,
 				43DD776924973A7A0038F7AB /* URLSessionDelegateTests.swift */,
 				43DD776B24973AF60038F7AB /* NetworkingTestUtils.swift */,
-				43DD776D24981F860038F7AB /* Data+Extensions.swift */,
 				43DD7792249BED370038F7AB /* HttpSerializeTests.swift */,
 			);
 			path = NetworkingTests;
