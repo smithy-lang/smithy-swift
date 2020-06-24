@@ -32,12 +32,5 @@ interface S3Client: SdkClient {
         return putObject(input)
     }
 
-    suspend fun getObjectAlt1(input: GetObjectRequest, block: suspend (GetObjectResponse) -> Unit)
-    // NOTE: can't do a DSL builder for ALT-1, see notes in implementation/quip
-
-    suspend fun getObjectAlt2(input: GetObjectRequest): GetObjectResponse
-    suspend fun getObjectAlt2(block: GetObjectRequest.DslBuilder.() -> Unit): GetObjectResponse {
-        val input = GetObjectRequest{ block(this) }
-        return getObjectAlt2(input)
-    }
+    suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T
 }
