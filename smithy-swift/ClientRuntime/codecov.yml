@@ -1,0 +1,11 @@
+ignore:
+  - "ClientRuntimeTests"
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+codecov:
+  branch: swift-client-runtime-circleci-setup
+  
