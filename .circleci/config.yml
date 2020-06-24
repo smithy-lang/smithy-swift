@@ -84,7 +84,7 @@ commands:
             destination: Reports
             path: build/reports/tests/test/
 
-  pre_start_iOS_simulator:
+  pre_start_ios_simulator:
     description: >-
       Pre-start iOS Simulator, as the build may fail if it takes too long to start up during that step
     steps:
@@ -130,7 +130,7 @@ jobs:
       xcode: "11.4.1"
     steps:
       - checkout
-      - pre_start_iOS_simulator
+      - pre_start_ios_simulator
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
@@ -142,7 +142,7 @@ jobs:
       xcode: "11.4.1"
     steps:
       - checkout
-      - pre_start_iOS_simulator
+      - pre_start_ios_simulator
       - run:
           name: Unit Test ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
