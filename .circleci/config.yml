@@ -230,6 +230,28 @@ jobs:
           command: |
             ./gradlew ktlint
 
+  build_and_unittest_swift_client_runtime:
+    macos:
+      xcode: "11.4.1"
+    steps:
+      - checkout
+      - pre_start_ios_simulator
+      - run:
+          name: Install swiftlint
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+      - run:
+          name: Build ClientRuntime
+          working_directory: ~/project/smithy-swift/ClientRuntime
+          command: |
+            xcodebuild build-for-testing -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
+      - run:
+          name: Unit Test ClientRuntime
+          working_directory: ~/project/smithy-swift/ClientRuntime
+          command: |
+            xcodebuild test-without-building -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
+            bash <(curl https://codecov.io/bash | sed 's/"$beta_xcode_partials"//g')
+            
 workflows:
   version: 2
 
@@ -247,14 +269,7 @@ workflows:
 
   build_and_test_swift_client_runtime:
     jobs:
-    - build_swift_client_runtime:
-        filters:
-            branches:
-              only:
-                - swift-client-runtime-circleci-setup
-    - unittest_swift_client_runtime:
-        requires:
-          - build_swift_client_runtime
+    - build_and_unittest_swift_client_runtime:
         filters:
             branches:
               only:
