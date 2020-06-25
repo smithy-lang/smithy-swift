@@ -148,7 +148,7 @@ jobs:
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
             xcodebuild test -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
-            bash <(curl -s https://codecov.io/bash)
+            bash <(curl https://codecov.io/bash | sed 's/"$beta_xcode_partials"//g')
 
   test_smithy_kotlin:
     environment:
