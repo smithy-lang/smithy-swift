@@ -8,7 +8,7 @@
 import Foundation
 
 struct XMLKeyBasedContainer {
-    
+
     var elements = XMLKeyBasedStorage<String, XMLContainer>() // why is this not simplecontainer?
     var attributes = XMLKeyBasedStorage<String, XMLSimpleContainer>()
 
@@ -39,7 +39,7 @@ extension XMLKeyBasedContainer: XMLContainer {
     var isNull: Bool {
         return false
     }
-    
+
     var xmlString: String? {
         return nil
     }

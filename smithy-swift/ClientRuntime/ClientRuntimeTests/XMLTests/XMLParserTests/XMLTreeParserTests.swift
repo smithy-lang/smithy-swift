@@ -17,9 +17,9 @@ import XCTest
 @testable import ClientRuntime
 
 class XMLTreeParserTests: XCTestCase {
-    
+
     var parser: XMLTreeParser!
-    
+
     override func setUp() {
         parser = XMLTreeParser()
     }
@@ -51,7 +51,7 @@ class XMLTreeParserTests: XCTestCase {
                 XMLElementRepresentable(
                     key: "stringValue",
                     stringValue: "foo"
-                ),
+                )
             ]
         )
         XCTAssertEqual(root, expected)

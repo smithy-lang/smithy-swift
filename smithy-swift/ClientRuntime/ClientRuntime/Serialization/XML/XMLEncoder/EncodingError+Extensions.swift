@@ -7,6 +7,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 extension EncodingError {
     /// Returns a `.invalidValue` error describing the given invalid floating-point value.
     ///

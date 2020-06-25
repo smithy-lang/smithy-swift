@@ -17,15 +17,15 @@ import XCTest
 @testable import ClientRuntime
 
 class StringExtensionsTests: XCTestCase {
-    
+
     var camelCaseString: String!
     var pascalCaseString: String!
     var stringWithDots: String!
     var kebabCaseString: String!
     var emptyString: String!
-    
+
     override func setUp() {
-        
+
         camelCaseString = "myString"
         pascalCaseString = "MyString"
         stringWithDots = "my.string"
@@ -36,19 +36,19 @@ class StringExtensionsTests: XCTestCase {
     func testCapitalizingFirstLetter() {
         camelCaseString.capitalizeFirstLetter()
         XCTAssertTrue(camelCaseString == pascalCaseString)
-        
+
         emptyString.capitalizeFirstLetter()
         XCTAssertTrue(emptyString == "")
     }
-    
+
     func testLowerCasingFirstLetter() {
         pascalCaseString.lowercaseFirstLetter()
         XCTAssertTrue(camelCaseString == pascalCaseString)
-        
+
         emptyString.lowercaseFirstLetter()
         XCTAssertTrue(emptyString == "")
     }
-    
+
     func testEscapingChars() {
         let escapedString = stringWithDots.escape([(".", "-")])
         XCTAssertTrue(escapedString == kebabCaseString)

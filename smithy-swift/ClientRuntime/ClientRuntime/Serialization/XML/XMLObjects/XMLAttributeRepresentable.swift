@@ -8,7 +8,7 @@
 import Foundation
 
 struct XMLAttributeRepresentable: Equatable {
-    
+
     let key: String
     let value: String
 }

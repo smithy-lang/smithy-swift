@@ -8,11 +8,11 @@
 import Foundation
 
 struct XMLNullContainer: XMLSimpleContainer {
-    
+
     var isNull: Bool {
         return true
     }
-    
+
     var xmlString: String? {
         return nil
     }

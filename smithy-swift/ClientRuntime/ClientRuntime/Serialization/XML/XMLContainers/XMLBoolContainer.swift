@@ -28,7 +28,7 @@ extension XMLBoolContainer: XMLSimpleContainer {
     var isNull: Bool {
         return false
     }
-    
+
     var xmlString: String? {
         return (unboxed) ? "true" : "false"
     }

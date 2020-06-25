@@ -76,7 +76,7 @@ class XMLDecoderImplementation: Decoder {
                 wrapping: keyed
             ))
         }
-        
+
         return try keyedContainer(keyedBy: keyType)
     }
 
@@ -288,7 +288,6 @@ extension XMLDecoderImplementation {
         return doubleBox.unboxed
     }
 
-    
     func unbox(_ box: XMLContainer) throws -> String {
         do {
             let stringBox: XMLStringContainer = try typedBox(box, for: String.self)
@@ -301,7 +300,7 @@ extension XMLDecoderImplementation {
 
         return ""
     }
-    
+
     func unbox(_ box: XMLContainer) throws -> URL {
         let stringBox: XMLStringContainer = try typedBox(box, for: URL.self)
         let string = stringBox.unboxed
@@ -315,7 +314,7 @@ extension XMLDecoderImplementation {
 
         return urlBox.unboxed
     }
-    
+
     func unbox(_ box: XMLContainer) throws -> Date {
         switch options.dateDecodingStrategy {
         case .deferredToDate:

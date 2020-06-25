@@ -20,7 +20,7 @@ class XMLKeyTests: XCTestCase {
 
     func testInitWithStringValue() {
         let key = XMLKey(stringValue: "foo")
-        
+
         XCTAssertNotNil(key)
         XCTAssertEqual(key!.stringValue, "foo")
         XCTAssertEqual(key!.intValue, nil)
@@ -28,7 +28,7 @@ class XMLKeyTests: XCTestCase {
 
     func testInitWithIntValue() {
         let key = XMLKey(intValue: 42)
-        
+
         XCTAssertNotNil(key)
         XCTAssertEqual(key!.stringValue, "42")
         XCTAssertEqual(key!.intValue, 42)
@@ -36,7 +36,7 @@ class XMLKeyTests: XCTestCase {
 
     func testInitWithStringValueIntValue() {
         let key = XMLKey(stringValue: "foo", intValue: 42)
-        
+
         XCTAssertEqual(key.stringValue, "foo")
         XCTAssertEqual(key.intValue, 42)
     }

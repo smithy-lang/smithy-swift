@@ -18,7 +18,7 @@ import Foundation
 public protocol OperationError {
     var retryable: Bool {get set}
     var type: ErrorType {get set}
- 
+
 }
 
 public enum ErrorType {

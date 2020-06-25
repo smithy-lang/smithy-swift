@@ -4,7 +4,6 @@ import XCTest
 @testable import ClientRuntime
 
 class XMLBoolContainerTests: XCTestCase {
-    
     func testIsNull() {
         let box = XMLBoolContainer(false)
         XCTAssertEqual(box.isNull, false)
@@ -13,7 +12,7 @@ class XMLBoolContainerTests: XCTestCase {
     func testUnbox() {
         let values: [Bool] = [
             false,
-            true,
+            true
         ]
 
         for unboxed in values {
@@ -25,7 +24,7 @@ class XMLBoolContainerTests: XCTestCase {
     func testXMLString() {
         let values: [(Bool, String)] = [
             (false, "false"),
-            (true, "true"),
+            (true, "true")
         ]
 
         for (unboxed, string) in values {
@@ -39,7 +38,7 @@ class XMLBoolContainerTests: XCTestCase {
             "0",
             "1",
             "false",
-            "true",
+            "true"
         ]
 
         for string in values {
@@ -52,7 +51,7 @@ class XMLBoolContainerTests: XCTestCase {
         let values: [String] = [
             "42",
             "foobar",
-            "",
+            ""
         ]
 
         for string in values {

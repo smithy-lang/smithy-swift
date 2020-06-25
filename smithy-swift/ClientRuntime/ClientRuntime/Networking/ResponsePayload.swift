@@ -18,12 +18,12 @@ import Foundation
 public struct ResponsePayload {
     public let body: Data
     public let decoder: ResponseDecoder
-    
+
     public init(body: Data, decoder: ResponseDecoder) {
         self.body = body
         self.decoder = decoder
     }
-    
+
     public func decode<T: Decodable>() -> Result<T, ClientError> {
         do {
             let result: T = try decoder.decode(responseBody: body)

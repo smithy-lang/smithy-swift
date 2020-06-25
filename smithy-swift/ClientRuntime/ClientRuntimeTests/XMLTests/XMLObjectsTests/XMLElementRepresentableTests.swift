@@ -37,12 +37,12 @@ class XMLElementRepresentableTests: XCTestCase {
 
         let keyedContainer = root.transformToKeyBasedContainer() as? XMLKeyBasedContainer
         XCTAssertNotNil(keyedContainer)
-        
+
         let foo = keyedContainer!.elements["foo"]
         XCTAssertNotNil(foo)
         XCTAssertEqual(foo.count, 2)
     }
-    
+
     func testInitWithKey() {
         let emptyElement = XMLElementRepresentable(key: "foo")
 
@@ -60,7 +60,7 @@ class XMLElementRepresentableTests: XCTestCase {
         XCTAssertEqual(xmlElement.elements, [])
         XCTAssertEqual(xmlElement.attributes, [])
     }
-    
+
     func testInitWithKeyBasedContainer() {
         let xmlElement = XMLElementRepresentable(key: "foo", isStringBoxCDATA: false, box: XMLKeyBasedContainer(
             elements: [] as [(String, XMLContainer)],
@@ -72,7 +72,7 @@ class XMLElementRepresentableTests: XCTestCase {
         XCTAssertEqual(xmlElement.elements, [])
         XCTAssertEqual(xmlElement.attributes, [XMLAttributeRepresentable(key: "blee", value: "42")])
     }
-    
+
     func testInitWithStringContainer() {
         let xmlElement = XMLElementRepresentable(key: "foo", isStringBoxCDATA: false, box: XMLStringContainer("bar"))
         let xmlStringElement = XMLElementRepresentable(stringValue: "bar")

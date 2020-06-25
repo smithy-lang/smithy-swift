@@ -16,10 +16,9 @@
 import Foundation
 
 class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
-    
+
     var streamingProvider: StreamingProvider?
-    
-    
+
     init(session: SessionProtocol, request: HttpRequest, streamingProvider: StreamingProvider, completion: @escaping NetworkResult) {
         super.init()
         self.completion = completion
@@ -27,22 +26,21 @@ class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
         do {
             let urlRequest = try request.toUrlRequest()
             self.task = session.uploadTask(withStreamedRequest: urlRequest)
-        }
-        catch {
+        } catch {
             completion(.failure(ClientError.serializationFailed("Serializaation failed due to malformed url")))
         }
-        
+
     }
-    
+
     override func receiveData(data: Data) {
-       
+
         if let stream = streamingProvider?.boundStreams.output {
                 var bytes = Array(data)
                 stream.write(&bytes, maxLength: bytes.count)
                 response?.content = .stream(stream)
         }
     }
-    
+
     override func finish(error: Error? = nil) {
         super.finish(error: error)
     }

@@ -27,18 +27,13 @@ public extension HttpSerialize {
     func encodeBody<T: Encodable>(_ obj: T, encoder: RequestEncoder) throws -> HttpBody {
         if let data = obj as? Data {
             return HttpBody.data(data)
-        }
-        else {
+        } else {
             do {
                 let data = try encoder.encode(obj)
                 return HttpBody.data(data)
-            }
-            catch {
+            } catch {
                 throw ClientError.serializationFailed("Failed to Encode Http Request body")
             }
         }
     }
 }
-
-
-

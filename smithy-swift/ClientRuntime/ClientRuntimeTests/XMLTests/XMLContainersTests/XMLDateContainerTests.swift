@@ -20,7 +20,7 @@ class XMLDateContainerTests: XCTestCase {
         let values: [Date] = [
             Date(timeIntervalSince1970: 0.0),
             Date(timeIntervalSinceReferenceDate: 0.0),
-            Date(),
+            Date()
         ]
 
         for unboxed in values {
@@ -33,7 +33,7 @@ class XMLDateContainerTests: XCTestCase {
         let xmlStrings = [
             "-1000.0",
             "0.0",
-            "1000.0",
+            "1000.0"
         ]
 
         for xmlString in xmlStrings {
@@ -50,7 +50,7 @@ class XMLDateContainerTests: XCTestCase {
         let xmlStrings = [
             "-1000.0",
             "0.0",
-            "1000.0",
+            "1000.0"
         ]
 
         for xmlString in xmlStrings {
@@ -65,7 +65,7 @@ class XMLDateContainerTests: XCTestCase {
 
     func testValidStrings_iso8601() {
         let xmlStrings = [
-            "1970-01-23T01:23:45Z",
+            "1970-01-23T01:23:45Z"
         ]
 
         for xmlString in xmlStrings {
@@ -80,7 +80,7 @@ class XMLDateContainerTests: XCTestCase {
 
     func testValidStrings_formatter() {
         let xmlStrings = [
-            "1970-01-23 01:23:45",
+            "1970-01-23 01:23:45"
         ]
 
         for xmlString in xmlStrings {
@@ -96,7 +96,7 @@ class XMLDateContainerTests: XCTestCase {
     func testInvalidStrings_secondsSince1970() {
         let xmlStrings = [
             "lorem ipsum",
-            "",
+            ""
         ]
 
         for xmlString in xmlStrings {
@@ -108,7 +108,7 @@ class XMLDateContainerTests: XCTestCase {
     func testInvalidStrings_millisecondsSince1970() {
         let xmlStrings = [
             "lorem ipsum",
-            "",
+            ""
         ]
 
         for xmlString in xmlStrings {
@@ -120,7 +120,7 @@ class XMLDateContainerTests: XCTestCase {
     func testInvalidStrings_iso8601() {
         let xmlStrings = [
             "lorem ipsum",
-            "",
+            ""
         ]
 
         for xmlString in xmlStrings {
@@ -132,7 +132,7 @@ class XMLDateContainerTests: XCTestCase {
     func testInvalidStrings_formatter() {
         let xmlStrings = [
             "lorem ipsum",
-            "",
+            ""
         ]
 
         for xmlString in xmlStrings {

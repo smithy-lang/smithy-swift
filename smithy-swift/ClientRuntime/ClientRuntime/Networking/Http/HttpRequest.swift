@@ -21,11 +21,11 @@ public struct HttpRequest {
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
-    
+
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
                 headers: HttpHeaders,
-                queryItems:[URLQueryItem]? = nil,
+                queryItems: [URLQueryItem]? = nil,
                 body: HttpBody? = nil) {
         self.method = method
         self.endpoint = endpoint
@@ -38,16 +38,16 @@ public struct HttpRequest {
 extension HttpRequest {
     public func toUrlRequest() throws -> URLRequest {
         guard let url = endpoint.url else {
-           
+
             throw ClientError.serializationFailed("Serialization failed with the url")
         }
-        
+
         var urlRequest = URLRequest(url: url)
-        
+
         urlRequest.allHTTPHeaderFields = headers.dictionary
-        
+
         urlRequest.httpMethod = method.rawValue
-        
+
         switch body {
         case .data(let data):
             urlRequest.httpBody = data
@@ -65,5 +65,3 @@ extension HttpRequest {
         return urlRequest
     }
 }
-
-

@@ -10,7 +10,7 @@ import Foundation
 // MARK: Decoding Containers
 
 struct XMLKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
-    
+
     typealias Key = K
     typealias KeyedContainer = XMLSharedContainer<XMLKeyBasedContainer>
     typealias UnkeyedContainer = XMLSharedContainer<XMLArrayBasedContainer>

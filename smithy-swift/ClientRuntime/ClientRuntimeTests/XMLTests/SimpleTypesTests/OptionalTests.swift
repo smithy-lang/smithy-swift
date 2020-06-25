@@ -16,18 +16,16 @@
 import XCTest
 @testable import ClientRuntime
 
-
 class OptionalTests: XMLSimpleTypesTestsUtils {
-    
+
     private struct ContainerWithOptionalStringMember: Codable, Equatable {
         var optional: String?
     }
-    
+
     private struct ContainerWithOptionalIntMember: Codable, Equatable {
         var optional: Int?
     }
 
-    
     /* An optional member of any type is initialized to nil if it is absent.
       */
     func testOptionalStringMemberAbsent() {
@@ -49,7 +47,7 @@ class OptionalTests: XMLSimpleTypesTestsUtils {
         }
         XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
     }
-    
+
     func testOptionalIntMemberAbsent() {
         let xmlString =
             """
@@ -69,7 +67,7 @@ class OptionalTests: XMLSimpleTypesTestsUtils {
         }
         XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
     }
-    
+
     /* String has a default value of "" while Int has no such defaults
      */
     func testOptionalStringMemberPresentWithNoValue() {
@@ -93,7 +91,7 @@ class OptionalTests: XMLSimpleTypesTestsUtils {
         }
         XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
     }
-    
+
     func testOptionalIntMemberPresentWithNoValue() {
         let xmlString =
             """
@@ -109,9 +107,9 @@ class OptionalTests: XMLSimpleTypesTestsUtils {
             XCTFail(getCodingSimpleTypeFailureMessage(type: Int?.self, context: .encoding, representation: .element))
             return
         }
-        
+
         let expectedXMLString = "<container />"
         XCTAssertEqual(String(data: encoded, encoding: .utf8)!, expectedXMLString)
     }
-    
+
 }

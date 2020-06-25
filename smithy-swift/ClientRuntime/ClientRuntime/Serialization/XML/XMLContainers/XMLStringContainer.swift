@@ -24,7 +24,7 @@ extension XMLStringContainer: XMLSimpleContainer {
     var isNull: Bool {
         return false
     }
-    
+
     var xmlString: String? {
         return unboxed.description
     }

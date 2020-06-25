@@ -16,23 +16,22 @@
 import XCTest
 @testable import ClientRuntime
 
-
 class IntFamilyTests: XMLSimpleTypesTestsUtils {
-    
+
     let intValues: [(Int, String)] = [
         (-4, "-4"),
         (0, "0"),
-        (4, "4"),
+        (4, "4")
     ]
 
     let uIntValues: [(UInt, String)] = [
         (0, "0"),
         (4, "4")
     ]
-    
+
     func testIntAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in intValues {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!
@@ -69,10 +68,10 @@ class IntFamilyTests: XMLSimpleTypesTestsUtils {
             XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
         }
     }
-    
+
     func testUIntAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in uIntValues {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!

@@ -13,14 +13,13 @@
 // permissions and limitations under the License.
 //
 
-
 import Foundation
 @testable import ClientRuntime
 
 class MockURLProtocol: URLProtocol {
-    
+
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
-    
+
     override class func canInit(with request: URLRequest) -> Bool {
       // handles all requests
       return true
@@ -34,20 +33,19 @@ class MockURLProtocol: URLProtocol {
       guard let handler = MockURLProtocol.requestHandler else {
         fatalError("Handler is unavailable.")
       }
-        
+
       do {
         let (response, data) = try handler(request)
-        
+
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        
+
         if let data = data {
           client?.urlProtocol(self, didLoad: data)
         }
-        
+
         client?.urlProtocolDidFinishLoading(self)
-      }
-      catch {
-        
+      } catch {
+
         client?.urlProtocol(self, didFailWithError: error)
       }
     }

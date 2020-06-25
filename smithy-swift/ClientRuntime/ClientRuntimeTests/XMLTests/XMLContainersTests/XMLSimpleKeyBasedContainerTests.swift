@@ -22,7 +22,7 @@ class XMLSimpleKeyBasedContainerTests: XCTestCase {
         let box = XMLSimpleKeyBasedContainer(key: "key", element: XMLStringContainer(xmlString: "value"))
         XCTAssertEqual(box.isNull, false)
     }
-    
+
     func testXMLString() {
         let box = XMLSimpleKeyBasedContainer(key: "key", element: XMLStringContainer(xmlString: "value"))
         XCTAssertNil(box.xmlString)

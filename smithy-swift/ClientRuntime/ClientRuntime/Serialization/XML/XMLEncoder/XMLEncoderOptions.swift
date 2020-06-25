@@ -25,10 +25,10 @@ public struct XMLEncoderOptions {
     var stringEncodingStrategy: XMLEncoder.StringEncodingStrategy = .deferredToString
     var outputFormatting: XMLEncoder.OutputFormatting = .sortedKeys
     var userInfo: [CodingUserInfoKey: Any] = [:]
-    var rootKey:String? = nil
-    var rootAttributes: [String: String]? = nil
-    var header: XMLHeader? = nil
-    
+    var rootKey: String?
+    var rootAttributes: [String: String]?
+    var header: XMLHeader?
+
     public init(dateEncodingStrategy: XMLEncoder.DateEncodingStrategy = .deferredToDate,
                 dataEncodingStrategy: XMLEncoder.DataEncodingStrategy = .base64,
                 nonConformingFloatEncodingStrategy: XMLEncoder.NonConformingFloatEncodingStrategy = .throw,
@@ -37,7 +37,7 @@ public struct XMLEncoderOptions {
                 stringEncodingStrategy: XMLEncoder.StringEncodingStrategy = .deferredToString,
                 outputFormatting: XMLEncoder.OutputFormatting = .sortedKeys,
                 userInfo: [CodingUserInfoKey: Any] = [:],
-                rootKey:String? = nil,
+                rootKey: String? = nil,
                 rootAttributes: [String: String]? = nil,
                 header: XMLHeader? = nil) {
         self.dateEncodingStrategy = dateEncodingStrategy

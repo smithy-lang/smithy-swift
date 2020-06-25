@@ -16,6 +16,6 @@
 import Foundation
 
 public protocol HttpOperationError: OperationError {
-    
+
     var httpResponse: HttpResponse { get set }
 }

@@ -16,7 +16,7 @@ class XMLStringContainerTests: XCTestCase {
             "false",
             "42",
             "12.34",
-            "lorem ipsum",
+            "lorem ipsum"
         ]
 
         for unboxed in values {
@@ -31,7 +31,7 @@ class XMLStringContainerTests: XCTestCase {
             ("false", "false"),
             ("42", "42"),
             ("12.34", "12.34"),
-            ("lorem ipsum", "lorem ipsum"),
+            ("lorem ipsum", "lorem ipsum")
         ]
 
         for (unboxed, string) in values {
@@ -45,7 +45,7 @@ class XMLStringContainerTests: XCTestCase {
             "0",
             "1",
             "false",
-            "true",
+            "true"
         ]
 
         for string in values {

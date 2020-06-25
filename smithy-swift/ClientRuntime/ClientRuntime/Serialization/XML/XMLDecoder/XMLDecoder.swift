@@ -163,7 +163,8 @@ open class XMLDecoder {
         /// If the result of the conversion is a duplicate key, then only one
         /// box will be present in the container for the type to decode from.
         case custom((_ codingPath: [CodingKey]) -> CodingKey)
-
+        
+        // swiftlint:disable identifier_name
         static func _convertFromCapitalized(_ stringKey: String) -> String {
             guard !stringKey.isEmpty else {
                 return stringKey
@@ -172,15 +173,18 @@ open class XMLDecoder {
             let result = firstLetter + stringKey.dropFirst()
             return result
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertFromSnakeCase(_ stringKey: String) -> String {
             return _convert(stringKey, usingSeparator: "_")
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertFromKebabCase(_ stringKey: String) -> String {
             return _convert(stringKey, usingSeparator: "-")
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convert(_ stringKey: String, usingSeparator separator: Character) -> String {
             guard !stringKey.isEmpty else {
                 return stringKey
@@ -318,7 +322,7 @@ open class XMLDecoder {
 
     /// Initializes `self` with default strategies.
     public init() {}
-    
+
     /// Initializes `self` with given `XMLDecoderOptions`
     public init(options: XMLDecoderOptions) {
         dateDecodingStrategy = options.dateDecodingStrategy
@@ -357,12 +361,12 @@ open class XMLDecoder {
             options: options,
             nodeDecodings: []
         )
-        
+
         decoder.nodeDecodings = [
             options.nodeDecodingStrategy.nodeDecodings(
                 forType: T.self,
                 with: decoder
-            ),
+            )
         ]
 
         defer {

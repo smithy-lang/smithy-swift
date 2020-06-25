@@ -16,13 +16,12 @@
 import XCTest
 @testable import ClientRuntime
 
-
 class FloatFamilyTests: XMLSimpleTypesTestsUtils {
-    
+
     let decimalValues: [(Decimal, String)] = [
         (Decimal(-12.34), "-12.34"),
         (Decimal(0.0), "0"),
-        (Decimal(12.34), "12.34"),
+        (Decimal(12.34), "12.34")
     ]
 
     let floatValues: [(Float, String)] = [
@@ -30,10 +29,10 @@ class FloatFamilyTests: XMLSimpleTypesTestsUtils {
         (0.0, "0.0"),
         (3.14, "3.14")
     ]
-    
+
     func testDecimalAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in decimalValues {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!
@@ -70,10 +69,10 @@ class FloatFamilyTests: XMLSimpleTypesTestsUtils {
             XCTAssertEqual(String(data: encoded, encoding: .utf8)!, xmlString)
         }
     }
-    
+
     func testFloatAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in floatValues {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!

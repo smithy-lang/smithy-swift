@@ -8,21 +8,21 @@
 import Foundation
 
 public class StreamingProvider: NSObject, StreamDelegate {
-    
-     public typealias streamClosure = (StreamEvents, Stream, OutputStream?, StreamErrors?) -> Void
-     var streamResponse: streamClosure?
-    
-    public func stream(closure: @escaping streamClosure) {
+
+     public typealias StreamClosure = (StreamEvents, Stream, OutputStream?, StreamErrors?) -> Void
+     var streamResponse: StreamClosure?
+
+    public func stream(closure: @escaping StreamClosure) {
         streamResponse = closure
     }
-    
+
     struct Streams {
         let input: InputStream
         let output: OutputStream
     }
     lazy var boundStreams: Streams = {
-        var inputOrNil: InputStream? = nil
-        var outputOrNil: OutputStream? = nil
+        var inputOrNil: InputStream?
+        var outputOrNil: OutputStream?
         Stream.getBoundStreams(withBufferSize: 4096,
                                inputStream: &inputOrNil,
                                outputStream: &outputOrNil)
@@ -35,12 +35,12 @@ public class StreamingProvider: NSObject, StreamDelegate {
         output.open()
         return Streams(input: input, output: output)
     }()
-    
+
     public func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
         guard aStream == boundStreams.output else {
             return
         }
-        switch (eventCode) {
+        switch eventCode {
         case .endEncountered:
             self.streamResponse?(.streamEnded, aStream, nil, nil)
           //  continueRunning = false
@@ -48,15 +48,15 @@ public class StreamingProvider: NSObject, StreamDelegate {
             // Close the streams and alert the user that the upload failed.
             print("error ocurred")
             aStream.close()
-            self.streamResponse?(.errorOccurred,aStream, nil, StreamErrors.uploadFailed)
+            self.streamResponse?(.errorOccurred, aStream, nil, StreamErrors.uploadFailed)
         case .hasSpaceAvailable:
-            self.streamResponse?(.readyForData,aStream, boundStreams.output, nil)
+            self.streamResponse?(.readyForData, aStream, boundStreams.output, nil)
         case .hasBytesAvailable:
-            self.streamResponse?(.receivedData,aStream, nil, nil)
+            self.streamResponse?(.receivedData, aStream, nil, nil)
         case .openCompleted:
-            self.streamResponse?(.openSuccessful,aStream, nil, nil)
+            self.streamResponse?(.openSuccessful, aStream, nil, nil)
         default:
-            self.streamResponse?(.errorOccurred,aStream, nil, StreamErrors.unknown)
+            self.streamResponse?(.errorOccurred, aStream, nil, StreamErrors.unknown)
         }
      }
 }

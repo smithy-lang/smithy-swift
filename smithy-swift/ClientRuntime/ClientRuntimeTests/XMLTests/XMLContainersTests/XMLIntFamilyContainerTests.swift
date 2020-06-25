@@ -14,7 +14,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
         let values: [Int] = [
             -42,
             42,
-            0,
+            0
         ]
 
         for unboxed in values {
@@ -27,7 +27,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
         let values: [(Int, String)] = [
             (-42, "-42"),
             (42, "42"),
-            (0, "0"),
+            (0, "0")
         ]
 
         for (unboxed, string) in values {
@@ -41,7 +41,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
             "-1",
             "0",
             "12678967543233",
-            "+100000",
+            "+100000"
         ]
 
         for string in values {
@@ -53,7 +53,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
     func testInvalidValues() {
         let values: [String] = [
             "foobar",
-            "",
+            ""
         ]
 
         for string in values {
@@ -61,7 +61,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
             XCTAssertNil(box)
         }
     }
-    
+
     func testUIntIsNull() {
         let box = XMLUIntContainer(UInt(42))
         XCTAssertEqual(box.isNull, false)
@@ -71,7 +71,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
         let values: [UInt] = [
             1,
             0,
-            12_678_967_543_233,
+            12_678_967_543_233
         ]
 
         for unboxed in values {
@@ -84,7 +84,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
         let values: [(UInt, String)] = [
             (1, "1"),
             (0, "0"),
-            (12_678_967_543_233, "12678967543233"),
+            (12_678_967_543_233, "12678967543233")
         ]
 
         for (unboxed, string) in values {
@@ -98,7 +98,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
             "1",
             "0",
             "12678967543233",
-            "+100000",
+            "+100000"
         ]
 
         for string in values {
@@ -111,7 +111,7 @@ class XMLIntFamilyContainerTests: XCTestCase {
         let values: [String] = [
             "-1",
             "foobar",
-            "",
+            ""
         ]
 
         for string in values {

@@ -48,7 +48,6 @@ extension XMLFloatContainer: CustomStringConvertible {
     }
 }
 
-
 struct XMLDecimalContainer: Equatable {
 
     let unboxed: Decimal
@@ -80,7 +79,6 @@ extension XMLDecimalContainer: CustomStringConvertible {
         return unboxed.description
     }
 }
-
 
 struct XMLDoubleContainer: Equatable, XMLValueContainer {
 

@@ -19,7 +19,7 @@ extension OperationQueue {
     /// Returns `operations` as `[NetworkOperations]`.
     var networkOperations: [NetworkOperation] {
         get {
-            return operations.filter{ $0 is NetworkOperation}.map { ($0 as? NetworkOperation)!}
+            return operations.filter { $0 is NetworkOperation}.map { ($0 as? NetworkOperation)!}
         }
     }
 }

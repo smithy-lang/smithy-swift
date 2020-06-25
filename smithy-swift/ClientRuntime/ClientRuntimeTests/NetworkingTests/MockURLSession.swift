@@ -20,25 +20,25 @@ class MockURLSession: SessionProtocol {
     var nextDataTask = MockURLSessionDataTask()
     var nextData: Data?
     var nextError: Error?
-    
+
     private (set) var lastURL: URL?
-    
+
     func successHttpURLResponse(request: URLRequest) -> URLResponse {
         return HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)!
     }
-    
+
     func dataTask(with request: URLRequest, completionHandler: @escaping DataTaskResult) -> URLSessionDataTaskProtocol {
         lastURL = request.url
-        
+
         completionHandler(nextData, successHttpURLResponse(request: request), nextError)
         return nextDataTask
     }
-    
+
     func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol {
         lastURL = request.url
         return nextDataTask
     }
-    
+
     func uploadTask(withStreamedRequest request: URLRequest) -> URLSessionUploadTask {
         // TODO
         return URLSessionUploadTask()
@@ -48,13 +48,13 @@ class MockURLSession: SessionProtocol {
 class MockURLSessionDataTask: URLSessionTask, URLSessionDataTaskProtocol {
     var resumeWasCalled = false
     var cancelWasCalled = false
-    
+
     override init() {}
-    
+
     override func resume() {
         resumeWasCalled = true
     }
-    
+
     override func cancel() {
         cancelWasCalled = true
     }

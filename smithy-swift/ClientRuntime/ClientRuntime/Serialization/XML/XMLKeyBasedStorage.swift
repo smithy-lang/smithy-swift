@@ -3,7 +3,7 @@
 import Foundation
 
 struct XMLKeyBasedStorage<Key: Hashable & Comparable, Value> {
-    
+
     typealias Buffer = [(Key, Value)]
 
     fileprivate var keyIndicesInBuffer = [Key: [Int]]()
@@ -36,12 +36,12 @@ struct XMLKeyBasedStorage<Key: Hashable & Comparable, Value> {
     }
 
     mutating func append(_ value: Value, at key: Key) {
-        let i = buffer.count
+        let bufferCount = buffer.count
         buffer.append((key, value))
         if keyIndicesInBuffer[key] != nil {
-            keyIndicesInBuffer[key]?.append(i)
+            keyIndicesInBuffer[key]?.append(bufferCount)
         } else {
-            keyIndicesInBuffer[key] = [i]
+            keyIndicesInBuffer[key] = [bufferCount]
         }
     }
 
