@@ -12,12 +12,13 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.testing
 
-package com.amazonaws.service.runtime
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.CoroutineScope
 
-// ######################################################################################
-// Things either missing or in-progress in the client runtime.
-// ######################################################################################
-
-
-
+/**
+ * MPP compatible runBlocking to run suspend tests in common modules
+ */
+expect fun <T> runSuspendTest(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.() -> T): T

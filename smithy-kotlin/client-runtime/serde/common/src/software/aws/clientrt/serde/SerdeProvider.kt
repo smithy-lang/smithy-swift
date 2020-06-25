@@ -12,12 +12,19 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.serde
 
-package com.amazonaws.service.runtime
+/**
+ * Factory type for creating new instances of a [Serializer] or [Deserializer]
+ */
+interface SerdeProvider {
+    /**
+     * Create a new serializer
+     */
+    fun serializer(): Serializer
 
-// ######################################################################################
-// Things either missing or in-progress in the client runtime.
-// ######################################################################################
-
-
-
+    /**
+     * Create a new deserializer for the given payload
+     */
+    fun deserializer(payload: ByteArray): Deserializer
+}

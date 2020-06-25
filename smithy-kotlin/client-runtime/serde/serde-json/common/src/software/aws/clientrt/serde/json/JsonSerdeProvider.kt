@@ -12,12 +12,16 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.serde.json
 
-package com.amazonaws.service.runtime
+import software.aws.clientrt.serde.Deserializer
+import software.aws.clientrt.serde.SerdeProvider
+import software.aws.clientrt.serde.Serializer
 
-// ######################################################################################
-// Things either missing or in-progress in the client runtime.
-// ######################################################################################
-
-
-
+/**
+ * JSON serde provider
+ */
+class JsonSerdeProvider : SerdeProvider {
+    override fun serializer(): Serializer = JsonSerializer()
+    override fun deserializer(payload: ByteArray): Deserializer = JsonDeserializer(payload)
+}

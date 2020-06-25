@@ -12,12 +12,11 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.testing
 
-package com.amazonaws.service.runtime
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
-// ######################################################################################
-// Things either missing or in-progress in the client runtime.
-// ######################################################################################
-
-
-
+actual fun <T> runSuspendTest(context: CoroutineContext, block: suspend CoroutineScope.() -> T): T =
+    runBlocking { block(this) }

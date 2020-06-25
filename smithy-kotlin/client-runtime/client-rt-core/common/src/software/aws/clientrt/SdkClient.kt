@@ -12,12 +12,13 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt
 
-package com.amazonaws.service.runtime
+/**
+ * Common interface all generated service clients implement
+ */
+interface SdkClient {
+    val serviceName: String
 
-// ######################################################################################
-// Things either missing or in-progress in the client runtime.
-// ######################################################################################
-
-
-
+    fun close() {}
+}

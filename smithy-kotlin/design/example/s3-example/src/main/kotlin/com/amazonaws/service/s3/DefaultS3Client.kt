@@ -14,15 +14,17 @@
  */
 package com.amazonaws.service.s3
 
-import com.amazonaws.service.runtime.*
 import com.amazonaws.service.s3.model.*
 import com.amazonaws.service.s3.transform.*
 import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.content.ByteStream
+import software.aws.clientrt.content.toByteArray
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
-import software.aws.clientrt.http.request.HttpRequestPipeline
+import software.aws.clientrt.http.feature.DefaultRequest
+import software.aws.clientrt.http.feature.HttpSerde
+import software.aws.clientrt.serde.json.JsonSerdeProvider
 import kotlin.text.decodeToString
 
 
@@ -34,14 +36,14 @@ class DefaultS3Client: S3Client {
         client = sdkHttpClient(KtorEngine(config)) {
             install(HttpSerde) {
                 // obviously S3 is actually XML
-                serializer = JsonSerializer()
-                deserializer = JsonDeserializer()
+                serdeProvider = JsonSerdeProvider()
             }
-        }
-        client.requestPipeline.intercept(HttpRequestPipeline.Initialize) {
-            context.url.scheme = Protocol.HTTP
-            context.url.host = "127.0.0.1"
-            context.url.port = 8000
+
+            install(DefaultRequest) {
+                url.scheme = Protocol.HTTP
+                url.host = "127.0.0.1"
+                url.port = 8000
+            }
         }
     }
 
@@ -103,7 +105,7 @@ fun main() = runBlocking{
 
 
     // example of dynamically consuming the stream
-    service.getObject(getRequest) {resp ->
+    service.getObject(getRequest) { resp ->
         resp.body?.let { body ->
             val stream = body as ByteStream.Reader
             val source = stream.readFrom()

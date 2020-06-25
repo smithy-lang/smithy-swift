@@ -14,8 +14,8 @@
  */
 package com.amazonaws.service.s3
 
-import com.amazonaws.service.runtime.SdkClient
 import com.amazonaws.service.s3.model.*
+import software.aws.clientrt.SdkClient
 
 
 interface S3Client: SdkClient {
