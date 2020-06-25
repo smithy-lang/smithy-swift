@@ -15,10 +15,12 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -28,10 +30,6 @@ import software.amazon.smithy.model.traits.EnumTrait
  */
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
-    override fun getDefault(shape: Shape?): Void? {
-        return null
-    }
-
     val LOGGER = Logger.getLogger(javaClass.name)
     private val model = context.model
     private val modelWithoutTraits = context.modelWithoutTraitShapes
@@ -40,6 +38,20 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
     private val writers: KotlinDelegator = KotlinDelegator(settings, model, fileManifest, symbolProvider)
+    private val integrations: List<KotlinIntegration>
+
+    init {
+        val loader = context.pluginClassLoader.orElse(javaClass.classLoader)
+        LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
+        val loaded = mutableListOf<KotlinIntegration>()
+        ServiceLoader.load(KotlinIntegration::class.java, loader)
+            .forEach { integration ->
+                LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
+                loaded.add(integration)
+            }
+
+        integrations = loaded
+    }
 
     fun execute() {
         LOGGER.info("Generating Kotlin client for service ${settings.service}")
@@ -52,6 +64,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
 
         writeGradleBuild(settings, fileManifest)
+    }
+
+    override fun getDefault(shape: Shape?): Void? {
+        return null
     }
 
     override fun structureShape(shape: StructureShape): Void? {
@@ -71,9 +87,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 
-    override fun serviceShape(shape: ServiceShape?): Void? {
+    override fun serviceShape(shape: ServiceShape): Void? {
+        if (service != shape) {
+            LOGGER.fine("Skipping `${shape.id}` because it is not `${service.id}`")
+            return null
+        }
+
         writers.useShapeWriter(shape) {
-            // TODO - generate client(s)
+            ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName).render()
         }
         return null
     }

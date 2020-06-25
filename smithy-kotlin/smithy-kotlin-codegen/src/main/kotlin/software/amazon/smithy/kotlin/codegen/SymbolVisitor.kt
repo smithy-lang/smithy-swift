@@ -66,6 +66,11 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
 
 /**
+ * Get the default name for an operation shape
+ */
+fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name)
+
+/**
  * Convert shapes to Kotlin types
  * @param model The smithy model to generate for
  * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
@@ -233,6 +238,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun blobShape(shape: BlobShape?): Symbol {
+        // FIXME - needs to test for streaming trait
         return createSymbolBuilder(shape, "ByteArray", boxed = true).build()
     }
 
@@ -267,8 +273,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "OperationTODO").build()
     }
 
-    override fun serviceShape(shape: ServiceShape?): Symbol {
-        return createSymbolBuilder(shape, "Client").definitionFile("./Client.kt").build()
+    override fun serviceShape(shape: ServiceShape): Symbol {
+        val serviceName = shape.defaultName()
+        return createSymbolBuilder(shape, "${serviceName}Client")
+            .namespace(rootNamespace, ".")
+            .definitionFile("${serviceName}Client.kt").build()
     }
 
     /**
