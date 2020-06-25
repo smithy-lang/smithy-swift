@@ -11,5 +11,5 @@ coverage:
   range: "60...100"
 
 codecov:
-  branch: swift-client-runtime-circleci-setup
+  branch: swift-client-runtime
   

@@ -5,6 +5,9 @@ analyzer_rules:
   - unused_import
   - unused_declaration
 
+disabled_rules:
+  - trailing_whitespace
+
 opt_in_rules:
   - empty_count
 

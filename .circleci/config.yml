@@ -124,31 +124,6 @@ jobs:
                 paths:
                   - smithy-swift/build
                   - smithy-swift/*/build
-  
-  build_swift_client_runtime:
-    macos:
-      xcode: "11.4.1"
-    steps:
-      - checkout
-      - pre_start_ios_simulator
-      - run:
-          name: Build ClientRuntime
-          working_directory: ~/project/smithy-swift/ClientRuntime
-          command: |
-            xcodebuild build -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
-  
-  unittest_swift_client_runtime:
-    macos:
-      xcode: "11.4.1"
-    steps:
-      - checkout
-      - pre_start_ios_simulator
-      - run:
-          name: Unit Test ClientRuntime
-          working_directory: ~/project/smithy-swift/ClientRuntime
-          command: |
-            xcodebuild test -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
-            bash <(curl https://codecov.io/bash | sed 's/"$beta_xcode_partials"//g')
 
   test_smithy_kotlin:
     environment:
@@ -273,4 +248,4 @@ workflows:
         filters:
             branches:
               only:
-                - swift-client-runtime-circleci-setup
+                - swift-client-runtime
