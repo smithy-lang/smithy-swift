@@ -1,10 +1,14 @@
 ignore:
-  - "ClientRuntimeTests"
+  - "ClientRuntimeTests/**/*"
+  - "^ClientRuntimeTests/**/*"
+  - "./ClientRuntimeTests/**/*"
+  - "smithy-swift/ClientRuntimeTests/**/*"
+  - "amplify-codegen/smithy-swift/ClientRuntime/ClientRuntimeTests/**/*"
 
 coverage:
   precision: 2
   round: down
-  range: "70...100"
+  range: "60...100"
 
 codecov:
   branch: swift-client-runtime-circleci-setup
