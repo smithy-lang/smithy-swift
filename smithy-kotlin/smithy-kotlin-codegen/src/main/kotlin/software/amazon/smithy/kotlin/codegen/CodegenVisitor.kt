@@ -60,10 +60,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
+        val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }
+        writeGradleBuild(settings, fileManifest, dependencies)
+
         println("flushing writers")
         writers.flushWriters()
-
-        writeGradleBuild(settings, fileManifest)
     }
 
     override fun getDefault(shape: Shape?): Void? {

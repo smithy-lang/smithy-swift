@@ -20,6 +20,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -237,9 +238,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "TimestampTODO", boxed = true).build()
     }
 
-    override fun blobShape(shape: BlobShape?): Symbol {
-        // FIXME - needs to test for streaming trait
-        return createSymbolBuilder(shape, "ByteArray", boxed = true).build()
+    override fun blobShape(shape: BlobShape): Symbol {
+        return if (shape.hasTrait(StreamingTrait::class.java)) {
+            val dependency = KotlinDependency.CLIENT_RT_CORE
+            createSymbolBuilder(shape, "ByteStream", boxed = true)
+                .namespace("${dependency.namespace}.content", ".")
+                .addDependency(dependency)
+                .build()
+        } else {
+            createSymbolBuilder(shape, "ByteArray", boxed = true).build()
+        }
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol {
@@ -308,15 +316,5 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     ): Symbol.Builder {
         return createSymbolBuilder(shape, typeName, boxed)
             .namespace(namespace, ".")
-    }
-
-    // Create a reference to the given symbol from the dependency
-    fun createNamespaceReference(dependency: KotlinDependency, symbolName: String): SymbolReference {
-        val namespace = dependency.namespace
-        val nsSymbol = Symbol.builder()
-            .name(symbolName)
-            .namespace(namespace, ".")
-            .build()
-        return SymbolReference.builder().symbol(nsSymbol).options(SymbolReference.ContextOption.DECLARE).build()
     }
 }
