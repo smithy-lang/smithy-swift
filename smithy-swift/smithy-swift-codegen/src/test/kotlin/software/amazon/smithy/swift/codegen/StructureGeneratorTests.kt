@@ -101,42 +101,7 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedStructure)
     }
 
-    private fun createStructureWithoutErrorTrait(): StructureShape {
-        val member1 = MemberShape.builder().id("smithy.example#MyStruct\$foo").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("smithy.example#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
-        val member3 = MemberShape.builder().id("smithy.example#MyStruct\$baz")
-            .target("smithy.api#Integer")
-            .addTrait(DocumentationTrait("This *is* documentation about the member."))
-            .build()
 
-        return StructureShape.builder()
-            .id("smithy.example#MyStruct")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-            .build()
-    }
-
-    private fun createStructureWithOptionalErrorMessage(): StructureShape {
-        val member1 = MemberShape.builder().id("smithy.example#MyError\$message")
-            .target("smithy.api#String")
-            .build()
-        val member2 = MemberShape.builder().id("smithy.example#MyError\$baz")
-            .target("smithy.api#Integer")
-            .addTrait(DocumentationTrait("This *is* documentation about the member."))
-            .build()
-
-        return StructureShape.builder()
-            .id("smithy.example#MyError")
-            .addMember(member1)
-            .addMember(member2)
-            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-            .addTrait(ErrorTrait("client"))
-            .addTrait(RetryableTrait.builder().build())
-            .addTrait(HttpErrorTrait(429))
-            .build()
-    }
 
     private fun createModelWithStructureShape(struct: StructureShape): Model {
 

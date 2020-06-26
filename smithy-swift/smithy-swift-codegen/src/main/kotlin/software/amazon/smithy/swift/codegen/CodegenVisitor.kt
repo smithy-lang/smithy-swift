@@ -22,6 +22,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
@@ -32,6 +33,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private var fileManifest: FileManifest = context.fileManifest
     private var symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
     private var writers: SwiftDelegator = SwiftDelegator(settings, model, fileManifest, symbolProvider)
+    private var integrations = mutableListOf<SwiftIntegration>()
 
     fun execute() { // Generate models that are connected to the service being generated.
         println("Walking shapes from " + service.id + " to find shapes to generate")
@@ -73,9 +75,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun serviceShape(shape: ServiceShape?): Void? {
-        // TODO: implement client generation
-        writers.useShapeWriter(shape) {
-            // TODO:: Generate Service Client
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, integrations).render()
         }
         return null
     }

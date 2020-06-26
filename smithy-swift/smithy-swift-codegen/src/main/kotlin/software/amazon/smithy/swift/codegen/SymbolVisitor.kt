@@ -24,6 +24,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.utils.CaseUtils
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -60,6 +61,8 @@ fun Symbol.defaultValue(): String? {
 }
 
 fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
+
+fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
     ShapeVisitor<Symbol> {
@@ -217,7 +220,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = shape.defaultName()
-        return createSymbolBuilder(shape, "Client").definitionFile(formatModuleName(shape.type, name)).build()
+        return createSymbolBuilder(shape, "${name}Client").definitionFile(formatModuleName(shape.type, name)).build()
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
@@ -262,10 +265,9 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     private fun formatModuleName(shapeType: ShapeType, name: String): String? {
-        // All shapes except for the service and operations are stored in models.
+        // All shapes except for the service are stored in models.
         return when (shapeType) {
-            ShapeType.SERVICE -> "./$rootNamespace/$name.swift"
-            ShapeType.OPERATION -> "./$rootNamespace/operations/$name.swift"
+            ShapeType.SERVICE -> "./$rootNamespace/${name}ClientProtocol.swift"
             else -> "./$rootNamespace/models/$name.swift"
         }
     }
