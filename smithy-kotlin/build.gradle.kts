@@ -25,7 +25,7 @@ allprojects {
     }
 }
 
-apply(from = rootProject.file("gradle/maincodecov.gradle"))
+apply(from = rootProject.file("gradle/maincodecoverage.gradle"))
 
 val ktlint by configurations.creating
 val ktlintVersion: String by project

@@ -19,7 +19,7 @@ subprojects {
                 "src/main/kotlin"
         ]
         // Do not add example projects coverage info
-        if ("example" != project.name && "lambda-example" != project.name && "s3-example" != project.name) {
+        if (!project.name.contains("example")) {
             classDirectories.from files(fileTree(dir: "${buildDir}/classes/kotlin/jvm/"), fileTree(dir: "${buildDir}/classes/kotlin/"))
             sourceDirectories.from files(coverageSourceDirs)
             additionalSourceDirs.from files(coverageSourceDirs)
