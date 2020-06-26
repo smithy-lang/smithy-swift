@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -37,10 +38,7 @@ class ServiceGenerator(
     fun render() {
         val symbol = symbolProvider.toSymbol(service)
 
-        // FIXME - add SdkClient import and dependency
-
-        // import all the models generated for use in input/output shapes
-        writer.addImport("$rootNamespace.model", "*", "")
+        importExternalSymbols()
 
         val topDownIndex = model.getKnowledge(TopDownIndex::class.java)
         val operations = topDownIndex.getContainedOperations(service).sortedBy { it.defaultName() }
@@ -59,6 +57,20 @@ class ServiceGenerator(
             .write("")
     }
 
+    private fun importExternalSymbols() {
+        // base client interface
+        val sdkInterfaceSymbol = Symbol.builder()
+            .name("SdkClient")
+            .namespace(CLIENT_RT_ROOT_NS, ".")
+            .addDependency(KotlinDependency.CLIENT_RT_CORE)
+            .build()
+
+        writer.addImport(sdkInterfaceSymbol, "")
+
+        // import all the models generated for use in input/output shapes
+        writer.addImport("$rootNamespace.model", "*", "")
+    }
+
     private fun renderClose() {
         writer.write("")
             .write("fun close()")
@@ -68,7 +80,6 @@ class ServiceGenerator(
         writer.write("")
             .write("override val serviceName: String")
             .indent()
-            // FIXME - this should be sdkId for AWS protocols
             .write("get() = \"\$L\"", service.id.name)
             .dedent()
     }

@@ -60,7 +60,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
-        val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }
+        val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
         writeGradleBuild(settings, fileManifest, dependencies)
 
         println("flushing writers")

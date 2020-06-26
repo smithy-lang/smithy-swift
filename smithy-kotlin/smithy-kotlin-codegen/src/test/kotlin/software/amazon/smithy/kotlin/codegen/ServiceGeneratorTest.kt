@@ -41,8 +41,9 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    fun `it imports models`() {
+    fun `it imports external symbols`() {
         commonTestContents.shouldContain("import test.model.*")
+        commonTestContents.shouldContain("import $CLIENT_RT_ROOT_NS.SdkClient")
     }
 
     @Test
