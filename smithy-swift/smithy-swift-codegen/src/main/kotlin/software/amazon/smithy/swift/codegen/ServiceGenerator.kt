@@ -17,9 +17,9 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -29,23 +29,25 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 /*
 * Generates a Swift protocol for the service
  */
-class ServiceGenerator(settings: SwiftSettings,
-                       private val model: Model,
-                       private val symbolProvider: SymbolProvider,
-                       private val writer: SwiftWriter,
-                       private val integrations: List<SwiftIntegration>) {
+class ServiceGenerator(
+    settings: SwiftSettings,
+    private val model: Model,
+    private val symbolProvider: SymbolProvider,
+    private val writer: SwiftWriter,
+    private val integrations: List<SwiftIntegration>
+) {
     private var service = settings.getService(model)
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
     }
 
     fun render() {
-        //writer.putContext("service.name", serviceSymbol.name)
-        //add imports
+        // writer.putContext("service.name", serviceSymbol.name)
+        // add imports
         writer.addImport(serviceSymbol)
-        //generate protocol
+        // generate protocol
         renderSwiftProtocol()
-        //writer.removeContext("service.name")
+        // writer.removeContext("service.name")
     }
     /**
      * Generates an appropriate Swift Protocol for a Smithy Service shape.
@@ -91,7 +93,7 @@ class ServiceGenerator(settings: SwiftSettings,
                 }
             .closeBlock("}")
             .write("")
-        //TODO: add in swift integrations
+        // TODO: add in swift integrations
     }
 
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
@@ -103,19 +105,16 @@ class ServiceGenerator(settings: SwiftSettings,
         val errorTypeName = "${op.defaultName()}OperationError"
         val inputParam = input.map { "input: $it, " }.orElse("")
         // get error object here
-        val outputParam = output.map { "completion: (SdkResult<$it, ${errorTypeName}>) -> Void" }.orElse("")
-
-       // writer.write("")
+        val outputParam = output.map { "completion: (SdkResult<$it, $errorTypeName>) -> Void" }.orElse("")
         writer.writeShapeDocs(op)
 
-        val hasOutputStream = outputShape.map{ it.hasStreamingMember(model) }.orElse(false)
+        val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
         if (!hasOutputStream) {
             writer.write("func \$L(\$L\$L)", operationName, inputParam, outputParam)
-        }else {
+        } else {
             writer.write("func \$L(\$L streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
         }
     }
-
 }
 /**
  * An extension to see if a structure shape has a the streaming trait*.

@@ -22,10 +22,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.DocumentationTrait
-import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpErrorTrait
-import software.amazon.smithy.model.traits.RetryableTrait
 
 class StructureGeneratorTests : TestsBase() {
     @Test
@@ -100,8 +96,6 @@ class StructureGeneratorTests : TestsBase() {
 
         contents.shouldContain(expectedGeneratedStructure)
     }
-
-
 
     private fun createModelWithStructureShape(struct: StructureShape): Model {
 

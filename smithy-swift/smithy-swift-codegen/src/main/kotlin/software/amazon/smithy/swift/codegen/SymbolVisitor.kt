@@ -24,7 +24,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.utils.CaseUtils
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
