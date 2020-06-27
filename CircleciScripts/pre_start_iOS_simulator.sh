@@ -1,4 +1,4 @@
-# Create sim if needed
+# Create simulator if needed
 test_device_id=$( xcrun simctl list devices | grep "circleci-test-device" | sed 's/ *circleci-test-device *(//' | sed 's/).*//' )
 
 if [[ -z $test_device_id ]] ; then
