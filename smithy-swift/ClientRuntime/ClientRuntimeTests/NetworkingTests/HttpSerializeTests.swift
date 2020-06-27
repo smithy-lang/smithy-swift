@@ -24,8 +24,8 @@ class HttpSerializeTests: NetworkingTestUtils {
             XCTFail("Encoding a valid request failed")
             return
         }
-        
-        switch(httpRequest.body) {
+
+        switch httpRequest.body {
         case .data(let bodyData):
             XCTAssertNotNil(bodyData)
         default:
@@ -37,30 +37,30 @@ class HttpSerializeTests: NetworkingTestUtils {
         let codableRequest = CodableRequestThatThrows()
         XCTAssertThrowsError(try codableRequest.encode())
     }
-    
+
     func testEncodeBodyReturnsPayloadAsItIs() {
         let codableRequest = CodableRequestWithPayload()
         guard let httpRequest = try? codableRequest.encode() else {
             XCTFail("Encoding a valid request failed")
             return
         }
-        
-        switch(httpRequest.body) {
+
+        switch httpRequest.body {
         case .data(let bodyData):
             XCTAssertEqual(bodyData, codableRequest.payload)
         default:
             XCTFail("Valid body data is expected")
         }
     }
-    
+
     func testXMLEncodingSetsValidHttpBody() {
         let codableRequest = CodableXMLRequest()
         guard let httpRequest = try? codableRequest.encode() else {
             XCTFail("Encoding a valid request with XMLEncoder failed")
             return
         }
-        
-        switch(httpRequest.body) {
+
+        switch httpRequest.body {
         case .data(let bodyData):
             XCTAssertNotNil(bodyData)
         default:
@@ -75,10 +75,10 @@ struct CodableRequest: Codable {
 
 struct CodableRequestThatThrows: Codable {
     var member: String = "value"
-    
+
     init() {}
 
-    func encode(to theEncoder:Encoder) throws {
+    func encode(to theEncoder: Encoder) throws {
         throw MockError.mockEncodingError
     }
 }
@@ -91,8 +91,7 @@ struct CodableXMLRequest: Codable {
     var member: String = "value"
 }
 
-
-enum MockError : Error {
+enum MockError: Error {
     case mockDecodingError
     case mockEncodingError
 }
@@ -124,4 +123,3 @@ extension CodableRequestWithPayload: HttpSerialize {
         return HttpRequest(method: .get, endpoint: Endpoint(host: "", path: ""), headers: HttpHeaders(), body: httpBody)
     }
 }
-

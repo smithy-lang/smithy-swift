@@ -17,12 +17,12 @@ import XCTest
 @testable import ClientRuntime
 
 class ResponsePayloadTests: XCTestCase {
-    
+
     var responseAsJSONString: String!
     var responseAsXMLString: String!
     var decoder: ResponseDecoder!
-    var expectedDecodedResponse: [String:String]!
-    
+    var expectedDecodedResponse: [String: String]!
+
     override func setUp() {
         responseAsJSONString = "{\"key\": \"value\"}"
         responseAsXMLString =
@@ -34,36 +34,36 @@ class ResponsePayloadTests: XCTestCase {
         decoder = JSONDecoder()
         expectedDecodedResponse = ["key": "value"]
     }
-    
+
     func testDecodingJSONResponsePayload() {
         let responsePayload = ResponsePayload(body: responseAsJSONString.data(using: .utf8)!, decoder: decoder)
-        
-        let result: Result<[String:String], SdkError<OperationError>> = responsePayload.decode()
+
+        let result: Result<[String: String], SdkError<OperationError>> = responsePayload.decode()
             .mapError { failure in SdkError<OperationError>.client(failure) }
-        
+
         let decodedResponse = try? result.get()
-        
+
         XCTAssertNotNil(decodedResponse)
         XCTAssertEqual(decodedResponse, expectedDecodedResponse)
     }
-    
+
     func testDecodingXMLResponsePayload() {
         decoder = XMLDecoder()
         let responsePayload = ResponsePayload(body: responseAsXMLString.data(using: .utf8)!, decoder: decoder)
-        
-        let result: Result<[String:String], SdkError<OperationError>> = responsePayload.decode()
+
+        let result: Result<[String: String], SdkError<OperationError>> = responsePayload.decode()
             .mapError { failure in SdkError<OperationError>.client(failure) }
-        
+
         let decodedResponse = try? result.get()
-        
+
         XCTAssertNotNil(decodedResponse)
         XCTAssertEqual(decodedResponse, expectedDecodedResponse)
     }
-    
+
     func testDecodingInvalidJSONResponsePayloadThrows() {
         let responsePayload = ResponsePayload(body: "{:}".data(using: .utf8)!, decoder: decoder)
-        
-        let result: Result<[String:String], SdkError<OperationError>> = responsePayload.decode()
+
+        let result: Result<[String: String], SdkError<OperationError>> = responsePayload.decode()
             .mapError { failure in SdkError<OperationError>.client(failure) }
         switch result {
         case .failure(let clientError):
@@ -72,12 +72,12 @@ class ResponsePayloadTests: XCTestCase {
             XCTFail("Decoding invalid payload is expected to fail")
         }
     }
-    
+
     func testDecodingInvalidXMLResponsePayloadThrows() {
         decoder = XMLDecoder()
         let responsePayload = ResponsePayload(body: "{:}".data(using: .utf8)!, decoder: decoder)
-        
-        let result: Result<[String:String], SdkError<OperationError>> = responsePayload.decode()
+
+        let result: Result<[String: String], SdkError<OperationError>> = responsePayload.decode()
             .mapError { failure in SdkError<OperationError>.client(failure) }
         switch result {
         case .failure(let clientError):
@@ -86,7 +86,7 @@ class ResponsePayloadTests: XCTestCase {
             XCTFail("Decoding invalid payload is expected to fail")
         }
     }
-    
+
     enum OperationError {
         case unknown(Error)
     }

@@ -16,7 +16,6 @@
 import XCTest
 @testable import ClientRuntime
 
-
 class StringTests: XMLSimpleTypesTestsUtils {
 
     let values: [(String, String)] = [
@@ -29,7 +28,7 @@ class StringTests: XMLSimpleTypesTestsUtils {
 
     func testStringAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in values {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!

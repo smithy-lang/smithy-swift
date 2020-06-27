@@ -19,11 +19,11 @@ public class HttpClientConfiguration {
     public var protocolType: ProtocolType
     //initialize with default headers
     public var defaultHeaders: HttpHeaders
-    
+
     public var operationQueue: OperationQueue
-    
+
     public var protocolClasses: [AnyClass]?
-    
+
     //add any other properties here you want to give the service operations control over to be mappted to the urlsessionconfig below
 
     public init(protocolType: ProtocolType = .https,
@@ -38,31 +38,34 @@ public class HttpClientConfiguration {
 }
 
 extension HttpClientConfiguration {
-    
+
     func toUrlSessionConfig () -> URLSessionConfiguration {
         let config = URLSessionConfiguration.default
         config.networkServiceType = .default
-        //essentially uses the network.framework to check network availablity automatically behind the scenes and wont call until network is available. do we want to set this to true for automatic reachability?
+        /* essentially uses the network.framework to check network availablity automatically
+           behind the scenes and wont call until network is available.
+           do we want to set this to true for automatic reachability?
+        */
         config.waitsForConnectivity = true
         config.allowsCellularAccess = true
         config.httpAdditionalHeaders = HttpHeaders().dictionary
         config.operationQueue = self.operationQueue
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
-        
+
         if let protocolClasses = self.protocolClasses {
             config.protocolClasses = protocolClasses
         }
-        
+
         return config
-        
+
     }
 }
 
 extension URLSessionConfiguration {
-   
-    static var _operationQueue:OperationQueue = OperationQueue()
-    
-    var operationQueue:OperationQueue {
+    // swiftlint:disable identifier_name
+    static var _operationQueue: OperationQueue = OperationQueue()
+
+    var operationQueue: OperationQueue {
         get {
             return URLSessionConfiguration._operationQueue
         }

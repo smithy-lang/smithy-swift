@@ -38,7 +38,7 @@ extension XMLEncoderImplementation: SingleValueEncodingContainer {
         assertCanEncodeNewValue()
         try storage.push(container: addToXMLContainer(value))
     }
-    
+
     public func encode(_ value: String) throws {
         assertCanEncodeNewValue()
         storage.push(container: addToXMLContainer(value))
@@ -48,7 +48,7 @@ extension XMLEncoderImplementation: SingleValueEncodingContainer {
         assertCanEncodeNewValue()
         try storage.push(container: addToXMLContainer(value))
     }
-    
+
     public func encode(_ value: UInt) throws {
         assertCanEncodeNewValue()
         storage.push(container: addToXMLContainer(value))
@@ -73,7 +73,7 @@ extension XMLEncoderImplementation: SingleValueEncodingContainer {
         assertCanEncodeNewValue()
         storage.push(container: addToXMLContainer(value))
     }
-    
+
     public func encode(_ value: Int8) throws {
         assertCanEncodeNewValue()
         storage.push(container: addToXMLContainer(value))

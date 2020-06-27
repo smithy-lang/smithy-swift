@@ -205,10 +205,12 @@ final class BooksTest: XCTestCase {
 
     func testBookXML() throws {
         let decoder = XMLDecoder()
-        
-        let encoderOptions = XMLEncoderOptions(dateEncodingStrategy: .formatted(formatter), outputFormatting: [.prettyPrinted], rootKey: "book", header: XMLHeader(version: 1.0,encoding: "UTF-8"))
+
+        let encoderOptions = XMLEncoderOptions(dateEncodingStrategy: .formatted(formatter),
+                                               outputFormatting: [.prettyPrinted],
+                                               rootKey: "book",
+                                               header: XMLHeader(version: 1.0, encoding: "UTF-8"))
         let encoder = XMLEncoder(options: encoderOptions)
-        
 
         decoder.dateDecodingStrategy = .formatted(formatter)
 
@@ -231,8 +233,10 @@ final class BooksTest: XCTestCase {
 
     func testCatalogXML() throws {
         let decoder = XMLDecoder()
-        
-        let encoderOptions = XMLEncoderOptions(dateEncodingStrategy: .formatted(formatter), rootKey: "catalog", header: XMLHeader(version: 1.0,encoding: "UTF-8"))
+
+        let encoderOptions = XMLEncoderOptions(dateEncodingStrategy: .formatted(formatter),
+                                               rootKey: "catalog",
+                                               header: XMLHeader(version: 1.0, encoding: "UTF-8"))
         let encoder = XMLEncoder(options: encoderOptions)
 
         decoder.dateDecodingStrategy = .formatted(formatter)

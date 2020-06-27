@@ -13,7 +13,7 @@ class XMLURLContainerTests: XCTestCase {
     func testUnbox() {
         let values: [URL] = [
             URL(string: "file:///")!,
-            URL(string: "http://example.com")!,
+            URL(string: "http://example.com")!
         ]
 
         for unboxed in values {
@@ -25,7 +25,7 @@ class XMLURLContainerTests: XCTestCase {
     func testXMLString() {
         let values: [(URL, String)] = [
             (URL(string: "file:///")!, "file:///"),
-            (URL(string: "http://example.com")!, "http://example.com"),
+            (URL(string: "http://example.com")!, "http://example.com")
         ]
 
         for (bool, string) in values {
@@ -37,7 +37,7 @@ class XMLURLContainerTests: XCTestCase {
     func testValidValues() {
         let values: [String] = [
             "file:///",
-            "http://example.com",
+            "http://example.com"
         ]
 
         for string in values {
@@ -49,7 +49,7 @@ class XMLURLContainerTests: XCTestCase {
     func testInvalidValues() {
         let values: [String] = [
             "foo\nbar",
-            "",
+            ""
         ]
 
         for string in values {

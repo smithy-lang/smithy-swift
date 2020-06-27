@@ -16,17 +16,16 @@
 import XCTest
 @testable import ClientRuntime
 
-
 class URLTests: XMLSimpleTypesTestsUtils {
 
     let values: [(URL, String)] = [
         (URL(string: "file:///")!, "file:///"),
-        (URL(string: "http://example.com")!, "http://example.com"),
+        (URL(string: "http://example.com")!, "http://example.com")
     ]
 
     func testURLAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in values {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!

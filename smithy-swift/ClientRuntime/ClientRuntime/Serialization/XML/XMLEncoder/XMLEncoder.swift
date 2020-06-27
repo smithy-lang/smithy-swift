@@ -5,7 +5,6 @@
 // TODO:: Add copyrights
 //
 
-
 import Foundation
 
 public protocol DynamicNodeEncoding: Encodable {
@@ -74,7 +73,7 @@ open class XMLEncoder {
         /// Encode the `Date` as a custom value encoded by the given closure.
         ///
         /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
-        case custom((Date, Encoder) throws -> ())
+        case custom((Date, Encoder) throws -> Void)
     }
 
     /// The strategy to use for encoding `String` values.
@@ -97,7 +96,7 @@ open class XMLEncoder {
         /// Encode the `Data` as a custom value encoded by the given closure.
         ///
         /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
-        case custom((Data, Encoder) throws -> ())
+        case custom((Data, Encoder) throws -> Void)
     }
 
     /// The strategy to use for non-XML-conforming floating-point values (IEEE 754 infinity and NaN).
@@ -159,15 +158,18 @@ open class XMLEncoder {
         /// If the result of the conversion is a duplicate key, then only one
         /// value will be present in the result.
         case custom((_ codingPath: [CodingKey]) -> CodingKey)
-
+        
+        // swiftlint:disable identifier_name
         static func _convertToSnakeCase(_ stringKey: String) -> String {
             return _convert(stringKey, usingSeparator: "_")
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertToKebabCase(_ stringKey: String) -> String {
             return _convert(stringKey, usingSeparator: "-")
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convert(_ stringKey: String, usingSeparator separator: String) -> String {
             guard !stringKey.isEmpty else {
                 return stringKey
@@ -186,13 +188,17 @@ open class XMLEncoder {
             var searchRange = stringKey.index(after: wordStart)..<stringKey.endIndex
 
             // Find next uppercase character
-            while let upperCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.uppercaseLetters, options: [], range: searchRange) {
+            while let upperCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.uppercaseLetters,
+                                                                  options: [],
+                                                                  range: searchRange) {
                 let untilUpperCase = wordStart..<upperCaseRange.lowerBound
                 words.append(untilUpperCase)
 
                 // Find next lowercase character
                 searchRange = upperCaseRange.lowerBound..<searchRange.upperBound
-                guard let lowerCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.lowercaseLetters, options: [], range: searchRange) else {
+                guard let lowerCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.lowercaseLetters,
+                                                                      options: [],
+                                                                      range: searchRange) else {
                     // There are no more lower case letters. Just end here.
                     wordStart = searchRange.lowerBound
                     break
@@ -222,15 +228,18 @@ open class XMLEncoder {
             }.joined(separator: separator)
             return result
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertToCapitalized(_ stringKey: String) -> String {
             return stringKey.capitalizingFirstLetter()
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertToLowercased(_ stringKey: String) -> String {
             return stringKey.lowercased()
         }
-
+        
+        // swiftlint:disable identifier_name
         static func _convertToUppercased(_ stringKey: String) -> String {
             return stringKey.uppercased()
         }
@@ -295,15 +304,15 @@ open class XMLEncoder {
 
     /// Contextual user-provided information for use during encoding.
     open var userInfo: [CodingUserInfoKey: Any] = [:]
-    
+
     /// String to be used as the root key
-    open var rootKey: String? = nil
-    
+    open var rootKey: String?
+
     /// Attributes that the root contains
-    open var rootAttributes: [String: String]? = nil
-    
+    open var rootAttributes: [String: String]?
+
     /// Header for XML
-    var header: XMLHeader? = nil
+    var header: XMLHeader?
 
     /// The options set on the top-level encoder.
     var options: XMLEncoderOptions {
@@ -323,7 +332,7 @@ open class XMLEncoder {
 
     /// Initializes `self` with default strategies.
     public init() {}
-    
+
     /// Initializes `self` with given `XMLEncoderOptions`
     public init(options: XMLEncoderOptions) {
         dateEncodingStrategy = options.dateEncodingStrategy

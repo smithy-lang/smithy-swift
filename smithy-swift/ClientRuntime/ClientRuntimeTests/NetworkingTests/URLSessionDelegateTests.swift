@@ -20,22 +20,22 @@ class URLSessionDelegateTests: NetworkingTestUtils {
 
     var httpClient: HttpClient!
     var expectedResponsePayload: Data!
-    
+
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration(operationQueue: mockOperationQueue, protocolClasses: [MockURLProtocol.self])
         httpClient = HttpClient(config: httpClientConfiguration)
         expectedResponsePayload = "{resultKey: resultValue}".data(using: .utf8)!
     }
-    
+
     override func tearDown() {
         super.tearDown()
     }
-    
+
     func testValidResponseDataIsReturned() {
         let validResponseDataExpectation: XCTestExpectation = expectation(description: "Mock Request returns valid response data payload")
         setMockProtocolResponse(responsePayload: expectedResponsePayload, statusCode: 200)
-        
+
         _ = httpClient.execute(request: mockHttpDataRequest) { (httpResult) in
             guard let httpResp = try? httpResult.get() else {
                 XCTFail("Http Response found to be nil")
@@ -46,28 +46,26 @@ class URLSessionDelegateTests: NetworkingTestUtils {
             if httpResp.statusCode == HttpStatusCode.ok {
                 if case .data(let data) = httpResp.content {
                     XCTAssertEqual(data, self.expectedResponsePayload)
-                }
-                else {
+                } else {
                     XCTFail("Http Response content has no valid data")
                     validResponseDataExpectation.fulfill()
                     return
                 }
-            }
-            else {
+            } else {
                 XCTFail("Mock Http Request failed")
                 validResponseDataExpectation.fulfill()
                 return
             }
             validResponseDataExpectation.fulfill()
         }
-        
+
         wait(for: [validResponseDataExpectation], timeout: 20)
     }
-    
+
     func testResponseWithEmptyPayloadIsHandled() {
         let emptyResponseExpectation: XCTestExpectation = expectation(description: "Mock invalid Request returns Error")
         setMockProtocolResponse(responsePayload: Data(), statusCode: 200)
-        
+
         _ = httpClient.execute(request: mockHttpDataRequest) { (httpResult) in
             guard let httpResp = try? httpResult.get() else {
                 XCTFail("Http Response found to be nil")
@@ -81,22 +79,21 @@ class URLSessionDelegateTests: NetworkingTestUtils {
                     emptyResponseExpectation.fulfill()
                     return
                 }
-            }
-            else {
+            } else {
                 XCTFail("Mock Http Request failed")
                 emptyResponseExpectation.fulfill()
                 return
             }
             emptyResponseExpectation.fulfill()
         }
-        
+
         wait(for: [emptyResponseExpectation], timeout: 20)
     }
-    
+
     func testFailureHttpStatusCodeIsCaptured() {
         let failedResponseExpectation: XCTestExpectation = expectation(description: "Mock invalid Request returns Error")
         setMockProtocolResponse(responsePayload: Data(), statusCode: 404)
-        
+
         _ = httpClient.execute(request: mockHttpDataRequest) { (httpResult) in
             guard let httpResp = try? httpResult.get() else {
                 XCTFail("Http Response found to be nil")
@@ -108,16 +105,15 @@ class URLSessionDelegateTests: NetworkingTestUtils {
                 XCTFail("Client returns OK status for failed response")
                 failedResponseExpectation.fulfill()
                 return
-            }
-            else {
+            } else {
                 XCTAssertEqual(httpResp.statusCode.rawValue, 404)
             }
             failedResponseExpectation.fulfill()
         }
-        
+
         wait(for: [failedResponseExpectation], timeout: 20)
     }
-    
+
     func setMockProtocolResponse(responsePayload: Data, statusCode: Int) {
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: self.expectedMockRequestURL, statusCode: statusCode, httpVersion: nil, headerFields: nil)!

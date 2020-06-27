@@ -18,13 +18,13 @@ import ClientRuntime
 import XCTest
 
 class NetworkingTestUtils: XCTestCase {
-    
+
     var mockHttpDataRequest: HttpRequest!
     var mockHttpStreamRequest: HttpRequest!
     var expectedMockRequestURL: URL!
     var expectedMockRequestData: Data!
     var mockOperationQueue: OperationQueue!
-    
+
     override func setUp() {
         super.setUp()
         expectedMockRequestURL = URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value")!
@@ -35,20 +35,20 @@ class NetworkingTestUtils: XCTestCase {
         setMockHttpDataRequest()
         setMockHttpStreamRequest()
     }
-    
+
     /*
      Create a mock HttpRequest with valid data payload
      */
     func setMockHttpDataRequest() {
         let endpoint = getMockEndpoint()
         var headers = HttpHeaders()
-        
+
         headers.add(name: "header-item-name", value: "header-item-value")
-        
+
         let httpBody = HttpBody.data(expectedMockRequestData)
         mockHttpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
     }
-    
+
     /*
      Create a mock HttpRequest with valid InputStream
      */
@@ -56,26 +56,26 @@ class NetworkingTestUtils: XCTestCase {
         let endpoint = getMockEndpoint()
         var headers = HttpHeaders()
         headers.add(name: "header-item-name", value: "header-item-value")
-        
+
         let httpBody = HttpBody.stream(InputStream(data: expectedMockRequestData))
         mockHttpStreamRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
     }
-    
+
     func getMockEndpoint() -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
         var queryItems = [URLQueryItem]()
         let endpoint: Endpoint!
-        
+
         queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
         endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
         return endpoint
     }
-    
+
     func testHttpStatusCodeDescriptionWorks() {
         let httpStatusCode = HttpStatusCode.ok
         let httpStatusCodeDescription = httpStatusCode.description
-        
+
         XCTAssertNotNil(httpStatusCodeDescription)
     }
 }

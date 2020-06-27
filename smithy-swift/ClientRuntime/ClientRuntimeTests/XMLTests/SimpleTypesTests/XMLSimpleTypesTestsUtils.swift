@@ -17,12 +17,12 @@ import XCTest
 @testable import ClientRuntime
 
 class XMLSimpleTypesTestsUtils: XCTestCase {
-    
+
     var decoder: XMLDecoder!
     var encoder: XMLEncoder!
     var encoderOptions: XMLEncoderOptions!
     var decoderOptions: XMLDecoderOptions!
-    
+
     struct Container<T: Codable>: Codable {
         let value: T
     }
@@ -30,7 +30,7 @@ class XMLSimpleTypesTestsUtils: XCTestCase {
     override func setUp() {
         encoderOptions = XMLEncoderOptions(outputFormatting: XMLEncoder.OutputFormatting.prettyPrinted, rootKey: "container")
         encoder = XMLEncoder(options: encoderOptions)
-        
+
         decoderOptions = XMLDecoderOptions()
         decoder = XMLDecoder(options: decoderOptions)
     }
@@ -41,28 +41,30 @@ class XMLSimpleTypesTestsUtils: XCTestCase {
 
         XCTAssertThrowsError(try decoder.decode(Container<Bool>.self, from: xmlData))
     }
-    
+
     func prepareEncoderForTestTypeAsAttribute() {
-        encoderOptions = XMLEncoderOptions(nodeEncodingStrategy: XMLEncoder.NodeEncodingStrategy.custom { _, _ in
-        { _ in .attribute }}, outputFormatting: XMLEncoder.OutputFormatting.prettyPrinted, rootKey: "container")
+        encoderOptions = XMLEncoderOptions(
+            nodeEncodingStrategy: XMLEncoder.NodeEncodingStrategy.custom { _, _ in { _ in .attribute }},
+            outputFormatting: XMLEncoder.OutputFormatting.prettyPrinted, rootKey: "container"
+        )
         encoder = XMLEncoder(options: encoderOptions)
     }
-    
-    func getCodingSimpleTypeFailureMessage<T>(type: T, context: codingSimpleTypeContext, representation: codingSimpleTypeRepresentation) -> String {
+
+    func getCodingSimpleTypeFailureMessage<T>(type: T, context: CodingSimpleTypeContext, representation: CodingSimpleTypeRepresentation) -> String {
         return "\(context.rawValue) \(String(describing: T.self)) as \(representation.rawValue) failed"
     }
-    
-    enum codingSimpleTypeContext: String {
+
+    enum CodingSimpleTypeContext: String {
         case encoding = "Encoding"
         case decoding = "Decoding"
     }
-    
-    enum codingSimpleTypeRepresentation: String {
+
+    enum CodingSimpleTypeRepresentation: String {
         case attribute = "Attribute"
         case element = "Element"
     }
-    
-    func getSimpleXMLContainerString(value: String, representation: codingSimpleTypeRepresentation) -> String {
+
+    func getSimpleXMLContainerString(value: String, representation: CodingSimpleTypeRepresentation) -> String {
         var xmlString: String
         switch representation {
         case .attribute:

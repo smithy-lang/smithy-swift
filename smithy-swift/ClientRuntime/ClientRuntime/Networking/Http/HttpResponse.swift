@@ -16,17 +16,17 @@
 import Foundation
 
 public struct HttpResponse: HttpUrlResponse {
-    
+
     public var headers: HttpHeaders
-    
+
     public var content: ResponseType?
 
     public var statusCode: HttpStatusCode
-    
+
     init(httpUrlResponse: HTTPURLResponse, content: ResponseType?) {
         self.content = content
         self.statusCode = HttpStatusCode(rawValue: httpUrlResponse.statusCode)!
         self.headers = httpUrlResponse.headers
     }
-    
+
 }

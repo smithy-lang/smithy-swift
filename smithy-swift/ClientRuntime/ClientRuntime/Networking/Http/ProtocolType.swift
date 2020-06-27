@@ -19,5 +19,3 @@ public enum ProtocolType: String {
     case http = "http"
     case https = "https"
 }
-
-

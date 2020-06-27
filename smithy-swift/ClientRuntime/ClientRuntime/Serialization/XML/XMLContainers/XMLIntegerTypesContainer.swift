@@ -44,7 +44,6 @@ extension XMLIntContainer: CustomStringConvertible {
     }
 }
 
-
 struct XMLUIntContainer: Equatable {
 
     let unboxed: UInt64
@@ -69,7 +68,7 @@ extension XMLUIntContainer: XMLSimpleContainer {
     var isNull: Bool {
         return false
     }
-    
+
     var xmlString: String? {
         return unboxed.description
     }
@@ -80,4 +79,3 @@ extension XMLUIntContainer: CustomStringConvertible {
         return unboxed.description
     }
 }
-

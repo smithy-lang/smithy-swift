@@ -18,7 +18,7 @@ import Foundation
 @testable import ClientRuntime
 
 class HttpClientConfigTests: NetworkingTestUtils {
-    
+
     var protocolType: ProtocolType!
     var headers: HttpHeaders = HttpHeaders()
     var protocolClasses: [AnyClass]!
@@ -31,13 +31,16 @@ class HttpClientConfigTests: NetworkingTestUtils {
     }
 
     func testConversionToUrlSessionConfig() {
-        let httpClientConfiguration = HttpClientConfiguration(protocolType: protocolType, defaultHeaders: headers, operationQueue: mockOperationQueue, protocolClasses: protocolClasses)
+        let httpClientConfiguration = HttpClientConfiguration(protocolType: protocolType,
+                                                              defaultHeaders: headers,
+                                                              operationQueue: mockOperationQueue,
+                                                              protocolClasses: protocolClasses)
         let urlSessionConfiguration = httpClientConfiguration.toUrlSessionConfig()
-        
+
         XCTAssertTrue(urlSessionConfiguration.waitsForConnectivity)
         XCTAssertTrue(urlSessionConfiguration.allowsCellularAccess)
         XCTAssertNotNil(urlSessionConfiguration.protocolClasses?.first)
-        
+
         XCTAssertEqual(urlSessionConfiguration.operationQueue.name, mockOperationQueue.name)
         XCTAssertEqual(urlSessionConfiguration.requestCachePolicy, URLRequest.CachePolicy.reloadIgnoringCacheData)
         XCTAssertEqual(urlSessionConfiguration.networkServiceType, URLRequest.NetworkServiceType.default)

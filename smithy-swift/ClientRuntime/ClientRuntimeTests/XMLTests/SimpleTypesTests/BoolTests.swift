@@ -20,12 +20,12 @@ class BoolTests: XMLSimpleTypesTestsUtils {
 
     let values: [(Bool, String)] = [
         (false, "false"),
-        (true, "true"),
+        (true, "true")
     ]
 
     func testBoolAsAttribute() {
         prepareEncoderForTestTypeAsAttribute()
-        
+
         for (value, xmlString) in values {
             let xmlString = getSimpleXMLContainerString(value: xmlString, representation: .attribute)
             let xmlData = xmlString.data(using: .utf8)!

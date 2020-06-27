@@ -18,8 +18,7 @@ public struct XMLDecoderOptions {
     var errorContextLength: UInt = 0
     var shouldProcessNamespaces: Bool = false
     var trimValueWhitespaces: Bool = true
-    
-    
+
     public init(dateDecodingStrategy: XMLDecoder.DateDecodingStrategy = .deferredToDate,
                 dataDecodingStrategy: XMLDecoder.DataDecodingStrategy = .base64,
                 nonConformingFloatDecodingStrategy: XMLDecoder.NonConformingFloatDecodingStrategy = .throw,

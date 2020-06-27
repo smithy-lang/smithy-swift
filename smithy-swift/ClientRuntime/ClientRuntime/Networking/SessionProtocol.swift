@@ -17,7 +17,7 @@ import Foundation
 
 protocol SessionProtocol {
     typealias DataTaskResult = (Data?, URLResponse?, Error?) -> Void
-    
+
     func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol
     func uploadTask(withStreamedRequest request: URLRequest) -> URLSessionUploadTask
 }

@@ -20,5 +20,5 @@ public enum ClientError: Error {
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
-    
+
 }

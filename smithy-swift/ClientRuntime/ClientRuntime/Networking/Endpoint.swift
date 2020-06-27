@@ -21,7 +21,7 @@ public struct Endpoint {
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int?
-    
+
     public init(host: String, path: String, port: Int? = nil, queryItems: [URLQueryItem]? = nil, protocolType: ProtocolType? = .https) {
         self.host = host
         self.path = path
@@ -48,5 +48,3 @@ public extension Endpoint {
         return components.url
     }
 }
-
-

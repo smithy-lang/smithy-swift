@@ -193,7 +193,7 @@ extension XMLEncoderImplementation {
     func addToXMLContainer(_ value: URL) -> XMLSimpleContainer {
         return XMLURLContainer(value)
     }
-    
+
 //    func box(_ value: Data) throws -> XMLContainer {
 //        switch options.dataEncodingStrategy {
 //        case .deferredToData:

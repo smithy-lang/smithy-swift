@@ -8,17 +8,17 @@
 import Foundation
 
 class XMLSharedContainer<ContainerType: XMLContainer>: XMLContainer {
-    
+
     private(set) var unboxed: ContainerType
 
     init(_ wrapped: ContainerType) {
         unboxed = wrapped
     }
-    
+
     var isNull: Bool {
         return unboxed.isNull
     }
-    
+
     var xmlString: String? {
         return unboxed.xmlString
     }
@@ -32,8 +32,7 @@ extension XMLSharedContainer: XMLSharedContainerProtocol {
     func unbox() -> XMLContainer {
         return unboxed
     }
-    
-    
+
     func unbox() -> ContainerType {
         return unboxed
     }

@@ -8,7 +8,7 @@
 import Foundation
 
 protocol XMLContainer {
-    
+
     var isNull: Bool { get }
     var xmlString: String? { get }
 }
@@ -18,12 +18,12 @@ protocol XMLSimpleContainer: XMLContainer {
 }
 
 protocol TypeErasedSharedBoxProtocol {
-    
+
     func unbox() -> XMLContainer
 }
 
 protocol XMLSharedContainerProtocol: TypeErasedSharedBoxProtocol {
-    
+
     associatedtype ContainerType: XMLContainer
     func unbox() -> ContainerType
 }

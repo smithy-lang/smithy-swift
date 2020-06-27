@@ -18,7 +18,7 @@ import Foundation
 public enum SdkError<E>: Error {
   // Service specific error
   case service(E)
-  
+
   // error from the underlying client runtime
   case client(ClientError)
 

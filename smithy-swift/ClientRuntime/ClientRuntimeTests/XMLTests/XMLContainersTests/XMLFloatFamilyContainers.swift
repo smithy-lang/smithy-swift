@@ -15,7 +15,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             -1.23,
             12_678_967.543233,
             +100_000.00,
-            210,
+            210
         ]
 
         for unboxed in values {
@@ -27,7 +27,7 @@ class XMLFloatFamilyContainers: XCTestCase {
     func testXMLString() {
         let values: [(Decimal, String)] = [
             (12.34, "12.34"),
-            (0.0, "0"),
+            (0.0, "0")
         ]
 
         for (bool, string) in values {
@@ -41,7 +41,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             "-1.23",
             "12678967.543233",
             "+100000.00",
-            "210",
+            "210"
         ]
 
         for string in values {
@@ -53,7 +53,7 @@ class XMLFloatFamilyContainers: XCTestCase {
     func testInvalidValues() {
         let values: [String] = [
             "foobar",
-            "",
+            ""
         ]
 
         for string in values {
@@ -61,7 +61,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             XCTAssertNil(box)
         }
     }
-    
+
     func testFloatIsNull() {
         let box = XMLFloatContainer(42.0)
         XCTAssertEqual(box.isNull, false)
@@ -75,7 +75,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             12,
             +3.5,
             -.infinity,
-            -0,
+            -0
         ]
 
         for unboxed in values {
@@ -89,7 +89,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             (42.0, "42.0"),
             (.infinity, "INF"),
             (-.infinity, "-INF"),
-            (.nan, "NaN"),
+            (.nan, "NaN")
         ]
 
         for (double, string) in values {
@@ -107,7 +107,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             "+3.5",
             "-INF",
             "-0",
-            "NaN",
+            "NaN"
         ]
 
         for string in values {
@@ -121,7 +121,7 @@ class XMLFloatFamilyContainers: XCTestCase {
             "-3E2.4",
             "12E",
             "foobar",
-            "",
+            ""
         ]
 
         for string in values {

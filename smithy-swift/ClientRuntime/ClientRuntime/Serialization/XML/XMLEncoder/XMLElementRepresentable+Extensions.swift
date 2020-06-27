@@ -5,15 +5,15 @@
 import Foundation
 
 extension XMLElementRepresentable {
-    
+
     private static let escapedCharacterSet = [
         ("&", "&amp;"),
         ("<", "&lt;"),
         (">", "&gt;"),
         ("'", "&apos;"),
-        ("\"", "&quot;"),
+        ("\"", "&quot;")
     ]
-    
+
     func toXMLString(with header: XMLHeader? = nil,
                      formatting: XMLEncoder.OutputFormatting) -> String {
         if let header = header, let headerXML = header.toXML() {
@@ -169,11 +169,10 @@ extension XMLElementRepresentable {
     }
 }
 
-
 // MARK: - Convenience Initializers
 
 extension XMLElementRepresentable {
-    
+
     init(key: String, isStringBoxCDATA isCDATA: Bool, box: XMLArrayBasedContainer, attributes: [XMLAttributeRepresentable] = []) {
         self.init(
             key: key,
@@ -248,4 +247,3 @@ extension XMLElementRepresentable {
         }
     }
 }
-

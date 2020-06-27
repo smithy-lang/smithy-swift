@@ -13,7 +13,7 @@ extension Array: XMLContainer {
     var isNull: Bool {
         return false
     }
-    
+
     var xmlString: String? {
         return nil
     }

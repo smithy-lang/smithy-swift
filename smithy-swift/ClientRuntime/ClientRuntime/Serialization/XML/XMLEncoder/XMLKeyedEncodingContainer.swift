@@ -7,7 +7,7 @@
 import Foundation
 
 struct XMLKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProtocol {
-    
+
     typealias Key = K
 
     // MARK: Properties
@@ -105,7 +105,7 @@ struct XMLKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProtocol {
         let box = try encode(encoder, value)
 
         let oldSelf = self
-        let attributeEncoder: (T, Key, XMLContainer) throws -> () = { value, key, box in
+        let attributeEncoder: (T, Key, XMLContainer) throws -> Void = { value, key, box in
             guard let attribute = box as? XMLSimpleContainer else {
                 throw EncodingError.invalidValue(value, EncodingError.Context(
                     codingPath: [],
@@ -117,7 +117,7 @@ struct XMLKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainerProtocol {
             }
         }
 
-        let elementEncoder: (T, Key, XMLContainer) throws -> () = { _, key, box in
+        let elementEncoder: (T, Key, XMLContainer) throws -> Void = { _, key, box in
             oldSelf.container.withShared { container in
                 container.elements.append(box, at: oldSelf.converted(key).stringValue)
             }

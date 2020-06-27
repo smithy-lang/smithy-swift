@@ -233,7 +233,6 @@
 		43DD7767249702C70038F7AB /* MockURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockURLProtocol.swift; sourceTree = "<group>"; };
 		43DD776924973A7A0038F7AB /* URLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDelegateTests.swift; sourceTree = "<group>"; };
 		43DD776B24973AF60038F7AB /* NetworkingTestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkingTestUtils.swift; sourceTree = "<group>"; };
-		43DD776D24981F860038F7AB /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		43DD7770249892A10038F7AB /* BoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoolTests.swift; sourceTree = "<group>"; };
 		43DD7772249936740038F7AB /* DateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTests.swift; sourceTree = "<group>"; };
 		43DD7776249957000038F7AB /* XMLSimpleTypesTestsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLSimpleTypesTestsUtils.swift; sourceTree = "<group>"; };
@@ -541,7 +540,6 @@
 				43DD7767249702C70038F7AB /* MockURLProtocol.swift */,
 				43DD776924973A7A0038F7AB /* URLSessionDelegateTests.swift */,
 				43DD776B24973AF60038F7AB /* NetworkingTestUtils.swift */,
-				43DD776D24981F860038F7AB /* Data+Extensions.swift */,
 				43DD7792249BED370038F7AB /* HttpSerializeTests.swift */,
 			);
 			path = NetworkingTests;
@@ -647,6 +645,7 @@
 				43DD75D8249025250038F7AB /* Sources */,
 				43DD75D9249025250038F7AB /* Frameworks */,
 				43DD75DA249025250038F7AB /* Resources */,
+				43DD77D924A54B070038F7AB /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -664,6 +663,7 @@
 				43DD75E1249025250038F7AB /* Sources */,
 				43DD75E2249025250038F7AB /* Frameworks */,
 				43DD75E3249025250038F7AB /* Resources */,
+				43DD77D824A54A470038F7AB /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -728,6 +728,43 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		43DD77D824A54A470038F7AB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: Recommended to install SwiftLint, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+		43DD77D924A54B070038F7AB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: Recommended to install SwiftLint, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		43DD75D8249025250038F7AB /* Sources */ = {

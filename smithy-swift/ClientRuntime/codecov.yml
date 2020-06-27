@@ -1,0 +1,15 @@
+ignore:
+  - "ClientRuntimeTests/**/*"
+  - "^ClientRuntimeTests/**/*"
+  - "./ClientRuntimeTests/**/*"
+  - "smithy-swift/ClientRuntimeTests/**/*"
+  - "amplify-codegen/smithy-swift/ClientRuntime/ClientRuntimeTests/**/*"
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...100"
+
+codecov:
+  branch: swift-client-runtime
+  

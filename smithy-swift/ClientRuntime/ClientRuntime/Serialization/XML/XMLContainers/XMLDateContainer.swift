@@ -8,7 +8,7 @@
 import Foundation
 
 struct XMLDateContainer: Equatable {
-    
+
     enum Format: Equatable {
         case secondsSince1970
         case millisecondsSince1970
@@ -94,6 +94,7 @@ extension XMLDateContainer: CustomStringConvertible {
     }
 }
 
+// swiftlint:disable identifier_name
 /// Shared ISO8601 Date Formatter
 /// NOTE: This value is implicitly lazy and _must_ be lazy. We're compiled
 /// against the latest SDK (w/ ISO8601DateFormatter), but linked against

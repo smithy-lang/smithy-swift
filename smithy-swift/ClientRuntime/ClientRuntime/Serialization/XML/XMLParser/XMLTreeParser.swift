@@ -3,7 +3,7 @@
 import Foundation
 
 class XMLTreeParser: NSObject {
-    
+
     var root: XMLElementRepresentable?
     private var stack: [XMLElementRepresentable] = []
     private let trimValueWhitespaces: Bool
@@ -29,13 +29,13 @@ class XMLTreeParser: NSObject {
 
         return node.transformToKeyBasedContainer()
     }
-    
+
     func parse(
             with data: Data,
             errorContextLength: UInt,
             shouldProcessNamespaces: Bool
         ) throws -> XMLElementRepresentable {
-        
+
             let xmlTreeParser = XMLParser(data: data)
             xmlTreeParser.shouldProcessNamespaces = shouldProcessNamespaces
             xmlTreeParser.delegate = self
@@ -57,13 +57,13 @@ class XMLTreeParser: NSObject {
             }
 
             let string = String(data: data, encoding: .utf8) ?? ""
-            
+
             // get the location in xml where error occurred based on errorContextLength
             let lines = string.split(separator: "\n")
             var errorPosition = 0
             let offset = Int(errorContextLength / 2)
-            for i in 0..<xmlTreeParser.lineNumber - 1 {
-                errorPosition += lines[i].count
+            for index in 0..<xmlTreeParser.lineNumber - 1 {
+                errorPosition += lines[index].count
             }
             errorPosition += xmlTreeParser.columnNumber
 
@@ -98,7 +98,7 @@ class XMLTreeParser: NSObject {
             ))
         }
 
-        func withCurrentElement(_ xmlElementRepresentable: (inout XMLElementRepresentable) throws -> ()) rethrows {
+        func withCurrentElement(_ xmlElementRepresentable: (inout XMLElementRepresentable) throws -> Void) rethrows {
             guard !stack.isEmpty else {
                 return
             }
@@ -154,7 +154,7 @@ class XMLTreeParser: NSObject {
 
         func parser(_: XMLParser, foundCharacters string: String) {
             let processedString = process(string: string)
-            guard processedString.count > 0, string.count != 0 else {
+            guard !processedString.isEmpty, !string.isEmpty else {
                 return
             }
 
@@ -163,4 +163,3 @@ class XMLTreeParser: NSObject {
             }
         }
     }
-

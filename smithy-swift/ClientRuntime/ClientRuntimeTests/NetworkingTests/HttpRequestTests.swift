@@ -17,39 +17,39 @@ import XCTest
 @testable import ClientRuntime
 
 class HttpRequestTests: NetworkingTestUtils {
-        
+
     override func setUp() {
         super.setUp()
     }
 
     func testHttpDataRequestToUrlRequest() {
         let urlRequest = try? mockHttpDataRequest.toUrlRequest()
-        
+
         XCTAssertNotNil(urlRequest)
-        
+
         XCTAssertEqual(urlRequest!.headers.dictionary, mockHttpDataRequest.headers.dictionary)
         XCTAssertEqual(urlRequest!.httpMethod, "GET")
         XCTAssertEqual(urlRequest?.httpBody, expectedMockRequestData)
         XCTAssertEqual(urlRequest!.url, expectedMockRequestURL)
     }
-    
+
     func testHttpStreamRequestToUrlRequest() {
         let urlRequest = try? mockHttpStreamRequest.toUrlRequest()
-        
+
         XCTAssertNotNil(urlRequest)
-        
+
         XCTAssertEqual(urlRequest!.headers.dictionary, mockHttpStreamRequest.headers.dictionary)
         XCTAssertEqual(urlRequest!.httpMethod, "GET")
-        
+
         let dataFromStream = try? Data(reading: urlRequest!.httpBodyStream!)
         XCTAssertNotNil(dataFromStream)
-        
+
         XCTAssertEqual(dataFromStream, expectedMockRequestData)
         XCTAssertEqual(urlRequest!.url, expectedMockRequestURL)
     }
-    
+
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // TODO:: When is the endpoint invalid or endpoint.url nil?
-        let _ = Endpoint(host: "", path: "", protocolType: nil)
+        _ = Endpoint(host: "", path: "", protocolType: nil)
     }
 }

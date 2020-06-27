@@ -19,36 +19,35 @@ import XCTest
 class EncodingErrorExtensionsTests: XCTestCase {
 
     func testInvalidFloatingPointValueGivesInvalidValueError() {
-        let invalidFloats = [Float.infinity, -Float.infinity, ]
+        let invalidFloats = [Float.infinity, -Float.infinity ]
         for invalidFloat in invalidFloats {
-            let encodingError = EncodingError._invalidFloatingPointValue(invalidFloat, at: [dummyCodingKey()])
+            let encodingError = EncodingError._invalidFloatingPointValue(invalidFloat, at: [DummyCodingKey()])
             if case let EncodingError.invalidValue(value, context) = encodingError {
-                XCTAssertEqual(value as! Float, invalidFloat)
+                XCTAssertEqual(value as? Float, invalidFloat)
                 XCTAssertNotNil(context.debugDescription)
-            }
-            else {
+            } else {
                 XCTFail("invalid floats should throw EncodingError.invalidValue")
             }
         }
     }
-    
-    struct dummyCodingKey: CodingKey {
+
+    struct DummyCodingKey: CodingKey {
         var stringValue: String
-        
+
         init?(stringValue: String) {
             self.stringValue = stringValue
         }
-        
+
         var intValue: Int?
-        
+
         init?(intValue: Int) {
             self.intValue = intValue
             self.stringValue = "dummy"
         }
-        
+
         init() {
             self.stringValue = "dummy"
         }
-        
+
     }
 }

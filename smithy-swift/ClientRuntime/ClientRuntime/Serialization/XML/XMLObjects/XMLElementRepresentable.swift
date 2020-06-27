@@ -8,21 +8,21 @@
 import Foundation
 
 struct XMLElementRepresentable: Equatable {
-    
+
     let key: String
     private(set) var stringValue: String?
     private(set) var elements: [XMLElementRepresentable] = []
     private(set) var attributes: [XMLAttributeRepresentable] = []
     private(set) var containsTextNodes: Bool = false
-    
+
     var isStringNode: Bool {
         return key == ""
     }
-    
+
     var isTextNode: Bool {
         return isStringNode
     }
-    
+
     init(
         key: String,
         elements: [XMLElementRepresentable] = [],
@@ -49,7 +49,7 @@ struct XMLElementRepresentable: Equatable {
         key = ""
         self.stringValue = stringValue
     }
-    
+
     mutating func append(element: XMLElementRepresentable, forKey key: String) {
         elements.append(element)
         containsTextNodes = containsTextNodes || element.isTextNode
@@ -64,7 +64,7 @@ struct XMLElementRepresentable: Equatable {
         }
         containsTextNodes = true
     }
-    
+
     func transformToKeyBasedContainer() -> XMLContainer {
         if isTextNode && stringValue != nil {
             return XMLStringContainer(stringValue!)
