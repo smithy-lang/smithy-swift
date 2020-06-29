@@ -80,9 +80,9 @@ fun ByteStream.toHttpBody(): HttpBody {
  * of a streaming variant.
  */
 suspend fun HttpBody.readAll(): ByteArray? = when (this) {
+    is HttpBody.Empty -> null
     is HttpBody.Bytes -> this.bytes()
     is HttpBody.Streaming -> this.readFrom().readAll()
-    else -> null
 }
 
 /**
@@ -90,6 +90,7 @@ suspend fun HttpBody.readAll(): ByteArray? = when (this) {
  */
 fun HttpBody.toByteStream(): ByteStream? {
     return when (val body = this) {
+        is HttpBody.Empty -> null
         is HttpBody.Bytes -> object : ByteStream.Buffer() {
             override val contentLength: Long? = body.contentLength
             override fun bytes(): ByteArray = body.bytes()
@@ -98,6 +99,5 @@ fun HttpBody.toByteStream(): ByteStream? {
             override val contentLength: Long? = body.contentLength
             override fun readFrom(): Source = body.readFrom()
         }
-        else -> null
     }
 }
