@@ -17,7 +17,7 @@ package com.amazonaws.service.s3.transform
 import com.amazonaws.service.s3.model.GetObjectRequest
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.feature.HttpSerialize
-import software.aws.clientrt.http.feature.SerializerFactory
+import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.parameters
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
@@ -25,7 +25,7 @@ import software.aws.clientrt.http.request.url
 
 
 class GetObjectRequestSerializer(val input: GetObjectRequest): HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, factory: SerializerFactory) {
+    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
         // URI
         builder.method = HttpMethod.GET
         builder.url {

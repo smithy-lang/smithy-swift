@@ -23,24 +23,24 @@ import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.SerdeProvider
 import software.aws.clientrt.serde.Serializer
 
-typealias SerializerFactory = () -> Serializer
+typealias SerializationProvider = () -> Serializer
 
 /**
  * Implemented by types that know how to serialize to the HTTP protocol. A [Serializer] instance
  * is provided for serializing payload contents.
  */
 interface HttpSerialize {
-    suspend fun serialize(builder: HttpRequestBuilder, factory: SerializerFactory)
+    suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider)
 }
 
-typealias DeserializerFactory = (payload: ByteArray) -> Deserializer
+typealias DeserializationProvider = (payload: ByteArray) -> Deserializer
 
 /**
  * Implemented by types that know how to deserialize from the HTTP protocol. A factory function is provided
  * that can be used to create a [Deserializer] instance for handling response payloads.
  */
 interface HttpDeserialize {
-    suspend fun deserialize(response: HttpResponse, factory: DeserializerFactory): Any
+    suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any
 }
 
 /**

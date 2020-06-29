@@ -18,11 +18,11 @@ import com.amazonaws.service.lambda.model.InvokeRequest
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.feature.HttpSerialize
-import software.aws.clientrt.http.feature.SerializerFactory
+import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.*
 
 class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, factory: SerializerFactory) {
+    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
         // URI
         builder.method = HttpMethod.POST
         builder.url {

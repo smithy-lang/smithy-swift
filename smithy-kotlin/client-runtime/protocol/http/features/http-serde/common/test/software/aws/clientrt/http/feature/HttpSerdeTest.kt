@@ -42,7 +42,7 @@ class HttpSerdeTest {
 
         val builder = HttpRequestBuilder()
         val subject = object : HttpSerialize {
-            override suspend fun serialize(builder: HttpRequestBuilder, factory: SerializerFactory) {
+            override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
                 builder.headers.append("called", "true")
             }
         }
@@ -62,7 +62,7 @@ class HttpSerdeTest {
         }
 
         val userContext = object : HttpDeserialize {
-            override suspend fun deserialize(response: HttpResponse, factory: DeserializerFactory): Any {
+            override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
                 return 2
             }
         }
