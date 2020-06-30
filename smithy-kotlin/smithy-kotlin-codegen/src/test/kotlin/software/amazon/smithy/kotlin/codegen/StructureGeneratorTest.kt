@@ -126,6 +126,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         @JvmStatic
         fun builder(): Builder = BuilderImpl()
 
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
         operator fun invoke(block: DslBuilder.() -> Unit): MyStruct = BuilderImpl().apply(block).build()
 
     }

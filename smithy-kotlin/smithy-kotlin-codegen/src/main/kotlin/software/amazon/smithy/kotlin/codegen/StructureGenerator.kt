@@ -103,6 +103,8 @@ class StructureGenerator(
             write("@JvmStatic")
             write("fun builder(): Builder = BuilderImpl()")
             write("")
+            write("fun dslBuilder(): DslBuilder = BuilderImpl()")
+            write("")
             write("operator fun invoke(block: DslBuilder.() -> Unit): \$class.name:L = BuilderImpl().apply(block).build()")
             write("")
         }
