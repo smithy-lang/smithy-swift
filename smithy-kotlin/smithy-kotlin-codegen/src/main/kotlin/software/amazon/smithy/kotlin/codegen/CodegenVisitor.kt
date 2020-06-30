@@ -28,7 +28,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 /**
  * Orchestrates Kotlin code generation
  */
-class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
+class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     val LOGGER = Logger.getLogger(javaClass.name)
     private val model = context.model
@@ -41,16 +41,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val integrations: List<KotlinIntegration>
 
     init {
-        val loader = context.pluginClassLoader.orElse(javaClass.classLoader)
         LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
-        val loaded = mutableListOf<KotlinIntegration>()
-        ServiceLoader.load(KotlinIntegration::class.java, loader)
-            .forEach { integration ->
+        integrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
+            .also { integration ->
                 LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
-                loaded.add(integration)
-            }
-
-        integrations = loaded
+            }.toList()
     }
 
     fun execute() {
@@ -67,36 +62,31 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
     }
 
-    override fun getDefault(shape: Shape?): Void? {
-        return null
+    override fun getDefault(shape: Shape?) {
     }
 
-    override fun structureShape(shape: StructureShape): Void? {
+    override fun structureShape(shape: StructureShape) {
         writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape).render() }
-        return null
     }
 
-    override fun stringShape(shape: StringShape): Void? {
+    override fun stringShape(shape: StringShape) {
         if (shape.hasTrait(EnumTrait::class.java)) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
-        return null
     }
 
-    override fun unionShape(shape: UnionShape): Void? {
+    override fun unionShape(shape: UnionShape) {
         writers.useShapeWriter(shape) { UnionGenerator(model, symbolProvider, it, shape).render() }
-        return null
     }
 
-    override fun serviceShape(shape: ServiceShape): Void? {
+    override fun serviceShape(shape: ServiceShape) {
         if (service != shape) {
             LOGGER.fine("Skipping `${shape.id}` because it is not `${service.id}`")
-            return null
+            return
         }
 
         writers.useShapeWriter(shape) {
             ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName).render()
         }
-        return null
     }
 }
