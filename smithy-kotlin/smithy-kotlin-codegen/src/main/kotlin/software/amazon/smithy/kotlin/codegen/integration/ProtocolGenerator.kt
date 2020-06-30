@@ -31,7 +31,7 @@ interface ProtocolGenerator {
     /**
      * Sanitizes the name of the protocol so it can be used as a symbol in Kotlin.
      *
-     * For example, the default implementation converts '.' to '_' and converst '-'
+     * For example, the default implementation converts '.' to '_' and converts '-'
      * to become camelCase separated words. `aws.rest-json-1.1` becomes `Aws_RestJson1_1`
      *
      * @param name Name of the protocol to sanitize
