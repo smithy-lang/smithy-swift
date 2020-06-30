@@ -14,7 +14,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -42,13 +42,13 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContain("import test.model.*")
-        commonTestContents.shouldContain("import $CLIENT_RT_ROOT_NS.SdkClient")
+        commonTestContents.shouldContainOnlyOnce("import test.model.*")
+        commonTestContents.shouldContainOnlyOnce("import $CLIENT_RT_ROOT_NS.SdkClient")
     }
 
     @Test
     fun `it renders interface`() {
-        commonTestContents.shouldContain("interface ExampleClient : SdkClient {")
+        commonTestContents.shouldContainOnlyOnce("interface ExampleClient : SdkClient {")
     }
 
     @Test
@@ -57,7 +57,7 @@ class ServiceGeneratorTest {
     override val serviceName: String
         get() = "Example"
 """
-        commonTestContents.shouldContain(expected)
+        commonTestContents.shouldContainOnlyOnce(expected)
     }
 
     @Test
@@ -72,13 +72,13 @@ class ServiceGeneratorTest {
             "suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest)"
         )
         expectedSignatures.forEach {
-            commonTestContents.shouldContain(it)
+            commonTestContents.shouldContainOnlyOnce(it)
         }
     }
 
     @Test
     fun `it renders a close method`() {
-        commonTestContents.shouldContain("fun close()")
+        commonTestContents.shouldContainOnlyOnce("fun close()")
     }
 
     @Test
