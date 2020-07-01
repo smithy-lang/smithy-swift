@@ -197,9 +197,6 @@ operation GetCityImage {
 
 structure GetCityImageInput {
     @required @httpLabel
-    countryCode: CountryCode,
-
-    @required @httpLabel
     cityId: CityId,
 }
 
