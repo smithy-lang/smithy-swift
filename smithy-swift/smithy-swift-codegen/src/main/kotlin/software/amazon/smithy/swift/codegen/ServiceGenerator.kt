@@ -42,12 +42,10 @@ class ServiceGenerator(
     }
 
     fun render() {
-        // writer.putContext("service.name", serviceSymbol.name)
         // add imports
         writer.addImport(serviceSymbol)
         // generate protocol
         renderSwiftProtocol()
-        // writer.removeContext("service.name")
     }
     /**
      * Generates an appropriate Swift Protocol for a Smithy Service shape.
@@ -93,7 +91,6 @@ class ServiceGenerator(
                 }
             .closeBlock("}")
             .write("")
-        // TODO: add in swift integrations
     }
 
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
@@ -103,16 +100,20 @@ class ServiceGenerator(
         val output = outputShape.map { symbolProvider.toSymbol(it).name }
         val operationName = op.camelCaseName()
         val errorTypeName = "${op.defaultName()}OperationError"
-        val inputParam = input.map { "input: $it, " }.orElse("")
+        val inputParam = input.map { "input: $it" }.orElse("")
         // get error object here
         val outputParam = output.map { "completion: (SdkResult<$it, $errorTypeName>) -> Void" }.orElse("")
+        var paramTerminator = ""
+        if (inputParam != "" && outputParam != "") {
+            paramTerminator = ", "
+        }
         writer.writeShapeDocs(op)
 
         val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
         if (!hasOutputStream) {
-            writer.write("func \$L(\$L\$L)", operationName, inputParam, outputParam)
+            writer.write("func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
         } else {
-            writer.write("func \$L(\$L streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
+            writer.write("func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
         }
     }
 }
