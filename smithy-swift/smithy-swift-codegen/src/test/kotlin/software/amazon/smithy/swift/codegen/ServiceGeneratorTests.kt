@@ -23,18 +23,12 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
 
 class ServiceGeneratorTests : TestsBase() {
 
     private val commonTestContents: String
 
     init {
-
         val model = createModelFromSmithy("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
@@ -73,7 +67,6 @@ class ServiceGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders swift func signatures correctly`() {
-
         val expectedSignatures = listOf(
                 "func getFooStreamingInput(input: GetFooStreamingRequest, completion: (SdkResult<GetFooResponse, GetFooStreamingInputOperationError>) -> Void)",
                 "func getFooNoOutput(input: GetFooRequest)",
@@ -106,5 +99,4 @@ class ServiceGeneratorTests : TestsBase() {
         Assertions.assertEquals(openBraces, closedBraces)
         Assertions.assertEquals(openParens, closedParens)
     }
-
 }
