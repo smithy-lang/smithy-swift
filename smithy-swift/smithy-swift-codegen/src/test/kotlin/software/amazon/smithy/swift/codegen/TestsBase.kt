@@ -23,7 +23,13 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.HttpErrorTrait
+import software.amazon.smithy.model.traits.RetryableTrait
 
 open class TestsBase {
 
@@ -78,5 +84,42 @@ open class TestsBase {
 
     protected fun buildMockPluginContext(model: Model, manifest: FileManifest): PluginContext {
         return buildPluginContext(model, manifest, "smithy.example#Example", "example", "0.0.1")
+    }
+
+    protected fun createStructureWithoutErrorTrait(): StructureShape {
+        val member1 = MemberShape.builder().id("smithy.example#MyStruct\$foo").target("smithy.api#String").build()
+        val member2 = MemberShape.builder().id("smithy.example#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
+        val member3 = MemberShape.builder().id("smithy.example#MyStruct\$baz")
+            .target("smithy.api#Integer")
+            .addTrait(DocumentationTrait("This *is* documentation about the member."))
+            .build()
+
+        return StructureShape.builder()
+            .id("smithy.example#MyStruct")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
+    }
+
+    protected fun createStructureWithOptionalErrorMessage(): StructureShape {
+        val member1 = MemberShape.builder().id("smithy.example#MyError\$message")
+            .target("smithy.api#String")
+            .build()
+        val member2 = MemberShape.builder().id("smithy.example#MyError\$baz")
+            .target("smithy.api#Integer")
+            .addTrait(DocumentationTrait("This *is* documentation about the member."))
+            .build()
+
+        return StructureShape.builder()
+            .id("smithy.example#MyError")
+            .addMember(member1)
+            .addMember(member2)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .addTrait(ErrorTrait("client"))
+            .addTrait(RetryableTrait.builder().build())
+            .addTrait(HttpErrorTrait(429))
+            .build()
     }
 }
