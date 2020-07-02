@@ -6,19 +6,16 @@ class ListCitiesInput private constructor(builder: BuilderImpl) {
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
-
-    interface Builder {
-        fun build(): ListCitiesInput
-        // TODO - Java fill in Java builder
+        fun dslBuilder(): DslBuilder = BuilderImpl()
     }
 
     interface DslBuilder {
         var nextToken: String?
         var pageSize: Int?
+        fun build(): ListCitiesInput
     }
 
-    private class BuilderImpl : Builder, DslBuilder {
+    private class BuilderImpl : DslBuilder {
         override var nextToken: String? = null
         override var pageSize: Int? = null
 

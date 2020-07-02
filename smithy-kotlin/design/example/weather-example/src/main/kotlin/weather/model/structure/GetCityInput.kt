@@ -8,18 +8,15 @@ class GetCityInput private constructor(builder: BuilderImpl) {
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
-
-    interface Builder {
-        fun build(): GetCityInput
-        // TODO - Java fill in Java builder
+        fun dslBuilder(): DslBuilder = BuilderImpl()
     }
 
     interface DslBuilder {
         var cityId: String?
+        fun build(): GetCityInput
     }
 
-    private class BuilderImpl : Builder, DslBuilder {
+    private class BuilderImpl : DslBuilder {
         override var cityId: String? = null
 
         override fun build(): GetCityInput = GetCityInput(this)

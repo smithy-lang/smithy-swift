@@ -1,7 +1,9 @@
 package weather.model.structure
 
-import com.amazonaws.service.runtime.HttpDeserialize
-import kotlinx.coroutines.runBlocking
+import software.aws.clientrt.ClientException
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
+import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.SdkFieldDescriptor
@@ -16,6 +18,7 @@ class GetCityOutput private constructor(builder: BuilderImpl) {
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        fun dslBuilder(): DslBuilder = BuilderImpl()
     }
 
     interface Builder {
@@ -27,6 +30,8 @@ class GetCityOutput private constructor(builder: BuilderImpl) {
         var city: CitySummary?
         var coordinates: CityCoordinates?
         var name: String?
+
+        fun build(): GetCityOutput
     }
 
     private class BuilderImpl : Builder, DslBuilder {
@@ -51,29 +56,25 @@ class GetCityOutputDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): Any {
-        var parsedCity: CitySummary? = null
-        var parsedCoordinates: CityCoordinates? = null
-        var parsedName: String? = null
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
+        val payload = response.body.readAll() ?: throw ClientException("expected a response payload")
+        val deserializer = provider(payload)
+        val getCityOutputBuilder = GetCityOutput.dslBuilder()
 
         deserializer.deserializeStruct(null) {
             loop@ while (true) {
                 when (nextField(OBJ_DESCRIPTOR)) {
-                    CITY_FIELD_DESCRIPTOR.index -> parsedCity =
-                        runBlocking { CitySummaryDeserializer().deserialize(response, deserializer) }
-                    COORDINATES_FIELD_DESCRIPTOR.index -> parsedCoordinates =
-                        runBlocking { CityCoordinatesDeserializer().deserialize(response, deserializer) }
-                    NAME_FIELD_DESCRIPTOR.index -> parsedName = deserializeString()
+                    CITY_FIELD_DESCRIPTOR.index -> getCityOutputBuilder.city =
+                        CitySummaryDeserializer.deserialize(deserializer) as CitySummary?
+                    COORDINATES_FIELD_DESCRIPTOR.index -> getCityOutputBuilder.coordinates =
+                        CityCoordinatesDeserializer.deserialize(deserializer) as CityCoordinates?
+                    NAME_FIELD_DESCRIPTOR.index -> getCityOutputBuilder.name = deserializeString()
                     Deserializer.FieldIterator.EXHAUSTED -> break@loop
                     else -> skipValue()
                 }
             }
         }
 
-        return GetCityOutput {
-            city = parsedCity
-            coordinates = parsedCoordinates
-            name = parsedName
-        }
+        return getCityOutputBuilder.build()
     }
 }

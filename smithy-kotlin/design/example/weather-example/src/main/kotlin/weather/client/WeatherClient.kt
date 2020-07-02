@@ -1,8 +1,7 @@
-package com.amazonaws.service.runtime.weather.client
+package weather.client
 
-import com.amazonaws.service.runtime.SdkClient
+import software.aws.clientrt.SdkClient
 import software.aws.clientrt.http.HttpMethod
-import weather.client.DefaultWeatherClient
 import weather.model.structure.*
 
 interface WeatherClient : SdkClient {

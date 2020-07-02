@@ -1,9 +1,5 @@
-
 package weather.model.structure
 
-import com.amazonaws.service.runtime.HttpDeserialize
-import software.aws.clientrt.content.ByteStream
-import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SdkObjectDescriptor
@@ -15,6 +11,7 @@ class CityCoordinates private constructor(builder: BuilderImpl) {
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        fun dslBuilder(): DslBuilder = BuilderImpl()
     }
 
     interface Builder {
@@ -25,6 +22,8 @@ class CityCoordinates private constructor(builder: BuilderImpl) {
     interface DslBuilder {
         var latitude: Float?
         var longitude: Float?
+
+        fun build(): CityCoordinates
     }
 
     private class BuilderImpl : Builder, DslBuilder {
@@ -35,7 +34,7 @@ class CityCoordinates private constructor(builder: BuilderImpl) {
     }
 }
 
-class CityCoordinatesDeserializer : HttpDeserialize {
+class CityCoordinatesDeserializer {
     companion object {
         private val LATITUDE_FIELD_DESCRIPTOR = SdkFieldDescriptor("latitude")
         private val LONGITUDE_FIELD_DESCRIPTOR = SdkFieldDescriptor("longitude")
@@ -44,27 +43,22 @@ class CityCoordinatesDeserializer : HttpDeserialize {
             field(LATITUDE_FIELD_DESCRIPTOR)
             field(LONGITUDE_FIELD_DESCRIPTOR)
         }
-    }
 
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): CityCoordinates {
-        var parsedLatitude: Float? = null
-        var parsedlongitude: Float? = null
+        fun deserialize(deserializer: Deserializer): Any {
+            val cityCoordinatesBuilder = CityCoordinates.dslBuilder()
+            deserializer.deserializeStruct(null) {
+                loop@ while (true) {
+                    when (nextField(OBJ_DESCRIPTOR)) {
+                        LATITUDE_FIELD_DESCRIPTOR.index -> cityCoordinatesBuilder.latitude = deserializeFloat()
+                        LONGITUDE_FIELD_DESCRIPTOR.index -> cityCoordinatesBuilder.longitude = deserializeFloat()
 
-        deserializer.deserializeStruct(null) {
-            loop@while(true) {
-                when(nextField(OBJ_DESCRIPTOR)) {
-                    LATITUDE_FIELD_DESCRIPTOR.index -> parsedLatitude = deserializeFloat()
-                    LONGITUDE_FIELD_DESCRIPTOR.index -> parsedlongitude = deserializeFloat()
-
-                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
-                    else -> skipValue()
+                        Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                        else -> skipValue()
+                    }
                 }
             }
-        }
 
-        return CityCoordinates {
-            latitude = parsedLatitude
-            longitude = parsedlongitude
+            return cityCoordinatesBuilder.build()
         }
     }
 }

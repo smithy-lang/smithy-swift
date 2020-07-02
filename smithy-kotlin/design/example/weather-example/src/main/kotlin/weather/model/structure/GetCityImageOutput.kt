@@ -1,13 +1,10 @@
 package weather.model.structure
 
-import com.amazonaws.service.runtime.HttpDeserialize
-import com.amazonaws.service.runtime.toByteStream
 import software.aws.clientrt.content.ByteStream
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
-import software.aws.clientrt.serde.deserializeStruct
+import software.aws.clientrt.http.toByteStream
 
 // @streaming
 // @httpPayload
@@ -19,16 +16,12 @@ class GetCityImageOutput private constructor(builder: BuilderImpl) {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
     }
 
-    interface Builder {
-        fun build(): GetCityImageOutput
-        // TODO - Java fill in Java builder
-    }
-
     interface DslBuilder {
         var image: ByteStream?
+        fun build(): GetCityImageOutput
     }
 
-    private class BuilderImpl : Builder, DslBuilder {
+    private class BuilderImpl : DslBuilder {
         override var image: ByteStream? = null
 
         override fun build(): GetCityImageOutput = GetCityImageOutput(this)
@@ -36,6 +29,6 @@ class GetCityImageOutput private constructor(builder: BuilderImpl) {
 }
 
 class GetCityImageOutputDeserializer : HttpDeserialize {
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): GetCityImageOutput =
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any =
         GetCityImageOutput { image = response.body.toByteStream() ?: throw RuntimeException("Unable to create ByteStream from response.") }
 }

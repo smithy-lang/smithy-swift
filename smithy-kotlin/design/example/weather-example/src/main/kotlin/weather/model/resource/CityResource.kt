@@ -1,8 +1,7 @@
 package weather.model.resource
 
-import com.amazonaws.service.runtime.weather.client.WeatherClient
+import weather.client.WeatherClient
 import software.aws.clientrt.http.HttpMethod
-import weather.client.DefaultWeatherClient
 import weather.model.structure.GetCityInput
 import weather.model.structure.GetCityOutput
 import weather.model.structure.ListCitiesInput

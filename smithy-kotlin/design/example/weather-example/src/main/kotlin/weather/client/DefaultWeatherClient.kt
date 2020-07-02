@@ -14,16 +14,15 @@
  */
 package weather.client
 
-import com.amazonaws.service.runtime.DefaultRequest
-import com.amazonaws.service.runtime.DefaultValidateResponse
-import com.amazonaws.service.runtime.HttpSerde
-import com.amazonaws.service.runtime.JsonSerdeProvider
-import com.amazonaws.service.runtime.weather.client.WeatherClient
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
+import software.aws.clientrt.http.feature.DefaultRequest
+import software.aws.clientrt.http.feature.DefaultValidateResponse
+import software.aws.clientrt.http.feature.HttpSerde
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.url
+import software.aws.clientrt.serde.json.JsonSerdeProvider
 import weather.model.structure.*
 
 

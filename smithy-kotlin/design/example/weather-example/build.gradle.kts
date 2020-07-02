@@ -4,10 +4,9 @@ plugins {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-//    implementation(project(":client-rt"))
-//    implementation("io.ktor:ktor-client-core-jvm:1.3.2")
     implementation(project(":client-runtime:client-rt-core"))
     implementation(project(":client-runtime:protocol:http"))
+    implementation(project(":client-runtime:protocol:http:features:http-serde"))
     implementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
     implementation(project(":client-runtime:serde"))
     implementation(project(":client-runtime:serde:serde-json"))
@@ -24,11 +23,3 @@ dependencies {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
-
-//compileKotlin {
-//    kotlinOptions.jvmTarget = "1.8"
-//}
-//
-//compileTestKotlin {
-//    kotlinOptions.jvmTarget = "1.8"
-//}
