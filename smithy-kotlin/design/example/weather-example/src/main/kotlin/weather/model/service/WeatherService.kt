@@ -19,5 +19,5 @@ class WeatherService(private val client: WeatherClient) {
     // Operation:
     // @readonly
     // @http(method: "GET", uri: "/current-time")
-    suspend fun getCurrentTime(): GetCurrentTimeOutput = client.getCurrentTime("/current-time", HttpMethod.GET)
+    suspend fun getCurrentTime(): GetCurrentTimeOutput = client.getCurrentTime()
 }

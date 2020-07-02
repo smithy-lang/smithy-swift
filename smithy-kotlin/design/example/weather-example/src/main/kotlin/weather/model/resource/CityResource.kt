@@ -13,7 +13,7 @@ class CityResource(private val client: WeatherClient) {
     // TODO: model errors
     // @readonly
     // @http(method: "GET", uri: "/cities/{cityId}")
-    suspend fun getCity(input: GetCityInput): GetCityOutput = client.getCity(input, "/cities/{cityId}", HttpMethod.GET)
+    suspend fun getCity(input: GetCityInput): GetCityOutput = client.getCity(input)
 
     // Operation: ListCities
     // @readonly

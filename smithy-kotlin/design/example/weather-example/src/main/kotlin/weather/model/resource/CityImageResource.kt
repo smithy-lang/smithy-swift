@@ -10,5 +10,5 @@ class CityImageResource(private val client: WeatherClient) {
     // @readonly
     // @http(method: "GET", uri: "/cities/{cityId}/image")
     // TODO: model errors
-    suspend fun getCityImage(input: GetCityImageInput): GetCityImageOutput = client.getCityImage(input, "/cities/{cityId}/image", HttpMethod.GET)
+    suspend fun getCityImage(input: GetCityImageInput): GetCityImageOutput = client.getCityImage(input)
 }

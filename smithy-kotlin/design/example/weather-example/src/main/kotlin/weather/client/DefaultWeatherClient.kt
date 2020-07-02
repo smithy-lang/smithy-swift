@@ -48,7 +48,10 @@ class DefaultWeatherClient: WeatherClient {
         }
     }
 
-    override suspend fun getCurrentTime(path: String, httpMethod: HttpMethod): GetCurrentTimeOutput {
+    override suspend fun getCurrentTime(): GetCurrentTimeOutput {
+        val path = "/current-time"
+        val httpMethod = HttpMethod.GET
+
         val requestBuilder = HttpRequestBuilder().apply {
             url { this.path = path }
             method = httpMethod
@@ -57,7 +60,10 @@ class DefaultWeatherClient: WeatherClient {
         return client.roundTrip(requestBuilder, GetCurrentTimeOutputDeserializer())
     }
 
-    override suspend fun getCity(input: GetCityInput, path: String, httpMethod: HttpMethod): GetCityOutput {
+    override suspend fun getCity(input: GetCityInput): GetCityOutput {
+        val path = "/cities/{cityId}"
+        val httpMethod = HttpMethod.GET
+
         requireNotNull(input.cityId) { "Must provide a value for cityId." }
 
         val requestBuilder = HttpRequestBuilder().apply {
@@ -68,8 +74,11 @@ class DefaultWeatherClient: WeatherClient {
         return client.roundTrip(requestBuilder, GetCityOutputDeserializer())
     }
 
-    override suspend fun getCityImage(input: GetCityImageInput, path: String, httpMethod: HttpMethod): GetCityImageOutput {
+    override suspend fun getCityImage(input: GetCityImageInput): GetCityImageOutput {
         requireNotNull(input.cityId) { "Must provide a value for cityId." }
+
+        val path = "/cities/{cityId}/image"
+        val httpMethod: HttpMethod = HttpMethod.GET
 
         val requestBuilder = HttpRequestBuilder().apply {
             url { this.path = path.replace("{cityId}", input.cityId) }
