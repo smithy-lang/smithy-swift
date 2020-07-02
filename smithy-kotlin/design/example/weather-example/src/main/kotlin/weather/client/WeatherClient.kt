@@ -3,6 +3,7 @@ package weather.client
 import software.aws.clientrt.SdkClient
 import software.aws.clientrt.http.HttpMethod
 import weather.model.structure.*
+import java.io.Closeable
 
 interface WeatherClient : SdkClient {
     override val serviceName: String
@@ -13,4 +14,5 @@ interface WeatherClient : SdkClient {
     suspend fun getCity(input: GetCityInput): GetCityOutput
 
     suspend fun getCityImage(input: GetCityImageInput): GetCityImageOutput
+
 }
