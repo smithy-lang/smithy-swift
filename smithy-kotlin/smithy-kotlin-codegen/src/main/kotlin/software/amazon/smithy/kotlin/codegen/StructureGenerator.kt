@@ -22,8 +22,8 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 
 /**
  * Renders Smithy structure shapes
@@ -125,7 +125,7 @@ class StructureGenerator(
                 write("append(\")\")")
             } else {
                 sortedMembers.forEachIndexed { index, memberShape ->
-                    val memberName = memberShape.memberName
+                    val memberName = memberShape.defaultName()
                     val separator = if (index < sortedMembers.size - 1) "," else ")"
 
                     val targetShape = model.expectShape(memberShape.target)
@@ -148,7 +148,7 @@ class StructureGenerator(
             } else {
                 write(
                     "var result = \$1L\$2L",
-                    sortedMembers[0].memberName,
+                    sortedMembers[0].defaultName(),
                     selectHashFunctionForShape(sortedMembers[0])
                 )
 
@@ -158,7 +158,7 @@ class StructureGenerator(
 
                         write(
                             "result = 31 * result + (\$1L\$2L)",
-                            memberShape.memberName, selectHashFunctionForShape(memberShape)
+                            memberShape.defaultName(), selectHashFunctionForShape(memberShape)
                         )
                     }
                 }
@@ -173,14 +173,19 @@ class StructureGenerator(
         // also available already in the byMember map
         val targetSymbol = symbolProvider.toSymbol(targetShape)
 
-        return when(targetShape.type) {
-            ShapeType.INTEGER, ShapeType.BYTE ->
-                when(targetSymbol.isBoxed()) {
+        return when (targetShape.type) {
+            ShapeType.INTEGER ->
+                when (targetSymbol.isBoxed()) {
                     true -> " ?: 0"
                     else -> ""
                 }
+            ShapeType.BYTE ->
+                when (targetSymbol.isBoxed()) {
+                    true -> "?.toInt() ?: 0"
+                    else -> ".toInt()"
+                }
             else ->
-                when(targetSymbol.isBoxed()) {
+                when (targetSymbol.isBoxed()) {
                     true -> "?.hashCode() ?: 0"
                     else -> ".hashCode()"
                 }
@@ -198,7 +203,7 @@ class StructureGenerator(
             write("")
 
             for (memberShape in sortedMembers) {
-                write("if (\$1L != other.\$1L) return false", memberShape.memberName)
+                write("if (\$1L != other.\$1L) return false", memberShape.defaultName())
             }
 
             write("")
