@@ -49,6 +49,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         println("Generating swift podspec file")
         writePodspec(settings, fileManifest, dependencies)
 
+        println("Generating package manifest file")
+        writePackageManifest(settings, fileManifest, dependencies)
+
         println("Generating info plist")
         writeInfoPlist(settings, fileManifest)
     }
