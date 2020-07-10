@@ -21,7 +21,7 @@ import software.amazon.smithy.utils.CodeWriter
 fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>) {
 
     // filter duplicates in dependencies
-    // val distinctDependencies = dependencies.distinctBy { it.packageName }
+    val distinctDependencies = dependencies.distinctBy { it.packageName }
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -33,38 +33,38 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.write("import PackageDescription")
 
     writer.openBlock("let package = Package(", ")") {
-        writer.write("name: '${settings.moduleName}',")
+        writer.write("name: \"${settings.moduleName}\",")
 
-        writer.openBlock("platforms: [", "]") {
+        writer.openBlock("platforms: [", "],") {
             writer.write(".macOS(.v10_15), .iOS(.v13)")
         }
 
-        writer.openBlock("products: [", "]") {
-            writer.write(".library(name: '${settings.moduleName}', targets: ['${settings.moduleName}'])")
+        writer.openBlock("products: [", "],") {
+            writer.write(".library(name: \"${settings.moduleName}\", targets: [\"${settings.moduleName}\"])")
         }
 
-        writer.openBlock("dependencies: [", "]") {
-            for (dependency in dependencies) {
+        writer.openBlock("dependencies: [", "],") {
+            for (dependency in distinctDependencies) {
                 val dependencyURL = dependency.expectProperty("url", String::class.java)
                 if (dependencyURL.take(4).toLowerCase().equals("http")) {
-                    writer.openBlock(".package(", ")") {
-                        writer.write("url: '$dependencyURL',")
+                    writer.openBlock(".package(", "),") {
+                        writer.write("url: \"$dependencyURL\",")
                         writer.write("from: ${dependency.version}")
                     }
                 }
                 else {
-                    writer.write(".package(path: '$dependencyURL')")
+                    writer.write(".package(path: \"$dependencyURL\"),")
                 }
             }
         }
 
         writer.openBlock("targets: [", "]") {
             writer.openBlock(".target(", ")") {
-                writer.write("name: '${settings.moduleName}',")
-                writer.openBlock("dependencies: [", "]") {
-                    writer.write(dependencies.map { it.packageName }.joinToString(separator = ", "))
+                writer.write("name: \"${settings.moduleName}\",")
+                writer.openBlock("dependencies: [", "],") {
+                    writer.write(distinctDependencies.map { "\"${it.packageName}\"" }.joinToString(separator = ", "))
                 }
-                writer.write("path: './${settings.moduleName}'")
+                writer.write("path: \"./${settings.moduleName}\"")
             }
         }
     }

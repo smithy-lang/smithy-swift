@@ -58,12 +58,12 @@ class PackageManifestGeneratorTests : TestsBase() {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
          "dependencies: [\n" +
-                "        .package(\n" +
-                "            url: 'https://github.com/mkrd/Swift-Big-Integer.git',\n" +
-                "            from: 2.0\n" +
-                "        )\n" +
-                "        .package(path: '../../../../../../ClientRuntime')\n" +
-                "    ]")
+                 "        .package(\n" +
+                 "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
+                 "            from: 2.0\n" +
+                 "        ),\n" +
+                 "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
+                 "    ]")
     }
 
     @Test
@@ -84,7 +84,7 @@ class PackageManifestGeneratorTests : TestsBase() {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "products: [\n" +
-                    "        .library(name: 'MockSDK', targets: ['MockSDK'])\n" +
+                    "        .library(name: \"MockSDK\", targets: [\"MockSDK\"])\n" +
                     "    ]")
     }
 
@@ -96,11 +96,11 @@ class PackageManifestGeneratorTests : TestsBase() {
         packageManifest.shouldContain(
             "targets: [\n" +
                     "        .target(\n" +
-                    "            name: 'MockSDK',\n" +
+                    "            name: \"MockSDK\",\n" +
                     "            dependencies: [\n" +
-                    "                BigNumber, ClientRuntime\n" +
-                    "            ]\n" +
-                    "            path: './MockSDK'\n" +
+                    "                \"BigNumber\", \"ClientRuntime\"\n" +
+                    "            ],\n" +
+                    "            path: \"./MockSDK\"\n" +
                     "        )\n" +
                     "    ]")
     }
