@@ -51,8 +51,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                         writer.write("url: \"$dependencyURL\",")
                         writer.write("from: ${dependency.version}")
                     }
-                }
-                else {
+                } else {
                     writer.write(".package(path: \"$dependencyURL\"),")
                 }
             }

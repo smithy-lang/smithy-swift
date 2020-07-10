@@ -57,13 +57,13 @@ class PackageManifestGeneratorTests : TestsBase() {
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
-         "dependencies: [\n" +
-                 "        .package(\n" +
-                 "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
-                 "            from: 2.0\n" +
-                 "        ),\n" +
-                 "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
-                 "    ]")
+            "dependencies: [\n" +
+                    "        .package(\n" +
+                    "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
+                    "            from: 2.0\n" +
+                    "        ),\n" +
+                    "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
+                    "    ]")
     }
 
     @Test
