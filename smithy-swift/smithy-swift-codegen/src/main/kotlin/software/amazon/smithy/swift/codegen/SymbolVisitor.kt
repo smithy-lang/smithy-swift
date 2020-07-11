@@ -219,7 +219,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = shape.defaultName()
-        return createSymbolBuilder(shape, "${name}Client").definitionFile(formatModuleName(shape.type, name)).build()
+        return createSymbolBuilder(shape, "${name}Client", "ClientRuntime")
+            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+            .definitionFile(formatModuleName(shape.type, name))
+            .build()
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {

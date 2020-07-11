@@ -43,8 +43,8 @@ class ServiceGenerator(
 
     fun render() {
         // add imports
-        writer.write("import ClientRuntime")
         writer.addImport(serviceSymbol)
+
         // generate protocol
         renderSwiftProtocol()
     }
