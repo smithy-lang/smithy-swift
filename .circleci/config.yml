@@ -177,6 +177,14 @@ jobs:
           command: |
             xcodebuild test-without-building -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime -sdk iphonesimulator -destination "${destination}"
             bash <(curl https://codecov.io/bash | sed 's/"$beta_xcode_partials"//g')
+      - run:
+          name: Install swiftlint
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+      - run:
+          name: Lint ClientRuntime
+          command: |
+            swiftlint
 
   build_smithy_swift:
     macos:
