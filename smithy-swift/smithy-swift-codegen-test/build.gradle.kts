@@ -35,8 +35,8 @@ repositories {
 
 task<Exec>("buildGeneratedSDK") {
     val pathToGeneratedSDK = "$buildDir/smithyprojections/smithy-swift-codegen-test/source/swift-codegen"
-    workingDir(pathToGeneratedSDK)
-    commandLine("command", "-v", "swift")
+    workingDir(".")
+    commandLine("which", "swift")
     isIgnoreExitValue=true
     dependsOn(tasks["build"])
 
