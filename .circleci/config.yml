@@ -198,6 +198,7 @@ jobs:
     steps:
       - checkout
       - with_cache:
+          cache_key: "macOSv2"
           steps:
             - run:
                 name: Build Smithy Swift
@@ -221,6 +222,7 @@ jobs:
       - attach_workspace:
           at: .
       - with_cache:
+          cache_key: "macOSv2"
           steps:
             - run:
                 working_directory: ~/project/smithy-swift
