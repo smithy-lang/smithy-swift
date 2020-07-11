@@ -184,6 +184,7 @@ jobs:
             HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
       - run:
           name: Lint ClientRuntime
+          working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
             swiftlint
 
