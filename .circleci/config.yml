@@ -163,9 +163,10 @@ jobs:
       - checkout
       - pre_start_ios_simulator
       - run:
-          name: Install swiftlint
+          name: Generate XCodeProject
+          working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+            swift package generate-xcodeproj
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
