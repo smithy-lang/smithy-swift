@@ -76,6 +76,7 @@ open class TestsBase {
                     .withMember("homepage", Node.from("https://docs.amplify.aws/"))
                     .withMember("author", Node.from("Amazon Web Services"))
                     .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
+                    .withMember("swiftVersion", Node.from("5.1.0"))
                     .build()
             )
             .build()

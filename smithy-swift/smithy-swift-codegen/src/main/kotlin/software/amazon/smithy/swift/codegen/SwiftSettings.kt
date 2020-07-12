@@ -33,6 +33,7 @@ private const val MODULE_VERSION = "moduleVersion"
 private const val GIT_REPO = "gitRepo"
 private const val HOMEPAGE = "homepage"
 private const val AUTHOR = "author"
+private const val SWIFT_VERSION = "swiftVersion"
 
 class SwiftSettings(
     val service: ShapeId,
@@ -41,7 +42,8 @@ class SwiftSettings(
     val moduleDescription: String,
     val author: String,
     val homepage: String,
-    val gitRepo: String
+    val gitRepo: String,
+    val swiftVersion: String
 ) {
 
 companion object {
@@ -55,7 +57,7 @@ companion object {
      * @return Returns the extracted settings
      */
     fun from(model: Model, config: ObjectNode): SwiftSettings {
-        config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, HOMEPAGE, GIT_REPO))
+        config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, HOMEPAGE, GIT_REPO, SWIFT_VERSION))
 
         val service = config.getStringMember(SERVICE)
             .map(StringNode::expectShapeId)
@@ -67,7 +69,8 @@ companion object {
         val homepage = config.expectStringMember(HOMEPAGE).value
         val author = config.expectStringMember(AUTHOR).value
         val gitRepo = config.expectStringMember(GIT_REPO).value
-        return SwiftSettings(service, moduleName, version, desc, author, homepage, gitRepo)
+        val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
+        return SwiftSettings(service, moduleName, version, desc, author, homepage, gitRepo, swiftVersion)
     }
     // infer the service to generate from a model
     private fun inferService(model: Model): ShapeId {

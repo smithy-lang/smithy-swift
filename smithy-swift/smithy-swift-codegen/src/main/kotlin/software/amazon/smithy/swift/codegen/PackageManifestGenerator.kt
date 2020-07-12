@@ -28,7 +28,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         setIndentText("    ")
     }
 
-    writer.write("// swift-tools-version:5.1")
+    writer.write("// swift-tools-version:${settings.swiftVersion}")
     writer.write("")
     writer.write("import PackageDescription")
 
