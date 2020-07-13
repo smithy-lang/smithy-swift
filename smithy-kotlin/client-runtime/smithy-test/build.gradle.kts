@@ -17,5 +17,11 @@ kotlin {
                 // implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
             }
         }
+
+        jvmMain {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+            }
+        }
     }
 }

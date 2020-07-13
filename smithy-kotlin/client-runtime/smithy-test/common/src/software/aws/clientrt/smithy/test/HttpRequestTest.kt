@@ -20,6 +20,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.util.urlEncodeComponent
@@ -79,44 +80,44 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
     assertRequest(testBuilder.expected.build(), actual)
 }
 
-private fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequestBuilder) {
+@OptIn(ExperimentalStdlibApi::class)
+private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequestBuilder) {
     // run the assertions
-    assertEquals(expected.method, actual.method)
-    assertEquals(expected.uri, actual.url.path)
+    assertEquals(expected.method, actual.method, "expected method: `${expected.method}`; got: `${actual.method}`")
+    assertEquals(expected.uri, actual.url.path, "expected path: `${expected.uri}`; got: `${actual.url.path}`")
 
     // have to deal with URL encoding
     expected.queryParams.forEach { (name, value) ->
         val actualValues = actual.url.parameters.getAll(name)
         assertNotNull(actualValues, "expected query parameter `$name`; no values found")
-        assertTrue(actualValues.map { it.urlEncodeComponent() }.contains(value), "expected query name value pair: `$name:$value` not found")
+        assertTrue(actualValues.map { it.urlEncodeComponent() }.contains(value), "expected query name value pair not found: `$name:$value`")
     }
 
     expected.forbiddenQueryParams.forEach {
-        assertFalse(actual.url.parameters.contains(it), "forbidden query parameter `$it` found")
+        assertFalse(actual.url.parameters.contains(it), "forbidden query parameter found: `$it`")
     }
 
     expected.requiredQueryParams.forEach {
-        assertTrue(actual.url.parameters.contains(it), "expected required query parameter `$it`")
+        assertTrue(actual.url.parameters.contains(it), "expected required query parameter: `$it`")
     }
 
     expected.headers.forEach { (name, value) ->
-        assertTrue(actual.headers.contains(name, value), "expected header `$name` with value `$value`")
+        assertTrue(actual.headers.contains(name, value), "expected header name value pair not found: `$name:$value`")
     }
 
     expected.forbiddenHeaders.forEach {
-        assertFalse(actual.headers.contains(it), "forbidden header `$it` found")
+        assertFalse(actual.headers.contains(it), "forbidden header found: `$it`")
     }
     expected.requiredHeaders.forEach {
-        assertTrue(actual.headers.contains(it), "expected required header `$it`")
+        assertTrue(actual.headers.contains(it), "expected required header not found: `$it`")
     }
 
-    // expected.expectedBody?.let {
-    //     TODO()
-    // }
-
-    // expected.expectedBodyMediaType?.let {
-    //     TODO()
-    // }
+    if (expected.body != null) {
+        assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
+        val actualBody = actual.body.readAll()?.decodeToString()
+        assertNotNull(actualBody, "HttpRequest body is null when one was expected")
+        expected.bodyAssert.invoke(expected.body, actualBody)
+    }
 }
 
 data class ExpectedHttpRequest(
@@ -138,9 +139,16 @@ data class ExpectedHttpRequest(
     val requiredHeaders: List<String> = listOf(),
     // if no body is defined no assertions are made about it
     val body: String? = null,
+    // actual function to use for the assertion
+    val bodyAssert: BodyAssertFn? = null,
     // if not defined no assertion is made
     val bodyMediaType: String? = null
 )
+
+/**
+ * The function used to assert the expected and actual body contents are equal
+ */
+typealias BodyAssertFn = (expected: String, actual: String) -> Unit
 
 class ExpectedHttpRequestBuilder {
     var method: HttpMethod = HttpMethod.GET
@@ -152,6 +160,7 @@ class ExpectedHttpRequestBuilder {
     var forbiddenHeaders: List<String> = listOf()
     var requiredHeaders: List<String> = listOf()
     var body: String? = null
+    var bodyAssert: BodyAssertFn? = null
     var bodyMediaType: String? = null
 
     fun build(): ExpectedHttpRequest =
@@ -165,6 +174,7 @@ class ExpectedHttpRequestBuilder {
             this.forbiddenHeaders,
             this.requiredHeaders,
             this.body,
+            this.bodyAssert,
             this.bodyMediaType
         )
 }
