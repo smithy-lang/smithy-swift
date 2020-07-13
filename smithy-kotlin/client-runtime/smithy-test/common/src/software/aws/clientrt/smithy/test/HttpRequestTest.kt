@@ -63,7 +63,7 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
         override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
             // capture the request that was build by the service operation
             actual = requestBuilder
-            // FIXME - I don't love this...it requires the service call to be the last
+            // this control flow requires the service call (or whatever calls the mock engine) to be the last
             // statement in the operation{} block...
             throw MockEngineException()
         }
