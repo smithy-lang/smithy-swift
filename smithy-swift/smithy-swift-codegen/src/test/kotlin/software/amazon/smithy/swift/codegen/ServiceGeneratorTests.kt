@@ -66,6 +66,11 @@ class ServiceGeneratorTests : TestsBase() {
     }
 
     @Test
+    fun `it has dependency on client runtime`() {
+        commonTestContents.shouldContainOnlyOnce("import ClientRuntime")
+    }
+
+    @Test
     fun `it renders swift func signatures correctly`() {
         val expectedSignatures = listOf(
                 "func getFooStreamingInput(input: GetFooStreamingRequest, completion: (SdkResult<GetFooResponse, GetFooStreamingInputOperationError>) -> Void)",

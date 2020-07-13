@@ -7,7 +7,8 @@
       "moduleVersion": "0.0.1",
       "gitRepo": "https://github.com/aws-amplify/amplify-codegen.git",
       "author": "Amazon Web Services",
-      "homepage": "https://docs.amplify.aws/"
+      "homepage": "https://docs.amplify.aws/",
+      "swiftVersion": "5.1.0"
     }
   }
 }

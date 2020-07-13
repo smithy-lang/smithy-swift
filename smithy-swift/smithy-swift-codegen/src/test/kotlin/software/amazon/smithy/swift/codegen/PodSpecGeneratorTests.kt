@@ -39,6 +39,7 @@ class PodSpecGeneratorTests : TestsBase() {
             .withMember("homepage", Node.from(homepage))
             .withMember("author", Node.from("Amazon Web Services"))
             .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
+            .withMember("swiftVersion", Node.from("5.1.0"))
             .build())
 
         val manifest = MockManifest()

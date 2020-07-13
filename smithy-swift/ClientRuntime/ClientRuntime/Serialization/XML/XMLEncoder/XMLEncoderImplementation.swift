@@ -4,6 +4,8 @@
 //
 // TODO:: Add copyrights
 
+import Foundation
+
 class XMLEncoderImplementation: Encoder {
     // MARK: Properties
 
