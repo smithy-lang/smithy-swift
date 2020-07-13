@@ -3,6 +3,8 @@ extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "software.aws.clientrt.smithy.test"
 
 val kotlinVersion: String by project
+val kotlinxSerializationVersion: String = "0.20.0"
+
 kotlin {
     sourceSets {
         commonMain {
@@ -14,12 +16,13 @@ kotlin {
                 implementation(project(":client-runtime:testing"))
 
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
-                // implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
             }
         }
 
         jvmMain {
             dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
             }
         }

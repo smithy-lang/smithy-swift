@@ -98,7 +98,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
     }
 
     expected.requiredQueryParams.forEach {
-        assertTrue(actual.url.parameters.contains(it), "expected required query parameter: `$it`")
+        assertTrue(actual.url.parameters.contains(it), "expected required query parameter not found: `$it`")
     }
 
     expected.headers.forEach { (name, value) ->
