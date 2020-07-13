@@ -14,7 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import java.lang.Character.isDigit
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StringShape
@@ -95,7 +94,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         writer.renderEnumDefinitionDocumentation(definition)
         val constName = definition.name.orElseGet {
                 val modified = CaseUtils.toSnakeCase(definition.value).replace(".", "_")
-                if (isDigit(modified.first())) {
+                if (!isValidKotlinIdentifier(modified)) {
                     "_$modified"
                 } else {
                     modified
