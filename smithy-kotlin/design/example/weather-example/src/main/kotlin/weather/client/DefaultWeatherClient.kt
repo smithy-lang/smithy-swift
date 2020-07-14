@@ -69,7 +69,15 @@ class DefaultWeatherClient: WeatherClient {
         return client.roundTrip(GetCityImageInputSerializer(input), GetCityImageOutputDeserializer())
     }
 
-    override fun close() {
+    override suspend fun listCities(input: ListCitiesInput): ListCitiesOutput {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getForecast(input: GetForecastInput): GetForecastOutput {
+        TODO("Not yet implemented")
+    }
+
+    override fun close() {
+        client.close()
     }
 }
