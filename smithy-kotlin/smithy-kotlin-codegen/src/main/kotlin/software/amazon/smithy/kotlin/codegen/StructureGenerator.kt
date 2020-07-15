@@ -111,7 +111,25 @@ class StructureGenerator(
     }
 
     // generate a `toString()` implementation
-    private fun renderToString() {}
+    private fun renderToString() {
+        writer.write("")
+        writer.withBlock("override fun toString(): String {", "}") {
+            // TODO: Unlock the mystery of indenting with `writeInLine`
+            val manualIndention: String = " ".repeat(8)
+            writeInline("${manualIndention}return \"\$class.name:L(")
+
+            sortedMembers.forEachIndexed { index, it ->
+                val (memberName, memberSymbol) = byMemberShape[it] ?: throw IllegalArgumentException("Expected member shape $it.")
+
+                //TODO: handle `sensitive` trait
+
+                writeInline("\$1L=$$\$1L", memberName)
+                if (index < sortedMembers.size - 1) writeInline(",")
+            }
+            writeInline(")\"")
+            write("")
+        }
+    }
 
     // generate a `hashCode()` implementation
     private fun renderHashCode() {}
