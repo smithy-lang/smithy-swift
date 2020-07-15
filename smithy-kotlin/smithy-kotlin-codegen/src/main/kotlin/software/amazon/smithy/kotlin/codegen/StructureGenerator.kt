@@ -118,10 +118,9 @@ class StructureGenerator(
             val manualIndention: String = " ".repeat(8)
             writeInline("${manualIndention}return \"\$class.name:L(")
 
-            sortedMembers.forEachIndexed { index, it ->
-                val (memberName, memberSymbol) = byMemberShape[it] ?: throw IllegalArgumentException("Expected member shape $it.")
-
-                //TODO: handle `sensitive` trait
+            //TODO: handle `sensitive` trait
+            sortedMembers.forEachIndexed { index, memberShape ->
+                val memberName = memberShape.memberName
 
                 writeInline("\$1L=$$\$1L", memberName)
                 if (index < sortedMembers.size - 1) writeInline(",")
