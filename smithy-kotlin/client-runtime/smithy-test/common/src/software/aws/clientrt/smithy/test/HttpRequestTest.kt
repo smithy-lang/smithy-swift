@@ -125,17 +125,17 @@ data class ExpectedHttpRequest(
     val method: HttpMethod = HttpMethod.GET,
     // expected path without the query string (e.g. /foo/bar)
     val uri: String = "",
-    // query parameter names AND the associated varues that must appear
+    // query parameter names AND the associated values that must appear
     val queryParams: List<Pair<String, String>> = listOf(),
     // query parameter names that MUST not appear
     val forbiddenQueryParams: List<String> = listOf(),
-    // query parameter names that MUST appear but no assertion on varues
+    // query parameter names that MUST appear but no assertion on values
     val requiredQueryParams: List<String> = listOf(),
     // header names AND values that must appear
     val headers: Map<String, String> = mapOf(),
     // header names that must not appear
     val forbiddenHeaders: List<String> = listOf(),
-    // header names that must appear but no assertion on varues
+    // header names that must appear but no assertion on values
     val requiredHeaders: List<String> = listOf(),
     // if no body is defined no assertions are made about it
     val body: String? = null,
