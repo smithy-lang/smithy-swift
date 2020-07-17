@@ -15,6 +15,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.Optional
 import java.util.logging.Logger
 import kotlin.streams.toList
 import software.amazon.smithy.codegen.core.CodegenException
@@ -76,8 +77,8 @@ class KotlinSettings(
             val moduleName = config.expectStringMember(MODULE_NAME).value
             val version = config.expectStringMember(MODULE_VERSION).value
             val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
-            val build = config.expectObjectMember(BUILD_SETTINGS)
-            return KotlinSettings(service, moduleName, version, desc, BuildSettings(build.getMember(BuildSettings.ROOT_PROJECT).get().asBooleanNode().get().value))
+            val build = config.getObjectMember(BUILD_SETTINGS)
+            return KotlinSettings(service, moduleName, version, desc, BuildSettings.fromNode(build))
         }
 
         // infer the service to generate from a model
@@ -112,6 +113,14 @@ class KotlinSettings(
 
 data class BuildSettings(val rootProject: Boolean = false) {
     companion object {
-        const val ROOT_PROJECT = "rootProject"
+        private const val ROOT_PROJECT = "rootProject"
+        fun fromNode(node: Optional<ObjectNode>): BuildSettings {
+            return if (node.isPresent) {
+                BuildSettings(node.get().getMember(BuildSettings.ROOT_PROJECT).get().asBooleanNode().get().value)
+            } else {
+                Default()
+            }
+        }
+        fun Default(): BuildSettings = BuildSettings(false)
     }
 }
