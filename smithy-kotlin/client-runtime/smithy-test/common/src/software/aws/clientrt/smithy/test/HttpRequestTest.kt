@@ -146,7 +146,12 @@ data class ExpectedHttpRequest(
 )
 
 /**
- * The function used to assert the expected and actual body contents are equal
+ * The function used to assert the expected and actual body contents are equal. Callers
+ * should make whatever assertions they want about the body and should throw an appropriate
+ * exception when the contents do not match.
+ *
+ * The function will be passed the [expected] contents and the [actual] read contents
+ * from the built request as a string.
  */
 typealias BodyAssertFn = (expected: String, actual: String) -> Unit
 
