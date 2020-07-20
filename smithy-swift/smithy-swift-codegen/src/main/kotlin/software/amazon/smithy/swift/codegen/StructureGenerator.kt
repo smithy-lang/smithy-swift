@@ -106,19 +106,21 @@ class StructureGenerator(
     }
 
     private fun generateInitializerForStructure() {
-        writer.openBlock("public init (", ")") {
-            for ((index, member) in membersSortedByName.withIndex()) {
-                val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
-                if (memberName == null || memberSymbol == null) continue
-                val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+        if (membersSortedByName.size > 0) {
+            writer.openBlock("public init (", ")") {
+                for ((index, member) in membersSortedByName.withIndex()) {
+                    val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
+                    if (memberName == null || memberSymbol == null) continue
+                    val terminator = if (index == membersSortedByName.size - 1) "" else ","
+                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                }
             }
-        }
 
-        writer.openBlock("{", "}") {
-            membersSortedByName.forEach {
-                val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-                writer.write("self.\$1L = \$1L", memberName)
+            writer.openBlock("{", "}") {
+                membersSortedByName.forEach {
+                    val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+                    writer.write("self.\$1L = \$1L", memberName)
+                }
             }
         }
     }
@@ -188,7 +190,7 @@ class StructureGenerator(
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
         writer.write("public var retryable = \$L", isRetryable)
 
-        writer.write("public var type = .\$L", errorTrait.value)
+        writer.write("public var type: ErrorType = .\$L", errorTrait.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

@@ -19,27 +19,100 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import java.util.*
+import java.util.logging.Logger
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
-    private var settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-    private var model: Model = context.model
-    private var modelWithoutTraitShapes: Model = context.modelWithoutTraitShapes
-    private var service: ServiceShape = settings.getService(model)
-    private var fileManifest: FileManifest = context.fileManifest
-    private var symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
-    private var writers: SwiftDelegator = SwiftDelegator(settings, model, fileManifest, symbolProvider)
-    private var integrations = mutableListOf<SwiftIntegration>()
+    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
+    private val model: Model
+    private val modelWithoutTraitShapes: Model = context.modelWithoutTraitShapes
+    private val service: ServiceShape
+    private val fileManifest: FileManifest = context.fileManifest
+    private val symbolProvider: SymbolProvider
+    private val writers: SwiftDelegator
+    private val integrations: List<SwiftIntegration>
+    private val protocolGenerator: ProtocolGenerator?
 
-    fun execute() { // Generate models that are connected to the service being generated.
+    init {
+        LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
+        integrations = ServiceLoader.load(SwiftIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
+            .also { integration ->
+                LOGGER.info("Adding SwiftIntegration: ${integration.javaClass.name}")
+            }.sortedBy(SwiftIntegration::order).toList()
+
+        LOGGER.info("Preprocessing model")
+        var resolvedModel = context.model
+        for (integration in integrations) {
+            resolvedModel = integration.preprocessModel(resolvedModel, settings)
+        }
+        model = resolvedModel
+
+        service = settings.getService(model)
+
+        var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        for (integration in integrations) {
+            resolvedSymbolProvider = integration.decorateSymbolProvider(settings, model, resolvedSymbolProvider)
+        }
+        symbolProvider = resolvedSymbolProvider
+
+        writers = SwiftDelegator(settings, model, fileManifest, symbolProvider)
+
+        protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
+    }
+
+    private fun resolveProtocolGenerator(
+        integrations: List<SwiftIntegration>,
+        model: Model,
+        service: ServiceShape,
+        settings: SwiftSettings
+    ): ProtocolGenerator? {
+        val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
+        val serviceIndex = model.getKnowledge(ServiceIndex::class.java)
+
+        try {
+            val protocolTrait = settings.resolveServiceProtocol(serviceIndex, service, generators.keys)
+            return generators[protocolTrait]
+        } catch (ex: UnresolvableProtocolException) {
+            LOGGER.warning("Unable to find protocol generator for ${service.id}: ${ex.message}")
+        }
+        return null
+    }
+
+    fun execute() {
+        LOGGER.info("Generating Kotlin client for service ${settings.service}")
+
         println("Walking shapes from " + service.id + " to find shapes to generate")
         val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
-        for (shape in serviceShapes) {
-            shape.accept(this)
+        serviceShapes.forEach { it.accept(this) }
+
+        if (protocolGenerator != null) {
+            val ctx = ProtocolGenerator.GenerationContext(
+                settings,
+                model,
+                service,
+                symbolProvider,
+                integrations,
+                protocolGenerator.protocolName,
+                writers
+            )
+
+            LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
+            protocolGenerator.generateSerializers(ctx)
+            protocolGenerator.generateDeserializers(ctx)
+
+            LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
+            protocolGenerator.generateProtocolUnitTests(ctx)
+
+            LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
+            protocolGenerator.generateProtocolClient(ctx)
         }
 
         println("Flushing swift writers")

@@ -1,9 +1,9 @@
 $version: "1.0"
-namespace smithy.example
+namespace com.test
 
-use aws.protocols#awsJson1_1
+use aws.protocols#restJson1
 
-@awsJson1_1
+@restJson1
 service Example {
     version: "1.0.0",
     operations: [
@@ -17,6 +17,7 @@ service Example {
     ]
 }
 
+@http(method: "GET", uri: "/foo")
 operation GetFoo {
     input: GetFooRequest,
     output: GetFooResponse,
@@ -30,10 +31,12 @@ structure GetFooResponse {}
 structure GetFooError {}
 
 
+@http(method: "GET", uri: "/foo-no-input")
 operation GetFooNoInput {
     output: GetFooResponse
 }
 
+@http(method: "GET", uri: "/foo-no-output")
 operation GetFooNoOutput {
     input: GetFooRequest
 }
@@ -42,6 +45,7 @@ operation GetFooNoOutput {
 blob BodyStream
 
 structure GetFooStreamingRequest {
+    @httpPayload
     body: BodyStream
 }
 
@@ -49,20 +53,24 @@ structure GetFooStreamingResponse {
     body: BodyStream
 }
 
+@http(method: "POST", uri: "/foo-streaming-input")
 operation GetFooStreamingInput {
     input: GetFooStreamingRequest,
     output: GetFooResponse
 }
 
+@http(method: "POST", uri: "/foo-streaming-output")
 operation GetFooStreamingOutput {
     input: GetFooRequest,
     output: GetFooStreamingResponse
 }
 
+@http(method: "POST", uri: "/foo-streaming-output-no-input")
 operation GetFooStreamingOutputNoInput {
     output: GetFooStreamingResponse
 }
 
+@http(method: "POST", uri: "/foo-streaming-input-no-output")
 operation GetFooStreamingInputNoOutput {
     input: GetFooStreamingRequest
 }

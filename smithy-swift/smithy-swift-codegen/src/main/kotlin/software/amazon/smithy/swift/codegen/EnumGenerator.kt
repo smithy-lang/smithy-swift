@@ -128,7 +128,7 @@ class EnumGenerator(
     fun render() {
         writer.putContext("enum.name", symbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("enum \$enum.name:L {", "}\n") {
+        writer.openBlock("public enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(String)")
@@ -178,7 +178,7 @@ class EnumGenerator(
 
     fun generateAllCasesBlock() {
         allCasesBuilder.add(".sdkUnknown(\"\")")
-        writer.openBlock("static var allCases: [\$enum.name:L] {", "}") {
+        writer.openBlock("public static var allCases: [\$enum.name:L] {", "}") {
             writer.openBlock("return [", "]") {
                 writer.write(allCasesBuilder.joinToString(",\n"))
             }
@@ -186,7 +186,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromRawValueBlock() {
-        writer.openBlock("init?(rawValue: String) {", "}") {
+        writer.openBlock("public init?(rawValue: String) {", "}") {
             writer.write("let value = Self.allCases.first(where: { \$\$0.rawValue == rawValue })")
             writer.write("self = value ?? Self.sdkUnknown(rawValue)")
         }
@@ -194,7 +194,7 @@ class EnumGenerator(
 
     fun generateRawValueEnumBlock() {
         rawValuesBuilder.add("case let .sdkUnknown(s): return s")
-        writer.openBlock("var rawValue: String {", "}") {
+        writer.openBlock("public var rawValue: String {", "}") {
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
             writer.write("}")
@@ -202,7 +202,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromDecoderBlock() {
-        writer.openBlock("init(from decoder: Decoder) throws {", "}") {
+        writer.openBlock("public init(from decoder: Decoder) throws {", "}") {
             writer.write("let container = try decoder.singleValueContainer()")
             writer.write("let rawValue = try container.decode(RawValue.self)")
             writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")

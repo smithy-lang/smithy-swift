@@ -26,6 +26,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import java.util.*
+
 /*
 * Generates a Swift protocol for the service
  */
@@ -39,6 +41,63 @@ class ServiceGenerator(
     private var service = settings.getService(model)
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
+    }
+
+    companion object {
+        /**
+         * Renders the definition of operation
+         */
+        fun renderOperationDefinition(model: Model,
+                                      symbolProvider: SymbolProvider,
+                                      writer: SwiftWriter,
+                                      opIndex: OperationIndex,
+                                      op: OperationShape) {
+
+            val operationName = op.camelCaseName()
+
+            val inputShapeName = getOperationInputShapeName(symbolProvider, opIndex, op)
+            val inputParam = inputShapeName?.map { "input: $it" }?.orElse("")
+
+            // TODO:: code generate operation specific errors
+            // val errorTypeName = "${op.defaultName()}OperationError"
+            val errorTypeName = "OperationError"
+            val outputShapeName = getOperationOutputShapeName(symbolProvider, opIndex, op)
+            val outputParam = outputShapeName?.map { "completion: (SdkResult<$it, $errorTypeName>) -> Void" }?.orElse("")
+
+            var paramTerminator = ""
+            if (inputParam != "" && outputParam != "") {
+                paramTerminator = ", "
+            }
+            writer.writeShapeDocs(op)
+
+            val hasOutputStream = operationHasOutputStream(model, opIndex, op)
+            if (!hasOutputStream) {
+                writer.write("func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
+            } else {
+                writer.write("func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
+            }
+        }
+
+        fun getOperationInputShapeName(symbolProvider: SymbolProvider,
+                                       opIndex: OperationIndex,
+                                       op: OperationShape) : Optional<String>? {
+            val inputShape = opIndex.getInput(op)
+            return inputShape.map { symbolProvider.toSymbol(it).name }
+        }
+
+        fun getOperationOutputShapeName(symbolProvider: SymbolProvider,
+                                        opIndex: OperationIndex,
+                                        op: OperationShape) : Optional<String>? {
+            val outputShape = opIndex.getOutput(op)
+            return outputShape.map { symbolProvider.toSymbol(it).name }
+        }
+
+        fun operationHasOutputStream(model: Model,
+                                     opIndex: OperationIndex,
+                                     op: OperationShape) : Boolean {
+            val outputShape = opIndex.getOutput(op)
+            return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
+        }
     }
 
     fun render() {
@@ -87,37 +146,14 @@ class ServiceGenerator(
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                     operations.forEach { op ->
-                        renderOperation(operationsIndex, op)
+                        renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op)
                     }
                 }
             .closeBlock("}")
             .write("")
     }
-
-    private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
-        val inputShape = opIndex.getInput(op)
-        val outputShape = opIndex.getOutput(op)
-        val input = inputShape.map { symbolProvider.toSymbol(it).name }
-        val output = outputShape.map { symbolProvider.toSymbol(it).name }
-        val operationName = op.camelCaseName()
-        val errorTypeName = "${op.defaultName()}OperationError"
-        val inputParam = input.map { "input: $it" }.orElse("")
-        // get error object here
-        val outputParam = output.map { "completion: (SdkResult<$it, $errorTypeName>) -> Void" }.orElse("")
-        var paramTerminator = ""
-        if (inputParam != "" && outputParam != "") {
-            paramTerminator = ", "
-        }
-        writer.writeShapeDocs(op)
-
-        val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
-        if (!hasOutputStream) {
-            writer.write("func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
-        } else {
-            writer.write("func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
-        }
-    }
 }
+
 /**
  * An extension to see if a structure shape has a the streaming trait*.
  *

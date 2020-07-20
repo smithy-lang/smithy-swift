@@ -16,6 +16,7 @@
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
+import org.junit.jupiter.api.Assertions
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
