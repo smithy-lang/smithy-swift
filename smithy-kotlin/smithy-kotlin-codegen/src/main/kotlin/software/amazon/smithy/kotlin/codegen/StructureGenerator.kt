@@ -131,10 +131,30 @@ class StructureGenerator(
     }
 
     // generate a `hashCode()` implementation
-    private fun renderHashCode() {}
+    private fun renderHashCode() {
+        writer.write("")
+        writer.withBlock("override fun hashCode(): Int {", "}") {
+            writer.withBlock(textBeforeNewLine = "return", textAfterNewLine = "") {
+                sortedMembers.forEachIndexed { index, memberShape ->
+                    val memberName = memberShape.memberName
+                    val additionOp = if (index < sortedMembers.size - 1) "+" else ""
+
+                    // TODO: Determine if enums require separate code path
+                    write(" (\$1L?.hashCode() ?: 0) $additionOp", memberName)
+                }
+            }
+            write("")
+        }
+    }
 
     // generate a `equals()` implementation
-    private fun renderEquals() {}
+    private fun renderEquals() {
+        // TODO: Determine why we cannot simply rely on hashCode values to determine equality
+        writer.write("")
+        writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
+            write("return this.hashCode() == other?.hashCode() ?: false")
+        }
+    }
 
     // generate a `copy()` implementation
     private fun renderCopy() {
