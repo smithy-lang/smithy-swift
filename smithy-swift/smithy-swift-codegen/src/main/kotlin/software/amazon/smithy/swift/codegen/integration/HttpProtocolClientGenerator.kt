@@ -92,7 +92,7 @@ class HttpProtocolClientGenerator(
             }
         }
         else {
-            writer.openBlock("guard let request = input.encodeFor${StringUtils.capitalize(op.id.name)}(encoder: $encoderInstance) else {", "}") {
+            writer.openBlock("guard let request = input.encode(encoder: $encoderInstance) else {", "}") {
                 writer.write("return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))")
             }
         }

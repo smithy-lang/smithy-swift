@@ -72,7 +72,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(inputShape) { writer ->
             writer.openBlock("extension $inputShapeName: HttpSerialize {", "}") {
-                writer.openBlock("func encodeFor${StringUtils.capitalize(op.id.name)}(encoder: RequestEncoder) -> HttpRequest? {", "}") {
+                writer.openBlock("func encode(encoder: RequestEncoder) -> HttpRequest? {", "}") {
                     val path = resolveUriPath(httpTrait, pathBindings)
                     writer.write("let path = \"$path\"")
                     renderQueryItems(ctx, queryBindings, writer)

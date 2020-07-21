@@ -87,7 +87,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     fun execute() {
-        LOGGER.info("Generating Kotlin client for service ${settings.service}")
+        LOGGER.info("Generating Swift client for service ${settings.service}")
 
         println("Walking shapes from " + service.id + " to find shapes to generate")
         val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
