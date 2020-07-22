@@ -113,20 +113,15 @@ class StructureGenerator(
     // generate a `toString()` implementation
     private fun renderToString() {
         writer.write("")
-        writer.withBlock("override fun toString(): String {", "}") {
-            // TODO: Unlock the mystery of indenting with `writeInLine`
-            val manualIndention: String = " ".repeat(8)
-            writeInline("${manualIndention}return \"\$class.name:L(")
-
+        writer.withBlock("override fun toString() = buildString {", "}") {
+            write("append(\"\$class.name:L(\")")
             //TODO: handle `sensitive` trait
             sortedMembers.forEachIndexed { index, memberShape ->
                 val memberName = memberShape.memberName
+                val separator = if (index < sortedMembers.size - 1) "," else ")"
 
-                writeInline("\$1L=$$\$1L", memberName)
-                if (index < sortedMembers.size - 1) writeInline(",")
+                write("append(\"\$1L=$$\$1L$separator\")", memberName)
             }
-            writeInline(")\"")
-            write("")
         }
     }
 
