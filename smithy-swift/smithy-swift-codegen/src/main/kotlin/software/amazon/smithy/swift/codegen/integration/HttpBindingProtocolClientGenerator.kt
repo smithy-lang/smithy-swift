@@ -84,6 +84,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("return HttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers, body: httpBody)")
                 }
             }
+
+            writer.write("")
+            writer.write(requestPayloadStructureBuilder.joinToString(separator = "\n"))
         }
     }
 

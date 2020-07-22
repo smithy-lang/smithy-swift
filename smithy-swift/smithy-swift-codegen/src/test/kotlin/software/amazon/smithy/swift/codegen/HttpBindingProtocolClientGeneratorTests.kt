@@ -51,7 +51,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     }
 
     @Test
-    fun `it creates codable extensions in the same Request object file`() {
+    fun `it creates `() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
