@@ -15,6 +15,7 @@
 
 package software.amazon.smithy.swift.codegen
 
+import org.junit.jupiter.api.Assertions
 import java.net.URL
 import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
@@ -33,7 +34,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
-open class TestsBase {
+abstract class TestsBase {
 
     protected val LOGGER: Logger = Logger.getLogger(TestsBase::class.java.name)
 
@@ -132,5 +133,23 @@ open class TestsBase {
 
     protected fun getModelFileContents(namespace: String,filename: String, manifest: MockManifest): String {
         return manifest.expectFileString("$namespace/models/$filename")
+    }
+
+    fun String.shouldSyntacticSanityCheck() {
+        // sanity check the generated code for matching paranthesis
+        var openBraces = 0
+        var closedBraces = 0
+        var openParens = 0
+        var closedParens = 0
+        this.forEach {
+            when (it) {
+                '{' -> openBraces++
+                '}' -> closedBraces++
+                '(' -> openParens++
+                ')' -> closedParens++
+            }
+        }
+        Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
+        Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
     }
 }

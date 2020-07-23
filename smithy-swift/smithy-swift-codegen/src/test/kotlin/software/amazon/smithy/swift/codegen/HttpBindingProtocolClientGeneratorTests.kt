@@ -15,12 +15,10 @@
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -51,43 +49,33 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     }
 
     @Test
-    fun `it creates `() {
-        val (ctx, manifest, generator) = newTestContext()
-        generator.generateSerializers(ctx)
-        ctx.delegator.flushWriters()
-        Assertions.assertTrue(manifest.hasFile("Example/models/SmokeTestRequest.swift"))
-    }
-
-    @Test
-    fun `it creates payload from multiple document member shapes `() {
+    fun `Input request confirms to HttpRequestBinding`() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         val contents = getModelFileContents("Example","SmokeTestRequest.swift", manifest)
         contents.shouldSyntacticSanityCheck()
-        val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
-        val expectedContents = """
-            fill
-"""
-        // NOTE: SmokeTestRequest$payload3 is a struct itself, the extension handles this if the type implements Codable
+        val expectedContents =
+                "extension SmokeTestRequest: HttpRequestBinding {\n" +
+                "    func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
+                "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
+                "        var queryItem: URLQueryItem\n" +
+                "        if let query1 = query1 {\n" +
+                "            queryItem = URLQueryItem(name: \"Query1\", value: query1)\n" +
+                "            queryItems.append(queryItem)\n" +
+                "        }\n" +
+                "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
+                "        var headers = HttpHeaders()\n" +
+                "        headers.add(name: \"Content-Type\", value: application/json)\n" +
+                "        if let header1 = header1 {\n" +
+                "            headers.add(name: \"X-Header1\", value: header1)\n" +
+                "        }\n" +
+                "        if let header2 = header2 {\n" +
+                "            headers.add(name: \"X-Header2\", value: header2)\n" +
+                "        }\n" +
+                "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
+                "    }\n" +
+                "}\n"
         contents.shouldContainOnlyOnce(expectedContents)
     }
-}
-
-fun String.shouldSyntacticSanityCheck() {
-    // sanity check since we are testing fragments
-    var openBraces = 0
-    var closedBraces = 0
-    var openParens = 0
-    var closedParens = 0
-    this.forEach {
-        when (it) {
-            '{' -> openBraces++
-            '}' -> closedBraces++
-            '(' -> openParens++
-            ')' -> closedParens++
-        }
-    }
-    Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
-    Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }

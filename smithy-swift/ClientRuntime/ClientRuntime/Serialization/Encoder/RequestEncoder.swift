@@ -42,3 +42,15 @@ public extension RequestEncoder {
         }
     }
 }
+
+struct Person {
+    var firstName: String
+    var lastName: String
+    var nickname: String?
+}
+
+extension Person: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case firstName, lastName
+    }
+}

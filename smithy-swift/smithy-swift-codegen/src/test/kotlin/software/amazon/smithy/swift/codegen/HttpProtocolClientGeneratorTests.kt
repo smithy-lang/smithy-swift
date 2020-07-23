@@ -28,10 +28,10 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
         val model = createModelFromSmithy("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val service = model.getShape(ShapeId.from("smithy.example#Example")).get().asServiceShape().get()
         val writer = SwiftWriter("test")
 
-        val generator = HttpProtocolClientGenerator(model, provider, writer, service)
+        val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf())
         generator.render()
         commonTestContents = writer.toString()
     }
@@ -55,30 +55,38 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
     @Test
     fun `it renders non-streaming operation`() {
         commonTestContents.shouldContainOnlyOnce(
-          "    func getFoo(input: GetFooRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
-                 "    {\n" +
-                 "        guard let request = input.encodeForGetFoo(encoder: JSONEncoder()) else {\n" +
-                 "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
-                 "        }\n" +
-                 "        client.execute(request: request) { httpResult in\n" +
-                 "            if case .failure(let httpClientErr) = httpResult {\n" +
-                 "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                 "                return\n" +
-                 "            }\n" +
-                 "            let httpResp = try! httpResult.get()\n" +
-                 "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                 "                if case .data(let data) = httpResp.content {\n" +
-                 "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                 "                    let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                 "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                 "                    completion(result)\n" +
-                 "                }\n" +
-                 "                else {\n" +
-                 "                    completion(.failure(.service(.unknown)))\n" +
-                 "                }\n" +
-                 "            }\n" +
-                 "        }\n" +
-                 "    }"
+            "    func getFoo(input: GetFooRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
+                  "    {\n" +
+                  "        let path: String = \"/foo\"\n" +
+                  "        let method: HttpMethodType = HttpMethodType.get\n" +
+                  "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                  "        do {\n" +
+                  "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
+                  "        } catch let err {\n" +
+                  "            completion(.failure(.client(err)))\n" +
+                  "        }\n" +
+                  "        client.execute(request: request) { httpResult in\n" +
+                  "            switch httpResult {\n" +
+                  "                case .failure(let httpClientErr):\n" +
+                  "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                  "                    return\n" +
+                  "\n" +
+                  "                case .success(let httpResp):\n" +
+                  "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                  "                        if case .data(let data) = httpResp.content {\n" +
+                  "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                  "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                  "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                  "                            completion(result)\n" +
+                  "                        }\n" +
+                  "                    }\n" +
+                  "                    else {\n" +
+                  "                        completion(.failure(.service(.unknown)))\n" +
+                  "                    }\n" +
+                  "\n" +
+                  "            }\n" +
+                  "        }\n" +
+                  "    }"
          )
     }
 
@@ -89,25 +97,26 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
                     "    {\n" +
                     "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: \"/foo-no-input\")\n" +
                     "        let headers = HttpHeaders()\n" +
-                    "        guard let request = HttpRequest(method: .get, endpoint: endpoint, headers: headers) else {\n" +
-                    "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
-                    "        }\n" +
+                    "        let request = HttpRequest(method: .get, endpoint: endpoint, headers: headers)\n" +
                     "        client.execute(request: request) { httpResult in\n" +
-                    "            if case .failure(let httpClientErr) = httpResult {\n" +
-                    "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                    "                return\n" +
-                    "            }\n" +
-                    "            let httpResp = try! httpResult.get()\n" +
-                    "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                    "                if case .data(let data) = httpResp.content {\n" +
-                    "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                    "                    let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                    "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                    "                    completion(result)\n" +
-                    "                }\n" +
-                    "                else {\n" +
-                    "                    completion(.failure(.service(.unknown)))\n" +
-                    "                }\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
                     "            }\n" +
                     "        }\n" +
                     "    }")
@@ -118,55 +127,71 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "    func getFooNoOutput(input: GetFooRequest)\n" +
                     "    {\n" +
-                    "        guard let request = input.encodeForGetFooNoOutput(encoder: JSONEncoder()) else {\n" +
-                    "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
+                    "        let path: String = \"/foo-no-output\"\n" +
+                    "        let method: HttpMethodType = HttpMethodType.get\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(err)))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
-                    "            if case .failure(let httpClientErr) = httpResult {\n" +
-                    "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                    "                return\n" +
-                    "            }\n" +
-                    "            let httpResp = try! httpResult.get()\n" +
-                    "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                    "                if case .data(let data) = httpResp.content {\n" +
-                    "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                    "                    let result: Result<nil, SdkError<OperationError>> = responsePayload.decode()\n" +
-                    "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                    "                    completion(result)\n" +
-                    "                }\n" +
-                    "                else {\n" +
-                    "                    completion(.failure(.service(.unknown)))\n" +
-                    "                }\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<nil, SdkError<OperationError>>\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
                     "            }\n" +
                     "        }\n" +
-                    "    }\n")
+                    "    }")
     }
 
     @Test
     fun `it renders operation with streaming input`() {
-        // The encoding of streaming input to HttpRequest is implemented as an extension just like non-streaming input
+        // TODO:: handling the streaming input payload
         commonTestContents.shouldContainOnlyOnce(
             "    func getFooStreamingInput(input: GetFooStreamingRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        guard let request = input.encodeForGetFooStreamingInput(encoder: JSONEncoder()) else {\n" +
-                    "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
+                    "        let path: String = \"/foo-streaming-input\"\n" +
+                    "        let method: HttpMethodType = HttpMethodType.post\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(err)))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
-                    "            if case .failure(let httpClientErr) = httpResult {\n" +
-                    "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                    "                return\n" +
-                    "            }\n" +
-                    "            let httpResp = try! httpResult.get()\n" +
-                    "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                    "                if case .data(let data) = httpResp.content {\n" +
-                    "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                    "                    let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                    "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                    "                    completion(result)\n" +
-                    "                }\n" +
-                    "                else {\n" +
-                    "                    completion(.failure(.service(.unknown)))\n" +
-                    "                }\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
                     "            }\n" +
                     "        }\n" +
                     "    }"
@@ -179,25 +204,33 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "    func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        guard let request = input.encodeForGetFooStreamingOutput(encoder: JSONEncoder()) else {\n" +
-                    "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
+                    "        let path: String = \"/foo-streaming-output\"\n" +
+                    "        let method: HttpMethodType = HttpMethodType.post\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(err)))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
-                    "            if case .failure(let httpClientErr) = httpResult {\n" +
-                    "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                    "                return\n" +
-                    "            }\n" +
-                    "            let httpResp = try! httpResult.get()\n" +
-                    "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                    "                if case .data(let data) = httpResp.content {\n" +
-                    "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                    "                    let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                    "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                    "                    completion(result)\n" +
-                    "                }\n" +
-                    "                else {\n" +
-                    "                    completion(.failure(.service(.unknown)))\n" +
-                    "                }\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
                     "            }\n" +
                     "        }\n" +
                     "    }"
@@ -212,25 +245,26 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
                     "    {\n" +
                     "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: \"/foo-streaming-output-no-input\")\n" +
                     "        let headers = HttpHeaders()\n" +
-                    "        guard let request = HttpRequest(method: .post, endpoint: endpoint, headers: headers) else {\n" +
-                    "            return completion(.failure(.client(.serializationFailed(\"Serialization failed\"))))\n" +
-                    "        }\n" +
+                    "        let request = HttpRequest(method: .post, endpoint: endpoint, headers: headers)\n" +
                     "        client.execute(request: request) { httpResult in\n" +
-                    "            if case .failure(let httpClientErr) = httpResult {\n" +
-                    "                completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                    "                return\n" +
-                    "            }\n" +
-                    "            let httpResp = try! httpResult.get()\n" +
-                    "            if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                    "                if case .data(let data) = httpResp.content {\n" +
-                    "                    let responsePayload = ResponsePayload(body: data!, decoder: JSONDecoder())\n" +
-                    "                    let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                    "                        .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                    "                    completion(result)\n" +
-                    "                }\n" +
-                    "                else {\n" +
-                    "                    completion(.failure(.service(.unknown)))\n" +
-                    "                }\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
                     "            }\n" +
                     "        }\n" +
                     "    }"

@@ -1,5 +1,5 @@
 $version: "1.0"
-namespace com.test
+namespace smithy.example
 
 use aws.protocols#restJson1
 
