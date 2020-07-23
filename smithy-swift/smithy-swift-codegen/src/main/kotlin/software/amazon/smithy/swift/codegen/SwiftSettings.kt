@@ -202,9 +202,7 @@ class SwiftSettings(
                     "willSet\n" +
                     "where\n" +
                     "while"
-            reservedWords = reservedWords.replace("\n", ",")
-            print(reservedWords)
-            return reservedWords.split(",").map { it.trim() }
+            return reservedWords.split("\n").map { it.trim() }
         }
     }
 
