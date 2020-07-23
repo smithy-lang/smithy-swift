@@ -71,7 +71,7 @@ fun ByteArray.encodeBase64(): ByteArray {
 
     for (i in indices step 3) {
         // block: 00000000 xxxxxxxx yyyyyyyy zzzzzzzz
-        val block: Int = (getOrZero(i) shl 16) or (getOrZero(i + 1) shl 8) or getOrZero(i + 2)
+        val block: Int = (getOrZero(i, 0xff) shl 16) or (getOrZero(i + 1, 0xff) shl 8) or getOrZero(i + 2, 0xff)
 
         // split block: xxxxxx xxyyyy yyyyzz zzzzzz
         output[writeIdx++] = ((block shr 18) and 0x3F).toBase64()
@@ -147,7 +147,17 @@ fun ByteArray.decodeBase64(): ByteArray {
 }
 
 private fun Int.toBase64(): Byte = BASE64_ENCODE_TABLE[this].toByte()
-private fun ByteArray.getOrZero(index: Int): Int = if (index >= size) 0 else this[index].toInt()
+private fun ByteArray.getOrZero(index: Int, mask: Int? = null): Int {
+    return if (index >= size) {
+        0
+    } else {
+        var tmp = this[index].toInt()
+        if (mask != null) {
+            tmp = tmp and mask
+        }
+        tmp
+    }
+}
 private fun Byte.fromBase64(): Int {
     val decoded = BASE64_DECODE_TABLE[this.toInt()]
     if (decoded == -1) throw IllegalArgumentException("decode base64: invalid input byte: $this")

@@ -113,4 +113,13 @@ class Base64Test {
         assertEquals(encoded, decoded.encodeBase64())
         assertEquals(decoded, encoded.decodeBase64())
     }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    @Test
+    fun `it handles utf8`() {
+        val decoded = "ユニコードとはか？"
+        val encoded = "44Om44OL44Kz44O844OJ44Go44Gv44GL77yf"
+        assertEquals(encoded, decoded.encodeBase64())
+        assertEquals(decoded, encoded.decodeBase64())
+    }
 }
