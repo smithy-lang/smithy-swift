@@ -17,6 +17,7 @@
 
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -26,7 +27,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import java.util.*
 
 /*
 * Generates a Swift protocol for the service
@@ -47,11 +47,7 @@ class ServiceGenerator(
         /**
          * Renders the definition of operation
          */
-        fun renderOperationDefinition(model: Model,
-                                      symbolProvider: SymbolProvider,
-                                      writer: SwiftWriter,
-                                      opIndex: OperationIndex,
-                                      op: OperationShape) {
+        fun renderOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
 
             val operationName = op.camelCaseName()
 
@@ -78,23 +74,17 @@ class ServiceGenerator(
             }
         }
 
-        fun getOperationInputShapeName(symbolProvider: SymbolProvider,
-                                       opIndex: OperationIndex,
-                                       op: OperationShape) : Optional<String>? {
+        fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): Optional<String>? {
             val inputShape = opIndex.getInput(op)
             return inputShape.map { symbolProvider.toSymbol(it).name }
         }
 
-        fun getOperationOutputShapeName(symbolProvider: SymbolProvider,
-                                        opIndex: OperationIndex,
-                                        op: OperationShape) : Optional<String>? {
+        fun getOperationOutputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): Optional<String>? {
             val outputShape = opIndex.getOutput(op)
             return outputShape.map { symbolProvider.toSymbol(it).name }
         }
 
-        fun operationHasOutputStream(model: Model,
-                                     opIndex: OperationIndex,
-                                     op: OperationShape) : Boolean {
+        fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
             val outputShape = opIndex.getOutput(op)
             return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
         }

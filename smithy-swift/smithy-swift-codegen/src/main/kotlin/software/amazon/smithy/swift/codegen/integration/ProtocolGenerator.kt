@@ -15,11 +15,11 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.swift.codegen.SwiftDelegator
+import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.utils.CaseUtils
 
 /**

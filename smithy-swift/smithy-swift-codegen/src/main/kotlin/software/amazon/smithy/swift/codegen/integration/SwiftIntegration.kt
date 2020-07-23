@@ -17,14 +17,9 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import java.awt.Shape
-import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering

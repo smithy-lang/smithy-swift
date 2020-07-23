@@ -53,7 +53,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
-        val contents = getModelFileContents("Example","SmokeTestRequest.swift", manifest)
+        val contents = getModelFileContents("Example", "SmokeTestRequest.swift", manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 "extension SmokeTestRequest: HttpRequestBinding {\n" +

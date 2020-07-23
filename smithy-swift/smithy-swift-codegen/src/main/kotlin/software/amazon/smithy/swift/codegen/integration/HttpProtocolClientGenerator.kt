@@ -17,7 +17,6 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -26,6 +25,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.swift.codegen.*
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -120,8 +120,7 @@ class HttpProtocolClientGenerator(
             writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: \"$uri\")")
             writer.write("let headers = HttpHeaders()")
             writer.write("let request = HttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
-        }
-        else {
+        } else {
             writer.write("let path: String = \"$uri\"")
             writer.write("let method: HttpMethodType = HttpMethodType.$httpMethod")
             writer.write("var request = input.buildHttpRequest(method: method, path: path)")
@@ -129,7 +128,7 @@ class HttpProtocolClientGenerator(
         }
     }
 
-    private fun renderEncodingHttpRequestBlock(writer:SwiftWriter) {
+    private fun renderEncodingHttpRequestBlock(writer: SwiftWriter) {
         writer.openBlock("do {", "} catch let err { ") {
             writer.write("try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)")
         }
@@ -151,7 +150,7 @@ class HttpProtocolClientGenerator(
     private fun renderHttpClientErrorBlock() {
         writer.openBlock("case .failure(let httpClientErr):")
             .call {
-                //TODO:: make error more operation specific
+                // TODO:: make error more operation specific
                 writer.write("completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))")
                 writer.write("return")
             }
@@ -164,7 +163,7 @@ class HttpProtocolClientGenerator(
                 writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
                     writer.openBlock("if case .data(let data) = httpResp.content {", "}") {
                         // TODO:: use HttpFeature to fetch this
-                        val decoderInstance =  "JSONDecoder()"
+                        val decoderInstance = "JSONDecoder()"
                         writer.write("let responsePayload = ResponsePayload(body: data, decoder: $decoderInstance)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case

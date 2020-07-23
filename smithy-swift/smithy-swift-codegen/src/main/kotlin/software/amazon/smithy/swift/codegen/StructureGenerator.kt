@@ -194,8 +194,6 @@ class StructureGenerator(
 
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
-
-
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
             writer.write("public var httpResponse: HttpResponse")
         }

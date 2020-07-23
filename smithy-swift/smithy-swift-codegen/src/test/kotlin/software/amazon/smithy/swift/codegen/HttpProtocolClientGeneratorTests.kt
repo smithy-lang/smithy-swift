@@ -21,7 +21,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 
-class HttpProtocolClientGeneratorTests: TestsBase() {
+class HttpProtocolClientGeneratorTests : TestsBase() {
     private val commonTestContents: String
 
     init {
@@ -36,7 +36,6 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
         commonTestContents = writer.toString()
     }
 
-
     @Test
     fun `it renders client initialization block`() {
         commonTestContents.shouldContainOnlyOnce("public class DefaultExampleClient {\n" +
@@ -44,7 +43,8 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
                 "    init(config: HttpClientConfiguration = HttpClientConfiguration()) {\n" +
                 "        client = HttpClient(config: config)\n" +
                 "    }\n" +
-                "}")
+                "}"
+        )
     }
 
     @Test
@@ -56,38 +56,38 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
     fun `it renders non-streaming operation`() {
         commonTestContents.shouldContainOnlyOnce(
             "    func getFoo(input: GetFooRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
-                  "    {\n" +
-                  "        let path: String = \"/foo\"\n" +
-                  "        let method: HttpMethodType = HttpMethodType.get\n" +
-                  "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                  "        do {\n" +
-                  "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
-                  "        } catch let err {\n" +
-                  "            completion(.failure(.client(err)))\n" +
-                  "        }\n" +
-                  "        client.execute(request: request) { httpResult in\n" +
-                  "            switch httpResult {\n" +
-                  "                case .failure(let httpClientErr):\n" +
-                  "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
-                  "                    return\n" +
-                  "\n" +
-                  "                case .success(let httpResp):\n" +
-                  "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
-                  "                        if case .data(let data) = httpResp.content {\n" +
-                  "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
-                  "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
-                  "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
-                  "                            completion(result)\n" +
-                  "                        }\n" +
-                  "                    }\n" +
-                  "                    else {\n" +
-                  "                        completion(.failure(.service(.unknown)))\n" +
-                  "                    }\n" +
-                  "\n" +
-                  "            }\n" +
-                  "        }\n" +
-                  "    }"
-         )
+                    "    {\n" +
+                    "        let path: String = \"/foo\"\n" +
+                    "        let method: HttpMethodType = HttpMethodType.get\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(err)))\n" +
+                    "        }\n" +
+                    "        client.execute(request: request) { httpResult in\n" +
+                    "            switch httpResult {\n" +
+                    "                case .failure(let httpClientErr):\n" +
+                    "                    completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))\n" +
+                    "                    return\n" +
+                    "\n" +
+                    "                case .success(let httpResp):\n" +
+                    "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
+                    "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
+                    "                            completion(result)\n" +
+                    "                        }\n" +
+                    "                    }\n" +
+                    "                    else {\n" +
+                    "                        completion(.failure(.service(.unknown)))\n" +
+                    "                    }\n" +
+                    "\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "    }"
+        )
     }
 
     @Test
@@ -119,7 +119,8 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
                     "\n" +
                     "            }\n" +
                     "        }\n" +
-                    "    }")
+                    "    }"
+        )
     }
 
     @Test
@@ -156,7 +157,8 @@ class HttpProtocolClientGeneratorTests: TestsBase() {
                     "\n" +
                     "            }\n" +
                     "        }\n" +
-                    "    }")
+                    "    }"
+        )
     }
 
     @Test

@@ -37,7 +37,6 @@ interface HttpFeature {
      */
     fun renderConfiguration(writer: SwiftWriter) {}
 
-
     /**
      * Register any imports or dependencies that will be needed to use this feature at runtime
      */
@@ -49,9 +48,7 @@ interface HttpFeature {
  * @property requestEncoderName The name of the request encoder (e.g. JSONEncoder)
  * @property requestEncoderOptions Map of options to set on the request encoder instance
  */
-abstract class HttpRequestEncoder(private val requestEncoderName: String,
-                                  private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf())
-    : HttpFeature {
+abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
     override val name: String = "HttpRequestEncoder"
     override fun renderInstantiation(writer: SwiftWriter) {
         writer.write("let encoder: $requestEncoderName = $requestEncoderName()")

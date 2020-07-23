@@ -15,6 +15,8 @@
 
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
+import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -25,8 +27,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import java.util.*
-import java.util.logging.Logger
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 

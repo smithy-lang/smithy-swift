@@ -15,9 +15,9 @@
 
 package software.amazon.smithy.swift.codegen
 
-import org.junit.jupiter.api.Assertions
 import java.net.URL
 import java.util.logging.Logger
+import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
@@ -117,9 +117,7 @@ abstract class TestsBase {
             .build()
     }
 
-    protected fun buildDefaultSwiftSettingsObjectNode(serviceShapeId: String,
-                                                      moduleName: String = "example",
-                                                      moduleVersion: String = "1.0.0"): ObjectNode {
+    protected fun buildDefaultSwiftSettingsObjectNode(serviceShapeId: String, moduleName: String = "example", moduleVersion: String = "1.0.0"): ObjectNode {
         return Node.objectNodeBuilder()
             .withMember("service", Node.from(serviceShapeId))
             .withMember("module", Node.from(moduleName))
@@ -131,7 +129,7 @@ abstract class TestsBase {
             .build()
     }
 
-    protected fun getModelFileContents(namespace: String,filename: String, manifest: MockManifest): String {
+    protected fun getModelFileContents(namespace: String, filename: String, manifest: MockManifest): String {
         return manifest.expectFileString("$namespace/models/$filename")
     }
 

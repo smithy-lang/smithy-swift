@@ -70,7 +70,7 @@ class ServiceGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce("import ClientRuntime")
     }
 
-    //TODO:: check back after operation specific errors are generated
+    // TODO:: check back after operation specific errors are generated
 //    @Test
 //    fun `it renders swift func signatures correctly`() {
 //        val expectedSignatures = listOf(

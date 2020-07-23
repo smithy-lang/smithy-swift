@@ -15,13 +15,13 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import java.util.logging.Logger
-import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.utils.OptionalUtils
 
 /**
@@ -32,7 +32,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
-        val inputShapesWithHttpBindings:MutableSet<ShapeId> = mutableSetOf()
+        val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
             if (operation.input.isPresent) {
                 val inputShapeId = operation.input.get()
@@ -84,9 +84,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderQueryItems(ctx: ProtocolGenerator.GenerationContext,
-                                 queryBindings: List<HttpBinding>,
-                                 writer: SwiftWriter) {
+    private fun renderQueryItems(ctx: ProtocolGenerator.GenerationContext, queryBindings: List<HttpBinding>, writer: SwiftWriter) {
         writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
         if (queryBindings.isNotEmpty()) {
             writer.write("var queryItem: URLQueryItem")
@@ -107,8 +105,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: queryItemValue)")
                         writer.write("queryItems.append(queryItem)")
                     }
-                }
-                else {
+                } else {
                     if (memberTarget.type == ShapeType.STRING &&
                         memberTarget.getTrait(EnumTrait::class.java).isPresent) {
                         memberName = "$memberName.rawValue"
@@ -120,11 +117,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderHeaders(ctx: ProtocolGenerator.GenerationContext,
-                              headerBindings: List<HttpBinding>,
-                              prefixHeaderBindings: List<HttpBinding>,
-                              writer: SwiftWriter,
-                              contentType: String) {
+    private fun renderHeaders(ctx: ProtocolGenerator.GenerationContext, headerBindings: List<HttpBinding>, prefixHeaderBindings: List<HttpBinding>, writer: SwiftWriter, contentType: String) {
         writer.write("var headers = HttpHeaders()")
         writer.write("headers.add(name: \"Content-Type\", value: $contentType)")
         headerBindings.forEach {
@@ -137,8 +130,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                         writer.write("headers.add(name: \"$paramName\", value: headerValue)")
                     }
-                }
-                else {
+                } else {
                     if (memberTarget.type == ShapeType.STRING &&
                         memberTarget.getTrait(EnumTrait::class.java).isPresent) {
                         memberName = "$memberName.rawValue"
