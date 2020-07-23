@@ -44,6 +44,7 @@ private fun base64DecodedLen(encoded: ByteArray): Int {
         throw IllegalArgumentException("invalid base64 string of length $len; not a multiple of 4")
     }
 
+    // figure out if the encoded string ends with 0, 1, or 2 bytes of padding ('=')
     var padding = 0
     if (len >= 2 && encoded[len - 1] == BASE64_PAD.toByte() && encoded[len - 2] == BASE64_PAD.toByte()) {
         padding = 2
