@@ -41,7 +41,7 @@ private fun base64DecodedLen(encoded: ByteArray): Int {
 
     // multiple of 4, last 2 bits must be 00
     if (len and 0x03 != 0) {
-        throw IllegalArgumentException("invalid base64 string, not a multiple of 4")
+        throw IllegalArgumentException("invalid base64 string of length $len; not a multiple of 4")
     }
 
     var padding = 0

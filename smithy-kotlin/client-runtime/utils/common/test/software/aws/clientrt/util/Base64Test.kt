@@ -94,7 +94,7 @@ class Base64Test {
         val ex = assertFails {
             "Zm9vY=".decodeBase64()
         }
-        ex.message!!.shouldContain("invalid base64 string, not a multiple of 4")
+        ex.message!!.shouldContain("invalid base64 string of length 6; not a multiple of 4")
     }
 
     @Test
