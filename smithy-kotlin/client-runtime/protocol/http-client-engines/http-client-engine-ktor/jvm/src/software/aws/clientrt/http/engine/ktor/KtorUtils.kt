@@ -28,7 +28,7 @@ import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.io.Source
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
-fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
+internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
     val sdkUrl = this.url
@@ -60,7 +60,7 @@ fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
 }
 
 // wrapper around ktor headers that implements expected SDK interface for Headers
-class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Headers {
+internal class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Headers {
     override val caseInsensitiveName: Boolean = true
     override fun getAll(name: String): List<String>? = headers.getAll(name)
     override fun names(): Set<String> = headers.names()
@@ -70,7 +70,7 @@ class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Hea
 }
 
 // wrapper around ByteReadChannel that implements the [Source] interface
-class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) : Source {
+internal class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) : Source {
     override val availableForRead: Int
         get() = channel.availableForRead
 
