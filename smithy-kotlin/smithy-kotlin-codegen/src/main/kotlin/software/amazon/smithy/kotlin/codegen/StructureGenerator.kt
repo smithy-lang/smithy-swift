@@ -147,9 +147,11 @@ class StructureGenerator(
                     }
                 }
             }
+            write("return result")
         }
     }
 
+    // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
         return when (member.target.name) {
             "PrimitiveFloat" -> ".hashCode()"
