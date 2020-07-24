@@ -136,8 +136,6 @@ class StructureGenerator(
                     }
                 }
             }
-
-            if (sortedMembers.isEmpty()) write("append(\")\")")
         }
     }
 

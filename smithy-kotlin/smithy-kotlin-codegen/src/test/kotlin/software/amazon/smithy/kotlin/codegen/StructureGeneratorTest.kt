@@ -15,9 +15,13 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
+<<<<<<< HEAD
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
+=======
+>>>>>>> Cleanup
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -30,7 +34,10 @@ import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.EnumDefinition
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {
@@ -514,6 +521,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     }
 
     @Test
+<<<<<<< HEAD
     fun `error generator extends correctly`() {
         val expectedClientClassDecl = """
 class ValidationException private constructor(builder: BuilderImpl) : ServiceException() {
@@ -615,5 +623,32 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
             generator.render()
         }
         e.message.shouldContain("Message is a reserved name for exception types and cannot be used for any other property")
+=======
+    fun `it handles the sensitive trait in toString`() {
+        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(SensitiveTrait()).build()
+        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
+        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
+        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
+
+        val struct = StructureShape.builder()
+            .id("com.test#Foo")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .build()
+
+        val model = Model.assembler()
+            .addShapes(struct, member1, member2, member3, stringShape)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+
+        val generated = writer.toString()
+        println(generated)
+>>>>>>> Cleanup
     }
 }
