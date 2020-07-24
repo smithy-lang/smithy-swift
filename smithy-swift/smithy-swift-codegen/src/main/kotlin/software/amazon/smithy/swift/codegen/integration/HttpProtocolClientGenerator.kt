@@ -45,7 +45,7 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderClientInitialization(serviceSymbol: Symbol) {
-        writer.openBlock("public class Default${serviceSymbol.name} {", "}") {
+        writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: HttpClient")
             features.forEach { feat ->
                 feat.addImportsAndDependencies(writer)
@@ -67,7 +67,7 @@ class HttpProtocolClientGenerator(
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.defaultName() }
         val operationsIndex = model.getKnowledge(OperationIndex::class.java)
 
-        writer.openBlock("extension Default${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
+        writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {

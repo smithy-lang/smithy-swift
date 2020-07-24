@@ -38,7 +38,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders client initialization block`() {
-        commonTestContents.shouldContainOnlyOnce("public class DefaultExampleClient {\n" +
+        commonTestContents.shouldContainOnlyOnce("public class ExampleClient {\n" +
                 "    let client: HttpClient\n" +
                 "    init(config: HttpClientConfiguration = HttpClientConfiguration()) {\n" +
                 "        client = HttpClient(config: config)\n" +
@@ -49,7 +49,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders operation implementations in extension`() {
-        commonTestContents.shouldContainOnlyOnce("extension DefaultExampleClient: ExampleClientProtocol {")
+        commonTestContents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
     }
 
     @Test

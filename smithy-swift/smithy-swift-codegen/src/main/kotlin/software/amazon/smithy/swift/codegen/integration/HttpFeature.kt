@@ -52,10 +52,6 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
     override val name: String = "HttpRequestEncoder"
     override fun renderInstantiation(writer: SwiftWriter) {
         writer.write("let encoder: $requestEncoderName = $requestEncoderName()")
-        requestEncoderOptions.forEach {
-                requestEncoderOptionName, requestEncoderOptionValue ->
-            writer.write("encoder.$requestEncoderOptionName = $requestEncoderOptionValue")
-        }
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {

@@ -28,17 +28,20 @@ import software.amazon.smithy.utils.CaseUtils
 interface ProtocolGenerator {
     companion object {
         /**
-         * Sanitizes the name of the protocol so it can be used as a symbol in Kotlin.
+         * Sanitizes the name of the protocol so it can be used as a symbol.
          *
          * For example, the default implementation converts '.' to '_' and converts '-'
-         * to become camelCase separated words. `aws.rest-json-1.1` becomes `Aws_RestJson1_1`
+         * to become camelCase separated words. `aws.rest-json-1.1` becomes `AWSRestJson1_1`
          *
          * @param name Name of the protocol to sanitize
          * @return sanitized protocol name
          */
         fun getSanitizedName(name: String): String {
-            val s1 = name.replace("(\\s|\\.|-)".toRegex(), "_")
-            return CaseUtils.toCamelCase(s1, true, '_')
+            var replacedString = name
+            replacedString = replacedString.replace("^aws.".toRegex(), "AWS-")
+            replacedString = replacedString.replace(".", "_")
+            replacedString = CaseUtils.toCamelCase(replacedString, true, '-')
+            return replacedString.replace("^Aws".toRegex(), "AWS")
         }
     }
 

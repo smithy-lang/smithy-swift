@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen
 
+import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
@@ -77,5 +78,12 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 "    }\n" +
                 "}\n"
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `getSanitizedName generates Swifty name`() {
+        val testProtocolName = "aws.rest-json-1.1"
+        val sanitizedProtocolName = ProtocolGenerator.getSanitizedName(testProtocolName)
+        sanitizedProtocolName.shouldBeEqualComparingTo("AWSRestJson1_1")
     }
 }

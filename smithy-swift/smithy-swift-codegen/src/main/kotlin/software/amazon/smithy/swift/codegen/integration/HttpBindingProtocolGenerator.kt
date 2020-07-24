@@ -159,7 +159,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/Default${symbol.name}.swift") { writer ->
+        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val features = getHttpFeatures(ctx)
             HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features).render()
         }
