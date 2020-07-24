@@ -17,11 +17,16 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.loader.Prelude
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 
+private const val BoxedClassHashFragment = "?.hashCode() ?: 0"
+private const val UnboxedClassHashFragment = ".hashCode()"
 /**
  * Renders Smithy structure shapes
  */
@@ -115,12 +120,17 @@ class StructureGenerator(
         writer.write("")
         writer.withBlock("override fun toString() = buildString {", "}") {
             write("append(\"\$class.name:L(\")")
-            //TODO: handle `sensitive` trait
+
             sortedMembers.forEachIndexed { index, memberShape ->
                 val memberName = memberShape.memberName
                 val separator = if (index < sortedMembers.size - 1) "," else ")"
 
-                write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                val targetShape = model.getShape(memberShape.target).get()
+                if (targetShape.hasTrait(SensitiveTrait::class.java)) {
+                    write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
+                } else {
+                    write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                }
             }
 
             if (sortedMembers.isEmpty()) write("append(\")\")")
@@ -154,25 +164,15 @@ class StructureGenerator(
     // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
         return when (member.target.name) {
-            "PrimitiveFloat" -> ".hashCode()"
-            "Float" -> "?.hashCode() ?: 0"
-            "PrimitiveDouble" -> ".hashCode()"
-            "Double" -> "?.hashCode() ?: 0"
+            "PrimitiveByte",
             "PrimitiveInteger" -> ""
-            "Integer" -> " ?: 0"
-            "PrimitiveShort" -> ".hashCode()"
-            "Short" -> "?.hashCode() ?: 0"
-            "PrimitiveByte" -> ""
+            "Integer",
             "Byte" -> " ?: 0"
-            "PrimitiveBoolean" -> ".hashCode()"
-            "Boolean" -> "?.hashCode() ?: 0"
-            "BigDecimal" -> "?.hashCode() ?: 0"
-            "BigInteger" -> "?.hashCode() ?: 0"
-            "String" -> "?.hashCode() ?: 0"
-            "Timestamp" -> "?.hashCode() ?: 0"
-            "Blob" -> "?.hashCode() ?: 0"
-            "Document" -> "?.hashCode() ?: 0"
-            else -> "?.hashCode() ?: 0"
+            "PrimitiveFloat",
+            "PrimitiveDouble",
+            "PrimitiveShort",
+            "PrimitiveBoolean" -> UnboxedClassHashFragment
+            else -> BoxedClassHashFragment
         }
     }
 
