@@ -17,6 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -477,6 +478,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val generated = writer.toString()
         generated.shouldContainOnlyOnce("Shape documentation")
         generated.shouldContainOnlyOnce("Member documentation")
+<<<<<<< HEAD
     }
 
     @Test
@@ -507,6 +509,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         generated.shouldContainOnlyOnce("bar=*** Sensitive Data Redacted ***")
         generated.shouldContainOnlyOnce("baz=*** Sensitive Data Redacted ***")
         generated.shouldContainOnlyOnce("qux=\$qux")
+=======
+>>>>>>> Add unit tests for hashCode, equals, and toString. Use shouldContainOnlyOnce as slightly tighter verification of string output in codegen for all tests.
     }
 
     @Test
