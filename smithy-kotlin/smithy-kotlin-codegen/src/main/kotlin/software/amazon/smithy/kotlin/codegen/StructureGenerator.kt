@@ -122,6 +122,8 @@ class StructureGenerator(
 
                 write("append(\"\$1L=$$\$1L$separator\")", memberName)
             }
+
+            if (sortedMembers.isEmpty()) write("append(\")\")")
         }
     }
 
@@ -129,16 +131,46 @@ class StructureGenerator(
     private fun renderHashCode() {
         writer.write("")
         writer.withBlock("override fun hashCode(): Int {", "}") {
-            writer.withBlock(textBeforeNewLine = "return", textAfterNewLine = "") {
-                sortedMembers.forEachIndexed { index, memberShape ->
-                    val memberName = memberShape.memberName
-                    val additionOp = if (index < sortedMembers.size - 1) "+" else ""
+            if (sortedMembers.isEmpty()) {
+                write("var result = javaClass.hashCode()")
+            } else {
+                write("var result = \$1L${selectHashFunctionForShape(sortedMembers[0])}", sortedMembers[0].memberName)
 
-                    // TODO: Determine if enums require separate code path
-                    write(" (\$1L?.hashCode() ?: 0) $additionOp", memberName)
+                if (sortedMembers.size > 1) {
+                    for ((index, memberShape) in sortedMembers.withIndex()) {
+                        if (index == 0) continue
+
+                        write(
+                            "result = 31 * result + (\$1L${selectHashFunctionForShape(memberShape)})",
+                            memberShape.memberName
+                        )
+                    }
                 }
             }
-            write("")
+        }
+    }
+
+    private fun selectHashFunctionForShape(member: MemberShape): String {
+        return when (member.target.name) {
+            "PrimitiveFloat" -> ".hashCode()"
+            "Float" -> "?.hashCode() ?: 0"
+            "PrimitiveDouble" -> ".hashCode()"
+            "Double" -> "?.hashCode() ?: 0"
+            "PrimitiveInteger" -> ""
+            "Integer" -> " ?: 0"
+            "PrimitiveShort" -> ".hashCode()"
+            "Short" -> "?.hashCode() ?: 0"
+            "PrimitiveByte" -> ""
+            "Byte" -> " ?: 0"
+            "PrimitiveBoolean" -> ".hashCode()"
+            "Boolean" -> "?.hashCode() ?: 0"
+            "BigDecimal" -> "?.hashCode() ?: 0"
+            "BigInteger" -> "?.hashCode() ?: 0"
+            "String" -> "?.hashCode() ?: 0"
+            "Timestamp" -> "?.hashCode() ?: 0"
+            "Blob" -> "?.hashCode() ?: 0"
+            "Document" -> "?.hashCode() ?: 0"
+            else -> "?.hashCode() ?: 0"
         }
     }
 
@@ -147,7 +179,18 @@ class StructureGenerator(
         // TODO: Determine why we cannot simply rely on hashCode values to determine equality
         writer.write("")
         writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
-            write("return this.hashCode() == other?.hashCode() ?: false")
+            write("if (this === other) return true")
+            write("if (javaClass != other?.javaClass) return false")
+            write("")
+            write("other as \$class.name:L")
+            write("")
+
+            for (memberShape in sortedMembers) {
+                write("if (\$1L != other.\$1L) return false", memberShape.memberName)
+            }
+
+            write("")
+            write("return true")
         }
     }
 
@@ -160,7 +203,7 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-        .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
+            .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
             .write("")
     }
 
@@ -213,9 +256,9 @@ class StructureGenerator(
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     write("")
-                    .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
+                        .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
                         .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
-                    .closeBlock("}")
+                        .closeBlock("}")
                 }
             }
     }
@@ -242,10 +285,10 @@ class StructureGenerator(
                     write("var \$1LAsString: String? = null", memberName)
                     write("override var \$1L: \$2D", memberName, memberSymbol)
                         .indent()
-                            .openBlock("set(value) {")
-                                .write("\$1LAsString = value.toString()", memberName)
-                                .write("field = value")
-                            .closeBlock("}")
+                        .openBlock("set(value) {")
+                        .write("\$1LAsString = value.toString()", memberName)
+                        .write("field = value")
+                        .closeBlock("}")
                         .dedent()
                     write("")
                 }
@@ -273,11 +316,19 @@ class StructureGenerator(
                     val targetShape = model.getShape(member.target).get()
                     // enums are always set using the backing string field not the typed enum
                     if (targetShape.hasTrait(EnumTrait::class.java)) {
-                        write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1LAsString = \$1L.toString() }", memberName, memberSymbol.name)
+                        write(
+                            "override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1LAsString = \$1L.toString() }",
+                            memberName,
+                            memberSymbol.name
+                        )
                         write("override fun \$1L(\$1L: \$2L) { this.\$1LAsString = \$1L }", memberName, "String")
                     } else {
                         // we want the type names sans nullability (?) for arguments
-                        write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol.name)
+                        write(
+                            "override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }",
+                            memberName,
+                            memberSymbol.name
+                        )
                     }
                 }
             }
