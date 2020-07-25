@@ -178,7 +178,6 @@ class StructureGenerator(
 
     // generate a `equals()` implementation
     private fun renderEquals() {
-        // TODO: Determine why we cannot simply rely on hashCode values to determine equality
         writer.write("")
         writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
             write("if (this === other) return true")
@@ -259,7 +258,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     write("")
                         .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
-                        .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
+                            .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
                 }
             }
@@ -288,8 +287,8 @@ class StructureGenerator(
                     write("override var \$1L: \$2D", memberName, memberSymbol)
                         .indent()
                         .openBlock("set(value) {")
-                        .write("\$1LAsString = value.toString()", memberName)
-                        .write("field = value")
+                            .write("\$1LAsString = value.toString()", memberName)
+                            .write("field = value")
                         .closeBlock("}")
                         .dedent()
                     write("")

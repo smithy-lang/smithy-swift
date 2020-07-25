@@ -104,10 +104,16 @@ class SymbolProviderTest {
         assertEquals(expectedDefault, memberSymbol.defaultValue())
         assertEquals(boxed, memberSymbol.isBoxed())
 
-        // the Kotlin type names pretty much match 1-1 with the smithy types for numerics, string, and boolean
-        val expectedName = primitiveType.removePrefix("Primitive")
+        val expectedName = translateTypeName(primitiveType.removePrefix("Primitive"))
         assertEquals(expectedName, memberSymbol.name)
     }
+
+    // the Kotlin type names pretty much match 1-1 with the smithy types for numerics (except Int), string, and boolean
+    private fun translateTypeName(typeName: String) =
+        when (typeName) {
+            "Integer" -> "Int"
+            else -> typeName
+        }
 
     @Test
     fun `creates blobs`() {
