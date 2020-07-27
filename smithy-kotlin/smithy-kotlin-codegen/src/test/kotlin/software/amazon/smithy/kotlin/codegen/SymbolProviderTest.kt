@@ -109,8 +109,7 @@ class SymbolProviderTest {
     }
 
     // the Kotlin type names pretty much match 1-1 with the smithy types for numerics (except Int), string, and boolean
-    private fun translateTypeName(typeName: String) =
-        when (typeName) {
+    private fun translateTypeName(typeName: String): String = when (typeName) {
             "Integer" -> "Int"
             else -> typeName
         }

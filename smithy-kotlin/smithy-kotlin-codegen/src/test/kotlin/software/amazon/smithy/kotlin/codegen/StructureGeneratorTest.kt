@@ -425,6 +425,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         generator.render()
 
         val generated = writer.toString()
-        println(generated)
+        generated.shouldContainOnlyOnce("bar=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnce("baz=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnce("qux=\$qux")
     }
 }

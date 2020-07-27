@@ -19,14 +19,13 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.loader.Prelude
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
 
-private const val BoxedClassHashFragment = "?.hashCode() ?: 0"
-private const val UnboxedClassHashFragment = ".hashCode()"
 /**
  * Renders Smithy structure shapes
  */
@@ -121,19 +120,21 @@ class StructureGenerator(
         writer.withBlock("override fun toString() = buildString {", "}") {
             write("append(\"\$class.name:L(\")")
 
-            sortedMembers.forEachIndexed { index, memberShape ->
-                val memberName = memberShape.memberName
-                val separator = if (index < sortedMembers.size - 1) "," else ")"
+            if (sortedMembers.isEmpty()) {
+                write("append(\")\")")
+            } else {
+                sortedMembers.forEachIndexed { index, memberShape ->
+                    val memberName = memberShape.memberName
+                    val separator = if (index < sortedMembers.size - 1) "," else ")"
 
-                val targetShape = model.getShape(memberShape.target).get()
-                if (targetShape.hasTrait(SensitiveTrait::class.java)) {
-                    write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
-                } else {
-                    write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                    val targetShape = model.expectShape(memberShape.target)
+                    if (targetShape.hasTrait(SensitiveTrait::class.java)) {
+                        write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
+                    } else {
+                        write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                    }
                 }
             }
-
-            if (sortedMembers.isEmpty()) write("append(\")\")")
         }
     }
 
@@ -144,15 +145,19 @@ class StructureGenerator(
             if (sortedMembers.isEmpty()) {
                 write("var result = javaClass.hashCode()")
             } else {
-                write("var result = \$1L${selectHashFunctionForShape(sortedMembers[0])}", sortedMembers[0].memberName)
+                write(
+                    "var result = \$1L\$2L",
+                    sortedMembers[0].memberName,
+                    selectHashFunctionForShape(sortedMembers[0])
+                )
 
                 if (sortedMembers.size > 1) {
                     for ((index, memberShape) in sortedMembers.withIndex()) {
                         if (index == 0) continue
 
                         write(
-                            "result = 31 * result + (\$1L${selectHashFunctionForShape(memberShape)})",
-                            memberShape.memberName
+                            "result = 31 * result + (\$1L\$2L)",
+                            memberShape.memberName, selectHashFunctionForShape(memberShape)
                         )
                     }
                 }
@@ -163,16 +168,21 @@ class StructureGenerator(
 
     // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
-        return when (member.target.name) {
-            "PrimitiveByte",
-            "PrimitiveInteger" -> ""
-            "Integer",
-            "Byte" -> " ?: 0"
-            "PrimitiveFloat",
-            "PrimitiveDouble",
-            "PrimitiveShort",
-            "PrimitiveBoolean" -> UnboxedClassHashFragment
-            else -> BoxedClassHashFragment
+        val targetShape = model.expectShape(member.target)
+        // also available already in the byMember map
+        val targetSymbol = symbolProvider.toSymbol(targetShape)
+
+        return when(targetShape.type) {
+            ShapeType.INTEGER, ShapeType.BYTE ->
+                when(targetSymbol.isBoxed()) {
+                    true -> " ?: 0"
+                    else -> ""
+                }
+            else ->
+                when(targetSymbol.isBoxed()) {
+                    true -> "?.hashCode() ?: 0"
+                    else -> ".hashCode()"
+                }
         }
     }
 
