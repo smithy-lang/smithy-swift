@@ -71,8 +71,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
         ctx.delegator.useShapeWriter(inputShape) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+            writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
             writer.openBlock("extension ${inputShapeName!!.get()}: HttpRequestBinding {", "}") {
-                writer.openBlock("func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {", "}") {
+                writer.openBlock("public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {", "}") {
                     renderQueryItems(ctx, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
@@ -102,7 +104,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     // Handle cases where member is a List or Set type
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-                        writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: queryItemValue)")
+                        writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String(queryItemValue))")
                         writer.write("queryItems.append(queryItem)")
                     }
                 } else {
@@ -110,7 +112,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         memberTarget.getTrait(EnumTrait::class.java).isPresent) {
                         memberName = "$memberName.rawValue"
                     }
-                    writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: $memberName)")
+                    writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
                     writer.write("queryItems.append(queryItem)")
                 }
             }
@@ -119,7 +121,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderHeaders(ctx: ProtocolGenerator.GenerationContext, headerBindings: List<HttpBinding>, prefixHeaderBindings: List<HttpBinding>, writer: SwiftWriter, contentType: String) {
         writer.write("var headers = HttpHeaders()")
-        writer.write("headers.add(name: \"Content-Type\", value: $contentType)")
+        writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
         headerBindings.forEach {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -128,14 +130,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (memberTarget is CollectionShape) {
                     // TODO:: use rawValue for Enum Collection
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        writer.write("headers.add(name: \"$paramName\", value: headerValue)")
+                        writer.write("headers.add(name: \"$paramName\", value: String(headerValue))")
                     }
                 } else {
                     if (memberTarget.type == ShapeType.STRING &&
                         memberTarget.getTrait(EnumTrait::class.java).isPresent) {
                         memberName = "$memberName.rawValue"
                     }
-                    writer.write("headers.add(name: \"$paramName\", value: $memberName)")
+                    writer.write("headers.add(name: \"$paramName\", value: String($memberName))")
                 }
             }
         }
@@ -146,7 +148,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 writer.openBlock("for (headerKey, headerValue) in $memberName { ", "}") {
-                    writer.write("headers.add(name: \"$paramName\"headerKey, value: headerValue)")
+                    writer.write("headers.add(name: \"$paramName\\(headerKey)\", value: String(headerValue))")
                 }
             }
         }

@@ -108,101 +108,101 @@ class SwiftSettings(
          * Get Reserved Keywords in Swift as a list
          */
         private fun getSwiftReservedKeywords(): List<String> {
-            var reservedWords = "Any\n" +
-                    "#available\n" +
-                    "associatedtype\n" +
-                    "associativity\n" +
-                    "as\n" +
-                    "break\n" +
-                    "case\n" +
-                    "catch\n" +
-                    "class\n" +
-                    "#colorLiteral\n" +
-                    "#column\n" +
-                    "continue\n" +
-                    "convenience\n" +
-                    "deinit\n" +
-                    "default\n" +
-                    "defer\n" +
-                    "didSet\n" +
-                    "do\n" +
-                    "dynamic\n" +
-                    "enum\n" +
-                    "extension\n" +
-                    "else\n" +
-                    "#else\n" +
-                    "#elseif\n" +
-                    "#endif\n" +
-                    "#error\n" +
-                    "fallthrough\n" +
-                    "false\n" +
-                    "#file\n" +
-                    "#fileLiteral\n" +
-                    "fileprivate\n" +
-                    "final\n" +
-                    "for\n" +
-                    "func\n" +
-                    "#function\n" +
-                    "get\n" +
-                    "guard\n" +
-                    "indirect\n" +
-                    "infix\n" +
-                    "if\n" +
-                    "#if\n" +
-                    "#imageLiteral\n" +
-                    "in\n" +
-                    "is\n" +
-                    "import\n" +
-                    "init\n" +
-                    "inout\n" +
-                    "internal\n" +
-                    "lazy\n" +
-                    "left\n" +
-                    "let\n" +
-                    "#line\n" +
-                    "mutating\n" +
-                    "none\n" +
-                    "nonmutating\n" +
-                    "nil\n" +
-                    "open\n" +
-                    "operator\n" +
-                    "optional\n" +
-                    "override\n" +
-                    "postfix\n" +
-                    "private\n" +
-                    "protocol\n" +
-                    "Protocol\n" +
-                    "public\n" +
-                    "repeat\n" +
-                    "rethrows\n" +
-                    "return\n" +
-                    "required\n" +
-                    "right\n" +
-                    "#selector\n" +
-                    "self\n" +
-                    "Self\n" +
-                    "set\n" +
-                    "#sourceLocation\n" +
-                    "super\n" +
-                    "static\n" +
-                    "struct\n" +
-                    "subscript\n" +
-                    "switch\n" +
-                    "this\n" +
-                    "throw\n" +
-                    "throws\n" +
-                    "true\n" +
-                    "try\n" +
-                    "Type\n" +
-                    "typealias\n" +
-                    "unowned\n" +
-                    "var\n" +
-                    "#warning\n" +
-                    "weak\n" +
-                    "willSet\n" +
-                    "where\n" +
-                    "while"
-            return reservedWords.split("\n").map { it.trim() }
+            val reservedWords = listOf<String>("Any",
+                    "#available",
+                    "associatedtype",
+                    "associativity",
+                    "as",
+                    "break",
+                    "case",
+                    "catch",
+                    "class",
+                    "#colorLiteral",
+                    "#column",
+                    "continue",
+                    "convenience",
+                    "deinit",
+                    "default",
+                    "defer",
+                    "didSet",
+                    "do",
+                    "dynamic",
+                    "enum",
+                    "extension",
+                    "else",
+                    "#else",
+                    "#elseif",
+                    "#endif",
+                    "#error",
+                    "fallthrough",
+                    "false",
+                    "#file",
+                    "#fileLiteral",
+                    "fileprivate",
+                    "final",
+                    "for",
+                    "func",
+                    "#function",
+                    "get",
+                    "guard",
+                    "indirect",
+                    "infix",
+                    "if",
+                    "#if",
+                    "#imageLiteral",
+                    "in",
+                    "is",
+                    "import",
+                    "init",
+                    "inout",
+                    "internal",
+                    "lazy",
+                    "left",
+                    "let",
+                    "#line",
+                    "mutating",
+                    "none",
+                    "nonmutating",
+                    "nil",
+                    "open",
+                    "operator",
+                    "optional",
+                    "override",
+                    "postfix",
+                    "private",
+                    "protocol",
+                    "Protocol",
+                    "public",
+                    "repeat",
+                    "rethrows",
+                    "return",
+                    "required",
+                    "right",
+                    "#selector",
+                    "self",
+                    "Self",
+                    "set",
+                    "#sourceLocation",
+                    "super",
+                    "static",
+                    "struct",
+                    "subscript",
+                    "switch",
+                    "this",
+                    "throw",
+                    "throws",
+                    "true",
+                    "try",
+                    "Type",
+                    "typealias",
+                    "unowned",
+                    "var",
+                    "#warning",
+                    "weak",
+                    "willSet",
+                    "where",
+                    "while")
+            return reservedWords
         }
     }
 
@@ -237,7 +237,6 @@ class SwiftSettings(
         service: ServiceShape,
         supportedProtocolTraits: Set<ShapeId>
     ): ShapeId {
-        print("inside resolve service protocol")
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
         val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
         return protocol ?: throw UnresolvableProtocolException(

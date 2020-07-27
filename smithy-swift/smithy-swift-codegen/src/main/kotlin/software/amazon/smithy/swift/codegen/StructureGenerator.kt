@@ -112,7 +112,7 @@ class StructureGenerator(
         if (hasErrorTrait || hasMembers) {
             writer.openBlock("public init (", ")") {
                 if (hasErrorTrait) {
-                    writer.write("httpResponse: HttpResponse,")
+                    writer.write("httpResponse: HttpResponse" + if (hasMembers)  "," else "")
                 }
                 if (membersSortedByName.size > 0) {
                     for ((index, member) in membersSortedByName.withIndex()) {

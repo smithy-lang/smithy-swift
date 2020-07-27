@@ -20,7 +20,8 @@ import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
 enum class SwiftDependency(val type: String, val namespace: String, val version: String, val url: String) : SymbolDependencyContainer {
     BIG("", "BigNumber", "2.0", url = "https://github.com/mkrd/Swift-Big-Integer.git"),
-    CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "../../../../../../ClientRuntime");
+    CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "../../../../../../ClientRuntime"),
+    FOUNDATION("", "Foundation", "", "");
 
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()
@@ -30,5 +31,9 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
             .putProperty("url", url)
             .build()
         return listOf(dependency)
+    }
+
+    fun getPackageName(): String {
+        return namespace
     }
 }

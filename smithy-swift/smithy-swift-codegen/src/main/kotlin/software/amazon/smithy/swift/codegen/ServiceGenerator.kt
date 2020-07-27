@@ -68,9 +68,9 @@ class ServiceGenerator(
 
             val hasOutputStream = operationHasOutputStream(model, opIndex, op)
             if (!hasOutputStream) {
-                writer.write("func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
+                writer.write("public func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
             } else {
-                writer.write("func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
+                writer.write("public func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
             }
         }
 

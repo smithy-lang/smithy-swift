@@ -50,7 +50,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     }
 
     @Test
-    fun `Input request confirms to HttpRequestBinding`() {
+    fun `Input request conforms to HttpRequestBinding`() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
