@@ -69,12 +69,12 @@ import software.amazon.smithy.utils.CaseUtils
  * sealed class TypedYesNo {
  *     abstract val value: String
  *
- *     object YES: TypedYesNo() {
+ *     object Yes: TypedYesNo() {
  *         override val value: String = "Yes"
  *         override fun toString(): String = value
  *     }
  *
- *     object NO: TypedYesNo() {
+ *     object No: TypedYesNo() {
  *         override val value: String = "No"
  *         override fun toString(): String = value
  *     }
@@ -86,12 +86,12 @@ import software.amazon.smithy.utils.CaseUtils
  *     companion object {
  *
  *         fun fromValue(str: String): TypedYesNo = when(str) {
- *             "Yes" -> YES
- *             "No" -> NO
+ *             "Yes" -> Yes
+ *             "No" -> No
  *             else -> SdkUnknown(str)
  *         }
  *
- *         fun values(): List<TypedYesNo> = listOf(YES, NO)
+ *         fun values(): List<TypedYesNo> = listOf(Yes, No)
  *     }
  * }
  * ```
@@ -170,7 +170,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         writer.renderEnumDefinitionDocumentation(definition)
         val variantName = getVariantName(definition)
         if (!generatedNames.add(variantName)) {
-            throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated sealed class names to not be unique")
+            throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated sealed class names to not be unique: $variantName; shape=$shape")
         }
 
         writer.openBlock("object $variantName : ${symbol.name}() {")
@@ -180,13 +180,16 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     }
 
     private fun getVariantName(definition: EnumDefinition): String {
-        return definition.name.orElseGet {
-            val modified = CaseUtils.toSnakeCase(definition.value).replace(".", "_")
-            if (!isValidKotlinIdentifier(modified)) {
-                "_$modified"
-            } else {
-                modified
-            }
-        }.capitalize()
+        val raw = definition.name.orElseGet {
+            CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+        }
+
+        val identifierName = CaseUtils.toCamelCase(raw, true, '_')
+
+        return if (!isValidKotlinIdentifier(identifierName)) {
+            "_$identifierName"
+        } else {
+            identifierName
+        }
     }
 }

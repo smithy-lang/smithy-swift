@@ -143,12 +143,12 @@ sealed class Baz {
      * performance with the ability to burst above the
      * baseline.${"\"\"\""}
      */
-    object T2_MICRO : Baz() {
+    object T2Micro : Baz() {
         override val value: String = "t2.micro"
         override fun toString(): String = value
     }
 
-    object T2_NANO : Baz() {
+    object T2Nano : Baz() {
         override val value: String = "t2.nano"
         override fun toString(): String = value
     }
@@ -162,8 +162,8 @@ sealed class Baz {
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
         fun fromValue(str: String): Baz = when(str) {
-            "t2.micro" -> T2_MICRO
-            "t2.nano" -> T2_NANO
+            "t2.micro" -> T2Micro
+            "t2.nano" -> T2Nano
             else -> SdkUnknown(str)
         }
 
@@ -171,8 +171,8 @@ sealed class Baz {
          * Get a list of all possible variants
          */
         fun values(): List<Baz> = listOf(
-            T2_MICRO,
-            T2_NANO
+            T2Micro,
+            T2Nano
         )
     }
 }
