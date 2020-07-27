@@ -69,12 +69,12 @@ import software.amazon.smithy.utils.CaseUtils
  * sealed class TypedYesNo {
  *     abstract val value: String
  *
- *     object Yes: TypedYesNo() {
+ *     object YES: TypedYesNo() {
  *         override val value: String = "Yes"
  *         override fun toString(): String = value
  *     }
  *
- *     object No: TypedYesNo() {
+ *     object NO: TypedYesNo() {
  *         override val value: String = "No"
  *         override fun toString(): String = value
  *     }
@@ -86,12 +86,12 @@ import software.amazon.smithy.utils.CaseUtils
  *     companion object {
  *
  *         fun fromValue(str: String): TypedYesNo = when(str) {
- *             "Yes" -> Yes
- *             "No" -> No
+ *             "Yes" -> YES
+ *             "No" -> NO
  *             else -> SdkUnknown(str)
  *         }
  *
- *         fun values(): List<TypedYesNo> = listOf(Yes, No)
+ *         fun values(): List<TypedYesNo> = listOf(YES, NO)
  *     }
  * }
  * ```
