@@ -124,6 +124,8 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                     write("")
                 }
 
+            if (generatedNames.contains("SdkUnknown")) throw CodegenException("generating SdkUnknown would cause duplicate variant for enum shape: $shape")
+
             // generate the unknown which will always be last
             writer.withBlock("data class SdkUnknown(override val value: String) : ${symbol.name}() {", "}") {
                 renderToStringOverride()
