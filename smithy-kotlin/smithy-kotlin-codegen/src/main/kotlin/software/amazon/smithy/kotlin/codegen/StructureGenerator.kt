@@ -262,7 +262,6 @@ class StructureGenerator(
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-
                     write("override var \$L: \$D", memberName, memberSymbol)
                 }
 
