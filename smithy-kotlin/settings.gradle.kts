@@ -14,6 +14,7 @@ include(":client-runtime:protocol:http")
 include(":client-runtime:protocol:http:features:http-serde")
 include(":client-runtime:serde")
 include(":client-runtime:serde:serde-json")
+include(":client-runtime:serde:serde-xml")
 
 include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")
 
