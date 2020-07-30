@@ -109,6 +109,22 @@ fun XmlStreamWriter.text(text: Double) {
     this.text(text.toString())
 }
 
+fun XmlStreamWriter.text(text: Boolean) {
+    this.text(text.toString())
+}
+
+fun XmlStreamWriter.text(text: Byte) {
+    this.text(text.toString())
+}
+
+fun XmlStreamWriter.text(text: Short) {
+    this.text(text.toString())
+}
+
+fun XmlStreamWriter.text(text: Float) {
+    this.text(text.toString())
+}
+
 /*
 * Creates a [XmlStreamWriter] instance to write XML
 */
