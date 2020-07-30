@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  ~ SPDX-License-Identifier: Apache-2.0.
+  -->
+
+<ChangeResourceRecordSetsRequest xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
+    <ChangeBatch>
+        <Comment>comment</Comment>
+        <Changes>
+            <Change>
+                <Action>DELETE</Action>
+                <ResourceRecordSet>
+                    <Name>java.sdk.com.</Name>
+                    <Type>NS</Type>
+                    <TTL>172800</TTL>
+                    <ResourceRecords>
+                        <ResourceRecord>
+                            <Value>ns-279.awsdns-34.com.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-1278.awsdns-31.org.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-780.awsdns-33.net.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-1782.awsdns-30.co.uk.</Value>
+                        </ResourceRecord>
+                    </ResourceRecords>
+                </ResourceRecordSet>
+            </Change>
+            <Change>
+                <Action>CREATE</Action>
+                <ResourceRecordSet>
+                    <Name>java.sdk.com.</Name>
+                    <Type>NS</Type>
+                    <TTL>172900</TTL>
+                    <ResourceRecords>
+                        <ResourceRecord>
+                            <Value>ns-279.awsdns-34.com.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-1278.awsdns-31.org.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-780.awsdns-33.net.</Value>
+                        </ResourceRecord>
+                        <ResourceRecord>
+                            <Value>ns-1782.awsdns-30.co.uk.</Value>
+                        </ResourceRecord>
+                    </ResourceRecords>
+                </ResourceRecordSet>
+            </Change>
+        </Changes>
+    </ChangeBatch>
+</ChangeResourceRecordSetsRequest>

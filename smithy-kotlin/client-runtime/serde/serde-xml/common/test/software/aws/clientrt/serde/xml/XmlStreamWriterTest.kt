@@ -42,31 +42,29 @@ class XmlStreamWriterTest {
 
     @Test
     fun `check close is idempotent`() {
-        val writer = xmlStreamWriter(true)
-        writer.beginObject()
-        writer.writeName("id")
-        writer.writeValue(912345678901)
-        writer.endObject()
-        assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
-        assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
+        val writer = generateSimpleDocument()
+        assertEquals(expectedIdempotent, writer.bytes.decodeToString())
+        assertEquals(expectedIdempotent, writer.bytes.decodeToString())
     }
+
+    private fun generateSimpleDocument() = xmlStreamWriter(true).apply {
+            startDocument(null, null)
+            startTag("id")
+            text(912345678901.toString())
+            endTag("id")
+            endDocument()
+        }
 
     @Test
     fun `check non human readable`() {
-        val writer = xmlStreamWriter()
-        writer.beginObject()
-        writer.writeName("id")
-        writer.writeValue(912345678901)
-        writer.endObject()
-        assertEquals(expectedNoIndent, writer.bytes?.decodeToString())
+        val writer = generateSimpleDocument()
+        assertEquals(expectedNoIndent, writer.bytes.decodeToString())
     }
 }
 
-val expectedIdempotent = """{
-    "id": 912345678901
-}"""
+const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
 
-val expectedNoIndent = """{"id":912345678901}"""
+const val expectedNoIndent = """<?xml version="1.0"?><id>912345678901</id>"""
 
 fun writeXmlStream(messages: List<Message>): ByteArray? {
     val writer = xmlStreamWriter(true)
@@ -74,49 +72,60 @@ fun writeXmlStream(messages: List<Message>): ByteArray? {
 }
 
 fun writeMessagesArray(writer: XmlStreamWriter, messages: List<Message>): ByteArray? {
-    writer.beginArray()
+    writer.apply {
+        startTag("messages")
+
+    }
     for (message in messages) {
         writeMessage(writer, message)
     }
-    writer.endArray()
+    writer.endTag("messages")
     return writer.bytes
 }
 
 fun writeMessage(writer: XmlStreamWriter, message: Message) {
-    writer.beginObject()
-    writer.writeName("id")
-    writer.writeValue(message.id)
-    writer.writeName("text")
-    writer.writeValue(message.text)
-    if (message.geo != null) {
-        writer.writeName("geo")
-        writeDoublesArray(writer, message.geo)
-    } else {
-        writer.writeName("geo")
-        writer.writeNull()
+    writer.apply {
+        startTag("message")
+        startTag("id")
+        text(message.id)
+        endTag("id")
+        startTag("text")
+        text(message.text)
+        endTag("text")
+
+        if (message.geo != null) {
+            writeDoublesArray(writer, message.geo)
+        } else {
+            writer.startTag("geo")
+            writer.endTag("geo")
+        }
+
     }
-    writer.writeName("user")
     writeUser(writer, message.user)
-    writer.endObject()
+    writer.endTag("message")
 }
 
 fun writeUser(writer: XmlStreamWriter, user: User) {
-    writer.beginObject()
-    writer.writeName("name")
-    writer.writeValue(user.name)
-    writer.writeName("followers_count")
-    writer.writeValue(user.followersCount)
-    writer.endObject()
+    writer.startTag("user")
+    writer.startTag("name")
+    writer.text(user.name)
+    writer.endTag("name")
+    writer.startTag("followers_count")
+    writer.text(user.followersCount)
+    writer.endTag("followers_count")
+    writer.endTag("user")
 }
 
 fun writeDoublesArray(writer: XmlStreamWriter, doubles: Array<Double>?) {
-    writer.beginArray()
+    writer.startTag("geo")
     if (doubles != null) {
         for (value in doubles) {
-            writer.writeValue(value)
+            writer.startTag("position")
+            writer.text(value)
+            writer.endTag("position")
         }
     }
-    writer.endArray()
+    writer.endTag("geo")
 }
 
 val user1 = User("xml_newb", 41)
@@ -125,25 +134,27 @@ val user2 = User("jesse", 2)
 class Message(val id: Long, val text: String, val geo: Array<Double>?, val user: User)
 data class User(val name: String, val followersCount: Int)
 
-val expected: String = """[
-    {
-        "id": 912345678901,
-        "text": "How do I stream XML in Java?",
-        "user": {
-            "name": "xml_newb",
-            "followers_count": 41
-        }
-    },
-    {
-        "id": 912345678902,
-        "text": "@xml_newb just use XmlWriter!",
-        "geo": [
-            50.454722,
-            -104.606667
-        ],
-        "user": {
-            "name": "jesse",
-            "followers_count": 2
-        }
-    }
-]"""
+val expected: String = """
+<messages>
+    <message>
+        <id>912345678901</id>
+        <text>How do I stream XML in Java?</text>
+        <geo />
+        <user>
+            <name>xml_newb</name>
+            <followers_count>41</followers_count>
+        </user>
+    </message>
+    <message>
+        <id>912345678902</id>
+        <text>@xml_newb just use XmlWriter!</text>
+        <geo>
+            <position>50.454722</position>
+            <position>-104.606667</position>
+        </geo>
+        <user>
+            <name>jesse</name>
+            <followers_count>2</followers_count>
+        </user>
+    </message>
+</messages>""".trimIndent()

@@ -1,0 +1,38 @@
+<?xml version="1.0" standalone="yes"?><!--
+  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  ~ SPDX-License-Identifier: Apache-2.0.
+  -->
+
+<array>
+    <array>
+        <id>
+            <text>How do I stream XML in Java?
+                <geo>
+                    <user>
+                        <array>
+                            <name>xml_newb
+                                <followers_count/>
+                            </name>
+                            <array>
+                                <id>
+                                    <text>@xml_newb just use XmlWriter!
+                                        <geo>
+                                            <array/>
+                                            <user>
+                                                <array>
+                                                    <name>jesse
+                                                        <followers_count/>
+                                                    </name>
+                                                </array>
+                                            </user>
+                                        </geo>
+                                    </text>
+                                </id>
+                            </array>
+                        </array>
+                    </user>
+                </geo>
+            </text>
+        </id>
+    </array>
+</array>

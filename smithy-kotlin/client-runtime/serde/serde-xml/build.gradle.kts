@@ -11,7 +11,9 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                // implementation("com.google.code.gson:gson:$gsonVersion")
+                implementation("xmlpull:xmlpull:1.1.3.1")
+                // https://mvnrepository.com/artifact/org.ogce/xpp3
+                implementation("org.ogce:xpp3:1.1.6")
             }
         }
     }
