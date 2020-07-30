@@ -15,9 +15,9 @@
 
 import Foundation
 
-struct EposchSecondsDate: Codable {
+struct EpochSecondsDate: Codable {
     var value: Date
-    var dateFormatterContainer: DateFormatterContainer = EposchSecondsDateFormatterContainer()
+    var dateFormatterContainer: DateFormatterContainer = EpochSecondsDateFormatterContainer()
     
     public var stringValue: String {
        get { return dateFormatterContainer.dateFormatters[0].string(from: value) }

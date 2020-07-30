@@ -177,7 +177,7 @@ class DateFormatterTests: XCTestCase {
         }
     }
     
-    func testCreateDateFromValidEposchString() {
+    func testCreateDateFromValidEpochString() {
         let validDates = [
             "0",
             "1604588357",
@@ -188,27 +188,27 @@ class DateFormatterTests: XCTestCase {
             "-1604588357.001"
         ]
         
-        let formatter = EposchSecondsDateFormatter()
+        let formatter = EpochSecondsDateFormatter()
         
         for dateString in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
-                XCTFail("could not parse Eposch Seconds string: \(dateString)")
+                XCTFail("could not parse Epoch Seconds string: \(dateString)")
                 continue
             }
-            XCTAssertEqual(Double(dateString), formatter.string(from: constructedDate))
+            XCTAssertEqual(Double(dateString), formatter.double(from: constructedDate))
         }
     }
     
-    func testCreateDateFromInValidEposchStringReturnsNil() {
+    func testCreateDateFromInValidEpochStringReturnsNil() {
         let inValidDates = [
             "Sun, 06 Nov 1994 08:49 GMT"
         ]
         
-        let formatter = EposchSecondsDateFormatter()
+        let formatter = EpochSecondsDateFormatter()
         
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
-            XCTAssertNil(constructedDate, "able to parse invalid Eposch Seconds string: \(dateString)")
+            XCTAssertNil(constructedDate, "able to parse invalid Epoch Seconds string: \(dateString)")
         }
     }
     
@@ -263,16 +263,16 @@ class DateFormatterTests: XCTestCase {
     struct StructWithDates: Codable {
         let iso8601Date: ISO8601Date
         let rfc7231Date: RFC7231Date
-        let eposchDate: EposchSecondsDate
+        let epochDate: EpochSecondsDate
         let normalDate: Date
         
         init(iso8601Date: ISO8601Date,
              rfc7231Date: RFC7231Date,
-             eposchDate: EposchSecondsDate,
+             epochDate: EpochSecondsDate,
              normalDate: Date) {
             self.iso8601Date = iso8601Date
             self.rfc7231Date = rfc7231Date
-            self.eposchDate = eposchDate
+            self.epochDate = epochDate
             self.normalDate = normalDate
         }
     }
@@ -290,7 +290,7 @@ class DateFormatterTests: XCTestCase {
         
         let structWithDates = StructWithDates(iso8601Date: ISO8601Date(from: testDate),
                                               rfc7231Date: RFC7231Date(from: testDate),
-                                              eposchDate: EposchSecondsDate(from: testDate),
+                                              epochDate: EpochSecondsDate(from: testDate),
                                               normalDate: testDate)
         guard let encodedStructWithDates = try? JSONEncoder().encode(structWithDates) else {
             XCTFail("could not encode struct with different date formats")
@@ -304,9 +304,9 @@ class DateFormatterTests: XCTestCase {
         
         let expectedISO8601DateString = "1993-11-20T05:45:01.000Z"
         let expectedRFC7231DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
-        let expectedEposchSecondsDateString = "753774301.0"
+        let expectedEpochSecondsDateString = "753774301.0"
         let expectedStructWithDatesJSON =
-            "{\"eposchDate\":\"\(expectedEposchSecondsDateString)\"," +
+            "{\"epochDate\":\"\(expectedEpochSecondsDateString)\"," +
             "\"iso8601Date\":\"\(expectedISO8601DateString)\"," +
             "\"rfc7231Date\":\"\(expectedRFC7231DateString)\"," +
             "\"normalDate\":-224532899}"
@@ -315,16 +315,16 @@ class DateFormatterTests: XCTestCase {
         // Test fetching the formatted date as string
         XCTAssertEqual(structWithDates.iso8601Date.stringValue, expectedISO8601DateString)
         XCTAssertEqual(structWithDates.rfc7231Date.stringValue, expectedRFC7231DateString)
-        XCTAssertEqual(structWithDates.eposchDate.stringValue, expectedEposchSecondsDateString)
+        XCTAssertEqual(structWithDates.epochDate.stringValue, expectedEpochSecondsDateString)
     }
     
     func testDecodingStructWithDatesFromValidStrings() {
         let iso8601DateString = "1993-11-20T05:45:01.000Z"
         let rfc7231DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
-        let eposchSecondsDateString = "753774301.0"
+        let epochSecondsDateString = "753774301.0"
         
         let validStructWithDatesJSON =
-            "{\"eposchDate\":\"\(eposchSecondsDateString)\"," +
+            "{\"epochDate\":\"\(epochSecondsDateString)\"," +
             "\"iso8601Date\":\"\(iso8601DateString)\"," +
             "\"rfc7231Date\":\"\(rfc7231DateString)\"," +
             "\"normalDate\":-224532899}"
@@ -341,10 +341,10 @@ class DateFormatterTests: XCTestCase {
         
         let actualISO8601Date = getISO8601DateFormatterWithFractionalSeconds().date(from: iso8601DateString)
         let actualRFC7231Date = getRFC7231DateFormatter().date(from: rfc7231DateString)
-        let actualEposchSecondsDate = EposchSecondsDateFormatter().date(from: eposchSecondsDateString)
+        let actualEpochSecondsDate = EpochSecondsDateFormatter().date(from: epochSecondsDateString)
         XCTAssertEqual(actualISO8601Date, decodedStructWithDates.iso8601Date.value)
         XCTAssertEqual(actualRFC7231Date, decodedStructWithDates.rfc7231Date.value)
-        XCTAssertEqual(actualEposchSecondsDate, decodedStructWithDates.eposchDate.value)
+        XCTAssertEqual(actualEpochSecondsDate, decodedStructWithDates.epochDate.value)
         XCTAssertNotNil(decodedStructWithDates.normalDate, "decoding default date representation failed")
     }
 }

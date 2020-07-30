@@ -34,8 +34,8 @@ struct ISO8601DateFormatterContainer: DateFormatterContainer {
     }
 }
 
-struct EposchSecondsDateFormatterContainer: DateFormatterContainer {
+struct EpochSecondsDateFormatterContainer: DateFormatterContainer {
     var dateFormatters: [DateFormatterProtocol] {
-        return [EposchSecondsDateFormatter()]
+        return [EpochSecondsDateFormatter()]
     }
 }

@@ -56,10 +56,10 @@ extension DateFormatter: DateFormatterProtocol {}
 extension ISO8601DateFormatter: DateFormatterProtocol {}
 
 /*
- Configures an Eposch Seconds based formatter.
+ Configures an Epoch Seconds based formatter.
  Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
  */
-struct EposchSecondsDateFormatter: DateFormatterProtocol {
+struct EpochSecondsDateFormatter: DateFormatterProtocol {
     func date(from string: String) -> Date? {
         guard let double = Double(string) else {
             return nil
@@ -75,7 +75,7 @@ struct EposchSecondsDateFormatter: DateFormatterProtocol {
         return Date(timeIntervalSince1970: double)
     }
     
-    func string(from date: Date) -> Double {
+    func double(from date: Date) -> Double {
         return date.timeIntervalSince1970
     }
 }
