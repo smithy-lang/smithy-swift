@@ -347,4 +347,185 @@ class DateFormatterTests: XCTestCase {
         XCTAssertEqual(actualEpochSecondsDate, decodedStructWithDates.epochDate.value)
         XCTAssertNotNil(decodedStructWithDates.normalDate, "decoding default date representation failed")
     }
+    
+    
+    struct StructWithDatesCollection: Codable {
+        let isoDate: Date
+        let normalDate: Date
+        let isoList: [Date]
+        let normalList: [Date]
+        var isoDictWithList: [String: [Date]]
+        var structWithDate: StructWithDate
+        
+        init(isoDate: Date, normalDate: Date, isoList: [Date], normalList: [Date], isoDictWithList: [String: [Date]], structWithDate: StructWithDate) {
+            self.isoDate = isoDate
+            self.normalDate = normalDate
+            self.isoList = isoList
+            self.normalList = normalList
+            self.isoDictWithList = isoDictWithList
+            self.structWithDate = structWithDate
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case isoDate
+            case normalDate
+            case isoList
+            case normalList
+            case isoDictWithList
+            case structWithDate
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            // var text = getISO8601DateFormatterWithFractionalSeconds().string(from: isoDate)
+            try container.encode(isoDate, forKey: .isoDate)
+
+            // text = EpochSecondsDateFormatter().string(from: normalDate)
+            try container.encode(normalDate, forKey: .normalDate)
+
+//            var unkeyedContainer = encoder.unkeyedContainer()
+//            unkeyedContainer
+//            for iso in isoList {
+//                text = getISO8601DateFormatterWithFractionalSeconds().string(from: iso)
+//                try container.encode(text, forKey: .isoList)
+//            }
+            //let isoStringList = getISO8601DateFormatterWithFractionalSeconds().string(from: isoList)
+             try container.encode(isoList, forKey: .isoList)
+            try container.encode(normalList, forKey: .normalList)
+
+//            for entry in isoDictWithList {
+//
+//                // text = getISO8601DateFormatterWithFractionalSeconds().string(from: entry.value)
+//                try container.encode(text, forKey: .isoDictWithList)
+//            }
+            // try container.encode(isoList, forKey: .isoList)
+            try container.encode(isoDictWithList, forKey: .isoDictWithList)
+            try container.encode(structWithDate, forKey: .structWithDate)
+        }
+    }
+    
+    struct StructWithDate: Codable {
+        let isoDate: Date
+        let normalDate: Date
+        
+        init(isoDate: Date) {
+            self.isoDate = isoDate
+            self.normalDate = Date()
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case isoDate, normalDate
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            // let text = getISO8601DateFormatterWithFractionalSeconds().string(from: isoDate)
+            try container.encode(isoDate, forKey: .isoDate)
+            try container.encode(normalDate, forKey: .normalDate)
+        }
+    }
+    
+    func testStructWithDatesCollection() {
+        let iso8601DateString = "1993-11-20T05:45:01.000Z"
+        let actualISO8601Date = getISO8601DateFormatterWithFractionalSeconds().date(from: iso8601DateString)!
+        let date = Date()
+        
+        let structWithDatesCollection = StructWithDatesCollection(isoDate: date,
+                                                                  normalDate: date,
+                                                                  isoList: [date, actualISO8601Date],
+                                                                  normalList: [date, actualISO8601Date],
+                                                                  isoDictWithList: ["a": [actualISO8601Date, date]],
+                                                                  structWithDate: StructWithDate(isoDate: date))
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .custom({ (key) -> DateFormatterProtocol? in
+            print("key", key)
+            switch key {
+            case StructWithDatesCollection.CodingKeys.isoDate,
+                 StructWithDatesCollection.CodingKeys.isoList,
+                 StructWithDatesCollection.CodingKeys.isoDictWithList,
+                 StructWithDatesCollection.CodingKeys.structWithDate,
+                 StructWithDate.CodingKeys.isoDate:
+                return getISO8601DateFormatterWithFractionalSeconds()
+            default:
+                return EpochSecondsDateFormatter()
+            }
+        })
+
+//        let decoder = JSONDecoder()
+//
+//        decoder.dateDecodingStrategy = .custom({ (key) -> DateFormatterProtocol? in
+//            switch key {
+//            case StructWithDatesCollection.CodingKeys.isoDate,
+//                 StructWithDatesCollection.CodingKeys.isoList,
+//                 StructWithDatesCollection.CodingKeys.isoDictWithList,
+//                 StructWithDatesCollection.CodingKeys.structWithDate:
+//                return getISO8601DateFormatterWithFractionalSeconds()
+//            default:
+//                return EpochSecondsDateFormatter()
+//            }
+//        })
+        
+        guard let encodedStructWithDates = try? encoder.encode(structWithDatesCollection) else {
+            XCTFail("could not encode struct with different date formats")
+            return
+        }
+        
+        guard let structWithDatesJSON = String(data: encodedStructWithDates, encoding: .utf8) else {
+            XCTFail("encoded struct with different date formats is not a valid JSON String")
+            return
+        }
+        
+        print(structWithDatesJSON)
+        
+    }
+}
+
+extension JSONDecoder.DateDecodingStrategy {
+    static func custom(_ formatterForKey: @escaping (CodingKey) throws -> DateFormatterProtocol?) -> JSONDecoder.DateDecodingStrategy {
+        return .custom({ (decoder) -> Date in
+            guard let codingKey = decoder.codingPath.last else {
+                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "No Coding Path Found"))
+            }
+
+            guard let container = try? decoder.singleValueContainer(),
+                let text = try? container.decode(String.self) else {
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not decode date text"))
+            }
+
+            guard let dateFormatter = try formatterForKey(codingKey) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "No date formatter for date text")
+            }
+
+            if let date = dateFormatter.date(from: text) {
+                return date
+            } else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(text)")
+            }
+        })
+    }
+}
+
+extension JSONEncoder.DateEncodingStrategy {
+    static func custom(_ formatterForKey: @escaping (CodingKey) throws -> DateFormatterProtocol?) -> JSONEncoder.DateEncodingStrategy {
+        return .custom({ (date, encoder) -> Void in
+            print(encoder.codingPath)
+            var codingKey: CodingKey?
+            codingKey = encoder.codingPath.last
+//            if codingKey?.stringValue.contains("Index") ?? false {
+//                codingKey = encoder.codingPath.first
+//            }
+            
+            guard let key = codingKey else {
+                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: encoder.codingPath, debugDescription: "No Coding Path Found"))
+            }
+            
+            guard let dateFormatter = try formatterForKey(key) else {
+                throw EncodingError.invalidValue("Date Formatter", EncodingError.Context.init(codingPath: [key], debugDescription: "could not find date formatter"))
+            }
+            
+            let text = dateFormatter.string(from: date)
+            var container = encoder.singleValueContainer()
+            try container.encode(text)
+        })
+    }
 }
