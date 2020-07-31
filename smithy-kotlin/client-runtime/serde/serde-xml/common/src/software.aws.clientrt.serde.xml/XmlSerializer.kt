@@ -24,37 +24,35 @@ class XmlSerializer : Serializer, ListSerializer, MapSerializer, StructSerialize
         return xmlWriter.bytes
     }
 
-    override fun beginStruct(): StructSerializer {
-        xmlWriter.startTag("struct")
+    override fun beginStruct(name: String?): StructSerializer {
+        xmlWriter.startTag(name ?: "struct")
         return this
     }
 
-    override fun beginList(): ListSerializer {
-        xmlWriter.startTag("list")
+    override fun beginList(name: String?): ListSerializer {
+        xmlWriter.startTag(name ?: "list")
         return this
     }
 
-    override fun beginMap(): MapSerializer {
-        xmlWriter.startTag("map")
+    override fun beginMap(name: String?): MapSerializer {
+        xmlWriter.startTag(name ?: "map")
         return this
     }
 
-    override fun endStruct() {
-        xmlWriter.endTag("struct")
+    override fun endStruct(name: String?) {
+       xmlWriter.endTag(name ?: "struct")
     }
 
-    override fun endList() {
-        xmlWriter.endTag("list")
+    override fun endList(name: String?) {
+        xmlWriter.endTag(name ?: "list")
     }
 
-    override fun endMap() {
-        xmlWriter.endTag("map")
+    override fun endMap(name: String?) {
+        xmlWriter.endTag(name ?: "map")
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
-        xmlWriter.startTag(descriptor.serialName)
         value.serialize(this)
-        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
@@ -112,21 +110,15 @@ class XmlSerializer : Serializer, ListSerializer, MapSerializer, StructSerialize
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        xmlWriter.startTag(descriptor.serialName)
-        serializeStruct(block)
-        xmlWriter.endTag(descriptor.serialName)
+        serializeStruct(descriptor.serialName, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        xmlWriter.startTag(descriptor.serialName)
-        serializeList(block)
-        xmlWriter.endTag(descriptor.serialName)
+        serializeList(descriptor.serialName, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        xmlWriter.startTag(descriptor.serialName)
-        serializeMap(block)
-        xmlWriter.endTag(descriptor.serialName)
+        serializeMap(descriptor.serialName, block)
     }
 
     override fun entry(key: String, value: Int) {

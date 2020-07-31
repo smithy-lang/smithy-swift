@@ -28,7 +28,7 @@ class XmlSerializerTest {
         )
         val xml = XmlSerializer()
         a.serialize(xml)
-        assertEquals("""{"b":{"value":2}}""", xml.toByteArray().decodeToString())
+        assertEquals("""<b><value><value>2</value></value></b>""", xml.toByteArray().decodeToString())
     }
 
     class A(private val b: B) : SdkSerializable {
@@ -37,7 +37,7 @@ class XmlSerializerTest {
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(descriptorB.serialName) {
                 field(descriptorB, b)
             }
         }
@@ -49,7 +49,7 @@ class XmlSerializerTest {
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(descriptorValue.serialName) {
                 field(descriptorValue, value)
             }
         }
@@ -68,9 +68,16 @@ class XmlSerializerTest {
                 value.serialize(xml)
             }
         }
-        assertEquals("""<list><struct><value>1</value></struct><struct><value>2</value></struct><struct><value>3</value></struct></list>""", xml.toByteArray().decodeToString())
+        assertEquals("""<list><value><value>1</value></value><value><value>2</value></value><value><value>3</value></value></list>""", xml.toByteArray().decodeToString())
     }
 
+    /**
+     * {    "A1":{"b":{      "value":1}},                      "A2":{"b":{      "value":2}},                      "A3":{"b":{      "value":3}}}
+     * <map><A1>  <b> <value><value> 1</value></value></b></A1><A2>  <b> <value><value> 2</value></value></b></A2><A3>  <b> <value><value> 3</value></value></b></A3></map>
+     * ^ --------------------------------- root container
+     *                ^ ------------------ struct container
+     *                        ^ ---------- primitive wrapper
+     */
     @Test
     fun `can serialize map`() {
         val objs = mapOf("A1" to A(
@@ -91,7 +98,7 @@ class XmlSerializerTest {
                 entry(obj.key, obj.value)
             }
         }
-        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", xml.toByteArray().decodeToString())
+        assertEquals("""<map><A1><b><value><value>1</value></value></b></A1><A2><b><value><value>2</value></value></b></A2><A3><b><value><value>3</value></value></b></A3></map>""", xml.toByteArray().decodeToString())
     }
 
     @Test
