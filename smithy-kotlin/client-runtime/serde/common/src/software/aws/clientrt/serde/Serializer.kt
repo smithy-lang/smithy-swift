@@ -20,17 +20,17 @@ interface Serializer : PrimitiveSerializer {
     /**
      * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the struct's fields.
      */
-    fun beginStruct(): StructSerializer
+    fun beginStruct(name: String? = null): StructSerializer
 
     /**
      * Begin a list (i.e. in JSON this would be a '[') and return a [ListSerializer] that can be used to serialize the list's elements.
      */
-    fun beginList(): ListSerializer
+    fun beginList(name: String? = null): ListSerializer
 
     /**
      * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
      */
-    fun beginMap(): MapSerializer
+    fun beginMap(name: String? = null): MapSerializer
 
     /**
      * Consume the serializer and get the payload as a [ByteArray]
@@ -160,7 +160,7 @@ interface StructSerializer : PrimitiveSerializer {
     /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
      */
-    fun endStruct()
+    fun endStruct(name: String? = null)
 }
 
 /**
@@ -171,7 +171,7 @@ interface ListSerializer : PrimitiveSerializer {
     /**
      * Ends the list that was started (i.e. in JSON this would be a ']').
      */
-    fun endList()
+    fun endList(name: String? = null)
 }
 
 /**
@@ -272,7 +272,7 @@ interface MapSerializer : PrimitiveSerializer {
     /**
      * Ends the map that was started (i.e. in JSON this would be a '}').
      */
-    fun endMap()
+    fun endMap(name: String? = null)
 }
 
 /**
@@ -353,7 +353,7 @@ interface PrimitiveSerializer {
     /**
      * Serializes the given value.
      *
-     * @param value
+     * @param descriptor
      */
     fun serializeNull(descriptor: SdkFieldDescriptor)
 }
@@ -367,6 +367,12 @@ inline fun Serializer.serializeStruct(crossinline block: StructSerializer.() -> 
     struct.endStruct()
 }
 
+inline fun Serializer.serializeStruct(name: String, crossinline block: StructSerializer.() -> Unit) {
+    val struct = beginStruct(name)
+    struct.block()
+    struct.endStruct(name)
+}
+
 /**
  * All elements of a list are expected to be serialized in the given block.
  */
@@ -376,6 +382,12 @@ inline fun Serializer.serializeList(crossinline block: ListSerializer.() -> Unit
     list.endList()
 }
 
+inline fun Serializer.serializeList(name: String, crossinline block: ListSerializer.() -> Unit) {
+    val list = beginList(name)
+    list.block()
+    list.endList(name)
+}
+
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
@@ -383,4 +395,10 @@ inline fun Serializer.serializeMap(crossinline block: MapSerializer.() -> Unit) 
     val map = beginMap()
     map.block()
     map.endMap()
+}
+
+inline fun Serializer.serializeMap(name: String, crossinline block: MapSerializer.() -> Unit) {
+    val map = beginMap(name)
+    map.block()
+    map.endMap(name)
 }

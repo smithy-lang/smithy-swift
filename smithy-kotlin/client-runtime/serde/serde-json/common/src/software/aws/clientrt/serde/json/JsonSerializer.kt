@@ -24,30 +24,30 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         return jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
     }
 
-    override fun beginStruct(): StructSerializer {
+    override fun beginStruct(name: String?): StructSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun beginList(): ListSerializer {
+    override fun beginList(name: String?): ListSerializer {
         jsonWriter.beginArray()
         return this
     }
 
-    override fun beginMap(): MapSerializer {
+    override fun beginMap(name: String?): MapSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun endStruct() {
+    override fun endStruct(name: String?) {
         jsonWriter.endObject()
     }
 
-    override fun endList() {
+    override fun endList(name: String?) {
         jsonWriter.endArray()
     }
 
-    override fun endMap() {
+    override fun endMap(name: String?) {
         jsonWriter.endObject()
     }
 
