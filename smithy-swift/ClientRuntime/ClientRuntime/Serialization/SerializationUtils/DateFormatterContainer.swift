@@ -71,7 +71,6 @@ struct EpochSecondsDateFormatterContainer: DateFormatterContainer {
     }
     
     static func decode(encodedDate: EncodedValueType) -> Date? {
-        // use the formatters in order of priority
         let decodedValue = EpochSecondsDateFormatter().date(from: encodedDate)
         return decodedValue
     }
