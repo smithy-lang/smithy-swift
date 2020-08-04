@@ -20,7 +20,7 @@ extension DateFormatter {
     Configures RFC 5322(822) Date Formatter
     https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
     */
-    static let rfc5322DateFormatter: DateFormatterProtocol = {
+    static let rfc5322DateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EE, dd MMM yyyy HH:mm:ss zzz"
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -32,7 +32,7 @@ extension DateFormatter {
     Configures ISO 8601 Date Formatter With Fractional Seconds
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithFractionalSeconds: DateFormatterProtocol = {
+    static let iso8601DateFormatterWithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
@@ -42,7 +42,7 @@ extension DateFormatter {
     Configures default ISO 8601 Date Formatter
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithoutFractionalSeconds: DateFormatterProtocol = {
+    static let iso8601DateFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
         return ISO8601DateFormatter()
     }()
     
@@ -50,7 +50,7 @@ extension DateFormatter {
     Configures an Epoch Seconds based formatter.
     Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
     */
-    static let epochSecondsDateFormatter: DateFormatterProtocol = {
+    static let epochSecondsDateFormatter: EpochSecondsDateFormatter = {
         return EpochSecondsDateFormatter()
     }()
 }
