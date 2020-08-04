@@ -24,7 +24,7 @@ typealias EpochSecondsDate = AWSDate<EpochSecondsDateFormatterContainer>
  Wraps a Date object with the format information.
  */
 public struct AWSDate<T: DateFormatterContainer>: Codable {
-    var value: Date
+    let value: Date
     
     init(from value: Date) {
         self.value = value
