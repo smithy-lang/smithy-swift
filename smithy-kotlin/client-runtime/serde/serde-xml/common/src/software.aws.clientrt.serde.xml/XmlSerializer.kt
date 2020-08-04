@@ -16,9 +16,7 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
 
-class XmlSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
-
-    private val xmlWriter = xmlStreamWriter()
+class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, ListSerializer, MapSerializer, StructSerializer {
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes

@@ -26,69 +26,69 @@ import software.aws.clientrt.serde.*
 class XmlDeserializerTest {
     @Test
     fun `it handles doubles`() {
-        val payload = "1.2".encodeToByteArray()
+        val payload = "<node>1.2</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeDouble()
+        val actual = deserializer.deserializeDouble(SdkFieldDescriptor("node"))
         val expected = 1.2
         assertTrue(abs(actual - expected) <= 0.0001)
     }
 
     @Test
     fun `it handles floats`() {
-        val payload = "1.2".encodeToByteArray()
+        val payload = "<node>1.2</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeFloat()
+        val actual = deserializer.deserializeFloat(SdkFieldDescriptor("node"))
         val expected = 1.2f
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
 
     @Test
     fun `it handles int`() {
-        val payload = "1.2".encodeToByteArray()
+        val payload = "<node>1</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeInt()
+        val actual = deserializer.deserializeInt(SdkFieldDescriptor("node"))
         val expected = 1
         assertEquals(expected, actual)
     }
 
     @Test
     fun `it handles byte as number`() {
-        val payload = "1".encodeToByteArray()
+        val payload = "<node>1</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeByte()
+        val actual = deserializer.deserializeByte(SdkFieldDescriptor("node"))
         val expected: Byte = 1
         assertEquals(expected, actual)
     }
 
     @Test
     fun `it handles short`() {
-        val payload = "1.2".encodeToByteArray()
+        val payload = "<node>1</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeShort()
+        val actual = deserializer.deserializeShort(SdkFieldDescriptor("node"))
         val expected: Short = 1
         assertEquals(expected, actual)
     }
 
     @Test
     fun `it handles long`() {
-        val payload = "1.2".encodeToByteArray()
+        val payload = "<node>12</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeLong()
-        val expected = 1L
+        val actual = deserializer.deserializeLong(SdkFieldDescriptor("node"))
+        val expected = 12L
         assertEquals(expected, actual)
     }
 
     @Test
     fun `it handles bool`() {
-        val payload = "true".encodeToByteArray()
+        val payload = "<node>true</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeBool()
+        val actual = deserializer.deserializeBool(SdkFieldDescriptor("node"))
         assertTrue(actual)
     }
 
     @Test
     fun `it handles lists`() {
-        val payload = "[1,2,3]".encodeToByteArray()
+        val payload = "<list><element>1</element><element>2</element><element>3</element></list>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList {
             val list = mutableListOf<Int>()
@@ -104,10 +104,16 @@ class XmlDeserializerTest {
     @Test
     fun `it handles maps`() {
         val payload = """
-            {
-                "key1": 1,
-                "key2": 2
-            }
+            <map>
+                <entry>
+                    <key>key1</key>
+                    <value>1</value>
+                </entry>
+                <entry>
+                    <key>key2</key>
+                    <value>2</value>
+                </entry>
+            </map>
         """.trimIndent().encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap {
@@ -152,10 +158,10 @@ class XmlDeserializerTest {
     @Test
     fun `it handles basic structs`() {
         val payload = """
-        {
-            "x": 1,
-            "y": 2
-        }
+            <payload>
+                <x>1</x>
+                <y>2</y>
+            </payload>
         """.trimIndent().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
@@ -177,16 +183,16 @@ class XmlDeserializerTest {
     @Test
     fun `it handles list of objects`() {
         val payload = """
-        [
-            {
-                "x": 1,
-                "y": 2
-            },
-            {
-                "x": 3,
-                "y": 4
-            }
-        ]
+        <list>
+            <payload>
+                <x>1</x>
+                <y>2</y>
+            </payload>
+            <payload>
+                <x>3</x>
+                <y>4</y>
+            </payload>
+        </list>
         """.trimIndent().encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList {
@@ -206,11 +212,11 @@ class XmlDeserializerTest {
     @Test
     fun `it enumerates unknown struct fields`() {
         val payload = """
-        {
-            "x": 1,
-            "z": "unknown field",
-            "y": 2
-        }
+        <payload>
+            <x>1</x>
+            <z>unknown field</z>
+            <y>2</y>
+        </payload>
         """.trimIndent().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
