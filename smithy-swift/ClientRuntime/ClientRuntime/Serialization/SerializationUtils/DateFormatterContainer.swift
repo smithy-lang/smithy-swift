@@ -29,14 +29,12 @@ extension DateFormatterContainer {
     
     static func decode(encodedDate: String) -> Date? {
         // use the formatters in order of priority
-        var decodedValue: Date?
         for dateFormatter in dateFormatters {
-            decodedValue = dateFormatter.date(from: encodedDate)
-            if (decodedValue != nil) {
-                break
+            if let decodedValue = dateFormatter.date(from: encodedDate) {
+                return decodedValue
             }
         }
-        return decodedValue
+        return nil
     }
 }
 
