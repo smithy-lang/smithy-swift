@@ -50,7 +50,7 @@ class DateFormatterTests: XCTestCase {
              
         ]
         
-        let formatter = getRFC7231DateFormatter()
+        let formatter = DateFormatter.rfc5322DateFormatter
         
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -73,7 +73,7 @@ class DateFormatterTests: XCTestCase {
             "Mon, 07 Nov 1994 14:02:72 GMT"
         ]
         
-        let formatter = getRFC7231DateFormatter()
+        let formatter = DateFormatter.rfc5322DateFormatter
         
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
@@ -108,7 +108,7 @@ class DateFormatterTests: XCTestCase {
                 ExpectedDateComponents(day: 22, month: 7, year: 193, hour: 4, minute: 55, second: 0)
         ]
         
-        let formatter = getISO8601DateFormatterWithoutFractionalSeconds()
+        let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
         
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -143,7 +143,7 @@ class DateFormatterTests: XCTestCase {
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, nanoSecond: 6999969)
         ]
         
-        let formatter = getISO8601DateFormatterWithFractionalSeconds()
+        let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -161,12 +161,11 @@ class DateFormatterTests: XCTestCase {
             "20201105",
             "2017-07-032T03:30:00Z",
             "2017-07-22T03::00Z",
-            "2017-07-22T03:0f:00Z",
-            "2017-07-22T03:30:02.1234567891Z"
+            "2017-07-22T03:0f:00Z"
         ]
         
-        let formatterWithoutFractionalSeconds = getISO8601DateFormatterWithoutFractionalSeconds()
-        let formatterWithFractionalSeconds = getISO8601DateFormatterWithoutFractionalSeconds()
+        let formatterWithoutFractionalSeconds = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+        let formatterWithFractionalSeconds = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         
         for dateString in inValidDates {
             var constructedDate: Date? = formatterWithoutFractionalSeconds.date(from: dateString)
@@ -261,18 +260,38 @@ class DateFormatterTests: XCTestCase {
     }
     
     struct StructWithDates: Codable {
+        let isoDatesList: [ISO8601Date]
+        let rfc5322DatesList: [RFC5322Date]
+        let epochSecondsDatesList: [EpochSecondsDate]
+        let normalDatesList: [Date]
+        var isoDictWithList: [String: [String: [ISO8601Date]]]
+        var nestedStructWithDates: NestedStructWithDates
+        
+        init(isoDatesList: [ISO8601Date],
+             rfc5322DatesList: [RFC5322Date],
+             epochSecondsDatesList: [EpochSecondsDate],
+             normalDatesList: [Date],
+             isoDictWithList: [String: [String: [ISO8601Date]]],
+             nestedStructWithDates: NestedStructWithDates) {
+            self.isoDatesList = isoDatesList
+            self.rfc5322DatesList = rfc5322DatesList
+            self.epochSecondsDatesList = epochSecondsDatesList
+            self.normalDatesList = normalDatesList
+            self.isoDictWithList = isoDictWithList
+            self.nestedStructWithDates = nestedStructWithDates
+        }
+    }
+    
+    struct NestedStructWithDates: Codable {
         let iso8601Date: ISO8601Date
-        let rfc7231Date: RFC7231Date
-        let epochDate: EpochSecondsDate
+        let rfc5322Date: RFC5322Date
+        let epochSecondsDate: EpochSecondsDate
         let normalDate: Date
         
-        init(iso8601Date: ISO8601Date,
-             rfc7231Date: RFC7231Date,
-             epochDate: EpochSecondsDate,
-             normalDate: Date) {
+        init(iso8601Date: ISO8601Date, rfc5322Date: RFC5322Date, epochSecondsDate: EpochSecondsDate, normalDate: Date) {
             self.iso8601Date = iso8601Date
-            self.rfc7231Date = rfc7231Date
-            self.epochDate = epochDate
+            self.rfc5322Date = rfc5322Date
+            self.epochSecondsDate = epochSecondsDate
             self.normalDate = normalDate
         }
     }
@@ -280,18 +299,25 @@ class DateFormatterTests: XCTestCase {
     func testEncodingStructWithDates() {
         // test date with any format
         testDateFormatter.dateFormat = "yyyy/MM/dd'Q'HH:mm:ssZ"
-        // testDateFormatter.locale = Locale.current
         
         let testDateString = "1993/11/20Q05:45:01Z"
         guard let testDate = testDateFormatter.date(from: testDateString) else {
             XCTFail("Could not create test date object from string")
             return
         }
+        let iso8601Date = ISO8601Date(from: testDate)
+        let rfc5322Date = RFC5322Date(from: testDate)
+        let epochSecondsDate = EpochSecondsDate(from: testDate)
         
-        let structWithDates = StructWithDates(iso8601Date: ISO8601Date(from: testDate),
-                                              rfc7231Date: RFC7231Date(from: testDate),
-                                              epochDate: EpochSecondsDate(from: testDate),
-                                              normalDate: testDate)
+        let structWithDates = StructWithDates(isoDatesList: [iso8601Date, iso8601Date],
+                                              rfc5322DatesList: [rfc5322Date, rfc5322Date],
+                                              epochSecondsDatesList: [epochSecondsDate, epochSecondsDate],
+                                              normalDatesList: [testDate, testDate],
+                                              isoDictWithList: ["a": ["b": [iso8601Date, iso8601Date]]],
+                                              nestedStructWithDates: NestedStructWithDates(iso8601Date: iso8601Date,
+                                                                                           rfc5322Date: rfc5322Date,
+                                                                                           epochSecondsDate: epochSecondsDate,
+                                                                                           normalDate: testDate))
         guard let encodedStructWithDates = try? JSONEncoder().encode(structWithDates) else {
             XCTFail("could not encode struct with different date formats")
             return
@@ -303,31 +329,41 @@ class DateFormatterTests: XCTestCase {
         }
         
         let expectedISO8601DateString = "1993-11-20T05:45:01.000Z"
-        let expectedRFC7231DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
-        let expectedEpochSecondsDateString = "753774301.0"
+        let expectedRFC5322DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
+        let expectedEpochSecondsDateString = "753774301"
         let expectedStructWithDatesJSON =
-            "{\"epochDate\":\"\(expectedEpochSecondsDateString)\"," +
-            "\"iso8601Date\":\"\(expectedISO8601DateString)\"," +
-            "\"rfc7231Date\":\"\(expectedRFC7231DateString)\"," +
-            "\"normalDate\":-224532899}"
+            "{\"rfc5322DatesList\":[\"\(expectedRFC5322DateString)\",\"\(expectedRFC5322DateString)\"]," +
+             "\"epochSecondsDatesList\":[\(expectedEpochSecondsDateString),\(expectedEpochSecondsDateString)]," +
+             "\"normalDatesList\":[-224532899,-224532899]," +
+             "\"isoDatesList\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]," +
+             "\"isoDictWithList\":{\"a\":{\"b\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]}}," +
+             "\"nestedStructWithDates\":{\"normalDate\":-224532899," +
+                                        "\"iso8601Date\":\"\(expectedISO8601DateString)\"," +
+                                        "\"rfc5322Date\":\"\(expectedRFC5322DateString)\"," +
+                                        "\"epochSecondsDate\":\(expectedEpochSecondsDateString)}}"
         XCTAssertEqual(structWithDatesJSON, expectedStructWithDatesJSON)
         
         // Test fetching the formatted date as string
-        XCTAssertEqual(structWithDates.iso8601Date.stringValue, expectedISO8601DateString)
-        XCTAssertEqual(structWithDates.rfc7231Date.stringValue, expectedRFC7231DateString)
-        XCTAssertEqual(structWithDates.epochDate.stringValue, expectedEpochSecondsDateString)
+        XCTAssertEqual(structWithDates.nestedStructWithDates.iso8601Date.stringValue, expectedISO8601DateString)
+        XCTAssertEqual(structWithDates.nestedStructWithDates.rfc5322Date.stringValue, expectedRFC5322DateString)
+        XCTAssertEqual(Double(structWithDates.nestedStructWithDates.epochSecondsDate.stringValue), Double(expectedEpochSecondsDateString))
     }
     
     func testDecodingStructWithDatesFromValidStrings() {
         let iso8601DateString = "1993-11-20T05:45:01.000Z"
-        let rfc7231DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
+        let rfc5322DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
         let epochSecondsDateString = "753774301.0"
         
         let validStructWithDatesJSON =
-            "{\"epochDate\":\"\(epochSecondsDateString)\"," +
-            "\"iso8601Date\":\"\(iso8601DateString)\"," +
-            "\"rfc7231Date\":\"\(rfc7231DateString)\"," +
-            "\"normalDate\":-224532899}"
+            "{\"rfc5322DatesList\":[\"\(rfc5322DateString)\",\"\(rfc5322DateString)\"]," +
+            "\"epochSecondsDatesList\":[\(epochSecondsDateString),\(epochSecondsDateString)]," +
+            "\"normalDatesList\":[-224532899,-224532899]," +
+            "\"isoDatesList\":[\"\(iso8601DateString)\",\"\(iso8601DateString)\"]," +
+            "\"isoDictWithList\":{\"a\":{\"b\":[\"\(iso8601DateString)\",\"\(iso8601DateString)\"]}}," +
+            "\"nestedStructWithDates\":{\"normalDate\":-224532899," +
+                                       "\"iso8601Date\":\"\(iso8601DateString)\"," +
+                                       "\"rfc5322Date\":\"\(rfc5322DateString)\"," +
+                                       "\"epochSecondsDate\":\(epochSecondsDateString)}}"
         
         guard let encodedValidStructWithDatesJSON = validStructWithDatesJSON.data(using: .utf8) else {
             XCTFail("could not convert validStructWithDatesJSON string to data")
@@ -339,193 +375,12 @@ class DateFormatterTests: XCTestCase {
             return
         }
         
-        let actualISO8601Date = getISO8601DateFormatterWithFractionalSeconds().date(from: iso8601DateString)
-        let actualRFC7231Date = getRFC7231DateFormatter().date(from: rfc7231DateString)
+        let actualISO8601Date = DateFormatter.iso8601DateFormatterWithFractionalSeconds.date(from: iso8601DateString)
+        let actualRFC7231Date = DateFormatter.rfc5322DateFormatter.date(from: rfc5322DateString)
         let actualEpochSecondsDate = EpochSecondsDateFormatter().date(from: epochSecondsDateString)
-        XCTAssertEqual(actualISO8601Date, decodedStructWithDates.iso8601Date.value)
-        XCTAssertEqual(actualRFC7231Date, decodedStructWithDates.rfc7231Date.value)
-        XCTAssertEqual(actualEpochSecondsDate, decodedStructWithDates.epochDate.value)
-        XCTAssertNotNil(decodedStructWithDates.normalDate, "decoding default date representation failed")
-    }
-    
-    
-    struct StructWithDatesCollection: Codable {
-        let isoDate: Date
-        let normalDate: Date
-        let isoList: [Date]
-        let normalList: [Date]
-        var isoDictWithList: [String: [Date]]
-        var structWithDate: StructWithDate
-        
-        init(isoDate: Date, normalDate: Date, isoList: [Date], normalList: [Date], isoDictWithList: [String: [Date]], structWithDate: StructWithDate) {
-            self.isoDate = isoDate
-            self.normalDate = normalDate
-            self.isoList = isoList
-            self.normalList = normalList
-            self.isoDictWithList = isoDictWithList
-            self.structWithDate = structWithDate
-        }
-        
-        enum CodingKeys: String, CodingKey {
-            case isoDate
-            case normalDate
-            case isoList
-            case normalList
-            case isoDictWithList
-            case structWithDate
-        }
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            // var text = getISO8601DateFormatterWithFractionalSeconds().string(from: isoDate)
-            try container.encode(isoDate, forKey: .isoDate)
-
-            // text = EpochSecondsDateFormatter().string(from: normalDate)
-            try container.encode(normalDate, forKey: .normalDate)
-
-//            var unkeyedContainer = encoder.unkeyedContainer()
-//            unkeyedContainer
-//            for iso in isoList {
-//                text = getISO8601DateFormatterWithFractionalSeconds().string(from: iso)
-//                try container.encode(text, forKey: .isoList)
-//            }
-            //let isoStringList = getISO8601DateFormatterWithFractionalSeconds().string(from: isoList)
-             try container.encode(isoList, forKey: .isoList)
-            try container.encode(normalList, forKey: .normalList)
-
-//            for entry in isoDictWithList {
-//
-//                // text = getISO8601DateFormatterWithFractionalSeconds().string(from: entry.value)
-//                try container.encode(text, forKey: .isoDictWithList)
-//            }
-            // try container.encode(isoList, forKey: .isoList)
-            try container.encode(isoDictWithList, forKey: .isoDictWithList)
-            try container.encode(structWithDate, forKey: .structWithDate)
-        }
-    }
-    
-    struct StructWithDate: Codable {
-        let isoDate: Date
-        let normalDate: Date
-        
-        init(isoDate: Date) {
-            self.isoDate = isoDate
-            self.normalDate = Date()
-        }
-        
-        enum CodingKeys: String, CodingKey {
-            case isoDate, normalDate
-        }
-        
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            // let text = getISO8601DateFormatterWithFractionalSeconds().string(from: isoDate)
-            try container.encode(isoDate, forKey: .isoDate)
-            try container.encode(normalDate, forKey: .normalDate)
-        }
-    }
-    
-    func testStructWithDatesCollection() {
-        let iso8601DateString = "1993-11-20T05:45:01.000Z"
-        let actualISO8601Date = getISO8601DateFormatterWithFractionalSeconds().date(from: iso8601DateString)!
-        let date = Date()
-        
-        let structWithDatesCollection = StructWithDatesCollection(isoDate: date,
-                                                                  normalDate: date,
-                                                                  isoList: [date, actualISO8601Date],
-                                                                  normalList: [date, actualISO8601Date],
-                                                                  isoDictWithList: ["a": [actualISO8601Date, date]],
-                                                                  structWithDate: StructWithDate(isoDate: date))
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .custom({ (key) -> DateFormatterProtocol? in
-            print("key", key)
-            switch key {
-            case StructWithDatesCollection.CodingKeys.isoDate,
-                 StructWithDatesCollection.CodingKeys.isoList,
-                 StructWithDatesCollection.CodingKeys.isoDictWithList,
-                 StructWithDatesCollection.CodingKeys.structWithDate,
-                 StructWithDate.CodingKeys.isoDate:
-                return getISO8601DateFormatterWithFractionalSeconds()
-            default:
-                return EpochSecondsDateFormatter()
-            }
-        })
-
-//        let decoder = JSONDecoder()
-//
-//        decoder.dateDecodingStrategy = .custom({ (key) -> DateFormatterProtocol? in
-//            switch key {
-//            case StructWithDatesCollection.CodingKeys.isoDate,
-//                 StructWithDatesCollection.CodingKeys.isoList,
-//                 StructWithDatesCollection.CodingKeys.isoDictWithList,
-//                 StructWithDatesCollection.CodingKeys.structWithDate:
-//                return getISO8601DateFormatterWithFractionalSeconds()
-//            default:
-//                return EpochSecondsDateFormatter()
-//            }
-//        })
-        
-        guard let encodedStructWithDates = try? encoder.encode(structWithDatesCollection) else {
-            XCTFail("could not encode struct with different date formats")
-            return
-        }
-        
-        guard let structWithDatesJSON = String(data: encodedStructWithDates, encoding: .utf8) else {
-            XCTFail("encoded struct with different date formats is not a valid JSON String")
-            return
-        }
-        
-        print(structWithDatesJSON)
-        
-    }
-}
-
-extension JSONDecoder.DateDecodingStrategy {
-    static func custom(_ formatterForKey: @escaping (CodingKey) throws -> DateFormatterProtocol?) -> JSONDecoder.DateDecodingStrategy {
-        return .custom({ (decoder) -> Date in
-            guard let codingKey = decoder.codingPath.last else {
-                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "No Coding Path Found"))
-            }
-
-            guard let container = try? decoder.singleValueContainer(),
-                let text = try? container.decode(String.self) else {
-                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not decode date text"))
-            }
-
-            guard let dateFormatter = try formatterForKey(codingKey) else {
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "No date formatter for date text")
-            }
-
-            if let date = dateFormatter.date(from: text) {
-                return date
-            } else {
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(text)")
-            }
-        })
-    }
-}
-
-extension JSONEncoder.DateEncodingStrategy {
-    static func custom(_ formatterForKey: @escaping (CodingKey) throws -> DateFormatterProtocol?) -> JSONEncoder.DateEncodingStrategy {
-        return .custom({ (date, encoder) -> Void in
-            print(encoder.codingPath)
-            var codingKey: CodingKey?
-            codingKey = encoder.codingPath.last
-//            if codingKey?.stringValue.contains("Index") ?? false {
-//                codingKey = encoder.codingPath.first
-//            }
-            
-            guard let key = codingKey else {
-                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: encoder.codingPath, debugDescription: "No Coding Path Found"))
-            }
-            
-            guard let dateFormatter = try formatterForKey(key) else {
-                throw EncodingError.invalidValue("Date Formatter", EncodingError.Context.init(codingPath: [key], debugDescription: "could not find date formatter"))
-            }
-            
-            let text = dateFormatter.string(from: date)
-            var container = encoder.singleValueContainer()
-            try container.encode(text)
-        })
+        XCTAssertEqual(actualISO8601Date, decodedStructWithDates.nestedStructWithDates.iso8601Date.value)
+        XCTAssertEqual(actualRFC7231Date, decodedStructWithDates.nestedStructWithDates.rfc5322Date.value)
+        XCTAssertEqual(actualEpochSecondsDate, decodedStructWithDates.nestedStructWithDates.epochSecondsDate.value)
+        XCTAssertNotNil(decodedStructWithDates.nestedStructWithDates.normalDate, "decoding default date representation failed")
     }
 }

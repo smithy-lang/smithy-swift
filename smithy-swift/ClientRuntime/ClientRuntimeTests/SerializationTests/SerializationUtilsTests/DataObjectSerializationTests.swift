@@ -101,7 +101,6 @@ class DataObjectSerializationTests: XCTestCase {
                 XCTFail("failed to encode string encodedStructWithDataObjectJSON using utf8 encoding")
                 return
             }
-            
             XCTAssertNil(try? JSONDecoder().decode(StructWithDataObject.self, from: encodedStructWithDataObjectJSON))
         }
     }

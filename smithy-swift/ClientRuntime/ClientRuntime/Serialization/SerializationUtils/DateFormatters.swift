@@ -15,45 +15,45 @@
 
 import Foundation
 
-/*
- Configures RFC 7231 Date Formatter
- https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
- */
-public func getRFC7231DateFormatter() -> DateFormatter {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "EE, dd MMM yyyy HH:mm:ss zzz"
-    formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(abbreviation: "GMT")
-    return formatter
+extension DateFormatter {
+    /*
+    Configures RFC 5322(822) Date Formatter
+    https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
+    */
+    static let rfc5322DateFormatter: DateFormatterProtocol = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EE, dd MMM yyyy HH:mm:ss zzz"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(abbreviation: "GMT")
+        return formatter
+    }()
+    
+    /*
+    Configures ISO 8601 Date Formatter With Fractional Seconds
+    https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
+    */
+    static let iso8601DateFormatterWithFractionalSeconds: DateFormatterProtocol = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    /*
+    Configures default ISO 8601 Date Formatter
+    https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
+    */
+    static let iso8601DateFormatterWithoutFractionalSeconds: DateFormatterProtocol = {
+        return ISO8601DateFormatter()
+    }()
+    
+    /*
+    Configures an Epoch Seconds based formatter.
+    Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
+    */
+    static let epochSecondsDateFormatter: DateFormatterProtocol = {
+        return EpochSecondsDateFormatter()
+    }()
 }
-
-/*
-Configures ISO 8601 Date Formatter With Fractional Seconds
-https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-*/
-public func getISO8601DateFormatterWithFractionalSeconds() -> ISO8601DateFormatter {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    return formatter
-}
-
-/*
-Configures ISO 8601 Date Formatter
-https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-*/
-public func getISO8601DateFormatterWithoutFractionalSeconds() -> ISO8601DateFormatter {
-    let formatter = ISO8601DateFormatter()
-    return formatter
-}
-
-
-public protocol DateFormatterProtocol {
-    func date(from string: String) -> Date?
-    func string(from date: Date) -> String
-}
-
-extension DateFormatter: DateFormatterProtocol {}
-extension ISO8601DateFormatter: DateFormatterProtocol {}
 
 /*
  Configures an Epoch Seconds based formatter.
@@ -64,7 +64,7 @@ struct EpochSecondsDateFormatter: DateFormatterProtocol {
         guard let double = Double(string) else {
             return nil
         }
-        return Date(timeIntervalSince1970: double)
+        return date(from: double)
     }
     
     func string(from date: Date) -> String {
@@ -83,3 +83,14 @@ struct EpochSecondsDateFormatter: DateFormatterProtocol {
 enum DateDecodingError: Error {
     case parseError
 }
+
+/*
+ Common protocol for normal and specialized date formatters
+ */
+public protocol DateFormatterProtocol {
+    func date(from string: String) -> Date?
+    func string(from date: Date) -> String
+}
+
+extension DateFormatter: DateFormatterProtocol {}
+extension ISO8601DateFormatter: DateFormatterProtocol {}

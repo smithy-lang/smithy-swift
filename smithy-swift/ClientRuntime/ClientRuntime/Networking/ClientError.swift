@@ -15,10 +15,24 @@
 
 import Foundation
 
-public enum ClientError: Error {
+public enum ClientError: Error, Equatable {
     case networkError(String)
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
-
+    
+    public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
+        switch (lhs, rhs) {
+        case (let .networkError(lhsNetworkErrorString), let .networkError(rhsNetworkErrorString)):
+            return lhsNetworkErrorString == rhsNetworkErrorString
+        case (let .serializationFailed(lhsSerializationFailedString), let .serializationFailed(rhsSerializationFailedString)):
+            return lhsSerializationFailedString == rhsSerializationFailedString
+        case (let .deserializationFailed(lhsDeserializationFailedError), let .deserializationFailed(rhsDeserializationFailedError)):
+            return lhsDeserializationFailedError.localizedDescription == rhsDeserializationFailedError.localizedDescription
+        case (let .dataNotFound(lhsDataNotFoundString), let .dataNotFound(rhsDataNotFoundString)):
+            return lhsDataNotFoundString == rhsDataNotFoundString
+        default:
+            return false
+        }
+    }
 }
