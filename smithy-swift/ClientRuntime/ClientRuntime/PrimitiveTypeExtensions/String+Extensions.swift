@@ -51,3 +51,13 @@ extension StringProtocol {
         self = lowercasingFirstLetter()
     }
 }
+
+extension StringProtocol {
+    func base64EncodedString() throws -> String {
+        let utf8Encoded = self.data(using: .utf8)
+        guard let base64String = utf8Encoded?.base64EncodedString() else {
+            throw ClientError.serializationFailed("Failed to base64 encode a String")
+        }
+        return base64String
+    }
+}

@@ -24,8 +24,11 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator.Companion.getFormattedDateString
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -97,7 +100,17 @@ class HttpProtocolClientGenerator(
                     val binding = pathBindings.find { binding ->
                         binding.memberName == segment.content
                     } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
-                    "\\(input.${binding.member.memberName})"
+
+                    // shape must be string, number, boolean, or timestamp
+                    val targetShape = model.expectShape(binding.member.target)
+                    var unformattedLabel = "input.${binding.member.memberName}"
+                    if (targetShape.isTimestampShape) {
+                        unformattedLabel = getFormattedDateString(TimestampFormatTrait.Format.DATE_TIME, unformattedLabel)
+                    } else if (targetShape.isStringShape) {
+                        val enumRawValueSuffix = targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+                        unformattedLabel = "$unformattedLabel$enumRawValueSuffix"
+                    }
+                    "\\(${unformattedLabel})"
                 } else {
                     // literal
                     segment.content

@@ -53,4 +53,13 @@ class StringExtensionsTests: XCTestCase {
         let escapedString = stringWithDots.escape([(".", "-")])
         XCTAssertTrue(escapedString == kebabCaseString)
     }
+    
+    func testValidBase64EncodedString() {
+        let normalString = "ABC"
+        guard let base64EncodedString = try? normalString.base64EncodedString() else {
+            XCTFail("Failed to base64 encode a valid string")
+            return
+        }
+        XCTAssertEqual(base64EncodedString, "QUJD")
+    }
 }

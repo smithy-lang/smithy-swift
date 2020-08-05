@@ -21,11 +21,13 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
+    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
@@ -50,7 +52,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     }
 
     @Test
-    fun `Input request conforms to HttpRequestBinding`() {
+    fun `it creates smoke test request serializer`() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()

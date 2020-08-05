@@ -92,5 +92,19 @@ public protocol DateFormatterProtocol {
     func string(from date: Date) -> String
 }
 
+extension DateFormatterProtocol {
+    func string(from date: ISO8601Date) -> String {
+        return string(from: date.value)
+    }
+    
+    func string(from date: RFC5322Date) -> String {
+        return string(from: date.value)
+    }
+    
+    func string(from date: EpochSecondsDate) -> String {
+        return string(from: date.value)
+    }
+}
+
 extension DateFormatter: DateFormatterProtocol {}
 extension ISO8601DateFormatter: DateFormatterProtocol {}
