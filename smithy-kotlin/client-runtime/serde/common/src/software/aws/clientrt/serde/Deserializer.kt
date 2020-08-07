@@ -41,11 +41,11 @@ package software.aws.clientrt.serde
  *     field(Y_DESCRIPTOR)
  * }
  * loop@ while(true) {
- *     when(struct.nextField(OBJ_DESCRIPTOR)) {
+ *     when(struct.findNextFieldIndexOrNull(OBJ_DESCRIPTOR)) {
  *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
  *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()
- *         Deserializer.FieldIterator.EXHAUSTED -> break@loop
- *         else -> struct.skipValue()
+ *         null -> break@loop
+ *         else -> struct.skipValue() // Unknown Field
  *     }
  * }
  * requireNotNull(x)
@@ -85,17 +85,10 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface ElementIterator : PrimitiveDeserializer {
         /**
-         * Advance to the next element. Returns [EXHAUSTED] when no more elements are in the list
+         * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
          */
-        fun next(): Int
-
-        companion object {
-            /**
-             * The iterator has been exhausted, no more fields will be returned by [next]
-             */
-            const val EXHAUSTED = -1
-        }
+        fun hasNext(): Boolean
     }
 
     /**
@@ -103,22 +96,15 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface EntryIterator : PrimitiveDeserializer {
         /**
-         * Advance to the next element. Returns [EXHAUSTED] when no more elements are in the map
+         * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
          */
-        fun next(): Int
+        fun hasNext(): Boolean
 
         /**
          * Read the next key
          */
         fun key(descriptor: SdkFieldDescriptor? = null): String
-
-        companion object {
-            /**
-             * The iterator has been exhausted, no more fields will be returned by [next]
-             */
-            const val EXHAUSTED = -1
-        }
     }
 
     /**
@@ -128,7 +114,7 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found or one of the defined constants
          */
-        fun nextField(descriptor: SdkObjectDescriptor): Int
+        fun findNextFieldIndexOrNull(descriptor: SdkObjectDescriptor): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields
@@ -136,11 +122,6 @@ interface Deserializer : PrimitiveDeserializer {
         fun skipValue()
 
         companion object {
-            /**
-             * The iterator has been exhausted, no more fields will be returned by [nextField]
-             */
-            const val EXHAUSTED = -1
-
             /**
              * An unknown field was encountered
              */

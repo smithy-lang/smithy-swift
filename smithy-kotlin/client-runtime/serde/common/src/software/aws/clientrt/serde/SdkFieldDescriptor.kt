@@ -14,8 +14,6 @@
  */
 package software.aws.clientrt.serde
 
-import kotlin.reflect.KClass
-
 /**
  * Metadata that may influence how a field is serialized and deserialized.
  *

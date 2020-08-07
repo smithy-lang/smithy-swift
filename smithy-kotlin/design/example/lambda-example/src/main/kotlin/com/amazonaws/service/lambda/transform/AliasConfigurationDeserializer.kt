@@ -51,14 +51,14 @@ class AliasConfigurationDeserializer: HttpDeserialize {
 
         deserializer.deserializeStruct(null) {
             loop@while(true) {
-                when(nextField(OBJ_DESCRIPTOR)) {
+                when(findNextFieldIndexOrNull(OBJ_DESCRIPTOR)) {
                     ALIAS_ARN_FIELD_DESCRIPTOR.index -> builder.aliasArn = deserializeString()
                     DESCRIPTION_FIELD_DESCRIPTOR.index -> builder.description = deserializeString()
                     FUNCTION_VERSION_FIELD_DESCRIPTOR.index -> builder.functionVersion = deserializeString()
                     NAME_FIELD_DESCRIPTOR.index -> builder.name = deserializeString()
                     REVISION_ID_FIELD_DESCRIPTOR.index -> builder.revisionId = deserializeString()
                     ROUTING_CONFIG_FIELD_DESCRIPTOR.index -> builder.routingConfig = AliasRoutingConfigurationDeserializer.deserialize(deserializer)
-                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                    null -> break@loop
                     else -> skipValue()
                 }
             }

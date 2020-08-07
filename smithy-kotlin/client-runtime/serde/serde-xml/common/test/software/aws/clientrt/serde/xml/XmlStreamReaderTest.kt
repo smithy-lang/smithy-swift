@@ -14,7 +14,6 @@
  */
 package software.aws.clientrt.serde.xml
 
-import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

@@ -19,9 +19,9 @@ import software.aws.clientrt.serde.SerdeProvider
 import software.aws.clientrt.serde.Serializer
 
 /**
- * JSON serde provider
+ * XML serde provider
  */
 class XmlSerdeProvider : SerdeProvider {
     override fun serializer(): Serializer = XmlSerializer()
-    override fun deserializer(payload: ByteArray): Deserializer = TODO("implement")
+    override fun deserializer(payload: ByteArray): Deserializer = XmlDeserializer(payload)
 }

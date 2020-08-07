@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream
 
 actual fun xmlStreamWriter(pretty: Boolean): XmlStreamWriter = XmlPullSerializer(pretty)
 
-class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer = XmlSerializerFactory()) :
+class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer = xmlSerializerFactory()) :
     XmlStreamWriter {
 
     // Content is serialized to this buffer.
@@ -30,7 +30,7 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
     }
 
     companion object {
-        private fun XmlSerializerFactory(): XmlSerializer {
+        private fun xmlSerializerFactory(): XmlSerializer {
             val factory = XmlPullParserFactory.newInstance(
                 "org.xmlpull.mxp1_serializer.MXSerializer", null
             )

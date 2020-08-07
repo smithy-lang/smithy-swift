@@ -1,7 +1,7 @@
 package software.aws.clientrt.serde.xml
 
 /**
- * Raw tokens produced when reading a JSON document as a stream
+ * Raw tokens produced when reading a XML document as a stream
  */
 sealed class XmlToken {
     /**
@@ -20,12 +20,7 @@ sealed class XmlToken {
     data class Text(val value: String?) : XmlToken()
 
     /**
-     * A JSON 'null'
-     */
-    object Null : XmlToken()
-
-    /**
-     * The end of the JSON stream to signal that the JSON-encoded value has no more
+     * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
     object EndDocument : XmlToken()
@@ -34,7 +29,6 @@ sealed class XmlToken {
         is BeginElement -> "BeginElement"
         is EndElement -> "EndElement"
         is Text -> "Text(${this.value})"
-        Null -> "Null"
         EndDocument -> "EndDocument"
     }
 }
@@ -48,12 +42,13 @@ interface XmlStreamReader {
     fun nextToken(): XmlToken
 
     /**
-     * Recursively skip the next token. Meant for discarding unwanted/unrecognized properties in a JSON document
+     * Recursively skip the next token. Meant for discarding unwanted/unrecognized nodes in an XML document
      */
     fun skipNext()
 
     /**
-     * Peek at the next token type
+     * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
+     * look-ahead at any given time during the parsing of input data.
      */
     fun peek(): XmlToken
 
@@ -64,6 +59,6 @@ interface XmlStreamReader {
 }
 
 /*
-* Creates a [JsonStreamReader] instance
+* Creates an [XmlStreamReader] instance
 */
 internal expect fun xmlStreamReader(payload: ByteArray): XmlStreamReader

@@ -23,35 +23,33 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginStruct(name: String?): StructSerializer {
-        xmlWriter.startTag(name ?: "struct")
+        xmlWriter.startTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
         return this
     }
 
     override fun beginList(name: String?): ListSerializer {
-        xmlWriter.startTag(name ?: "list")
+        xmlWriter.startTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
         return this
     }
 
     override fun beginMap(name: String?): MapSerializer {
-        xmlWriter.startTag(name ?: "map")
+        xmlWriter.startTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
         return this
     }
 
     override fun endStruct(name: String?) {
-       xmlWriter.endTag(name ?: "struct")
+       xmlWriter.endTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
     }
 
     override fun endList(name: String?) {
-        xmlWriter.endTag(name ?: "list")
+        xmlWriter.endTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
     }
 
     override fun endMap(name: String?) {
-        xmlWriter.endTag(name ?: "map")
+        xmlWriter.endTag(name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML.")))
     }
 
-    override fun field(descriptor: JsonFieldDescriptor, value: SdkSerializable) {
-        value.serialize(this)
-    }
+    override fun field(descriptor: JsonFieldDescriptor, value: SdkSerializable) = value.serialize(this)
 
     override fun field(descriptor: JsonFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName)
@@ -107,17 +105,11 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun structField(descriptor: JsonFieldDescriptor, block: StructSerializer.() -> Unit) {
-        serializeStruct(descriptor.serialName, block)
-    }
+    override fun structField(descriptor: JsonFieldDescriptor, block: StructSerializer.() -> Unit) = serializeStruct(descriptor.serialName, block)
 
-    override fun listField(descriptor: JsonFieldDescriptor, block: ListSerializer.() -> Unit) {
-        serializeList(descriptor.serialName, block)
-    }
+    override fun listField(descriptor: JsonFieldDescriptor, block: ListSerializer.() -> Unit) = serializeList(descriptor.serialName, block)
 
-    override fun mapField(descriptor: JsonFieldDescriptor, block: MapSerializer.() -> Unit) {
-        serializeMap(descriptor.serialName, block)
-    }
+    override fun mapField(descriptor: JsonFieldDescriptor, block: MapSerializer.() -> Unit) = serializeMap(descriptor.serialName, block)
 
     override fun entry(key: String, value: Int) {
         xmlWriter.startTag(key)
@@ -181,45 +173,30 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun serializeNull(descriptor: JsonFieldDescriptor) {
         // This might also be represented w/ attrib 'xsi:nil="true"'
+        TODO("Unsure of how to handle this atm.")
     }
 
-    override fun serializeBoolean(value: Boolean) {
-        xmlWriter.text(value)
-    }
+    override fun serializeBoolean(value: Boolean) = xmlWriter.text(value)
 
-    override fun serializeByte(value: Byte) {
-        xmlWriter.text(value)
-    }
+    override fun serializeByte(value: Byte) = xmlWriter.text(value)
 
-    override fun serializeShort(value: Short) {
-        xmlWriter.text(value)
-    }
+    override fun serializeShort(value: Short) = xmlWriter.text(value)
 
     override fun serializeChar(value: Char) {
         xmlWriter.text(value.toString())
     }
 
-    override fun serializeInt(value: Int) {
-        xmlWriter.text(value)
-    }
+    override fun serializeInt(value: Int) = xmlWriter.text(value)
 
-    override fun serializeLong(value: Long) {
-        xmlWriter.text(value)
-    }
+    override fun serializeLong(value: Long) = xmlWriter.text(value)
 
-    override fun serializeFloat(value: Float) {
-        xmlWriter.text(value)
-    }
+    override fun serializeFloat(value: Float) = xmlWriter.text(value)
 
-    override fun serializeDouble(value: Double) {
-        xmlWriter.text(value)
-    }
+    override fun serializeDouble(value: Double) = xmlWriter.text(value)
 
     override fun serializeString(value: String) {
         xmlWriter.text(value)
     }
 
-    override fun serializeSdkSerializable(value: SdkSerializable) {
-        value.serialize(this)
-    }
+    override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
 }

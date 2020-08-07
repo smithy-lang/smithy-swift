@@ -19,16 +19,22 @@ interface Serializer : PrimitiveSerializer {
 
     /**
      * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the struct's fields.
+     *
+     * @param name Name of container for formats that require them.
      */
     fun beginStruct(name: String? = null): StructSerializer
 
     /**
      * Begin a list (i.e. in JSON this would be a '[') and return a [ListSerializer] that can be used to serialize the list's elements.
+     *
+     * @param name Name of container for formats that require them.
      */
     fun beginList(name: String? = null): ListSerializer
 
     /**
      * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
+     *
+     * @param name Name of container for formats that require them.
      */
     fun beginMap(name: String? = null): MapSerializer
 
@@ -159,6 +165,8 @@ interface StructSerializer : PrimitiveSerializer {
 
     /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
+     *
+     * @param name Name of container for formats that require them.
      */
     fun endStruct(name: String? = null)
 }
@@ -170,6 +178,8 @@ interface ListSerializer : PrimitiveSerializer {
 
     /**
      * Ends the list that was started (i.e. in JSON this would be a ']').
+     *
+     * @param name Name of container for formats that require them.
      */
     fun endList(name: String? = null)
 }

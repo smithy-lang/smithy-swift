@@ -77,14 +77,14 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return this
     }
 
-    override fun nextField(descriptor: SdkObjectDescriptor): Int {
+    override fun findNextFieldIndexOrNull(descriptor: SdkObjectDescriptor): Int? {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
                 nextToken<JsonToken.EndObject>()
-                Deserializer.FieldIterator.EXHAUSTED
+                null
             }
-            RawJsonToken.EndDocument -> Deserializer.FieldIterator.EXHAUSTED
+            RawJsonToken.EndDocument -> null
             else -> {
                 val token = nextToken<JsonToken.Name>()
                 val propertyName = token.value
@@ -117,34 +117,34 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     // next has to work for different modes of iteration (list vs map entries)
-    override fun next(): Int {
+    override fun hasNext(): Boolean {
         return when (iteratorMode) {
             IteratorMode.LIST -> nextList()
             IteratorMode.MAP -> nextMap()
         }
     }
 
-    private fun nextMap(): Int {
+    private fun nextMap(): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
                 nextToken<JsonToken.EndObject>()
-                Deserializer.EntryIterator.EXHAUSTED
+                false
             }
-            RawJsonToken.EndDocument -> Deserializer.EntryIterator.EXHAUSTED
-            else -> 0
+            RawJsonToken.EndDocument -> false
+            else -> true
         }
     }
 
-    private fun nextList(): Int {
+    private fun nextList(): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
                 nextToken<JsonToken.EndArray>()
-                Deserializer.ElementIterator.EXHAUSTED
+                false
             }
-            RawJsonToken.EndDocument -> Deserializer.ElementIterator.EXHAUSTED
-            else -> 0
+            RawJsonToken.EndDocument -> false
+            else -> true
         }
     }
 }
