@@ -154,23 +154,10 @@ class XmlStreamReaderTest {
         assertTokensAreEqual(expected, actual)
     }
 
-    /*
     @Test
     fun `it skips values recursively`() {
         val payload = """
-        {
-            "x": 1,
-            "unknown": {
-                "a": "a",
-                "b": "b",
-                "c": ["d", "e", "f"],
-                "g": {
-                    "h": "h",
-                    "i": "i"
-                }
-             },
-            "y": 2
-        }
+            <payload><x>1></x><unknown><a>a</a><b>b</b><c><list><element>d</element><element>e</element><element>f</element></list></c><g><h>h</h><i>i</i></g></unknown><y>2></y></payload>
         """.trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x
@@ -178,27 +165,22 @@ class XmlStreamReaderTest {
             nextToken() // begin obj
             nextToken() // x
             nextToken() // value
+            nextToken() // end x
         }
 
-        val name = reader.nextToken() as XmlToken.Name
-        assertEquals("unknown", name.value)
+        val nt = reader.peek()
+        assertTrue(nt is XmlToken.BeginElement)
+
+        assertEquals("unknown", nt.name)
         reader.skipNext()
 
-        val y = reader.nextToken() as XmlToken.Name
-        assertEquals("y", y.value)
+        val y = reader.nextToken() as XmlToken.BeginElement
+        assertEquals("y", y.name)
     }
-     */
 
-    /*
     @Test
     fun `it skips simple values`() {
-        val payload = """
-        {
-            "x": 1,
-            "z": "unknown",
-            "y": 2
-        }
-        """.trimIndent().encodeToByteArray()
+        val payload = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x
         reader.apply {
@@ -207,13 +189,11 @@ class XmlStreamReaderTest {
         }
         reader.skipNext()
 
-        val name = reader.nextToken() as XmlToken.Name
-        assertEquals("z", name.value)
+        val name = reader.nextToken() as XmlToken.BeginElement
+        assertEquals("z", name.name)
         reader.skipNext()
 
-        val y = reader.nextToken() as XmlToken.Name
-        assertEquals("y", y.value)
+        val y = reader.nextToken() as XmlToken.BeginElement
+        assertEquals("y", y.name)
     }
-
-     */
 }

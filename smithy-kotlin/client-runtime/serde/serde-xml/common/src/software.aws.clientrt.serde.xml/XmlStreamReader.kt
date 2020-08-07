@@ -47,6 +47,20 @@ interface XmlStreamReader {
      */
     fun nextToken(): XmlToken
 
+    /**
+     * Recursively skip the next token. Meant for discarding unwanted/unrecognized properties in a JSON document
+     */
+    fun skipNext()
+
+    /**
+     * Peek at the next token type
+     */
+    fun peek(): XmlToken
+
+    /**
+     * Return the current node depth of the parser.
+     */
+    fun currentDepth(): Int
 }
 
 /*

@@ -5,13 +5,15 @@
 
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.DeserializerStateException
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.*
 
 class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator, Deserializer.EntryIterator {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
+
+    // Stores the name of the last start node, used to detect trailing end tokens.
+    private var lastNode: XmlToken.BeginElement? = null
+
+    private val containerNodeStack = mutableListOf<XmlToken.BeginElement>()
 
     // return the next token and require that it be of type [TExpected] or else throw an exception
     private inline fun <reified TExpected : XmlToken> nextToken(): TExpected {
@@ -28,26 +30,58 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer, Deser
     }
 
     override fun deserializeStruct(descriptor: SdkFieldDescriptor?): Deserializer.FieldIterator {
-        val token = nextToken<XmlToken.BeginElement>()
-        require(token.name == descriptor?.serialName ?: throw IllegalArgumentException("input unexpectedly passed null serialName: $descriptor")) { "expected element named ${descriptor.serialName} but got ${token.name}."}
+        containerNodeStack.add(testAndRemoveContainer(descriptor))
         return this
     }
 
-    override fun deserializeList(): Deserializer.ElementIterator {
-        TODO("Not yet implemented")
+    override fun deserializeList(descriptor: SdkFieldDescriptor?): Deserializer.ElementIterator {
+        containerNodeStack.add(testAndRemoveContainer(descriptor))
+        return this
     }
 
-    override fun deserializeMap(): Deserializer.EntryIterator {
-        TODO("Not yet implemented")
+    override fun deserializeMap(descriptor: SdkFieldDescriptor?): Deserializer.EntryIterator {
+        containerNodeStack.add(testAndRemoveContainer(descriptor))
+        return this
     }
 
+    private fun testAndRemoveContainer(descriptor: SdkFieldDescriptor?): XmlToken.BeginElement {
+        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got $descriptor"}
+
+        trimEndToken()
+
+        val token = nextToken<XmlToken.BeginElement>()
+        lastNode = token
+        require(token.name == descriptor.nodeName) {
+            "expected element named ${descriptor.nodeName} but got ${token.name}."
+        }
+
+        return token
+    }
+
+    private fun trimEndToken(): XmlToken.EndElement? {
+        val peekedNode = reader.peek()
+        if (peekedNode is XmlToken.EndElement && peekedNode.name == lastNode?.name) {
+            reader.nextToken() // Trim trailing end frahom previous node
+            return peekedNode
+        }
+        return null
+    }
+
+    @ExperimentalStdlibApi
     override fun next(): Int {
-        TODO("Not yet implemented")
+        val trimmedToken = trimEndToken()
+
+        if (trimmedToken?.name == containerNodeStack.lastOrNull()?.name ) {
+            containerNodeStack.removeLast()
+            return Deserializer.ElementIterator.EXHAUSTED
+        }
+
+        val nt = reader.peek()
+
+        return if (nt !is XmlToken.BeginElement) Deserializer.ElementIterator.EXHAUSTED else 0
     }
 
-    override fun key(): String {
-        TODO("Not yet implemented")
-    }
+    override fun key(descriptor: SdkFieldDescriptor?) = deserializeString(descriptor)
 
     override fun deserializeByte(descriptor: SdkFieldDescriptor?): Byte = deserializePrimitive(descriptor) { it.toByteOrNull() }
 
@@ -67,10 +101,11 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer, Deser
 
     private fun <T> deserializePrimitive(descriptor: SdkFieldDescriptor?, transform: (String) -> T?): T {
         requireNotNull(descriptor) { "Must provide a non-null value for elementName." }
+        require(descriptor is XmlFieldDescriptor)
 
         val node = nextToken<XmlToken.BeginElement>()
 
-        require(node.name == descriptor.serialName) { "Expected node named ${descriptor.serialName} but got ${node.name} instead."}
+        require(node.name == descriptor.nodeName) { "Expected node named ${descriptor.nodeName} but got ${node.name} instead."}
 
         val rt = nextToken<XmlToken.Text>()
 
@@ -83,23 +118,25 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer, Deser
     }
 
     override fun nextField(descriptor: SdkObjectDescriptor): Int {
-        return when (reader.nextToken()) {
+        trimEndToken()
+
+        return when (val nt = reader.peek()) {
             is XmlToken.EndElement -> {
                 // consume the token
+                nextToken<XmlToken.EndElement>()
                 Deserializer.FieldIterator.EXHAUSTED
             }
             XmlToken.EndDocument -> Deserializer.FieldIterator.EXHAUSTED
-            else -> {
-                val token = nextToken<XmlToken.BeginElement>()
-                val propertyName = token.name
-                val field = descriptor.fields.find { it.serialName == propertyName }
+            is XmlToken.BeginElement -> {
+                val propertyName = nt.name
+                val field = descriptor.fields.filterIsInstance<XmlFieldDescriptor>().find { it.nodeName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
+            else -> throw IllegalArgumentException("Unexpected token $nt")
         }
     }
 
     override fun skipValue() {
-        // stream reader skips the *next* token
-        TODO()
+        reader.skipNext()
     }
 }

@@ -49,73 +49,73 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(name ?: "map")
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
+    override fun field(descriptor: JsonFieldDescriptor, value: SdkSerializable) {
         value.serialize(this)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Int) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName)
         serializeInt(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Long) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Long) {
         xmlWriter.startTag(descriptor.serialName)
         serializeLong(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Float) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Float) {
         xmlWriter.startTag(descriptor.serialName)
         serializeFloat(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String) {
+    override fun field(descriptor: JsonFieldDescriptor, value: String) {
         xmlWriter.startTag(descriptor.serialName)
         serializeString(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Double) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Double) {
         xmlWriter.startTag(descriptor.serialName)
         serializeDouble(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Boolean) {
         xmlWriter.startTag(descriptor.serialName)
         serializeBoolean(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Byte) {
         xmlWriter.startTag(descriptor.serialName)
         serializeByte(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Short) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Short) {
         xmlWriter.startTag(descriptor.serialName)
         serializeShort(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char) {
+    override fun field(descriptor: JsonFieldDescriptor, value: Char) {
         xmlWriter.startTag(descriptor.serialName)
         serializeChar(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
+    override fun structField(descriptor: JsonFieldDescriptor, block: StructSerializer.() -> Unit) {
         serializeStruct(descriptor.serialName, block)
     }
 
-    override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+    override fun listField(descriptor: JsonFieldDescriptor, block: ListSerializer.() -> Unit) {
         serializeList(descriptor.serialName, block)
     }
 
-    override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+    override fun mapField(descriptor: JsonFieldDescriptor, block: MapSerializer.() -> Unit) {
         serializeMap(descriptor.serialName, block)
     }
 
@@ -179,7 +179,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(key)
     }
 
-    override fun serializeNull(descriptor: SdkFieldDescriptor) {
+    override fun serializeNull(descriptor: JsonFieldDescriptor) {
         // This might also be represented w/ attrib 'xsi:nil="true"'
     }
 

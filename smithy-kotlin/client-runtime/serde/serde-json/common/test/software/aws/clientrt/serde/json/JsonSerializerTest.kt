@@ -33,7 +33,7 @@ class JsonSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b")
+            val descriptorB: JsonFieldDescriptor = JsonFieldDescriptor("b")
         }
 
         override fun serialize(serializer: Serializer) {
@@ -45,7 +45,7 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("value")
+            val descriptorValue = JsonFieldDescriptor("value")
         }
 
         override fun serialize(serializer: Serializer) {
@@ -118,18 +118,18 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit")
-        val descriptorBoolean = SdkFieldDescriptor("boolean")
-        val descriptorByte = SdkFieldDescriptor("byte")
-        val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkFieldDescriptor("int")
-        val descriptorLong = SdkFieldDescriptor("long")
-        val descriptorFloat = SdkFieldDescriptor("float")
-        val descriptorDouble = SdkFieldDescriptor("double")
-        val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkFieldDescriptor("string")
-        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        val descriptorListInt = SdkFieldDescriptor("listInt")
+        val descriptorUnit = JsonFieldDescriptor("unit")
+        val descriptorBoolean = JsonFieldDescriptor("boolean")
+        val descriptorByte = JsonFieldDescriptor("byte")
+        val descriptorShort = JsonFieldDescriptor("short")
+        val descriptorInt = JsonFieldDescriptor("int")
+        val descriptorLong = JsonFieldDescriptor("long")
+        val descriptorFloat = JsonFieldDescriptor("float")
+        val descriptorDouble = JsonFieldDescriptor("double")
+        val descriptorChar = JsonFieldDescriptor("char")
+        val descriptorString = JsonFieldDescriptor("string")
+        val descriptorUnitNullable = JsonFieldDescriptor("unitNullable")
+        val descriptorListInt = JsonFieldDescriptor("listInt")
     }
 
     override fun serialize(serializer: Serializer) {

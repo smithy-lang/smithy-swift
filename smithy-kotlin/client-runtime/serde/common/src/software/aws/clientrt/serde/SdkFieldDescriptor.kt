@@ -14,12 +14,28 @@
  */
 package software.aws.clientrt.serde
 
+import kotlin.reflect.KClass
+
 /**
  * Metadata that may influence how a field is serialized and deserialized.
  *
+ */
+sealed class SdkFieldDescriptor
+
+/**
+ * Describes a JSON field.
+ *
  * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
  */
-data class SdkFieldDescriptor(val serialName: String) {
+class JsonFieldDescriptor(val serialName: String) : SdkFieldDescriptor() {
     // only relevant in the context of an object descriptor
     var index: Int = 0
 }
+
+/**
+ * Describes an XML node / field.
+ *
+ * @property nodeName name of containing node
+ * @property index index of field in structure
+ */
+data class XmlFieldDescriptor(val nodeName: String, val index: Int = 0): SdkFieldDescriptor()

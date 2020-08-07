@@ -14,10 +14,7 @@
  */
 package software.aws.clientrt.serde.json
 
-import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.DeserializerStateException
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.*
 
 private enum class IteratorMode {
     LIST,
@@ -50,27 +47,27 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(): Byte = deserializeDouble().toByte()
+    override fun deserializeByte(descriptor: SdkFieldDescriptor?): Byte = deserializeDouble().toByte()
 
-    override fun deserializeInt(): Int = deserializeDouble().toInt()
+    override fun deserializeInt(descriptor: SdkFieldDescriptor?): Int = deserializeDouble().toInt()
 
-    override fun deserializeShort(): Short = deserializeDouble().toShort()
+    override fun deserializeShort(descriptor: SdkFieldDescriptor?): Short = deserializeDouble().toShort()
 
-    override fun deserializeLong(): Long = deserializeDouble().toLong()
-
-    override fun deserializeFloat(): Float = deserializeDouble().toFloat()
-
-    override fun deserializeDouble(): Double {
-        val token = nextToken<JsonToken.Number>()
-        return token.value
+    override fun deserializeLong(descriptor: SdkFieldDescriptor?): Long = deserializeDouble().toLong()
+    override fun deserializeFloat(descriptor: SdkFieldDescriptor?): Float {
+        TODO("Not yet implemented")
     }
 
-    override fun deserializeString(): String {
+    override fun deserializeDouble(descriptor: SdkFieldDescriptor?): Double {
+        TODO("Not yet implemented")
+    }
+
+    override fun deserializeString(descriptor: SdkFieldDescriptor?): String {
         val token = nextToken<JsonToken.String>()
         return token.value
     }
 
-    override fun deserializeBool(): Boolean {
+    override fun deserializeBool(descriptor: SdkFieldDescriptor?): Boolean {
         val token = nextToken<JsonToken.Bool>()
         return token.value
     }
@@ -91,7 +88,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> {
                 val token = nextToken<JsonToken.Name>()
                 val propertyName = token.value
-                val field = descriptor.fields.find { it.serialName == propertyName }
+                val field = descriptor.fields.filterIsInstance<JsonFieldDescriptor>().find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
         }
@@ -102,19 +99,19 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         reader.skipNext()
     }
 
-    override fun deserializeList(): Deserializer.ElementIterator {
+    override fun deserializeList(descriptor: SdkFieldDescriptor?): Deserializer.ElementIterator {
         nextToken<JsonToken.BeginArray>()
         switchIterationMode(IteratorMode.LIST)
         return this
     }
 
-    override fun deserializeMap(): Deserializer.EntryIterator {
+    override fun deserializeMap(descriptor: SdkFieldDescriptor?): Deserializer.EntryIterator {
         nextToken<JsonToken.BeginObject>()
         switchIterationMode(IteratorMode.MAP)
         return this
     }
 
-    override fun key(): String {
+    override fun key(descriptor: SdkFieldDescriptor?): String {
         val token = nextToken<JsonToken.Name>()
         return token.value
     }

@@ -125,8 +125,8 @@ class JsonDeserializerTest {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x")
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y")
+            val X_DESCRIPTOR = JsonFieldDescriptor("x")
+            val Y_DESCRIPTOR = JsonFieldDescriptor("y")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
@@ -235,8 +235,8 @@ class JsonDeserializerTest {
         var list2: List<String>? = null
         var int2: Int? = null
         companion object {
-            val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2")
-            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2")
+            val LIST2_FIELD_DESCRIPTOR = JsonFieldDescriptor("list2")
+            val INT2_FIELD_DESCRIPTOR = JsonFieldDescriptor("int2")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
@@ -271,8 +271,8 @@ class JsonDeserializerTest {
         var bool2: Boolean? = null
 
         companion object {
-            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2")
-            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2")
+            val NESTED2_FIELD_DESCRIPTOR = JsonFieldDescriptor("nested2")
+            val BOOL2_FIELD_DESCRIPTOR = JsonFieldDescriptor("bool2")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
@@ -310,16 +310,16 @@ class JsonDeserializerTest {
         var mapField: Map<String, String>? = null
 
         companion object {
-            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor("int")
-            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor("long")
-            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor("short")
-            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool")
-            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str")
-            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list")
-            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double")
-            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested")
-            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float")
-            val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map")
+            val INT_FIELD_DESCRIPTOR = JsonFieldDescriptor("int")
+            val LONG_FIELD_DESCRIPTOR = JsonFieldDescriptor("long")
+            val SHORT_FIELD_DESCRIPTOR = JsonFieldDescriptor("short")
+            val BOOL_FIELD_DESCRIPTOR = JsonFieldDescriptor("bool")
+            val STR_FIELD_DESCRIPTOR = JsonFieldDescriptor("str")
+            val LIST_FIELD_DESCRIPTOR = JsonFieldDescriptor("list")
+            val DOUBLE_FIELD_DESCRIPTOR = JsonFieldDescriptor("double")
+            val NESTED_FIELD_DESCRIPTOR = JsonFieldDescriptor("nested")
+            val FLOAT_FIELD_DESCRIPTOR = JsonFieldDescriptor("float")
+            val MAP_FIELD_DESCRIPTOR = JsonFieldDescriptor("map")
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(INT_FIELD_DESCRIPTOR)

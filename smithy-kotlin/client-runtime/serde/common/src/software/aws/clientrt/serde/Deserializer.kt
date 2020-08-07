@@ -66,19 +66,19 @@ interface Deserializer : PrimitiveDeserializer {
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
      */
-    fun deserializeStruct(descriptor: SdkFieldDescriptor?): FieldIterator
+    fun deserializeStruct(descriptor: SdkFieldDescriptor? = null): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
      * the deserialization process of the list to completion.
      */
-    fun deserializeList(): ElementIterator
+    fun deserializeList(descriptor: SdkFieldDescriptor? = null): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
      * the deserialization process of the map to completion.
      */
-    fun deserializeMap(): EntryIterator
+    fun deserializeMap(descriptor: SdkFieldDescriptor? = null): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
@@ -111,7 +111,7 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Read the next key
          */
-        fun key(): String
+        fun key(descriptor: SdkFieldDescriptor? = null): String
 
         companion object {
             /**
@@ -149,21 +149,19 @@ interface Deserializer : PrimitiveDeserializer {
     }
 }
 
-fun Deserializer.deserializeStruct(descriptor: SdkFieldDescriptor?, block: Deserializer.FieldIterator.() -> Unit) {
+fun Deserializer.deserializeStruct(descriptor: SdkFieldDescriptor? = null, block: Deserializer.FieldIterator.() -> Unit) {
     val iter = deserializeStruct(descriptor)
     iter.apply(block)
 }
 
-fun <T> Deserializer.deserializeList(block: Deserializer.ElementIterator.() -> T): T {
-    val deserializer = deserializeList()
-    val result = block(deserializer)
-    return result
+fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor? = null, block: Deserializer.ElementIterator.() -> T): T {
+    val deserializer = deserializeList(descriptor)
+    return block(deserializer)
 }
 
-fun <T> Deserializer.deserializeMap(block: Deserializer.EntryIterator.() -> T): T {
-    val deserializer = deserializeMap()
-    val result = block(deserializer)
-    return result
+fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor? = null, block: Deserializer.EntryIterator.() -> T): T {
+    val deserializer = deserializeMap(descriptor)
+    return block(deserializer)
 }
 
 /**
@@ -173,40 +171,40 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Byte]
      */
-    fun deserializeByte(): Byte
+    fun deserializeByte(descriptor: SdkFieldDescriptor? = null): Byte
 
     /**
      * Deserialize and return the next token as an [Int]
      */
-    fun deserializeInt(): Int
+    fun deserializeInt(descriptor: SdkFieldDescriptor? = null): Int
 
     /**
      * Deserialize and return the next token as a [Short]
      */
-    fun deserializeShort(): Short
+    fun deserializeShort(descriptor: SdkFieldDescriptor? = null): Short
 
     /**
      * Deserialize and return the next token as a [Long]
      */
-    fun deserializeLong(): Long
+    fun deserializeLong(descriptor: SdkFieldDescriptor? = null): Long
 
     /**
      * Deserialize and return the next token as a [Float]
      */
-    fun deserializeFloat(): Float
+    fun deserializeFloat(descriptor: SdkFieldDescriptor? = null): Float
 
     /**
      * Deserialize and return the next token as a [Double]
      */
-    fun deserializeDouble(): Double
+    fun deserializeDouble(descriptor: SdkFieldDescriptor? = null): Double
 
     /**
      * Deserialize and return the next token as a [String]
      */
-    fun deserializeString(): String
+    fun deserializeString(descriptor: SdkFieldDescriptor? = null): String
 
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    fun deserializeBool(): Boolean
+    fun deserializeBool(descriptor: SdkFieldDescriptor? = null): Boolean
 }
