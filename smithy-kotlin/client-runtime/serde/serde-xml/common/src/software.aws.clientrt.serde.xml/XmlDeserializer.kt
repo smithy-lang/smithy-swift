@@ -107,7 +107,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         deserializePrimitive(descriptor) { it.toBoolean() }
 
     private fun <T> deserializePrimitive(descriptor: SdkFieldDescriptor?, transform: (String) -> T?): T {
-        requireNotNull(descriptor) { "Must provide a non-null value for elementName." }
+        requireNotNull(descriptor) { "Must provide a non-null value for descriptor." }
         require(descriptor is XmlFieldDescriptor)
 
         val node = reader.nextTokenOf<XmlToken.BeginElement>()
