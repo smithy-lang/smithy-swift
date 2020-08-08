@@ -37,4 +37,4 @@ interface JsonStreamReader {
 /*
 * Creates a [JsonStreamReader] instance
 */
-expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader
+internal expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader

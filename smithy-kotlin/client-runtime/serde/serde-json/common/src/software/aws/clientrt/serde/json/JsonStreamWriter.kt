@@ -108,4 +108,4 @@ interface JsonStreamWriter {
 /*
 * Creates a [JsonStreamWriter] instance to write JSON
 */
-expect fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter
+internal expect fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter

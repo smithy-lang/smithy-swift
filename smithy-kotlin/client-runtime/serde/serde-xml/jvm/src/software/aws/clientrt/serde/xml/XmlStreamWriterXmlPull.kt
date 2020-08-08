@@ -10,8 +10,6 @@ import org.xmlpull.v1.XmlSerializer
 import java.io.ByteArrayOutputStream
 
 
-actual fun xmlStreamWriter(pretty: Boolean): XmlStreamWriter = XmlPullSerializer(pretty)
-
 class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer = xmlSerializerFactory()) :
     XmlStreamWriter {
 
@@ -73,3 +71,5 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
             return buffer.toByteArray()
         }
 }
+
+internal actual fun xmlStreamWriter(pretty: Boolean): XmlStreamWriter = XmlPullSerializer(pretty)

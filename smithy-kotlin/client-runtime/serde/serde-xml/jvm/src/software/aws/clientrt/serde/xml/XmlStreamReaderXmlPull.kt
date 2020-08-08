@@ -103,4 +103,4 @@ private fun String?.blankToNull(): String? = if (this?.isBlank() != false) null 
 /*
 * Creates a [JsonStreamReader] instance
 */
-actual fun xmlStreamReader(payload: ByteArray): XmlStreamReader = XmlStreamReaderXmlPull(payload)
+internal actual fun xmlStreamReader(payload: ByteArray): XmlStreamReader = XmlStreamReaderXmlPull(payload)
