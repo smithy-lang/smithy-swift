@@ -66,7 +66,7 @@ interface Deserializer : PrimitiveDeserializer {
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
      */
-    fun deserializeStruct(descriptor: SdkFieldDescriptor? = null): FieldIterator
+    fun deserializeStruct(descriptor: SdkFieldDescriptor?): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
@@ -112,7 +112,7 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface FieldIterator : PrimitiveDeserializer {
         /**
-         * Returns the index of the next field found or one of the defined constants
+         * Returns the index of the next field found, null if fields exhausted, or UNKNOWN_FIELD.
          */
         fun findNextFieldIndexOrNull(descriptor: SdkObjectDescriptor): Int?
 

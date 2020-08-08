@@ -33,11 +33,11 @@ class XmlSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: JsonFieldDescriptor = JsonFieldDescriptor("b")
+            val descriptorB: XmlFieldDescriptor = XmlFieldDescriptor("b")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorB.serialName) {
+            serializer.serializeStruct(descriptorB.nodeName) {
                 field(descriptorB, b)
             }
         }
@@ -45,11 +45,11 @@ class XmlSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = JsonFieldDescriptor("value")
+            val descriptorValue = XmlFieldDescriptor("value")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorValue.serialName) {
+            serializer.serializeStruct(descriptorValue.nodeName) {
                 field(descriptorValue, value)
             }
         }
@@ -63,7 +63,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList {
+        xml.serializeList("list") {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -93,7 +93,7 @@ class XmlSerializerTest {
         )
         )
         val xml = XmlSerializer()
-        xml.serializeMap {
+        xml.serializeMap("map") {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
@@ -124,22 +124,22 @@ data class Primitives(
     val unitNullable: Unit?
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = JsonFieldDescriptor("unit")
-        val descriptorBoolean = JsonFieldDescriptor("boolean")
-        val descriptorByte = JsonFieldDescriptor("byte")
-        val descriptorShort = JsonFieldDescriptor("short")
-        val descriptorInt = JsonFieldDescriptor("int")
-        val descriptorLong = JsonFieldDescriptor("long")
-        val descriptorFloat = JsonFieldDescriptor("float")
-        val descriptorDouble = JsonFieldDescriptor("double")
-        val descriptorChar = JsonFieldDescriptor("char")
-        val descriptorString = JsonFieldDescriptor("string")
-        val descriptorUnitNullable = JsonFieldDescriptor("unitNullable")
+        val descriptorUnit = XmlFieldDescriptor("unit")
+        val descriptorBoolean = XmlFieldDescriptor("boolean")
+        val descriptorByte = XmlFieldDescriptor("byte")
+        val descriptorShort = XmlFieldDescriptor("short")
+        val descriptorInt = XmlFieldDescriptor("int")
+        val descriptorLong = XmlFieldDescriptor("long")
+        val descriptorFloat = XmlFieldDescriptor("float")
+        val descriptorDouble = XmlFieldDescriptor("double")
+        val descriptorChar = XmlFieldDescriptor("char")
+        val descriptorString = XmlFieldDescriptor("string")
+        val descriptorUnitNullable = XmlFieldDescriptor("unitNullable")
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
-            serializeNull(descriptorUnit)
+        serializer.serializeStruct("struct") {
+            // serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)
             field(descriptorShort, short)
@@ -149,7 +149,7 @@ data class Primitives(
             field(descriptorDouble, double)
             field(descriptorChar, char)
             field(descriptorString, string)
-            serializeNull(descriptorUnitNullable)
+            // serializeNull(descriptorUnitNullable)
         }
     }
 }
