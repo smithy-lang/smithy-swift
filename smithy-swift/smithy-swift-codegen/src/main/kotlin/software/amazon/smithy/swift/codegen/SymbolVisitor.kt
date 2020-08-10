@@ -24,8 +24,10 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.StringUtils
+import java.text.Format
 
 // PropertyBag keys
 
@@ -197,7 +199,19 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", true).build()
+        var (typeName, namespace) = Pair("Date", "Foundation")
+        if (shape.hasTrait(TimestampFormatTrait::class.java)) {
+            val timestampFormat = shape.getTrait(TimestampFormatTrait::class.java).get().format
+            namespace = "ClientRuntime"
+            if (timestampFormat == TimestampFormatTrait.Format.DATE_TIME) {
+                typeName = "ISO8601Date"
+            } else if (timestampFormat == TimestampFormatTrait.Format.HTTP_DATE) {
+                typeName = "RFC5322Date"
+            } else if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+                typeName = "EpochSecondsDate"
+            }
+        }
+        return createSymbolBuilder(shape, typeName, namespace, true).build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {

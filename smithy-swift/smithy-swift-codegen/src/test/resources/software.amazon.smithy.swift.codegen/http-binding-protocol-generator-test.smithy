@@ -1,9 +1,9 @@
 $version: "1.0"
 namespace com.test
 
-use aws.protocols#awsJson1_1
+use aws.protocols#restJson1
 
-@awsJson1_1
+@restJson1
 service Example {
     version: "1.0.0",
     operations: [

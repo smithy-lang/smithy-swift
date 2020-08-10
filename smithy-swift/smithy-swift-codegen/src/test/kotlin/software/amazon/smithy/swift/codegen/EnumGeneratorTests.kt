@@ -56,7 +56,7 @@ class EnumGeneratorTests : TestsBase() {
                 "    case sdkUnknown(String)\n" +
                 "}\n" +
                 "\n" +
-                "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
+                "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {\n" +
                 "    public static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
                 "            .bar,\n" +
@@ -128,7 +128,7 @@ class EnumGeneratorTests : TestsBase() {
                 "    case sdkUnknown(String)\n" +
                 "}\n" +
                 "\n" +
-                "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable {\n" +
+                "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {\n" +
                 "    public static var allCases: [MyEnum] {\n" +
                 "        return [\n" +
                 "            .t2Micro,\n" +

@@ -20,7 +20,7 @@ extension DateFormatter {
     Configures RFC 5322(822) Date Formatter
     https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
     */
-    static let rfc5322DateFormatter: DateFormatter = {
+    public static let rfc5322DateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EE, dd MMM yyyy HH:mm:ss zzz"
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -32,7 +32,7 @@ extension DateFormatter {
     Configures ISO 8601 Date Formatter With Fractional Seconds
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithFractionalSeconds: ISO8601DateFormatter = {
+    public static let iso8601DateFormatterWithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
@@ -42,7 +42,7 @@ extension DateFormatter {
     Configures default ISO 8601 Date Formatter
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
+    public static let iso8601DateFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
         return ISO8601DateFormatter()
     }()
     
@@ -50,7 +50,7 @@ extension DateFormatter {
     Configures an Epoch Seconds based formatter.
     Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
     */
-    static let epochSecondsDateFormatter: EpochSecondsDateFormatter = {
+    public static let epochSecondsDateFormatter: EpochSecondsDateFormatter = {
         return EpochSecondsDateFormatter()
     }()
 }
@@ -59,23 +59,23 @@ extension DateFormatter {
  Configures an Epoch Seconds based formatter.
  Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
  */
-struct EpochSecondsDateFormatter: DateFormatterProtocol {
-    func date(from string: String) -> Date? {
+public struct EpochSecondsDateFormatter: DateFormatterProtocol {
+    public func date(from string: String) -> Date? {
         guard let double = Double(string) else {
             return nil
         }
         return date(from: double)
     }
     
-    func string(from date: Date) -> String {
+    public func string(from date: Date) -> String {
         return String(date.timeIntervalSince1970)
     }
     
-    func date(from double: Double) -> Date? {
+    public func date(from double: Double) -> Date? {
         return Date(timeIntervalSince1970: double)
     }
     
-    func double(from date: Date) -> Double {
+    public func double(from date: Date) -> Double {
         return date.timeIntervalSince1970
     }
 }
@@ -93,15 +93,15 @@ public protocol DateFormatterProtocol {
 }
 
 extension DateFormatterProtocol {
-    func string(from date: ISO8601Date) -> String {
+    public func string(from date: ISO8601Date) -> String {
         return string(from: date.value)
     }
     
-    func string(from date: RFC5322Date) -> String {
+    public func string(from date: RFC5322Date) -> String {
         return string(from: date.value)
     }
     
-    func string(from date: EpochSecondsDate) -> String {
+    public func string(from date: EpochSecondsDate) -> String {
         return string(from: date.value)
     }
 }

@@ -47,7 +47,7 @@ class ServiceGenerator(
         /**
          * Renders the definition of operation
          */
-        fun renderOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
+        fun renderOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape, insideProtocol: Boolean = false) {
 
             val operationName = op.camelCaseName()
 
@@ -67,10 +67,11 @@ class ServiceGenerator(
             writer.writeShapeDocs(op)
 
             val hasOutputStream = operationHasOutputStream(model, opIndex, op)
+            val accessSpecifier = if (insideProtocol) "" else "public "
             if (!hasOutputStream) {
-                writer.write("public func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
+                writer.write("${accessSpecifier}func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
             } else {
-                writer.write("public func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
+                writer.write("${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
             }
         }
 
@@ -136,7 +137,7 @@ class ServiceGenerator(
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                     operations.forEach { op ->
-                        renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op)
+                        renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
                     }
                 }
             .closeBlock("}")

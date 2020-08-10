@@ -89,7 +89,7 @@ class StructureGenerator(
      */
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
-        writer.openBlock("public struct \$struct.name:L: Codable {")
+        writer.openBlock("public struct \$struct.name:L {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -182,7 +182,7 @@ class StructureGenerator(
         }
         writer.putContext("error.protocol", errorProtocol)
 
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, Codable {")
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
