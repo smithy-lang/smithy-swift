@@ -93,7 +93,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     @Test
     fun `it renders non-streaming operation with no input`() {
         commonTestContents.shouldContainOnlyOnce(
-              "public func getFooNoInput(completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
+            "public func getFooNoInput(completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
                     "        let path: String = \"/foo-no-input\"\n" +
                     "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)\n" +

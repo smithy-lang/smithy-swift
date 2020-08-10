@@ -15,7 +15,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
@@ -27,7 +26,6 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.StringUtils
-import java.text.Format
 
 // PropertyBag keys
 

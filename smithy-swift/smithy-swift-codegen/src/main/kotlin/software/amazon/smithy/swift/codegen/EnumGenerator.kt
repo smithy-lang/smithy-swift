@@ -215,7 +215,7 @@ class EnumGenerator(
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
     fun EnumDefinition.swiftEnumCaseName(): String {
-        var enumCaseName =  CaseUtils.toCamelCase(name.orElseGet {
+        var enumCaseName = CaseUtils.toCamelCase(name.orElseGet {
             value
         }.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
         if (enumCaseName.toIntOrNull() != null || enumCaseName.toDoubleOrNull() != null) {

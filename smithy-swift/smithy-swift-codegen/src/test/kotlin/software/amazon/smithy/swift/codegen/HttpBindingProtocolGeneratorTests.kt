@@ -89,7 +89,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit string payloads`() {
-        val contents = getModelFileContents("Example","ExplicitStringRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "ExplicitStringRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension ExplicitStringRequest: HttpRequestBinding {\n" +
@@ -106,7 +106,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit blob payloads`() {
-        val contents = getModelFileContents("Example","ExplicitBlobRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "ExplicitBlobRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension ExplicitBlobRequest: HttpRequestBinding {\n" +
@@ -123,7 +123,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit streaming blob payloads`() {
-        val contents = getModelFileContents("Example","ExplicitBlobStreamRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "ExplicitBlobStreamRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension ExplicitBlobStreamRequest: HttpRequestBinding {\n" +
@@ -140,7 +140,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit struct payloads`() {
-        val contents = getModelFileContents("Example","ExplicitStructRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "ExplicitStructRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension ExplicitStructRequest: HttpRequestBinding {\n" +
@@ -157,7 +157,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes operation inputs with lists`() {
-        val contents = getModelFileContents("Example","ListInputRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "ListInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension ListInputRequest: HttpRequestBinding {\n" +
@@ -174,7 +174,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes enums as raw values`() {
-        val contents = getModelFileContents("Example","EnumInputRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "EnumInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension EnumInputRequest: HttpRequestBinding {\n" +
@@ -194,7 +194,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes timestamps with format`() {
-        val contents = getModelFileContents("Example","TimestampInputRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Example", "TimestampInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             "extension TimestampInputRequest: HttpRequestBinding {\n" +
