@@ -57,8 +57,8 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFoo(input: GetFooRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo\"\n" +
-                    "        let method: HttpMethodType = HttpMethodType.get\n" +
+                    "        let path = \"/foo\"\n" +
+                    "        let method = HttpMethodType.get\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
@@ -95,7 +95,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFooNoInput(completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo-no-input\"\n" +
+                    "        let path = \"/foo-no-input\"\n" +
                     "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)\n" +
                     "        let headers = HttpHeaders()\n" +
                     "        let request = HttpRequest(method: .get, endpoint: endpoint, headers: headers)\n" +
@@ -129,8 +129,8 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFooNoOutput(input: GetFooRequest)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo-no-output\"\n" +
-                    "        let method: HttpMethodType = HttpMethodType.get\n" +
+                    "        let path = \"/foo-no-output\"\n" +
+                    "        let method = HttpMethodType.get\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
@@ -168,8 +168,8 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFooStreamingInput(input: GetFooStreamingRequest, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo-streaming-input\"\n" +
-                    "        let method: HttpMethodType = HttpMethodType.post\n" +
+                    "        let path = \"/foo-streaming-input\"\n" +
+                    "        let method = HttpMethodType.post\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
@@ -207,8 +207,8 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo-streaming-output\"\n" +
-                    "        let method: HttpMethodType = HttpMethodType.post\n" +
+                    "        let path = \"/foo-streaming-output\"\n" +
+                    "        let method = HttpMethodType.post\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
@@ -246,7 +246,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce(
             "public func getFooStreamingOutputNoInput(streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
-                    "        let path: String = \"/foo-streaming-output-no-input\"\n" +
+                    "        let path = \"/foo-streaming-output-no-input\"\n" +
                     "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)\n" +
                     "        let headers = HttpHeaders()\n" +
                     "        let request = HttpRequest(method: .post, endpoint: endpoint, headers: headers)\n" +

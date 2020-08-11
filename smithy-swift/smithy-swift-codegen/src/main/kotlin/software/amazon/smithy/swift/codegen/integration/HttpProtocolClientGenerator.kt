@@ -124,7 +124,7 @@ class HttpProtocolClientGenerator(
         }
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("let path: String = \"$uri\"")
+        writer.write("let path = \"$uri\"")
     }
 
     private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
@@ -145,7 +145,7 @@ class HttpProtocolClientGenerator(
             writer.write("let request = HttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
-            writer.write("let method: HttpMethodType = HttpMethodType.$httpMethod")
+            writer.write("let method = HttpMethodType.$httpMethod")
             writer.write("var request = input.buildHttpRequest(method: method, path: path)")
             renderEncodingHttpRequestBlock(writer)
         }
