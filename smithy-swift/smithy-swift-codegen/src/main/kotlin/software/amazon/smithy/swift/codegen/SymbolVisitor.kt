@@ -201,12 +201,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         if (shape.hasTrait(TimestampFormatTrait::class.java)) {
             val timestampFormat = shape.getTrait(TimestampFormatTrait::class.java).get().format
             namespace = "ClientRuntime"
-            if (timestampFormat == TimestampFormatTrait.Format.DATE_TIME) {
-                typeName = "ISO8601Date"
-            } else if (timestampFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                typeName = "RFC5322Date"
-            } else if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                typeName = "EpochSecondsDate"
+            typeName = when (timestampFormat) {
+                TimestampFormatTrait.Format.DATE_TIME -> "ISO8601Date"
+                TimestampFormatTrait.Format.HTTP_DATE -> "RFC5322Date"
+                TimestampFormatTrait.Format.EPOCH_SECONDS -> "EpochSecondsDate"
+                else -> "Date"
             }
         }
         return createSymbolBuilder(shape, typeName, namespace, true).build()
@@ -303,6 +302,17 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
+        }
+    }
+
+    companion object {
+        /**
+         * Check if a given string can be a valid swift identifier.
+         * Valid swift identifier has only alphanumerics and underscore and does not start with a number
+         */
+        fun isValidSwiftIdentifier(value: String): Boolean {
+            return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
+                    !Character.isDigit(value.first())
         }
     }
 }

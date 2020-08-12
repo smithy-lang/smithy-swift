@@ -218,7 +218,7 @@ class EnumGenerator(
         var enumCaseName = CaseUtils.toCamelCase(name.orElseGet {
             value
         }.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
-        if (enumCaseName.toIntOrNull() != null || enumCaseName.toDoubleOrNull() != null) {
+        if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
             enumCaseName = "_$enumCaseName"
         }
         return enumCaseName

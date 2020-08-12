@@ -64,26 +64,28 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "SmokeTestRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                "extension SmokeTestRequest: HttpRequestBinding {\n" +
-                "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-                "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-                "        var queryItem: URLQueryItem\n" +
-                "        if let query1 = query1 {\n" +
-                "            queryItem = URLQueryItem(name: \"Query1\", value: String(query1))\n" +
-                "            queryItems.append(queryItem)\n" +
-                "        }\n" +
-                "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-                "        var headers = HttpHeaders()\n" +
-                "        headers.add(name: \"Content-Type\", value: \"application/json\")\n" +
-                "        if let header1 = header1 {\n" +
-                "            headers.add(name: \"X-Header1\", value: String(header1))\n" +
-                "        }\n" +
-                "        if let header2 = header2 {\n" +
-                "            headers.add(name: \"X-Header2\", value: String(header2))\n" +
-                "        }\n" +
-                "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-                "    }\n" +
-                "}"
+                """
+                    extension SmokeTestRequest: HttpRequestBinding {
+                        public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                            var queryItems: [URLQueryItem] = [URLQueryItem]()
+                            var queryItem: URLQueryItem
+                            if let query1 = query1 {
+                                queryItem = URLQueryItem(name: "Query1", value: String(query1))
+                                queryItems.append(queryItem)
+                            }
+                            let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                            var headers = HttpHeaders()
+                            headers.add(name: "Content-Type", value: "application/json")
+                            if let header1 = header1 {
+                                headers.add(name: "X-Header1", value: String(header1))
+                            }
+                            if let header2 = header2 {
+                                headers.add(name: "X-Header2", value: String(header2))
+                            }
+                            return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        }
+                    }
+                """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -92,15 +94,17 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "ExplicitStringRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension ExplicitStringRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"text/plain\")\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension ExplicitStringRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "text/plain")
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -109,15 +113,17 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "ExplicitBlobRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension ExplicitBlobRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/octet-stream\")\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension ExplicitBlobRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "application/octet-stream")
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -126,15 +132,17 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "ExplicitBlobStreamRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension ExplicitBlobStreamRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/octet-stream\")\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension ExplicitBlobStreamRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "application/octet-stream")
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -143,15 +151,17 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "ExplicitStructRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension ExplicitStructRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/json\")\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension ExplicitStructRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "application/json")
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -160,15 +170,17 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "ListInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension ListInputRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/json\")\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension ListInputRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "application/json")
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -177,18 +189,20 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "EnumInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension EnumInputRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/json\")\n" +
-            "        if let enumHeader = enumHeader {\n" +
-            "            headers.add(name: \"X-EnumHeader\", value: String(enumHeader.rawValue))\n" +
-            "        }\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+                extension EnumInputRequest: HttpRequestBinding {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                        var headers = HttpHeaders()
+                        headers.add(name: "Content-Type", value: "application/json")
+                        if let enumHeader = enumHeader {
+                            headers.add(name: "X-EnumHeader", value: String(enumHeader.rawValue))
+                        }
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
+                }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -197,32 +211,34 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val contents = getModelFileContents("Example", "TimestampInputRequest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-            "extension TimestampInputRequest: HttpRequestBinding {\n" +
-            "    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {\n" +
-            "        var queryItems: [URLQueryItem] = [URLQueryItem]()\n" +
-            "        var queryItem: URLQueryItem\n" +
-            "        if let queryTimestamp = queryTimestamp {\n" +
-            "            queryItem = URLQueryItem(name: \"qtime\", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryTimestamp)))\n" +
-            "            queryItems.append(queryItem)\n" +
-            "        }\n" +
-            "        if let queryTimestampList = queryTimestampList {\n" +
-            "            queryTimestampList.forEach { queryItemValue in\n" +
-            "                queryItem = URLQueryItem(name: \"qtimeList\", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryItemValue)))\n" +
-            "                queryItems.append(queryItem)\n" +
-            "            }\n" +
-            "        }\n" +
-            "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)\n" +
-            "        var headers = HttpHeaders()\n" +
-            "        headers.add(name: \"Content-Type\", value: \"application/json\")\n" +
-            "        if let headerEpoch = headerEpoch {\n" +
-            "            headers.add(name: \"X-Epoch\", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerEpoch)))\n" +
-            "        }\n" +
-            "        if let headerHttpDate = headerHttpDate {\n" +
-            "            headers.add(name: \"X-Date\", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerHttpDate)))\n" +
-            "        }\n" +
-            "        return HttpRequest(method: method, endpoint: endpoint, headers: headers)\n" +
-            "    }\n" +
-            "}"
+            """
+            extension TimestampInputRequest: HttpRequestBinding {
+                public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    var queryItems: [URLQueryItem] = [URLQueryItem]()
+                    var queryItem: URLQueryItem
+                    if let queryTimestamp = queryTimestamp {
+                        queryItem = URLQueryItem(name: "qtime", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryTimestamp)))
+                        queryItems.append(queryItem)
+                    }
+                    if let queryTimestampList = queryTimestampList {
+                        queryTimestampList.forEach { queryItemValue in
+                            queryItem = URLQueryItem(name: "qtimeList", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryItemValue)))
+                            queryItems.append(queryItem)
+                        }
+                    }
+                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                    var headers = HttpHeaders()
+                    headers.add(name: "Content-Type", value: "application/json")
+                    if let headerEpoch = headerEpoch {
+                        headers.add(name: "X-Epoch", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerEpoch)))
+                    }
+                    if let headerHttpDate = headerHttpDate {
+                        headers.add(name: "X-Date", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerHttpDate)))
+                    }
+                    return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                }
+            }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

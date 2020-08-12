@@ -16,6 +16,8 @@
 package software.amazon.smithy.swift.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -212,5 +214,21 @@ class SymbolProviderTest : TestsBase() {
         assertEquals(true, structSymbol.isBoxed())
         assertEquals("nil", structSymbol.defaultValue())
         assertEquals(2, structSymbol.references.size)
+    }
+
+    @Test
+    fun `test checking valid swift name`() {
+        val validNames = mutableListOf<String>("a", "a1", "_a", "_1")
+        val invalidNames = mutableListOf<String>("0", "0.0", "a@")
+
+        for (validName in validNames) {
+            val isSwiftIdentifierValid = SymbolVisitor.isValidSwiftIdentifier(validName)
+            assertTrue(isSwiftIdentifierValid, "$validName is wrongly interpretted as invalid swift identifier")
+        }
+
+        for (invalidName in invalidNames) {
+            val isSwiftIdentifierValid = SymbolVisitor.isValidSwiftIdentifier(invalidName)
+            assertFalse(isSwiftIdentifierValid, "$invalidName is wrongly interpretted as valid swift identifier")
+        }
     }
 }

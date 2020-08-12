@@ -20,7 +20,7 @@ class DateFormatterTests: XCTestCase {
     
     var testDateFormatter: DateFormatter = DateFormatter()
 
-    func testCreateDateFromValidRFC7231String() {
+    func testCreateDateFromValidRFC5322String() {
         let validDates = [
             // standard
             "Sun, 20 Nov 1993 05:45:1 GMT":
@@ -61,7 +61,7 @@ class DateFormatterTests: XCTestCase {
         }
     }
     
-    func testCreateDateFromInValidRFC7231StringReturnsNil() {
+    func testCreateDateFromInValidRFC5322StringReturnsNil() {
         let inValidDates = [
             "Sun, 06 Nov 1994 08:49 GMT",
             "06 Nov 1994 08:49:37 GMT",
@@ -91,8 +91,6 @@ class DateFormatterTests: XCTestCase {
             // with offset
             "1993-11-20T05:45:01+05:00":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 0, minute: 45, second: 1),
-            "1993-11-20T05:45:01z+05:00":
-                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1),
             "1993-11-20T05:45:01-05:00":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 10, minute: 45, second: 1),
             "1993-11-20T05:45:01-00:02":
@@ -129,8 +127,6 @@ class DateFormatterTests: XCTestCase {
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1, nanoSecond: 100000023),
              "1993-11-20T05:00:00.123456789z":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, nanoSecond: 123000025),
-             "1993-11-20T05:45:01.100000000z+05:00":
-                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1, nanoSecond: 100000023),
              "1993-11-20T05:45:01.0-05:00":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 10, minute: 45, second: 1, nanoSecond: 0),
              "1993-11-20T05:45:01.010-00:02":
@@ -161,7 +157,8 @@ class DateFormatterTests: XCTestCase {
             "20201105",
             "2017-07-032T03:30:00Z",
             "2017-07-22T03::00Z",
-            "2017-07-22T03:0f:00Z"
+            "2017-07-22T03:0f:00Z",
+            "1993-11-20T05:45:01z+05:00"
         ]
         
         let formatterWithoutFractionalSeconds = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
@@ -265,6 +262,7 @@ class DateFormatterTests: XCTestCase {
         let epochSecondsDatesList: [EpochSecondsDate]
         let normalDatesList: [Date]
         var isoDictWithList: [String: [String: [ISO8601Date]]]
+        var normalDictWithList: [String: [String: [Date]]]
         var nestedStructWithDates: NestedStructWithDates
         
         init(isoDatesList: [ISO8601Date],
@@ -272,12 +270,14 @@ class DateFormatterTests: XCTestCase {
              epochSecondsDatesList: [EpochSecondsDate],
              normalDatesList: [Date],
              isoDictWithList: [String: [String: [ISO8601Date]]],
+             normalDictWithList: [String: [String: [Date]]],
              nestedStructWithDates: NestedStructWithDates) {
             self.isoDatesList = isoDatesList
             self.rfc5322DatesList = rfc5322DatesList
             self.epochSecondsDatesList = epochSecondsDatesList
             self.normalDatesList = normalDatesList
             self.isoDictWithList = isoDictWithList
+            self.normalDictWithList = normalDictWithList
             self.nestedStructWithDates = nestedStructWithDates
         }
     }
@@ -314,11 +314,15 @@ class DateFormatterTests: XCTestCase {
                                               epochSecondsDatesList: [epochSecondsDate, epochSecondsDate],
                                               normalDatesList: [testDate, testDate],
                                               isoDictWithList: ["a": ["b": [iso8601Date, iso8601Date]]],
+                                              normalDictWithList: ["a": ["b": [testDate, testDate]]],
                                               nestedStructWithDates: NestedStructWithDates(iso8601Date: iso8601Date,
                                                                                            rfc5322Date: rfc5322Date,
                                                                                            epochSecondsDate: epochSecondsDate,
                                                                                            normalDate: testDate))
-        guard let encodedStructWithDates = try? JSONEncoder().encode(structWithDates) else {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .custom(EpochSecondsDateFormatterContainer.encode)
+        
+        guard let encodedStructWithDates = try? encoder.encode(structWithDates) else {
             XCTFail("could not encode struct with different date formats")
             return
         }
@@ -328,19 +332,20 @@ class DateFormatterTests: XCTestCase {
             return
         }
         
-        let expectedISO8601DateString = "1993-11-20T05:45:01.000Z"
+        let expectedISO8601DateString = "1993-11-20T05:45:01.000+0000"
         let expectedRFC5322DateString = "Sat, 20 Nov 1993 05:45:01 GMT"
         let expectedEpochSecondsDateString = "753774301"
         let expectedStructWithDatesJSON =
-            "{\"rfc5322DatesList\":[\"\(expectedRFC5322DateString)\",\"\(expectedRFC5322DateString)\"]," +
-             "\"epochSecondsDatesList\":[\(expectedEpochSecondsDateString),\(expectedEpochSecondsDateString)]," +
-             "\"normalDatesList\":[-224532899,-224532899]," +
-             "\"isoDatesList\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]," +
-             "\"isoDictWithList\":{\"a\":{\"b\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]}}," +
-             "\"nestedStructWithDates\":{\"normalDate\":-224532899," +
+            "{\"isoDictWithList\":{\"a\":{\"b\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]}}," +
+            "\"normalDatesList\":[\(expectedEpochSecondsDateString),\(expectedEpochSecondsDateString)]," +
+            "\"isoDatesList\":[\"\(expectedISO8601DateString)\",\"\(expectedISO8601DateString)\"]," +
+            "\"nestedStructWithDates\":{\"normalDate\":\(expectedEpochSecondsDateString)," +
                                         "\"iso8601Date\":\"\(expectedISO8601DateString)\"," +
                                         "\"rfc5322Date\":\"\(expectedRFC5322DateString)\"," +
-                                        "\"epochSecondsDate\":\(expectedEpochSecondsDateString)}}"
+                                        "\"epochSecondsDate\":\(expectedEpochSecondsDateString)}," +
+            "\"normalDictWithList\":{\"a\":{\"b\":[\(expectedEpochSecondsDateString),\(expectedEpochSecondsDateString)]}}," +
+            "\"epochSecondsDatesList\":[\(expectedEpochSecondsDateString),\(expectedEpochSecondsDateString)]," +
+            "\"rfc5322DatesList\":[\"\(expectedRFC5322DateString)\",\"\(expectedRFC5322DateString)\"]}"
         XCTAssertEqual(structWithDatesJSON, expectedStructWithDatesJSON)
         
         // Test fetching the formatted date as string
@@ -357,10 +362,11 @@ class DateFormatterTests: XCTestCase {
         let validStructWithDatesJSON =
             "{\"rfc5322DatesList\":[\"\(rfc5322DateString)\",\"\(rfc5322DateString)\"]," +
             "\"epochSecondsDatesList\":[\(epochSecondsDateString),\(epochSecondsDateString)]," +
-            "\"normalDatesList\":[-224532899,-224532899]," +
+            "\"normalDatesList\":[\(epochSecondsDateString),\(epochSecondsDateString)]," +
             "\"isoDatesList\":[\"\(iso8601DateString)\",\"\(iso8601DateString)\"]," +
             "\"isoDictWithList\":{\"a\":{\"b\":[\"\(iso8601DateString)\",\"\(iso8601DateString)\"]}}," +
-            "\"nestedStructWithDates\":{\"normalDate\":-224532899," +
+            "\"normalDictWithList\":{\"a\":{\"b\":[\(epochSecondsDateString),\(epochSecondsDateString)]}}," +
+            "\"nestedStructWithDates\":{\"normalDate\":\(epochSecondsDateString)," +
                                        "\"iso8601Date\":\"\(iso8601DateString)\"," +
                                        "\"rfc5322Date\":\"\(rfc5322DateString)\"," +
                                        "\"epochSecondsDate\":\(epochSecondsDateString)}}"
@@ -369,6 +375,17 @@ class DateFormatterTests: XCTestCase {
             XCTFail("could not convert validStructWithDatesJSON string to data")
             return
         }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom({ (decoder) throws -> Date in
+            let container = try decoder.singleValueContainer()
+            let formattedDate = try container.decode(Double.self)
+            guard let decodedDate = EpochSecondsDateFormatter().date(from: formattedDate) else {
+                throw ClientError.deserializationFailed(DecodingError.dataCorruptedError(in: container,
+                                                                                         debugDescription: "unable to decode date in the required format"))
+            }
+            return decodedDate
+        })
         
         guard let decodedStructWithDates = try? JSONDecoder().decode(StructWithDates.self, from: encodedValidStructWithDatesJSON) else {
             XCTFail("Failed to decode validStructWithDatesJSON")

@@ -17,7 +17,7 @@ import Foundation
 
 public protocol DateFormatterContainer {
     associatedtype EncodedValueType: Codable
-    static var dateFormatters: [DateFormatterProtocol] { get }
+    static var dateFormatters: [DateFormatter] { get }
     static func encode(date: Date) -> EncodedValueType
     static func decode(encodedDate: EncodedValueType) -> Date?
 }
@@ -41,9 +41,7 @@ extension DateFormatterContainer {
 public struct RFC5322DateFormatterContainer: DateFormatterContainer {
     public typealias EncodedValueType = String
     
-    public static var dateFormatters: [DateFormatterProtocol] {
-        return [DateFormatter.rfc5322DateFormatter]
-    }
+    public static var dateFormatters = [DateFormatter.rfc5322DateFormatter]
 }
 
 // holds the two variants of ISO8601 DateFormatters in the order of priority
@@ -51,7 +49,7 @@ public struct ISO8601DateFormatterContainer: DateFormatterContainer {
     public typealias EncodedValueType = String
     
     // Need separate date formatters to handle optional fractional seconds
-    public static var dateFormatters: [DateFormatterProtocol] {
+    public static var dateFormatters: [DateFormatter] {
         return [DateFormatter.iso8601DateFormatterWithFractionalSeconds,
                 DateFormatter.iso8601DateFormatterWithoutFractionalSeconds]
     }
@@ -60,9 +58,7 @@ public struct ISO8601DateFormatterContainer: DateFormatterContainer {
 public struct EpochSecondsDateFormatterContainer: DateFormatterContainer {
     public typealias EncodedValueType = Double
     
-    public static var dateFormatters: [DateFormatterProtocol] {
-        return [DateFormatter.epochSecondsDateFormatter]
-    }
+    public static var dateFormatters: [DateFormatter] = [DateFormatter.epochSecondsDateFormatter]
     
     public static func encode(date: Date) -> EncodedValueType {
         return EpochSecondsDateFormatter().double(from: date)
@@ -71,5 +67,11 @@ public struct EpochSecondsDateFormatterContainer: DateFormatterContainer {
     public static func decode(encodedDate: EncodedValueType) -> Date? {
         let decodedValue = EpochSecondsDateFormatter().date(from: encodedDate)
         return decodedValue
+    }
+    
+    public static func encode(date: Date, encoder: Encoder) throws -> Void {
+        var container = encoder.singleValueContainer()
+        let formattedDate = encode(date: date)
+        try container.encode(formattedDate)
     }
 }

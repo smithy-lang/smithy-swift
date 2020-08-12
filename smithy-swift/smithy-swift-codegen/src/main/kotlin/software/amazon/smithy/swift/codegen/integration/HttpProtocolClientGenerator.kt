@@ -28,7 +28,6 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator.Companion.getFormattedDateString
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -91,7 +90,6 @@ class HttpProtocolClientGenerator(
     // replace labels with any path bindings
     private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBinding>, writer: SwiftWriter) {
         val resolvedURIComponents = mutableListOf<String>()
-
         httpTrait.uri.segments.forEach {
             if (it.isLabel) {
                 // spec dictates member name and label name MUST be the same
@@ -104,7 +102,9 @@ class HttpProtocolClientGenerator(
                 val labelMemberName = binding.member.memberName
                 val formattedLabel: String
                 if (targetShape.isTimestampShape) {
-                    formattedLabel = getFormattedDateString(TimestampFormatTrait.Format.DATE_TIME, labelMemberName)
+                    val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
+                    val timestampFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.LABEL, TimestampFormatTrait.Format.DATE_TIME)
+                    formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
                 } else if (targetShape.isStringShape) {
                     val enumRawValueSuffix = targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
                     formattedLabel = "$labelMemberName$enumRawValueSuffix"
