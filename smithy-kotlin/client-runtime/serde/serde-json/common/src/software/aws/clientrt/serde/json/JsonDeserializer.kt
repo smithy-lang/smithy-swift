@@ -47,27 +47,27 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(descriptor: SdkFieldDescriptor?): Byte = deserializeDouble().toByte()
+    override fun deserializeByte(): Byte = deserializeDouble().toByte()
 
-    override fun deserializeInt(descriptor: SdkFieldDescriptor?): Int = deserializeDouble().toInt()
+    override fun deserializeInt(): Int = deserializeDouble().toInt()
 
-    override fun deserializeShort(descriptor: SdkFieldDescriptor?): Short = deserializeDouble().toShort()
+    override fun deserializeShort(): Short = deserializeDouble().toShort()
 
-    override fun deserializeLong(descriptor: SdkFieldDescriptor?): Long = deserializeDouble().toLong()
-    override fun deserializeFloat(descriptor: SdkFieldDescriptor?): Float {
+    override fun deserializeLong(): Long = deserializeDouble().toLong()
+    override fun deserializeFloat(): Float {
         TODO("Not yet implemented")
     }
 
-    override fun deserializeDouble(descriptor: SdkFieldDescriptor?): Double {
+    override fun deserializeDouble(): Double {
         TODO("Not yet implemented")
     }
 
-    override fun deserializeString(descriptor: SdkFieldDescriptor?): String {
+    override fun deserializeString(): String {
         val token = nextToken<JsonToken.String>()
         return token.value
     }
 
-    override fun deserializeBool(descriptor: SdkFieldDescriptor?): Boolean {
+    override fun deserializeBool(): Boolean {
         val token = nextToken<JsonToken.Bool>()
         return token.value
     }

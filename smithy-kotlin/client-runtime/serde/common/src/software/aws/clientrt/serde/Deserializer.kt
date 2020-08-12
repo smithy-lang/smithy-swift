@@ -152,40 +152,40 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Byte]
      */
-    fun deserializeByte(descriptor: SdkFieldDescriptor? = null): Byte
+    fun deserializeByte(): Byte
 
     /**
      * Deserialize and return the next token as an [Int]
      */
-    fun deserializeInt(descriptor: SdkFieldDescriptor? = null): Int
+    fun deserializeInt(): Int
 
     /**
      * Deserialize and return the next token as a [Short]
      */
-    fun deserializeShort(descriptor: SdkFieldDescriptor? = null): Short
+    fun deserializeShort(): Short
 
     /**
      * Deserialize and return the next token as a [Long]
      */
-    fun deserializeLong(descriptor: SdkFieldDescriptor? = null): Long
+    fun deserializeLong(): Long
 
     /**
      * Deserialize and return the next token as a [Float]
      */
-    fun deserializeFloat(descriptor: SdkFieldDescriptor? = null): Float
+    fun deserializeFloat(): Float
 
     /**
      * Deserialize and return the next token as a [Double]
      */
-    fun deserializeDouble(descriptor: SdkFieldDescriptor? = null): Double
+    fun deserializeDouble(): Double
 
     /**
      * Deserialize and return the next token as a [String]
      */
-    fun deserializeString(descriptor: SdkFieldDescriptor? = null): String
+    fun deserializeString(): String
 
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    fun deserializeBool(descriptor: SdkFieldDescriptor? = null): Boolean
+    fun deserializeBool(): Boolean
 }

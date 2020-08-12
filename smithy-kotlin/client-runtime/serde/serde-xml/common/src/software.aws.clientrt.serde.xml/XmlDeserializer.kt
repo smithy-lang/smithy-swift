@@ -46,79 +46,55 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     /**
      * Deserialize a byte value defined as the text section of an Xml element.
      *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the byte value.
      */
-    override fun deserializeByte(descriptor: SdkFieldDescriptor?): Byte =
-        deserializePrimitive(descriptor) { it.toByteOrNull() }
+    override fun deserializeByte(): Byte =
+        deserializePrimitive { it.toByteOrNull() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the integer value.
      */
-    override fun deserializeInt(descriptor: SdkFieldDescriptor?): Int =
-        deserializePrimitive(descriptor) { it.toIntOrNull() }
+    override fun deserializeInt(): Int =
+        deserializePrimitive { it.toIntOrNull() }
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the short value.
      */
-    override fun deserializeShort(descriptor: SdkFieldDescriptor?): Short =
-        deserializePrimitive(descriptor) { it.toShortOrNull() }
+    override fun deserializeShort(): Short =
+        deserializePrimitive { it.toShortOrNull() }
 
     /**
      * Deserialize a long value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the long value.
      */
-    override fun deserializeLong(descriptor: SdkFieldDescriptor?): Long =
-        deserializePrimitive(descriptor) { it.toLongOrNull() }
+    override fun deserializeLong(): Long =
+        deserializePrimitive { it.toLongOrNull() }
 
     /**
      * Deserialize an float value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the float value.
      */
-    override fun deserializeFloat(descriptor: SdkFieldDescriptor?): Float =
-        deserializePrimitive(descriptor) { it.toFloatOrNull() }
+    override fun deserializeFloat(): Float =
+        deserializePrimitive { it.toFloatOrNull() }
 
     /**
      * Deserialize a double value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the double value.
      */
-    override fun deserializeDouble(descriptor: SdkFieldDescriptor?): Double =
-        deserializePrimitive(descriptor) { it.toDoubleOrNull() }
+    override fun deserializeDouble(): Double =
+        deserializePrimitive { it.toDoubleOrNull() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the integer value.
      */
-    override fun deserializeString(descriptor: SdkFieldDescriptor?): String = deserializePrimitive(descriptor) { it }
+    override fun deserializeString(): String = deserializePrimitive { it }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
-     *
-     * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the integer value.
      */
-    override fun deserializeBool(descriptor: SdkFieldDescriptor?): Boolean =
-        deserializePrimitive(descriptor) { it.toBoolean() }
+    override fun deserializeBool(): Boolean =
+        deserializePrimitive { it.toBoolean() }
 
-    private fun <T> deserializePrimitive(descriptor: SdkFieldDescriptor?, transform: (String) -> T?): T {
-        requireNotNull(descriptor) { "Must provide a non-null value for descriptor." }
-        require(descriptor is XmlFieldDescriptor)
-
-        val node = reader.nextTokenOf<XmlToken.BeginElement>()
-
-        require(node.name == descriptor.nodeName) { "Expected '${descriptor.nodeName}' but got '${node.name}' instead." }
-
+    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
         val rt = reader.nextTokenOf<XmlToken.Text>()
 
-        val rv = rt.value ?: throw DeserializationException("Expected value but text of element was empty.")
-        requireToken<XmlToken.EndElement>(reader.nextToken()) // consume the end node
-
+        val rv = rt.value ?: throw DeserializationException("Expected value but text of element was null.")
         return transform(rv) ?: throw DeserializationException("Cannot parse $rv with ${transform::class}")
     }
 }
@@ -181,23 +157,23 @@ private class CompositeIterator(
     override fun skipValue() = reader.skipNext()
 
     // Deserializer.EntryIterator
-    override fun key(descriptor: SdkFieldDescriptor?): String = deserializeString(descriptor)
+    override fun key(descriptor: SdkFieldDescriptor?): String = deserializeString()
 
-    override fun deserializeByte(descriptor: SdkFieldDescriptor?): Byte = deserializer.deserializeByte(descriptor)
+    override fun deserializeByte(): Byte = deserializer.deserializeByte()
 
-    override fun deserializeInt(descriptor: SdkFieldDescriptor?): Int = deserializer.deserializeInt(descriptor)
+    override fun deserializeInt(): Int = deserializer.deserializeInt()
 
-    override fun deserializeShort(descriptor: SdkFieldDescriptor?): Short = deserializer.deserializeShort(descriptor)
+    override fun deserializeShort(): Short = deserializer.deserializeShort()
 
-    override fun deserializeLong(descriptor: SdkFieldDescriptor?): Long = deserializer.deserializeLong(descriptor)
+    override fun deserializeLong(): Long = deserializer.deserializeLong()
 
-    override fun deserializeFloat(descriptor: SdkFieldDescriptor?): Float = deserializer.deserializeFloat(descriptor)
+    override fun deserializeFloat(): Float = deserializer.deserializeFloat()
 
-    override fun deserializeDouble(descriptor: SdkFieldDescriptor?): Double = deserializer.deserializeDouble(descriptor)
+    override fun deserializeDouble(): Double = deserializer.deserializeDouble()
 
-    override fun deserializeString(descriptor: SdkFieldDescriptor?): String = deserializer.deserializeString(descriptor)
+    override fun deserializeString(): String = deserializer.deserializeString()
 
-    override fun deserializeBool(descriptor: SdkFieldDescriptor?): Boolean = deserializer.deserializeBool(descriptor)
+    override fun deserializeBool(): Boolean = deserializer.deserializeBool()
 }
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
