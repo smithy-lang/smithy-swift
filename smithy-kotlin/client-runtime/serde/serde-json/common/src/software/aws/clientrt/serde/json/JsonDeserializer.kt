@@ -88,7 +88,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> {
                 val token = nextToken<JsonToken.Name>()
                 val propertyName = token.value
-                val field = descriptor.fields.filterIsInstance<JsonFieldDescriptor>().find { it.serialName == propertyName }
+                val field = descriptor.fields.find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
         }

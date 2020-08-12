@@ -24,7 +24,7 @@ import software.aws.clientrt.serde.*
 // can but this type itself cannot)
 class AliasRoutingConfigurationDeserializer {
     companion object {
-        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = JsonFieldDescriptor("AdditionalVersionWeights")
+        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = SdkFieldDescriptor("AdditionalVersionWeights")
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR)

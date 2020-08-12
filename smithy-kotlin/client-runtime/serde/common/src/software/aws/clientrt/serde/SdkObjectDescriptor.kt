@@ -37,7 +37,7 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) {
         val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
 
         override fun field(field: SdkFieldDescriptor) {
-            if (field is JsonFieldDescriptor) field.index = fields.size
+            field.index = fields.size
             fields.add(field)
         }
 

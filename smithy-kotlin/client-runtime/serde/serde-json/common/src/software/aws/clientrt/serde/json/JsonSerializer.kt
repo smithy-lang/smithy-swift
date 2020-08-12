@@ -52,79 +52,66 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         value.serialize(this)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeInt(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Long) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeLong(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Float) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeFloat(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeString(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeDouble(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeBoolean(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeByte(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Short) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeShort(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeChar(value)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeStruct(block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeList(block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         serializeMap(block)
     }
@@ -180,7 +167,6 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
-        require(descriptor is JsonFieldDescriptor) { "Expected JsonFieldDescriptor but got ${descriptor::class}" }
         jsonWriter.writeName(descriptor.serialName)
         jsonWriter.writeNull()
     }

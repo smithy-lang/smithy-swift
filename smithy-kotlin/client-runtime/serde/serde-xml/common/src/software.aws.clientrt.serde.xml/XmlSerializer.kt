@@ -24,133 +24,104 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginStruct(name: String?): StructSerializer {
-        xmlWriter.startTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.startTag(name)
         return this
     }
 
     override fun beginList(name: String?): ListSerializer {
-        xmlWriter.startTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.startTag(name)
         return this
     }
 
     override fun beginMap(name: String?): MapSerializer {
-        xmlWriter.startTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.startTag(name)
         return this
     }
 
     override fun endStruct(name: String?) {
-        xmlWriter.endTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.endTag(name)
     }
 
     override fun endList(name: String?) {
-        xmlWriter.endTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.endTag(name)
     }
 
     override fun endMap(name: String?) {
-        xmlWriter.endTag(
-            name ?: throw XmlGenerationException(IllegalArgumentException("Must specify a struct name for XML."))
-        )
+        requireNotNull(name) { "Must specify a name for XML serialization." }
+        xmlWriter.endTag(name)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeInt(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Long) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeLong(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Float) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeFloat(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeString(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeDouble(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeBoolean(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeByte(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Short) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeShort(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        xmlWriter.startTag(descriptor.nodeName)
+        xmlWriter.startTag(descriptor.serialName)
         serializeChar(value)
-        xmlWriter.endTag(descriptor.nodeName)
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        serializeStruct(descriptor.nodeName, block)
+        serializeStruct(descriptor.serialName, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-
-        serializeList(descriptor.nodeName, block)
+        serializeList(descriptor.serialName, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        require(descriptor is XmlFieldDescriptor) { "Expected XmlFieldDescriptor but got ${descriptor::class}" }
-        serializeMap(descriptor.nodeName, block)
+        serializeMap(descriptor.serialName, block)
     }
 
     override fun entry(key: String, value: Int) {
@@ -214,7 +185,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
-        // This might also be represented w/ attrib 'xsi:nil="true"'
+        // This might  be represented w/ attrib 'xsi:nil="true"'
         TODO("Unsure of how to handle this atm.")
     }
 

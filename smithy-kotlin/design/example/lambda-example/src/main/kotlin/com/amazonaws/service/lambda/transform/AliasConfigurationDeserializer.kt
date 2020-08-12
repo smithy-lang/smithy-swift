@@ -24,12 +24,12 @@ import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer: HttpDeserialize {
     companion object {
-        private val ALIAS_ARN_FIELD_DESCRIPTOR = JsonFieldDescriptor("AliasArn")
-        private val DESCRIPTION_FIELD_DESCRIPTOR = JsonFieldDescriptor("Description")
-        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = JsonFieldDescriptor("FunctionVersion")
-        private val NAME_FIELD_DESCRIPTOR = JsonFieldDescriptor("Name")
-        private val REVISION_ID_FIELD_DESCRIPTOR = JsonFieldDescriptor("RevisionId")
-        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = JsonFieldDescriptor("RoutingConfig")
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn")
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
+        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
+        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name")
+        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId")
+        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ALIAS_ARN_FIELD_DESCRIPTOR)

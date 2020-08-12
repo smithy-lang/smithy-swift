@@ -33,11 +33,11 @@ class XmlSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: XmlFieldDescriptor = XmlFieldDescriptor("b")
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorB.nodeName) {
+            serializer.serializeStruct(descriptorB.serialName) {
                 field(descriptorB, b)
             }
         }
@@ -45,11 +45,11 @@ class XmlSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = XmlFieldDescriptor("value")
+            val descriptorValue = SdkFieldDescriptor("value")
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorValue.nodeName) {
+            serializer.serializeStruct(descriptorValue.serialName) {
                 field(descriptorValue, value)
             }
         }
@@ -124,17 +124,17 @@ data class Primitives(
     val unitNullable: Unit?
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = XmlFieldDescriptor("unit")
-        val descriptorBoolean = XmlFieldDescriptor("boolean")
-        val descriptorByte = XmlFieldDescriptor("byte")
-        val descriptorShort = XmlFieldDescriptor("short")
-        val descriptorInt = XmlFieldDescriptor("int")
-        val descriptorLong = XmlFieldDescriptor("long")
-        val descriptorFloat = XmlFieldDescriptor("float")
-        val descriptorDouble = XmlFieldDescriptor("double")
-        val descriptorChar = XmlFieldDescriptor("char")
-        val descriptorString = XmlFieldDescriptor("string")
-        val descriptorUnitNullable = XmlFieldDescriptor("unitNullable")
+        val descriptorUnit = SdkFieldDescriptor("unit")
+        val descriptorBoolean = SdkFieldDescriptor("boolean")
+        val descriptorByte = SdkFieldDescriptor("byte")
+        val descriptorShort = SdkFieldDescriptor("short")
+        val descriptorInt = SdkFieldDescriptor("int")
+        val descriptorLong = SdkFieldDescriptor("long")
+        val descriptorFloat = SdkFieldDescriptor("float")
+        val descriptorDouble = SdkFieldDescriptor("double")
+        val descriptorChar = SdkFieldDescriptor("char")
+        val descriptorString = SdkFieldDescriptor("string")
+        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
     }
 
     override fun serialize(serializer: Serializer) {

@@ -146,7 +146,7 @@ private class CompositeIterator(
                 val propertyName = nt.name
                 //FIXME: The following filter needs to take XML namespace into account when matching.
                 val field =
-                    descriptor.fields.filterIsInstance<XmlFieldDescriptor>().find { it.nodeName == propertyName }
+                    descriptor.fields.find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
             else -> throw DeserializationException("Unexpected token $nt")
