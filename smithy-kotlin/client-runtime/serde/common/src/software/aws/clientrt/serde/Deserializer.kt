@@ -72,13 +72,13 @@ interface Deserializer : PrimitiveDeserializer {
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
      * the deserialization process of the list to completion.
      */
-    fun deserializeList(descriptor: SdkFieldDescriptor? = null): ElementIterator
+    fun deserializeList(descriptor: SdkFieldDescriptor?): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
      * the deserialization process of the map to completion.
      */
-    fun deserializeMap(descriptor: SdkFieldDescriptor? = null): EntryIterator
+    fun deserializeMap(descriptor: SdkFieldDescriptor?): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
@@ -87,8 +87,10 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
+         *
+         * @param descriptor Specifies the name of the container for formats that require it.
          */
-        fun hasNext(): Boolean
+        fun hasNextElement(descriptor: SdkFieldDescriptor? = null): Boolean
     }
 
     /**
@@ -98,8 +100,10 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
+         *
+         * @param descriptor Specifies the name of the container for formats that require it.
          */
-        fun hasNext(): Boolean
+        fun hasNextEntry(descriptor: SdkFieldDescriptor? = null): Boolean
 
         /**
          * Read the next key
@@ -114,7 +118,7 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found, null if fields exhausted, or UNKNOWN_FIELD.
          */
-        fun findNextFieldIndexOrNull(descriptor: SdkObjectDescriptor): Int?
+        fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields

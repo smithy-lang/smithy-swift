@@ -35,10 +35,10 @@ class AliasRoutingConfigurationDeserializer {
 
             deserializer.deserializeStruct(null) {
                 loop@ while(true) {
-                    when(findNextFieldIndexOrNull(OBJ_DESCRIPTOR)) {
+                    when(findNextFieldIndex(OBJ_DESCRIPTOR)) {
                         ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR.index -> builder.additionalVersionWeights = deserializer.deserializeMap() {
                             val map = mutableMapOf<String, Float>()
-                            while(hasNext()) {
+                            while(hasNextEntry()) {
                                 map[key()] = deserializeFloat()
                             }
                             return@deserializeMap map

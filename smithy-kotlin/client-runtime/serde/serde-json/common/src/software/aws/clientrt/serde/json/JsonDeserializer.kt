@@ -16,19 +16,8 @@ package software.aws.clientrt.serde.json
 
 import software.aws.clientrt.serde.*
 
-private enum class IteratorMode {
-    LIST,
-    MAP,
-}
-
 class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator, Deserializer.EntryIterator {
     private val reader = jsonStreamReader(payload)
-
-    private var iteratorMode = IteratorMode.LIST
-
-    private fun switchIterationMode(mode: IteratorMode) {
-        iteratorMode = mode
-    }
 
     // return the next token and require that it be of type [TExpected] or else throw an exception
     private inline fun <reified TExpected : JsonToken> nextToken(): TExpected {
@@ -77,7 +66,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return this
     }
 
-    override fun findNextFieldIndexOrNull(descriptor: SdkObjectDescriptor): Int? {
+    override fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int? {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
@@ -101,13 +90,11 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeList(descriptor: SdkFieldDescriptor?): Deserializer.ElementIterator {
         nextToken<JsonToken.BeginArray>()
-        switchIterationMode(IteratorMode.LIST)
         return this
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor?): Deserializer.EntryIterator {
         nextToken<JsonToken.BeginObject>()
-        switchIterationMode(IteratorMode.MAP)
         return this
     }
 
@@ -117,14 +104,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     // next has to work for different modes of iteration (list vs map entries)
-    override fun hasNext(): Boolean {
-        return when (iteratorMode) {
-            IteratorMode.LIST -> nextList()
-            IteratorMode.MAP -> nextMap()
-        }
-    }
-
-    private fun nextMap(): Boolean {
+    override fun hasNextEntry(descriptor: SdkFieldDescriptor?): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
@@ -136,7 +116,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         }
     }
 
-    private fun nextList(): Boolean {
+    override fun hasNextElement(descriptor: SdkFieldDescriptor?): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
