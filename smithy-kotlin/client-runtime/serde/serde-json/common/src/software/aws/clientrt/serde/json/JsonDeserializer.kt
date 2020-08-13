@@ -103,7 +103,6 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    // next has to work for different modes of iteration (list vs map entries)
     override fun hasNextEntry(descriptor: SdkFieldDescriptor?): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {

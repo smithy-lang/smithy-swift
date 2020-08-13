@@ -466,7 +466,7 @@ class XmlDeserializerTest {
         """.flatten().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
-        val struct = deserializer.deserializeStruct(SdkFieldDescriptor("payload"))
+        val struct = deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR.toSdkFieldDescriptor())
         val sink = KitchenSinkTest()
         loop@ while (true) {
             when (struct.findNextFieldIndex(KitchenSinkTest.OBJ_DESCRIPTOR)) {
