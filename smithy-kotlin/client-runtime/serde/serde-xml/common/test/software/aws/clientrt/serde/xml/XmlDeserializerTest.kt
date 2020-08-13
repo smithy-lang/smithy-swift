@@ -195,13 +195,14 @@ class XmlDeserializerTest {
             val X_DESCRIPTOR = SdkFieldDescriptor("x")
             val Y_DESCRIPTOR = SdkFieldDescriptor("y")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("payload")
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
 
             fun deserialize(deserializer: Deserializer): BasicStructTest {
                 val result = BasicStructTest()
-                deserializer.deserializeStruct(SdkFieldDescriptor("payload")) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR.toSdkFieldDescriptor()) {
                     loop@ while (true) {
                         when (findNextFieldIndex(OBJ_DESCRIPTOR)) {
                             X_DESCRIPTOR.index -> result.x = deserializer.deserializeStruct(X_DESCRIPTOR).deserializeInt()
@@ -250,10 +251,14 @@ class XmlDeserializerTest {
                 </payload>
             </list>
         """.flatten().encodeToByteArray()
-        val listFieldDescriptor = SdkFieldDescriptor("list")
         val objectFieldDescriptor = SdkFieldDescriptor("payload")
+        val listFieldDescriptor = SdkObjectDescriptor.build {
+            field(objectFieldDescriptor)
+            serialName("list")
+        }
+
         val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeList(listFieldDescriptor) {
+        val actual = deserializer.deserializeList(listFieldDescriptor.toSdkFieldDescriptor()) {
             val list = mutableListOf<BasicStructTest>()
             while (hasNextElement(objectFieldDescriptor)) {
                 val obj = BasicStructTest()
@@ -293,13 +298,14 @@ class XmlDeserializerTest {
             val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2")
             val LIST_ELEMENT_FIELD_DESCRIPTOR = SdkFieldDescriptor("element")
             val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2")
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("nested2")
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
             }
 
             fun deserialize(deserializer: Deserializer): Nested2 {
-                val struct = deserializer.deserializeStruct(SdkFieldDescriptor("nested2"))
+                val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR.toSdkFieldDescriptor())
                 val nested2 = Nested2()
                 loop@ while (true) {
                     when (struct.findNextFieldIndex(OBJ_DESCRIPTOR)) {
@@ -333,13 +339,14 @@ class XmlDeserializerTest {
         companion object {
             val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2")
             val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2")
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("nested")
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
             }
 
             fun deserialize(deserializer: Deserializer): Nested {
-                val struct = deserializer.deserializeStruct(SdkFieldDescriptor("nested"))
+                val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR.toSdkFieldDescriptor())
                 val nested = Nested()
                 loop@ while (true) {
                     when (struct.findNextFieldIndex(OBJ_DESCRIPTOR)) {
@@ -385,7 +392,8 @@ class XmlDeserializerTest {
             val MAP_KEY_FIELD_DESCRIPTOR = SdkFieldDescriptor("key")
             val MAP_VALUE_FIELD_DESCRIPTOR = SdkFieldDescriptor("value")
 
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("payload")
                 field(INT_FIELD_DESCRIPTOR)
                 field(LONG_FIELD_DESCRIPTOR)
                 field(SHORT_FIELD_DESCRIPTOR)
@@ -514,12 +522,13 @@ class XmlDeserializerTest {
         companion object {
             val COMMENT_DESCRIPTOR = SdkFieldDescriptor("Comment")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("HostedZoneConfig")
                 field(COMMENT_DESCRIPTOR)
             }
 
             fun deserialize(deserializer: Deserializer): HostedZoneConfig {
                 val builder = BuilderImpl()
-                deserializer.deserializeStruct(SdkFieldDescriptor("payload")) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR.toSdkFieldDescriptor()) {
                     loop@ while (true) {
                         when (findNextFieldIndex(OBJ_DESCRIPTOR)) {
                             COMMENT_DESCRIPTOR.index -> builder.comment = deserializer.deserializeStruct(COMMENT_DESCRIPTOR).deserializeString()
@@ -527,7 +536,6 @@ class XmlDeserializerTest {
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {}
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field index in HostedZoneConfig deserializer"))
                         }
-                        skipValue()
                     }
                 }
                 return HostedZoneConfig(builder)
@@ -562,6 +570,7 @@ class XmlDeserializerTest {
             val CALLER_REFERENCE_DESCRIPTOR = SdkFieldDescriptor("CallerReference")
             val HOSTED_ZONE_DESCRIPTOR = SdkFieldDescriptor("HostedZoneConfig")
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName("CreateHostedZoneRequest")
                 field(NAME_DESCRIPTOR)
                 field(CALLER_REFERENCE_DESCRIPTOR)
                 field(HOSTED_ZONE_DESCRIPTOR)
@@ -569,7 +578,7 @@ class XmlDeserializerTest {
 
             fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
                 val builder = BuilderImpl()
-                deserializer.deserializeStruct(SdkFieldDescriptor("payload")) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR.toSdkFieldDescriptor()) {
                     loop@ while (true) {
                         when (findNextFieldIndex(OBJ_DESCRIPTOR)) {
                             NAME_DESCRIPTOR.index -> builder.name = deserializer.deserializeStruct(NAME_DESCRIPTOR).deserializeString()
