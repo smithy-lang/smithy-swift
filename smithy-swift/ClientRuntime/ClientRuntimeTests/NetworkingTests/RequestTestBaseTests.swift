@@ -27,7 +27,7 @@ class RequestTestBaseTests: RequestTestBase {
                 queryItem = URLQueryItem(name: "RequiredQuery", value: String(requiredQuery))
                 queryItems.append(queryItem)
             }
-            let endpoint = Endpoint(host: host , path: path, queryItems: queryItems)
+            let endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
             var headers = HttpHeaders()
             headers.add(name: "Content-Type", value: "application/json")
             if let requiredHeader = requiredHeader {
@@ -70,7 +70,7 @@ class RequestTestBaseTests: RequestTestBase {
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
                                                           "RequiredHeader": "required header"],
-                                                queryParams:["RequiredQuery=required%20query"],
+                                                queryParams: ["RequiredQuery=required%20query"],
                                                 body: "{\"greeting\": \"Hello There\"}",
                                                 host: RequestTestBaseTests.host)
         
@@ -88,7 +88,7 @@ class RequestTestBaseTests: RequestTestBase {
         
         do {
             _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
-        }  catch let err {
+        } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
         

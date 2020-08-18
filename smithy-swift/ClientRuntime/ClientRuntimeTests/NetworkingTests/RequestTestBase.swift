@@ -109,7 +109,7 @@ class RequestTestBase: NetworkingTestUtils {
         }
         
         for queryItem in queryItems {
-            if (queryItem.name == queryItemName){
+            if (queryItem.name == queryItemName) {
                 return true
             }
         }
@@ -118,7 +118,7 @@ class RequestTestBase: NetworkingTestUtils {
     
     public func headerExists(_ headerName: String, in headers: [Header]) -> Bool {
         for header in headers {
-            if (header.name == headerName){
+            if (header.name == headerName) {
                 return true
             }
         }
