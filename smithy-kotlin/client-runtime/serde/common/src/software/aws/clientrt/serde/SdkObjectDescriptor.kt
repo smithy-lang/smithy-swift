@@ -17,38 +17,44 @@ package software.aws.clientrt.serde
 /**
  * Metadata container for all fields of an object/class
  */
-class SdkObjectDescriptor private constructor(builder: BuilderImpl) {
-    val fields: List<SdkFieldDescriptor> = builder.fields
-    // Name of object for formats that require them.
-    val serialName = builder.serialName
-
+class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkNamedFieldDescriptor(
+    builder.serialName!!,
+    SerialKind.Struct(
+        setOf(ObjectStruct(builder.fields))
+    ),
+    0
+) {
     companion object {
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
     }
 
-    fun toSdkFieldDescriptor(): SdkFieldDescriptor =
-        SdkFieldDescriptor(serialName ?: error("Cannot convert to SdkFieldDescriptor, serialName is undefined."))
+    fun fields(): List<SdkNamedFieldDescriptor> {
+        val objectStruct = (kind as SerialKind.Struct).traits.first { it is ObjectStruct } as ObjectStruct
+
+        return objectStruct.fields
+    }
 
     interface DslBuilder {
         /**
          * Declare a field belonging to this object
          */
-        fun field(field: SdkFieldDescriptor)
+        fun field(field: SdkNamedFieldDescriptor)
         fun serialName(name: String)
         fun build(): SdkObjectDescriptor
     }
 
     private class BuilderImpl : DslBuilder {
-        val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
+        val fields: MutableList<SdkNamedFieldDescriptor> = mutableListOf()
         var serialName: String? = null
+        val kind: SerialKind = SerialKind.Struct()
 
-        override fun field(field: SdkFieldDescriptor) {
+        override fun field(field: SdkNamedFieldDescriptor) {
             field.index = fields.size
             fields.add(field)
         }
 
         override fun serialName(name: String) {
-            serialName = name
+            this.serialName = name
         }
 
         override fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)

@@ -19,7 +19,46 @@ package software.aws.clientrt.serde
  *
  * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
  */
+/*
 data class SdkFieldDescriptor(val serialName: String) {
     // only relevant in the context of an object descriptor
     var index: Int = 0
 }
+*/
+
+interface FieldTrait
+class XmlAttribute : FieldTrait
+class XmlMap(
+    val parent: String? = "map",
+    val entry: String = "entry",
+    val keyName: String = "key",
+    val valueName: String = "value",
+    val flattened: Boolean = false
+) : FieldTrait
+class XmlList(
+    val elementName: String = "element"
+) : FieldTrait
+class ObjectStruct(val fields: List<SdkNamedFieldDescriptor>) : FieldTrait
+
+sealed class SerialKind {
+    object Integer : SerialKind()
+    object Long : SerialKind()
+    object Double : SerialKind()
+    object String: SerialKind()
+    object Boolean: SerialKind()
+    object Short: SerialKind()
+    object Float: SerialKind()
+
+    // ...
+    // either through SerialKind or Trait system...
+    data class Map(val traits: Set<FieldTrait> = emptySet()) : SerialKind()
+    data class List(val traits: Set<FieldTrait> = emptySet()): SerialKind()
+    data class Struct(val traits: Set<FieldTrait> = emptySet()): SerialKind()
+}
+
+open class SdkFieldDescriptor(
+    open val kind: SerialKind,
+    open var index: Int = 0
+)
+
+open class SdkNamedFieldDescriptor(val serialName: String, override val kind: SerialKind, override var index: Int = 0) : SdkFieldDescriptor(kind, index)

@@ -56,71 +56,71 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(name)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: SdkSerializable) = value.serialize(this)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Int) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName)
         serializeInt(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Long) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Long) {
         xmlWriter.startTag(descriptor.serialName)
         serializeLong(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Float) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Float) {
         xmlWriter.startTag(descriptor.serialName)
         serializeFloat(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: String) {
         xmlWriter.startTag(descriptor.serialName)
         serializeString(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Double) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Double) {
         xmlWriter.startTag(descriptor.serialName)
         serializeDouble(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Boolean) {
         xmlWriter.startTag(descriptor.serialName)
         serializeBoolean(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Byte) {
         xmlWriter.startTag(descriptor.serialName)
         serializeByte(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Short) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Short) {
         xmlWriter.startTag(descriptor.serialName)
         serializeShort(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char) {
+    override fun field(descriptor: SdkNamedFieldDescriptor, value: Char) {
         xmlWriter.startTag(descriptor.serialName)
         serializeChar(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
+    override fun structField(descriptor: SdkNamedFieldDescriptor, block: StructSerializer.() -> Unit) {
         serializeStruct(descriptor.serialName, block)
     }
 
-    override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+    override fun listField(descriptor: SdkNamedFieldDescriptor, block: ListSerializer.() -> Unit) {
         serializeList(descriptor.serialName, block)
     }
 
-    override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+    override fun mapField(descriptor: SdkNamedFieldDescriptor, block: MapSerializer.() -> Unit) {
         serializeMap(descriptor.serialName, block)
     }
 
@@ -184,7 +184,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(key)
     }
 
-    override fun serializeNull(descriptor: SdkFieldDescriptor) {
+    override fun serializeNull(descriptor: SdkNamedFieldDescriptor) {
         // This might  be represented w/ attrib 'xsi:nil="true"'
         TODO("Unsure of how to handle this atm.")
     }

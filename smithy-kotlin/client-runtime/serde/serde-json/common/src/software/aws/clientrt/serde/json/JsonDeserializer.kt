@@ -61,7 +61,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun deserializeStruct(descriptor: SdkFieldDescriptor?): Deserializer.FieldIterator {
+    override fun deserializeStruct(descriptor: SdkFieldDescriptor): Deserializer.FieldIterator {
         nextToken<JsonToken.BeginObject>()
         return this
     }
@@ -77,7 +77,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> {
                 val token = nextToken<JsonToken.Name>()
                 val propertyName = token.value
-                val field = descriptor.fields.find { it.serialName == propertyName }
+                val field = descriptor.fields().find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
         }
@@ -88,22 +88,22 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         reader.skipNext()
     }
 
-    override fun deserializeList(descriptor: SdkFieldDescriptor?): Deserializer.ElementIterator {
+    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         nextToken<JsonToken.BeginArray>()
         return this
     }
 
-    override fun deserializeMap(descriptor: SdkFieldDescriptor?): Deserializer.EntryIterator {
+    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         nextToken<JsonToken.BeginObject>()
         return this
     }
 
-    override fun key(descriptor: SdkFieldDescriptor?): String {
+    override fun key(): String {
         val token = nextToken<JsonToken.Name>()
         return token.value
     }
 
-    override fun hasNextEntry(descriptor: SdkFieldDescriptor?): Boolean {
+    override fun hasNextEntry(): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
@@ -115,7 +115,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         }
     }
 
-    override fun hasNextElement(descriptor: SdkFieldDescriptor?): Boolean {
+    override fun hasNextElement(): Boolean {
         return when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
