@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct Endpoint {
+public struct Endpoint: Equatable {
     public let path: String
     public let queryItems: [URLQueryItem]?
     public let protocolType: ProtocolType?

@@ -16,7 +16,7 @@
 import Foundation
 
 extension URLSession: SessionProtocol {
-    func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol {
+    public func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol {
         return dataTask(with: request) as URLSessionDataTask
     }
 }

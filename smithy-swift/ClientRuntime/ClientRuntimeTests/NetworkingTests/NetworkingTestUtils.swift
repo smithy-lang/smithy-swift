@@ -28,7 +28,7 @@ class NetworkingTestUtils: XCTestCase {
     override func setUp() {
         super.setUp()
         expectedMockRequestURL = URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value")!
-        let mockRequestBody = "{parameter:value}"
+        let mockRequestBody = "{\"parameter\": \"value\"}"
         expectedMockRequestData = mockRequestBody.data(using: .utf8)
         mockOperationQueue = OperationQueue()
         mockOperationQueue.name = "mock-operation-queue"

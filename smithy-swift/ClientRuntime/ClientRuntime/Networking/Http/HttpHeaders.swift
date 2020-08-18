@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct HttpHeaders {
+public struct HttpHeaders: Equatable {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -78,7 +78,10 @@ public struct HttpHeaders {
 
         return Dictionary(namesAndValues, uniquingKeysWith: { _, last in last })
     }
-
+    
+    public static func == (lhs: HttpHeaders, rhs: HttpHeaders) -> Bool {
+        return lhs.headers.sorted { $0.name < $1.name } == rhs.headers.sorted { $0.name < $1.name }
+    }
 }
 
 extension Array where Element == Header {
@@ -89,7 +92,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header {
+public struct Header: Equatable {
     public let name: String
     public let value: String
 

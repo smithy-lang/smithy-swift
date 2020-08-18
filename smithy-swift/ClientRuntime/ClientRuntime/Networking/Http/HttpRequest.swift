@@ -15,22 +15,19 @@
 
 import Foundation
 
-public struct HttpRequest {
+public struct HttpRequest: Equatable {
     public var body: HttpBody?
     public let headers: HttpHeaders
-    public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
                 headers: HttpHeaders,
-                queryItems: [URLQueryItem]? = nil,
                 body: HttpBody? = nil) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
-        self.queryItems = queryItems
         self.body = body
     }
 }
