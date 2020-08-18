@@ -43,7 +43,8 @@ class StructureGeneratorTests : TestsBase() {
                 "    public let bar: Int\n" +
                 "    /// This *is* documentation about the member.\n" +
                 "    public let baz: Int?\n" +
-                "    public let foo: String?\n\n" +
+                "    public let foo: String?\n" +
+                "\n" +
                 "    public init (\n" +
                 "        bar: Int = 0,\n" +
                 "        baz: Int? = nil,\n" +
@@ -54,7 +55,7 @@ class StructureGeneratorTests : TestsBase() {
                 "        self.baz = baz\n" +
                 "        self.foo = foo\n" +
                 "    }\n" +
-                "}\n"
+                "}"
 
         contents.shouldContain(expectedGeneratedStructure)
     }
@@ -79,20 +80,22 @@ class StructureGeneratorTests : TestsBase() {
                 "public struct MyError: HttpOperationError {\n" +
                 "    public var httpResponse: HttpResponse\n" +
                 "    public var retryable = true\n" +
-                "    public var type = .client\n" +
+                "    public var type: ErrorType = .client\n" +
                 "    /// This *is* documentation about the member.\n" +
                 "    public var baz: Int?\n" +
                 "    public var message: String?\n" +
                 "\n" +
                 "    public init (\n" +
+                "        httpResponse: HttpResponse,\n" +
                 "        baz: Int? = nil,\n" +
                 "        message: String? = nil\n" +
                 "    )\n" +
                 "    {\n" +
+                "        self.httpResponse = httpResponse\n" +
                 "        self.baz = baz\n" +
                 "        self.message = message\n" +
                 "    }\n" +
-                "}\n"
+                "}"
 
         contents.shouldContain(expectedGeneratedStructure)
     }

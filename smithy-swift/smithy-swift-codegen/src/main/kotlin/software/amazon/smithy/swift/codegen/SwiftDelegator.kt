@@ -76,6 +76,18 @@ class SwiftDelegator(
         writer.popState()
     }
 
+    /**
+     * Gets a previously created writer or creates a new one if needed
+     * and adds a new line if the writer already exists.
+     *
+     * @param filename Name of the file to create.
+     * @param writerConsumer Lambda that accepts and works with the file.
+     */
+    fun useFileWriter(filename: String, writerConsumer: (SwiftWriter) -> Unit) {
+        val writer: SwiftWriter = checkoutWriter(filename)
+        writerConsumer(writer)
+    }
+
     private fun checkoutWriter(filename: String): SwiftWriter {
         val formattedFilename = Paths.get(filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)

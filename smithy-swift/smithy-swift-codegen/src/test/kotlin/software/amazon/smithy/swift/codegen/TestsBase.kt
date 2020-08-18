@@ -17,12 +17,15 @@ package software.amazon.smithy.swift.codegen
 
 import java.net.URL
 import java.util.logging.Logger
+import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.FileManifest
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
@@ -31,7 +34,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
-open class TestsBase {
+abstract class TestsBase {
 
     protected val LOGGER: Logger = Logger.getLogger(TestsBase::class.java.name)
 
@@ -68,17 +71,7 @@ open class TestsBase {
         val context = PluginContext.builder()
             .model(model)
             .fileManifest(manifest)
-            .settings(
-                Node.objectNodeBuilder()
-                    .withMember("service", Node.from(serviceShapeId))
-                    .withMember("module", Node.from(moduleName))
-                    .withMember("moduleVersion", Node.from(moduleVersion))
-                    .withMember("homepage", Node.from("https://docs.amplify.aws/"))
-                    .withMember("author", Node.from("Amazon Web Services"))
-                    .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
-                    .withMember("swiftVersion", Node.from("5.1.0"))
-                    .build()
-            )
+            .settings(buildDefaultSwiftSettingsObjectNode(serviceShapeId, moduleName, moduleVersion))
             .build()
         return context
     }
@@ -122,5 +115,39 @@ open class TestsBase {
             .addTrait(RetryableTrait.builder().build())
             .addTrait(HttpErrorTrait(429))
             .build()
+    }
+
+    protected fun buildDefaultSwiftSettingsObjectNode(serviceShapeId: String, moduleName: String = "example", moduleVersion: String = "1.0.0"): ObjectNode {
+        return Node.objectNodeBuilder()
+            .withMember("service", Node.from(serviceShapeId))
+            .withMember("module", Node.from(moduleName))
+            .withMember("moduleVersion", Node.from(moduleVersion))
+            .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+            .withMember("author", Node.from("Amazon Web Services"))
+            .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
+            .withMember("swiftVersion", Node.from("5.1.0"))
+            .build()
+    }
+
+    protected fun getModelFileContents(namespace: String, filename: String, manifest: MockManifest): String {
+        return manifest.expectFileString("$namespace/models/$filename")
+    }
+
+    fun String.shouldSyntacticSanityCheck() {
+        // sanity check the generated code for matching paranthesis
+        var openBraces = 0
+        var closedBraces = 0
+        var openParens = 0
+        var closedParens = 0
+        this.forEach {
+            when (it) {
+                '{' -> openBraces++
+                '}' -> closedBraces++
+                '(' -> openParens++
+                ')' -> closedParens++
+            }
+        }
+        Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
+        Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
     }
 }

@@ -56,6 +56,10 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         }
     }
 
+    fun addImport(packageName: String) {
+        imports.addImport(packageName)
+    }
+
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
         symbol.references.forEach { reference ->
             for (option in options) {

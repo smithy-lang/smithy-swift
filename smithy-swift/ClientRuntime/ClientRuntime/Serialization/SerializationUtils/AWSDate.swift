@@ -15,9 +15,9 @@
 
 import Foundation
 
-typealias ISO8601Date = AWSDate<ISO8601DateFormatterContainer>
-typealias RFC5322Date = AWSDate<RFC5322DateFormatterContainer>
-typealias EpochSecondsDate = AWSDate<EpochSecondsDateFormatterContainer>
+public typealias ISO8601Date = AWSDate<ISO8601DateFormatterContainer>
+public typealias RFC5322Date = AWSDate<RFC5322DateFormatterContainer>
+public typealias EpochSecondsDate = AWSDate<EpochSecondsDateFormatterContainer>
 
 /*
  Generic formatted date representation.

@@ -1,7 +1,24 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
     jacoco
+    maven
+    `maven-publish`
 }
 
 description = "Generates Swift code from Smithy models"
@@ -34,6 +51,13 @@ val licenseSpec = copySpec {
     from("${project.rootDir}/NOTICE")
 }
 
+val sourcesJar by tasks.creating(Jar::class) {
+    group = "publishing"
+    description = "Assembles Kotlin sources jar"
+    classifier = "sources"
+    from(sourceSets.getByName("main").allSource)
+}
+
 // Configure jars to include license related info
 tasks.jar {
     metaInf.with(licenseSpec)
@@ -62,3 +86,17 @@ tasks.jacocoTestReport {
 
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+            artifact(sourcesJar)
+        }
+    }
+    repositories {
+        maven {
+            url = uri("$buildDir/repository")
+        }
+    }
+}
