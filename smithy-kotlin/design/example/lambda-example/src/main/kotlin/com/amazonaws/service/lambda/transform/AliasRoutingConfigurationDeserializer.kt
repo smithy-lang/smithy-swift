@@ -24,7 +24,7 @@ import software.aws.clientrt.serde.*
 // can but this type itself cannot)
 class AliasRoutingConfigurationDeserializer {
     companion object {
-        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = SdkFieldDescriptor("AdditionalVersionWeights")
+        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("AdditionalVersionWeights", SerialKind.Map())
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR)
@@ -33,10 +33,10 @@ class AliasRoutingConfigurationDeserializer {
         fun deserialize(deserializer: Deserializer): AliasRoutingConfiguration {
             val builder = AliasRoutingConfiguration.dslBuilder()
 
-            deserializer.deserializeStruct(null) {
+            deserializer.deserializeStruct(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR) {
                 loop@ while(true) {
                     when(findNextFieldIndex(OBJ_DESCRIPTOR)) {
-                        ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR.index -> builder.additionalVersionWeights = deserializer.deserializeMap() {
+                        ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR.index -> builder.additionalVersionWeights = deserializer.deserializeMap(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR) {
                             val map = mutableMapOf<String, Float>()
                             while(hasNextEntry()) {
                                 map[key()] = deserializeFloat()

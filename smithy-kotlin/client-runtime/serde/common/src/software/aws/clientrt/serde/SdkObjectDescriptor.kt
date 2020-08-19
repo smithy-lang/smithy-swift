@@ -18,7 +18,7 @@ package software.aws.clientrt.serde
  * Metadata container for all fields of an object/class
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkNamedFieldDescriptor(
-    builder.serialName!!,
+    builder.serialName ?: "", //TODO: fix the empty string hack
     SerialKind.Struct(
         setOf(ObjectStruct(builder.fields))
     ),

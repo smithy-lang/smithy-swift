@@ -24,12 +24,12 @@ import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer: HttpDeserialize {
     companion object {
-        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn")
-        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
-        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
-        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name")
-        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId")
-        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("AliasArn", SerialKind.String)
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("Description", SerialKind.String)
+        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("FunctionVersion", SerialKind.String)
+        private val NAME_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("Name", SerialKind.String)
+        private val REVISION_ID_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("RevisionId", SerialKind.String)
+        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("RoutingConfig", SerialKind.Struct())
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ALIAS_ARN_FIELD_DESCRIPTOR)
@@ -49,7 +49,7 @@ class AliasConfigurationDeserializer: HttpDeserialize {
         // FIXME - expected response is 201, need to plug in error handling middleware as well as check for
         //  the specific code here (or pass it to the pipeline as metadata for a feature to check)
 
-        deserializer.deserializeStruct(null) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while(true) {
                 when(findNextFieldIndex(OBJ_DESCRIPTOR)) {
                     ALIAS_ARN_FIELD_DESCRIPTOR.index -> builder.aliasArn = deserializeString()
