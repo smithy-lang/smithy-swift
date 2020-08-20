@@ -53,7 +53,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Boolean)
+    fun field(descriptor: SdkFieldDescriptor, value: Boolean)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -62,7 +62,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Byte)
+    fun field(descriptor: SdkFieldDescriptor, value: Byte)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -71,7 +71,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Short)
+    fun field(descriptor: SdkFieldDescriptor, value: Short)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -80,7 +80,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Char)
+    fun field(descriptor: SdkFieldDescriptor, value: Char)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -89,7 +89,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Int)
+    fun field(descriptor: SdkFieldDescriptor, value: Int)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -98,7 +98,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Long)
+    fun field(descriptor: SdkFieldDescriptor, value: Long)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -107,7 +107,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Float)
+    fun field(descriptor: SdkFieldDescriptor, value: Float)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -116,7 +116,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: Double)
+    fun field(descriptor: SdkFieldDescriptor, value: Double)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -125,7 +125,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: String)
+    fun field(descriptor: SdkFieldDescriptor, value: String)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -134,7 +134,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkNamedFieldDescriptor, value: SdkSerializable)
+    fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -143,7 +143,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun structField(descriptor: SdkNamedFieldDescriptor, block: StructSerializer.() -> Unit)
+    fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -152,7 +152,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun listField(descriptor: SdkNamedFieldDescriptor, block: ListSerializer.() -> Unit)
+    fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -161,7 +161,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun mapField(descriptor: SdkNamedFieldDescriptor, block: MapSerializer.() -> Unit)
+    fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
@@ -365,7 +365,7 @@ interface PrimitiveSerializer {
      *
      * @param descriptor
      */
-    fun serializeNull(descriptor: SdkNamedFieldDescriptor)
+    fun serializeNull(descriptor: SdkFieldDescriptor)
 }
 
 /**
@@ -377,7 +377,7 @@ inline fun Serializer.serializeStruct(crossinline block: StructSerializer.() -> 
     struct.endStruct()
 }
 
-inline fun Serializer.serializeStruct(name: String, crossinline block: StructSerializer.() -> Unit) {
+inline fun Serializer.serializeStruct(name: String?, crossinline block: StructSerializer.() -> Unit) {
     val struct = beginStruct(name)
     struct.block()
     struct.endStruct(name)
@@ -392,7 +392,7 @@ inline fun Serializer.serializeList(crossinline block: ListSerializer.() -> Unit
     list.endList()
 }
 
-inline fun Serializer.serializeList(name: String, crossinline block: ListSerializer.() -> Unit) {
+inline fun Serializer.serializeList(name: String?, crossinline block: ListSerializer.() -> Unit) {
     val list = beginList(name)
     list.block()
     list.endList(name)
@@ -407,7 +407,7 @@ inline fun Serializer.serializeMap(crossinline block: MapSerializer.() -> Unit) 
     map.endMap()
 }
 
-inline fun Serializer.serializeMap(name: String, crossinline block: MapSerializer.() -> Unit) {
+inline fun Serializer.serializeMap(name: String?, crossinline block: MapSerializer.() -> Unit) {
     val map = beginMap(name)
     map.block()
     map.endMap(name)

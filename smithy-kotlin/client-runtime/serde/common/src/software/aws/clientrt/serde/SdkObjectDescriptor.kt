@@ -17,8 +17,8 @@ package software.aws.clientrt.serde
 /**
  * Metadata container for all fields of an object/class
  */
-class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkNamedFieldDescriptor(
-    builder.serialName ?: "", //TODO: fix the empty string hack
+class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
+    builder.serialName,
     SerialKind.Struct(
         setOf(ObjectStruct(builder.fields))
     ),
@@ -28,7 +28,7 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkNamedFi
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
     }
 
-    fun fields(): List<SdkNamedFieldDescriptor> {
+    fun fields(): List<SdkFieldDescriptor> {
         val objectStruct = (kind as SerialKind.Struct).traits.first { it is ObjectStruct } as ObjectStruct
 
         return objectStruct.fields
@@ -38,17 +38,17 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkNamedFi
         /**
          * Declare a field belonging to this object
          */
-        fun field(field: SdkNamedFieldDescriptor)
+        fun field(field: SdkFieldDescriptor)
         fun serialName(name: String)
         fun build(): SdkObjectDescriptor
     }
 
     private class BuilderImpl : DslBuilder {
-        val fields: MutableList<SdkNamedFieldDescriptor> = mutableListOf()
+        val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
         var serialName: String? = null
         val kind: SerialKind = SerialKind.Struct()
 
-        override fun field(field: SdkNamedFieldDescriptor) {
+        override fun field(field: SdkFieldDescriptor) {
             field.index = fields.size
             fields.add(field)
         }

@@ -38,7 +38,7 @@ class XmlMap(
 class XmlList(
     val elementName: String = "element"
 ) : FieldTrait
-class ObjectStruct(val fields: List<SdkNamedFieldDescriptor>) : FieldTrait
+class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
 
 sealed class SerialKind {
     object Integer : SerialKind()
@@ -49,16 +49,9 @@ sealed class SerialKind {
     object Short: SerialKind()
     object Float: SerialKind()
 
-    // ...
-    // either through SerialKind or Trait system...
     data class Map(val traits: Set<FieldTrait> = emptySet()) : SerialKind()
     data class List(val traits: Set<FieldTrait> = emptySet()): SerialKind()
     data class Struct(val traits: Set<FieldTrait> = emptySet()): SerialKind()
 }
 
-open class SdkFieldDescriptor(
-    open val kind: SerialKind,
-    open var index: Int = 0
-)
-
-open class SdkNamedFieldDescriptor(val serialName: String, override val kind: SerialKind, override var index: Int = 0) : SdkFieldDescriptor(kind, index)
+open class SdkFieldDescriptor(val serialName: String?, val kind: SerialKind, var index: Int = 0)

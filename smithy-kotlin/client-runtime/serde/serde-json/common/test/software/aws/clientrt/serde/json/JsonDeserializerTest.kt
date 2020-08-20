@@ -90,7 +90,7 @@ class JsonDeserializerTest {
     fun `it handles lists`() {
         val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeList(JsonListSdkFieldDescriptor) {
+        val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List())) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
                 list.add(deserializeInt())
@@ -110,7 +110,7 @@ class JsonDeserializerTest {
             }
         """.trimIndent().encodeToByteArray()
         val deserializer: Deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeMap(JsonMapSdkFieldDescriptor) {
+        val actual = deserializer.deserializeMap(SdkFieldDescriptor("", SerialKind.Map())) {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
                 map[key()] = deserializeInt()
@@ -125,8 +125,8 @@ class BasicStructTest {
     var x: Int? = null
     var y: Int? = null
     companion object {
-        val X_DESCRIPTOR = SdkNamedFieldDescriptor("x", SerialKind.Integer)
-        val Y_DESCRIPTOR = SdkNamedFieldDescriptor("y", SerialKind.Integer)
+        val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
+        val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(X_DESCRIPTOR)
             field(Y_DESCRIPTOR)
@@ -189,7 +189,7 @@ class BasicStructTest {
         ]
         """.trimIndent().encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeList(JsonListSdkFieldDescriptor) {
+        val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List())) {
             val list = mutableListOf<BasicStructTest>()
             while (hasNextElement()) {
                 list.add(BasicStructTest.deserialize(deserializer))
@@ -235,8 +235,8 @@ class BasicStructTest {
         var list2: List<String>? = null
         var int2: Int? = null
         companion object {
-            val LIST2_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("list2", SerialKind.List())
-            val INT2_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("int2", SerialKind.Integer)
+            val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2", SerialKind.List())
+            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2", SerialKind.Integer)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
@@ -271,8 +271,8 @@ class BasicStructTest {
         var bool2: Boolean? = null
 
         companion object {
-            val NESTED2_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("nested2", SerialKind.Struct())
-            val BOOL2_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("bool2", SerialKind.Boolean)
+            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2", SerialKind.Struct())
+            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2", SerialKind.Boolean)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
@@ -310,16 +310,16 @@ class BasicStructTest {
         var mapField: Map<String, String>? = null
 
         companion object {
-            val INT_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("int", SerialKind.Integer)
-            val LONG_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("long", SerialKind.Long)
-            val SHORT_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("short", SerialKind.Short)
-            val BOOL_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("bool", SerialKind.Boolean)
-            val STR_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("str", SerialKind.String)
-            val LIST_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("list", SerialKind.List())
-            val DOUBLE_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("double", SerialKind.Double)
-            val NESTED_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("nested", SerialKind.Struct())
-            val FLOAT_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("float", SerialKind.Float)
-            val MAP_FIELD_DESCRIPTOR = SdkNamedFieldDescriptor("map", SerialKind.Map())
+            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor("int", SerialKind.Integer)
+            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor("long", SerialKind.Long)
+            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor("short", SerialKind.Short)
+            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool", SerialKind.Boolean)
+            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str", SerialKind.String)
+            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List())
+            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double", SerialKind.Double)
+            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested", SerialKind.Struct())
+            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float)
+            val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map())
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(INT_FIELD_DESCRIPTOR)

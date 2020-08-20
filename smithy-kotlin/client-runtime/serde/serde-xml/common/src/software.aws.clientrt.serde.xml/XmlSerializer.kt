@@ -56,72 +56,72 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(name)
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: SdkSerializable) = value.serialize(this)
+    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Int) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Int) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeInt(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Long) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Long) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeLong(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Float) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Float) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeFloat(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: String) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: String) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeString(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Double) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Double) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeDouble(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Boolean) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeBoolean(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Byte) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeByte(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Short) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Short) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeShort(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun field(descriptor: SdkNamedFieldDescriptor, value: Char) {
-        xmlWriter.startTag(descriptor.serialName)
+    override fun field(descriptor: SdkFieldDescriptor, value: Char) {
+        xmlWriter.startTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
         serializeChar(value)
-        xmlWriter.endTag(descriptor.serialName)
+        xmlWriter.endTag(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
     }
 
-    override fun structField(descriptor: SdkNamedFieldDescriptor, block: StructSerializer.() -> Unit) {
-        serializeStruct(descriptor.serialName, block)
+    override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
+        serializeStruct(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."), block)
     }
 
-    override fun listField(descriptor: SdkNamedFieldDescriptor, block: ListSerializer.() -> Unit) {
-        serializeList(descriptor.serialName, block)
+    override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+        serializeList(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."), block)
     }
 
-    override fun mapField(descriptor: SdkNamedFieldDescriptor, block: MapSerializer.() -> Unit) {
-        serializeMap(descriptor.serialName, block)
+    override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+        serializeMap(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."), block)
     }
 
     override fun entry(key: String, value: Int) {
@@ -184,7 +184,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(key)
     }
 
-    override fun serializeNull(descriptor: SdkNamedFieldDescriptor) {
+    override fun serializeNull(descriptor: SdkFieldDescriptor) {
         // This might  be represented w/ attrib 'xsi:nil="true"'
         TODO("Unsure of how to handle this atm.")
     }

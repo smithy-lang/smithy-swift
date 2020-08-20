@@ -33,7 +33,7 @@ class JsonSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkNamedFieldDescriptor = SdkNamedFieldDescriptor("b", SerialKind.Struct())
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct())
         }
 
         override fun serialize(serializer: Serializer) {
@@ -45,7 +45,7 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkNamedFieldDescriptor("value", SerialKind.Integer)
+            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer)
         }
 
         override fun serialize(serializer: Serializer) {
@@ -123,12 +123,12 @@ data class Primitives(
         //val descriptorBoolean = SdkFieldDescriptor("boolean")
         //val descriptorByte = SdkFieldDescriptor("byte")
         //val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkNamedFieldDescriptor("int", SerialKind.Integer)
-        val descriptorLong = SdkNamedFieldDescriptor("long", SerialKind.Long)
+        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
+        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
         //val descriptorFloat = SdkFieldDescriptor("float")
         //val descriptorDouble = SdkFieldDescriptor("double")
         //val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkNamedFieldDescriptor("string", SerialKind.String)
+        val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
         //val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
         //val descriptorListInt = SdkFieldDescriptor("listInt")
     }
