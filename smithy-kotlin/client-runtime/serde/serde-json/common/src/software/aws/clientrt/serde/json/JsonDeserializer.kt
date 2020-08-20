@@ -14,10 +14,7 @@
  */
 package software.aws.clientrt.serde.json
 
-import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.DeserializerStateException
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.*
 
 private enum class IteratorMode {
     LIST,
@@ -70,8 +67,14 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     override fun deserializeString(): String {
-        val token = nextToken<JsonToken.String>()
-        return token.value
+        // allow for tokens to be consumed as string even when the next token isn't a quoted string
+        return when (val token = reader.nextToken()) {
+            is JsonToken.String -> token.value
+            is JsonToken.Number -> token.value
+            is JsonToken.Bool -> token.value.toString()
+            is JsonToken.Null -> "null"
+            else -> throw DeserializationException("$token cannot be deserialized as type String")
+        }
     }
 
     override fun deserializeBool(): Boolean {
