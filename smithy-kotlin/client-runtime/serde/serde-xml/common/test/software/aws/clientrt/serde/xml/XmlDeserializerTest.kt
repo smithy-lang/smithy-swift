@@ -96,7 +96,7 @@ class XmlDeserializerTest {
                 <element>3</element>
             </list>
         """.flatten().encodeToByteArray()
-        val listWrapperFieldDescriptor = SdkFieldDescriptor("list", SerialKind.List(setOf(XmlList(elementName = "element"))))
+        val listWrapperFieldDescriptor = SdkFieldDescriptor("list", SerialKind.List(XmlList(elementName = "element")))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
             val list = mutableListOf<Int>()
@@ -125,7 +125,7 @@ class XmlDeserializerTest {
                 </values>
             </Foo>
         """.flatten().encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor("Foo", SerialKind.Map(setOf(XmlMap("values", "entry", "key", "value"))))
+        val fieldDescriptor = SdkFieldDescriptor("Foo", SerialKind.Map(XmlMap("values", "entry", "key", "value")))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -160,7 +160,7 @@ class XmlDeserializerTest {
                 </flatMap>
             </Bar>
         """.flatten().encodeToByteArray()
-        val containerFieldDescriptor = SdkFieldDescriptor("Bar", SerialKind.Map(setOf(XmlMap(null, "flatMap", "key", "value", true))))
+        val containerFieldDescriptor = SdkFieldDescriptor("Bar", SerialKind.Map(XmlMap(null, "flatMap", "key", "value", true)))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -239,7 +239,7 @@ class XmlDeserializerTest {
                    </payload>
                </list>
            """.flatten().encodeToByteArray()
-           val listWrapperFieldDescriptor = SdkFieldDescriptor("list", SerialKind.List(setOf(XmlList(elementName = "payload"))))
+           val listWrapperFieldDescriptor = SdkFieldDescriptor("list", SerialKind.List(XmlList(elementName = "payload")))
 
            val deserializer = XmlDeserializer(payload)
            val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
@@ -277,7 +277,7 @@ class XmlDeserializerTest {
            var list2: List<String>? = null
            var int2: Int? = null
            companion object {
-               val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2", SerialKind.List(setOf(XmlList(elementName = "element"))))
+               val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2", SerialKind.List(XmlList(elementName = "element")))
                val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2", SerialKind.Integer())
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                    serialName("nested2")
@@ -367,11 +367,11 @@ class XmlDeserializerTest {
                val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor("short", SerialKind.Short())
                val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool", SerialKind.Boolean())
                val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str", SerialKind.String())
-               val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List(setOf(XmlList())))
+               val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List(XmlList()))
                val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double", SerialKind.Double())
                val NESTED_FIELD_DESCRIPTOR = SdkObjectDescriptor.build { serialName("nested") }
                val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float())
-               val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map(setOf(XmlMap(null, "entry", "key", "value", true))))
+               val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map(XmlMap(null, "entry", "key", "value", true)))
 
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                    serialName("payload")

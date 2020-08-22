@@ -40,20 +40,23 @@ class XmlList(
 ) : FieldTrait
 class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
 
-sealed class SerialKind(val traits: Set<FieldTrait> = emptySet()) {
+sealed class SerialKind(vararg val trait: FieldTrait) {
+    class Unit : SerialKind()
     class Integer : SerialKind()
     class Long : SerialKind()
     class Double : SerialKind()
     class String: SerialKind()
     class Boolean: SerialKind()
+    class Byte: SerialKind()
+    class Char: SerialKind()
     class Short: SerialKind()
     class Float: SerialKind()
-    class Map(traits: Set<FieldTrait> = emptySet()) : SerialKind(traits)
-    class List(traits: Set<FieldTrait> = emptySet()): SerialKind(traits)
-    class Struct(traits: Set<FieldTrait> = emptySet()): SerialKind(traits)
+    class Map(vararg trait: FieldTrait) : SerialKind(*trait)
+    class List(vararg trait: FieldTrait): SerialKind(*trait)
+    class Struct(vararg trait: FieldTrait): SerialKind(*trait)
 
     inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected =
-        traits.find { it::class == TExpected::class } as TExpected
+        trait.find { it::class == TExpected::class } as TExpected
 }
 
 open class SdkFieldDescriptor(val serialName: String?, val kind: SerialKind, var index: Int = 0)

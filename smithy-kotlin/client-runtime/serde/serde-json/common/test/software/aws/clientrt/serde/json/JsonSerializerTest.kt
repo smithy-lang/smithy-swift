@@ -45,7 +45,7 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer)
+            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer())
         }
 
         override fun serialize(serializer: Serializer) {
@@ -99,65 +99,63 @@ class JsonSerializerTest {
         val json = JsonSerializer()
         data.serialize(json)
 
-        //assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
-        assertEquals("""{"int":1,"long":2,"string":"Str0"}""", json.toByteArray().decodeToString())
+        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
+        //assertEquals("""{"int":1,"long":2,"string":"Str0"}""", json.toByteArray().decodeToString())
     }
 }
 
 data class Primitives(
-    //val unit: Unit,
-    //val boolean: Boolean,
-    //val byte: Byte,
-    //val short: Short,
+    val unit: Unit,
+    val boolean: Boolean,
+    val byte: Byte,
+    val short: Short,
     val int: Int,
     val long: Long,
-    //val float: Float,
-    //val double: Double,
-    //val char: Char,
-    val string: String
-    //val unitNullable: Unit?,
-    //val listInt: List<Int>
+    val float: Float,
+    val double: Double,
+    val char: Char,
+    val string: String,
+    val unitNullable: Unit?,
+    val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        //val descriptorUnit = SdkFieldDescriptor("unit")
-        //val descriptorBoolean = SdkFieldDescriptor("boolean")
-        //val descriptorByte = SdkFieldDescriptor("byte")
-        //val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
-        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
-        //val descriptorFloat = SdkFieldDescriptor("float")
-        //val descriptorDouble = SdkFieldDescriptor("double")
-        //val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
-        //val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        //val descriptorListInt = SdkFieldDescriptor("listInt")
+        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit())
+        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean())
+        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte())
+        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short())
+        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer())
+        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long())
+        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float())
+        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double())
+        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char())
+        val descriptorString = SdkFieldDescriptor("string", SerialKind.String())
+        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable", SerialKind.Unit())
+        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List())
     }
 
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct {
-            //serializeNull(descriptorUnit)
-            //field(descriptorBoolean, boolean)
-            //field(descriptorByte, byte)
-            //field(descriptorShort, short)
+            serializeNull(descriptorUnit)
+            field(descriptorBoolean, boolean)
+            field(descriptorByte, byte)
+            field(descriptorShort, short)
             field(descriptorInt, int)
             field(descriptorLong, long)
-            //field(descriptorFloat, float)
-            //field(descriptorDouble, double)
-            //field(descriptorChar, char)
+            field(descriptorFloat, float)
+            field(descriptorDouble, double)
+            field(descriptorChar, char)
             field(descriptorString, string)
-            //serializeNull(descriptorUnitNullable)
-            //listField(descriptorListInt) {
-            //    for (value in listInt) {
-            //        serializeInt(value)
-            //    }
-            //}
+            serializeNull(descriptorUnitNullable)
+            listField(descriptorListInt) {
+                for (value in listInt) {
+                    serializeInt(value)
+                }
+            }
         }
     }
 }
 
-val data = Primitives(1,2L,"Str0")
-
-    /*Primitives(
+val data =  Primitives(
     Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
     null, listOf(1, 2, 3)
-)*/
+)

@@ -24,30 +24,30 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         return jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
     }
 
-    override fun beginStruct(name: String?): StructSerializer {
+    override fun beginStruct(descriptor: SdkFieldDescriptor?): StructSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun beginList(name: String?): ListSerializer {
+    override fun beginList(descriptor: SdkFieldDescriptor?): ListSerializer {
         jsonWriter.beginArray()
         return this
     }
 
-    override fun beginMap(name: String?): MapSerializer {
+    override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun endStruct(name: String?) {
+    override fun endStruct(descriptor: SdkFieldDescriptor?) {
         jsonWriter.endObject()
     }
 
-    override fun endList(name: String?) {
+    override fun endList(descriptor: SdkFieldDescriptor?) {
         jsonWriter.endArray()
     }
 
-    override fun endMap(name: String?) {
+    override fun endMap(descriptor: SdkFieldDescriptor?) {
         jsonWriter.endObject()
     }
 
@@ -103,17 +103,17 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
-        serializeStruct(block)
+        serializeStruct(descriptor, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
-        serializeList(block)
+        serializeList(descriptor, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
-        serializeMap(block)
+        serializeMap(descriptor, block)
     }
 
     override fun entry(key: String, value: Int) {

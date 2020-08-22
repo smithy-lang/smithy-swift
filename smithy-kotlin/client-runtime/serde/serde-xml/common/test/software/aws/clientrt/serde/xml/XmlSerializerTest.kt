@@ -37,7 +37,7 @@ class XmlSerializerTest {
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorB.serialName) {
+            serializer.serializeStruct(descriptorB) {
                 field(descriptorB, b)
             }
         }
@@ -45,11 +45,11 @@ class XmlSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer())
+            val descriptorValue = SdkFieldDescriptor("bv", SerialKind.Integer())
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(descriptorValue.serialName) {
+            serializer.serializeStruct(descriptorValue) {
                 field(descriptorValue, value)
             }
         }
@@ -63,7 +63,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList("list") {
+        xml.serializeList(SdkFieldDescriptor("list", SerialKind.List())) {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -80,20 +80,13 @@ class XmlSerializerTest {
      */
     @Test
     fun `can serialize map`() {
-        val objs = mapOf("A1" to A(
-            B(1)
-        ), "A2" to A(
-            B(
-                2
-            )
-        ), "A3" to A(
-            B(
-                3
-            )
-        )
+        val objs = mapOf(
+            "A1" to A(B(1)),
+            "A2" to A(B(2)),
+            "A3" to A(B(3))
         )
         val xml = XmlSerializer()
-        xml.serializeMap("map") {
+        xml.serializeMap(SdkFieldDescriptor("map", SerialKind.Map(XmlMap("parent", "entry", "key", "value")))) {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
@@ -106,67 +99,12 @@ class XmlSerializerTest {
         val xml = XmlSerializer()
         data.serialize(xml)
 
-        //assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.0</float><double>60.0</double><char>A</char><string>Str0</string></struct>""", xml.toByteArray().decodeToString())
-        assertEquals("""<struct><int>1</int><long>2</long><string>Str0</string></struct>""", xml.toByteArray().decodeToString())
+        assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.0</float><double>60.0</double><char>A</char><string>Str0</string><listInt><number>1</number><number>2</number><number>3</number></listInt></struct>""", xml.toByteArray().decodeToString())
     }
 }
 
 data class Primitives(
     //val unit: Unit,
-    //val boolean: Boolean,
-    //val byte: Byte,
-    //val short: Short,
-    val int: Int,
-    val long: Long,
-    //val float: Float,
-    //val double: Double,
-    //val char: Char,
-    val string: String
-    //val unitNullable: Unit?,
-    //val listInt: List<Int>
-) : SdkSerializable {
-    companion object {
-        //val descriptorUnit = SdkFieldDescriptor("unit")
-        //val descriptorBoolean = SdkFieldDescriptor("boolean")
-        //val descriptorByte = SdkFieldDescriptor("byte")
-        //val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer())
-        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long())
-        //val descriptorFloat = SdkFieldDescriptor("float")
-        //val descriptorDouble = SdkFieldDescriptor("double")
-        //val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkFieldDescriptor("string", SerialKind.String())
-        //val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        //val descriptorListInt = SdkFieldDescriptor("listInt")
-    }
-
-    override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct("struct") {
-            //serializeNull(descriptorUnit)
-            //field(descriptorBoolean, boolean)
-            //field(descriptorByte, byte)
-            //field(descriptorShort, short)
-            field(descriptorInt, int)
-            field(descriptorLong, long)
-            //field(descriptorFloat, float)
-            //field(descriptorDouble, double)
-            //field(descriptorChar, char)
-            field(descriptorString, string)
-            //serializeNull(descriptorUnitNullable)
-            //listField(descriptorListInt) {
-            //    for (value in listInt) {
-            //        serializeInt(value)
-            //    }
-            //}
-        }
-    }
-}
-
-val data = Primitives(1,2L,"Str0")
-
-/*
-data class Primitives(
-    val unit: Unit,
     val boolean: Boolean,
     val byte: Byte,
     val short: Short,
@@ -176,25 +114,27 @@ data class Primitives(
     val double: Double,
     val char: Char,
     val string: String,
-    val unitNullable: Unit?
+    //val unitNullable: Unit?,
+    val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit")
-        val descriptorBoolean = SdkFieldDescriptor("boolean")
-        val descriptorByte = SdkFieldDescriptor("byte")
-        val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkFieldDescriptor("int")
-        val descriptorLong = SdkFieldDescriptor("long")
-        val descriptorFloat = SdkFieldDescriptor("float")
-        val descriptorDouble = SdkFieldDescriptor("double")
-        val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkFieldDescriptor("string")
-        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
+        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit())
+        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean())
+        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte())
+        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short())
+        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer())
+        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long())
+        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float())
+        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double())
+        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char())
+        val descriptorString = SdkFieldDescriptor("string", SerialKind.String())
+        // val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
+        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List(XmlList(elementName = "number")))
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct("struct") {
-            // serializeNull(descriptorUnit)
+        serializer.serializeStruct(SdkFieldDescriptor("struct", SerialKind.Struct())) {
+            serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)
             field(descriptorShort, short)
@@ -205,13 +145,17 @@ data class Primitives(
             field(descriptorChar, char)
             field(descriptorString, string)
             // serializeNull(descriptorUnitNullable)
+            listField(descriptorListInt) {
+                for (value in listInt) {
+                    serializeInt(value)
+                }
+            }
         }
     }
 }
 
 val data = Primitives(
-    Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-    null
+    true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
+    listOf(1,2,3)
 )
 
- */

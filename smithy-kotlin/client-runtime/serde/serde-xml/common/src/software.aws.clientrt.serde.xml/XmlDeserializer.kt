@@ -131,14 +131,14 @@ private class CompositeIterator(
 
         if (!consumedWrapper) {
             val nextToken = reader.peekToken<XmlToken.BeginElement>()
-            require(nextToken.name == getWrapperName(descriptor)) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.name}" }
+            require(nextToken.name == descriptor.kind.getWrapperName()) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.name}" }
             consumedWrapper = true
         }
 
-        return when (val nt = reader.peek()) {
+        return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() == depth && nt.name == beginNode.name) {
+                if (reader.currentDepth() == depth && nextToken.name == beginNode.name) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
@@ -154,54 +154,25 @@ private class CompositeIterator(
         reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
             val mapInfo = descriptor.kind.expectTrait<XmlMap>()
             if (!consumedWrapper && !mapInfo.flattened) {
-                require(beginToken.name == getWrapperName(descriptor)) { "Expected entry wrapper ${descriptor.serialName} but got ${beginToken.name}" }
+                val expectedWrapperName = descriptor.kind.getWrapperName()
+                require(beginToken.name == expectedWrapperName) { "Expected entry wrapper ${descriptor.serialName} but got $expectedWrapperName" }
                 consumedWrapper = true
-                val nextToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //TODO: verify node name
+                val nextToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+                require(nextToken.name == mapInfo.entry) { "Expected node ${mapInfo.entry} but got ${nextToken.name}" }
                 reader.peekToken<XmlToken.BeginElement>()
             }
         }
 
-        /*
-        var nextToken = reader.peek()
-        if (nextToken is XmlToken.BeginElement) { // Determine if next node is our wrapper, if so consume.
-            val mapInfo = (descriptor.kind as SerialKind.Map).traits.first { it is XmlMap } as XmlMap
-            if (!consumedWrapper && !mapInfo.flattened) {
-                require(nextToken.name == getListWrapperName(descriptor)) { "Expected entry wrapper ${descriptor.serialName} but got ${(nextToken as XmlToken.BeginElement).name}" }
-                consumedWrapper = true
-                nextToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
-                nextToken = reader.peek()
-                require(nextToken is XmlToken.BeginElement) { "Expected begin tag but got ${nextToken::class}"}
-            }
-
-            require(nextToken.name == mapInfo.entry) { "Expected node named ${mapInfo.entry} but got ${nextToken.name}" }
-            reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
-        }
-         */
-
-        return when (val nt = reader.peek()) {
+        return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() == depth && nt.name == beginNode.name) {
+                if (reader.currentDepth() == depth && nextToken.name == beginNode.name) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
                     hasNextEntry() // recurse
                 }
             else -> true
-        }
-    }
-
-    private fun getWrapperName(descriptor: SdkFieldDescriptor): String {
-        return when(descriptor.kind) {
-            is SerialKind.List -> {
-                val listInfo = (descriptor.kind as SerialKind.List).traits.first { it is XmlList } as XmlList
-                listInfo.elementName
-            }
-            is SerialKind.Map -> {
-                val listInfo = (descriptor.kind as SerialKind.Map).traits.first { it is XmlMap } as XmlMap
-                listInfo.parent ?: error("Cannot get wrapper of flattened map.")
-            }
-            else -> error("Unexpected descriptor kind: ${descriptor.kind::class}")
         }
     }
 
@@ -227,7 +198,7 @@ private class CompositeIterator(
     override fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int? {
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
-        return when (val nt = reader.peek()) {
+        return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> null
             is XmlToken.EndElement -> {
                 // consume the token
@@ -240,7 +211,7 @@ private class CompositeIterator(
                 }
             }
             is XmlToken.BeginElement -> {
-                val propertyName = nt.name
+                val propertyName = nextToken.name
                 //FIXME: The following filter needs to take XML namespace into account when matching.
                 val field =
                     descriptor.fields().find { it.serialName == propertyName }
@@ -252,7 +223,7 @@ private class CompositeIterator(
 
                 rt
             }
-            else -> throw DeserializationException("Unexpected token $nt")
+            else -> throw DeserializationException("Unexpected token $nextToken")
         }
     }
 
@@ -345,6 +316,9 @@ private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(node
     return token as TExpected
 }
 
+/**
+ * Verify that the next token is of a specified type but do not consume it.
+ */
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.peekToken(): TExpected {
     val token = this.peek()
     requireToken<TExpected>(token)
@@ -359,10 +333,16 @@ private inline fun <reified TExpected> requireToken(token: XmlToken) {
     }
 }
 
+/**
+ * If the token is of specified type, consume it and perform work against it in `block`.
+ *
+ * @param nodeNameStack tracks traversal through tree to verify correctness.
+ * @param block function to apply expected token against.
+ */
 private inline fun <reified TExpected> XmlStreamReader.takeIfToken(nodeNameStack: MutableList<String>, block: (TExpected) -> Unit = {}): Boolean {
-    val nt = this.peek()
+    val nextToken = this.peek()
 
-    if (nt::class == TExpected::class) {
+    if (nextToken::class == TExpected::class) {
         val expectedToken = this.nextToken() as TExpected
 
         when(TExpected::class) {
@@ -380,6 +360,24 @@ private inline fun <reified TExpected> XmlStreamReader.takeIfToken(nodeNameStack
     }
 
     return false
+}
+
+/**
+ * Return the top-level name of the container of a List or Map.
+ */
+private fun SerialKind.getWrapperName(): String {
+    return when(this) {
+        is SerialKind.List -> {
+            val listTrait = this.expectTrait<XmlList>()
+            listTrait.elementName
+        }
+        is SerialKind.Map -> {
+            val mapTrait = this.expectTrait<XmlMap>()
+            require(!mapTrait.flattened) { "Cannot get wrapper name of flattened map." }
+            mapTrait.parent ?: error("Expected XmlMap to contain non-null parent name.")
+        }
+        else -> error("Unexpected descriptor kind: ${this::class}")
+    }
 }
 
 fun XmlStreamReader.consumeListWrapper(descriptor: SdkFieldDescriptor, nodeNameStack: MutableList<String>) =

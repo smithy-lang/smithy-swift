@@ -24,11 +24,11 @@ import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer: HttpDeserialize {
     companion object {
-        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn", SerialKind.String)
-        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String)
-        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
-        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
-        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId", SerialKind.String)
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn", SerialKind.String())
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String())
+        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String())
+        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String())
+        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId", SerialKind.String())
         private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct())
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {

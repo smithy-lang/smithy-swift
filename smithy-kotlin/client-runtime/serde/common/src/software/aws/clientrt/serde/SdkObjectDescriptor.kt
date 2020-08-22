@@ -19,9 +19,7 @@ package software.aws.clientrt.serde
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
     builder.serialName,
-    SerialKind.Struct(
-        setOf(ObjectStruct(builder.fields))
-    ),
+    SerialKind.Struct(ObjectStruct(builder.fields)),
     0
 ) {
     companion object {
@@ -29,7 +27,7 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
     }
 
     fun fields(): List<SdkFieldDescriptor> {
-        val objectStruct = (kind as SerialKind.Struct).traits.first { it is ObjectStruct } as ObjectStruct
+        val objectStruct = kind.expectTrait<ObjectStruct>()
 
         return objectStruct.fields
     }
