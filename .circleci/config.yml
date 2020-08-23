@@ -84,6 +84,34 @@ commands:
             destination: Reports
             path: build/reports/tests/test/
 
+  setup_emulator:
+    description: >-
+      setup emulator
+    steps:
+      - checkout
+      - run:
+          name: Setup emulator
+          command: |
+            echo y | sdkmanager "system-images;android-24;default;armeabi-v7a"
+            echo "no" | avdmanager create avd -n test -k "system-images;android-24;default;armeabi-v7a"
+      - run:
+          name: Launch emulator
+          command: |
+            export LD_LIBRARY_PATH=${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib
+            emulator64-arm -avd test -no-boot-anim -no-window -accel auto -verbose
+          background: true
+      - run:
+          name: Launch logcat
+          command:
+            adb logcat > logcat.log
+          background: true
+      - run:
+          name: Wait emulator
+          command: |
+            echo "wait for emulator to have booted"
+            circle-android wait-for-boot
+            python3 ~/project/smithy-kotlin/unlock_emulator_screen.py
+
 jobs:
   build:
     environment:
@@ -115,6 +143,26 @@ jobs:
                 paths:
                   - smithy-swift/build
                   - smithy-swift/*/build
+  test_kotlin_on_emulator:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+    docker:
+      - image: circleci/android@sha256:5cdc8626cc6f13efe5ed982cdcdb432b0472f8740fed8743a6461e025ad6cdfc
+    steps:
+      - attach_workspace:
+          at: .
+      - setup_emulator
+      - run:
+          working_directory: ~/project/smithy-kotlin
+          name: Run integration test
+          command: |
+            sudo chmod +x ./gradlew
+            ./gradlew cAT --no-daemon
+            ./gradlew test
+      - store_artifacts:
+          path: logcat.log
   test_smithy_kotlin:
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
@@ -130,9 +178,14 @@ jobs:
           steps:
             - run:
                 working_directory: ~/project/smithy-kotlin
-                name: Run tests
+                name: Run codegen related tests
                 command: |
                   ./gradlew test
+            - run:
+                working_directory: ~/project/smithy-kotlin
+                name: Run client-rt related tests
+                command: |
+                  ./gradlew :client-runtime:rootAllTest
       - collect_test_results:
           test_results_path: ""
           reports_path: ""
