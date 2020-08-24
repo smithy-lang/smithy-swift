@@ -18,11 +18,13 @@ package software.aws.clientrt.serde
  * Metadata container for all fields of an object/class
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
-    builder.serialName,
+    builder.serialName ?: ANONYMOUS_OBJECT_NAME,
     SerialKind.Struct(ObjectStruct(builder.fields)),
     0
 ) {
     companion object {
+        const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT"
+
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
     }
 
@@ -44,7 +46,6 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
     private class BuilderImpl : DslBuilder {
         val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
         var serialName: String? = null
-        val kind: SerialKind = SerialKind.Struct()
 
         override fun field(field: SdkFieldDescriptor) {
             field.index = fields.size

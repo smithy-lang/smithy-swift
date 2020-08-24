@@ -14,20 +14,8 @@
  */
 package software.aws.clientrt.serde
 
-/**
- * Metadata to describe how a given member property maps to serialization.
- *
- * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
- */
-/*
-data class SdkFieldDescriptor(val serialName: String) {
-    // only relevant in the context of an object descriptor
-    var index: Int = 0
-}
-*/
-
 interface FieldTrait
-class XmlAttribute : FieldTrait
+// class XmlAttribute : FieldTrait  // TBD
 class XmlMap(
     val parent: String? = "map",
     val entry: String = "entry",
@@ -40,6 +28,9 @@ class XmlList(
 ) : FieldTrait
 class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
 
+/**
+ * A protocol-agnostic type description of a field.
+ */
 sealed class SerialKind(vararg val trait: FieldTrait) {
     class Unit : SerialKind()
     class Integer : SerialKind()
@@ -55,9 +46,20 @@ sealed class SerialKind(vararg val trait: FieldTrait) {
     class List(vararg trait: FieldTrait): SerialKind(*trait)
     class Struct(vararg trait: FieldTrait): SerialKind(*trait)
 
-    inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected =
-        trait.find { it::class == TExpected::class } as TExpected
-}
+    /**
+     * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
+     */
+    inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected {
+        val x = trait.find { it::class == TExpected::class }
+        requireNotNull(x) { "Expected to find trait ${TExpected::class} but was not present." }
 
-open class SdkFieldDescriptor(val serialName: String?, val kind: SerialKind, var index: Int = 0)
+        return x as TExpected
+    }
+}
+/**
+ * Metadata to describe how a given member property maps to serialization.
+ *
+ * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
+ */
+open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0)
 

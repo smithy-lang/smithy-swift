@@ -23,7 +23,7 @@ class XmlDeserializer(private val reader: XmlStreamReader, private val nodeNameS
      *
      * @param descriptor A SdkFieldDescriptor which defines the name of the node wrapping the struct values.
      */
-    override fun deserializeStruct(descriptor: SdkFieldDescriptor): Deserializer.FieldIterator {
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //Consume the container start tag
@@ -181,11 +181,11 @@ private class CompositeIterator(
         val mapInfo = descriptor.kind.expectTrait<XmlMap>()
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
-        val keyToken = reader.peek()
-        require(keyToken is XmlToken.BeginElement) { "Expected BeginElement, got $keyToken" }
-        require(keyToken.name == mapInfo.keyName) { "Expected key name to be ${mapInfo.keyName} but got ${keyToken.name}" }
-        val key = deserializer.deserializeStruct(descriptor).deserializeString()
-        reader.takeToken<XmlToken.EndElement>(nodeNameStack)
+        val keyStartToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+        require(keyStartToken.name == mapInfo.keyName) { "Expected key name to be ${mapInfo.keyName} but got ${keyStartToken.name}" }
+        val key = reader.takeToken<XmlToken.Text>(nodeNameStack).value ?: error("Expected string value for key, but found null.")
+        val keyEndToken = reader.takeToken<XmlToken.EndElement>(nodeNameStack)
+        require(keyEndToken.name == mapInfo.keyName) { "Expected key name to be ${mapInfo.keyName} but got ${keyStartToken.name}" }
 
         val valueToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
 
@@ -195,7 +195,7 @@ private class CompositeIterator(
     }
 
     // Deserializer.FieldIterator
-    override fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int? {
+    override fun findNextFieldIndex(): Int? {
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
         return when (val nextToken = reader.peek()) {
@@ -207,12 +207,14 @@ private class CompositeIterator(
                 if (reader.currentDepth() == depth && endToken.name == beginNode.name) {
                     null
                 } else {
-                    findNextFieldIndex(descriptor) // recurse
+                    findNextFieldIndex() // recurse
                 }
             }
             is XmlToken.BeginElement -> {
                 val propertyName = nextToken.name
                 //FIXME: The following filter needs to take XML namespace into account when matching.
+
+                require(descriptor is SdkObjectDescriptor) { "Expected SdkObjectDescriptor but got SdkFieldDescriptor" }
                 val field =
                     descriptor.fields().find { it.serialName == propertyName }
                 val rt = field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD

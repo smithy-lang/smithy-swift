@@ -51,7 +51,7 @@ class AliasConfigurationDeserializer: HttpDeserialize {
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while(true) {
-                when(findNextFieldIndex(OBJ_DESCRIPTOR)) {
+                when(findNextFieldIndex()) {
                     ALIAS_ARN_FIELD_DESCRIPTOR.index -> builder.aliasArn = deserializeString()
                     DESCRIPTION_FIELD_DESCRIPTOR.index -> builder.description = deserializeString()
                     FUNCTION_VERSION_FIELD_DESCRIPTOR.index -> builder.functionVersion = deserializeString()

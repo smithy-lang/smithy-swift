@@ -16,22 +16,8 @@ package software.aws.clientrt.serde.json
 
 import software.aws.clientrt.serde.*
 
-class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.FieldIterator, Deserializer.EntryIterator {
+class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator {
     private val reader = jsonStreamReader(payload)
-
-    // return the next token and require that it be of type [TExpected] or else throw an exception
-    private inline fun <reified TExpected : JsonToken> nextToken(): TExpected {
-        val token = reader.nextToken()
-        requireToken<TExpected>(token)
-        return token as TExpected
-    }
-
-    // require that the given token be of type [TExpected] or else throw an exception
-    private inline fun <reified TExpected> requireToken(token: JsonToken) {
-        if (token::class != TExpected::class) {
-            throw DeserializerStateException("expected ${TExpected::class}; found ${token::class}")
-        }
-    }
 
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
@@ -52,54 +38,32 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     override fun deserializeString(): String {
-        val token = nextToken<JsonToken.String>()
+        val token = reader.nextTokenOf<JsonToken.String>()
         return token.value
     }
 
     override fun deserializeBool(): Boolean {
-        val token = nextToken<JsonToken.Bool>()
+        val token = reader.nextTokenOf<JsonToken.Bool>()
         return token.value
     }
 
-    override fun deserializeStruct(descriptor: SdkFieldDescriptor): Deserializer.FieldIterator {
-        nextToken<JsonToken.BeginObject>()
-        return this
-    }
-
-    override fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int? {
-        return when (reader.peek()) {
-            RawJsonToken.EndObject -> {
-                // consume the token
-                nextToken<JsonToken.EndObject>()
-                null
-            }
-            RawJsonToken.EndDocument -> null
-            else -> {
-                val token = nextToken<JsonToken.Name>()
-                val propertyName = token.value
-                val field = descriptor.fields().find { it.serialName == propertyName }
-                field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
-            }
-        }
-    }
-
-    override fun skipValue() {
-        // stream reader skips the *next* token
-        reader.skipNext()
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
+        reader.nextTokenOf<JsonToken.BeginObject>()
+        return JsonFieldIterator(reader, descriptor, this)
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        nextToken<JsonToken.BeginArray>()
+        reader.nextTokenOf<JsonToken.BeginArray>()
         return this
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        nextToken<JsonToken.BeginObject>()
+        reader.nextTokenOf<JsonToken.BeginObject>()
         return this
     }
 
     override fun key(): String {
-        val token = nextToken<JsonToken.Name>()
+        val token = reader.nextTokenOf<JsonToken.Name>()
         return token.value
     }
 
@@ -107,7 +71,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
-                nextToken<JsonToken.EndObject>()
+                reader.nextTokenOf<JsonToken.EndObject>()
                 false
             }
             RawJsonToken.EndDocument -> false
@@ -119,11 +83,54 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
-                nextToken<JsonToken.EndArray>()
+                reader.nextTokenOf<JsonToken.EndArray>()
                 false
             }
             RawJsonToken.EndDocument -> false
             else -> true
         }
+    }
+}
+
+private class JsonFieldIterator(
+    private val reader: JsonStreamReader,
+    private val descriptor: SdkObjectDescriptor,
+    deserializer: Deserializer
+) : Deserializer.FieldIterator, Deserializer by deserializer {
+
+    override fun findNextFieldIndex(): Int? {
+        return when (reader.peek()) {
+            RawJsonToken.EndObject -> {
+                // consume the token
+                reader.nextTokenOf<JsonToken.EndObject>()
+                null
+            }
+            RawJsonToken.EndDocument -> null
+            else -> {
+                val token = reader.nextTokenOf<JsonToken.Name>()
+                val propertyName = token.value
+                val field = descriptor.fields().find { it.serialName == propertyName }
+                field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+            }
+        }
+    }
+
+    override fun skipValue() {
+        // stream reader skips the *next* token
+        reader.skipNext()
+    }
+}
+
+// return the next token and require that it be of type [TExpected] or else throw an exception
+private inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
+    val token = this.nextToken()
+    requireToken<TExpected>(token)
+    return token as TExpected
+}
+
+// require that the given token be of type [TExpected] or else throw an exception
+private inline fun <reified TExpected> requireToken(token: JsonToken) {
+    if (token::class != TExpected::class) {
+        throw DeserializerStateException("expected ${TExpected::class}; found ${token::class}")
     }
 }

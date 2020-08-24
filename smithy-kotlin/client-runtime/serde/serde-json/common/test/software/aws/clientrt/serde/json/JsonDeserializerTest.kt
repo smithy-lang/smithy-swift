@@ -136,7 +136,7 @@ class BasicStructTest {
             val result = BasicStructTest()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
-                    when (findNextFieldIndex(OBJ_DESCRIPTOR)) {
+                    when (findNextFieldIndex()) {
                         X_DESCRIPTOR.index -> result.x = deserializeInt()
                         Y_DESCRIPTOR.index -> result.y = deserializeInt()
                         null -> break@loop
@@ -163,7 +163,7 @@ class BasicStructTest {
         var y: Int? = null
         deserializer.deserializeStruct(BasicStructTest.OBJ_DESCRIPTOR) {
             loop@ while (true) {
-                when (findNextFieldIndex(BasicStructTest.OBJ_DESCRIPTOR)) {
+                when (findNextFieldIndex()) {
                     BasicStructTest.X_DESCRIPTOR.index -> x = deserializeInt()
                     BasicStructTest.Y_DESCRIPTOR.index -> y = deserializeInt()
                     null -> break@loop
@@ -217,8 +217,7 @@ class BasicStructTest {
         val struct = deserializer.deserializeStruct(BasicStructTest.OBJ_DESCRIPTOR)
         var found = false
         loop@ while (true) {
-            val i = struct.findNextFieldIndex(BasicStructTest.OBJ_DESCRIPTOR)
-            when (i) {
+            when (struct.findNextFieldIndex()) {
                 Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                     found = true
                     struct.skipValue()
@@ -246,7 +245,7 @@ class BasicStructTest {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested2 = Nested2()
                 loop@ while (true) {
-                    when (struct.findNextFieldIndex(OBJ_DESCRIPTOR)) {
+                    when (struct.findNextFieldIndex()) {
                         LIST2_FIELD_DESCRIPTOR.index -> nested2.list2 = deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
                             val list = mutableListOf<String>()
                             while (hasNextElement()) {
@@ -282,7 +281,7 @@ class BasicStructTest {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested = Nested()
                 loop@ while (true) {
-                    when (struct.findNextFieldIndex(OBJ_DESCRIPTOR)) {
+                    when (struct.findNextFieldIndex()) {
                         NESTED2_FIELD_DESCRIPTOR.index -> nested.nested2 =
                             Nested2.deserialize(
                                 deserializer
@@ -375,7 +374,7 @@ class BasicStructTest {
         val struct = deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR)
         val sink = KitchenSinkTest()
         loop@ while (true) {
-            when (struct.findNextFieldIndex(KitchenSinkTest.OBJ_DESCRIPTOR)) {
+            when (struct.findNextFieldIndex()) {
                 KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInt()
                 KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = struct.deserializeLong()
                 KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = struct.deserializeShort()

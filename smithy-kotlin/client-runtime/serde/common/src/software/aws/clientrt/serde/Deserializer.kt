@@ -41,7 +41,7 @@ package software.aws.clientrt.serde
  *     field(Y_DESCRIPTOR)
  * }
  * loop@ while(true) {
- *     when(struct.findNextFieldIndexOrNull(OBJ_DESCRIPTOR)) {
+ *     when(struct.findNextFieldIndexOrNull()) {
  *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
  *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()
  *         null -> break@loop
@@ -65,18 +65,24 @@ interface Deserializer : PrimitiveDeserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
+     *
+     * @param descriptor SdkObjectDescriptor the structure descriptor
      */
-    fun deserializeStruct(descriptor: SdkFieldDescriptor): FieldIterator
+    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
      * the deserialization process of the list to completion.
+     *
+     * @param descriptor SdkFieldDescriptor the structure descriptor
      */
     fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
      * the deserialization process of the map to completion.
+     *
+     * @param descriptor SdkFieldDescriptor the structure descriptor
      */
     fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
 
@@ -87,8 +93,6 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
-         *
-         * @param descriptor Specifies the name of the container for formats that require it.
          */
         fun hasNextElement(): Boolean
     }
@@ -100,8 +104,6 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
-         *
-         * @param descriptor Specifies the name of the container for formats that require it.
          */
         fun hasNextEntry(): Boolean
 
@@ -118,7 +120,7 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found, null if fields exhausted, or UNKNOWN_FIELD.
          */
-        fun findNextFieldIndex(descriptor: SdkObjectDescriptor): Int?
+        fun findNextFieldIndex(): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields
@@ -129,7 +131,7 @@ interface Deserializer : PrimitiveDeserializer {
             /**
              * An unknown field was encountered
              */
-            const val UNKNOWN_FIELD = -2
+            const val UNKNOWN_FIELD = -1
         }
     }
 }
@@ -179,7 +181,7 @@ interface PrimitiveDeserializer {
     fun deserializeBool(): Boolean
 }
 
-fun Deserializer.deserializeStruct(descriptor: SdkFieldDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
+fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
     val iter = deserializeStruct(descriptor)
     iter.apply(block)
 }

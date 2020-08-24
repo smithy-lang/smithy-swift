@@ -52,67 +52,67 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         value.serialize(this)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeInt(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Long) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeLong(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Float) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeFloat(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeString(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeDouble(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeBoolean(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeByte(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Short) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeShort(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeChar(value)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeStruct(descriptor, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeList(descriptor, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         serializeMap(descriptor, block)
     }
 
@@ -167,7 +167,7 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
-        jsonWriter.writeName(descriptor.serialName ?: error("Expected SdkFieldDescriptor to have non-null serialName."))
+        jsonWriter.writeName(descriptor.serialName)
         jsonWriter.writeNull()
     }
 
