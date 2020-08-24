@@ -29,13 +29,15 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun beginList(descriptor: SdkFieldDescriptor?): ListSerializer {
         xmlWriter.startTag(descriptor.expectSerialName())
-        return XmlListSerializer(descriptor!!, xmlWriter)
+        return XmlListSerializer(descriptor!!, xmlWriter, this)
     }
 
     override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
         xmlWriter.startTag(descriptor.expectSerialName())
         val mapTrait = descriptor!!.kind.expectTrait<XmlMap>()
-        if (!mapTrait.flattened) xmlWriter.startTag(mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined."))
+        if (!mapTrait.flattened) xmlWriter.startTag(
+            mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
+        )
         return XmlMapSerializer(descriptor, xmlWriter, this)
     }
 
@@ -105,7 +107,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         xmlWriter.startTag(descriptor.expectSerialName())
-        val s = XmlListSerializer(descriptor, xmlWriter)
+        val s = XmlListSerializer(descriptor, xmlWriter, this)
         block(s)
         xmlWriter.endTag(descriptor.expectSerialName())
     }
@@ -154,11 +156,13 @@ private class XmlMapSerializer(
         requireNotNull(descriptor)
 
         val mapTrait = descriptor.kind.expectTrait<XmlMap>()
-        if (!mapTrait.flattened) xmlWriter.endTag(mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined."))
+        if (!mapTrait.flattened) xmlWriter.endTag(
+            mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
+        )
         xmlWriter.endTag(descriptor.expectSerialName())
     }
 
-    fun generalEntry(key:String, valueFn: () -> Unit) {
+    fun generalEntry(key: String, valueFn: () -> Unit) {
         val mapTrait = descriptor.kind.expectTrait<XmlMap>()
 
         xmlWriter.startTag(mapTrait.entry)
@@ -209,9 +213,8 @@ private class XmlMapSerializer(
 
     override fun serializeString(value: String) = serializePrimitive(value)
 
-    override fun serializeSdkSerializable(value: SdkSerializable) {
-        TODO("Not yet implemented")
-    }
+    override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
+
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
         TODO("Not yet implemented")
@@ -225,7 +228,10 @@ private class XmlMapSerializer(
     }
 }
 
-private class XmlListSerializer(private val descriptor: SdkFieldDescriptor, private val xmlWriter: XmlStreamWriter) : ListSerializer {
+private class XmlListSerializer(
+    private val descriptor: SdkFieldDescriptor, private val xmlWriter: XmlStreamWriter,
+    private val xmlSerializer: Serializer
+) : ListSerializer {
 
     override fun endList(descriptor: SdkFieldDescriptor?) {
         xmlWriter.endTag(descriptor.expectSerialName())
@@ -249,9 +255,7 @@ private class XmlListSerializer(private val descriptor: SdkFieldDescriptor, priv
 
     override fun serializeString(value: String) = serializePrimitive(value)
 
-    override fun serializeSdkSerializable(value: SdkSerializable) {
-        TODO("Not yet implemented")
-    }
+    override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
         TODO("Not yet implemented")
