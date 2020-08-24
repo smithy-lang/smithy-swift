@@ -13,10 +13,11 @@
 // permissions and limitations under the License.
 //
 
+@testable import SmithyTestUtil
 import ClientRuntime
 import XCTest
 
-class RequestTestBaseTests: RequestTestBase {
+class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
@@ -59,11 +60,6 @@ class RequestTestBaseTests: RequestTestBase {
         }
     }
 
-    
-    override func setUp() {
-        super.setUp()
-    }
-    
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() {
         let expected = buildExpectedHttpRequest(method: .post,
@@ -72,7 +68,7 @@ class RequestTestBaseTests: RequestTestBase {
                                                           "RequiredHeader": "required header"],
                                                 queryParams: ["RequiredQuery=required%20query"],
                                                 body: "{\"greeting\": \"Hello There\"}",
-                                                host: RequestTestBaseTests.host)
+                                                host: HttpRequestTestBaseTests.host)
         
         let forbiddenQueryParams = ["ForbiddenQuery"]
         let requiredQueryParams = ["RequiredQuery"]

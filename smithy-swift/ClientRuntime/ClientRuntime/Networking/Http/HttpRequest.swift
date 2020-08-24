@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct HttpRequest: Equatable {
+public struct HttpRequest {
     public var body: HttpBody?
     public let headers: HttpHeaders
     public let endpoint: Endpoint

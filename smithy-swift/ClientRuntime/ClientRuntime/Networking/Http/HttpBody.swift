@@ -15,7 +15,7 @@
 
 import Foundation
 
-public enum HttpBody: Equatable {
+public enum HttpBody {
     case data(Data?)
     case stream(InputStream?)
     case file(URL)
