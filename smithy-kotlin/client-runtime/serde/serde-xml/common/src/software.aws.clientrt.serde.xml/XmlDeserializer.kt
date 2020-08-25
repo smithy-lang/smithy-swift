@@ -15,8 +15,8 @@ import software.aws.clientrt.serde.*
  * consumes end tokens by checking for them each time a new token is to be consumed.  If the next
  * token in this case is an end token, it is consumed and discarded.
  *
- * TODO: To verify correctness, a stack of node names is maintained to match expected against actual node traversal.
- * TODO: This is not necessary for parsing and should be removed before removed before GA
+ * TODO: To verify correctness, a stack of open node names is maintained to match expected against actual node traversal.
+ * TODO: This is not necessary for parsing and should be removed before GA.
  */
 class XmlDeserializer(private val reader: XmlStreamReader, private val nodeNameStack: MutableList<String> = mutableListOf()) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
