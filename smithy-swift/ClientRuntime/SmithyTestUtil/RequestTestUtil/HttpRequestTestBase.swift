@@ -21,16 +21,6 @@ import XCTest
  Includes Utility functions for Http Protocol Serialization Tests
  */
 open class HttpRequestTestBase: XCTestCase {
-    var httpClient: HttpClient!
-    let mockSession = TestURLSession()
-    let testOperationQueue = OperationQueue()
-    
-    override public func setUp() {
-        super.setUp()
-        let httpClientConfiguration = HttpClientConfiguration(operationQueue: testOperationQueue)
-        httpClient = HttpClient(session: mockSession, config: httpClientConfiguration)
-    }
-    
     /**
      Create `HttpRequest` from it's components
      */
@@ -114,12 +104,9 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpBody` to compare against
     */
     public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody) {
-        switch actual {
-        case let .data(actualData):
-            switch expected {
-            case let .data(expectedData):
-                // convert data back to string with utf8 encoding and compare based on the media type
-                guard let expectedData = expectedData else {
+        if case .data(let actualData) = actual {
+            if case .data(let expectedData) = expected {
+                guard let expectedData  = expectedData else {
                     XCTAssertNil(actualData, "expected data in HttpBody is nil but actual is not")
                     return
                 }
@@ -129,9 +116,13 @@ open class HttpRequestTestBase: XCTestCase {
                     return
                 }
                 assertEqualJSON(expectedData, actualData)
-            default: XCTFail("The expected HttpBody is not Data Type")
             }
-        default: XCTFail("The actual HttpBody is not Data Type")
+            else {
+                XCTFail("The expected HttpBody is not Data Type")
+            }
+        }
+        else {
+            XCTFail("The actual HttpBody is not Data Type")
         }
     }
     
@@ -160,21 +151,13 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
     public func assertEqualHttpHeaders(_ expected: HttpHeaders, _ actual: HttpHeaders) {
-        for expectedHeader in expected.headers {
-            var headerFound = false
-            
-            // Compare the header values
-            for actualHeader in actual.headers {
-                // considering case-sensitive header names
-                if (expectedHeader.name == actualHeader.name) {
-                    // header found. compare values
-                    headerFound = true
-                    XCTAssertEqual(expectedHeader.value, actualHeader.value, "Expected Header [\(expectedHeader.name)=\(expectedHeader.value)] does not match actual Header [\(actualHeader.name)=\(actualHeader.value)]")
-                    break
-                }
+        for (expectedHeaderName, expectedHeaderValue) in expected.dictionary {
+            guard let actualHeaderValue = actual.dictionary[expectedHeaderName] else {
+                XCTFail("Expected Header \(expectedHeaderName) is not found in actual headers")
+                return
             }
-            
-            XCTAssertTrue(headerFound, "Expected Header \(expectedHeader.name) is not found in actual headers")
+            XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
+                           "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)] does not match actual header value \(actual.dictionary[expectedHeaderName])]")
         }
     }
     

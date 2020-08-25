@@ -117,11 +117,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
             assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
         })
-        
-        //use mock engine to fake request and then assert correct url is used
-        _ = httpClient.execute(request: actual) { _ in }
-
-        XCTAssert(mockSession.lastURL == expected.endpoint.url)
     }
     
     func testJSONEqual () throws {
