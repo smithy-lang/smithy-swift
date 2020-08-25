@@ -23,7 +23,7 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
     0
 ) {
     companion object {
-        const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT"
+        const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT" //TODO: determine how to guard that reading this value from serialName results in error.
 
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
     }
