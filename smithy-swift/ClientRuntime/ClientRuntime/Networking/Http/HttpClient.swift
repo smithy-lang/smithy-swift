@@ -26,7 +26,7 @@ public class HttpClient {
         self.session = URLSession(configuration: config.toUrlSessionConfig(), delegate: delegate, delegateQueue: config.operationQueue)
     }
 
-    init(session: SessionProtocol, config: HttpClientConfiguration) {
+    public init(session: SessionProtocol, config: HttpClientConfiguration) {
         self.session = session
         self.operationQueue = config.operationQueue
     }
