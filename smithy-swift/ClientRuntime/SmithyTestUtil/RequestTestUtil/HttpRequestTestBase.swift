@@ -22,7 +22,7 @@ import XCTest
  */
 open class HttpRequestTestBase: XCTestCase {
     /**
-     Create `HttpRequest` from it's components
+     Create `HttpRequest` from its components
      */
     public func buildExpectedHttpRequest(method: HttpMethodType,
                                          path: String,
@@ -58,10 +58,8 @@ open class HttpRequestTestBase: XCTestCase {
             return false
         }
 
-        for queryItem in queryItems {
-            if (queryItem.name == queryItemName) {
-                return true
-            }
+        for queryItem in queryItems where queryItem.name == queryItemName {
+            return true
         }
         return false
     }
@@ -70,10 +68,8 @@ open class HttpRequestTestBase: XCTestCase {
     Check if a header with given name exists in array of `Header`
     */
     public func headerExists(_ headerName: String, in headers: [Header]) -> Bool {
-        for header in headers {
-            if (header.name == headerName) {
-                return true
-            }
+        for header in headers where header.name == headerName {
+            return true
         }
         return false
     }
@@ -116,12 +112,10 @@ open class HttpRequestTestBase: XCTestCase {
                     return
                 }
                 assertEqualJSON(expectedData, actualData)
-            }
-            else {
+            } else {
                 XCTFail("The expected HttpBody is not Data Type")
             }
-        }
-        else {
+        } else {
             XCTFail("The actual HttpBody is not Data Type")
         }
     }
@@ -157,7 +151,8 @@ open class HttpRequestTestBase: XCTestCase {
                 return
             }
             XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
-                           "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)] does not match actual header value \(actual.dictionary[expectedHeaderName])]")
+                           "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
+                           " does not match actual header value \(actual.dictionary[expectedHeaderName])]")
         }
     }
     
@@ -169,7 +164,9 @@ open class HttpRequestTestBase: XCTestCase {
     public func assertEqualEndpoint(_ expected: Endpoint, _ actual: Endpoint) {
         // match all the components of Endpoint
         XCTAssertEqual(expected.path, actual.path, "Expected Endpoint path: \(expected.path) does not match the actual Endpoint path: \(actual.path)")
-        XCTAssertEqual(expected.protocolType, actual.protocolType, "Expected Endpoint protocolType: \(expected.protocolType) does not match the actual Endpoint protocolType: \(actual.protocolType)")
+        XCTAssertEqual(expected.protocolType, actual.protocolType,
+                       "Expected Endpoint protocolType: \(expected.protocolType)" +
+                       " does not match the actual Endpoint protocolType: \(actual.protocolType)")
         XCTAssertEqual(expected.host, actual.host, "Expected Endpoint host: \(expected.host) does not match the actual Endpoint host: \(actual.host)")
         XCTAssertEqual(expected.port, actual.port, "Expected Endpoint port: \(expected.port) does not match the actual Endpoint port: \(actual.port)")
         
@@ -196,14 +193,14 @@ open class HttpRequestTestBase: XCTestCase {
             var queryItemFound = false
             
             // Compare the query item values
-            for actualQueryItem in actual {
-                // considering case-sensitive header names
-                if (expectedQueryItem.name == actualQueryItem.name) {
-                    // header found. compare values
-                    queryItemFound = true
-                    XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value, "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)] does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
-                    break
-                }
+            for actualQueryItem in actual where expectedQueryItem.name == actualQueryItem.name {
+                // considering case-sensitive query item names
+                // query item found. compare values
+                queryItemFound = true
+                XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value,
+                               "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" +
+                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
+                break
             }
             
             XCTAssertTrue(queryItemFound, "Expected query item \(expectedQueryItem.name) is not found in actual query items")
