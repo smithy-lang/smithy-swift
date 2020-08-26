@@ -33,7 +33,7 @@ class JsonSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Object)
         }
 
         override fun serialize(serializer: Serializer) {

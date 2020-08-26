@@ -366,7 +366,7 @@ private fun isContainerType(field: SdkFieldDescriptor?): Boolean {
         field is SdkObjectDescriptor -> true
         field?.kind is SerialKind.List -> true
         field?.kind is SerialKind.Map -> true
-        field?.kind is SerialKind.Struct -> true
+        field?.kind is SerialKind.Object -> true
         field == null -> true // Unknown field which will be skipped
         else -> false
     }

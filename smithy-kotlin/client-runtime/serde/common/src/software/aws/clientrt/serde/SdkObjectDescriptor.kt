@@ -19,7 +19,7 @@ package software.aws.clientrt.serde
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
     builder.serialName ?: ANONYMOUS_OBJECT_NAME,
-    SerialKind.Struct,
+    SerialKind.Object,
     0,
     ObjectStruct(builder.fields)
 ) {

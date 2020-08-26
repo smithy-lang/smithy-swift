@@ -33,7 +33,7 @@ class XmlSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Object)
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
                 serialName("a")
@@ -172,7 +172,7 @@ data class Primitives(
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct(SdkFieldDescriptor("struct", SerialKind.Struct)) {
+        serializer.serializeStruct(SdkFieldDescriptor("struct", SerialKind.Object)) {
             serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)

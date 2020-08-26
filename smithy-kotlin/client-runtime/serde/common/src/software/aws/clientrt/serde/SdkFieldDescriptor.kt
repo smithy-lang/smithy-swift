@@ -15,19 +15,7 @@
 package software.aws.clientrt.serde
 
 interface FieldTrait
-// NOTE: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
-// If it's determined we need to serialize from/to specific namespaces.
-class XmlMap(
-    val parent: String? = "map",
-    val entry: String = "entry",
-    val keyName: String = "key",
-    val valueName: String = "value",
-    val flattened: Boolean = false
-) : FieldTrait
-class XmlList(
-    val elementName: String = "element"
-) : FieldTrait
-class XmlAttribute(val name: String, val namespace: String?) : FieldTrait
+
 class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
 
 /**
@@ -46,7 +34,7 @@ sealed class SerialKind {
     object Float: SerialKind()
     object Map : SerialKind()
     object List: SerialKind()
-    object Struct: SerialKind()
+    object Object: SerialKind()
 }
 /**
  * Metadata to describe how a given member property maps to serialization.
