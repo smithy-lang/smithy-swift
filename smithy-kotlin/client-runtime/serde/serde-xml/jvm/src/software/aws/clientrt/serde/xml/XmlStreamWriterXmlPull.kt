@@ -64,6 +64,10 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
         return this
     }
 
+    override fun toString(): String {
+        return String(bytes)
+    }
+
     override val bytes: ByteArray
         get() {
             serializer.endDocument()

@@ -60,6 +60,27 @@ class XmlStreamWriterTest {
         val writer = generateSimpleDocument()
         assertEquals(expectedNoIndent, writer.bytes.decodeToString())
     }
+
+    @Test
+    fun `it writes XML with attributes`() {
+        val writer = xmlStreamWriter(pretty = false)
+
+        writer.startTag("batch")
+        writer.startTag("add").attribute("id", "tt0484562")
+        writer.startTag("field").attribute("name", "title")
+        writer.text("The Seeker: The Dark Is Rising")
+        writer.endTag("field")
+        writer.endTag("add")
+        writer.startTag("delete").attribute("id", "tt0301199")
+        writer.endTag("delete")
+        writer.endTag("batch")
+
+
+        // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
+        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
+
+        assertEquals(expected, writer.toString())
+    }
 }
 
 const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""

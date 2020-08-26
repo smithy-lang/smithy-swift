@@ -5,14 +5,30 @@ package software.aws.clientrt.serde.xml
  */
 sealed class XmlToken {
     /**
+     * Defines the name and namespace of an element
+     */
+    data class QualifiedName(val name: String, val namespace: String? = null)
+
+    /**
      * The opening of an XML element
      */
-    data class BeginElement(val name: String, val namespace: String? = null) : XmlToken()
+    data class BeginElement(
+        val name: QualifiedName,
+        val attributes: Map<QualifiedName, String> = emptyMap()
+    ) : XmlToken() {
+        // Convenience constructor for name-only nodes.
+        constructor(name: String) : this(QualifiedName(name))
+        // Convenience constructor for name-only nodes with attributes.
+        constructor(name: String, attributes: Map<QualifiedName, String>) : this(QualifiedName(name), attributes)
+    }
 
     /**
      * The closing of an XML element
      */
-    data class EndElement(val name: String, val namespace: String? = null) : XmlToken()
+    data class EndElement(val name: QualifiedName) : XmlToken() {
+        // Convenience constructor for name-only nodes.
+        constructor(name: String) : this(QualifiedName(name))
+    }
 
     /**
      * An XML element text as string
@@ -26,10 +42,10 @@ sealed class XmlToken {
     object EndDocument : XmlToken()
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "BeginElement"
-        is EndElement -> "EndElement"
-        is Text -> "Text(${this.value})"
-        EndDocument -> "EndDocument"
+        is BeginElement -> "<${this.name}>"
+        is EndElement -> "</${this.name}>"
+        is Text -> "${this.value}"
+        EndDocument -> "[EndDocument]"
     }
 }
 

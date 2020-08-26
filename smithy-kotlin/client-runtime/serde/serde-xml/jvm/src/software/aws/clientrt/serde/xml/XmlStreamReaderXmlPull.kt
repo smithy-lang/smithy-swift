@@ -42,8 +42,8 @@ private class XmlStreamReaderXmlPull(
             return when (val nt = parser.nextToken()) {
                 XmlPullParser.START_DOCUMENT -> nextToken()
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
-                XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.name, parser.namespace.blankToNull())
-                XmlPullParser.END_TAG -> XmlToken.EndElement(parser.name, parser.namespace.blankToNull())
+                XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes())
+                XmlPullParser.END_TAG -> XmlToken.EndElement(parser.qualifiedName())
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
@@ -54,6 +54,25 @@ private class XmlStreamReaderXmlPull(
         } catch (e: Exception) {
             throw XmlGenerationException(e)
         }
+    }
+
+    // Create qualified name from current node
+    private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
+        XmlToken.QualifiedName(name, namespace.blankToNull())
+
+    // Return attribute map from attributes of current node
+    private fun parseAttributes(): Map<XmlToken.QualifiedName, String> {
+        if (parser.attributeCount == 0) return emptyMap()
+
+        return (0 until parser.attributeCount)
+            .asSequence()
+            .map { attributeIndex ->
+                XmlToken.QualifiedName(
+                    parser.getAttributeName(attributeIndex),
+                    parser.getAttributeNamespace(attributeIndex).blankToNull()
+                ) to parser.getAttributeValue(attributeIndex)
+            }
+            .toMap()
     }
 
     //This does one of three things:
@@ -71,7 +90,7 @@ private class XmlStreamReaderXmlPull(
 
                 var st = nextToken()
                 while (st != XmlToken.EndDocument) {
-                    if (st is XmlToken.EndElement && parser.depth == startDepth && st.name == currentNodeName) return
+                    if (st is XmlToken.EndElement && parser.depth == startDepth && st.name.name == currentNodeName.name && st.name.namespace == currentNodeName.namespace) return
                     st = nextToken()
                     require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
                 }

@@ -42,7 +42,7 @@ fun assertTokensAreEqual(expected: List<XmlToken>, actual: List<XmlToken>) {
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
-    fun `it deserializes objects`() {
+    fun `it deserializes xml`() {
         val payload = """<root><x>1</x><y>2</y></root>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -61,11 +61,45 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun `it deserializes xml with attributes`() {
+        val payload = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>""".trimIndent().encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        val expected = listOf(
+            XmlToken.BeginElement("batch"),
+            XmlToken.BeginElement("add", mapOf(XmlToken.QualifiedName("id") to "tt0484562")),
+            XmlToken.BeginElement("field", mapOf(XmlToken.QualifiedName("name") to "title")),
+            XmlToken.Text("The Seeker: The Dark Is Rising"),
+            XmlToken.EndElement("field"),
+            XmlToken.EndElement("add"),
+            XmlToken.BeginElement("delete", mapOf(XmlToken.QualifiedName("id") to "tt0301199")),
+            XmlToken.EndElement("delete"),
+            XmlToken.EndElement("batch"),
+            XmlToken.EndDocument
+        )
+
+        assertTokensAreEqual(expected, actual)
+    }
+
+    @Test
     fun `garbage in garbage out`() {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
         assertFailsWith(XmlGenerationException::class) {
             val actual = xmlStreamReader(payload).allTokens()
         }
+    }
+
+    @Test
+    fun `it handles nil node values`() {
+        val payload = """<null xsi:nil="true"></null>""".encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+        val expected = listOf(
+            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
+            XmlToken.EndElement("null"),
+            XmlToken.EndDocument
+        )
+
+        assertEquals(expected, actual)
     }
 
     @Test
@@ -93,7 +127,7 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
         println(actual)
         val expected = listOf(
-            XmlToken.BeginElement("root", namespace=null),
+            XmlToken.BeginElement("root"),
             XmlToken.Text(null),
             XmlToken.BeginElement("num"),
             XmlToken.Text("1"), 
@@ -143,7 +177,7 @@ class XmlStreamReaderTest {
             XmlToken.Text(null),
             XmlToken.EndElement("nested"),
             XmlToken.Text(null),
-            XmlToken.BeginElement("null"),
+            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
             XmlToken.EndElement("null"),
             XmlToken.Text(null),
             XmlToken.EndElement("root"),
@@ -170,11 +204,11 @@ class XmlStreamReaderTest {
         val nt = reader.peek()
         assertTrue(nt is XmlToken.BeginElement)
 
-        assertEquals("unknown", nt.name)
+        assertEquals("unknown", nt.name.name)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.name)
+        assertEquals("y", y.name.name)
     }
 
     @Test
@@ -189,10 +223,10 @@ class XmlStreamReaderTest {
         reader.skipNext()
 
         val name = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", name.name)
+        assertEquals("z", name.name.name)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.name)
+        assertEquals("y", y.name.name)
     }
 }

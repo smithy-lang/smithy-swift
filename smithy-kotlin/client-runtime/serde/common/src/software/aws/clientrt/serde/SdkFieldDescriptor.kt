@@ -16,6 +16,8 @@ package software.aws.clientrt.serde
 
 interface FieldTrait
 // class XmlAttribute : FieldTrait  // TBD
+// NOTE: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
+// If it's determined we need to serialize from/to specific namespaces.
 class XmlMap(
     val parent: String? = "map",
     val entry: String = "entry",
