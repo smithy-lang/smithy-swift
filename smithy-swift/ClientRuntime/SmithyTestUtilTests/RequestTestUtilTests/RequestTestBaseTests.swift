@@ -70,11 +70,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                 body: "{\"greeting\": \"Hello There\"}",
                                                 host: HttpRequestTestBaseTests.host)
         
-        let forbiddenQueryParams = ["ForbiddenQuery"]
-        let requiredQueryParams = ["RequiredQuery"]
-        let forbiddenHeaders = ["ForbiddenHeader"]
-        let requiredHeaders = ["RequiredHeader"]
-        
         let input = SayHelloInput(greeting: "Hello There",
                                   forbiddenQuery: "forbidden query",
                                   requiredQuery: "required query",
@@ -88,24 +83,28 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
         
+        let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
         for forbiddenQueryParam in forbiddenQueryParams {
             XCTAssertFalse(queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
                            "Forbidden Query:\(forbiddenQueryParam) exists in query items")
         }
         
+        let forbiddenHeaders = ["ForbiddenHeader"]
         // assert forbidden headers do not exist
         for forbiddenHeader in forbiddenHeaders {
             XCTAssertFalse(headerExists(forbiddenHeader, in: actual.headers.headers),
                            "Forbidden Header:\(forbiddenHeader) exists in headers")
         }
         
+        let requiredQueryParams = ["RequiredQuery"]
         // assert forbidden query params do not exist
         for requiredQueryParam in requiredQueryParams {
             XCTAssertTrue(queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
                            "Required Query:\(requiredQueryParam) does not exist in query items")
         }
         
+        let requiredHeaders = ["RequiredHeader"]
         // assert forbidden headers do not exist
         for requiredHeader in requiredHeaders {
             XCTAssertTrue(headerExists(requiredHeader, in: actual.headers.headers),

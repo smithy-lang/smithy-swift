@@ -28,7 +28,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          path: String,
                                          headers: [String: String],
                                          queryParams: [String],
-                                         body: String,
+                                         body: String?,
                                          host: String) -> HttpRequest {
         var queryItems = [URLQueryItem]()
         var httpHeaders = HttpHeaders()
@@ -43,6 +43,12 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        
+        guard let body = body else {
+            return HttpRequest(method: method,
+                               endpoint: endPoint,
+                               headers: httpHeaders)
+        }
         let httpBody = HttpBody.data(body.data(using: .utf8))
         return HttpRequest(method: method,
                            endpoint: endPoint,
