@@ -87,7 +87,7 @@ class XmlDeserializerTest {
         val payload = "<node>${Long.MAX_VALUE}</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Object))
+            field(SdkFieldDescriptor("node", SerialKind.Struct))
         }
         val actual = deserializer.deserializeStruct(objSerializer).deserializeLong()
         val expected = 9223372036854775807L

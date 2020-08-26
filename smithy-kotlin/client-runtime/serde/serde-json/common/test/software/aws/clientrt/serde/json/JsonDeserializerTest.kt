@@ -270,7 +270,7 @@ class BasicStructTest {
         var bool2: Boolean? = null
 
         companion object {
-            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2", SerialKind.Object)
+            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2", SerialKind.Struct)
             val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2", SerialKind.Boolean)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(NESTED2_FIELD_DESCRIPTOR)
@@ -316,7 +316,7 @@ class BasicStructTest {
             val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str", SerialKind.String)
             val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List)
             val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double", SerialKind.Double)
-            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested", SerialKind.Object)
+            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested", SerialKind.Struct)
             val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float)
             val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map)
 

@@ -19,26 +19,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-fun XmlStreamReader.allTokens(): List<XmlToken> {
-    val tokens = mutableListOf<XmlToken>()
-    while (true) {
-        val token = nextToken()
-        tokens.add(token)
-        if (token is XmlToken.EndDocument) {
-            break
-        }
-    }
-    return tokens
-}
-
-fun assertTokensAreEqual(expected: List<XmlToken>, actual: List<XmlToken>) {
-    assertEquals(expected.size, actual.size, "unbalanced tokens")
-    val pairs = expected.zip(actual)
-    pairs.forEach { (exp, act) ->
-        assertEquals(exp, act)
-    }
-}
-
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
@@ -57,7 +37,7 @@ class XmlStreamReaderTest {
             XmlToken.EndElement("root"),
             XmlToken.EndDocument
         )
-        assertTokensAreEqual(expected, actual)
+        assertEquals(expected, actual)
     }
 
     @Test
@@ -78,15 +58,13 @@ class XmlStreamReaderTest {
             XmlToken.EndDocument
         )
 
-        assertTokensAreEqual(expected, actual)
+        assertEquals(expected, actual)
     }
 
     @Test
     fun `garbage in garbage out`() {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
-        assertFailsWith(XmlGenerationException::class) {
-            val actual = xmlStreamReader(payload).allTokens()
-        }
+        assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test
@@ -184,7 +162,7 @@ class XmlStreamReaderTest {
             XmlToken.EndDocument
         )
 
-        assertTokensAreEqual(expected, actual)
+         assertEquals(expected, actual)
     }
 
     @Test
@@ -204,11 +182,11 @@ class XmlStreamReaderTest {
         val nt = reader.peek()
         assertTrue(nt is XmlToken.BeginElement)
 
-        assertEquals("unknown", nt.name.name)
+        assertEquals("unknown", nt.id.name)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.name.name)
+        assertEquals("y", y.id.name)
     }
 
     @Test
@@ -224,11 +202,23 @@ class XmlStreamReaderTest {
 
         assertTrue(reader.peek() is XmlToken.BeginElement)
 
-        val name = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", name.name.name)
+        val zElement = reader.nextToken() as XmlToken.BeginElement
+        assertEquals("z", zElement.id.name)
         reader.skipNext()
 
-        val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.name.name)
+        val yElement = reader.nextToken() as XmlToken.BeginElement
+        assertEquals("y", yElement.id.name)
     }
+}
+
+fun XmlStreamReader.allTokens(): List<XmlToken> {
+    val tokens = mutableListOf<XmlToken>()
+    while (true) {
+        val token = nextToken()
+        tokens.add(token)
+        if (token is XmlToken.EndDocument) {
+            break
+        }
+    }
+    return tokens
 }

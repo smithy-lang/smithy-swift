@@ -32,7 +32,7 @@ sealed class SerialKind {
     object Float: SerialKind()
     object Map : SerialKind()
     object List: SerialKind()
-    object Object: SerialKind()
+    object Struct: SerialKind()
 }
 /**
  * Metadata to describe how a given member property maps to serialization.
