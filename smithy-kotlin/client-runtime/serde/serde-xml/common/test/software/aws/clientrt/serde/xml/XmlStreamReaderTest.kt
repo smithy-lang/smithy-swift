@@ -222,6 +222,8 @@ class XmlStreamReaderTest {
         }
         reader.skipNext()
 
+        assertTrue(reader.peek() is XmlToken.BeginElement)
+
         val name = reader.nextToken() as XmlToken.BeginElement
         assertEquals("z", name.name.name)
         reader.skipNext()

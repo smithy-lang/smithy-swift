@@ -81,29 +81,21 @@ private class XmlStreamReaderXmlPull(
     // 3: if the next token is EndDocument, NOP
     override fun skipNext() {
         val startDepth = parser.depth
-        var nt = peek()
 
-        when (nt) {
-            // Code path 1
-            is XmlToken.BeginElement -> {
-                val currentNodeName = nt.name
-
-                var st = nextToken()
-                while (st != XmlToken.EndDocument) {
-                    if (st is XmlToken.EndElement && parser.depth == startDepth && st.name.name == currentNodeName.name && st.name.namespace == currentNodeName.namespace) return
-                    st = nextToken()
-                    require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
-                }
-            }
+        when (peek()) {
             is XmlToken.EndDocument -> return
-            // Code path 2
-            else -> {
-                while (nt != XmlToken.EndDocument) {
-                    nt = nextToken()
-                    if (nt is XmlToken.EndElement && parser.depth == startDepth) return
-                }
-            }
+            else -> traverseNode(nextToken(), startDepth)
         }
+
+        require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
+    }
+
+    tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
+        if (st == XmlToken.EndDocument) return
+        if (st is XmlToken.EndElement && parser.depth == startDepth) return
+        val next = nextToken()
+        require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
+        return traverseNode(next, startDepth)
     }
 
     override fun peek(): XmlToken = when (peekedToken) {
