@@ -34,7 +34,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
         xmlWriter.startTag(descriptor?.serialName  ?: error("Expected instance of SdkFieldDescriptor but passed null."))
-        val mapTrait = descriptor.kind.expectTrait<XmlMap>()
+        val mapTrait = descriptor.expectTrait<XmlMap>()
         if (!mapTrait.flattened) xmlWriter.startTag(
             mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
         )
@@ -155,7 +155,7 @@ private class XmlMapSerializer(
     override fun endMap(descriptor: SdkFieldDescriptor?) {
         requireNotNull(descriptor)
 
-        val mapTrait = descriptor.kind.expectTrait<XmlMap>()
+        val mapTrait = descriptor.expectTrait<XmlMap>()
         if (!mapTrait.flattened) xmlWriter.endTag(
             mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
         )
@@ -163,7 +163,7 @@ private class XmlMapSerializer(
     }
 
     fun generalEntry(key: String, valueFn: () -> Unit) {
-        val mapTrait = descriptor.kind.expectTrait<XmlMap>()
+        val mapTrait = descriptor.expectTrait<XmlMap>()
 
         xmlWriter.startTag(mapTrait.entry)
         xmlWriter.startTag(mapTrait.keyName)
@@ -221,7 +221,7 @@ private class XmlMapSerializer(
     }
 
     private fun serializePrimitive(value: Any?) {
-        val nodeName = descriptor.kind.expectTrait<XmlMap>().valueName
+        val nodeName = descriptor.expectTrait<XmlMap>().valueName
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value?.toString() ?: "") //NOTE: this may not be the correct serialization format for `null`
         xmlWriter.endTag(nodeName)
@@ -262,7 +262,7 @@ private class XmlListSerializer(
     }
 
     private fun serializePrimitive(value: Any?) {
-        val nodeName = descriptor.kind.expectTrait<XmlList>().elementName
+        val nodeName = descriptor.expectTrait<XmlList>().elementName
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value?.toString() ?: "") //NOTE: this may not be the correct serialization format for `null`
         xmlWriter.endTag(nodeName)

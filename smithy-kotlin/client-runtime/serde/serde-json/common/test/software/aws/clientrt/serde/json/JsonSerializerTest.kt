@@ -33,7 +33,7 @@ class JsonSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct())
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
         }
 
         override fun serialize(serializer: Serializer) {
@@ -45,7 +45,7 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer())
+            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer)
         }
 
         override fun serialize(serializer: Serializer) {
@@ -119,18 +119,18 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit())
-        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean())
-        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte())
-        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short())
-        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer())
-        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long())
-        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float())
-        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double())
-        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char())
-        val descriptorString = SdkFieldDescriptor("string", SerialKind.String())
-        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable", SerialKind.Unit())
-        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List())
+        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit)
+        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
+        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
+        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
+        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
+        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
+        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float)
+        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double)
+        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char)
+        val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
+        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable", SerialKind.Unit)
+        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List)
     }
 
     override fun serialize(serializer: Serializer) {

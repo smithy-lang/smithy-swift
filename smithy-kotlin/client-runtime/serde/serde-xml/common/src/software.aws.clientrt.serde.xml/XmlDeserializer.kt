@@ -134,7 +134,7 @@ private class CompositeIterator(
 
         if (!consumedWrapper) {
             val nextToken = reader.peekToken<XmlToken.BeginElement>()
-            require(nextToken.name.name == descriptor.kind.getWrapperName()) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.name}" }
+            require(nextToken.name.name == descriptor.getWrapperName()) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.name}" }
             consumedWrapper = true
         }
 
@@ -155,9 +155,9 @@ private class CompositeIterator(
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
         reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
-            val mapInfo = descriptor.kind.expectTrait<XmlMap>()
+            val mapInfo = descriptor.expectTrait<XmlMap>()
             if (!consumedWrapper && !mapInfo.flattened) {
-                val expectedWrapperName = descriptor.kind.getWrapperName()
+                val expectedWrapperName = descriptor.getWrapperName()
                 require(beginToken.name.name == expectedWrapperName) { "Expected entry wrapper ${descriptor.serialName} but got $expectedWrapperName" }
                 consumedWrapper = true
                 val nextToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
@@ -181,7 +181,7 @@ private class CompositeIterator(
 
     // Deserializer.EntryIterator
     override fun key(): String {
-        val mapInfo = descriptor.kind.expectTrait<XmlMap>()
+        val mapInfo = descriptor.expectTrait<XmlMap>()
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
         val keyStartToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
@@ -375,8 +375,8 @@ private fun isContainerType(field: SdkFieldDescriptor?): Boolean {
 /**
  * Return the top-level name of the container of a List or Map.
  */
-private fun SerialKind.getWrapperName(): String {
-    return when(this) {
+private fun SdkFieldDescriptor.getWrapperName(): String {
+    return when(this.kind) {
         is SerialKind.List -> {
             val listTrait = this.expectTrait<XmlList>()
             listTrait.elementName
@@ -395,7 +395,7 @@ private fun SerialKind.getWrapperName(): String {
  */
 fun XmlStreamReader.consumeListWrapper(descriptor: SdkFieldDescriptor, nodeNameStack: MutableList<XmlToken.QualifiedName>) =
     this.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { token ->
-        val listInfo = descriptor.kind.expectTrait<XmlList>()
+        val listInfo = descriptor.expectTrait<XmlList>()
         //NOTE: here we'll need to match on namespace too if we are to de/serialize with namespaces.
         require(token.name.name == listInfo.elementName) { "Expected ${listInfo.elementName} but found ${token.name}" }
     }

@@ -19,8 +19,9 @@ package software.aws.clientrt.serde
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
     builder.serialName ?: ANONYMOUS_OBJECT_NAME,
-    SerialKind.Struct(ObjectStruct(builder.fields)),
-    0
+    SerialKind.Struct,
+    0,
+    ObjectStruct(builder.fields)
 ) {
     companion object {
         const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT" //TODO: determine how to guard that reading this value from serialName results in error.
@@ -29,7 +30,7 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
     }
 
     fun fields(): List<SdkFieldDescriptor> {
-        val objectStruct = kind.expectTrait<ObjectStruct>()
+        val objectStruct = expectTrait<ObjectStruct>()
 
         return objectStruct.fields
     }

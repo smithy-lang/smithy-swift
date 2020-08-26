@@ -15,7 +15,6 @@
 package software.aws.clientrt.serde
 
 interface FieldTrait
-// class XmlAttribute : FieldTrait  // TBD
 // NOTE: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
 // If it's determined we need to serialize from/to specific namespaces.
 class XmlMap(
@@ -28,25 +27,33 @@ class XmlMap(
 class XmlList(
     val elementName: String = "element"
 ) : FieldTrait
+class XmlAttribute(val name: String, val namespace: String?) : FieldTrait
 class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
 
 /**
  * A protocol-agnostic type description of a field.
  */
-sealed class SerialKind(vararg val trait: FieldTrait) {
-    class Unit : SerialKind()
-    class Integer : SerialKind()
-    class Long : SerialKind()
-    class Double : SerialKind()
-    class String: SerialKind()
-    class Boolean: SerialKind()
-    class Byte: SerialKind()
-    class Char: SerialKind()
-    class Short: SerialKind()
-    class Float: SerialKind()
-    class Map(vararg trait: FieldTrait) : SerialKind(*trait)
-    class List(vararg trait: FieldTrait): SerialKind(*trait)
-    class Struct(vararg trait: FieldTrait): SerialKind(*trait)
+sealed class SerialKind {
+    object Unit : SerialKind()
+    object Integer : SerialKind()
+    object Long : SerialKind()
+    object Double : SerialKind()
+    object String: SerialKind()
+    object Boolean: SerialKind()
+    object Byte: SerialKind()
+    object Char: SerialKind()
+    object Short: SerialKind()
+    object Float: SerialKind()
+    object Map : SerialKind()
+    object List: SerialKind()
+    object Struct: SerialKind()
+}
+/**
+ * Metadata to describe how a given member property maps to serialization.
+ *
+ * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
+ */
+open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0, vararg val trait: FieldTrait) {
 
     /**
      * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
@@ -58,10 +65,4 @@ sealed class SerialKind(vararg val trait: FieldTrait) {
         return x as TExpected
     }
 }
-/**
- * Metadata to describe how a given member property maps to serialization.
- *
- * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
- */
-open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0)
 
