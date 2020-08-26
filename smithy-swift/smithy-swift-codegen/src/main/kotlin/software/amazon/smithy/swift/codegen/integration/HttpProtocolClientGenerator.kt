@@ -24,7 +24,9 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
 
 /**
@@ -86,24 +88,43 @@ class HttpProtocolClientGenerator(
     }
 
     // replace labels with any path bindings
-    private fun resolveUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBinding>): String {
-        return httpTrait.uri.segments.joinToString(
-            separator = "/",
-            prefix = "/",
-            postfix = "",
-            transform = { segment ->
-                if (segment.isLabel) {
-                    // spec dictates member name and label name MUST be the same
-                    val binding = pathBindings.find { binding ->
-                        binding.memberName == segment.content
-                    } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
-                    "\\(input.${binding.member.memberName})"
+    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBinding>, writer: SwiftWriter) {
+        val resolvedURIComponents = mutableListOf<String>()
+        httpTrait.uri.segments.forEach {
+            if (it.isLabel) {
+                // spec dictates member name and label name MUST be the same
+                val binding = pathBindings.find { binding ->
+                    binding.memberName == it.content
+                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${it.content}")
+
+                // shape must be string, number, boolean, or timestamp
+                val targetShape = model.expectShape(binding.member.target)
+                val labelMemberName = binding.member.memberName
+                val formattedLabel: String
+                if (targetShape.isTimestampShape) {
+                    val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
+                    val timestampFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.LABEL, TimestampFormatTrait.Format.DATE_TIME)
+                    formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
+                } else if (targetShape.isStringShape) {
+                    val enumRawValueSuffix = targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+                    formattedLabel = "$labelMemberName$enumRawValueSuffix"
                 } else {
-                    // literal
-                    segment.content
+                    formattedLabel = labelMemberName
                 }
+
+                // unwrap the label members
+                writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
+                    writer.write("completion(.failure(.client(ClientError.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))")
+                    writer.write("return")
+                }
+                resolvedURIComponents.add("\\($formattedLabel)")
+            } else {
+                resolvedURIComponents.add(it.content)
             }
-        )
+        }
+
+        val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
+        writer.write("let path = \"$uri\"")
     }
 
     private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
@@ -112,19 +133,19 @@ class HttpProtocolClientGenerator(
         val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
-        val uri = resolveUriPath(httpTrait, pathBindings)
         val httpMethod = httpTrait.method.toLowerCase()
 
         if (inputShape.isEmpty()) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
             // protocol request from the operation itself
             // TODO:: Replace host appropriately
-            writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: \"$uri\")")
+            renderUriPath(httpTrait, pathBindings, writer)
+            writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)")
             writer.write("let headers = HttpHeaders()")
             writer.write("let request = HttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
         } else {
-            writer.write("let path: String = \"$uri\"")
-            writer.write("let method: HttpMethodType = HttpMethodType.$httpMethod")
+            renderUriPath(httpTrait, pathBindings, writer)
+            writer.write("let method = HttpMethodType.$httpMethod")
             writer.write("var request = input.buildHttpRequest(method: method, path: path)")
             renderEncodingHttpRequestBlock(writer)
         }
@@ -132,7 +153,7 @@ class HttpProtocolClientGenerator(
 
     private fun renderEncodingHttpRequestBlock(writer: SwiftWriter) {
         writer.openBlock("do {", "} catch let err { ") {
-            writer.write("try encoder.encodeHttpRequest(input: input, currrentHttpRequest: &request)")
+            writer.write("try encoder.encodeHttpRequest(input, currentHttpRequest: &request)")
         }
         writer.indent()
         writer.write("completion(.failure(.client(err)))")

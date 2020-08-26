@@ -8,7 +8,8 @@ let package = Package(
 	.iOS(.v13)
     ],
     products: [
-        .library(name: "ClientRuntime", targets: ["ClientRuntime"])
+        .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     targets: [
         .target(
@@ -17,7 +18,18 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
+            dependencies: ["ClientRuntime"],
             path: "./ClientRuntimeTests"
+        ),
+        .target(
+            name: "SmithyTestUtil",
+            dependencies: ["ClientRuntime"],
+            path: "./SmithyTestUtil"
+        ),
+        .testTarget(
+            name: "SmithyTestUtilTests",
+            dependencies: ["SmithyTestUtil"],
+            path: "./SmithyTestUtilTests"
         )
     ]
 )

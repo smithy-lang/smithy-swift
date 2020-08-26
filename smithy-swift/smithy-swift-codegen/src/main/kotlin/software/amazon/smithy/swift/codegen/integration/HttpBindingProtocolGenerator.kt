@@ -57,11 +57,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val inputShape = ctx.model.expectShape(op.input.get())
         val opIndex = ctx.model.getKnowledge(OperationIndex::class.java)
+        val httpTrait = op.expectTrait(HttpTrait::class.java)
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
 
         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val queryBindings = requestBindings.values.filter { it.location == HttpBinding.Location.QUERY }
+        val queryLiterals = httpTrait.uri.queryLiterals
         val headerBindings = requestBindings.values
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
@@ -75,7 +77,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
             writer.openBlock("extension ${inputShapeName!!.get()}: HttpRequestBinding {", "}") {
                 writer.openBlock("public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {", "}") {
-                    renderQueryItems(ctx, queryBindings, writer)
+                    renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
                     renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType)
@@ -86,8 +88,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderQueryItems(ctx: ProtocolGenerator.GenerationContext, queryBindings: List<HttpBinding>, writer: SwiftWriter) {
+    private fun renderQueryItems(ctx: ProtocolGenerator.GenerationContext, queryLiterals: Map<String, String>, queryBindings: List<HttpBinding>, writer: SwiftWriter) {
         writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
+        queryLiterals.forEach { (queryItemKey, queryItemValue) ->
+            writer.write("queryItems.append(URLQueryItem(name: \$S, value: \$S))", queryItemKey, queryItemValue)
+        }
+
         if (queryBindings.isNotEmpty()) {
             writer.write("var queryItem: URLQueryItem")
         }
@@ -95,23 +101,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
+            val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
 
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
-                    if (memberTarget.member.hasTrait(EnumTrait::class.java)) {
-                        // TODO:: use rawValue for Enum Collection
-                        print("found enum collection!")
-                    }
                     // Handle cases where member is a List or Set type
+                    val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+                    var queryItemValue = "queryItemValue"
+                    queryItemValue = formatHeaderOrQueryValue(queryItemValue, collectionMemberTarget, HttpBinding.Location.QUERY, bindingIndex)
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-                        writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String(queryItemValue))")
+                        writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                         writer.write("queryItems.append(queryItem)")
                     }
                 } else {
-                    if (memberTarget.type == ShapeType.STRING &&
-                        memberTarget.getTrait(EnumTrait::class.java).isPresent) {
-                        memberName = "$memberName.rawValue"
-                    }
+                    memberName = formatHeaderOrQueryValue(memberName, memberTarget, HttpBinding.Location.QUERY, bindingIndex)
                     writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
                     writer.write("queryItems.append(queryItem)")
                 }
@@ -119,24 +122,46 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    private fun formatHeaderOrQueryValue(itemValue: String, itemShape: Shape, location: HttpBinding.Location, bindingIndex: HttpBindingIndex): String {
+        return when (itemShape) {
+            is TimestampShape -> {
+                val timestampFormat = bindingIndex.determineTimestampFormat(itemShape, location, defaultTimestampFormat)
+                ProtocolGenerator.getFormattedDateString(timestampFormat, itemValue)
+            }
+            is BlobShape -> {
+                "$itemValue.base64EncodedString()"
+            }
+            is StringShape -> {
+                val enumRawValueSuffix = itemShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+                var formattedItemValue = "$itemValue$enumRawValueSuffix"
+                if (itemShape.hasTrait(MediaTypeTrait::class.java)) {
+                    formattedItemValue = "$formattedItemValue.base64EncodedString()"
+                }
+                formattedItemValue
+            }
+            else -> itemValue
+        }
+    }
+
     private fun renderHeaders(ctx: ProtocolGenerator.GenerationContext, headerBindings: List<HttpBinding>, prefixHeaderBindings: List<HttpBinding>, writer: SwiftWriter, contentType: String) {
+        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         writer.write("var headers = HttpHeaders()")
         writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
         headerBindings.forEach {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
+
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
-                    // TODO:: use rawValue for Enum Collection
+                    val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+                    var headerValue = "headerValue"
+                    headerValue = formatHeaderOrQueryValue(headerValue, collectionMemberTarget, HttpBinding.Location.HEADER, bindingIndex)
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        writer.write("headers.add(name: \"$paramName\", value: String(headerValue))")
+                        writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
-                    if (memberTarget.type == ShapeType.STRING &&
-                        memberTarget.getTrait(EnumTrait::class.java).isPresent) {
-                        memberName = "$memberName.rawValue"
-                    }
+                    memberName = formatHeaderOrQueryValue(memberName, memberTarget, HttpBinding.Location.HEADER, bindingIndex)
                     writer.write("headers.add(name: \"$paramName\", value: String($memberName))")
                 }
             }
@@ -144,11 +169,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         prefixHeaderBindings.forEach {
             val memberName = it.member.memberName
+            val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
 
             writer.openBlock("if let $memberName = $memberName {", "}") {
-                writer.openBlock("for (headerKey, headerValue) in $memberName { ", "}") {
-                    writer.write("headers.add(name: \"$paramName\\(headerKey)\", value: String(headerValue))")
+                val mapValueShape = memberTarget.asMapShape().get().value
+                val mapValueShapeTarget = ctx.model.expectShape(mapValueShape.target)
+
+                writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
+                    if (mapValueShapeTarget is CollectionShape) {
+                        val collectionMemberTarget = ctx.model.expectShape(mapValueShapeTarget.member.target)
+                        var headerValueString = "headerValue"
+                        headerValueString = formatHeaderOrQueryValue(headerValueString, collectionMemberTarget, HttpBinding.Location.HEADER, bindingIndex)
+                        writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
+                            writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValueString))")
+                        }
+                    } else {
+                        var headerValueString = "prefixHeaderMapValue"
+                        headerValueString = formatHeaderOrQueryValue(headerValueString, mapValueShapeTarget, HttpBinding.Location.HEADER, bindingIndex)
+                        writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValueString))")
+                    }
                 }
             }
         }
@@ -171,6 +211,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The default content-type when a document is synthesized in the body.
      */
     protected abstract val defaultContentType: String
+
+    /**
+     * The default format for timestamps.
+     */
+    protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
     /**
      * Get all of the features that are used as middleware

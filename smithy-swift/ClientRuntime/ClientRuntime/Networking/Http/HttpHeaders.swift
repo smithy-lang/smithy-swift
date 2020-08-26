@@ -78,7 +78,6 @@ public struct HttpHeaders {
 
         return Dictionary(namesAndValues, uniquingKeysWith: { _, last in last })
     }
-
 }
 
 extension Array where Element == Header {

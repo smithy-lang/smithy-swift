@@ -18,6 +18,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.utils.CaseUtils
@@ -42,6 +43,16 @@ interface ProtocolGenerator {
             replacedString = replacedString.replace(".", "_")
             replacedString = CaseUtils.toCamelCase(replacedString, true, '-')
             return replacedString.replace("^Aws".toRegex(), "AWS")
+        }
+
+        fun getFormattedDateString(timestampFormat: TimestampFormatTrait.Format, memberName: String): String {
+            if (timestampFormat == TimestampFormatTrait.Format.HTTP_DATE) {
+                return "$memberName.rfc5322String()"
+            } else if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+                return "$memberName.timeIntervalSince1970"
+            } else {
+                return "$memberName.iso8601WithoutFractionalSecondsString()"
+            }
         }
     }
 

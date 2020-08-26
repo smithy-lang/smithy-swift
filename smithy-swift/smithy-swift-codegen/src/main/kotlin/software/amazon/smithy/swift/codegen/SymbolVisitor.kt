@@ -15,7 +15,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
@@ -291,6 +290,17 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
+        }
+    }
+
+    companion object {
+        /**
+         * Check if a given string can be a valid swift identifier.
+         * Valid swift identifier has only alphanumerics and underscore and does not start with a number
+         */
+        fun isValidSwiftIdentifier(value: String): Boolean {
+            return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
+                    !Character.isDigit(value.first())
         }
     }
 }

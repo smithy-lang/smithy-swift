@@ -40,7 +40,7 @@ import software.amazon.smithy.utils.CaseUtils
  * }
  *
  *
- * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
+ * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
  *     static var allCases: [TypedYesNo] {
  *         return [.yep, .nope, .sdkUnknown("")]
  *     }
@@ -82,7 +82,7 @@ import software.amazon.smithy.utils.CaseUtils
  * }
  *
  *
- * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
+ * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
  *     static var allCases: [SimpleYesNo] {
  *         return [.yes, .no, .sdkUnknown("")]
  *     }
@@ -134,7 +134,7 @@ class EnumGenerator(
             writer.write("case sdkUnknown(String)")
         }
 
-        writer.openBlock("extension \$enum.name:L : Equatable, RawRepresentable, Codable, CaseIterable { ", "}") {
+        writer.openBlock("extension \$enum.name:L : Equatable, RawRepresentable, Codable, CaseIterable, Hashable { ", "}") {
 
             // Generate allCases static array
             generateAllCasesBlock()
@@ -215,8 +215,12 @@ class EnumGenerator(
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
     fun EnumDefinition.swiftEnumCaseName(): String {
-        return CaseUtils.toCamelCase(name.orElseGet {
+        var enumCaseName = CaseUtils.toCamelCase(name.orElseGet {
             value
         }.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
+        if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
+            enumCaseName = "_$enumCaseName"
+        }
+        return enumCaseName
     }
 }
