@@ -182,8 +182,8 @@ interface PrimitiveDeserializer {
 }
 
 fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
-    val iter = deserializeStruct(descriptor)
-    iter.apply(block)
+    val deserializer = deserializeStruct(descriptor)
+    block(deserializer)
 }
 
 fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {

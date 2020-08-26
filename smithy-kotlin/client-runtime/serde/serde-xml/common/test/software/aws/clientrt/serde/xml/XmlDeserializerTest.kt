@@ -18,10 +18,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.*
 import kotlin.math.abs
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerTest {
@@ -106,6 +103,42 @@ class XmlDeserializerTest {
         }
         val actual = deserializer.deserializeStruct(objSerializer).deserializeBool()
         assertTrue(actual)
+    }
+
+    @Test
+    fun `it fails invalid type specification for int`() {
+        val payload = "<node>1.2</node>".encodeToByteArray()
+        val deserializer = XmlDeserializer(payload)
+        val objSerializer = SdkObjectDescriptor.build {
+            field(SdkFieldDescriptor("node", SerialKind.Integer))
+        }
+        assertFailsWith(DeserializationException::class) {
+            deserializer.deserializeStruct(objSerializer).deserializeInt()
+        }
+    }
+
+    @Test
+    fun `it fails missing type specification for int`() {
+        val payload = "<node></node>".encodeToByteArray()
+        val deserializer = XmlDeserializer(payload)
+        val objSerializer = SdkObjectDescriptor.build {
+            field(SdkFieldDescriptor("node", SerialKind.Integer))
+        }
+        assertFailsWith(DeserializationException::class) {
+            deserializer.deserializeStruct(objSerializer).deserializeInt()
+        }
+    }
+
+    @Test
+    fun `it fails whitespace type specification for int`() {
+        val payload = "<node> </node>".encodeToByteArray()
+        val deserializer = XmlDeserializer(payload)
+        val objSerializer = SdkObjectDescriptor.build {
+            field(SdkFieldDescriptor("node", SerialKind.Integer))
+        }
+        assertFailsWith(DeserializationException::class) {
+            deserializer.deserializeStruct(objSerializer).deserializeInt()
+        }
     }
 
     @Test
