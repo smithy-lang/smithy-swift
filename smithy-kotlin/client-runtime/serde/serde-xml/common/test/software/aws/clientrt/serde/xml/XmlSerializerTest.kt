@@ -36,7 +36,7 @@ class XmlSerializerTest {
             val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Object)
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName("a")
+                serialName = "a"
                 field(descriptorB)
             }
         }
@@ -53,7 +53,7 @@ class XmlSerializerTest {
             val descriptorValue = SdkFieldDescriptor("v", SerialKind.Integer)
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName("b")
+                serialName = "b"
                 field(descriptorValue)
             }
         }

@@ -29,12 +29,11 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     override fun deserializeShort(): Short = deserializeDouble().toShort()
 
     override fun deserializeLong(): Long = deserializeDouble().toLong()
-    override fun deserializeFloat(): Float {
-        TODO("Not yet implemented")
-    }
+    override fun deserializeFloat(): Float = deserializeDouble().toFloat()
 
     override fun deserializeDouble(): Double {
-        TODO("Not yet implemented")
+        val token = reader.nextTokenOf<JsonToken.Number>()
+        return token.value
     }
 
     override fun deserializeString(): String {
@@ -109,7 +108,7 @@ private class JsonFieldIterator(
             else -> {
                 val token = reader.nextTokenOf<JsonToken.Name>()
                 val propertyName = token.value
-                val field = descriptor.fields().find { it.serialName == propertyName }
+                val field = descriptor.fields.find { it.serialName == propertyName }
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
         }

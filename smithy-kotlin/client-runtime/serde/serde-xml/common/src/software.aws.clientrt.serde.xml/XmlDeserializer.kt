@@ -276,7 +276,7 @@ private class XmlFieldIterator(
                 val propertyName = nextToken.name
                 //FIXME: The following filter needs to take XML namespace into account when matching.
                 val field =
-                    descriptor.fields().find { it.serialName == propertyName.name }
+                    descriptor.fields.find { it.serialName == propertyName.name }
                 val rt = field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
 
                 if (!isContainerType(field)) {

@@ -16,8 +16,6 @@ package software.aws.clientrt.serde
 
 interface FieldTrait
 
-class ObjectStruct(val fields: List<SdkFieldDescriptor>) : FieldTrait
-
 /**
  * A protocol-agnostic type description of a field.
  */

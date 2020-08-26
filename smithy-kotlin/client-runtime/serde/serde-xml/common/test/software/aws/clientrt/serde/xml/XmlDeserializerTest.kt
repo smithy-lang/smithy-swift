@@ -204,7 +204,7 @@ class XmlDeserializerTest {
             val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
             val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName("payload")
+                serialName = "payload"
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
@@ -301,7 +301,7 @@ class XmlDeserializerTest {
                val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor("list2", SerialKind.List, 0, XmlList(elementName = "element"))
                val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2", SerialKind.Integer)
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("nested2")
+                   serialName = "nested2"
                    field(LIST2_FIELD_DESCRIPTOR)
                    field(INT2_FIELD_DESCRIPTOR)
                }
@@ -340,10 +340,10 @@ class XmlDeserializerTest {
            var bool2: Boolean? = null
 
            companion object {
-               val NESTED2_FIELD_DESCRIPTOR = SdkObjectDescriptor.build { serialName("nested2") }
+               val NESTED2_FIELD_DESCRIPTOR = SdkObjectDescriptor.build { serialName = "nested2" }
                val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2", SerialKind.Boolean)
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("nested")
+                   serialName = "nested"
                    field(NESTED2_FIELD_DESCRIPTOR)
                    field(BOOL2_FIELD_DESCRIPTOR)
                }
@@ -390,12 +390,12 @@ class XmlDeserializerTest {
                val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str", SerialKind.String)
                val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List, 0, XmlList())
                val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double", SerialKind.Double)
-               val NESTED_FIELD_DESCRIPTOR = SdkObjectDescriptor.build { serialName("nested") }
+               val NESTED_FIELD_DESCRIPTOR = SdkObjectDescriptor.build { serialName = "nested" }
                val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float)
                val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map, 0, XmlMap(null, "entry", "key", "value", true))
 
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("payload")
+                   serialName = "payload"
                    field(INT_FIELD_DESCRIPTOR)
                    field(LONG_FIELD_DESCRIPTOR)
                    field(SHORT_FIELD_DESCRIPTOR)
@@ -522,7 +522,7 @@ class XmlDeserializerTest {
            companion object {
                val COMMENT_DESCRIPTOR = SdkFieldDescriptor("Comment", SerialKind.String)
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("HostedZoneConfig")
+                   serialName = "HostedZoneConfig"
                    field(COMMENT_DESCRIPTOR)
                }
 
@@ -569,11 +569,11 @@ class XmlDeserializerTest {
                val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
                val CALLER_REFERENCE_DESCRIPTOR = SdkFieldDescriptor("CallerReference", SerialKind.String)
                val HOSTED_ZONE_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("HostedZoneConfig")
+                   serialName = "HostedZoneConfig"
                } // SdkFieldDescriptor("HostedZoneConfig", SerialKind.Struct())
 
                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                   serialName("CreateHostedZoneRequest")
+                   serialName = "CreateHostedZoneRequest"
                    field(NAME_DESCRIPTOR)
                    field(CALLER_REFERENCE_DESCRIPTOR)
                    field(HOSTED_ZONE_DESCRIPTOR)

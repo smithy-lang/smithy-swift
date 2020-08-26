@@ -20,19 +20,14 @@ package software.aws.clientrt.serde
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
     builder.serialName ?: ANONYMOUS_OBJECT_NAME,
     SerialKind.Object,
-    0,
-    ObjectStruct(builder.fields)
+    0
 ) {
+    val fields: List<SdkFieldDescriptor> = builder.fields
+
     companion object {
         const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT" //TODO: determine how to guard that reading this value from serialName results in error.
 
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
-    }
-
-    fun fields(): List<SdkFieldDescriptor> {
-        val objectStruct = expectTrait<ObjectStruct>()
-
-        return objectStruct.fields
     }
 
     interface DslBuilder {
@@ -40,21 +35,17 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
          * Declare a field belonging to this object
          */
         fun field(field: SdkFieldDescriptor)
-        fun serialName(name: String)
         fun build(): SdkObjectDescriptor
+        var serialName: String?
     }
 
     private class BuilderImpl : DslBuilder {
         val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
-        var serialName: String? = null
+        override var serialName: String? = null
 
         override fun field(field: SdkFieldDescriptor) {
             field.index = fields.size
             fields.add(field)
-        }
-
-        override fun serialName(name: String) {
-            this.serialName = name
         }
 
         override fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)
