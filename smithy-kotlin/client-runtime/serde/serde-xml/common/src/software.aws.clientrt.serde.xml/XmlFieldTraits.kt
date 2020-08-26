@@ -19,4 +19,4 @@ class XmlMap(
 class XmlList(
     val elementName: String = "element"
 ) : FieldTrait
-class XmlAttribute(val name: String, val namespace: String?) : FieldTrait
+class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
