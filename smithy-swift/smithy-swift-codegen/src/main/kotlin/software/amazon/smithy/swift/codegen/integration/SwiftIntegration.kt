@@ -17,14 +17,9 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import java.awt.Shape
-import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering
@@ -45,9 +40,8 @@ interface SwiftIntegration {
      *
      * @return Returns the sort order, defaulting to 0.
      */
-    fun getOrder(): Byte {
-        return 0
-    }
+    val order: Byte
+        get() = 0
 
     /**
      * Preprocess the model before code generation.
@@ -56,13 +50,11 @@ interface SwiftIntegration {
      * This can be used to remove unsupported features, remove traits
      * from shapes (e.g., make members optional), etc.
      *
-     * @param context Plugin context.
+     * @param model model definition.
      * @param settings Setting used to generate.
      * @return Returns the updated model.
      */
-    fun preprocessModel(context: PluginContext, settings: SwiftSettings): Model? {
-        return context.model
-    }
+    fun preprocessModel(model: Model, settings: SwiftSettings): Model = model
 
     /**
      * Updates the [SymbolProvider] used when generating code.
@@ -84,6 +76,7 @@ interface SwiftIntegration {
         return symbolProvider
     }
 
+    /*
     /**
      * Called each time a writer is used that defines a shape.
      *
@@ -199,4 +192,10 @@ interface SwiftIntegration {
         symbolProvider: SymbolProvider,
         writer: SwiftWriter
     )
+    */
+    /**
+     * Get the list of protocol generators to register
+     */
+    val protocolGenerators: List<ProtocolGenerator>
+        get() = listOf()
 }

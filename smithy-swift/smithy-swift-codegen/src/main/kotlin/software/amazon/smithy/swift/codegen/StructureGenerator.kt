@@ -106,19 +106,32 @@ class StructureGenerator(
     }
 
     private fun generateInitializerForStructure() {
-        writer.openBlock("public init (", ")") {
-            for ((index, member) in membersSortedByName.withIndex()) {
-                val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
-                if (memberName == null || memberSymbol == null) continue
-                val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                writer.write("\$L: \$D$terminator", memberName, memberSymbol)
-            }
-        }
+        val hasErrorTrait = shape.getTrait(HttpErrorTrait::class.java).isPresent
+        val hasMembers = membersSortedByName.size > 0
 
-        writer.openBlock("{", "}") {
-            membersSortedByName.forEach {
-                val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-                writer.write("self.\$1L = \$1L", memberName)
+        // TODO:: handle the rendering of error and normal structures more separately
+        if (hasErrorTrait || hasMembers) {
+            writer.openBlock("public init (", ")") {
+                if (hasErrorTrait) {
+                    writer.write("httpResponse: HttpResponse" + (if (hasMembers) "," else ""))
+                }
+                if (membersSortedByName.size > 0) {
+                    for ((index, member) in membersSortedByName.withIndex()) {
+                        val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
+                        if (memberName == null || memberSymbol == null) continue
+                        val terminator = if (index == membersSortedByName.size - 1) "" else ","
+                        writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                    }
+                }
+            }
+            writer.openBlock("{", "}") {
+                if (hasErrorTrait) {
+                    writer.write("self.httpResponse = httpResponse")
+                }
+                membersSortedByName.forEach {
+                    val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+                    writer.write("self.\$1L = \$1L", memberName)
+                }
             }
         }
     }
@@ -149,9 +162,11 @@ class StructureGenerator(
      *     public var message: String
      *
      *     public init (
-     *         message: String
+     *         message: String,
+     *         httpResponse: HttpResponse
      *     )
      *     {
+     *         self.httpResponse = httpResponse
      *         self.message = message
      *     }
      * }
@@ -180,7 +195,6 @@ class StructureGenerator(
 
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
-
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
             writer.write("public var httpResponse: HttpResponse")
         }
@@ -188,7 +202,7 @@ class StructureGenerator(
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
         writer.write("public var retryable = \$L", isRetryable)
 
-        writer.write("public var type = .\$L", errorTrait.value)
+        writer.write("public var type: ErrorType = .\$L", errorTrait.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

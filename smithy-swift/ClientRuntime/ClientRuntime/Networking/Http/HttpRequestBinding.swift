@@ -15,10 +15,9 @@
 
 import Foundation
 
-extension URLSession: SessionProtocol {
-    public func dataTask(with request: URLRequest) -> URLSessionDataTaskProtocol {
-        return dataTask(with: request) as URLSessionDataTask
-    }
-}
+public protocol HttpRequestBinding {
 
-extension URLSessionDataTask: URLSessionDataTaskProtocol {}
+  // Build the HttpRequest using the input method and path
+  // Does not encode the request
+  func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest
+}

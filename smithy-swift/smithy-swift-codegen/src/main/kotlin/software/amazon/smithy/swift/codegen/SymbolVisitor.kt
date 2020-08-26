@@ -15,7 +15,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
@@ -24,6 +23,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -68,14 +68,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
     private var escaper: Escaper
+    // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
+    // how deep in the model we have recursed
+    private var depth = 0
+
     // private val errorShapes: Set<StructureShape> = HashSet()
 
     init {
         // Load reserved words from a new-line delimited file.
-        val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
-        val reservedWords = ReservedWordsBuilder()
-            .loadWords(resource, ::escapeReservedWords)
-            .build()
+        // val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
+        // TODO:: fix java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)
+
+        val reservedWords = ReservedWordsBuilder().apply {
+            reservedKeywords.forEach { put(it, escapeReservedWords(it)) }
+        }.build()
 
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
@@ -95,7 +101,9 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     private fun escapeReservedWords(word: String): String = "`$word`"
 
     override fun toSymbol(shape: Shape): Symbol {
+        depth++
         val symbol = shape.accept(this)
+        depth--
         this.logger.fine("Creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
@@ -151,14 +159,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
-        shape.allMembers.values.forEach {
-            val memberSymbol = toSymbol(it)
-            val ref = SymbolReference.builder()
-                .symbol(memberSymbol)
-                .options(SymbolReference.ContextOption.DECLARE)
-                .build()
-            builder.addReference(ref)
-        }
+        addDeclareMemberReferences(builder, shape.allMembers.values)
 
         if (shape.getTrait(ErrorTrait::class.java).isPresent) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
@@ -271,6 +272,35 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return when (shapeType) {
             ShapeType.SERVICE -> "./$rootNamespace/${name}ClientProtocol.swift"
             else -> "./$rootNamespace/models/$name.swift"
+        }
+    }
+
+    /**
+     * Add all the [members] as references needed to declare the given symbol being built.
+     */
+    private fun addDeclareMemberReferences(builder: Symbol.Builder, members: Collection<MemberShape>) {
+        // when converting a shape to a symbol we only need references to top level members
+        // in order to declare the symbol. This prevents recursive shapes from causing a stack overflow (and doing
+        // unnecessary work since we don't need the inner references)
+        if (depth > 1) return
+        members.forEach {
+            val memberSymbol = toSymbol(it)
+            val ref = SymbolReference.builder()
+                .symbol(memberSymbol)
+                .options(SymbolReference.ContextOption.DECLARE)
+                .build()
+            builder.addReference(ref)
+        }
+    }
+
+    companion object {
+        /**
+         * Check if a given string can be a valid swift identifier.
+         * Valid swift identifier has only alphanumerics and underscore and does not start with a number
+         */
+        fun isValidSwiftIdentifier(value: String): Boolean {
+            return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
+                    !Character.isDigit(value.first())
         }
     }
 }
