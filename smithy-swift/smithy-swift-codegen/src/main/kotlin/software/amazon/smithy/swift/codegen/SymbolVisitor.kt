@@ -197,18 +197,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        var (typeName, namespace) = Pair("Date", "Foundation")
-        if (shape.hasTrait(TimestampFormatTrait::class.java)) {
-            val timestampFormat = shape.getTrait(TimestampFormatTrait::class.java).get().format
-            namespace = "ClientRuntime"
-            typeName = when (timestampFormat) {
-                TimestampFormatTrait.Format.DATE_TIME -> "ISO8601Date"
-                TimestampFormatTrait.Format.HTTP_DATE -> "RFC5322Date"
-                TimestampFormatTrait.Format.EPOCH_SECONDS -> "EpochSecondsDate"
-                else -> "Date"
-            }
-        }
-        return createSymbolBuilder(shape, typeName, namespace, true).build()
+        return createSymbolBuilder(shape, "Date", "Foundation", true).build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {

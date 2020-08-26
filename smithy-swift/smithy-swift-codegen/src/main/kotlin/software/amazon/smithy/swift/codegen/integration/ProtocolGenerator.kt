@@ -47,11 +47,11 @@ interface ProtocolGenerator {
 
         fun getFormattedDateString(timestampFormat: TimestampFormatTrait.Format, memberName: String): String {
             if (timestampFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                return "DateFormatter.rfc5322DateFormatter.string(from: $memberName)"
+                return "$memberName.rfc5322String()"
             } else if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                return "DateFormatter.epochSecondsDateFormatter.string(from: $memberName)"
+                return "$memberName.timeIntervalSince1970"
             } else {
-                return "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: $memberName)"
+                return "$memberName.iso8601WithoutFractionalSecondsString()"
             }
         }
     }
