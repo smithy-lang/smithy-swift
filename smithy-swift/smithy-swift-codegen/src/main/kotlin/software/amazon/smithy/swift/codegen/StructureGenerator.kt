@@ -109,6 +109,7 @@ class StructureGenerator(
         val hasErrorTrait = shape.getTrait(HttpErrorTrait::class.java).isPresent
         val hasMembers = membersSortedByName.size > 0
 
+        // TODO:: handle the rendering of error and normal structures more separately
         if (hasErrorTrait || hasMembers) {
             writer.openBlock("public init (", ")") {
                 if (hasErrorTrait) {
