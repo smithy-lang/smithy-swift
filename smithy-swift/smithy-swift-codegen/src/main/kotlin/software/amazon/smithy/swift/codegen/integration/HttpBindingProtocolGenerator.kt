@@ -47,7 +47,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
-     * Generate conformace to (HttpRequestBinding) for the input request (if not already present)
+     * Generate conformance to (HttpRequestBinding) for the input request (if not already present)
      * and implement (buildRequest) method
      */
     private fun renderInputRequestConformanceToHttpRequestBinding(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
@@ -94,9 +94,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("queryItems.append(URLQueryItem(name: \$S, value: \$S))", queryItemKey, queryItemValue)
         }
 
-        if (queryBindings.isNotEmpty()) {
-            writer.write("var queryItem: URLQueryItem")
-        }
         queryBindings.forEach {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -110,12 +107,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     var queryItemValue = "queryItemValue"
                     queryItemValue = formatHeaderOrQueryValue(queryItemValue, collectionMemberTarget, HttpBinding.Location.QUERY, bindingIndex)
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-                        writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
+                        writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                         writer.write("queryItems.append(queryItem)")
                     }
                 } else {
                     memberName = formatHeaderOrQueryValue(memberName, memberTarget, HttpBinding.Location.QUERY, bindingIndex)
-                    writer.write("queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
+                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
                     writer.write("queryItems.append(queryItem)")
                 }
             }

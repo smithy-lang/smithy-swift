@@ -56,7 +56,7 @@ extension DateFormatter {
 }
 
 
-extension Date {
+public extension Date {
     func iso8601FractionalSecondsString() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         return formatter.string(from: self)
