@@ -190,9 +190,9 @@ class HttpProtocolClientGenerator(
                         writer.write("let responsePayload = ResponsePayload(body: data, decoder: $decoderInstance)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case
-                        val resultBlock = outputShapeName?.map {
+                        val resultBlock = outputShapeName.map {
                             "let result: Result<$it, SdkError<OperationError>> = responsePayload.decode()"
-                        }?.orElse("let result: Result<nil, SdkError<OperationError>>")
+                        }
                         // TODO:: generate more specific operation error
                         writer.write(resultBlock)
                         writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
