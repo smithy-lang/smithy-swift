@@ -354,6 +354,7 @@ class XmlDeserializerTest {
             <payload>
                 <x value="1">x1</x>
                 <y value="2" />
+                <z>true</z>
             </payload>
         """.flatten().encodeToByteArray()
 
@@ -363,23 +364,27 @@ class XmlDeserializerTest {
         assertEquals(1, bst.xa)
         assertEquals("x1", bst.xt)
         assertEquals(2, bst.y)
+        assertEquals(0, bst.unknownFieldCount)
     }
 
     class BasicAttribTextStructTest {
         var xa: Int? = null
         var xt: String? = null
         var y: Int? = null
+        var z: Boolean? = null
         var unknownFieldCount: Int = 0
 
         companion object {
             val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("value"))
             val X_VALUE_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0)
             val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer, 0, XmlAttribute("value"))
+            val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.Boolean)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 serialName = "payload"
                 field(X_ATTRIB_DESCRIPTOR)
                 field(X_VALUE_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
+                field(Z_DESCRIPTOR)
             }
 
             fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
@@ -390,9 +395,9 @@ class XmlDeserializerTest {
                             X_ATTRIB_DESCRIPTOR.index -> result.xa = deserializeInt()
                             X_VALUE_DESCRIPTOR.index -> result.xt = deserializeString()
                             Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            Z_DESCRIPTOR.index -> result.z = deserializeBool()
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
-                                skipValue()
                                 result.unknownFieldCount++
                             }
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))

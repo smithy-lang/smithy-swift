@@ -252,7 +252,7 @@ private class CompositeIterator(
     }
 }
 
-data class AttributeDataSource(val trait: XmlAttribute, val token: XmlToken.BeginElement)
+data class AttributeDataSource(val trait: XmlAttribute, val token: XmlToken.BeginElement, val lastFromNode: Boolean)
 
 private class XmlFieldIterator(
     private val deserializer: Deserializer,
@@ -263,7 +263,7 @@ private class XmlFieldIterator(
     private val nodeNameStack: MutableList<XmlToken.QualifiedName>
 ) : Deserializer.FieldIterator, Deserializer {
     private var nextFieldValueSource: AttributeDataSource? = null
-    private val handledFields = mutableListOf<Int>()
+    private val handledFields = mutableListOf<SdkFieldDescriptor>()
 
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
@@ -296,7 +296,7 @@ private class XmlFieldIterator(
                             check(reader.peek() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peek()}" }
                             null
                         }
-                        else -> AttributeDataSource(xmlAttribTrait!!, token)
+                        else -> AttributeDataSource(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
                     }
                 }
 
@@ -306,10 +306,18 @@ private class XmlFieldIterator(
         }
     }
 
+    private fun lastAttributeInNode(handledFieldList: List<SdkFieldDescriptor>, fields: List<SdkFieldDescriptor>, targetDescriptor: SdkFieldDescriptor): Boolean {
+        val allVisitedAttribsForTargetDescriptor = handledFieldList.filter { descriptor -> descriptor.serialName == targetDescriptor.serialName }
+        val allAttribsOfTargetDescriptor = fields.filter { descriptor -> descriptor.serialName == targetDescriptor.serialName }
+
+        return allVisitedAttribsForTargetDescriptor == allAttribsOfTargetDescriptor
+    }
+
+
     private fun findFieldIndex(fields: List<SdkFieldDescriptor>, nextToken: XmlToken.BeginElement): SdkFieldDescriptor? {
         // Handle attributes
         val unhandledAttribFields = fields
-            .filter { field -> !handledFields.contains(field.index) }
+            .filter { field -> !handledFields.contains(field) }
             .filter { field -> field.findTrait<XmlAttribute>() != null }
             //FIXME: The following filter needs to take XML namespace into account when matching.
             .filter { field -> field.serialName == nextToken.id.name }
@@ -317,13 +325,15 @@ private class XmlFieldIterator(
         if (unhandledAttribFields.isNotEmpty()) {
             val nextAttribField = unhandledAttribFields.first()
 
-            handledFields.add(nextAttribField.index)
+            handledFields.add(nextAttribField)
 
             return nextAttribField
         }
 
         //FIXME: The following filter needs to take XML namespace into account when matching.
-        return descriptor.fields.find { it.serialName == nextToken.id.name && !handledFields.contains(it.index) }
+        return descriptor.fields
+            .find { it.serialName == nextToken.id.name && !handledFields.contains(it) }
+            .also { descriptor -> if (descriptor != null) handledFields.add(descriptor) }
     }
 
     // Deserializer.FieldIterator
@@ -397,9 +407,10 @@ private class XmlFieldIterator(
             is AttributeDataSource -> {
                 val attfs = nextFieldValueSource as AttributeDataSource
                 val attribute: XmlToken.QualifiedName = XmlToken.QualifiedName(attfs.trait.name, attfs.trait.namespace)
-                nextFieldValueSource =
-                    null // This value should only be read once on parse, setting to null to guard unexpected behavior
-                attfs.token.attributes[attribute] ?: error("Expected attribute $")
+                // This value should only be read once on parse, setting to null to guard unexpected behavior
+                nextFieldValueSource = null
+                if (attfs.lastFromNode) reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+                attfs.token.attributes[attribute] ?: error("Expected attribute $attribute but was not present")
             }
             else -> error("Unexpected value in nextFieldValueSource $nextFieldValueSource::class")
         }
