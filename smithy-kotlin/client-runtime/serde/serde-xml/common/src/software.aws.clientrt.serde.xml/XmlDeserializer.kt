@@ -252,7 +252,7 @@ private class CompositeIterator(
     }
 }
 
-data class AttributeDataSource(val trait: XmlAttribute, val token: XmlToken.BeginElement, val lastFromNode: Boolean)
+data class AttributeParseState(val trait: XmlAttribute, val token: XmlToken.BeginElement, val lastFromNode: Boolean)
 
 private class XmlFieldIterator(
     private val deserializer: Deserializer,
@@ -262,12 +262,16 @@ private class XmlFieldIterator(
     private val descriptor: SdkObjectDescriptor,
     private val nodeNameStack: MutableList<XmlToken.QualifiedName>
 ) : Deserializer.FieldIterator, Deserializer {
-    private var nextFieldValueSource: AttributeDataSource? = null
+    // This stores transient state that must exist between the time of findNextFieldIndex() and parsing of a primitive value.
+    // This state is necessary such that when the value is read, we know to take either from TEXT or a named attribute.
+    // Each time the value is read, it is explicitly set to null, and null state is guarded to help ensure that stale
+    // values are not acted upon.
+    private var attributeParseState: AttributeParseState? = null
     private val handledFields = mutableListOf<SdkFieldDescriptor>()
 
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
-        check(nextFieldValueSource == null) { "Expected nextFieldValueSource to be null but found $nextFieldValueSource" }
+        check(attributeParseState == null) { "Expected nextFieldValueSource to be null but found $attributeParseState" }
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
         return when (val nextToken = reader.peek()) {
@@ -288,7 +292,7 @@ private class XmlFieldIterator(
                 if (!isContainerType(field)) {
                     val token = reader.peekToken<XmlToken.BeginElement>()
                     val xmlAttribTrait = field?.findTrait<XmlAttribute>()
-                    nextFieldValueSource = when (field?.findTrait<XmlAttribute>()) {
+                    attributeParseState = when (field?.findTrait<XmlAttribute>()) {
                         null -> {
                             // All attributes will be consumed first. Since we did not retrieve an attribute we
                             // can consume this node as this will be the TEXT element.
@@ -296,7 +300,7 @@ private class XmlFieldIterator(
                             check(reader.peek() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peek()}" }
                             null
                         }
-                        else -> AttributeDataSource(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
+                        else -> AttributeParseState(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
                     }
                 }
 
@@ -306,6 +310,7 @@ private class XmlFieldIterator(
         }
     }
 
+    // Determine if all attributes of the currently parsing node have already been seen
     private fun lastAttributeInNode(handledFieldList: List<SdkFieldDescriptor>, fields: List<SdkFieldDescriptor>, targetDescriptor: SdkFieldDescriptor): Boolean {
         val allVisitedAttribsForTargetDescriptor = handledFieldList.filter { descriptor -> descriptor.serialName == targetDescriptor.serialName }
         val allAttribsOfTargetDescriptor = fields.filter { descriptor -> descriptor.serialName == targetDescriptor.serialName }
@@ -314,14 +319,17 @@ private class XmlFieldIterator(
     }
 
 
+    // Return the next field to parse. First looking for attributes and then once all attribues are consumed, taking the TEXT
+    // This function mutates class-level state regarding what attributes have already been seen.
     private fun findFieldIndex(fields: List<SdkFieldDescriptor>, nextToken: XmlToken.BeginElement): SdkFieldDescriptor? {
-        // Handle attributes
+        // Find attributes we have not already consumed
         val unhandledAttribFields = fields
             .filter { field -> !handledFields.contains(field) }
             .filter { field -> field.findTrait<XmlAttribute>() != null }
             //FIXME: The following filter needs to take XML namespace into account when matching.
             .filter { field -> field.serialName == nextToken.id.name }
 
+        // If present, take the next and return
         if (unhandledAttribFields.isNotEmpty()) {
             val nextAttribField = unhandledAttribFields.first()
 
@@ -331,6 +339,7 @@ private class XmlFieldIterator(
         }
 
         //FIXME: The following filter needs to take XML namespace into account when matching.
+        //If no attributes are present, take the field matching the serialName
         return descriptor.fields
             .find { it.serialName == nextToken.id.name && !handledFields.contains(it) }
             .also { descriptor -> if (descriptor != null) handledFields.add(descriptor) }
@@ -401,18 +410,19 @@ private class XmlFieldIterator(
     override fun deserializeBool(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
+    // Read a primitive from either TEXT or an attribute based on value of [attributeParseState].
     private fun <T> deserializePrimitive(transform: (String) -> T?): T {
-        val rv: String = when (nextFieldValueSource) {
+        val rv = when (attributeParseState) {
             null -> reader.takeToken<XmlToken.Text>(nodeNameStack).value
-            is AttributeDataSource -> {
-                val attfs = nextFieldValueSource as AttributeDataSource
-                val attribute: XmlToken.QualifiedName = XmlToken.QualifiedName(attfs.trait.name, attfs.trait.namespace)
+            is AttributeParseState -> {
+                val attfs = attributeParseState!!
+                val attribute = XmlToken.QualifiedName(attfs.trait.name, attfs.trait.namespace)
                 // This value should only be read once on parse, setting to null to guard unexpected behavior
-                nextFieldValueSource = null
+                attributeParseState = null
                 if (attfs.lastFromNode) reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
                 attfs.token.attributes[attribute] ?: error("Expected attribute $attribute but was not present")
             }
-            else -> error("Unexpected value in nextFieldValueSource $nextFieldValueSource::class")
+            else -> error("Unexpected value in nextFieldValueSource $attributeParseState::class")
         }
             ?: throw DeserializationException("Expected value but text of element was null.")
 
@@ -492,7 +502,7 @@ private fun isContainerType(field: SdkFieldDescriptor?): Boolean {
         field?.kind is SerialKind.List -> true
         field?.kind is SerialKind.Map -> true
         field?.kind is SerialKind.Struct -> true
-        field == null -> true // Unknown field which will be skipped
+        field == null -> true // Maps to Unknown field, which will be skipped entirely, so treated as a container
         else -> false
     }
 }
