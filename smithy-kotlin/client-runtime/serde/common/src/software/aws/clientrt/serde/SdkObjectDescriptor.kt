@@ -19,8 +19,7 @@ package software.aws.clientrt.serde
  */
 class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDescriptor(
     builder.serialName ?: ANONYMOUS_OBJECT_NAME,
-    SerialKind.Struct,
-    0
+    SerialKind.Struct
 ) {
     val fields: List<SdkFieldDescriptor> = builder.fields
 

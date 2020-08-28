@@ -18,7 +18,10 @@ import software.aws.clientrt.serde.*
  * TODO: To verify correctness, a stack of open node names is maintained to match expected against actual node traversal.
  * TODO: This is not necessary for parsing and should be removed before GA.
  */
-class XmlDeserializer(private val reader: XmlStreamReader, private val nodeNameStack: MutableList<XmlToken.QualifiedName> = mutableListOf()) : Deserializer {
+class XmlDeserializer(
+    private val reader: XmlStreamReader,
+    private val nodeNameStack: MutableList<XmlToken.QualifiedName> = mutableListOf()
+) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
     /**
@@ -38,7 +41,7 @@ class XmlDeserializer(private val reader: XmlStreamReader, private val nodeNameS
      * Deserialize an element with identically-typed children.
      */
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        reader.takeIfToken<XmlToken.EndElement>(nodeNameStack) 
+        reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //Consume the container start tag
         require(descriptor.serialName == beginNode.id.name) { "Expected list start tag of ${beginNode.id} but got ${descriptor.serialName}" }
@@ -186,7 +189,8 @@ private class CompositeIterator(
 
         val keyStartToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
         require(keyStartToken.id.name == mapInfo.keyName) { "Expected key name to be ${mapInfo.keyName} but got ${keyStartToken.id}" }
-        val key = reader.takeToken<XmlToken.Text>(nodeNameStack).value ?: error("Expected string value for key, but found null.")
+        val key = reader.takeToken<XmlToken.Text>(nodeNameStack).value
+            ?: error("Expected string value for key, but found null.")
         val keyEndToken = reader.takeToken<XmlToken.EndElement>(nodeNameStack)
         require(keyEndToken.name.name == mapInfo.keyName) { "Expected key name to be ${mapInfo.keyName} but got ${keyStartToken.id}" }
 
@@ -248,6 +252,8 @@ private class CompositeIterator(
     }
 }
 
+data class AttributeDataSource(val trait: XmlAttribute, val token: XmlToken.BeginElement)
+
 private class XmlFieldIterator(
     private val deserializer: Deserializer,
     private val depth: Int,
@@ -255,9 +261,13 @@ private class XmlFieldIterator(
     private val beginNode: XmlToken.BeginElement,
     private val descriptor: SdkObjectDescriptor,
     private val nodeNameStack: MutableList<XmlToken.QualifiedName>
-) : Deserializer.FieldIterator, Deserializer by deserializer {
+) : Deserializer.FieldIterator, Deserializer {
+    private var nextFieldValueSource: AttributeDataSource? = null
+    private val handledFields = mutableListOf<Int>()
+
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
+        check(nextFieldValueSource == null) { "Expected nextFieldValueSource to be null but found $nextFieldValueSource" }
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
         return when (val nextToken = reader.peek()) {
@@ -273,20 +283,47 @@ private class XmlFieldIterator(
                 }
             }
             is XmlToken.BeginElement -> {
-                val propertyName = nextToken.id
-                //FIXME: The following filter needs to take XML namespace into account when matching.
-                val field =
-                    descriptor.fields.find { it.serialName == propertyName.name }
-                val rt = field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                val field = findFieldIndex(descriptor.fields, nextToken)
 
                 if (!isContainerType(field)) {
-                    reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+                    val token = reader.peekToken<XmlToken.BeginElement>()
+                    val xmlAttribTrait = field?.findTrait<XmlAttribute>()
+                    nextFieldValueSource = when (field?.findTrait<XmlAttribute>()) {
+                        null -> {
+                            // All attributes will be consumed first. Since we did not retrieve an attribute we
+                            // can consume this node as this will be the TEXT element.
+                            reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+                            check(reader.peek() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peek()}" }
+                            null
+                        }
+                        else -> AttributeDataSource(xmlAttribTrait!!, token)
+                    }
                 }
 
-                rt
+                field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
             else -> throw DeserializationException("Unexpected token $nextToken")
         }
+    }
+
+    private fun findFieldIndex(fields: List<SdkFieldDescriptor>, nextToken: XmlToken.BeginElement): SdkFieldDescriptor? {
+        // Handle attributes
+        val unhandledAttribFields = fields
+            .filter { field -> !handledFields.contains(field.index) }
+            .filter { field -> field.findTrait<XmlAttribute>() != null }
+            //FIXME: The following filter needs to take XML namespace into account when matching.
+            .filter { field -> field.serialName == nextToken.id.name }
+
+        if (unhandledAttribFields.isNotEmpty()) {
+            val nextAttribField = unhandledAttribFields.first()
+
+            handledFields.add(nextAttribField.index)
+
+            return nextAttribField
+        }
+
+        //FIXME: The following filter needs to take XML namespace into account when matching.
+        return descriptor.fields.find { it.serialName == nextToken.id.name && !handledFields.contains(it.index) }
     }
 
     // Deserializer.FieldIterator
@@ -296,6 +333,80 @@ private class XmlFieldIterator(
             reader.skipNext()
         }
     }
+
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
+        deserializer.deserializeStruct(descriptor)
+
+    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator =
+        deserializer.deserializeList(descriptor)
+
+    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator =
+        deserializer.deserializeMap(descriptor)
+
+    /**
+     * Deserialize a byte value defined as the text section of an Xml element.
+     *
+     */
+    override fun deserializeByte(): Byte =
+        deserializePrimitive { it.toIntOrNull()?.toByte() }
+
+    /**
+     * Deserialize an integer value defined as the text section of an Xml element.
+     */
+    override fun deserializeInt(): Int =
+        deserializePrimitive { it.toIntOrNull() }
+
+    /**
+     * Deserialize a short value defined as the text section of an Xml element.
+     */
+    override fun deserializeShort(): Short =
+        deserializePrimitive { it.toIntOrNull()?.toShort() }
+
+    /**
+     * Deserialize a long value defined as the text section of an Xml element.
+     */
+    override fun deserializeLong(): Long =
+        deserializePrimitive { it.toLongOrNull() }
+
+    /**
+     * Deserialize an float value defined as the text section of an Xml element.
+     */
+    override fun deserializeFloat(): Float =
+        deserializePrimitive { it.toFloatOrNull() }
+
+    /**
+     * Deserialize a double value defined as the text section of an Xml element.
+     */
+    override fun deserializeDouble(): Double =
+        deserializePrimitive { it.toDoubleOrNull() }
+
+    /**
+     * Deserialize an integer value defined as the text section of an Xml element.
+     */
+    override fun deserializeString(): String = deserializePrimitive { it }
+
+    /**
+     * Deserialize an integer value defined as the text section of an Xml element.
+     */
+    override fun deserializeBool(): Boolean =
+        deserializePrimitive { it.toBoolean() }
+
+    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
+        val rv: String = when (nextFieldValueSource) {
+            null -> reader.takeToken<XmlToken.Text>(nodeNameStack).value
+            is AttributeDataSource -> {
+                val attfs = nextFieldValueSource as AttributeDataSource
+                val attribute: XmlToken.QualifiedName = XmlToken.QualifiedName(attfs.trait.name, attfs.trait.namespace)
+                nextFieldValueSource =
+                    null // This value should only be read once on parse, setting to null to guard unexpected behavior
+                attfs.token.attributes[attribute] ?: error("Expected attribute $")
+            }
+            else -> error("Unexpected value in nextFieldValueSource $nextFieldValueSource::class")
+        }
+            ?: throw DeserializationException("Expected value but text of element was null.")
+
+        return transform(rv) ?: throw DeserializationException("Cannot parse $rv with ${transform::class}")
+    }
 }
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
@@ -303,7 +414,7 @@ private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(node
     val token = this.nextToken()
     requireToken<TExpected>(token)
 
-    when(TExpected::class) {
+    when (TExpected::class) {
         XmlToken.BeginElement::class -> nodeNameStack.add((token as XmlToken.BeginElement).id)
         XmlToken.EndElement::class -> {
             val lastNode = nodeNameStack.removeAt(nodeNameStack.size - 1)
@@ -338,13 +449,16 @@ private inline fun <reified TExpected> requireToken(token: XmlToken) {
  * @param nodeNameStack tracks traversal through tree to verify correctness.
  * @param block function to apply expected token against.
  */
-private inline fun <reified TExpected> XmlStreamReader.takeIfToken(nodeNameStack: MutableList<XmlToken.QualifiedName>, block: (TExpected) -> Unit = {}): Boolean {
+private inline fun <reified TExpected> XmlStreamReader.takeIfToken(
+    nodeNameStack: MutableList<XmlToken.QualifiedName>,
+    block: (TExpected) -> Unit = {}
+): Boolean {
     val nextToken = this.peek()
 
     if (nextToken::class == TExpected::class) {
         val expectedToken = this.nextToken() as TExpected
 
-        when(TExpected::class) {
+        when (TExpected::class) {
             XmlToken.BeginElement::class -> nodeNameStack.add((expectedToken as XmlToken.BeginElement).id)
             XmlToken.EndElement::class -> {
                 val lastNodeName = nodeNameStack.removeAt(nodeNameStack.size - 1)
@@ -376,7 +490,7 @@ private fun isContainerType(field: SdkFieldDescriptor?): Boolean {
  * Return the top-level name of the container of a List or Map.
  */
 private fun SdkFieldDescriptor.getWrapperName(): String {
-    return when(this.kind) {
+    return when (this.kind) {
         is SerialKind.List -> {
             val listTrait = this.expectTrait<XmlList>()
             listTrait.elementName
@@ -393,7 +507,10 @@ private fun SdkFieldDescriptor.getWrapperName(): String {
 /**
  * If the next parse token is BeginElement on List, verify that element matches list wrapper name.
  */
-fun XmlStreamReader.consumeListWrapper(descriptor: SdkFieldDescriptor, nodeNameStack: MutableList<XmlToken.QualifiedName>) =
+fun XmlStreamReader.consumeListWrapper(
+    descriptor: SdkFieldDescriptor,
+    nodeNameStack: MutableList<XmlToken.QualifiedName>
+) =
     this.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { token ->
         val listInfo = descriptor.expectTrait<XmlList>()
         //NOTE: here we'll need to match on namespace too if we are to de/serialize with namespaces.

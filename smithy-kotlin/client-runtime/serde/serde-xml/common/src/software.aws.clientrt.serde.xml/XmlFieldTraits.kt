@@ -9,14 +9,16 @@ import software.aws.clientrt.serde.FieldTrait
 
 // NOTE: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
 // If it's determined we need to serialize from/to specific namespaces.
-class XmlMap(
+
+// NOTE: By default, a descriptor without any Xml trait is assumed to be a primitive TEXT value.
+data class XmlMap(
     val parent: String? = "map",
     val entry: String = "entry",
     val keyName: String = "key",
     val valueName: String = "value",
     val flattened: Boolean = false
 ) : FieldTrait
-class XmlList(
+data class XmlList(
     val elementName: String = "element"
 ) : FieldTrait
-class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
+data class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait

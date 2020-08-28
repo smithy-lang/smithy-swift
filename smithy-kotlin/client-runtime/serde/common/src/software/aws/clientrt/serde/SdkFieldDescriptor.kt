@@ -33,6 +33,10 @@ sealed class SerialKind {
     object Map : SerialKind()
     object List: SerialKind()
     object Struct: SerialKind()
+
+    override fun toString(): kotlin.String {
+        return this::class.simpleName ?: "SerialKind"
+    }
 }
 /**
  * Metadata to describe how a given member property maps to serialization.
@@ -49,6 +53,16 @@ open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var 
         requireNotNull(x) { "Expected to find trait ${TExpected::class} but was not present." }
 
         return x as TExpected
+    }
+
+    inline fun <reified TExpected : FieldTrait> findTrait(): TExpected? {
+        val x = trait.find { it::class == TExpected::class }
+
+        return x as TExpected?
+    }
+
+    override fun toString(): String {
+        return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
     }
 }
 

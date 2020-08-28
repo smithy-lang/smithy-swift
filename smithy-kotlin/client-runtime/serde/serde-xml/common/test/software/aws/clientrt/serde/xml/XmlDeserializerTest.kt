@@ -185,7 +185,7 @@ class XmlDeserializerTest {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializer.deserializeInt()
+                val value = deserializeInt()
 
                 map[key] = value
             }
@@ -218,7 +218,7 @@ class XmlDeserializerTest {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializer.deserializeInt()
+                val value = deserializeInt()
 
                 map[key] = value
             }
@@ -281,8 +281,8 @@ class XmlDeserializerTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializer.deserializeInt()
-                            Y_DESCRIPTOR.index -> result.y = deserializer.deserializeInt()
+                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++
@@ -298,7 +298,6 @@ class XmlDeserializerTest {
     }
 
     @Test
-    @Ignore
     fun `it handles basic structs with attribs`() {
         val payload = """
             <payload>
@@ -328,13 +327,13 @@ class XmlDeserializerTest {
                 field(Y_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): BasicStructTest {
-                val result = BasicStructTest()
+            fun deserialize(deserializer: Deserializer): BasicAttribStructTest {
+                val result = BasicAttribStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializer.deserializeInt()
-                            Y_DESCRIPTOR.index -> result.y = deserializer.deserializeInt()
+                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++
@@ -342,6 +341,63 @@ class XmlDeserializerTest {
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
                         skipValue() // This performs two tasks.  For unknown fields, it consumes the node.  For found fields, it consumes the end token.
+                    }
+                }
+                return result
+            }
+        }
+    }
+
+    @Test
+    fun `it handles basic structs with attribs and text`() {
+        val payload = """
+            <payload>
+                <x value="1">x1</x>
+                <y value="2" />
+            </payload>
+        """.flatten().encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = BasicAttribTextStructTest.deserialize(deserializer)
+
+        assertEquals(1, bst.xa)
+        assertEquals("x1", bst.xt)
+        assertEquals(2, bst.y)
+    }
+
+    class BasicAttribTextStructTest {
+        var xa: Int? = null
+        var xt: String? = null
+        var y: Int? = null
+        var unknownFieldCount: Int = 0
+
+        companion object {
+            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("value"))
+            val X_VALUE_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0)
+            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer, 0, XmlAttribute("value"))
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                serialName = "payload"
+                field(X_ATTRIB_DESCRIPTOR)
+                field(X_VALUE_DESCRIPTOR)
+                field(Y_DESCRIPTOR)
+            }
+
+            fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
+                val result = BasicAttribTextStructTest()
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            X_ATTRIB_DESCRIPTOR.index -> result.xa = deserializeInt()
+                            X_VALUE_DESCRIPTOR.index -> result.xt = deserializeString()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            null -> break@loop
+                            Deserializer.FieldIterator.UNKNOWN_FIELD -> {
+                                skipValue()
+                                result.unknownFieldCount++
+                            }
+                            else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        }
+                        // skipValue() // This performs two tasks.  For unknown fields, it consumes the node.  For found fields, it consumes the end token.
                     }
                 }
                 return result
