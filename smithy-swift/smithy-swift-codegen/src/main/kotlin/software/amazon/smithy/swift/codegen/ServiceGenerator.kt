@@ -58,7 +58,7 @@ class ServiceGenerator(
             // val errorTypeName = "${op.defaultName()}OperationError"
             val errorTypeName = "OperationError"
             val outputShapeName = getOperationOutputShapeName(symbolProvider, opIndex, op)
-            val outputParam = outputShapeName.map { "completion: (SdkResult<$it, $errorTypeName>) -> Void" }
+            val outputParam = "completion: (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
 
             var paramTerminator = ""
             if (inputParam != "") {
@@ -84,8 +84,7 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op)
             val outputShapeName = outputShape.map { symbolProvider.toSymbol(it).name }
             return outputShapeName.orElseGet {
-                val inputShapeName = opIndex.getInput(op).map { symbolProvider.toSymbol(it).name }
-                return@orElseGet inputShapeName.get().replace("Input", "Output")
+                return@orElseGet "${op.defaultName()}Response"
             }
         }
 

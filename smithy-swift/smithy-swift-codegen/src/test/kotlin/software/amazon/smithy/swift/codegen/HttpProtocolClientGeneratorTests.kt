@@ -74,6 +74,9 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
@@ -108,6 +111,9 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
@@ -127,7 +133,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     @Test
     fun `it renders non-streaming operation with no output`() {
         commonTestContents.shouldContainOnlyOnce(
-            "public func getFooNoOutput(input: GetFooRequest)\n" +
+            "public func getFooNoOutput(input: GetFooRequest, completion: (SdkResult<GetFooNoOutputResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
                     "        let path = \"/foo-no-output\"\n" +
                     "        let method = HttpMethodType.get\n" +
@@ -146,8 +152,11 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
-                    "                            let result: Result<nil, SdkError<OperationError>>\n" +
+                    "                            let result: Result<GetFooNoOutputResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
                     "                        }\n" +
@@ -185,6 +194,9 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
@@ -224,6 +236,9 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
                     "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
@@ -259,6 +274,9 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                case .success(let httpResp):\n" +
                     "                    if httpResp.statusCode == HttpStatusCode.ok {\n" +
                     "                        if case .data(let data) = httpResp.content {\n" +
+                    "                            guard let data = data else {\n" +
+                    "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
+                    "                            }\n" +
                     "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
                     "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +

@@ -68,9 +68,8 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     extension SmokeTestRequest: HttpRequestBinding {
                         public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
                             var queryItems: [URLQueryItem] = [URLQueryItem]()
-                            var queryItem: URLQueryItem
                             if let query1 = query1 {
-                                queryItem = URLQueryItem(name: "Query1", value: String(query1))
+                                let queryItem = URLQueryItem(name: "Query1", value: String(query1))
                                 queryItems.append(queryItem)
                             }
                             let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
