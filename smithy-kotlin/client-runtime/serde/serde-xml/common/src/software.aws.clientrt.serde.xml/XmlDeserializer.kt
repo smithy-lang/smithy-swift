@@ -32,7 +32,7 @@ class XmlDeserializer(
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
-        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //Consume the container start tag
+        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
 
         return XmlFieldIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
     }
@@ -43,7 +43,7 @@ class XmlDeserializer(
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
-        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //Consume the container start tag
+        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
         require(descriptor.serialName == beginNode.id.name) { "Expected list start tag of ${beginNode.id} but got ${descriptor.serialName}" }
 
         return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
@@ -55,7 +55,7 @@ class XmlDeserializer(
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
-        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) //Consume the container start tag
+        val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
         require(descriptor.serialName == beginNode.id.name) { "Expected map start tag of ${beginNode.id} but got ${descriptor.serialName}" }
 
         return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
@@ -318,7 +318,6 @@ private class XmlFieldIterator(
         return allVisitedAttribsForTargetDescriptor == allAttribsOfTargetDescriptor
     }
 
-
     // Return the next field to parse. First looking for attributes and then once all attribues are consumed, taking the TEXT
     // This function mutates class-level state regarding what attributes have already been seen.
     private fun findFieldIndex(fields: List<SdkFieldDescriptor>, nextToken: XmlToken.BeginElement): SdkFieldDescriptor? {
@@ -326,7 +325,7 @@ private class XmlFieldIterator(
         val unhandledAttribFields = fields
             .filter { field -> !handledFields.contains(field) }
             .filter { field -> field.findTrait<XmlAttribute>() != null }
-            //FIXME: The following filter needs to take XML namespace into account when matching.
+            // FIXME: The following filter needs to take XML namespace into account when matching.
             .filter { field -> field.serialName == nextToken.id.name }
 
         // If present, take the next and return
@@ -338,8 +337,8 @@ private class XmlFieldIterator(
             return nextAttribField
         }
 
-        //FIXME: The following filter needs to take XML namespace into account when matching.
-        //If no attributes are present, take the field matching the serialName
+        // FIXME: The following filter needs to take XML namespace into account when matching.
+        // If no attributes are present, take the field matching the serialName
         return descriptor.fields
             .find { it.serialName == nextToken.id.name && !handledFields.contains(it) }
             .also { descriptor -> if (descriptor != null) handledFields.add(descriptor) }
@@ -534,6 +533,6 @@ fun XmlStreamReader.consumeListWrapper(
 ) =
     this.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { token ->
         val listInfo = descriptor.expectTrait<XmlList>()
-        //NOTE: here we'll need to match on namespace too if we are to de/serialize with namespaces.
+        // NOTE: here we'll need to match on namespace too if we are to de/serialize with namespaces.
         require(token.id.name == listInfo.elementName) { "Expected ${listInfo.elementName} but found ${token.id}" }
     }

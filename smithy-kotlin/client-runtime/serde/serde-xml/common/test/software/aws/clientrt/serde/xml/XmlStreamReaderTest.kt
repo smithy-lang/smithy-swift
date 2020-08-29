@@ -108,23 +108,23 @@ class XmlStreamReaderTest {
             XmlToken.BeginElement("root"),
             XmlToken.Text(null),
             XmlToken.BeginElement("num"),
-            XmlToken.Text("1"), 
-            XmlToken.EndElement("num"), 
-            XmlToken.Text(null), 
-            XmlToken.BeginElement("str"), 
-            XmlToken.Text("string"), 
-            XmlToken.EndElement("str"), 
-            XmlToken.Text(null), 
-            XmlToken.BeginElement("list"), 
-            XmlToken.Text(null), 
-            XmlToken.BeginElement("value"), 
-            XmlToken.Text("1"), 
-            XmlToken.EndElement("value"), 
-            XmlToken.Text(null), 
-            XmlToken.BeginElement("value"), 
-            XmlToken.Text("2.3456"), 
-            XmlToken.EndElement("value"), 
-            XmlToken.Text(null), 
+            XmlToken.Text("1"),
+            XmlToken.EndElement("num"),
+            XmlToken.Text(null),
+            XmlToken.BeginElement("str"),
+            XmlToken.Text("string"),
+            XmlToken.EndElement("str"),
+            XmlToken.Text(null),
+            XmlToken.BeginElement("list"),
+            XmlToken.Text(null),
+            XmlToken.BeginElement("value"),
+            XmlToken.Text("1"),
+            XmlToken.EndElement("value"),
+            XmlToken.Text(null),
+            XmlToken.BeginElement("value"),
+            XmlToken.Text("2.3456"),
+            XmlToken.EndElement("value"),
+            XmlToken.Text(null),
             XmlToken.BeginElement("value"),
             XmlToken.Text("3"),
             XmlToken.EndElement("value"),
@@ -162,7 +162,7 @@ class XmlStreamReaderTest {
             XmlToken.EndDocument
         )
 
-         assertEquals(expected, actual)
+        assertEquals(expected, actual)
     }
 
     @Test

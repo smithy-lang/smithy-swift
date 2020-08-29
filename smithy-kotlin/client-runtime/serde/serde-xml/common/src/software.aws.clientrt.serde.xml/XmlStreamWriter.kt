@@ -5,7 +5,6 @@
 
 package software.aws.clientrt.serde.xml
 
-
 /**
  * Defines an interface to serialization of an XML Infoset.
  */

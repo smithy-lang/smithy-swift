@@ -14,9 +14,9 @@
  */
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlSerializerTest {
@@ -143,7 +143,7 @@ class XmlSerializerTest {
 }
 
 data class Primitives(
-    //val unit: Unit,
+    // val unit: Unit,
     val boolean: Boolean,
     val byte: Byte,
     val short: Short,
@@ -153,7 +153,7 @@ data class Primitives(
     val double: Double,
     val char: Char,
     val string: String,
-    //val unitNullable: Unit?,
+    // val unitNullable: Unit?,
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
@@ -195,6 +195,5 @@ data class Primitives(
 
 val data = Primitives(
     true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-    listOf(1,2,3)
+    listOf(1, 2, 3)
 )
-

@@ -38,7 +38,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
-        xmlWriter.startTag(descriptor?.serialName  ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+        xmlWriter.startTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
         val mapTrait = descriptor.expectTrait<XmlMap>()
         if (!mapTrait.flattened) xmlWriter.startTag(
             mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
@@ -219,7 +219,6 @@ private class XmlMapSerializer(
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
-
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
         TODO("Not yet implemented")
     }
@@ -227,13 +226,14 @@ private class XmlMapSerializer(
     private fun serializePrimitive(value: Any?) {
         val nodeName = descriptor.expectTrait<XmlMap>().valueName
         xmlWriter.startTag(nodeName)
-        xmlWriter.text(value?.toString() ?: "") //NOTE: this may not be the correct serialization format for `null`
+        xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
         xmlWriter.endTag(nodeName)
     }
 }
 
 private class XmlListSerializer(
-    private val descriptor: SdkFieldDescriptor, private val xmlWriter: XmlStreamWriter,
+    private val descriptor: SdkFieldDescriptor,
+    private val xmlWriter: XmlStreamWriter,
     private val xmlSerializer: Serializer
 ) : ListSerializer {
 
@@ -268,7 +268,7 @@ private class XmlListSerializer(
     private fun serializePrimitive(value: Any?) {
         val nodeName = descriptor.expectTrait<XmlList>().elementName
         xmlWriter.startTag(nodeName)
-        xmlWriter.text(value?.toString() ?: "") //NOTE: this may not be the correct serialization format for `null`
+        xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
         xmlWriter.endTag(nodeName)
     }
 }

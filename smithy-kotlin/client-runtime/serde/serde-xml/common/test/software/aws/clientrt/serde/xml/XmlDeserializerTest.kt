@@ -16,9 +16,9 @@ package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
-import software.aws.clientrt.serde.*
 import kotlin.math.abs
 import kotlin.test.*
+import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerTest {
@@ -260,7 +260,6 @@ class XmlDeserializerTest {
         val expected = mapOf("key1" to 1, "key2" to 2, "key3" to 3)
         actual.shouldContainExactly(expected)
     }
-
 
     class BasicStructTest {
         var x: Int? = null
@@ -506,7 +505,7 @@ class XmlDeserializerTest {
                             INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializeInt()
                             // deeply nested unknown field
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
-                                //here we need to recurse out of the unknown node, the following doesnt work:
+                                // here we need to recurse out of the unknown node, the following doesnt work:
                                 skipValue()
                             }
                             null -> break@loop
@@ -547,7 +546,6 @@ class XmlDeserializerTest {
                         }
                     }
                 }
-
 
                 return nested
             }
@@ -684,7 +682,6 @@ class XmlDeserializerTest {
                 }
             }
         }
-
 
         assertEquals(1, sink.intField)
         assertEquals(2L, sink.longField)

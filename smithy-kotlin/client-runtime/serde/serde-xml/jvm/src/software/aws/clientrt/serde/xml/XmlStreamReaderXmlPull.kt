@@ -5,10 +5,10 @@
 
 package software.aws.clientrt.serde.xml
 
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
 
 private class XmlStreamReaderXmlPull(
     payload: ByteArray,
@@ -75,7 +75,7 @@ private class XmlStreamReaderXmlPull(
             .toMap()
     }
 
-    //This does one of three things:
+    // This does one of three things:
     // 1: if the next token is BeginElement, then that node is skipped
     // 2: if the next token is Text or EndElement, read tokens until the end of the current node is exited
     // 3: if the next token is EndDocument, NOP

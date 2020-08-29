@@ -75,7 +75,6 @@ class XmlStreamWriterTest {
         writer.endTag("delete")
         writer.endTag("batch")
 
-
         // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
         val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
 
@@ -95,7 +94,6 @@ fun writeXmlStream(messages: List<Message>): ByteArray? {
 fun writeMessagesArray(writer: XmlStreamWriter, messages: List<Message>): ByteArray? {
     writer.apply {
         startTag("messages")
-
     }
     for (message in messages) {
         writeMessage(writer, message)
@@ -120,7 +118,6 @@ fun writeMessage(writer: XmlStreamWriter, message: Message) {
             writer.startTag("geo")
             writer.endTag("geo")
         }
-
     }
     writeUser(writer, message.user)
     writer.endTag("message")

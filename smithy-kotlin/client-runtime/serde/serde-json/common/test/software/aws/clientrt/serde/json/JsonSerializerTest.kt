@@ -100,7 +100,7 @@ class JsonSerializerTest {
         data.serialize(json)
 
         assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
-        //assertEquals("""{"int":1,"long":2,"string":"Str0"}""", json.toByteArray().decodeToString())
+        // assertEquals("""{"int":1,"long":2,"string":"Str0"}""", json.toByteArray().decodeToString())
     }
 }
 
@@ -155,7 +155,7 @@ data class Primitives(
     }
 }
 
-val data =  Primitives(
+val data = Primitives(
     Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
     null, listOf(1, 2, 3)
 )

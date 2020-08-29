@@ -24,15 +24,15 @@ sealed class SerialKind {
     object Integer : SerialKind()
     object Long : SerialKind()
     object Double : SerialKind()
-    object String: SerialKind()
-    object Boolean: SerialKind()
-    object Byte: SerialKind()
-    object Char: SerialKind()
-    object Short: SerialKind()
-    object Float: SerialKind()
+    object String : SerialKind()
+    object Boolean : SerialKind()
+    object Byte : SerialKind()
+    object Char : SerialKind()
+    object Short : SerialKind()
+    object Float : SerialKind()
     object Map : SerialKind()
-    object List: SerialKind()
-    object Struct: SerialKind()
+    object List : SerialKind()
+    object Struct : SerialKind()
 
     override fun toString(): kotlin.String {
         return this::class.simpleName ?: "SerialKind"
@@ -65,4 +65,3 @@ open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var 
         return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
     }
 }
-
