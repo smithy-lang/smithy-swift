@@ -92,8 +92,7 @@ class ShapeValueGenerator(
                 .call { block() }
                 .dedent()
                 .writeInline("\n)")
-        }
-        else if (shape.isListShape) {
+        } else if (shape.isListShape) {
             writer.writeInline("[")
                 .indent()
                 .call { block() }

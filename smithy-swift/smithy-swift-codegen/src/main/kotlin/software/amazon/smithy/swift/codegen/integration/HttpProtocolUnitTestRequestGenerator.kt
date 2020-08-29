@@ -72,16 +72,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             // invoke the DSL builder for the input type
             writer.writeInline("\nlet input = ")
-                //.indent()
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
-                //.dedent()
                 .write("")
 
             writer.write("var actual = input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)", test.uri)
             writer.openBlock("do {")
-                .write("_ = try ${requestEncoder}.encodeHttpRequest(input, currentHttpRequest: &actual)")
+                .write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
                 .closeBlock("} catch let err {")
                 .indent()
                 .write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
@@ -140,7 +138,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.openBlock("assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in", "})") {
                     writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                     writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                    writer.write("${bodyAssertMethod}(expectedHttpBody!, actualHttpBody!)")
+                    writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
                 }
             }
         }
