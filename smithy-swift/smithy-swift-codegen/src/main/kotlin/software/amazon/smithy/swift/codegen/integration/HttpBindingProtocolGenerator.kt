@@ -51,7 +51,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * and implement (buildRequest) method
      */
     private fun renderInputRequestConformanceToHttpRequestBinding(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
-        if (op.input.isEmpty()) {
+        if (op.input.isEmpty) {
             return
         }
 

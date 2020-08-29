@@ -47,7 +47,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
         val delegator = SwiftDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), "mockHttp", delegator)
+        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
         return TestContext(ctx, manifest, generator)
     }
 
@@ -217,12 +217,12 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     var queryItem: URLQueryItem
                     if let queryTimestamp = queryTimestamp {
-                        queryItem = URLQueryItem(name: "qtime", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryTimestamp)))
+                        queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSecondsString()))
                         queryItems.append(queryItem)
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            queryItem = URLQueryItem(name: "qtimeList", value: String(DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.string(from: queryItemValue)))
+                            queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSecondsString()))
                             queryItems.append(queryItem)
                         }
                     }
@@ -230,10 +230,10 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/json")
                     if let headerEpoch = headerEpoch {
-                        headers.add(name: "X-Epoch", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerEpoch)))
+                        headers.add(name: "X-Epoch", value: String(headerEpoch.rfc5322String()))
                     }
                     if let headerHttpDate = headerHttpDate {
-                        headers.add(name: "X-Date", value: String(DateFormatter.rfc5322DateFormatter.string(from: headerHttpDate)))
+                        headers.add(name: "X-Date", value: String(headerHttpDate.rfc5322String()))
                     }
                     return HttpRequest(method: method, endpoint: endpoint, headers: headers)
                 }

@@ -86,8 +86,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
         for forbiddenQueryParam in forbiddenQueryParams {
-            XCTAssertFalse(queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
-                           "Forbidden Query:\(forbiddenQueryParam) exists in query items")
+            XCTAssertFalse(
+                queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
+                "Forbidden Query:\(forbiddenQueryParam) exists in query items"
+            )
         }
         
         let forbiddenHeaders = ["ForbiddenHeader"]

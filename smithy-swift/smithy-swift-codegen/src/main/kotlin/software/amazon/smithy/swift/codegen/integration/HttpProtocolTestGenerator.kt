@@ -54,7 +54,7 @@ class HttpProtocolTestGenerator(
                     }
 
                     val testClassName = "${operation.id.name.capitalize()}RequestTest"
-                    val testFilename = "$testClassName.swift"
+                    val testFilename = "./${ctx.settings.moduleName}Tests/${testClassName}.swift"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
                         // import dependencies
