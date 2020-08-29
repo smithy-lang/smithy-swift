@@ -39,15 +39,15 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         return this
     }
 
-    override fun endStruct(descriptor: SdkFieldDescriptor?) {
+    override fun endStruct() {
         jsonWriter.endObject()
     }
 
-    override fun endList(descriptor: SdkFieldDescriptor?) {
+    override fun endList() {
         jsonWriter.endArray()
     }
 
-    override fun endMap(descriptor: SdkFieldDescriptor?) {
+    override fun endMap() {
         jsonWriter.endObject()
     }
 

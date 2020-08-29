@@ -18,12 +18,17 @@ import software.aws.clientrt.serde.*
 
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
+    private var nodeStack = mutableListOf<String>()
+
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor?): StructSerializer {
         xmlWriter.startTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+
+        nodeStack.add(descriptor.serialName)
+
         return this
     }
 
@@ -41,8 +46,9 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         return XmlMapSerializer(descriptor, xmlWriter, this)
     }
 
-    override fun endStruct(descriptor: SdkFieldDescriptor?) {
-        xmlWriter.endTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+    override fun endStruct() {
+        check(nodeStack.isNotEmpty()) { "Expected nodeStack to have a value, but was empty." }
+        xmlWriter.endTag(nodeStack.removeAt(nodeStack.size - 1))
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
@@ -152,9 +158,7 @@ private class XmlMapSerializer(
     private val xmlSerializer: Serializer
 ) : MapSerializer {
 
-    override fun endMap(descriptor: SdkFieldDescriptor?) {
-        requireNotNull(descriptor)
-
+    override fun endMap() {
         val mapTrait = descriptor.expectTrait<XmlMap>()
         if (!mapTrait.flattened) xmlWriter.endTag(
             mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
@@ -233,8 +237,8 @@ private class XmlListSerializer(
     private val xmlSerializer: Serializer
 ) : ListSerializer {
 
-    override fun endList(descriptor: SdkFieldDescriptor?) {
-        xmlWriter.endTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+    override fun endList() {
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
