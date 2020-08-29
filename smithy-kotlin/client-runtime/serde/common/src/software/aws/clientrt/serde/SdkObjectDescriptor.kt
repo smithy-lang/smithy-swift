@@ -24,7 +24,10 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
     val fields: List<SdkFieldDescriptor> = builder.fields
 
     companion object {
-        const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT" //TODO: determine how to guard that reading this value from serialName results in error.
+        //TODO: determine how to guard that reading this value from serialName results in error.
+        // This value should never be read because JSON should never be looking for the name of a struct, etc,
+        // and XML will always be setting serialName.
+        const val ANONYMOUS_OBJECT_NAME: String = "ANONYMOUS_OBJECT"
 
         fun build(block: DslBuilder.() -> Unit): SdkObjectDescriptor = BuilderImpl().apply(block).build()
     }

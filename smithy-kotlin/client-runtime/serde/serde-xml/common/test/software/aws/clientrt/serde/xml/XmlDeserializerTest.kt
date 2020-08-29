@@ -167,7 +167,7 @@ class XmlDeserializerTest {
     fun `it handles maps with default node names`() {
         val payload = """
             <Foo>
-                <map>
+                <values>
                     <entry>
                         <key>key1</key>
                         <value>1</value>
@@ -176,7 +176,7 @@ class XmlDeserializerTest {
                         <key>key2</key>
                         <value>2</value>
                     </entry>
-                </map>
+                </values>
             </Foo>
         """.flatten().encodeToByteArray()
         val fieldDescriptor = SdkFieldDescriptor("Foo", SerialKind.Map, 0, XmlMap())
