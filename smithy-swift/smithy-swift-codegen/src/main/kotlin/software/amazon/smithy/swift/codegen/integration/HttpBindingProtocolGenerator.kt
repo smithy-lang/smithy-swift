@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import java.util.logging.Logger
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -72,7 +73,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val prefixHeaderBindings = requestBindings.values
             .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
-        ctx.delegator.useShapeWriter(inputShape) { writer ->
+        val rootNamespace = ctx.settings.moduleName
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./${rootNamespace}/models/${inputShapeName}+HttpRequestBinding.swift")
+            .name(inputShapeName)
+            .build()
+
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
             writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
             writer.openBlock("extension ${inputShapeName}: HttpRequestBinding {", "}") {

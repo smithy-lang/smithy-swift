@@ -19,7 +19,9 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering
@@ -76,7 +78,6 @@ interface SwiftIntegration {
         return symbolProvider
     }
 
-    /*
     /**
      * Called each time a writer is used that defines a shape.
      *
@@ -113,7 +114,9 @@ interface SwiftIntegration {
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
         definedShape: Shape
-    )
+    ) {
+        //pass
+    }
 
     /**
      * Writes additional files.
@@ -138,12 +141,12 @@ interface SwiftIntegration {
      * to write and a closure that receives a
      * [SwiftWriter] to perform the actual writing to the file.
      */
-    fun writeAdditionalFiles(
-        settings: SwiftSettings,
-        model: Model?,
-        symbolProvider: SymbolProvider?,
-        writerFactory: (String, (SwiftWriter) -> Unit) -> Unit
-    )
+//    fun writeAdditionalFiles(
+//        settings: SwiftSettings,
+//        model: Model?,
+//        symbolProvider: SymbolProvider?,
+//        writerFactory: (String, (SwiftWriter) -> Unit) -> Unit
+//    )
 
     /**
      * Adds additional client config interface fields.
@@ -186,13 +189,13 @@ interface SwiftIntegration {
      * @param symbolProvider Symbol provider used for codegen.
      * @param writer TypeScript writer to write to.
      */
-    fun addConfigInterfaceFields(
-        settings: SwiftSettings,
-        model: Model,
-        symbolProvider: SymbolProvider,
-        writer: SwiftWriter
-    )
-    */
+//    fun addConfigInterfaceFields(
+//        settings: SwiftSettings,
+//        model: Model,
+//        symbolProvider: SymbolProvider,
+//        writer: SwiftWriter
+//    )
+
     /**
      * Get the list of protocol generators to register
      */

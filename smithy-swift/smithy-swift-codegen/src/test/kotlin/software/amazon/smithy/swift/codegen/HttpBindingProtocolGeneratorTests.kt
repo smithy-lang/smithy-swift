@@ -62,7 +62,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates smoke test request serializer`() {
-        val contents = getModelFileContents("Example", "SmokeTestRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -91,7 +91,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit string payloads`() {
-        val contents = getModelFileContents("Example", "ExplicitStringRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStringRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -110,7 +110,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit blob payloads`() {
-        val contents = getModelFileContents("Example", "ExplicitBlobRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -129,7 +129,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit streaming blob payloads`() {
-        val contents = getModelFileContents("Example", "ExplicitBlobStreamRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobStreamRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -148,7 +148,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes explicit struct payloads`() {
-        val contents = getModelFileContents("Example", "ExplicitStructRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -167,7 +167,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes operation inputs with lists`() {
-        val contents = getModelFileContents("Example", "ListInputRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ListInputRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -186,7 +186,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it serializes enums as raw values`() {
-        val contents = getModelFileContents("Example", "EnumInputRequest.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputRequest+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
