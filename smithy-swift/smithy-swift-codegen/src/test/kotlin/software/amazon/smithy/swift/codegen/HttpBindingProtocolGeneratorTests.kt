@@ -35,7 +35,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTests : TestsBase() {
-    val model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
@@ -45,6 +45,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val serviceShapeIdWithNamespace = "com.test#Example"
         val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
         val delegator = SwiftDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)

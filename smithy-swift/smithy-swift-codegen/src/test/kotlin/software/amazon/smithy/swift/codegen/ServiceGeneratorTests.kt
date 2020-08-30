@@ -29,7 +29,7 @@ class ServiceGeneratorTests : TestsBase() {
     private val commonTestContents: String
 
     init {
-        val model = createModelFromSmithy("service-generator-test-operations.smithy")
+        var model = createModelFromSmithy("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val writer = SwiftWriter("test")
@@ -38,6 +38,7 @@ class ServiceGeneratorTests : TestsBase() {
         val context = buildMockPluginContext(model, manifest)
 
         val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
         val generator = ServiceGenerator(settings, model, provider, writer, emptyList())
         generator.render()
 

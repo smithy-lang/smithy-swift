@@ -25,12 +25,14 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     private val commonTestContents: String
 
     init {
-        val model = createModelFromSmithy("service-generator-test-operations.smithy")
+        var model = createModelFromSmithy("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val service = model.getShape(ShapeId.from("smithy.example#Example")).get().asServiceShape().get()
         val writer = SwiftWriter("test")
-
+        val serviceShapeIdWithNamespace = "smithy.example#Example"
+        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
         val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf())
         generator.render()
         commonTestContents = writer.toString()
@@ -63,7 +65,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
                     "        } catch let err {\n" +
-                    "            completion(.failure(.client(err)))\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
@@ -77,7 +79,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
@@ -96,12 +98,16 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     @Test
     fun `it renders non-streaming operation with no input`() {
         commonTestContents.shouldContainOnlyOnce(
-            "public func getFooNoInput(completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
+            "public func getFooNoInput(input: GetFooNoInputInput, completion: (SdkResult<GetFooResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
                     "        let path = \"/foo-no-input\"\n" +
-                    "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)\n" +
-                    "        let headers = HttpHeaders()\n" +
-                    "        let request = HttpRequest(method: .get, endpoint: endpoint, headers: headers)\n" +
+                    "        let method = HttpMethodType.get\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
+                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -114,7 +120,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
@@ -133,7 +139,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     @Test
     fun `it renders non-streaming operation with no output`() {
         commonTestContents.shouldContainOnlyOnce(
-            "public func getFooNoOutput(input: GetFooRequest, completion: (SdkResult<GetFooNoOutputResponse, OperationError>) -> Void)\n" +
+            "public func getFooNoOutput(input: GetFooRequest, completion: (SdkResult<GetFooNoOutputOutput, OperationError>) -> Void)\n" +
                     "    {\n" +
                     "        let path = \"/foo-no-output\"\n" +
                     "        let method = HttpMethodType.get\n" +
@@ -141,7 +147,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
                     "        } catch let err {\n" +
-                    "            completion(.failure(.client(err)))\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
@@ -155,8 +161,8 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
-                    "                            let result: Result<GetFooNoOutputResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
+                    "                            let result: Result<GetFooNoOutputOutput, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
                     "                        }\n" +
@@ -183,7 +189,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
                     "        } catch let err {\n" +
-                    "            completion(.failure(.client(err)))\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
@@ -197,7 +203,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
                     "                            let result: Result<GetFooResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
@@ -225,7 +231,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        do {\n" +
                     "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
                     "        } catch let err {\n" +
-                    "            completion(.failure(.client(err)))\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
                     "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
@@ -239,7 +245,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
                     "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +
@@ -259,12 +265,16 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
     fun `it renders operation with no input and streaming output`() {
         // TODO:: how do we deserialize the streaming output to desired response object using streamingHandler?
         commonTestContents.shouldContainOnlyOnce(
-            "public func getFooStreamingOutputNoInput(streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)\n" +
+            "public func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)\n" +
                     "    {\n" +
                     "        let path = \"/foo-streaming-output-no-input\"\n" +
-                    "        let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)\n" +
-                    "        let headers = HttpHeaders()\n" +
-                    "        let request = HttpRequest(method: .post, endpoint: endpoint, headers: headers)\n" +
+                    "        let method = HttpMethodType.post\n" +
+                    "        var request = input.buildHttpRequest(method: method, path: path)\n" +
+                    "        do {\n" +
+                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
+                    "        } catch let err {\n" +
+                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
+                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -277,7 +287,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "                            guard let data = data else {\n" +
                     "                                completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))\n" +
                     "                            }\n" +
-                    "                            let responsePayload = ResponsePayload(body: data, decoder: JSONDecoder())\n" +
+                    "                            let responsePayload = ResponsePayload(body: data, decoder: self.decoder)\n" +
                     "                            let result: Result<GetFooStreamingResponse, SdkError<OperationError>> = responsePayload.decode()\n" +
                     "                                .mapError { failure in SdkError<OperationError>.client(failure) }\n" +
                     "                            completion(result)\n" +

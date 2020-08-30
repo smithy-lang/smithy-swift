@@ -25,6 +25,7 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
@@ -33,7 +34,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
     private val model: Model
-    private val modelWithoutTraitShapes: Model = context.modelWithoutTraitShapes
+    private val modelWithoutTraitShapes: Model
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
@@ -53,8 +54,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
-        model = resolvedModel
+        // Add operation input/output shapes if not provided for future evolution of sdk
+        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName);
 
+        model = resolvedModel
+        modelWithoutTraitShapes = ModelTransformer.create().getModelWithoutTraitShapes(model)
         service = settings.getService(model)
 
         var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)

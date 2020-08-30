@@ -156,7 +156,7 @@ class HttpProtocolClientGenerator(
             writer.write("try encoder.encodeHttpRequest(input, currentHttpRequest: &request)")
         }
         writer.indent()
-        writer.write("completion(.failure(.client(err)))")
+        writer.write("completion(.failure(.client(.serializationFailed(err.localizedDescription))))")
         writer.dedent()
         writer.write("}")
     }
@@ -185,12 +185,11 @@ class HttpProtocolClientGenerator(
             .call {
                 writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
                     writer.openBlock("if case .data(let data) = httpResp.content {", "}") {
-                        // TODO:: use HttpFeature to fetch this
                         writer.openBlock("guard let data = data else {", "}") {
                                 writer.write("completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))")
                         }
-                        val decoderInstance = "JSONDecoder()"
-                        writer.write("let responsePayload = ResponsePayload(body: data, decoder: $decoderInstance)")
+
+                        writer.write("let responsePayload = ResponsePayload(body: data, decoder: self.decoder)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case
                         val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"

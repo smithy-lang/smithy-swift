@@ -204,7 +204,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
-        // TODO create operation type
         return createSymbolBuilder(shape, "func").build()
     }
 

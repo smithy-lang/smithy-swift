@@ -75,7 +75,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useShapeWriter(inputShape) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
             writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
-            writer.openBlock("extension ${inputShapeName!!.get()}: HttpRequestBinding {", "}") {
+            writer.openBlock("extension ${inputShapeName}: HttpRequestBinding {", "}") {
                 writer.openBlock("public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {", "}") {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately

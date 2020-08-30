@@ -17,7 +17,7 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.*
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -47,45 +47,71 @@ class ServiceGenerator(
         /**
          * Renders the definition of operation
          */
-        fun renderOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape, insideProtocol: Boolean = false) {
+        fun renderOperationDefinition(
+            model: Model,
+            symbolProvider: SymbolProvider,
+            writer: SwiftWriter,
+            opIndex: OperationIndex,
+            op: OperationShape,
+            insideProtocol: Boolean = false
+        ) {
 
             val operationName = op.camelCaseName()
 
-            val inputShapeName = getOperationInputShapeName(symbolProvider, opIndex, op)
-            val inputParam = inputShapeName?.map { "input: $it" }?.orElse("")
+//            if (!opIndex.getInput(op).isPresent) {
+//                // Theoretically this shouldn't ever get hit since we automatically insert synthetic inputs / outputs.
+//                throw CodegenException(
+//                    "Operations are required to have input shapes in order to allow for future evolution."
+//                );
+//            }
+            val inputShape = opIndex.getInput(op).get()
+            val inputShapeName = symbolProvider.toSymbol(inputShape).name
+            val inputParam = "input: $inputShapeName"
+//            if (!opIndex.getOutput(op).isPresent) {
+//                throw CodegenException(
+//                    "Operations are required to have output shapes in order to allow for future evolution."
+//                );
+//            }
+            val outputShape = opIndex.getOutput(op).get()
+            val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
             // TODO:: code generate operation specific errors
             // val errorTypeName = "${op.defaultName()}OperationError"
             val errorTypeName = "OperationError"
-            val outputShapeName = getOperationOutputShapeName(symbolProvider, opIndex, op)
+
             val outputParam = "completion: (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
 
-            var paramTerminator = ""
-            if (inputParam != "") {
-                paramTerminator = ", "
-            }
+            val paramTerminator = ", "
+
             writer.writeShapeDocs(op)
 
             val hasOutputStream = operationHasOutputStream(model, opIndex, op)
             val accessSpecifier = if (insideProtocol) "" else "public "
             if (!hasOutputStream) {
-                writer.write("${accessSpecifier}func \$L(\$L${paramTerminator}\$L)", operationName, inputParam, outputParam)
+                writer.write(
+                    "${accessSpecifier}func \$L(\$L${paramTerminator}\$L)",
+                    operationName,
+                    inputParam,
+                    outputParam
+                )
             } else {
-                writer.write("${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)", operationName, inputParam, outputParam)
+                writer.write(
+                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)",
+                    operationName,
+                    inputParam,
+                    outputParam
+                )
             }
         }
 
-        fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): Optional<String>? {
-            val inputShape = opIndex.getInput(op)
-            return inputShape.map { symbolProvider.toSymbol(it).name }
+        fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
+            val inputShape = opIndex.getInput(op).get()
+            return symbolProvider.toSymbol(inputShape).name
         }
 
         fun getOperationOutputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
-            val outputShape = opIndex.getOutput(op)
-            val outputShapeName = outputShape.map { symbolProvider.toSymbol(it).name }
-            return outputShapeName.orElseGet {
-                return@orElseGet "${op.defaultName()}Response"
-            }
+            val outputShape = opIndex.getOutput(op).get()
+            return symbolProvider.toSymbol(outputShape).name
         }
 
         fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
