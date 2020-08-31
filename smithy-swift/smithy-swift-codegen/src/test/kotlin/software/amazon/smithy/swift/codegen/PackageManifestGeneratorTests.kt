@@ -102,8 +102,17 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "                \"BigNumber\", \"ClientRuntime\"\n" +
                     "            ],\n" +
                     "            path: \"./MockSDK\"\n" +
+                    "        ),\n" +
+                    "        .testTarget(\n" +
+                    "            name: \"MockSDKTests\",\n" +
+                    "            dependencies: [\n" +
+                    "                \"MockSDK\",\n" +
+                    "                \"SmithyTestUtil\"\n" +
+                    "            ],\n" +
+                    "            path: \"./MockSDKTests\"\n" +
                     "        )\n" +
-                    "    ]")
+                    "    ]"
+            )
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {

@@ -100,7 +100,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
                 service,
                 symbolProvider,
                 integrations,
-                protocolGenerator.protocolName,
+                protocolGenerator.protocol,
                 writers
             )
 

@@ -104,7 +104,7 @@ interface ProtocolGenerator {
         val service: ServiceShape,
         val symbolProvider: SymbolProvider,
         val integrations: List<SwiftIntegration>,
-        val protocolName: String,
+        val protocol: ShapeId,
         val delegator: SwiftDelegator
     )
 }

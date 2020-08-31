@@ -28,7 +28,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          path: String,
                                          headers: [String: String],
                                          queryParams: [String],
-                                         body: String,
+                                         body: String?,
                                          host: String) -> HttpRequest {
         var queryItems = [URLQueryItem]()
         var httpHeaders = HttpHeaders()
@@ -43,6 +43,12 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        
+        guard let body = body else {
+            return HttpRequest(method: method,
+                               endpoint: endPoint,
+                               headers: httpHeaders)
+        }
         let httpBody = HttpBody.data(body.data(using: .utf8))
         return HttpRequest(method: method,
                            endpoint: endPoint,
@@ -92,6 +98,32 @@ open class HttpRequestTestBase: XCTestCase {
         
         // assert the contents of HttpBody match
         assertEqualHttpBody(expected.body, actual.body)
+    }
+    
+    /**
+    Asserts `HttpBody` objects with Data objects match
+    /// - Parameter expected: Expected `HttpBody`
+    /// - Parameter actual: Actual `HttpBody` to compare against
+    */
+    public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody) {
+        if case .data(let actualData) = actual {
+            if case .data(let expectedData) = expected {
+                guard let expectedData  = expectedData else {
+                    XCTAssertNil(actualData, "expected data in HttpBody is nil but actual is not")
+                    return
+                }
+                
+                guard let actualData = actualData else {
+                    XCTFail("actual data in HttpBody is nil but expected is not")
+                    return
+                }
+                XCTAssertEqual(expectedData, actualData, "The expected and Actual data inside the HttpBody do not match")
+            } else {
+                XCTFail("The expected HttpBody is not Data Type")
+            }
+        } else {
+            XCTFail("The actual HttpBody is not Data Type")
+        }
     }
     
     /**

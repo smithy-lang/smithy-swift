@@ -88,6 +88,18 @@ class SwiftDelegator(
         writerConsumer(writer)
     }
 
+    /**
+     * Gets a previously created test file writer or creates a new one if needed
+     * and adds a new line if the writer already exists.
+     *
+     * @param filename Name of the file to create.
+     * @param block Lambda that accepts and works with the file.
+     */
+    fun useTestFileWriter(filename: String, namespace: String, block: (SwiftWriter) -> Unit) {
+        val writer: SwiftWriter = checkoutWriter(filename)
+        block(writer)
+    }
+
     private fun checkoutWriter(filename: String): SwiftWriter {
         val formattedFilename = Paths.get(filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
