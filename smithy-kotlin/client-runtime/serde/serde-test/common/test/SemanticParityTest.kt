@@ -2,6 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerializer
@@ -9,8 +11,6 @@ import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerializer
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @ExperimentalStdlibApi
 class SemanticParityTest {
@@ -18,25 +18,25 @@ class SemanticParityTest {
     @Test
     fun `xml deserializes into object form then deserializes to json then serializes to object form then deserializes to original xml`() {
         for (test in getTests()) {
-            //xml
+            // xml
             val xmlPayload = test.xmlSerialization
 
-            //object
+            // object
             val xmlDeserializer = XmlDeserializer(xmlPayload.encodeToByteArray())
             val bst = test.deserialize(xmlDeserializer)
 
-            //json
+            // json
             val jsonSerializer = JsonSerializer()
             bst.serialize(jsonSerializer)
             val jsonPayload = jsonSerializer.toByteArray().decodeToString()
 
-            //object
+            // object
             val jsonDeserializer = JsonDeserializer(jsonPayload.encodeToByteArray())
             val bst2 = test.deserialize(jsonDeserializer)
 
             assertEquals(bst, bst2)
 
-            //xml - compare
+            // xml - compare
             val xmlSerializer = XmlSerializer()
             bst2.serialize(xmlSerializer)
             val xmlPayload2 = xmlSerializer.toByteArray().decodeToString()
@@ -48,25 +48,25 @@ class SemanticParityTest {
     @Test
     fun `json deserializes into object form then deserializes to xml then serializes to object form then deserializes to original json`() {
         for (test in getTests()) {
-            //json
+            // json
             val jsonPayload = test.jsonSerialization
 
-            //object
+            // object
             val jsonDeserializer = JsonDeserializer(jsonPayload.encodeToByteArray())
             val bst = test.deserialize(jsonDeserializer)
 
-            //xml
+            // xml
             val xmlSerializer = XmlSerializer()
             bst.serialize(xmlSerializer)
             val xmlPayload = xmlSerializer.toByteArray().decodeToString()
 
-            //object
+            // object
             val xmlDeserializer = XmlDeserializer(xmlPayload.encodeToByteArray())
             val bst2 = test.deserialize(xmlDeserializer)
 
             assertEquals(bst, bst2)
 
-            //json - compare
+            // json - compare
             val jsonSerializer = JsonSerializer()
             bst2.serialize(jsonSerializer)
             val jsonPayload2 = jsonSerializer.toByteArray().decodeToString()

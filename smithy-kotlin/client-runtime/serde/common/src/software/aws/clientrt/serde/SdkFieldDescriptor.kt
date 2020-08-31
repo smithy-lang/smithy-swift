@@ -77,4 +77,3 @@ open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var 
         return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
     }
 }
-
