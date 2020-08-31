@@ -103,23 +103,24 @@ class ShapeValueGenerator(
     }
 
     private fun primitiveDecl(writer: SwiftWriter, shape: Shape, block: () -> Unit) {
-        var suffix = ""
-        when (shape.type) {
+        val suffix = when (shape.type) {
             ShapeType.STRING -> {
                 if (shape.hasTrait(EnumTrait::class.java)) {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$L(rawValue: ", symbol.name)
-                    suffix = ")!"
-                }
+                    ")!"
+                } else ""
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait(StreamingTrait::class.java)) {
                     // TODO:: handle streaming case
+                    ""
                 } else {
                     val symbol = symbolProvider.toSymbol(shape)
-                    suffix = ".data(using: .utf8)"
+                    ".data(using: .utf8)"
                 }
             }
+            else -> ""
         }
 
         block()
@@ -144,12 +145,8 @@ class ShapeValueGenerator(
                 val memberShape: Shape
                 when (currShape) {
                     is StructureShape -> {
-                        val member = if (currShape.asStructureShape().get().getMember(keyNode.value).isPresent) {
-                            currShape.asStructureShape().get().getMember(keyNode.value).get()
-                        } else {
-                            throw CodegenException(
-                                "unknown member ${currShape.id}.${keyNode.value}"
-                            )
+                        val member = currShape.getMember(keyNode.value).orElseThrow {
+                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
