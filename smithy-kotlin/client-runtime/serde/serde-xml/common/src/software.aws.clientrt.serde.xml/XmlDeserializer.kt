@@ -160,11 +160,8 @@ private class CompositeIterator(
         reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
             val mapInfo = descriptor.expectTrait<XmlMap>()
             if (!consumedWrapper && !mapInfo.flattened) {
-                val expectedWrapperName = descriptor.getWrapperName()
-                require(beginToken.id.name == expectedWrapperName) { "Expected entry wrapper ${descriptor.serialName} but got $expectedWrapperName" }
                 consumedWrapper = true
-                val nextToken = reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
-                require(nextToken.id.name == mapInfo.entry) { "Expected node ${mapInfo.entry} but got ${nextToken.id}" }
+                require(beginToken.id.name == mapInfo.entry) { "Expected node ${mapInfo.entry} but got ${beginToken.id}" }
                 reader.peekToken<XmlToken.BeginElement>()
             }
         }
@@ -518,7 +515,7 @@ private fun SdkFieldDescriptor.getWrapperName(): String {
         is SerialKind.Map -> {
             val mapTrait = this.expectTrait<XmlMap>()
             require(!mapTrait.flattened) { "Cannot get wrapper name of flattened map." }
-            mapTrait.parent ?: error("Expected XmlMap to contain non-null parent name.")
+            mapTrait.entry
         }
         else -> error("Unexpected descriptor kind: ${this::class}")
     }

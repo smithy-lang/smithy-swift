@@ -15,14 +15,12 @@ import software.aws.clientrt.serde.FieldTrait
  * Specifies that a field represents a Map structure and describes the XML node names used to encode that structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#map-serialization
  *
- * @param parent the name of the XML node that wraps the entire map, or null if the Map is flat.
  * @param entry the name of the entry node which wraps map entries.
  * @param keyName the name of the key field
  * @param valueName the name of the value field
  * @param flattened determines of the map has a flattened structure.  See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
  */
 data class XmlMap(
-    val parent: String? = "values",
     val entry: String = "entry",
     val keyName: String = "key",
     val valueName: String = "value",

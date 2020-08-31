@@ -38,11 +38,12 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
-        xmlWriter.startTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+        requireNotNull(descriptor)
         val mapTrait = descriptor.expectTrait<XmlMap>()
-        if (!mapTrait.flattened) xmlWriter.startTag(
-            mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
-        )
+
+        if (!mapTrait.flattened) {
+            xmlWriter.startTag(descriptor.serialName)
+        }
         return XmlMapSerializer(descriptor, xmlWriter, this)
     }
 
@@ -160,10 +161,9 @@ private class XmlMapSerializer(
 
     override fun endMap() {
         val mapTrait = descriptor.expectTrait<XmlMap>()
-        if (!mapTrait.flattened) xmlWriter.endTag(
-            mapTrait.parent ?: error("XmlMap trait not flattened and no parent defined.")
-        )
-        xmlWriter.endTag(descriptor.serialName)
+        if (!mapTrait.flattened) {
+            xmlWriter.endTag(descriptor.serialName)
+        }
     }
 
     fun generalEntry(key: String, valueFn: () -> Unit) {

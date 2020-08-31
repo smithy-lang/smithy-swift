@@ -166,20 +166,19 @@ class XmlDeserializerTest {
     @Test
     fun `it handles maps with default node names`() {
         val payload = """
-            <Foo>
-                <values>
-                    <entry>
-                        <key>key1</key>
-                        <value>1</value>
-                    </entry>
-                    <entry>
-                        <key>key2</key>
-                        <value>2</value>
-                    </entry>
-                </values>
-            </Foo>
+            <values>
+                <entry>
+                    <key>key1</key>
+                    <value>1</value>
+                </entry>
+                <entry>
+                    <key>key2</key>
+                    <value>2</value>
+                </entry>
+            </values>
         """.flatten().encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor("Foo", SerialKind.Map, 0, XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap())
+
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -198,21 +197,19 @@ class XmlDeserializerTest {
     @Test
     fun `it handles maps with custom node names`() {
         val payload = """
-            <Foo>
-                <mymap>
-                    <myentry>
-                        <mykey>key1</mykey>
-                        <myvalue>1</myvalue>
-                    </myentry>
-                    <myentry>
-                        <mykey>key2</mykey>
-                        <myvalue>2</myvalue>
-                    </myentry>
-                </mymap>
-            </Foo>
+            <mymap>
+                <myentry>
+                    <mykey>key1</mykey>
+                    <myvalue>1</myvalue>
+                </myentry>
+                <myentry>
+                    <mykey>key2</mykey>
+                    <myvalue>2</myvalue>
+                </myentry>
+            </mymap>
         """.flatten().encodeToByteArray()
         val fieldDescriptor =
-            SdkFieldDescriptor("Foo", SerialKind.Map, 0, XmlMap("mymap", "myentry", "mykey", "myvalue"))
+            SdkFieldDescriptor("mymap", SerialKind.Map, 0, XmlMap( "myentry", "mykey", "myvalue"))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -248,7 +245,7 @@ class XmlDeserializerTest {
             </Bar>
         """.flatten().encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor("Bar", SerialKind.Map, 0, XmlMap(null, "flatMap", "key", "value", true))
+            SdkFieldDescriptor("Bar", SerialKind.Map, 0, XmlMap( "flatMap", "key", "value", true))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -575,7 +572,7 @@ class XmlDeserializerTest {
             val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested", SerialKind.Struct)
             val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float)
             val MAP_FIELD_DESCRIPTOR =
-                SdkFieldDescriptor("map", SerialKind.Map, 0, XmlMap(null, "entry", "key", "value", true))
+                SdkFieldDescriptor("map", SerialKind.Map, 0, XmlMap( "entry", "key", "value", true))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 serialName = "payload"
