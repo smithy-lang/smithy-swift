@@ -56,7 +56,7 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
 
         // payload
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(SdkFieldDescriptor.ANONYMOUS_DESCRIPTOR) {
             input.name?.let { field(NAME_DESCRIPTOR, it) }
             input.functionVersion?.let { field(FUNCTION_VERSION_DESCRIPTOR, it) }
 

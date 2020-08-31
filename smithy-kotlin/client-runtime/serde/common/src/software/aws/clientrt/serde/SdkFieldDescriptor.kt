@@ -14,6 +14,13 @@
  */
 package software.aws.clientrt.serde
 
+/**
+ * This tag interface provides a mechanism to attach type-specific metadata to any field.
+ * See [software.aws.clientrt.serde.xml.XmlList] for an example implementation.
+ *
+ * For example, to specify that a list should be serialized in XML such that values are wrapped
+ * in a tag called "boo", pass an instance of XmlList to the FieldDescriptor of `XmlList(elementName="boo")`.
+ */
 interface FieldTrait
 
 /**
@@ -38,6 +45,7 @@ sealed class SerialKind {
         return this::class.simpleName ?: "SerialKind"
     }
 }
+
 /**
  * Metadata to describe how a given member property maps to serialization.
  *
@@ -45,6 +53,10 @@ sealed class SerialKind {
  */
 open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0, vararg val trait: FieldTrait) {
 
+    companion object {
+        // For use in formats which provide ways of encoding nameless entities.  Value is disregarded.
+        val ANONYMOUS_DESCRIPTOR = SdkFieldDescriptor("ANONYMOUS_FIELD", SerialKind.Struct)
+    }
     /**
      * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
      */
@@ -65,3 +77,4 @@ open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var 
         return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
     }
 }
+

@@ -17,6 +17,7 @@ package software.aws.clientrt.serde.json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.SdkFieldDescriptor.Companion.ANONYMOUS_DESCRIPTOR
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonSerializerTest {
@@ -37,7 +38,7 @@ class JsonSerializerTest {
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
                 field(descriptorB, b)
             }
         }
@@ -49,7 +50,7 @@ class JsonSerializerTest {
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
                 field(descriptorValue, value)
             }
         }
@@ -63,7 +64,7 @@ class JsonSerializerTest {
             B(3)
         )
         val json = JsonSerializer()
-        json.serializeList {
+        json.serializeList(ANONYMOUS_DESCRIPTOR) {
             for (value in obj) {
                 value.serialize(json)
             }
@@ -86,7 +87,7 @@ class JsonSerializerTest {
         )
         )
         val json = JsonSerializer()
-        json.serializeMap {
+        json.serializeMap(ANONYMOUS_DESCRIPTOR) {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
@@ -100,7 +101,6 @@ class JsonSerializerTest {
         data.serialize(json)
 
         assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
-        // assertEquals("""{"int":1,"long":2,"string":"Str0"}""", json.toByteArray().decodeToString())
     }
 }
 
@@ -134,7 +134,7 @@ data class Primitives(
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
+        serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
             serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)

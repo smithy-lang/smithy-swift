@@ -24,21 +24,20 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         return xmlWriter.bytes
     }
 
-    override fun beginStruct(descriptor: SdkFieldDescriptor?): StructSerializer {
-        xmlWriter.startTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+    override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
+        xmlWriter.startTag(descriptor.serialName)
 
         nodeStack.add(descriptor.serialName)
 
         return this
     }
 
-    override fun beginList(descriptor: SdkFieldDescriptor?): ListSerializer {
-        xmlWriter.startTag(descriptor?.serialName ?: error("Expected instance of SdkFieldDescriptor but passed null."))
+    override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
+        xmlWriter.startTag(descriptor.serialName)
         return XmlListSerializer(descriptor, xmlWriter, this)
     }
 
-    override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
-        requireNotNull(descriptor)
+    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         val mapTrait = descriptor.expectTrait<XmlMap>()
 
         if (!mapTrait.flattened) {

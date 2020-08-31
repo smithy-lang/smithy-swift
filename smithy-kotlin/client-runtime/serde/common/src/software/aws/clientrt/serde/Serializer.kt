@@ -22,21 +22,21 @@ interface Serializer : PrimitiveSerializer {
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginStruct(descriptor: SdkFieldDescriptor? = null): StructSerializer
+    fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer
 
     /**
      * Begin a list (i.e. in JSON this would be a '[') and return a [ListSerializer] that can be used to serialize the list's elements.
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginList(descriptor: SdkFieldDescriptor? = null): ListSerializer
+    fun beginList(descriptor: SdkFieldDescriptor): ListSerializer
 
     /**
      * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginMap(descriptor: SdkFieldDescriptor? = null): MapSerializer
+    fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
 
     /**
      * Consume the serializer and get the payload as a [ByteArray]
@@ -367,7 +367,7 @@ interface PrimitiveSerializer {
 /**
  * All components of a struct are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor? = null, crossinline block: StructSerializer.() -> Unit) {
+inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
     val struct = beginStruct(sdkFieldDescriptor)
     struct.block()
     struct.endStruct()
@@ -376,7 +376,7 @@ inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor? = 
 /**
  * All elements of a list are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor? = null, crossinline block: ListSerializer.() -> Unit) {
+inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: ListSerializer.() -> Unit) {
     val list = beginList(sdkFieldDescriptor)
     list.block()
     list.endList()
@@ -385,7 +385,7 @@ inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor? = nu
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor? = null, crossinline block: MapSerializer.() -> Unit) {
+inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
     val map = beginMap(sdkFieldDescriptor)
     map.block()
     map.endMap()

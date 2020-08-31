@@ -24,17 +24,17 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         return jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
     }
 
-    override fun beginStruct(descriptor: SdkFieldDescriptor?): StructSerializer {
+    override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         jsonWriter.beginObject()
         return this
     }
 
-    override fun beginList(descriptor: SdkFieldDescriptor?): ListSerializer {
+    override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         jsonWriter.beginArray()
         return this
     }
 
-    override fun beginMap(descriptor: SdkFieldDescriptor?): MapSerializer {
+    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         jsonWriter.beginObject()
         return this
     }
