@@ -282,10 +282,10 @@ class XmlDeserializerTest {
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++
+                                skipValue()
                             }
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
-                        skipValue() // This performs two tasks.  For unknown fields, it consumes the node.  For found fields, it consumes the end token.
                     }
                 }
                 return result
@@ -333,10 +333,10 @@ class XmlDeserializerTest {
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++
+                                skipValue()
                             }
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
-                        skipValue() // This performs two tasks.  For unknown fields, it consumes the node.  For found fields, it consumes the end token.
                     }
                 }
                 return result
@@ -395,10 +395,10 @@ class XmlDeserializerTest {
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++
+                                skipValue()
                             }
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
-                        // skipValue() // This performs two tasks.  For unknown fields, it consumes the node.  For found fields, it consumes the end token.
                     }
                 }
                 return result
@@ -486,7 +486,6 @@ class XmlDeserializerTest {
             }
 
             fun deserialize(deserializer: Deserializer): Nested2 {
-                // val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested2 = Nested2()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -502,7 +501,6 @@ class XmlDeserializerTest {
                             INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializeInt()
                             // deeply nested unknown field
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
-                                // here we need to recurse out of the unknown node, the following doesnt work:
                                 skipValue()
                             }
                             null -> break@loop
