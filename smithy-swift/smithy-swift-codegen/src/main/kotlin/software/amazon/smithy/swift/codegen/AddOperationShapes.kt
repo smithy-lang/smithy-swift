@@ -52,11 +52,12 @@ public final class AddOperationShapes {
             for (operation in operations) {
                 val operationId = operation.id
                 LOGGER.info("building unique input/output shapes for $operationId")
-
+                //TODO: decide between this approach vs additive approach with inputs. keeping for now but may remove at a later point in time
                 val inputShape = opIndex.getInput(operation)
                     .orElseGet {
                         emptyOperationStructure(operationId, "Input", moduleName)
                     }
+
                 val outputShape = opIndex.getOutput(operation)
                     .orElseGet {
                         emptyOperationStructure(operationId, "Output", moduleName)

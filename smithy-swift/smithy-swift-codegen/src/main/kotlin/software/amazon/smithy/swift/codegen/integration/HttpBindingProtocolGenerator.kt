@@ -20,6 +20,8 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.neighbor.RelationshipType
+import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.swift.codegen.*
@@ -32,7 +34,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
-        // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
             if (operation.input.isPresent) {
@@ -45,6 +46,96 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
+        // render conformance to Encodable for all input shapes and their nested types
+        val structuresNeedingEncodableConformance = resolveStructuresNeedingEncodableConformance(ctx)
+        for (structureShape in structuresNeedingEncodableConformance) {
+            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
+            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+            val rootNamespace = ctx.settings.moduleName
+            val encodeSymbol = Symbol.builder()
+                .definitionFile("./${rootNamespace}/models/${structSymbol.name}+Encodable.swift")
+                .name(structSymbol.name)
+                .build()
+            ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
+                writer.openBlock("extension ${structSymbol.name}: Encodable {", "}") {
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                    writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
+                    generateCodingKeysForStructure(ctx, writer, structureShape)
+                    //generate encode implementation
+                }
+            }
+        }
+    }
+    //can be overridden by protocol for things like json keys, xml keys etc.
+    open fun generateCodingKeysForStructure(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, shape: StructureShape) {
+        val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { ctx.symbolProvider.toMemberName(it) }
+        writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
+            for (member in membersSortedByName) {
+                val memberName = ctx.symbolProvider.toMemberName(member)
+                writer.write("case ${memberName}")
+            }
+        }
+        writer.write("")
+    }
+
+    override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
+        // render Decodable for all operation outputs and their nested types
+        // TODO("Not yet implemented")
+    }
+
+    /**
+     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types plus their nested types.
+     * Operation inputs and all nested types will conform to `Encodable`.
+     *
+     * @return The set of shapes that require a `Encodable` conformance and coding keys.
+     */
+    private fun resolveStructuresNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+        // all top level operation inputs conform to Encodable
+        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
+        //get them all and return as one set to loop through
+        val inputShapes = resolveOperationInputShapes(ctx)
+
+        val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
+            val inputShape = ctx.model.expectShape(it.input.get())
+            inputShape.members()
+            }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
+
+        val nested = walkNestedShapesRequiringSerde(ctx, topLevelMembers)
+
+        return inputShapes.plus(nested)
+    }
+
+    private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) as StructureShape }.toSet()
+    }
+
+    private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<StructureShape> {
+        val resolved = mutableSetOf<StructureShape>()
+        val walker = Walker(ctx.model)
+
+        // walk all the shapes in the set and find all other
+        // structs/unions (or collections thereof) in the graph from that shape
+        shapes.forEach { shape ->
+            walker.iterateShapes(shape) { relationship ->
+                when (relationship.relationshipType) {
+                    RelationshipType.MEMBER_TARGET,
+                    RelationshipType.STRUCTURE_MEMBER,
+                    RelationshipType.LIST_MEMBER,
+                    RelationshipType.SET_MEMBER,
+                    RelationshipType.MAP_VALUE,
+                    RelationshipType.UNION_MEMBER -> true
+                    else -> false
+                }
+            }.forEach { walkedShape ->
+                if (walkedShape.type == ShapeType.STRUCTURE) {
+                    resolved.add(walkedShape as StructureShape)
+                }
+            }
+        }
+        return resolved
     }
 
     /**
@@ -55,8 +146,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (op.input.isEmpty) {
             return
         }
-
-        val inputShape = ctx.model.expectShape(op.input.get())
         val opIndex = ctx.model.getKnowledge(OperationIndex::class.java)
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
@@ -198,11 +287,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        // render HttpDeserialize for all operation outputs, render normal serde for all shapes that appear as nested on any operation output
-        // TODO("Not yet implemented")
-    }
-
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
@@ -246,6 +330,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
             }
         }
-        return containedOperations
+       return containedOperations
     }
 }
