@@ -15,7 +15,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import java.util.logging.Logger
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -24,8 +23,23 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.utils.OptionalUtils
+import java.util.logging.Logger
+
+/**
+ * Checks to see if shape is in the body of the http request
+ */
+fun Shape.isInHttpBody(): Boolean {
+
+    val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java)
+            && !this.hasTrait(HttpHeaderTrait::class.java)
+            && !this.hasTrait(HttpPrefixHeadersTrait::class.java)
+            && !this.hasTrait(HttpQueryTrait::class.java)
+    return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
+}
 
 /**
  * Abstract implementation useful for all HTTP protocols
@@ -46,7 +60,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
-        // render conformance to Encodable for all input shapes and their nested types
+        // render conformance to Encodable for all input shapes with an http body and their nested types
         val structuresNeedingEncodableConformance = resolveStructuresNeedingEncodableConformance(ctx)
         for (structureShape in structuresNeedingEncodableConformance) {
             // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
@@ -66,16 +80,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
     }
-    //can be overridden by protocol for things like json keys, xml keys etc.
-    open fun generateCodingKeysForStructure(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, shape: StructureShape) {
-        val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { ctx.symbolProvider.toMemberName(it) }
+    //can be overridden by protocol for things like json name traits, xml keys etc.
+    open fun generateCodingKeysForStructure(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        shape: StructureShape
+    ) {
+        //get all members sorted by name and filter out either all members with other traits OR members with the payload trait
+        val membersSortedByName: List<MemberShape> = shape.allMembers.values
+            .sortedBy { ctx.symbolProvider.toMemberName(it) }
+            .filter { it.isInHttpBody() }
+        if (membersSortedByName.isEmpty()) { return }
         writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
                 val memberName = ctx.symbolProvider.toMemberName(member)
                 writer.write("case ${memberName}")
             }
         }
-        writer.write("")
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
@@ -90,10 +111,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @return The set of shapes that require a `Encodable` conformance and coding keys.
      */
     private fun resolveStructuresNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
-        // all top level operation inputs conform to Encodable
+        // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         //get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx)
+        val inputShapes = resolveOperationInputShapes(ctx).filter { it.members().any { it.isInHttpBody() } }.toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
@@ -142,7 +163,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Generate conformance to (HttpRequestBinding) for the input request (if not already present)
      * and implement (buildRequest) method
      */
-    private fun renderInputRequestConformanceToHttpRequestBinding(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+    private fun renderInputRequestConformanceToHttpRequestBinding(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape
+    ) {
         if (op.input.isEmpty) {
             return
         }
@@ -172,7 +196,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
             writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
             writer.openBlock("extension ${inputShapeName}: HttpRequestBinding {", "}") {
-                writer.openBlock("public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {", "}") {
+                writer.openBlock(
+                    "public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {",
+                    "}"
+                ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
@@ -184,7 +211,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderQueryItems(ctx: ProtocolGenerator.GenerationContext, queryLiterals: Map<String, String>, queryBindings: List<HttpBinding>, writer: SwiftWriter) {
+    private fun renderQueryItems(
+        ctx: ProtocolGenerator.GenerationContext,
+        queryLiterals: Map<String, String>,
+        queryBindings: List<HttpBinding>,
+        writer: SwiftWriter
+    ) {
         writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
             writer.write("queryItems.append(URLQueryItem(name: \$S, value: \$S))", queryItemKey, queryItemValue)
@@ -201,13 +233,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // Handle cases where member is a List or Set type
                     val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
                     var queryItemValue = "queryItemValue"
-                    queryItemValue = formatHeaderOrQueryValue(queryItemValue, collectionMemberTarget, HttpBinding.Location.QUERY, bindingIndex)
+                    queryItemValue = formatHeaderOrQueryValue(
+                        queryItemValue,
+                        collectionMemberTarget,
+                        HttpBinding.Location.QUERY,
+                        bindingIndex
+                    )
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
                         writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                         writer.write("queryItems.append(queryItem)")
                     }
                 } else {
-                    memberName = formatHeaderOrQueryValue(memberName, memberTarget, HttpBinding.Location.QUERY, bindingIndex)
+                    memberName = formatHeaderOrQueryValue(
+                        memberName,
+                        memberTarget,
+                        HttpBinding.Location.QUERY,
+                        bindingIndex
+                    )
                     writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
                     writer.write("queryItems.append(queryItem)")
                 }
@@ -215,7 +257,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun formatHeaderOrQueryValue(itemValue: String, itemShape: Shape, location: HttpBinding.Location, bindingIndex: HttpBindingIndex): String {
+    private fun formatHeaderOrQueryValue(
+        itemValue: String,
+        itemShape: Shape,
+        location: HttpBinding.Location,
+        bindingIndex: HttpBindingIndex
+    ): String {
         return when (itemShape) {
             is TimestampShape -> {
                 val timestampFormat = bindingIndex.determineTimestampFormat(itemShape, location, defaultTimestampFormat)
@@ -236,7 +283,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderHeaders(ctx: ProtocolGenerator.GenerationContext, headerBindings: List<HttpBinding>, prefixHeaderBindings: List<HttpBinding>, writer: SwiftWriter, contentType: String) {
+    private fun renderHeaders(
+        ctx: ProtocolGenerator.GenerationContext,
+        headerBindings: List<HttpBinding>,
+        prefixHeaderBindings: List<HttpBinding>,
+        writer: SwiftWriter,
+        contentType: String
+    ) {
         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         writer.write("var headers = HttpHeaders()")
         writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
@@ -249,12 +302,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (memberTarget is CollectionShape) {
                     val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
                     var headerValue = "headerValue"
-                    headerValue = formatHeaderOrQueryValue(headerValue, collectionMemberTarget, HttpBinding.Location.HEADER, bindingIndex)
+                    headerValue = formatHeaderOrQueryValue(
+                        headerValue,
+                        collectionMemberTarget,
+                        HttpBinding.Location.HEADER,
+                        bindingIndex
+                    )
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                         writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
-                    memberName = formatHeaderOrQueryValue(memberName, memberTarget, HttpBinding.Location.HEADER, bindingIndex)
+                    memberName = formatHeaderOrQueryValue(
+                        memberName,
+                        memberTarget,
+                        HttpBinding.Location.HEADER,
+                        bindingIndex
+                    )
                     writer.write("headers.add(name: \"$paramName\", value: String($memberName))")
                 }
             }
@@ -273,13 +336,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     if (mapValueShapeTarget is CollectionShape) {
                         val collectionMemberTarget = ctx.model.expectShape(mapValueShapeTarget.member.target)
                         var headerValueString = "headerValue"
-                        headerValueString = formatHeaderOrQueryValue(headerValueString, collectionMemberTarget, HttpBinding.Location.HEADER, bindingIndex)
+                        headerValueString = formatHeaderOrQueryValue(
+                            headerValueString,
+                            collectionMemberTarget,
+                            HttpBinding.Location.HEADER,
+                            bindingIndex
+                        )
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValueString))")
                         }
                     } else {
                         var headerValueString = "prefixHeaderMapValue"
-                        headerValueString = formatHeaderOrQueryValue(headerValueString, mapValueShapeTarget, HttpBinding.Location.HEADER, bindingIndex)
+                        headerValueString = formatHeaderOrQueryValue(
+                            headerValueString,
+                            mapValueShapeTarget,
+                            HttpBinding.Location.HEADER,
+                            bindingIndex
+                        )
                         writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValueString))")
                     }
                 }
