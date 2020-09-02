@@ -196,7 +196,9 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", true).build()
+        return createSymbolBuilder(shape, "Date", "Foundation", true)
+            .addDependency(SwiftDependency.FOUNDATION)
+            .build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {

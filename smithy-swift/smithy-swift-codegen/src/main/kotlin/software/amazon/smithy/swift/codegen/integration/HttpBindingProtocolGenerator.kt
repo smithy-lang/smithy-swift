@@ -75,7 +75,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
                     writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
                     generateCodingKeysForStructure(ctx, writer, structureShape)
-                    //generate encode implementation
+                    writer.write("") //need enter space between coding keys and encode implementation
+                    StructEncodeGeneration(ctx, structureShape.members().toList(), writer, defaultTimestampFormat).render()
                 }
             }
         }
@@ -90,7 +91,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val membersSortedByName: List<MemberShape> = shape.allMembers.values
             .sortedBy { ctx.symbolProvider.toMemberName(it) }
             .filter { it.isInHttpBody() }
-        if (membersSortedByName.isEmpty()) { return }
         writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
                 val memberName = ctx.symbolProvider.toMemberName(member)
@@ -105,7 +105,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
-     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types plus their nested types.
+     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types with members in the http body
+     * and their nested types.
      * Operation inputs and all nested types will conform to `Encodable`.
      *
      * @return The set of shapes that require a `Encodable` conformance and coding keys.
@@ -114,7 +115,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         //get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx).filter { it.members().any { it.isInHttpBody() } }.toMutableSet()
+        val inputShapes = resolveOperationInputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
