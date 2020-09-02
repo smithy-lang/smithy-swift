@@ -91,7 +91,7 @@ class PackageManifestGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders package manifest file with correct targets block`() {
-        writePackageManifest(settings, manifest, mockDependencies)
+        writePackageManifest(settings, manifest, mockDependencies, true)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(

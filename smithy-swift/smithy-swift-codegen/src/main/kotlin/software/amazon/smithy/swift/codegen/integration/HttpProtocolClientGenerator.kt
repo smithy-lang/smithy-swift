@@ -42,7 +42,7 @@ class HttpProtocolClientGenerator(
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-        writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
+        writer.addFoundationImport()
         renderClientInitialization(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
@@ -147,7 +147,9 @@ class HttpProtocolClientGenerator(
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
             writer.write("var request = input.buildHttpRequest(method: method, path: path)")
-            renderEncodingHttpRequestBlock(writer)
+            if(inputShape.get().members().any { it.isInHttpBody() }) {
+                renderEncodingHttpRequestBlock(writer)
+            }
         }
     }
 

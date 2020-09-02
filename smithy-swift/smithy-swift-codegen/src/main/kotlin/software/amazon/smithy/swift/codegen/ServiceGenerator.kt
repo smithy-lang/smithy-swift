@@ -58,20 +58,10 @@ class ServiceGenerator(
 
             val operationName = op.camelCaseName()
 
-//            if (!opIndex.getInput(op).isPresent) {
-//                // Theoretically this shouldn't ever get hit since we automatically insert synthetic inputs / outputs.
-//                throw CodegenException(
-//                    "Operations are required to have input shapes in order to allow for future evolution."
-//                );
-//            }
             val inputShape = opIndex.getInput(op).get()
             val inputShapeName = symbolProvider.toSymbol(inputShape).name
             val inputParam = "input: $inputShapeName"
-//            if (!opIndex.getOutput(op).isPresent) {
-//                throw CodegenException(
-//                    "Operations are required to have output shapes in order to allow for future evolution."
-//                );
-//            }
+
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 

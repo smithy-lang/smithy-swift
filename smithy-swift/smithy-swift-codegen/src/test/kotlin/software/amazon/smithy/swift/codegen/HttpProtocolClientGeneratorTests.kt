@@ -62,11 +62,6 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        let path = \"/foo\"\n" +
                     "        let method = HttpMethodType.get\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                    "        do {\n" +
-                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
-                    "        } catch let err {\n" +
-                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
-                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -103,11 +98,6 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        let path = \"/foo-no-input\"\n" +
                     "        let method = HttpMethodType.get\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                    "        do {\n" +
-                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
-                    "        } catch let err {\n" +
-                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
-                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -144,11 +134,6 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        let path = \"/foo-no-output\"\n" +
                     "        let method = HttpMethodType.get\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                    "        do {\n" +
-                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
-                    "        } catch let err {\n" +
-                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
-                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -228,11 +213,6 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        let path = \"/foo-streaming-output\"\n" +
                     "        let method = HttpMethodType.post\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                    "        do {\n" +
-                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
-                    "        } catch let err {\n" +
-                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
-                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +
@@ -270,11 +250,6 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
                     "        let path = \"/foo-streaming-output-no-input\"\n" +
                     "        let method = HttpMethodType.post\n" +
                     "        var request = input.buildHttpRequest(method: method, path: path)\n" +
-                    "        do {\n" +
-                    "            try encoder.encodeHttpRequest(input, currentHttpRequest: &request)\n" +
-                    "        } catch let err {\n" +
-                    "            completion(.failure(.client(.serializationFailed(err.localizedDescription))))\n" +
-                    "        }\n" +
                     "        client.execute(request: request) { httpResult in\n" +
                     "            switch httpResult {\n" +
                     "                case .failure(let httpClientErr):\n" +

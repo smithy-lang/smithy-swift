@@ -170,17 +170,18 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "[${reference.name}]", true).build()
+
+        return createSymbolBuilder(shape, "[${reference.name}]", reference.namespace, true).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        return createSymbolBuilder(shape, "[String:${reference.name}]", true).build()
+        return createSymbolBuilder(shape, "[String:${reference.name}]", reference.namespace, true).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", true)
+        return createSymbolBuilder(shape, "Set<${reference.name}>", reference.namespace, true)
             .build()
     }
 
@@ -197,7 +198,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun timestampShape(shape: TimestampShape): Symbol {
         return createSymbolBuilder(shape, "Date", "Foundation", true)
-            .addDependency(SwiftDependency.FOUNDATION)
             .build()
     }
 

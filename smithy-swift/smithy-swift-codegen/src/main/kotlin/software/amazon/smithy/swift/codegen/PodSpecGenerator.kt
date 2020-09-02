@@ -19,7 +19,7 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.utils.CodeWriter
 
-fun writePodspec(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>) {
+fun writePodspec(settings: SwiftSettings, fileManifest: FileManifest, dependencies: Set<SymbolDependency>) {
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()

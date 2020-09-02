@@ -73,7 +73,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension ${structSymbol.name}: Encodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-                    writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
+                    writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
                     writer.write("") //need enter space between coding keys and encode implementation
                     StructEncodeGeneration(ctx, structureShape.members().toList(), writer, defaultTimestampFormat).render()
@@ -195,7 +195,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-            writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
+            writer.addFoundationImport()
             writer.openBlock("extension ${inputShapeName}: HttpRequestBinding {", "}") {
                 writer.openBlock(
                     "public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {",

@@ -96,7 +96,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         println("Walking shapes from " + service.id + " to find shapes to generate")
         val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
-
+        var generateTestTarget = false
         if (protocolGenerator != null) {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
@@ -114,6 +114,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolUnitTests(ctx)
+            generateTestTarget = true
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolClient(ctx)
@@ -124,10 +125,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
 
         println("Generating swift podspec file")
-        writePodspec(settings, fileManifest, dependencies)
+        writePodspec(settings, fileManifest, dependencies.toSet())
 
         println("Generating package manifest file")
-        writePackageManifest(settings, fileManifest, dependencies)
+        writePackageManifest(settings, fileManifest, dependencies, generateTestTarget)
 
         println("Generating info plist")
         writeInfoPlist(settings, fileManifest)
