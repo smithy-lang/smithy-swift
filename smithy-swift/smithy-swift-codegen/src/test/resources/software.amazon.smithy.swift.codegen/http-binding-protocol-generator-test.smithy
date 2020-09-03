@@ -186,6 +186,12 @@ map BlobMap {
     value: Blob
 }
 
+map DateMap {
+    key: String,
+    @timestampFormat("http-date")
+    value: Timestamp
+}
+
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
     input: MapInputRequest
@@ -195,7 +201,8 @@ structure MapInputRequest {
     intMap: IntMap,
     structMap: StructMap,
     enumMap: EnumMap,
-    blobMap: BlobMap
+    blobMap: BlobMap,
+    dateMap: DateMap
 }
 
 

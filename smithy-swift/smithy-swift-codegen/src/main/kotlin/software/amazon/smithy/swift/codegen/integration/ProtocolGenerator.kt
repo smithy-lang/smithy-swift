@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -45,13 +46,13 @@ interface ProtocolGenerator {
             return replacedString.replace("^Aws".toRegex(), "AWS")
         }
 
-        fun getFormattedDateString(timestampFormat: TimestampFormatTrait.Format, memberName: String): String {
-            if (timestampFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                return "$memberName.rfc5322String()"
-            } else if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                return "$memberName.timeIntervalSince1970"
-            } else {
-                return "$memberName.iso8601WithoutFractionalSecondsString()"
+        fun getFormattedDateString(tsFormat: TimestampFormatTrait.Format, memberName: String, isOptional: Boolean = false): String {
+            val terminator = if (isOptional) "?" else ""
+            return when (tsFormat) {
+                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}${terminator}.timeIntervalSince1970"
+                TimestampFormatTrait.Format.DATE_TIME -> "${memberName}${terminator}.iso8601FractionalSecondsString()"
+                TimestampFormatTrait.Format.HTTP_DATE -> "${memberName}${terminator}.rfc5322String()"
+                else -> throw CodegenException("unknown timestamp format: $tsFormat")
             }
         }
     }
