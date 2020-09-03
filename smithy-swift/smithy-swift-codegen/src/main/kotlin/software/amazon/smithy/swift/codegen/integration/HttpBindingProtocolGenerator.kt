@@ -70,13 +70,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./${rootNamespace}/models/${structSymbol.name}+Encodable.swift")
                 .name(structSymbol.name)
                 .build()
+            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension ${structSymbol.name}: Encodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
                     writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
                     writer.write("") //need enter space between coding keys and encode implementation
-                    StructEncodeGeneration(ctx, structureShape.members().toList(), writer, defaultTimestampFormat).render()
+                    StructEncodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
             }
         }
