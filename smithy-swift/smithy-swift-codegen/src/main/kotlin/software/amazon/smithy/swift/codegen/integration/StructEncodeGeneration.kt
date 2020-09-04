@@ -25,6 +25,9 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
+import java.lang.reflect.Member
+import java.sql.Blob
+import java.sql.Time
 
 /**
  * Generates encode function for members bound to the payload.
@@ -67,42 +70,52 @@ class StructEncodeGeneration(
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
                 val memberName = member.memberName
-                when (target.type) {
-                    ShapeType.SET, ShapeType.LIST -> {
+                when (target) {
+                    is CollectionShape -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
                             renderEncodeListMember(target, memberName, containerName)
                         }
                     }
-                    ShapeType.MAP -> {
+                    is MapShape -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
                             renderEncodeMapMember(target, memberName, containerName)
                         }
                     }
-                    ShapeType.TIMESTAMP -> {
-                        val dateExtension = encodeDateType(member)
-                        writer.write("try \$L.encode($dateExtension, forKey: .\$L)", containerName, memberName)
-                    }
                     else -> {
-                        val rawValue = if (target.isStringShape && target.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                        writer.write("try $containerName.encode(\$1L$rawValue, forKey: .\$1L)", memberName)
+                        val memberWithExtension = getShapeExtension(member, memberName)
+                        writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
                     }
                 }
             }
         }
     }
 
-    private fun encodeDateType(member: MemberShape): String {
-        val memberName = member.memberName
-        val tsFormat = member
+    private fun getShapeExtension(shape: Shape, memberName: String, isOptional: Boolean = true): String {
+        // target shape type to deserialize is either the shape itself or member.target
+        val target = when (shape) {
+            is MemberShape -> ctx.model.expectShape(shape.target)
+            else -> shape
+        }
+        return when (target) {
+            is TimestampShape -> encodeDateType(shape, memberName, isOptional)
+            is StringShape -> if(target.hasTrait(EnumTrait::class.java)) "$memberName.rawValue" else memberName
+            is BlobShape -> "$memberName.base64EncodedString()"
+            else -> memberName
+        }
+    }
+    //timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
+    private fun encodeDateType(shape: Shape, memberName: String, isOptional: Boolean = true): String {
+      //  val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val tsFormat = shape
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
-        return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, member.isOptional)
+        return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isOptional)
     }
 
     private fun renderEncodeListMember(targetShape: Shape, keyName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
-            is CollectionShape, is TimestampShape -> {
+            is CollectionShape -> {
                 val topLevelContainerName = "${keyName}Container"
 
                 if (level == 0) {
@@ -116,14 +129,12 @@ class StructEncodeGeneration(
                 }
                 renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
             }
-            is MapShape -> {
-
-                renderEncodeList(ctx, keyName, containerName, targetShape, level)
-            }
+            is MapShape -> renderEncodeList(ctx, keyName, containerName, targetShape, level)
             else -> {
-                val rawValue = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                writer.write("try $containerName.encode(\$1L$rawValue)", keyName)
+                val extension = getShapeExtension(targetShape, keyName, false)
+                writer.write("try $containerName.encode($extension)")
             }
+
         }
     }
 
@@ -137,17 +148,6 @@ class StructEncodeGeneration(
         val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
-                is TimestampShape -> {
-                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                    val tsFormat = bindingIndex.determineTimestampFormat(
-                        targetShape,
-                        HttpBinding.Location.DOCUMENT,
-                        defaultTimestampFormat
-                    )
-
-                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($dateString)")
-                }
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.member.target)
                     renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
@@ -161,31 +161,35 @@ class StructEncodeGeneration(
                         level + 1
                     )
                 }
-                else -> {
-                    val rawValue = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                    writer.write("try $topLevelContainerName.encode(\$L$rawValue)", collectionName)
+                is TimestampShape -> {
+                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                    val tsFormat = bindingIndex.determineTimestampFormat(
+                        targetShape,
+                        HttpBinding.Location.DOCUMENT,
+                        defaultTimestampFormat
+                    )
+
+                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
+                    writer.write("try $topLevelContainerName.encode($dateString)")
                 }
+                is BlobShape -> writer.write("try $topLevelContainerName.encode($iteratorName.base64EncodedString())")
+                is StringShape -> {
+                    val extension = if (targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
+                    writer.write("try $topLevelContainerName.encode($iteratorName$extension)")
+                }
+                else ->  writer.write("try $topLevelContainerName.encode(\$L)", iteratorName)
+
+
             }
         }
     }
 
-    private fun renderEncodeMapMember(valueTargetShape: Shape, keyName: String, containerName: String, level: Int = 0) {
-        when (valueTargetShape) {
-            is TimestampShape -> {
-                val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                val tsFormat = bindingIndex.determineTimestampFormat(
-                    valueTargetShape,
-                    HttpBinding.Location.DOCUMENT,
-                    defaultTimestampFormat
-                )
-
-                val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, keyName, valueTargetShape.hasTrait(BoxTrait::class.java))
-                writer.write("try $containerName.encode($dateString, forKey: Key(stringValue: key${level - 1}))")
-            }
+    private fun renderEncodeMapMember(targetShape: Shape, keyName: String, containerName: String, level: Int = 0) {
+        when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${keyName}Container"
                 writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
-                renderEncodeMap(ctx, keyName, topLevelContainerName, valueTargetShape, level)
+                renderEncodeMap(ctx, keyName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
                 val topLevelContainerName = "${keyName}Container"
@@ -194,14 +198,14 @@ class StructEncodeGeneration(
                     topLevelContainerName,
                     keyName
                 )
-                renderEncodeMap(ctx, keyName, topLevelContainerName, valueTargetShape, level)
+                renderEncodeMap(ctx, keyName, topLevelContainerName, targetShape.value, level)
             }
             else -> {
-                val rawValue = if (valueTargetShape.isStringShape && valueTargetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
+                val extension = getShapeExtension(targetShape, keyName, false)
                 if (level == 0) {
-                    writer.write("try $containerName.encode(\$1L$rawValue, forKey: .\$1L)", keyName)
+                    writer.write("try $containerName.encode($extension, forKey: .\$L)", keyName)
                 } else {
-                    writer.write("try $containerName.encode(\$1L$rawValue, forKey: Key(stringValue: key${level - 1}))", keyName)
+                    writer.write("try $containerName.encode($extension, forKey: Key(stringValue: key${level - 1}))")
                 }
             }
         }
@@ -211,23 +215,28 @@ class StructEncodeGeneration(
         ctx: ProtocolGenerator.GenerationContext,
         mapName: String,
         topLevelContainerName: String,
-        targetShape: Shape,
+        valueTargetShape: Shape,
         level: Int = 0
     ) {
-        val valueIterator = "${targetShape.defaultName().toLowerCase()}$level"
-
+        val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
+        val target = when (valueTargetShape) {
+            is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
+            else -> valueTargetShape
+        }
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
-            when (targetShape) {
+            when (target) {
                 is TimestampShape -> {
-                    val tsFormat = targetShape
-                        .getTrait(TimestampFormatTrait::class.java)
-                        .map { it.format }
-                        .orElse(defaultTimestampFormat)
-                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, valueIterator, targetShape.hasTrait(BoxTrait::class.java))
+                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                    val tsFormat = bindingIndex.determineTimestampFormat(
+                        valueTargetShape,
+                        HttpBinding.Location.DOCUMENT,
+                        defaultTimestampFormat
+                    )
+                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, valueIterator, target.hasTrait(BoxTrait::class.java))
                     writer.write("try $topLevelContainerName.encode($dateString, forKey: Key(stringValue: key$level))")
                 }
                 is CollectionShape -> {
-                    val nestedTarget = ctx.model.expectShape(targetShape.member.target)
+                    val nestedTarget = ctx.model.expectShape(target.member.target)
                     renderEncodeListMember(
                         nestedTarget,
                         valueIterator,
@@ -236,7 +245,7 @@ class StructEncodeGeneration(
                     )
                 }
                 is MapShape -> {
-                    val nestedTarget = ctx.model.expectShape(targetShape.value.target)
+                    val nestedTarget = ctx.model.expectShape(target.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
                         valueIterator,
@@ -244,9 +253,13 @@ class StructEncodeGeneration(
                         level + 1
                     )
                 }
+                is StringShape -> {
+                    val extension = if (target.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
+                    writer.write("try $topLevelContainerName.encode($valueIterator$extension, forKey: Key(stringValue: key$level))")
+                }
+                is BlobShape -> writer.write("try $topLevelContainerName.encode($valueIterator.base64EncodedString(), forKey: Key(stringValue: key$level))")
                 else -> {
-                    val rawValue = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                    writer.write("try $topLevelContainerName.encode($valueIterator$rawValue, forKey: Key(stringValue: key$level))")
+                    writer.write("try $topLevelContainerName.encode($valueIterator, forKey: Key(stringValue: key$level))")
                 }
             }
         }

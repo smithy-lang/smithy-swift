@@ -339,10 +339,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     if let timestampList = timestampList {
                         var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
-                            var timestamplist0Container = timestampListContainer.nestedUnkeyedContainer()
-                            for timestamp1 in timestamplist0 {
-                                try timestamplist0Container.encode(timestamp1.iso8601FractionalSecondsString())
-                            }
+                            try timestampListContainer.encode(timestamplist0.iso8601FractionalSecondsString())
                         }
                     }
                 }
@@ -371,13 +368,13 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     if let blobMap = blobMap {
                         var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
                         for (key0, blobmap0) in blobMap {
-                            try blobMapContainer.encode(blobmap0, forKey: Key(stringValue: key0))
+                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let dateMap = dateMap {
                         var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
                         for (key0, datemap0) in dateMap {
-                            try dateMapContainer.encode(datemap0.iso8601FractionalSecondsString(), forKey: Key(stringValue: key0))
+                            try dateMapContainer.encode(datemap0.rfc5322String(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let enumMap = enumMap {
