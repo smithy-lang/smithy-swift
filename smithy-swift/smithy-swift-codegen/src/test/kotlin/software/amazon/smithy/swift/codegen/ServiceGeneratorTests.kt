@@ -38,7 +38,7 @@ class ServiceGeneratorTests : TestsBase() {
         val context = buildMockPluginContext(model, manifest)
 
         val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val generator = ServiceGenerator(settings, model, provider, writer, emptyList())
         generator.render()
 

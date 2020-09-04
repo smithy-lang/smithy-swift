@@ -147,7 +147,7 @@ class HttpProtocolClientGenerator(
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
             writer.write("var request = input.buildHttpRequest(method: method, path: path)")
-            if(inputShape.get().members().any { it.isInHttpBody() }) {
+            if (inputShape.get().members().any { it.isInHttpBody() }) {
                 renderEncodingHttpRequestBlock(writer)
             }
         }

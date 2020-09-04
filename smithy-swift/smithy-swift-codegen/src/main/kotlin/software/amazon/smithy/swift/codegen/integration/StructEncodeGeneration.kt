@@ -68,7 +68,7 @@ class StructEncodeGeneration(
                 val target = ctx.model.expectShape(member.target)
                 val memberName = member.memberName
                 when (target.type) {
-                    ShapeType.SET, ShapeType.LIST ->{
+                    ShapeType.SET, ShapeType.LIST -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
                             renderEncodeListMember(target, memberName, containerName)
                         }
@@ -134,7 +134,7 @@ class StructEncodeGeneration(
         targetShape: Shape,
         level: Int = 0
     ) {
-        val iteratorName = "${targetShape.defaultName().toLowerCase()}${level}"
+        val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is TimestampShape -> {
@@ -150,8 +150,7 @@ class StructEncodeGeneration(
                 }
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                   renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level+1)
-
+                    renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
                 }
                 is MapShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
@@ -162,7 +161,7 @@ class StructEncodeGeneration(
                         level + 1
                     )
                 }
-                else ->{
+                else -> {
                     val rawValue = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
                     writer.write("try $topLevelContainerName.encode(\$L$rawValue)", collectionName)
                 }
@@ -181,7 +180,7 @@ class StructEncodeGeneration(
                 )
 
                 val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, keyName, valueTargetShape.hasTrait(BoxTrait::class.java))
-                writer.write("try $containerName.encode($dateString, forKey: Key(stringValue: key${level-1}))")
+                writer.write("try $containerName.encode($dateString, forKey: Key(stringValue: key${level - 1}))")
             }
             is CollectionShape -> {
                 val topLevelContainerName = "${keyName}Container"
@@ -201,9 +200,8 @@ class StructEncodeGeneration(
                 val rawValue = if (valueTargetShape.isStringShape && valueTargetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
                 if (level == 0) {
                     writer.write("try $containerName.encode(\$1L$rawValue, forKey: .\$1L)", keyName)
-                }
-                else {
-                    writer.write("try $containerName.encode(\$1L$rawValue, forKey: Key(stringValue: key${level-1}))", keyName)
+                } else {
+                    writer.write("try $containerName.encode(\$1L$rawValue, forKey: Key(stringValue: key${level - 1}))", keyName)
                 }
             }
         }
@@ -216,7 +214,7 @@ class StructEncodeGeneration(
         targetShape: Shape,
         level: Int = 0
     ) {
-        val valueIterator = "${targetShape.defaultName().toLowerCase()}${level}"
+        val valueIterator = "${targetShape.defaultName().toLowerCase()}$level"
 
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
             when (targetShape) {
@@ -252,6 +250,5 @@ class StructEncodeGeneration(
                 }
             }
         }
-
     }
 }

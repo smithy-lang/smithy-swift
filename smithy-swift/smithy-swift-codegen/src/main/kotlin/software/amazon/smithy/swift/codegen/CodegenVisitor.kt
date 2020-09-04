@@ -55,7 +55,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
         // Add operation input/output shapes if not provided for future evolution of sdk
-        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName);
+        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
 
         model = resolvedModel
         modelWithoutTraitShapes = ModelTransformer.create().getModelWithoutTraitShapes(model)

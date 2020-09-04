@@ -46,7 +46,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val serviceShapeIdWithNamespace = "com.test#Example"
         val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val delegator = SwiftDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
@@ -314,7 +314,6 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-
 
     @Test
     fun `it provides encodable conformance to operation inputs with timestamps`() {

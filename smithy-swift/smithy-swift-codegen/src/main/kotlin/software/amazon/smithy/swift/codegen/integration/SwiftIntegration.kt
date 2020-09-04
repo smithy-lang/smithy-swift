@@ -115,7 +115,7 @@ interface SwiftIntegration {
         writer: SwiftWriter,
         definedShape: Shape
     ) {
-        //pass
+        // pass
     }
 
     /**

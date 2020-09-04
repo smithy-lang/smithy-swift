@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -27,17 +28,16 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.utils.OptionalUtils
-import java.util.logging.Logger
 
 /**
  * Checks to see if shape is in the body of the http request
  */
 fun Shape.isInHttpBody(): Boolean {
 
-    val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java)
-            && !this.hasTrait(HttpHeaderTrait::class.java)
-            && !this.hasTrait(HttpPrefixHeadersTrait::class.java)
-            && !this.hasTrait(HttpQueryTrait::class.java)
+    val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
+            !this.hasTrait(HttpHeaderTrait::class.java) &&
+            !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
+            !this.hasTrait(HttpQueryTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
 }
 
@@ -67,7 +67,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
             val rootNamespace = ctx.settings.moduleName
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./${rootNamespace}/models/${structSymbol.name}+Encodable.swift")
+                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Encodable.swift")
                 .name(structSymbol.name)
                 .build()
             val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
@@ -76,26 +76,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
                     writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
-                    writer.write("") //need enter space between coding keys and encode implementation
+                    writer.write("") // need enter space between coding keys and encode implementation
                     StructEncodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
             }
         }
     }
-    //can be overridden by protocol for things like json name traits, xml keys etc.
+    // can be overridden by protocol for things like json name traits, xml keys etc.
     open fun generateCodingKeysForStructure(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         shape: StructureShape
     ) {
-        //get all members sorted by name and filter out either all members with other traits OR members with the payload trait
+        // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
         val membersSortedByName: List<MemberShape> = shape.allMembers.values
             .sortedBy { ctx.symbolProvider.toMemberName(it) }
             .filter { it.isInHttpBody() }
         writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
                 val memberName = ctx.symbolProvider.toMemberName(member)
-                writer.write("case ${memberName}")
+                writer.write("case $memberName")
             }
         }
     }
@@ -115,7 +115,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun resolveStructuresNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
-        //get them all and return as one set to loop through
+        // get them all and return as one set to loop through
         val inputShapes = resolveOperationInputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
@@ -190,14 +190,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./${rootNamespace}/models/${inputShapeName}+HttpRequestBinding.swift")
+            .definitionFile("./$rootNamespace/models/$inputShapeName+HttpRequestBinding.swift")
             .name(inputShapeName)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
             writer.addFoundationImport()
-            writer.openBlock("extension ${inputShapeName}: HttpRequestBinding {", "}") {
+            writer.openBlock("extension $inputShapeName: HttpRequestBinding {", "}") {
                 writer.openBlock(
                     "public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {",
                     "}"
@@ -405,6 +405,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
             }
         }
-       return containedOperations
+        return containedOperations
     }
 }

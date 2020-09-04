@@ -17,16 +17,14 @@
 
 package software.amazon.smithy.swift.codegen
 
+import java.util.*
+import java.util.logging.Logger
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
-import java.util.*
-import java.util.logging.Logger
-
 
 /**
  * Ensures that each operation has a unique input and output shape.
@@ -39,20 +37,20 @@ public final class AddOperationShapes {
          * Processes the given model and returns a new model ensuring service operation has an unique input and output
          * synthesized shape.
          *
-         * @param model          the model
+         * @param model the model
          * @param serviceShapeId the service shape
          * @return a model with unique operation input and output shapes
          */
         fun execute(model: Model, serviceShape: ServiceShape, moduleName: String): Model {
             val topDownIndex: TopDownIndex =
                 model.getKnowledge(TopDownIndex::class.java)
-            val opIndex: OperationIndex =  model.getKnowledge(OperationIndex::class.java)
+            val opIndex: OperationIndex = model.getKnowledge(OperationIndex::class.java)
             val operations = topDownIndex.getContainedOperations(serviceShape)
             val modelBuilder: Model.Builder = model.toBuilder()
             for (operation in operations) {
                 val operationId = operation.id
                 LOGGER.info("building unique input/output shapes for $operationId")
-                //TODO: decide between this approach vs additive approach with inputs. keeping for now but may remove at a later point in time
+                // TODO: decide between this approach vs additive approach with inputs. keeping for now but may remove at a later point in time
                 val inputShape = opIndex.getInput(operation)
                     .orElseGet {
                         emptyOperationStructure(operationId, "Input", moduleName)

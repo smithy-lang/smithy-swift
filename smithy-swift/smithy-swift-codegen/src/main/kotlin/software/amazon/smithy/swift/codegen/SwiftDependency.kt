@@ -24,7 +24,6 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
     XCTest("", "XCTest", "", ""),
     SMITHY_TEST_UTIL("", "SmithyTestUtil", "0.1.0", "../../../../../../ClientRuntime");
 
-
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()
             .dependencyType(type)

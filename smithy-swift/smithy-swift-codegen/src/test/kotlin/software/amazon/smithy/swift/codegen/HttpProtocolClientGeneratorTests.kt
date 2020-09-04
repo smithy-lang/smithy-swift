@@ -32,7 +32,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         val writer = SwiftWriter("test")
         val serviceShapeIdWithNamespace = "smithy.example#Example"
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName);
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf())
         generator.render()
         commonTestContents = writer.toString()

@@ -49,9 +49,9 @@ interface ProtocolGenerator {
         fun getFormattedDateString(tsFormat: TimestampFormatTrait.Format, memberName: String, isOptional: Boolean = false): String {
             val terminator = if (isOptional) "?" else ""
             return when (tsFormat) {
-                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}${terminator}.timeIntervalSince1970"
-                TimestampFormatTrait.Format.DATE_TIME -> "${memberName}${terminator}.iso8601FractionalSecondsString()"
-                TimestampFormatTrait.Format.HTTP_DATE -> "${memberName}${terminator}.rfc5322String()"
+                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}$terminator.timeIntervalSince1970"
+                TimestampFormatTrait.Format.DATE_TIME -> "${memberName}$terminator.iso8601FractionalSecondsString()"
+                TimestampFormatTrait.Format.HTTP_DATE -> "${memberName}$terminator.rfc5322String()"
                 else -> throw CodegenException("unknown timestamp format: $tsFormat")
             }
         }
