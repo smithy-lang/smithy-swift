@@ -40,12 +40,15 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders client initialization block`() {
-        commonTestContents.shouldContainOnlyOnce("public class ExampleClient {\n" +
-                "    let client: HttpClient\n" +
-                "    init(config: HttpClientConfiguration = HttpClientConfiguration()) {\n" +
-                "        client = HttpClient(config: config)\n" +
-                "    }\n" +
-                "}"
+        commonTestContents.shouldContainOnlyOnce(
+            """ 
+                public class ExampleClient {
+                    let client: HttpClient
+                    init(config: HttpClientConfiguration = HttpClientConfiguration()) {
+                        client = HttpClient(config: config)
+                    }
+                }
+            """.trimIndent()
         )
     }
 

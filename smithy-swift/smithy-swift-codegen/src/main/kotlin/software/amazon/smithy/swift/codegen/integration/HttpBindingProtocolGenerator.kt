@@ -303,9 +303,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
                     val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-                    var headerValue = "headerValue"
-                    headerValue = formatHeaderOrQueryValue(
-                        headerValue,
+                    val headerValue = formatHeaderOrQueryValue(
+                        "headerValue",
                         collectionMemberTarget,
                         HttpBinding.Location.HEADER,
                         bindingIndex
@@ -337,9 +336,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
                     if (mapValueShapeTarget is CollectionShape) {
                         val collectionMemberTarget = ctx.model.expectShape(mapValueShapeTarget.member.target)
-                        var headerValueString = "headerValue"
-                        headerValueString = formatHeaderOrQueryValue(
-                            headerValueString,
+                        val headerValueString = formatHeaderOrQueryValue(
+                            "headerValue",
                             collectionMemberTarget,
                             HttpBinding.Location.HEADER,
                             bindingIndex
@@ -348,9 +346,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValueString))")
                         }
                     } else {
-                        var headerValueString = "prefixHeaderMapValue"
-                        headerValueString = formatHeaderOrQueryValue(
-                            headerValueString,
+                        val headerValueString = formatHeaderOrQueryValue(
+                            "prefixHeaderMapValue",
                             mapValueShapeTarget,
                             HttpBinding.Location.HEADER,
                             bindingIndex
