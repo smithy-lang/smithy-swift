@@ -25,9 +25,6 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
-import java.lang.reflect.Member
-import java.sql.Blob
-import java.sql.Time
 
 /**
  * Generates encode function for members bound to the payload.
@@ -98,14 +95,13 @@ class StructEncodeGeneration(
         }
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isOptional)
-            is StringShape -> if(target.hasTrait(EnumTrait::class.java)) "$memberName.rawValue" else memberName
+            is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName.rawValue" else memberName
             is BlobShape -> "$memberName.base64EncodedString()"
             else -> memberName
         }
     }
-    //timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
+    // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
     private fun encodeDateType(shape: Shape, memberName: String, isOptional: Boolean = true): String {
-      //  val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         val tsFormat = shape
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
@@ -134,7 +130,6 @@ class StructEncodeGeneration(
                 val extension = getShapeExtension(targetShape, keyName, false)
                 writer.write("try $containerName.encode($extension)")
             }
-
         }
     }
 
@@ -177,9 +172,7 @@ class StructEncodeGeneration(
                     val extension = if (targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
                     writer.write("try $topLevelContainerName.encode($iteratorName$extension)")
                 }
-                else ->  writer.write("try $topLevelContainerName.encode(\$L)", iteratorName)
-
-
+                else -> writer.write("try $topLevelContainerName.encode(\$L)", iteratorName)
             }
         }
     }
