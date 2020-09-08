@@ -29,6 +29,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 /**
  * Ensures that each operation has a unique input and output shape.
  */
+// TODO: decide between this approach vs additive approach with inputs and fix outputs to create synthetic outputs to avoid possible future added outputs.
 public final class AddOperationShapes {
 
     companion object {
@@ -50,7 +51,7 @@ public final class AddOperationShapes {
             for (operation in operations) {
                 val operationId = operation.id
                 LOGGER.info("building unique input/output shapes for $operationId")
-                // TODO: decide between this approach vs additive approach with inputs. keeping for now but may remove at a later point in time
+
                 val inputShape = opIndex.getInput(operation)
                     .orElseGet {
                         emptyOperationStructure(operationId, "Input", moduleName)

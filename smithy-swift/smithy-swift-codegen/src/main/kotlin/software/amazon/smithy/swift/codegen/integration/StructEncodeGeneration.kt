@@ -93,10 +93,11 @@ class StructEncodeGeneration(
             is MemberShape -> ctx.model.expectShape(shape.target)
             else -> shape
         }
+        val optional = if(isOptional) "?" else ""
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isOptional)
-            is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName.rawValue" else memberName
-            is BlobShape -> "$memberName.base64EncodedString()"
+            is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
+            is BlobShape -> "$memberName$optional.base64EncodedString()"
             else -> memberName
         }
     }
@@ -156,23 +157,10 @@ class StructEncodeGeneration(
                         level + 1
                     )
                 }
-                is TimestampShape -> {
-                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                    val tsFormat = bindingIndex.determineTimestampFormat(
-                        targetShape,
-                        HttpBinding.Location.DOCUMENT,
-                        defaultTimestampFormat
-                    )
-
-                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($dateString)")
+                else -> {
+                    val shapeExtension = getShapeExtension(targetShape, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
+                    writer.write("try $topLevelContainerName.encode(\$L)", shapeExtension)
                 }
-                is BlobShape -> writer.write("try $topLevelContainerName.encode($iteratorName.base64EncodedString())")
-                is StringShape -> {
-                    val extension = if (targetShape.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                    writer.write("try $topLevelContainerName.encode($iteratorName$extension)")
-                }
-                else -> writer.write("try $topLevelContainerName.encode(\$L)", iteratorName)
             }
         }
     }
@@ -218,16 +206,6 @@ class StructEncodeGeneration(
         }
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
             when (target) {
-                is TimestampShape -> {
-                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                    val tsFormat = bindingIndex.determineTimestampFormat(
-                        valueTargetShape,
-                        HttpBinding.Location.DOCUMENT,
-                        defaultTimestampFormat
-                    )
-                    val dateString = ProtocolGenerator.getFormattedDateString(tsFormat, valueIterator, target.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($dateString, forKey: Key(stringValue: key$level))")
-                }
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(target.member.target)
                     renderEncodeListMember(
@@ -246,13 +224,9 @@ class StructEncodeGeneration(
                         level + 1
                     )
                 }
-                is StringShape -> {
-                    val extension = if (target.hasTrait(EnumTrait::class.java)) ".rawValue" else ""
-                    writer.write("try $topLevelContainerName.encode($valueIterator$extension, forKey: Key(stringValue: key$level))")
-                }
-                is BlobShape -> writer.write("try $topLevelContainerName.encode($valueIterator.base64EncodedString(), forKey: Key(stringValue: key$level))")
                 else -> {
-                    writer.write("try $topLevelContainerName.encode($valueIterator, forKey: Key(stringValue: key$level))")
+                    val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
                 }
             }
         }

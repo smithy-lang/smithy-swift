@@ -431,7 +431,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
             
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(myEnum.rawValue, forKey: .myEnum)
+                    try container.encode(myEnum?.rawValue, forKey: .myEnum)
                 }
             }
             """.trimIndent()

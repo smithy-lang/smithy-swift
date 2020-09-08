@@ -15,15 +15,15 @@
 
 import Foundation
 
-struct Key: CodingKey {
-    let stringValue: String
-    init(stringValue: String) {
+public struct Key: CodingKey {
+    public let stringValue: String
+    public init(stringValue: String) {
         self.stringValue = stringValue
         self.intValue = nil
     }
 
-    let intValue: Int?
-    init?(intValue: Int) {
+    public let intValue: Int?
+    public init?(intValue: Int) {
         return nil
     }
 }

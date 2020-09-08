@@ -32,6 +32,7 @@ import software.amazon.smithy.utils.OptionalUtils
 /**
  * Checks to see if shape is in the body of the http request
  */
+//TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
 fun Shape.isInHttpBody(): Boolean {
 
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&

@@ -34,7 +34,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
     private val model: Model
-    private val modelWithoutTraitShapes: Model
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
@@ -58,7 +57,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
 
         model = resolvedModel
-        modelWithoutTraitShapes = ModelTransformer.create().getModelWithoutTraitShapes(model)
+
         service = settings.getService(model)
 
         var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
@@ -94,7 +93,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         LOGGER.info("Generating Swift client for service ${settings.service}")
 
         println("Walking shapes from " + service.id + " to find shapes to generate")
-        val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
+        val serviceShapes: Set<Shape> = Walker(model).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
         var generateTestTarget = false
         if (protocolGenerator != null) {
@@ -114,6 +113,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolUnitTests(ctx)
+            //FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
             generateTestTarget = true
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
