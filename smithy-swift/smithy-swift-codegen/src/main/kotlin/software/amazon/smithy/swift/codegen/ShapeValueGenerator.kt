@@ -183,7 +183,7 @@ class ShapeValueGenerator(
         }
 
         override fun nullNode(node: NullNode) {
-            writer.writeInline("null")
+            writer.writeInline("nil")
         }
 
         override fun arrayNode(node: ArrayNode) {

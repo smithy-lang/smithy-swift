@@ -209,7 +209,7 @@ MyStruct(
     enumMember: MyEnum(rawValue:"fooey")!,
     floatMember: 2,
     doubleMember: 3.0,
-    nullMember: null
+    nullMember: nil
 )
 """.trimIndent()
 

@@ -37,21 +37,27 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .write("path: \$S,", test.uri)
             .call { renderExpectedHeaders(test) }
             .call { renderExpectedQueryParams(test) }
-            .call {
-                test.body.ifPresent { body ->
-                    if (!body.isBlank()) {
-                        writer.write("body: \"\"\"\n\$L\n\"\"\",", body)
-                    }
-                }
-            }
+            .call { renderExpectedBody(test) }
             .write("host: host")
             .closeBlock(")")
+    }
+
+    private fun renderExpectedBody( test: HttpRequestTestCase) {
+        if(!test.body.isPresent) {
+            writer.write("body: nil,")
+        } else {
+            test.body.ifPresent { body ->
+                if (!body.isBlank()) {
+                    writer.write("body: \"\"\"\n\$L\n\"\"\",", body)
+                }
+            }
+        }
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
         operation.input.ifPresent {
             val inputShape = model.expectShape(it)
-            // Default to bytes comparision
+            // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
             var bodyAssertMethod = "assertEqualHttpBodyData"
 
@@ -78,17 +84,19 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 .write("")
 
             writer.write("var actual = input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)", test.uri)
-            writer.openBlock("do {")
-                .write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
-                .closeBlock("} catch let err {")
-                .indent()
-                .write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
-                .dedent()
-                .write("}")
+            if(!test.body.isEmpty) { //if body is not empty we will need to serialize it
+                writer.openBlock("do {")
+                    .write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
+                    .closeBlock("} catch let err {")
+                    .indent()
+                    .write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
+                    .dedent()
+                    .write("}")
+            }
 
             // assert that forbidden Query Items do not exist
             if (test.forbidQueryParams.isNotEmpty()) {
-                writer.write("let forbiddenQueryParams = [${test.forbidQueryParams.joinToString(separator = ", ")}]")
+                writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
                 writer.write("// assert forbidden query params do not exist")
                 writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
                     writer.openBlock("XCTAssertFalse(", ")") {
@@ -145,29 +153,35 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
-        if (test.queryParams.isEmpty()) return
-        val queryParams = test.queryParams
+        if (test.queryParams.isEmpty()) {
+            writer.write("queryParams: [String](),") //pass empty array if no query params
+        } else {
+            val queryParams = test.queryParams
 
-        writer.openBlock("queryParams: [")
-            .call {
-                queryParams.forEachIndexed { idx, value ->
-                    val suffix = if (idx < queryParams.size - 1) "," else ""
-                    writer.write("\$S$suffix", value)
+            writer.openBlock("queryParams: [")
+                .call {
+                    queryParams.forEachIndexed { idx, value ->
+                        val suffix = if (idx < queryParams.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
                 }
-            }
-            .closeBlock("],")
+                .closeBlock("],")
+        }
     }
 
     private fun renderExpectedHeaders(test: HttpRequestTestCase) {
-        if (test.headers.isEmpty()) return
-        writer.openBlock("headers: [")
-            .call {
-                for ((idx, hdr) in test.headers.entries.withIndex()) {
-                    val suffix = if (idx < test.headers.size - 1) "," else ""
-                    writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
+        if (test.headers.isEmpty()) {
+            writer.write("headers: [String: String](),") //pass empty dictionary if no headers
+        } else {
+            writer.openBlock("headers: [")
+                .call {
+                    for ((idx, hdr) in test.headers.entries.withIndex()) {
+                        val suffix = if (idx < test.headers.size - 1) "," else ""
+                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
+                    }
                 }
-            }
-            .closeBlock("],")
+                .closeBlock("],")
+        }
     }
 
     class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {

@@ -188,24 +188,27 @@ class HttpProtocolClientGenerator(
                 writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
                     writer.openBlock("if case .data(let data) = httpResp.content {", "}") {
                         writer.openBlock("guard let data = data else {", "}") {
-                                writer.write("completion(.failure(ClientError.dataNotFound(\"No data was returned to deserialize\")))")
+                                writer.write("completion(.failure(SdkError<OperationError>.client(ClientError.dataNotFound(\"No data was returned to deserialize\"))))")
+                                writer.write("return")
                         }
 
                         writer.write("let responsePayload = ResponsePayload(body: data, decoder: self.decoder)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case
-                        val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
+                       // val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
 
                         // TODO:: generate more specific operation error
-                        writer.write(resultBlock)
-                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
-                        writer.write("completion(result)")
+//                        writer.write(resultBlock)
+//                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
+//                        writer.write("completion(result)")
+                        //TODO:: REPLACE with proper decoding after decoding is implemented
+                        writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                     }
                 }
                 // HTTP request failed to execute
                 writer.openBlock("else {", "}") {
                     // TODO:: map the HttpError to a service specific error
-                    writer.write("completion(.failure(.service(.unknown)))")
+                    writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                 }
             }
             .closeBlock("")

@@ -269,7 +269,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     case payload2
                     case payload3
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     try container.encode(payload1, forKey: .payload1)
@@ -293,7 +293,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     case intMap
                     case member1
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
@@ -329,7 +329,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     case normal
                     case timestampList
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     try container.encode(dateTime?.iso8601FractionalSecondsString(), forKey: .dateTime)
@@ -362,7 +362,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     case intMap
                     case structMap
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let blobMap = blobMap {
@@ -411,7 +411,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 private enum CodingKeys: String, CodingKey {
                     case nestedWithEnum
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     try container.encode(nestedWithEnum, forKey: .nestedWithEnum)
@@ -428,7 +428,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 private enum CodingKeys: String, CodingKey {
                     case myEnum
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     try container.encode(myEnum?.rawValue, forKey: .myEnum)

@@ -25,9 +25,11 @@ import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.StructureGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.utils.OptionalUtils
+import javax.swing.plaf.synth.SynthTreeUI
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -102,8 +104,27 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        // render Decodable for all operation outputs and their nested types
-        // TODO("Not yet implemented")
+        // render conformance to Decodable for all output shapes with an http body and their nested types
+//        val structuresNeedingDecodableConformance = resolveStructuresNeedingDecodableConformance(ctx)
+//        for (structureShape in structuresNeedingDecodableConformance) {
+//            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
+//            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+//            val rootNamespace = ctx.settings.moduleName
+//            val encodeSymbol = Symbol.builder()
+//                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
+//                .name(structSymbol.name)
+//                .build()
+//            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
+//            ctx.delegator.useShapeWriter(structSymbol) { writer ->
+//                writer.write("extension ${structSymbol.name}: Decodable {}")
+////                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+////                    writer.addFoundationImport()
+////                    generateCodingKeysForStructure(ctx, writer, structureShape)
+////                    writer.write("") // need enter space between coding keys and decode implementation
+//                    //TODO replace with full decode implementation in separate file
+//               // }
+//            }
+//        }
     }
 
     /**
@@ -132,8 +153,38 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return inputShapes.plus(nested)
     }
 
+    /**
+     * Find and return the set of shapes that need `Decodable` conformance which includes top level outputs types with members returned in the http body
+     * and their nested types.
+     * Operation outputs and all nested types will conform to `Decodable`.
+     *
+     * @return The set of shapes that require a `Decodable` conformance and coding keys.
+     */
+    private fun resolveStructuresNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+        // all top level operation outputs with an http body must conform to Decodable
+        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Decodable
+        // get them all and return as one set to loop through
+        val outputShapes = resolveOperationOutputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+
+        val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
+            val outputShape = ctx.model.expectShape(it.output.get())
+            outputShape.members()
+            }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
+
+        val nested = walkNestedShapesRequiringSerde(ctx, topLevelMembers)
+
+        return outputShapes.plus(nested)
+    }
+
     private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
         return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) as StructureShape }.toSet()
+    }
+
+    private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) as StructureShape }.toSet()
     }
 
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<StructureShape> {

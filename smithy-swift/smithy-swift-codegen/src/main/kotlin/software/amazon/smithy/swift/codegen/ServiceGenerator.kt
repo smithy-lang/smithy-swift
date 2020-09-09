@@ -71,7 +71,7 @@ class ServiceGenerator(
             // val errorTypeName = "${op.defaultName()}OperationError"
             val errorTypeName = "OperationError"
 
-            val outputParam = "completion: (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
+            val outputParam = "completion: @escaping (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
 
             val paramTerminator = ", "
 
