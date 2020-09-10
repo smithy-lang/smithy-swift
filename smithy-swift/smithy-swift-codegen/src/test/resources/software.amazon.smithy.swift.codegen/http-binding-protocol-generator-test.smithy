@@ -2,6 +2,7 @@ $version: "1.0"
 namespace com.test
 
 use aws.protocols#restJson1
+use smithy.test#httpRequestTests
 
 @restJson1
 service Example {
@@ -17,7 +18,8 @@ service Example {
         MapInput,
         EnumInput,
         TimestampInput,
-        BlobInput
+        BlobInput,
+        NoBody
     ]
 }
 
@@ -53,6 +55,47 @@ structure SmokeTestRequest {
     payload3: Nested
 }
 
+apply SmokeTest @httpRequestTests([
+    {
+        id: "SmokeTest",
+        documentation: "Serializes a smoke test request with body, headers, query params, and labels",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/smoketest/{label1}/foo",
+        body: """
+        {
+        "payload1": "String",
+        "payload2": 2,
+        "payload3": {
+            "member1": "test string",
+            "member2": "test string 2"
+            }
+        }""",
+        headers: {
+            "X-Header1": "Foo",
+            "X-Header2": "Bar"
+        },
+        requireHeaders: [
+            "Content-Length"
+        ],
+        queryParams: [
+        "Query1=Query 1"
+        ],
+        params: {
+            label1: "label",
+            query1: "Query 1",
+            header1: "Foo",
+            header2: "Bar",
+            payload1: "String",
+            payload2: 2,
+            payload3: {
+                member1: "test string",
+                member2: "test string 2"
+            }
+        }
+    }
+])
+
 structure Nested {
     member1: String,
     member2: String
@@ -75,6 +118,28 @@ structure ExplicitStringRequest {
     @httpPayload
     payload1: String
 }
+
+apply ExplicitString @httpRequestTests([
+    {
+        id: "ExplicitString",
+        documentation: "Serializes a request with an explicit string payload",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/explicit/string",
+        body: """
+        {
+        "payload1": "explicit string"
+        }""",
+        headers: {},
+        requireHeaders: [
+            "Content-Length"
+        ],
+        queryParams: [],
+        params: {
+        payload1: "explicit string"
+        }
+    }
+])
 
 @http(method: "POST", uri: "/explicit/blob")
 operation ExplicitBlob {
@@ -296,3 +361,39 @@ structure BlobInputRequest {
 
     payloadBlob: Blob
 }
+
+structure NoBodyRequest {
+    @httpHeader("X-Foo")
+    header1: String,
+
+    @httpQuery("Query2")
+    query2: String
+
+}
+
+@http(method: "POST", uri: "/input/query")
+operation NoBody {
+    input: NoBodyRequest
+}
+
+apply NoBody @httpRequestTests([
+    {
+        id: "NoBody",
+        documentation: "Serializes a request without a body",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/input/query",
+        body: "",
+        headers: {
+        "X-Foo": "Foo"
+        },
+        requireHeaders: [
+            "Content-Length"
+        ],
+        queryParams: ["Query2=query2"],
+        params: {
+        header1: "Foo",
+        query2: "query2"
+        }
+    }
+])

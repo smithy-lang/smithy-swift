@@ -200,16 +200,16 @@ Set<String>(arrayLiteral:
 
         val expected = """
 MyStruct(
-    stringMember: "v1",
     boolMember: true,
-    intMember: 1,
-    structMember: Nested(
-        tsMember: Date(timeIntervalSince1970: 11223344)
-),
+    doubleMember: 3.0,
     enumMember: MyEnum(rawValue:"fooey")!,
     floatMember: 2,
-    doubleMember: 3.0,
-    nullMember: nil
+    intMember: 1,
+    nullMember: nil,
+    stringMember: "v1",
+    structMember: Nested(
+        tsMember: Date(timeIntervalSince1970: 11223344)
+)
 )
 """.trimIndent()
 

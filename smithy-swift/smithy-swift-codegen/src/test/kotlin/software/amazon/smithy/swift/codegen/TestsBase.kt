@@ -133,6 +133,11 @@ abstract class TestsBase {
         return manifest.expectFileString("$namespace/models/$filename")
     }
 
+    protected fun getTestFileContents(namespace: String, filename: String, manifest: MockManifest): String {
+        return manifest.expectFileString("${namespace}Tests/$filename")
+    }
+
+
     fun String.shouldSyntacticSanityCheck() {
         // sanity check the generated code for matching paranthesis
         var openBraces = 0

@@ -35,7 +35,11 @@ open class HttpRequestTestBase: XCTestCase {
         
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
             queryItems.append(URLQueryItem(name: queryParamComponents[0], value: queryParamComponents[1].removingPercentEncoding))
+            } else {
+                queryItems.append(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
         }
         
         for (headerName, headerValue) in headers {

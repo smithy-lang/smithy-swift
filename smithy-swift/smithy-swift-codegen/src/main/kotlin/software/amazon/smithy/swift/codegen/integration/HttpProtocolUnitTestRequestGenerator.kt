@@ -23,8 +23,6 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
 
-    override fun openTestFunctionBlock(): String = "= httpRequestTest {"
-
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
         writer.write("")
@@ -43,19 +41,21 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedBody( test: HttpRequestTestCase) {
-        if(!test.body.isPresent) {
+        if(test.body.isEmpty) {
             writer.write("body: nil,")
         } else {
             test.body.ifPresent { body ->
                 if (!body.isBlank()) {
                     writer.write("body: \"\"\"\n\$L\n\"\"\",", body)
+                } else {
+                    writer.write("body: nil,")
                 }
             }
         }
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
-        operation.input.ifPresent {
+        operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
@@ -82,9 +82,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-
-            writer.write("var actual = input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)", test.uri)
-            if(!test.body.isEmpty) { //if body is not empty we will need to serialize it
+            val declarative = if(test.body.isPresent && !test.body.get().isBlank()) "var" else "let"
+            writer.write("$declarative actual = input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)", test.uri)
+            if(test.body.isPresent && !test.body.get().isBlank()) { //if body is not null or equal to empty string we will need to serialize it
                 writer.openBlock("do {")
                     .write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
                     .closeBlock("} catch let err {")
@@ -108,7 +108,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             // assert that forbidden headers do not exist
             if (test.forbidHeaders.isNotEmpty()) {
-                writer.write("let forbiddenHeaders = [${test.forbidHeaders.joinToString(separator = ", ")}]")
+                writer.write("let forbiddenHeaders = [\"${test.forbidHeaders.joinToString(separator = ", ")}\"]")
                 writer.write("// assert forbidden headers do not exist")
                 writer.openBlock("for forbiddenHeader in forbiddenHeaders {", "}") {
                     writer.openBlock("XCTAssertFalse(", ")") {
@@ -120,7 +120,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             // assert that required Query Items do exist
             if (test.requireQueryParams.isNotEmpty()) {
-                writer.write("let requiredQueryParams = [${test.requireQueryParams.joinToString(separator = ", ")}]")
+                writer.write("let requiredQueryParams = [\"${test.requireQueryParams.joinToString(separator = ", ")}\"]")
                 writer.write("// assert required query params do exist")
                 writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
                     writer.openBlock("XCTAssertTrue(", ")") {
@@ -132,7 +132,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             // assert that required Headers do exist
             if (test.requireHeaders.isNotEmpty()) {
-                writer.write("let requiredHeaders = [${test.requireHeaders.joinToString(separator = ", ")}]")
+                writer.write("let requiredHeaders = [\"${test.requireHeaders.joinToString(separator = ", ")}\"]")
                 writer.write("// assert required headers do exist")
                 writer.openBlock("for requiredHeader in requiredHeaders {", "}") {
                     writer.openBlock("XCTAssertTrue(", ")") {
@@ -142,11 +142,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
             }
 
-            if (test.body.isPresent) {
+            if(test.body.isPresent && !test.body.get().isBlank()) {
                 writer.openBlock("assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in", "})") {
                     writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                     writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                     writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
+                }
+            } else {
+                writer.openBlock("assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in", "})") {
+                    writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is nil as expected\")")
+                    writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is nil as expected\")")
                 }
             }
         }

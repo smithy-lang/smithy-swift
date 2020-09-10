@@ -25,13 +25,34 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
 
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
+        val ignoredTests = setOf(
+            "RestJsonListsSerializeNull", // TODO - sparse lists not supported - this test needs removed
+            "RestJsonSerializesNullMapValues", // TODO - sparse maps not supported - this test needs removed
+            // FIXME - document type not fully supported yet
+            "InlineDocumentInput",
+            "InlineDocumentAsPayloadInput",
+            "InlineDocumentOutput",
+            "InlineDocumentAsPayloadInputOutput"
+        )
+
+        val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
+
+        // TODO:: add response generator too
+        HttpProtocolTestGenerator(
+            ctx,
+            requestTestBuilder,
+            ignoredTests
+        ).generateProtocolTests()
+    }
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite

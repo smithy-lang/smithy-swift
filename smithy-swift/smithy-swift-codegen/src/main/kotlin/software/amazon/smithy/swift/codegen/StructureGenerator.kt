@@ -115,7 +115,7 @@ class StructureGenerator(
                 if (hasErrorTrait) {
                     writer.write("httpResponse: HttpResponse" + (if (hasMembers) "," else ""))
                 }
-                if (membersSortedByName.size > 0) {
+                if (membersSortedByName.isNotEmpty()) {
                     for ((index, member) in membersSortedByName.withIndex()) {
                         val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                         if (memberName == null || memberSymbol == null) continue

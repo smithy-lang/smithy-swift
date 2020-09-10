@@ -31,7 +31,7 @@ protected constructor(builder: Builder<T>) {
 
     protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
     protected val model: Model = builder.model!!
-    protected val testCases: List<T> = builder.testCases!!
+    private val testCases: List<T> = builder.testCases!!
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!
     protected val serviceName: String = builder.serviceName!!
@@ -51,8 +51,6 @@ protected constructor(builder: Builder<T>) {
             }
             .closeBlock("}")
     }
-
-    protected open fun openTestFunctionBlock(): String = "{"
 
     /**
      * Write a single unit test function using the given [writer]

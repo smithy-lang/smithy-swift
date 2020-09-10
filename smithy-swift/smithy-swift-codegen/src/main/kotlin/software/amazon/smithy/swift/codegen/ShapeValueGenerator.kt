@@ -141,7 +141,11 @@ class ShapeValueGenerator(
 
         override fun objectNode(node: ObjectNode) {
             var i = 0
-            node.members.forEach { (keyNode, valueNode) ->
+            // this is important because when a struct is generated in swift it is generated with its members sorted by name.
+            // when you instantiate that struct you have to call params in order with their param names. if you don't it won't compile
+            // so we sort here before we write any of the members with their values
+            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> {it.value})
+            sortedMembers.forEach { (keyNode, valueNode) ->
                 val memberShape: Shape
                 when (currShape) {
                     is StructureShape -> {
@@ -164,6 +168,7 @@ class ShapeValueGenerator(
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
                         writer.writeInline("\n\$S: ", keyNode.value)
+
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
