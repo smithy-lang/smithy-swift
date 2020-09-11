@@ -227,7 +227,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val opIndex = ctx.model.getKnowledge(OperationIndex::class.java)
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
-
+        val inputShape = ctx.model.expectShape(op.input.get())
+        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val queryBindings = requestBindings.values.filter { it.location == HttpBinding.Location.QUERY }
@@ -251,13 +252,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
-                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType)
+                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
                     writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
                 }
             }
@@ -323,13 +324,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 ProtocolGenerator.getFormattedDateString(timestampFormat, itemValue)
             }
             is BlobShape -> {
-                "$itemValue.base64EncodedString()"
+                "try $itemValue.base64EncodedString()"
             }
             is StringShape -> {
                 val enumRawValueSuffix = itemShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
                 var formattedItemValue = "$itemValue$enumRawValueSuffix"
                 if (itemShape.hasTrait(MediaTypeTrait::class.java)) {
-                    formattedItemValue = "$formattedItemValue.base64EncodedString()"
+                    formattedItemValue = "try $formattedItemValue.base64EncodedString()"
                 }
                 formattedItemValue
             }
@@ -342,11 +343,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         headerBindings: List<HttpBinding>,
         prefixHeaderBindings: List<HttpBinding>,
         writer: SwiftWriter,
-        contentType: String
+        contentType: String,
+        hasHttpBody: Boolean
     ) {
         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         writer.write("var headers = HttpHeaders()")
-        writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
+        //we only need the content type header in the request if there is an http body that is being sent
+        if(hasHttpBody) {
+            writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
+        }
         headerBindings.forEach {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)

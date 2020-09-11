@@ -16,6 +16,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
  * Generates HTTP protocol unit tests for `httpRequestTest` cases
@@ -40,15 +41,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .closeBlock(")")
     }
 
-    private fun renderExpectedBody( test: HttpRequestTestCase) {
-        if(test.body.isEmpty) {
+    private fun renderExpectedBody(test: HttpRequestTestCase) {
+        if (test.body.isEmpty) {
             writer.write("body: nil,")
         } else {
             test.body.ifPresent { body ->
-                if (!body.isBlank()) {
-                    writer.write("body: \"\"\"\n\$L\n\"\"\",", body)
-                } else {
-                    writer.write("body: nil,")
+                when {
+                    !body.isBlank() && body != "{}" -> writer.write("body: \"\"\"\n\$L\n\"\"\",", body)
+                    body == "{}" -> writer.write("body: nil,")
+                    else -> writer.write("body: nil,")
                 }
             }
         }
@@ -82,78 +83,90 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-            val declarative = if(test.body.isPresent && !test.body.get().isBlank()) "var" else "let"
-            writer.write("$declarative actual = input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)", test.uri)
-            if(test.body.isPresent && !test.body.get().isBlank()) { //if body is not null or equal to empty string we will need to serialize it
-                writer.openBlock("do {")
-                    .write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
-                    .closeBlock("} catch let err {")
-                    .indent()
-                    .write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
-                    .dedent()
-                    .write("}")
-            }
+            writer.openBlock("do {", "} catch let err {") {
 
-            // assert that forbidden Query Items do not exist
-            if (test.forbidQueryParams.isNotEmpty()) {
-                writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
-                writer.write("// assert forbidden query params do not exist")
-                writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
-                    writer.openBlock("XCTAssertFalse(", ")") {
-                        writer.write("queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
-                        writer.write("\"Forbidden Query:\\(forbiddenQueryParam) exists in query items\"")
+                val declarative = if (test.body.isPresent && !test.body.get().isBlank()) "var" else "let"
+                writer.write(
+                    "$declarative actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)",
+                    test.uri
+                )
+                if (test.body.isPresent && !test.body.get()
+                        .isBlank() && test.body.get() != "{}"
+                ) { //if body is not null or equal to empty string we will need to serialize it
+                    writer.write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
+                }
+
+                // assert that forbidden Query Items do not exist
+                if (test.forbidQueryParams.isNotEmpty()) {
+                    writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
+                    writer.write("// assert forbidden query params do not exist")
+                    writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
+                        writer.openBlock("XCTAssertFalse(", ")") {
+                            writer.write("queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
+                            writer.write("\"Forbidden Query:\\(forbiddenQueryParam) exists in query items\"")
+                        }
+                    }
+                }
+
+                // assert that forbidden headers do not exist
+                if (test.forbidHeaders.isNotEmpty()) {
+                    writer.write("let forbiddenHeaders = [\"${test.forbidHeaders.joinToString(separator = ", ")}\"]")
+                    writer.write("// assert forbidden headers do not exist")
+                    writer.openBlock("for forbiddenHeader in forbiddenHeaders {", "}") {
+                        writer.openBlock("XCTAssertFalse(", ")") {
+                            writer.write("headerExists(forbiddenHeader, in: actual.headers.headers),")
+                            writer.write("\"Forbidden Header:\\(forbiddenHeader) exists in headers\"")
+                        }
+                    }
+                }
+
+                // assert that required Query Items do exist
+                if (test.requireQueryParams.isNotEmpty()) {
+                    writer.write("let requiredQueryParams = [\"${test.requireQueryParams.joinToString(separator = ", ")}\"]")
+                    writer.write("// assert required query params do exist")
+                    writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
+                        writer.openBlock("XCTAssertTrue(", ")") {
+                            writer.write("queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
+                            writer.write("\"Required Query:\\(requiredQueryParam) does not exist in query items\"")
+                        }
+                    }
+                }
+
+                // assert that required Headers do exist
+                if (test.requireHeaders.isNotEmpty()) {
+                    writer.write("let requiredHeaders = [\"${test.requireHeaders.joinToString(separator = ", ")}\"]")
+                    writer.write("// assert required headers do exist")
+                    writer.openBlock("for requiredHeader in requiredHeaders {", "}") {
+                        writer.openBlock("XCTAssertTrue(", ")") {
+                            writer.write("headerExists(requiredHeader, in: actual.headers.headers),")
+                            writer.write("\"Required Header:\\(requiredHeader) does not exist in headers\"")
+                        }
+                    }
+                }
+
+                if (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}") {
+                    writer.openBlock(
+                        "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                        "})"
+                    ) {
+                        writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
+                        writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
+                        writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
+                    }
+                } else {
+                    writer.openBlock(
+                        "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                        "})"
+                    ) {
+                        writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is nil as expected\")")
+                        writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is nil as expected\")")
                     }
                 }
             }
-
-            // assert that forbidden headers do not exist
-            if (test.forbidHeaders.isNotEmpty()) {
-                writer.write("let forbiddenHeaders = [\"${test.forbidHeaders.joinToString(separator = ", ")}\"]")
-                writer.write("// assert forbidden headers do not exist")
-                writer.openBlock("for forbiddenHeader in forbiddenHeaders {", "}") {
-                    writer.openBlock("XCTAssertFalse(", ")") {
-                        writer.write("headerExists(forbiddenHeader, in: actual.headers.headers),")
-                        writer.write("\"Forbidden Header:\\(forbiddenHeader) exists in headers\"")
-                    }
-                }
-            }
-
-            // assert that required Query Items do exist
-            if (test.requireQueryParams.isNotEmpty()) {
-                writer.write("let requiredQueryParams = [\"${test.requireQueryParams.joinToString(separator = ", ")}\"]")
-                writer.write("// assert required query params do exist")
-                writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
-                    writer.openBlock("XCTAssertTrue(", ")") {
-                        writer.write("queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
-                        writer.write("\"Required Query:\\(requiredQueryParam) does not exist in query items\"")
-                    }
-                }
-            }
-
-            // assert that required Headers do exist
-            if (test.requireHeaders.isNotEmpty()) {
-                writer.write("let requiredHeaders = [\"${test.requireHeaders.joinToString(separator = ", ")}\"]")
-                writer.write("// assert required headers do exist")
-                writer.openBlock("for requiredHeader in requiredHeaders {", "}") {
-                    writer.openBlock("XCTAssertTrue(", ")") {
-                        writer.write("headerExists(requiredHeader, in: actual.headers.headers),")
-                        writer.write("\"Required Header:\\(requiredHeader) does not exist in headers\"")
-                    }
-                }
-            }
-
-            if(test.body.isPresent && !test.body.get().isBlank()) {
-                writer.openBlock("assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in", "})") {
-                    writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
-                    writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                    writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
-                }
-            } else {
-                writer.openBlock("assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in", "})") {
-                    writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is nil as expected\")")
-                    writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is nil as expected\")")
-                }
-            }
+            writer.indent()
+            writer.write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
+            writer.dedent()
+            writer.write("}")
         }
     }
 

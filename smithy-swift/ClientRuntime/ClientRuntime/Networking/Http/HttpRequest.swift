@@ -17,7 +17,7 @@ import Foundation
 
 public struct HttpRequest {
     public var body: HttpBody?
-    public let headers: HttpHeaders
+    public var headers: HttpHeaders
     public let endpoint: Endpoint
     public let method: HttpMethodType
 

@@ -79,35 +79,44 @@ class StructEncodeGeneration(
                         }
                     }
                     else -> {
-                        val memberWithExtension = getShapeExtension(member, memberName)
-                        writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+
+                        val isBoxed = target.hasTrait(BoxTrait::class.java) || (!(target is NumberShape) && !(target is BooleanShape))
+                        val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
+                        if(isBoxed) {
+                            writer.openBlock("if let $memberName = $memberName {", "}") {
+                                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+                            }
+                        } else {
+                            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun getShapeExtension(shape: Shape, memberName: String, isOptional: Boolean = true): String {
+    private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
         // target shape type to deserialize is either the shape itself or member.target
         val target = when (shape) {
             is MemberShape -> ctx.model.expectShape(shape.target)
             else -> shape
         }
-        val optional = if(isOptional) "?" else ""
+        val optional = if((isBoxed && isUnwrapped) || !isBoxed)  "" else "?"
+
         return when (target) {
-            is TimestampShape -> encodeDateType(shape, memberName, isOptional)
+            is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
             is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
             is BlobShape -> "$memberName$optional.base64EncodedString()"
             else -> memberName
         }
     }
     // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
-    private fun encodeDateType(shape: Shape, memberName: String, isOptional: Boolean = true): String {
+    private fun encodeDateType(shape: Shape, memberName: String, isUnwrapped: Boolean = true): String {
         val tsFormat = shape
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
-        return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isOptional)
+        return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isUnwrapped)
     }
 
     private fun renderEncodeListMember(targetShape: Shape, keyName: String, containerName: String, level: Int = 0) {

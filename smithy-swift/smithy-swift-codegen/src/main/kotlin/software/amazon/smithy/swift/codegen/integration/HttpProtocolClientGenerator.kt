@@ -24,10 +24,12 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
+import java.util.*
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -83,8 +85,14 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderOperationBody(opIndex: OperationIndex, op: OperationShape) {
-        renderOperationInputSerializationBlock(opIndex, op)
-        renderHttpRequestExecutionBlock(opIndex, op)
+        writer.openBlock("do {", "} catch let err { ") {
+            renderOperationInputSerializationBlock(opIndex, op)
+            renderHttpRequestExecutionBlock(opIndex, op)
+        }
+        writer.indent()
+        writer.write("completion(.failure(.client(.serializationFailed(err.localizedDescription))))")
+        writer.dedent()
+        writer.write("}")
     }
 
     // replace labels with any path bindings
@@ -146,21 +154,11 @@ class HttpProtocolClientGenerator(
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
-            writer.write("var request = input.buildHttpRequest(method: method, path: path)")
+            writer.write("var request = try input.buildHttpRequest(method: method, path: path)")
             if (inputShape.get().members().any { it.isInHttpBody() }) {
-                renderEncodingHttpRequestBlock(writer)
+                writer.write("try encoder.encodeHttpRequest(input, currentHttpRequest: &request)")
             }
         }
-    }
-
-    private fun renderEncodingHttpRequestBlock(writer: SwiftWriter) {
-        writer.openBlock("do {", "} catch let err { ") {
-            writer.write("try encoder.encodeHttpRequest(input, currentHttpRequest: &request)")
-        }
-        writer.indent()
-        writer.write("completion(.failure(.client(.serializationFailed(err.localizedDescription))))")
-        writer.dedent()
-        writer.write("}")
     }
 
     private fun renderHttpRequestExecutionBlock(opIndex: OperationIndex, op: OperationShape) {

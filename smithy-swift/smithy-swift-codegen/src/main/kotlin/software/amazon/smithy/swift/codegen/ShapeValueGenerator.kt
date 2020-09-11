@@ -112,13 +112,8 @@ class ShapeValueGenerator(
                 } else ""
             }
             ShapeType.BLOB -> {
-                if (shape.hasTrait(StreamingTrait::class.java)) {
-                    // TODO:: handle streaming case
-                    ""
-                } else {
-                    val symbol = symbolProvider.toSymbol(shape)
+                  //  val symbol = symbolProvider.toSymbol(shape)
                     ".data(using: .utf8)"
-                }
             }
             else -> ""
         }
@@ -180,6 +175,11 @@ class ShapeValueGenerator(
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }
                 i++
+            }
+            if (sortedMembers.isEmpty()) {
+                when(currShape) {
+                    is MapShape -> writer.writeInline(":") // to pass an empty map you need to have a colon like `[:]`
+                }
             }
         }
 

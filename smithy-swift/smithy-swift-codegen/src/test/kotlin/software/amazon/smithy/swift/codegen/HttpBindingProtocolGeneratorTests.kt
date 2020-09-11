@@ -89,7 +89,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
                 """
                     extension SmokeTestRequest: HttpRequestBinding {
-                        public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                        public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                             var queryItems: [URLQueryItem] = [URLQueryItem]()
                             if let query1 = query1 {
                                 let queryItem = URLQueryItem(name: "Query1", value: String(query1))
@@ -118,7 +118,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension ExplicitStringRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -137,7 +137,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension ExplicitBlobRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -156,7 +156,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension ExplicitBlobStreamRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -175,7 +175,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension ExplicitStructRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -194,7 +194,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension ListInputRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -213,7 +213,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
                 extension EnumInputRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                         var headers = HttpHeaders()
@@ -235,15 +235,15 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension TimestampInputRequest: HttpRequestBinding {
-                public func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     if let queryTimestamp = queryTimestamp {
-                        let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601FractionalSecondsString()))
+                        let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.rfc5322String()))
                         queryItems.append(queryItem)
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601FractionalSecondsString()))
+                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.rfc5322String()))
                             queryItems.append(queryItem)
                         }
                     }
@@ -251,10 +251,10 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/json")
                     if let headerEpoch = headerEpoch {
-                        headers.add(name: "X-Epoch", value: String(headerEpoch.rfc5322String()))
+                        headers.add(name: "X-Epoch", value: String(headerEpoch.iso8601FractionalSecondsString()))
                     }
                     if let headerHttpDate = headerHttpDate {
-                        headers.add(name: "X-Date", value: String(headerHttpDate.rfc5322String()))
+                        headers.add(name: "X-Date", value: String(headerHttpDate.iso8601FractionalSecondsString()))
                     }
                     return HttpRequest(method: method, endpoint: endpoint, headers: headers)
                 }
@@ -293,9 +293,15 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(payload1, forKey: .payload1)
-                    try container.encode(payload2, forKey: .payload2)
-                    try container.encode(payload3, forKey: .payload3)
+                    if let payload1 = payload1 {
+                        try container.encode(payload1, forKey: .payload1)
+                    }
+                    if let payload2 = payload2 {
+                        try container.encode(payload2, forKey: .payload2)
+                    }
+                    if let payload3 = payload3 {
+                        try container.encode(payload3, forKey: .payload3)
+                    }
                 }
             }
             """.trimIndent()
@@ -329,7 +335,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                             try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                         }
                     }
-                    try container.encode(member1, forKey: .member1)
+                    if let member1 = member1 {
+                        try container.encode(member1, forKey: .member1)
+                    }
                 }
             }
             """.trimIndent()
@@ -353,14 +361,22 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(dateTime?.iso8601FractionalSecondsString(), forKey: .dateTime)
-                    try container.encode(epochSeconds?.timeIntervalSince1970, forKey: .epochSeconds)
-                    try container.encode(httpDate?.rfc5322String(), forKey: .httpDate)
-                    try container.encode(normal?.iso8601FractionalSecondsString(), forKey: .normal)
+                    if let dateTime = dateTime {
+                        try container.encode(dateTime.rfc5322String(), forKey: .dateTime)
+                    }
+                    if let epochSeconds = epochSeconds {
+                        try container.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
+                    }
+                    if let httpDate = httpDate {
+                        try container.encode(httpDate.iso8601FractionalSecondsString(), forKey: .httpDate)
+                    }
+                    if let normal = normal {
+                        try container.encode(normal.rfc5322String(), forKey: .normal)
+                    }
                     if let timestampList = timestampList {
                         var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
-                            try timestampListContainer.encode(timestamplist0.iso8601FractionalSecondsString())
+                            try timestampListContainer.encode(timestamplist0.rfc5322String())
                         }
                     }
                 }
@@ -395,7 +411,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     if let dateMap = dateMap {
                         var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
                         for (key0, datemap0) in dateMap {
-                            try dateMapContainer.encode(datemap0.rfc5322String(), forKey: Key(stringValue: key0))
+                            try dateMapContainer.encode(datemap0.iso8601FractionalSecondsString(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let enumMap = enumMap {
@@ -435,7 +451,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(nestedWithEnum, forKey: .nestedWithEnum)
+                    if let nestedWithEnum = nestedWithEnum {
+                        try container.encode(nestedWithEnum, forKey: .nestedWithEnum)
+                    }
                 }
             }
             """.trimIndent()
@@ -452,7 +470,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(myEnum?.rawValue, forKey: .myEnum)
+                    if let myEnum = myEnum {
+                        try container.encode(myEnum.rawValue, forKey: .myEnum)
+                    }
                 }
             }
             """.trimIndent()

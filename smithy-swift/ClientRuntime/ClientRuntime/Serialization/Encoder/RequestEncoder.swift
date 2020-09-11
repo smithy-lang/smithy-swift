@@ -28,11 +28,13 @@ public extension RequestEncoder {
     func encodeHttpRequest<T>(_ input: T, currentHttpRequest: inout HttpRequest) throws -> HttpRequest where T: Encodable {
         if let data = input as? Data {
             currentHttpRequest.body = HttpBody.data(data)
+            currentHttpRequest.headers.add(name: "Content-Length", value: String(data.count))
             return currentHttpRequest
         } else {
             do {
                 let data = try self.encode(input)
                 currentHttpRequest.body = HttpBody.data(data)
+                currentHttpRequest.headers.add(name: "Content-Length", value: String(data.count))
                 return currentHttpRequest
             } catch {
                 throw ClientError.serializationFailed("Failed to Encode Http Request body")

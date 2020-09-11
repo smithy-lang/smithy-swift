@@ -53,11 +53,20 @@ open class HttpRequestTestBase: XCTestCase {
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
+        //handle empty string body cases that should still create a request
+        //without the body
+        if body == "" || body == "{}" {
+            return HttpRequest(method: method,
+                               endpoint: endPoint,
+                               headers: httpHeaders)
+        }
+    
         let httpBody = HttpBody.data(body.data(using: .utf8))
         return HttpRequest(method: method,
                            endpoint: endPoint,
                            headers: httpHeaders,
                            body: httpBody)
+        
     }
     
     /**

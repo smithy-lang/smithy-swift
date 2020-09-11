@@ -43,7 +43,7 @@ protected constructor(builder: Builder<T>) {
         writer.write("")
             .openBlock("class $testClassName: HttpRequestTestBase {")
             // TODO:: Replace host appropriately
-            .write("let host = \"myapi.host.com\"")
+            .write("let host = \"my-api.us-east-2.amazonaws.com\"")
             .call {
                 for (test in testCases) {
                     renderTestFunction(test)

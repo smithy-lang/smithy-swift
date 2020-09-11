@@ -25,7 +25,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class HttpProtocolClientGeneratorTests : TestsBase() {
+class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
     var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
@@ -93,25 +93,25 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 ),
             query1: "Query 1"
 )
-        var actual = input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo")
         do {
+            var actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo")
             _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
+            let requiredHeaders = ["Content-Length"]
+            // assert required headers do exist
+            for requiredHeader in requiredHeaders {
+                XCTAssertTrue(
+                    headerExists(requiredHeader, in: actual.headers.headers),
+                    "Required Header:\(requiredHeader) does not exist in headers"
+                )
+            }
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+            })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
-        let requiredHeaders = ["Content-Length"]
-        // assert required headers do exist
-        for requiredHeader in requiredHeaders {
-            XCTAssertTrue(
-                headerExists(requiredHeader, in: actual.headers.headers),
-                "Required Header:\(requiredHeader) does not exist in headers"
-            )
-        }
-        assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-            XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-            XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-            assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
-        })
     }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -140,25 +140,25 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         let input = ExplicitStringRequest(
             payload1: "explicit string"
 )
-        var actual = input.buildHttpRequest(method: .post, path: "/explicit/string")
         do {
+            var actual = try input.buildHttpRequest(method: .post, path: "/explicit/string")
             _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
+            let requiredHeaders = ["Content-Length"]
+            // assert required headers do exist
+            for requiredHeader in requiredHeaders {
+                XCTAssertTrue(
+                    headerExists(requiredHeader, in: actual.headers.headers),
+                    "Required Header:\(requiredHeader) does not exist in headers"
+                )
+            }
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+            })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
-        let requiredHeaders = ["Content-Length"]
-        // assert required headers do exist
-        for requiredHeader in requiredHeaders {
-            XCTAssertTrue(
-                headerExists(requiredHeader, in: actual.headers.headers),
-                "Required Header:\(requiredHeader) does not exist in headers"
-            )
-        }
-        assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-            XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-            XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-            assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
-        })
     }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -166,44 +166,146 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates a unit test for a request without a body`() {
-        val contents = getTestFileContents("example", "NoBodyRequestTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "EmptyInputAndEmptyOutputRequestTest.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testNoBody() {
+    func testRestJsonEmptyInputAndEmptyOutput() {
         let expected = buildExpectedHttpRequest(
             method: .post,
-            path: "/input/query",
-            headers: [
-                "X-Foo": "Foo"
-            ],
-            queryParams: [
-                "Query2=query2"
-            ],
+            path: "/EmptyInputAndEmptyOutput",
+            headers: [String: String](),
+            queryParams: [String](),
             body: nil,
             host: host
         )
 
-        let input = NoBodyRequest(
-            header1: "Foo",
-            query2: "query2"
+        let input = EmptyInputAndEmptyOutputInput(
 )
-        var actual = input.buildHttpRequest(method: .post, path: "/input/query")
-        let requiredHeaders = ["Content-Length"]
-        // assert required headers do exist
-        for requiredHeader in requiredHeaders {
-            XCTAssertTrue(
-                headerExists(requiredHeader, in: actual.headers.headers),
-                "Required Header:\(requiredHeader) does not exist in headers"
-            )
+        do {
+            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput")
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
+                XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
         }
-        assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-            XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-            XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-            assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
-        })
     }
-}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates a unit test for a request without a body given an empty object`() {
+        val contents = getTestFileContents("example", "SimpleScalarPropertiesRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+    func testRestJsonDoesntSerializeNullStructureValues() {
+        let expected = buildExpectedHttpRequest(
+            method: .put,
+            path: "/SimpleScalarProperties",
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            queryParams: [String](),
+            body: nil,
+            host: host
+        )
+
+        let input = SimpleScalarPropertiesInputOutput(
+            stringValue: nil
+)
+        do {
+            var actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties")
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
+                XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+    }
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates a unit test with a string to be converted to data`() {
+        val contents = getTestFileContents("example", "StreamingTraitsRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+    func testRestJsonStreamingTraitsWithBlob() {
+        let expected = buildExpectedHttpRequest(
+            method: .post,
+            path: "/StreamingTraits",
+            headers: [
+                "Content-Type": "application/octet-stream",
+                "X-Foo": "Foo"
+            ],
+            queryParams: [String](),
+            body: ""${'"'}
+            blobby blob blob
+            ""${'"'},
+            host: host
+        )
+
+        let input = StreamingTraitsInputOutput(
+            blob: "blobby blob blob".data(using: .utf8),
+            foo: "Foo"
+)
+        do {
+            var actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits")
+            _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+    }
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates unit test with an empty map`() {
+        val contents = getTestFileContents("example", "HttpPrefixHeadersRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+    func testRestJsonHttpPrefixHeadersAreNotPresent() {
+        let expected = buildExpectedHttpRequest(
+            method: .get,
+            path: "/HttpPrefixHeaders",
+            headers: [
+                "X-Foo": "Foo"
+            ],
+            queryParams: [String](),
+            body: nil,
+            host: host
+        )
+
+        let input = HttpPrefixHeadersInputOutput(
+            foo: "Foo",
+            fooMap: [:            
+            ]
+
+)
+        do {
+            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders")
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
+                XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+    }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
