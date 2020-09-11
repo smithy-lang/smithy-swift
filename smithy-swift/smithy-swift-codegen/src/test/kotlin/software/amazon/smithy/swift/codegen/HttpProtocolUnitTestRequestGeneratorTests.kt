@@ -95,7 +95,6 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 )
         do {
             var actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo")
-            _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -142,7 +141,6 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 )
         do {
             var actual = try input.buildHttpRequest(method: .post, path: "/explicit/string")
-            _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -258,7 +256,6 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 )
         do {
             var actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits")
-            _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")

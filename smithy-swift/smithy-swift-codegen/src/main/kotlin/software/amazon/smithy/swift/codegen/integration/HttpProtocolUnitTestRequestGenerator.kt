@@ -90,11 +90,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     "$declarative actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)",
                     test.uri
                 )
-                if (test.body.isPresent && !test.body.get()
-                        .isBlank() && test.body.get() != "{}"
-                ) { //if body is not null or equal to empty string we will need to serialize it
-                    writer.write("_ = try $requestEncoder.encodeHttpRequest(input, currentHttpRequest: &actual)")
-                }
 
                 // assert that forbidden Query Items do not exist
                 if (test.forbidQueryParams.isNotEmpty()) {

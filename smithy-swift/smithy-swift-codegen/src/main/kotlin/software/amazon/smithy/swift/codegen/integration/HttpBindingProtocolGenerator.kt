@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.CodegenException
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -24,10 +25,7 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import software.amazon.smithy.swift.codegen.ServiceGenerator
-import software.amazon.smithy.swift.codegen.StructureGenerator
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.utils.OptionalUtils
 import javax.swing.plaf.synth.SynthTreeUI
 
@@ -252,17 +250,70 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String) throws -> HttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
                     renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
-                    writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
+                    renderEncodedBodyAndReturn(ctx, writer, inputShape, requestBindings)
                 }
             }
             writer.write("")
+        }
+    }
+
+    private fun renderEncodedBodyAndReturn(ctx: ProtocolGenerator.GenerationContext,
+                                           writer: SwiftWriter,
+                                           inputShape: Shape,
+                                           requestBindings: Map<String,HttpBinding>) {
+        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+        val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+
+        if(hasHttpBody) {
+            if (httpPayload != null) {
+                renderExplicitPayload(ctx, httpPayload, writer)
+            } else {
+                writer.write("let data = try encoder.encode(self)")
+                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))")
+            }
+        } else {
+            writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
+        }
+    }
+
+    private fun renderExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
+        // explicit payload member as the sole payload
+        val memberName = binding.member.defaultName()
+
+        val target = ctx.model.expectShape(binding.member.target)
+        val name = target.camelCaseName()
+        when (target.type) {
+            ShapeType.BLOB -> {
+                //FIXME handle streaming properly
+                val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
+
+                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.\$L))", name)
+            }
+            ShapeType.STRING -> {
+
+                val contents = if (target.hasTrait(EnumTrait::class.java)) {
+                    "$name.rawValue"
+                } else {
+                    name
+                }
+                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.\$L))", contents)
+            }
+            ShapeType.STRUCTURE, ShapeType.UNION -> {
+                // delegate to the member encode function
+                writer.write("let data = try encoder.encode(self.\$L)", name)
+                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))")
+            }
+            ShapeType.DOCUMENT -> {
+                // TODO - deal with document members
+            }
+            else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
         }
     }
 

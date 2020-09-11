@@ -25,6 +25,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.isBoxed
 
 /**
  * Generates encode function for members bound to the payload.
@@ -79,8 +80,8 @@ class StructEncodeGeneration(
                         }
                     }
                     else -> {
-
-                        val isBoxed = target.hasTrait(BoxTrait::class.java) || (!(target is NumberShape) && !(target is BooleanShape))
+                        val symbol = ctx.symbolProvider.toSymbol(target)
+                        val isBoxed = symbol.isBoxed()
                         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
                         if(isBoxed) {
                             writer.openBlock("if let $memberName = $memberName {", "}") {

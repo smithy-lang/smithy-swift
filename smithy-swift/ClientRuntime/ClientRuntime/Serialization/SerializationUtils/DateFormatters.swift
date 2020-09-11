@@ -57,15 +57,15 @@ extension DateFormatter {
 
 
 public extension Date {
-    func iso8601FractionalSecondsString() -> String {
+    func iso8601FractionalSeconds() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         return formatter.string(from: self)
     }
-    func iso8601WithoutFractionalSecondsString() -> String {
+    func iso8601WithoutFractionalSeconds() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
         return formatter.string(from: self)
     }
-    func rfc5322String() -> String {
+    func rfc5322() -> String {
         let formatter = DateFormatter.rfc5322DateFormatter
         return formatter.string(from: self)
     }
