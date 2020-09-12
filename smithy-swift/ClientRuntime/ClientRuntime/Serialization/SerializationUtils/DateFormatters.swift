@@ -42,7 +42,7 @@ extension DateFormatter {
     */
     public static let iso8601DateFormatterWithoutFractionalSeconds: DateFormatter =
         getDateFormatter(
-            dateFormat: "yyyy-MM-dd'T'HH:mm:ssZ",
+            dateFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
             timeZone: TimeZone(secondsFromGMT: 0)!
     )
     

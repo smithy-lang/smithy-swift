@@ -195,6 +195,7 @@ open class HttpRequestTestBase: XCTestCase {
                 XCTFail("Expected Header \(expectedHeaderName) is not found in actual headers")
                 return
             }
+//            let values = actual.dictionary.filter {$0.key == expectedHeaderName}.joinWithSeparator(",")
             XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
                            "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
                            " does not match actual header value \(actual.dictionary[expectedHeaderName])]")

@@ -154,7 +154,7 @@ class HttpProtocolClientGenerator(
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
-            writer.write("var request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)")
+            writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)")
         }
     }
 

@@ -21,7 +21,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = requiredQuery {
@@ -75,13 +75,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   requiredQuery: "required query",
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
-        var actual = input.buildHttpRequest(method: .post, path: "/")
-        
         do {
-            _ = try JSONEncoder().encodeHttpRequest(input, currentHttpRequest: &actual)
-        } catch let err {
-            XCTFail("Failed to encode the input. Error description: \(err)")
-        }
+        let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
         
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
@@ -118,6 +113,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
             assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
         })
+        }
+        catch {
+            XCTFail("Encoding of request failed")
+        }
     }
     
     func testJSONEqual () throws {

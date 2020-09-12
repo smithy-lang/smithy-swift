@@ -272,12 +272,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
         if(hasHttpBody) {
+            var optionalTerminator  = ""
             if (httpPayload != null) {
+                val shape = ctx.model.expectShape(httpPayload.member.target)
+                optionalTerminator = if(ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
                 renderExplicitPayload(ctx, httpPayload, writer)
             } else {
                 writer.write("let data = try encoder.encode(self)")
-                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))")
+                writer.write("let body = HttpBody.data(data)")
+                writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
+                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
             }
+
         } else {
             writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
         }
@@ -285,36 +291,47 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
         // explicit payload member as the sole payload
-        val memberName = binding.member.defaultName()
-
+        val memberName = binding.member.memberName
         val target = ctx.model.expectShape(binding.member.target)
-        val name = target.camelCaseName()
-        when (target.type) {
-            ShapeType.BLOB -> {
-                //FIXME handle streaming properly
-                val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
-
-                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.\$L))", name)
-            }
-            ShapeType.STRING -> {
-
-                val contents = if (target.hasTrait(EnumTrait::class.java)) {
-                    "$name.rawValue"
-                } else {
-                    name
+        writer.openBlock("if let $memberName = self.$memberName {", "} else {") {
+            when (target.type) {
+                ShapeType.BLOB -> {
+                    //FIXME handle streaming properly
+                    val isBinaryStream =
+                        ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
+                    writer.write("let data = \$L", memberName)
+                    writer.write("let body = HttpBody.data(data)")
                 }
-                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.\$L))", contents)
+                ShapeType.STRING -> {
+
+                    val contents = if (target.hasTrait(EnumTrait::class.java)) {
+                        "$memberName.rawValue"
+                    } else {
+                        memberName
+                    }
+                    writer.write("let data = \$L.data(using: .utf8)", contents)
+                    writer.write("let body = HttpBody.data(data)")
+
+                }
+                ShapeType.STRUCTURE, ShapeType.UNION -> {
+                    // delegate to the member encode function
+                    writer.write("let data = try encoder.encode(\$L)", memberName)
+                    writer.write("let body = HttpBody.data(data)")
+                }
+                ShapeType.DOCUMENT -> {
+                    // TODO - deal with document members
+                    writer.write("let data = try encoder.encode(\$L)", memberName)
+                    writer.write("let body = HttpBody.data(data)")
+                }
+                else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
-            ShapeType.STRUCTURE, ShapeType.UNION -> {
-                // delegate to the member encode function
-                writer.write("let data = try encoder.encode(self.\$L)", name)
-                writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))")
-            }
-            ShapeType.DOCUMENT -> {
-                // TODO - deal with document members
-            }
-            else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
+
+            writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
+            writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
         }
+        writer.indent()
+        writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
+        writer.closeBlock("}")
     }
 
     private fun renderQueryItems(

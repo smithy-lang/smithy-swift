@@ -94,7 +94,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             query1: "Query 1"
 )
         do {
-            var actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo")
+            var actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: JSONEncoder())
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -140,7 +140,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             payload1: "explicit string"
 )
         do {
-            var actual = try input.buildHttpRequest(method: .post, path: "/explicit/string")
+            var actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: JSONEncoder())
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -181,7 +181,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         let input = EmptyInputAndEmptyOutputInput(
 )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput")
+            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: JSONEncoder())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")
@@ -216,7 +216,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             stringValue: nil
 )
         do {
-            var actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties")
+            var actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: JSONEncoder())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")
@@ -255,7 +255,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             foo: "Foo"
 )
         do {
-            var actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits")
+            var actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: JSONEncoder())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -294,7 +294,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
 )
         do {
-            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders")
+            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: JSONEncoder())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is nil as expected")

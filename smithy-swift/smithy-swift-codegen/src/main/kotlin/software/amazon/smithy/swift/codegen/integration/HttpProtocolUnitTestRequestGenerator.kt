@@ -84,10 +84,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 .write("")
             writer.openBlock("do {", "} catch let err {") {
-
-                val declarative = if (test.body.isPresent && !test.body.get().isBlank()) "var" else "let"
+                
                 writer.write(
-                    "$declarative actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S)",
+                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: $requestEncoder)",
                     test.uri
                 )
 

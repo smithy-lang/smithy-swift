@@ -35,7 +35,7 @@ public struct HttpHeaders {
     ///   - name:  The `HTTPHeader` name.
     ///   - value: The `HTTPHeader value.
     public mutating func add(name: String, value: String) {
-        update(Header(name: name, value: value))
+        headers.append(Header(name: name, value: value))
     }
 
     /// Case-insensitively updates or appends the provided `HTTPHeader` into the instance.
@@ -76,7 +76,10 @@ public struct HttpHeaders {
     public var dictionary: [String: String] {
         let namesAndValues = headers.map { ($0.name, $0.value) }
 
-        return Dictionary(namesAndValues, uniquingKeysWith: { _, last in last })
+        return Dictionary(namesAndValues, uniquingKeysWith: { first, last in
+            let array = [first, last]
+            return array.sorted { $0 < $1}.joined(separator: ", ")
+            })
     }
 }
 

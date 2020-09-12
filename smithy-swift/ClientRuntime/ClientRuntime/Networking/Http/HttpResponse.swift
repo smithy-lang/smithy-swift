@@ -26,6 +26,7 @@ public struct HttpResponse: HttpUrlResponse {
     init(httpUrlResponse: HTTPURLResponse, content: ResponseType?) {
         self.content = content
         self.statusCode = HttpStatusCode(rawValue: httpUrlResponse.statusCode)!
+        self.headers = HttpHeaders()
         self.headers = httpUrlResponse.headers
     }
 

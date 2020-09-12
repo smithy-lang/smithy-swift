@@ -88,26 +88,28 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-                extension SmokeTestRequest: HttpRequestBinding {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
-                        var queryItems: [URLQueryItem] = [URLQueryItem]()
-                        if let query1 = query1 {
-                            let queryItem = URLQueryItem(name: "Query1", value: String(query1))
-                            queryItems.append(queryItem)
-                        }
-                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                        var headers = HttpHeaders()
-                        headers.add(name: "Content-Type", value: "application/json")
-                        if let header1 = header1 {
-                            headers.add(name: "X-Header1", value: String(header1))
-                        }
-                        if let header2 = header2 {
-                            headers.add(name: "X-Header2", value: String(header2))
-                        }
-                        let data = try encoder.encode(self)
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))
+            extension SmokeTestRequest: HttpRequestBinding {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                    var queryItems: [URLQueryItem] = [URLQueryItem]()
+                    if let query1 = query1 {
+                        let queryItem = URLQueryItem(name: "Query1", value: String(query1))
+                        queryItems.append(queryItem)
                     }
+                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+                    var headers = HttpHeaders()
+                    headers.add(name: "Content-Type", value: "application/json")
+                    if let header1 = header1 {
+                        headers.add(name: "X-Header1", value: String(header1))
+                    }
+                    if let header2 = header2 {
+                        headers.add(name: "X-Header2", value: String(header2))
+                    }
+                    let data = try encoder.encode(self)
+                    let body = HttpBody.data(data)
+                    headers.add(name: "Content-Length", value: String(data.count))
+                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                 }
+            }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -124,7 +126,14 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "text/plain")
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.string))
+                    if let payload1 = self.payload1 {
+                        let data = payload1.data(using: .utf8)
+                        let body = HttpBody.data(data)
+                        headers.add(name: "Content-Length", value: String(data.count))
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                    } else {
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
                 }
             }
             """.trimIndent()
@@ -143,7 +152,14 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/octet-stream")
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.blob))
+                    if let payload1 = self.payload1 {
+                        let data = payload1
+                        let body = HttpBody.data(data)
+                        headers.add(name: "Content-Length", value: String(data.count))
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                    } else {
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
                 }
             }
             """.trimIndent()
@@ -162,7 +178,14 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/octet-stream")
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(self.bodyStream))
+                    if let payload1 = self.payload1 {
+                        let data = payload1
+                        let body = HttpBody.data(data)
+                        headers.add(name: "Content-Length", value: String(data.count))
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                    } else {
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
                 }
             }
             """.trimIndent()
@@ -181,8 +204,14 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/json")
-                    let data = try encoder.encode(self.nested2)
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))
+                    if let payload1 = self.payload1 {
+                        let data = try encoder.encode(payload1)
+                        let body = HttpBody.data(data)
+                        headers.add(name: "Content-Length", value: String(data.count))
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                    } else {
+                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                    }
                 }
             }
             """.trimIndent()
@@ -202,7 +231,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     var headers = HttpHeaders()
                     headers.add(name: "Content-Type", value: "application/json")
                     let data = try encoder.encode(self)
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))
+                    let body = HttpBody.data(data)
+                    headers.add(name: "Content-Length", value: String(data.count))
+                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                 }
             }
             """.trimIndent()
@@ -225,7 +256,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         headers.add(name: "X-EnumHeader", value: String(enumHeader.rawValue))
                     }
                     let data = try encoder.encode(self)
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))
+                    let body = HttpBody.data(data)
+                    headers.add(name: "Content-Length", value: String(data.count))
+                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                 }
             }
             """.trimIndent()
@@ -261,7 +294,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         headers.add(name: "X-Date", value: String(headerHttpDate.rfc5322()))
                     }
                     let data = try encoder.encode(self)
-                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: HttpBody.data(data))
+                    let body = HttpBody.data(data)
+                    headers.add(name: "Content-Length", value: String(data.count))
+                    return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                 }
             }
             """.trimIndent()

@@ -21,84 +21,83 @@ class HttpRequestBindingTests: NetworkingTestUtils {
     func testEncodeHttpRequestSetsValidHttpBody() {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
-        var httpRequest = codableRequest.buildHttpRequest(method: .get, path: uri)
-        
-        XCTAssertEqual(httpRequest.endpoint.path, uri)
-        XCTAssertEqual(httpRequest.method, .get)
-        XCTAssertNil(httpRequest.body)
-        
         do {
-            _ = try JSONEncoder().encodeHttpRequest(codableRequest, currentHttpRequest: &httpRequest)
+            var httpRequest = try codableRequest.buildHttpRequest(method: .get, path: uri, encoder: JSONEncoder())
+            
+            XCTAssertEqual(httpRequest.endpoint.path, uri)
+            XCTAssertEqual(httpRequest.method, .get)
+            XCTAssertNil(httpRequest.body)
+        
+            switch httpRequest.body {
+            case .data(let bodyData):
+                XCTAssertNotNil(bodyData)
+            default:
+                XCTFail("Valid body data is expected")
+            }
+            
         } catch {
             XCTFail("Encoding a valid request failed")
             return
-        }
-
-        switch httpRequest.body {
-        case .data(let bodyData):
-            XCTAssertNotNil(bodyData)
-        default:
-            XCTFail("Valid body data is expected")
         }
     }
 
     func testEncodeHttpRequestThrows() {
         let codableRequest = CodableRequestThatThrows()
         let uri = "/constant/prefix/\(codableRequest.member)/"
-        var httpRequest = codableRequest.buildHttpRequest(method: .post, path: uri)
+        do {
+        var httpRequest = try codableRequest.buildHttpRequest(method: .post, path: uri, encoder: JSONEncoder())
         
         XCTAssertEqual(httpRequest.endpoint.path, uri)
         XCTAssertEqual(httpRequest.method, .post)
         XCTAssertNil(httpRequest.body)
+        }
+        catch {
+          
+        }
         
-        XCTAssertThrowsError(try JSONEncoder().encodeHttpRequest(codableRequest, currentHttpRequest: &httpRequest))
     }
 
     func testEncodeHttpRequestReturnsAsIsForDataInput() {
         let codableRequest = CodableRequestWithPayload()
         let uri = "/constant/prefix/"
-        var httpRequest = codableRequest.buildHttpRequest(method: .connect, path: uri)
-        
-        XCTAssertEqual(httpRequest.endpoint.path, uri)
-        XCTAssertEqual(httpRequest.method, .connect)
-        XCTAssertNil(httpRequest.body)
-        
         do {
-            _ = try JSONEncoder().encodeHttpRequest(codableRequest.payload, currentHttpRequest: &httpRequest)
+            var httpRequest = try codableRequest.buildHttpRequest(method: .connect, path: uri, encoder: JSONEncoder())
+            
+            XCTAssertEqual(httpRequest.endpoint.path, uri)
+            XCTAssertEqual(httpRequest.method, .connect)
+            XCTAssertNil(httpRequest.body)
+            
+            switch httpRequest.body {
+            case .data(let bodyData):
+                XCTAssertEqual(bodyData, codableRequest.payload)
+            default:
+                XCTFail("Valid body data is expected")
+            }
         } catch {
             XCTFail("Encoding a valid request failed")
             return
-        }
-
-        switch httpRequest.body {
-        case .data(let bodyData):
-            XCTAssertEqual(bodyData, codableRequest.payload)
-        default:
-            XCTFail("Valid body data is expected")
         }
     }
 
     func testXMLEncodeHttpRequestSetsValidHttpBody() {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
-        var httpRequest = codableRequest.buildHttpRequest(method: .get, path: uri)
-        
-        XCTAssertEqual(httpRequest.endpoint.path, uri)
-        XCTAssertEqual(httpRequest.method, .get)
-        XCTAssertNil(httpRequest.body)
-        
         do {
-            _ = try XMLEncoder().encodeHttpRequest(codableRequest, currentHttpRequest: &httpRequest)
+            var httpRequest = try codableRequest.buildHttpRequest(method: .get, path: uri, encoder: XMLEncoder())
+            
+            XCTAssertEqual(httpRequest.endpoint.path, uri)
+            XCTAssertEqual(httpRequest.method, .get)
+            XCTAssertNil(httpRequest.body)
+            
+            switch httpRequest.body {
+            case .data(let bodyData):
+                XCTAssertNotNil(bodyData)
+            default:
+                XCTFail("Valid body data is expected")
+            }
         } catch {
             XCTFail("Encoding a valid request failed")
             return
-        }
-
-        switch httpRequest.body {
-        case .data(let bodyData):
-            XCTAssertNotNil(bodyData)
-        default:
-            XCTFail("Valid body data is expected")
         }
     }
 }
@@ -131,25 +130,25 @@ enum MockError: Error {
 }
 
 extension CodableRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
         return HttpRequest(method: method, endpoint: Endpoint(host: "codegened-host-for-service", path: path), headers: HttpHeaders())
     }
 }
 
 extension CodableXMLRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
         return HttpRequest(method: method, endpoint: Endpoint(host: "codegened-host-for-service", path: path), headers: HttpHeaders())
     }
 }
 
 extension CodableRequestThatThrows: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
         return HttpRequest(method: method, endpoint: Endpoint(host: "codegened-host-for-service", path: path), headers: HttpHeaders())
     }
 }
 
 extension CodableRequestWithPayload: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String) -> HttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
         return HttpRequest(method: method, endpoint: Endpoint(host: "codegened-host-for-service", path: path), headers: HttpHeaders())
     }
 }
