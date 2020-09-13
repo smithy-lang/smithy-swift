@@ -84,7 +84,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 .write("")
             writer.openBlock("do {", "} catch let err {") {
-                
+
                 writer.write(
                     "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: $requestEncoder)",
                     test.uri
@@ -152,8 +152,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                         "})"
                     ) {
-                        writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is nil as expected\")")
-                        writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is nil as expected\")")
+                        writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is not nil as expected\")")
+                        writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is not nil as expected\")")
                     }
                 }
             }

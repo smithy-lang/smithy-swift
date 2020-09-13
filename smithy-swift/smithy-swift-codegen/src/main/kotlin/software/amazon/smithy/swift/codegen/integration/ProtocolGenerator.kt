@@ -46,10 +46,14 @@ interface ProtocolGenerator {
             return replacedString.replace("^Aws".toRegex(), "AWS")
         }
 
-        fun getFormattedDateString(tsFormat: TimestampFormatTrait.Format, memberName: String, isUnwrapped: Boolean = true): String {
+        fun getFormattedDateString(tsFormat: TimestampFormatTrait.Format,
+                                   memberName: String,
+                                   isUnwrapped: Boolean = true,
+                                   isInHeaderOrQuery: Boolean = false): String {
             val terminator = if (isUnwrapped) "" else "?"
+            val epochTerminator = if(isInHeaderOrQuery) ".clean" else ""
             return when (tsFormat) {
-                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}$terminator.timeIntervalSince1970"
+                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}$terminator.timeIntervalSince1970$epochTerminator"
                 //FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
                // to custom date type
                 TimestampFormatTrait.Format.DATE_TIME -> "${memberName}$terminator.iso8601WithoutFractionalSeconds()"
