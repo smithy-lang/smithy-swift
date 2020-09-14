@@ -29,8 +29,7 @@ public struct HttpHeaders {
         dictionary.forEach { add(name: $0.key, value: $0.value)}
     }
     
-    /// Creates an instance from a `[String: [String]]`. Duplicate case-insensitive names are collapsed into the last name
-    /// and value encountered.
+    /// Creates an instance from a `[String: [String]]`. 
     public init(_ dictionary: [String: [String]]) {
         self.init()
 
