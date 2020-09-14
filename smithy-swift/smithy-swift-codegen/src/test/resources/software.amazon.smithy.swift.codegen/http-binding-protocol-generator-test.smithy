@@ -2,6 +2,7 @@ $version: "1.0"
 namespace com.test
 
 use aws.protocols#restJson1
+use smithy.test#httpRequestTests
 
 @restJson1
 service Example {
@@ -17,7 +18,11 @@ service Example {
         MapInput,
         EnumInput,
         TimestampInput,
-        BlobInput
+        BlobInput,
+        EmptyInputAndEmptyOutput,
+        SimpleScalarProperties,
+        StreamingTraits,
+        HttpPrefixHeaders
     ]
 }
 
@@ -53,6 +58,47 @@ structure SmokeTestRequest {
     payload3: Nested
 }
 
+apply SmokeTest @httpRequestTests([
+    {
+        id: "SmokeTest",
+        documentation: "Serializes a smoke test request with body, headers, query params, and labels",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/smoketest/{label1}/foo",
+        body: """
+        {
+        "payload1": "String",
+        "payload2": 2,
+        "payload3": {
+            "member1": "test string",
+            "member2": "test string 2"
+            }
+        }""",
+        headers: {
+            "X-Header1": "Foo",
+            "X-Header2": "Bar"
+        },
+        requireHeaders: [
+            "Content-Length"
+        ],
+        queryParams: [
+        "Query1=Query 1"
+        ],
+        params: {
+            label1: "label",
+            query1: "Query 1",
+            header1: "Foo",
+            header2: "Bar",
+            payload1: "String",
+            payload2: 2,
+            payload3: {
+                member1: "test string",
+                member2: "test string 2"
+            }
+        }
+    }
+])
+
 structure Nested {
     member1: String,
     member2: String
@@ -75,6 +121,28 @@ structure ExplicitStringRequest {
     @httpPayload
     payload1: String
 }
+
+apply ExplicitString @httpRequestTests([
+    {
+        id: "ExplicitString",
+        documentation: "Serializes a request with an explicit string payload",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/explicit/string",
+        body: """
+        {
+        "payload1": "explicit string"
+        }""",
+        headers: {},
+        requireHeaders: [
+            "Content-Length"
+        ],
+        queryParams: [],
+        params: {
+        payload1: "explicit string"
+        }
+    }
+])
 
 @http(method: "POST", uri: "/explicit/blob")
 operation ExplicitBlob {
@@ -186,6 +254,12 @@ map BlobMap {
     value: Blob
 }
 
+map DateMap {
+    key: String,
+    @timestampFormat("http-date")
+    value: Timestamp
+}
+
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
     input: MapInputRequest
@@ -195,7 +269,8 @@ structure MapInputRequest {
     intMap: IntMap,
     structMap: StructMap,
     enumMap: EnumMap,
-    blobMap: BlobMap
+    blobMap: BlobMap,
+    dateMap: DateMap
 }
 
 
@@ -288,4 +363,155 @@ structure BlobInputRequest {
     queryBlob: Blob,
 
     payloadBlob: Blob
+}
+
+structure EmptyInputAndEmptyOutputInput {}
+structure EmptyInputAndEmptyOutputOutput {}
+
+@http(uri: "/EmptyInputAndEmptyOutput", method: "POST")
+operation EmptyInputAndEmptyOutput {
+    input: EmptyInputAndEmptyOutputInput,
+    output: EmptyInputAndEmptyOutputOutput
+}
+
+apply EmptyInputAndEmptyOutput @httpRequestTests([
+    {
+        id: "RestJsonEmptyInputAndEmptyOutput",
+        documentation: "Empty input serializes no payload",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/EmptyInputAndEmptyOutput",
+        body: "",
+        bodyMediaType: "application/json"
+    }
+])
+
+structure SimpleScalarPropertiesInputOutput {
+    @httpHeader("X-Foo")
+    foo: String,
+
+    stringValue: String,
+    trueBooleanValue: Boolean,
+    falseBooleanValue: Boolean,
+    byteValue: Byte,
+    shortValue: Short,
+    integerValue: Integer,
+    longValue: Long,
+    floatValue: Float,
+
+    @jsonName("DoubleDribble")
+    doubleValue: Double,
+}
+
+@idempotent
+@http(uri: "/SimpleScalarProperties", method: "PUT")
+operation SimpleScalarProperties {
+    input: SimpleScalarPropertiesInputOutput,
+    output: SimpleScalarPropertiesInputOutput
+}
+
+apply SimpleScalarProperties @httpRequestTests([
+    {
+        id: "RestJsonDoesntSerializeNullStructureValues",
+        documentation: "Rest Json should not serialize null structure values",
+        protocol: restJson1,
+        method: "PUT",
+        uri: "/SimpleScalarProperties",
+        body: "{}",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        params: {
+            stringValue: null
+        },
+    },
+])
+
+@http(uri: "/StreamingTraits", method: "POST")
+operation StreamingTraits {
+    input: StreamingTraitsInputOutput,
+    output: StreamingTraitsInputOutput
+}
+
+apply StreamingTraits @httpRequestTests([
+    {
+        id: "RestJsonStreamingTraitsWithBlob",
+        documentation: "Serializes a blob in the HTTP payload",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/StreamingTraits",
+        body: "blobby blob blob",
+        headers: {
+            "X-Foo": "Foo",
+            "Content-Type": "application/octet-stream"
+        },
+        params: {
+            foo: "Foo",
+            blob: "blobby blob blob"
+        }
+    },
+    {
+        id: "RestJsonStreamingTraitsWithNoBlobBody",
+        documentation: "Serializes an empty blob in the HTTP payload",
+        protocol: restJson1,
+        method: "POST",
+        uri: "/StreamingTraits",
+        body: "",
+        headers: {
+            "X-Foo": "Foo"
+        },
+        params: {
+            foo: "Foo"
+        }
+    },
+])
+
+structure StreamingTraitsInputOutput {
+    @httpHeader("X-Foo")
+    foo: String,
+
+    @httpPayload
+    blob: StreamingBlob,
+}
+
+@streaming
+blob StreamingBlob
+
+@readonly
+@http(uri: "/HttpPrefixHeaders", method: "GET")
+@externalDocumentation("httpPrefixHeaders Trait": "https://awslabs.github.io/smithy/1.0/spec/http.html#httpprefixheaders-trait")
+operation HttpPrefixHeaders  {
+    input: HttpPrefixHeadersInputOutput,
+    output: HttpPrefixHeadersInputOutput
+}
+
+apply HttpPrefixHeaders @httpRequestTests([
+    {
+        id: "RestJsonHttpPrefixHeadersAreNotPresent",
+        documentation: "No prefix headers are serialized because the value is empty",
+        protocol: restJson1,
+        method: "GET",
+        uri: "/HttpPrefixHeaders",
+        body: "",
+        headers: {
+            "X-Foo": "Foo"
+        },
+        params: {
+            foo: "Foo",
+            fooMap: {}
+        }
+    },
+])
+
+structure HttpPrefixHeadersInputOutput {
+    @httpHeader("X-Foo")
+    foo: String,
+
+    @httpPrefixHeaders("X-Foo-")
+    fooMap: StringMap
+}
+
+map StringMap {
+    key: String,
+    value: String
 }

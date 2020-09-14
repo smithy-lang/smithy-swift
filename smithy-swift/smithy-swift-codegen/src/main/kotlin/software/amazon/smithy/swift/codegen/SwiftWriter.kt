@@ -60,6 +60,10 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         imports.addImport(packageName)
     }
 
+    fun addFoundationImport() {
+        imports.addImport("Foundation")
+    }
+
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
         symbol.references.forEach { reference ->
             for (option in options) {

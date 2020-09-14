@@ -15,9 +15,15 @@
 
 import Foundation
 
-public protocol HttpRequestBinding {
+public struct Key: CodingKey {
+    public let stringValue: String
+    public init(stringValue: String) {
+        self.stringValue = stringValue
+        self.intValue = nil
+    }
 
-  // Build the HttpRequest using the input method and path
-  // Does not encode the request
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest
+    public let intValue: Int?
+    public init?(intValue: Int) {
+        return nil
+    }
 }

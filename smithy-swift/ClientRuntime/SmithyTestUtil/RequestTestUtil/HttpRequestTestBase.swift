@@ -35,7 +35,11 @@ open class HttpRequestTestBase: XCTestCase {
         
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
             queryItems.append(URLQueryItem(name: queryParamComponents[0], value: queryParamComponents[1].removingPercentEncoding))
+            } else {
+                queryItems.append(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
         }
         
         for (headerName, headerValue) in headers {
@@ -49,11 +53,20 @@ open class HttpRequestTestBase: XCTestCase {
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
+        //handle empty string body cases that should still create a request
+        //without the body
+        if body == "" || body == "{}" {
+            return HttpRequest(method: method,
+                               endpoint: endPoint,
+                               headers: httpHeaders)
+        }
+    
         let httpBody = HttpBody.data(body.data(using: .utf8))
         return HttpRequest(method: method,
                            endpoint: endPoint,
                            headers: httpHeaders,
                            body: httpBody)
+        
     }
     
     /**
@@ -168,7 +181,7 @@ open class HttpRequestTestBase: XCTestCase {
             return
         }
         
-        XCTAssertTrue((expectedJSON as NSDictionary).isEqual(to: actualJSON))
+        XCTAssertTrue(NSDictionary(dictionary: expectedJSON).isEqual(to: actualJSON))
     }
     
     /**
@@ -177,11 +190,35 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
     public func assertEqualHttpHeaders(_ expected: HttpHeaders, _ actual: HttpHeaders) {
-        for (expectedHeaderName, expectedHeaderValue) in expected.dictionary {
-            guard let actualHeaderValue = actual.dictionary[expectedHeaderName] else {
+        //in order to properly compare header values where actual is an array and expected comes in as a comma separated string
+        //take actual and join them with a comma and then separate them by comma (to in effect get the same separated list as expected)
+        //take expected and separate them by comma
+        //then throw both actual and expected comma separated arrays in a set and compare sets
+        let sortedActualHeaders = actual.dictionary.mapValues({ (values) -> Set<String> in
+            let joinedValues = values.joined(separator: ", ")
+            let splitValues = joinedValues.components(separatedBy: ", ")
+            var set = Set<String>()
+            splitValues.forEach { (value) in
+                set.insert(value)
+            }
+            return set
+        })
+        let sortedExpectedHeaders = expected.dictionary.mapValues { (values) -> Set<String> in
+            var set = Set<String>()
+            values.forEach { (value) in
+                let components = value.components(separatedBy: ", ")
+                components.forEach { (arrayValue) in
+                    set.insert(arrayValue)
+                }
+            }
+            return set
+        }
+        for (expectedHeaderName, expectedHeaderValue) in sortedExpectedHeaders {
+            guard let actualHeaderValue = sortedActualHeaders[expectedHeaderName] else {
                 XCTFail("Expected Header \(expectedHeaderName) is not found in actual headers")
                 return
             }
+            
             XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
                            "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
                            " does not match actual header value \(actual.dictionary[expectedHeaderName])]")
@@ -221,21 +258,24 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual array of Query Items to compare against
     */
     public func assertEqualHttpQueryItems(_ expected: [URLQueryItem], _ actual: [URLQueryItem]) {
+        //take arrays of query items and convert to dictionary
+        let expectedNamesAndValues = expected.map { ($0.name, Set(arrayLiteral: $0.value)) }
+        let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
+            return first.union(last)
+        })
+        
+        let actualNamesAndValues = actual.map {($0.name, Set(arrayLiteral: $0.value))}
+        let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
+            return first.union(last)
+        })
+
+        
         for expectedQueryItem in expected {
             var queryItemFound = false
-            
-            // Compare the query item values
-            for actualQueryItem in actual where expectedQueryItem.name == actualQueryItem.name {
-                // considering case-sensitive query item names
-                // query item found. compare values
-                queryItemFound = true
-                XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value,
-                               "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" +
-                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
-                break
-            }
-            
-            XCTAssertTrue(queryItemFound, "Expected query item \(expectedQueryItem.name) is not found in actual query items")
+            XCTAssertTrue(actual.contains(expectedQueryItem), "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
+            let actualQueryItemValue = actualMap[expectedQueryItem.name]
+            XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" + " does not match actual query item [\(expectedQueryItem.name)=\(actualQueryItemValue)]")
+
         }
     }
 }

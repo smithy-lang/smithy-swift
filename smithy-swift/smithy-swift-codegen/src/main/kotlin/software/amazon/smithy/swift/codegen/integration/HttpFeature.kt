@@ -51,13 +51,32 @@ interface HttpFeature {
 abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
     override val name: String = "HttpRequestEncoder"
     override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let encoder: $requestEncoderName = $requestEncoderName()")
+        writer.write("let encoder = $requestEncoderName()")
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {
         requestEncoderOptions.forEach {
                 requestEncoderOptionName, requestEncoderOptionValue ->
             writer.write("encoder.$requestEncoderOptionName = $requestEncoderOptionValue")
+        }
+    }
+}
+
+/**
+ * `HttpRequestDecoder` feature to help instantiate RequestDecoder
+ * @property requestDecoderName The name of the request decoder (e.g. JSONDecoder)
+ * @property requestDecoderOptions Map of options to set on the request decoder instance
+ */
+abstract class HttpResponseDecoder(private val requestDecoderName: String, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
+    override val name: String = "HttpRequestDecoder"
+    override fun renderInstantiation(writer: SwiftWriter) {
+        writer.write("let decoder = $requestDecoderName()")
+    }
+
+    override fun renderConfiguration(writer: SwiftWriter) {
+        requestDecoderOptions.forEach {
+                requestDecoderOptionName, requestDecoderOptionValue ->
+            writer.write("decoder.$requestDecoderOptionName = $requestDecoderOptionValue")
         }
     }
 }

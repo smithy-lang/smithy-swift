@@ -20,8 +20,7 @@ import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
 enum class SwiftDependency(val type: String, val namespace: String, val version: String, val url: String) : SymbolDependencyContainer {
     BIG("", "BigNumber", "2.0", url = "https://github.com/mkrd/Swift-Big-Integer.git"),
-    CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "../../../../../../ClientRuntime"),
-    FOUNDATION("", "Foundation", "", ""),
+    CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime"),
     XCTest("", "XCTest", "", ""),
     SMITHY_TEST_UTIL("", "SmithyTestUtil", "0.1.0", "../../../../../../ClientRuntime");
 

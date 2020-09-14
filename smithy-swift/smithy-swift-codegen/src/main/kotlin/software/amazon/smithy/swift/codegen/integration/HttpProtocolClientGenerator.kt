@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import java.util.*
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -42,7 +43,7 @@ class HttpProtocolClientGenerator(
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-        writer.addImport(SwiftDependency.FOUNDATION.getPackageName())
+        writer.addFoundationImport()
         renderClientInitialization(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
@@ -83,8 +84,14 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderOperationBody(opIndex: OperationIndex, op: OperationShape) {
-        renderOperationInputSerializationBlock(opIndex, op)
-        renderHttpRequestExecutionBlock(opIndex, op)
+        writer.openBlock("do {", "} catch let err { ") {
+            renderOperationInputSerializationBlock(opIndex, op)
+            renderHttpRequestExecutionBlock(opIndex, op)
+        }
+        writer.indent()
+        writer.write("completion(.failure(.client(.serializationFailed(err.localizedDescription))))")
+        writer.dedent()
+        writer.write("}")
     }
 
     // replace labels with any path bindings
@@ -146,19 +153,8 @@ class HttpProtocolClientGenerator(
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
-            writer.write("var request = input.buildHttpRequest(method: method, path: path)")
-            renderEncodingHttpRequestBlock(writer)
+            writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)")
         }
-    }
-
-    private fun renderEncodingHttpRequestBlock(writer: SwiftWriter) {
-        writer.openBlock("do {", "} catch let err { ") {
-            writer.write("try encoder.encodeHttpRequest(input, currentHttpRequest: &request)")
-        }
-        writer.indent()
-        writer.write("completion(.failure(.client(err)))")
-        writer.dedent()
-        writer.write("}")
     }
 
     private fun renderHttpRequestExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
@@ -185,24 +181,28 @@ class HttpProtocolClientGenerator(
             .call {
                 writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
                     writer.openBlock("if case .data(let data) = httpResp.content {", "}") {
-                        // TODO:: use HttpFeature to fetch this
-                        val decoderInstance = "JSONDecoder()"
-                        writer.write("let responsePayload = ResponsePayload(body: data, decoder: $decoderInstance)")
+                        writer.openBlock("guard let data = data else {", "}") {
+                                writer.write("completion(.failure(SdkError<OperationError>.client(ClientError.dataNotFound(\"No data was returned to deserialize\"))))")
+                                writer.write("return")
+                        }
+
+                        writer.write("let responsePayload = ResponsePayload(body: data, decoder: self.decoder)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case
-                        val resultBlock = outputShapeName?.map {
-                            "let result: Result<$it, SdkError<OperationError>> = responsePayload.decode()"
-                        }?.orElse("let result: Result<nil, SdkError<OperationError>>")
+                        // val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
+
                         // TODO:: generate more specific operation error
-                        writer.write(resultBlock)
-                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
-                        writer.write("completion(result)")
+//                        writer.write(resultBlock)
+//                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
+//                        writer.write("completion(result)")
+                        // TODO:: REPLACE with proper decoding after decoding is implemented
+                        writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                     }
                 }
                 // HTTP request failed to execute
                 writer.openBlock("else {", "}") {
                     // TODO:: map the HttpError to a service specific error
-                    writer.write("completion(.failure(.service(.unknown)))")
+                    writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                 }
             }
             .closeBlock("")

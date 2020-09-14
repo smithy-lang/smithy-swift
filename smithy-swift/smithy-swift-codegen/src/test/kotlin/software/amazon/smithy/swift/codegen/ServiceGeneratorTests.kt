@@ -29,7 +29,7 @@ class ServiceGeneratorTests : TestsBase() {
     private val commonTestContents: String
 
     init {
-        val model = createModelFromSmithy("service-generator-test-operations.smithy")
+        var model = createModelFromSmithy("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val writer = SwiftWriter("test")
@@ -38,6 +38,7 @@ class ServiceGeneratorTests : TestsBase() {
         val context = buildMockPluginContext(model, manifest)
 
         val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val generator = ServiceGenerator(settings, model, provider, writer, emptyList())
         generator.render()
 
@@ -70,22 +71,21 @@ class ServiceGeneratorTests : TestsBase() {
         commonTestContents.shouldContainOnlyOnce("import ClientRuntime")
     }
 
-    // TODO:: check back after operation specific errors are generated
-//    @Test
-//    fun `it renders swift func signatures correctly`() {
-//        val expectedSignatures = listOf(
-//                "func getFooStreamingInput(input: GetFooStreamingRequest, completion: (SdkResult<GetFooResponse, GetFooStreamingInputOperationError>) -> Void)",
-//                "func getFooNoOutput(input: GetFooRequest)",
-//                "func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputOperationError>) -> Void)",
-//                "func getFoo(input: GetFooRequest, completion: (SdkResult<GetFooResponse, GetFooOperationError>) -> Void)",
-//                "func getFooNoInput(completion: (SdkResult<GetFooResponse, GetFooNoInputOperationError>) -> Void)",
-//                "func getFooStreamingInputNoOutput(input: GetFooStreamingRequest)",
-//                "func getFooStreamingOutputNoInput(streamingHandler: StreamingProvider, completion: (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputNoInputOperationError>) -> Void)"
-//        )
-//        expectedSignatures.forEach {
-//            commonTestContents.shouldContainOnlyOnce(it)
-//        }
-//    }
+    @Test
+    fun `it renders swift func signatures correctly`() {
+        val expectedSignatures = listOf(
+                "func getFooStreamingInput(input: GetFooStreamingRequest, completion: @escaping (SdkResult<GetFooResponse, OperationError>) -> Void)",
+                "func getFooNoOutput(input: GetFooRequest, completion: @escaping (SdkResult<GetFooNoOutputOutput, OperationError>) -> Void)",
+                "func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamingProvider, completion: @escaping (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)",
+                "func getFoo(input: GetFooRequest, completion: @escaping (SdkResult<GetFooResponse, OperationError>) -> Void)",
+                "func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooResponse, OperationError>) -> Void)",
+                "func getFooStreamingInputNoOutput(input: GetFooStreamingRequest, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, OperationError>) -> Void)",
+                "func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamingHandler: StreamingProvider, completion: @escaping (SdkResult<GetFooStreamingResponse, OperationError>) -> Void)"
+        )
+        expectedSignatures.forEach {
+            commonTestContents.shouldContainOnlyOnce(it)
+        }
+    }
 
     @Test
     fun `it syntactic sanity checks`() {

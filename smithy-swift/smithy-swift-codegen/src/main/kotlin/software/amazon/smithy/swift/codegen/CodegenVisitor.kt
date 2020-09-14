@@ -33,7 +33,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
     private val model: Model
-    private val modelWithoutTraitShapes: Model = context.modelWithoutTraitShapes
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
@@ -53,6 +52,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
+        // Add operation input/output shapes if not provided for future evolution of sdk
+        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
+
         model = resolvedModel
 
         service = settings.getService(model)
@@ -90,9 +92,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         LOGGER.info("Generating Swift client for service ${settings.service}")
 
         println("Walking shapes from " + service.id + " to find shapes to generate")
-        val serviceShapes: Set<Shape> = Walker(modelWithoutTraitShapes).walkShapes(service)
+        val serviceShapes: Set<Shape> = Walker(model).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
-
+        var generateTestTarget = false
         if (protocolGenerator != null) {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
@@ -110,6 +112,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolUnitTests(ctx)
+            // FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
+            generateTestTarget = true
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolClient(ctx)
@@ -120,10 +124,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
 
         println("Generating swift podspec file")
-        writePodspec(settings, fileManifest, dependencies)
+        writePodspec(settings, fileManifest, dependencies.toSet())
 
         println("Generating package manifest file")
-        writePackageManifest(settings, fileManifest, dependencies)
+        writePackageManifest(settings, fileManifest, dependencies, generateTestTarget)
 
         println("Generating info plist")
         writeInfoPlist(settings, fileManifest)

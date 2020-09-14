@@ -13,11 +13,9 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
+public extension Double {
+    var clean: String {
+       return self.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", self) : String(self)
+    }
 
-public protocol HttpRequestBinding {
-
-  // Build the HttpRequest using the input method and path
-  // Does not encode the request
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest
 }

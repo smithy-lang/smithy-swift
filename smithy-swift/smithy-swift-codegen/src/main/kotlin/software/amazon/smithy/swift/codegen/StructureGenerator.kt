@@ -107,7 +107,7 @@ class StructureGenerator(
 
     private fun generateInitializerForStructure() {
         val hasErrorTrait = shape.getTrait(HttpErrorTrait::class.java).isPresent
-        val hasMembers = membersSortedByName.size > 0
+        val hasMembers = membersSortedByName.isNotEmpty()
 
         // TODO:: handle the rendering of error and normal structures more separately
         if (hasErrorTrait || hasMembers) {
@@ -115,13 +115,12 @@ class StructureGenerator(
                 if (hasErrorTrait) {
                     writer.write("httpResponse: HttpResponse" + (if (hasMembers) "," else ""))
                 }
-                if (membersSortedByName.size > 0) {
-                    for ((index, member) in membersSortedByName.withIndex()) {
-                        val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
-                        if (memberName == null || memberSymbol == null) continue
-                        val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                        writer.write("\$L: \$D$terminator", memberName, memberSymbol)
-                    }
+
+                for ((index, member) in membersSortedByName.withIndex()) {
+                    val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
+                    if (memberName == null || memberSymbol == null) continue
+                    val terminator = if (index == membersSortedByName.size - 1) "" else ","
+                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
                 }
             }
             writer.openBlock("{", "}") {
@@ -133,6 +132,8 @@ class StructureGenerator(
                     writer.write("self.\$1L = \$1L", memberName)
                 }
             }
+        } else if (!hasErrorTrait && !hasMembers) {
+            writer.write("public init() {}")
         }
     }
 

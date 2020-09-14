@@ -38,9 +38,9 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
 
     override fun getName(): String = "swift-codegen"
 
-    override fun execute(context: PluginContext?) {
+    override fun execute(context: PluginContext) {
         println("executing swift codegen")
 
-        CodegenVisitor(context!!).execute()
+        CodegenVisitor(context).execute()
     }
 }

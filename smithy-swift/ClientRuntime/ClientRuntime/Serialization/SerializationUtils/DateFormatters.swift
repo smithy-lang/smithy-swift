@@ -42,7 +42,7 @@ extension DateFormatter {
     */
     public static let iso8601DateFormatterWithoutFractionalSeconds: DateFormatter =
         getDateFormatter(
-            dateFormat: "yyyy-MM-dd'T'HH:mm:ssZ",
+            dateFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
             timeZone: TimeZone(secondsFromGMT: 0)!
     )
     
@@ -56,16 +56,16 @@ extension DateFormatter {
 }
 
 
-extension Date {
-    func iso8601FractionalSecondsString() -> String {
+public extension Date {
+    func iso8601FractionalSeconds() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         return formatter.string(from: self)
     }
-    func iso8601WithoutFractionalSecondsString() -> String {
+    func iso8601WithoutFractionalSeconds() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
         return formatter.string(from: self)
     }
-    func rfc5322String() -> String {
+    func rfc5322() -> String {
         let formatter = DateFormatter.rfc5322DateFormatter
         return formatter.string(from: self)
     }

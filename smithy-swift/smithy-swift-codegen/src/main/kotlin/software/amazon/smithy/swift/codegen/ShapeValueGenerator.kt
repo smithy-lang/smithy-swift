@@ -20,7 +20,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -109,18 +108,13 @@ class ShapeValueGenerator(
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$L(rawValue: ", symbol.name)
                     ")!"
-                } else ""
+                } else { "" }
             }
             ShapeType.BLOB -> {
-                if (shape.hasTrait(StreamingTrait::class.java)) {
-                    // TODO:: handle streaming case
-                    ""
-                } else {
-                    val symbol = symbolProvider.toSymbol(shape)
+                //  val symbol = symbolProvider.toSymbol(shape)
                     ".data(using: .utf8)"
-                }
             }
-            else -> ""
+            else -> { "" }
         }
 
         block()
@@ -141,7 +135,11 @@ class ShapeValueGenerator(
 
         override fun objectNode(node: ObjectNode) {
             var i = 0
-            node.members.forEach { (keyNode, valueNode) ->
+            // this is important because when a struct is generated in swift it is generated with its members sorted by name.
+            // when you instantiate that struct you have to call params in order with their param names. if you don't it won't compile
+            // so we sort here before we write any of the members with their values
+            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value })
+            sortedMembers.forEach { (keyNode, valueNode) ->
                 val memberShape: Shape
                 when (currShape) {
                     is StructureShape -> {
@@ -164,6 +162,7 @@ class ShapeValueGenerator(
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
                         writer.writeInline("\n\$S: ", keyNode.value)
+
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
@@ -176,6 +175,11 @@ class ShapeValueGenerator(
                 }
                 i++
             }
+            if (sortedMembers.isEmpty()) {
+                when (currShape) {
+                    is MapShape -> writer.writeInline(":") // to pass an empty map you need to have a colon like `[:]`
+                }
+            }
         }
 
         override fun stringNode(node: StringNode) {
@@ -183,7 +187,7 @@ class ShapeValueGenerator(
         }
 
         override fun nullNode(node: NullNode) {
-            writer.writeInline("null")
+            writer.writeInline("nil")
         }
 
         override fun arrayNode(node: ArrayNode) {

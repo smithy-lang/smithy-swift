@@ -12,12 +12,23 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
-
 import Foundation
 
-public protocol HttpRequestBinding {
+public protocol Reflection {
+    func allPropertiesAreNull() throws -> Bool
+}
 
-  // Build the HttpRequest using the input method and path
-  // Does not encode the request
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest
+public extension Reflection {
+    func allPropertiesAreNull() throws -> Bool {
+
+        let mirror = Mirror(reflecting: self)
+
+        return mirror.children.filter{
+            if case Optional<Any>.some(_) = $0.value {
+                   return false
+               } else {
+                   return true
+               }
+        }.count == mirror.children.count
+    }
 }

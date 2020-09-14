@@ -18,7 +18,7 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.utils.CodeWriter
 
-fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>) {
+fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>, generateTestTarget: Boolean = false) {
 
     // filter duplicates in dependencies
     val distinctDependencies = dependencies.distinctBy { it.packageName }
@@ -65,13 +65,15 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                 }
                 writer.write("path: \"./${settings.moduleName}\"")
             }
-            writer.openBlock(".testTarget(", ")") {
-                writer.write("name: \"${settings.moduleName}Tests\",")
-                writer.openBlock("dependencies: [", "],") {
-                    writer.write("\$S,", settings.moduleName)
-                    writer.write("\$S", "SmithyTestUtil")
+            if (generateTestTarget) {
+                writer.openBlock(".testTarget(", ")") {
+                    writer.write("name: \"${settings.moduleName}Tests\",")
+                    writer.openBlock("dependencies: [", "],") {
+                        writer.write("\$S,", settings.moduleName)
+                        writer.write("\$S", "SmithyTestUtil")
+                    }
+                    writer.write("path: \"./${settings.moduleName}Tests\"")
                 }
-                writer.write("path: \"./${settings.moduleName}Tests\"")
             }
         }
     }

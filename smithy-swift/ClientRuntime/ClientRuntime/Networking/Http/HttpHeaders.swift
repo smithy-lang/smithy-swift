@@ -26,7 +26,14 @@ public struct HttpHeaders {
     public init(_ dictionary: [String: String]) {
         self.init()
 
-        dictionary.forEach { update(Header(name: $0.key, value: $0.value)) }
+        dictionary.forEach { add(name: $0.key, value: $0.value)}
+    }
+    
+    /// Creates an instance from a `[String: [String]]`. 
+    public init(_ dictionary: [String: [String]]) {
+        self.init()
+
+        dictionary.forEach { key, value in value.forEach {add(name: key, value: $0) }}
     }
 
     /// Case-insensitively updates or appends an `HTTPHeader` into the instance using the provided `name` and `value`.
@@ -35,7 +42,7 @@ public struct HttpHeaders {
     ///   - name:  The `HTTPHeader` name.
     ///   - value: The `HTTPHeader value.
     public mutating func add(name: String, value: String) {
-        update(Header(name: name, value: value))
+        headers.append(Header(name: name, value: value))
     }
 
     /// Case-insensitively updates or appends the provided `HTTPHeader` into the instance.
@@ -73,10 +80,12 @@ public struct HttpHeaders {
     /// The dictionary representation of all headers.
     ///
     /// This representation does not preserve the current order of the instance.
-    public var dictionary: [String: String] {
-        let namesAndValues = headers.map { ($0.name, $0.value) }
+    public var dictionary: [String: [String]] {
+        let namesAndValues = headers.map { ($0.name, [$0.value]) }
 
-        return Dictionary(namesAndValues, uniquingKeysWith: { _, last in last })
+        return Dictionary(namesAndValues) { (first, last) -> [String] in
+            return first + last
+        }
     }
 }
 
@@ -102,7 +111,9 @@ extension URLRequest {
     /// Returns `allHTTPHeaderFields` as `HTTPHeaders`.
     public var headers: HttpHeaders {
         get { allHTTPHeaderFields.map(HttpHeaders.init) ?? HttpHeaders() }
-        set { allHTTPHeaderFields = newValue.dictionary }
+        set { allHTTPHeaderFields = newValue.dictionary.mapValues({ array -> String in
+            array.joined(separator: ", ")
+        }) }
     }
 }
 

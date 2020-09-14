@@ -142,11 +142,14 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "String", boxed = true).build()
     }
 
-    fun createEnumSymbol(shape: Shape): Symbol {
+    private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName()
-        return createSymbolBuilder(shape, name, boxed = true)
+        val builder = createSymbolBuilder(shape, name, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
-            .build()
+
+        // add a reference to each member symbol
+        addDeclareMemberReferences(builder, shape.members())
+        return builder.build()
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
@@ -170,17 +173,17 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "[${reference.name}]", true).build()
+        return createSymbolBuilder(shape, "[${reference.name}]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        return createSymbolBuilder(shape, "[String:${reference.name}]", true).build()
+        return createSymbolBuilder(shape, "[String:${reference.name}]", true).addReference(reference).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", true)
+        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
             .build()
     }
 
@@ -196,7 +199,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", true).build()
+        return createSymbolBuilder(shape, "Date", "Foundation", true)
+            .build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {
@@ -204,7 +208,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
-        // TODO create operation type
         return createSymbolBuilder(shape, "func").build()
     }
 
@@ -257,16 +260,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .namespace(namespace, ".")
     }
 
-    // Create a reference to the given symbol from the dependency
-    fun createNamespaceReference(dependency: SwiftDependency, symbolName: String): SymbolReference {
-        val namespace = dependency.namespace
-        val nsSymbol = Symbol.builder()
-            .name(symbolName)
-            .namespace(namespace, ".")
-            .build()
-        return SymbolReference.builder().symbol(nsSymbol).options(SymbolReference.ContextOption.DECLARE).build()
-    }
-
     private fun formatModuleName(shapeType: ShapeType, name: String): String? {
         // All shapes except for the service are stored in models.
         return when (shapeType) {
@@ -290,6 +283,12 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
+
+            val targetShape = model.expectShape(it.target)
+            if (targetShape is CollectionShape) {
+                val targetSymbol = toSymbol(targetShape)
+                targetSymbol.references.forEach { builder.addReference(it) }
+            }
         }
     }
 
