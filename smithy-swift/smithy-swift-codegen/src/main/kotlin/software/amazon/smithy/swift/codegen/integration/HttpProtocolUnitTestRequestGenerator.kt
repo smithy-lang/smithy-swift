@@ -166,7 +166,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
         if (test.queryParams.isEmpty()) {
-            writer.write("queryParams: [String](),") //pass empty array if no query params
+            writer.write("queryParams: [String](),") // pass empty array if no query params
         } else {
             val queryParams = test.queryParams
 
@@ -183,7 +183,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderExpectedHeaders(test: HttpRequestTestCase) {
         if (test.headers.isEmpty()) {
-            writer.write("headers: [String: String](),") //pass empty dictionary if no headers
+            writer.write("headers: [String: String](),") // pass empty dictionary if no headers
         } else {
             writer.openBlock("headers: [")
                 .call {

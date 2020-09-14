@@ -20,7 +20,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -109,13 +108,13 @@ class ShapeValueGenerator(
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$L(rawValue: ", symbol.name)
                     ")!"
-                } else ""
+                } else { "" }
             }
             ShapeType.BLOB -> {
-                  //  val symbol = symbolProvider.toSymbol(shape)
+                //  val symbol = symbolProvider.toSymbol(shape)
                     ".data(using: .utf8)"
             }
-            else -> ""
+            else -> { "" }
         }
 
         block()
@@ -139,7 +138,7 @@ class ShapeValueGenerator(
             // this is important because when a struct is generated in swift it is generated with its members sorted by name.
             // when you instantiate that struct you have to call params in order with their param names. if you don't it won't compile
             // so we sort here before we write any of the members with their values
-            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> {it.value})
+            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value })
             sortedMembers.forEach { (keyNode, valueNode) ->
                 val memberShape: Shape
                 when (currShape) {
@@ -177,7 +176,7 @@ class ShapeValueGenerator(
                 i++
             }
             if (sortedMembers.isEmpty()) {
-                when(currShape) {
+                when (currShape) {
                     is MapShape -> writer.writeInline(":") // to pass an empty map you need to have a colon like `[:]`
                 }
             }

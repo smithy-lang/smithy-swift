@@ -43,7 +43,17 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for (headerName, headerValue) in headers {
-            httpHeaders.add(name: headerName, value: headerValue)
+            //NOTE this will not split http-dates correctly but the comparison will still work
+//            let isHeaderValueDate = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: headerValue) != nil
+//            if !isHeaderValueDate {
+//            let values = headerValue.components(separatedBy: ", ")
+//            for value in values {
+//                httpHeaders.add(name: headerName, value: value)
+//            }
+//            }
+//            else {
+                httpHeaders.add(name: headerName, value: headerValue)
+           // }
         }
         
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
@@ -190,8 +200,31 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
     public func assertEqualHttpHeaders(_ expected: HttpHeaders, _ actual: HttpHeaders) {
-        for (expectedHeaderName, expectedHeaderValue) in expected.dictionary {
-            guard let actualHeaderValue = actual.dictionary[expectedHeaderName] else {
+        //in order to properly compare header values where actual is an array and expected comes in as a comma separated string
+        //take actual and join them with a comma and then separate them by comma (to in effect get the same separated list as expected)
+        //take expected and separate them by comma
+        //then throw both actual and expected comma separated arrays in a set and compare sets
+        let sortedActualHeaders = actual.dictionary.mapValues({ (values) -> Set<String> in
+            let joinedValues = values.joined(separator: ", ")
+            let splitValues = joinedValues.components(separatedBy: ", ")
+            var set = Set<String>()
+            splitValues.forEach { (value) in
+                set.insert(value)
+            }
+            return set
+        })
+        let sortedExpectedHeaders = expected.dictionary.mapValues { (values) -> Set<String> in
+            var set = Set<String>()
+            values.forEach { (value) in
+                let components = value.components(separatedBy: ", ")
+                components.forEach { (arrayValue) in
+                    set.insert(arrayValue)
+                }
+            }
+            return set
+        }
+        for (expectedHeaderName, expectedHeaderValue) in sortedExpectedHeaders {
+            guard let actualHeaderValue = sortedActualHeaders[expectedHeaderName] else {
                 XCTFail("Expected Header \(expectedHeaderName) is not found in actual headers")
                 return
             }
@@ -235,21 +268,50 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual array of Query Items to compare against
     */
     public func assertEqualHttpQueryItems(_ expected: [URLQueryItem], _ actual: [URLQueryItem]) {
+        
+        let expectedNamesAndValues = expected.map { ($0.name, [$0.value]) }
+        let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
+        let array = first + last
+        return array
+        }).compactMapValues { (values) -> Set<String?> in
+            var set = Set<String?>()
+            for value in values {
+                set.insert(value)
+            }
+            return set
+        }
+        
+        let actualNamesAndValues = actual.map {($0.name, [$0.value])}
+        let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
+        let array = first + last
+        return array
+        }).compactMapValues { (values) -> Set<String?> in
+            var set = Set<String?>()
+            for value in values {
+                set.insert(value)
+            }
+            return set
+        }
+
+        
         for expectedQueryItem in expected {
             var queryItemFound = false
-            
+            XCTAssertTrue(actual.contains(expectedQueryItem))
+            let actualQueryItemValue = actualMap[expectedQueryItem.name]
+            XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" + " does not match actual query item [\(expectedQueryItem.name)=\(actualQueryItemValue)]")
+            //                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
             // Compare the query item values
-            for actualQueryItem in actual where expectedQueryItem.name == actualQueryItem.name {
-                // considering case-sensitive query item names
-                // query item found. compare values
-                queryItemFound = true
-                XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value,
-                               "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" +
-                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
-                break
-            }
+//            for actualQueryItem in actual where expectedQueryItem.name == actualQueryItem.name {
+//                // considering case-sensitive query item names
+//                // query item found. compare values
+//                queryItemFound = true
+//                XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value,
+//                               "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" +
+//                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
+//                break
+//            }
             
-            XCTAssertTrue(queryItemFound, "Expected query item \(expectedQueryItem.name) is not found in actual query items")
+          //  XCTAssertTrue(queryItemFound, "Expected query item \(expectedQueryItem.name) is not found in actual query items")
         }
     }
 }

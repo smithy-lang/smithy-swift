@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import java.util.*
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -24,12 +25,10 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
-import java.util.*
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -190,13 +189,13 @@ class HttpProtocolClientGenerator(
                         writer.write("let responsePayload = ResponsePayload(body: data, decoder: self.decoder)")
                         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
                         // TODO:: verify handling this deserialization case
-                       // val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
+                        // val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
 
                         // TODO:: generate more specific operation error
 //                        writer.write(resultBlock)
 //                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
 //                        writer.write("completion(result)")
-                        //TODO:: REPLACE with proper decoding after decoding is implemented
+                        // TODO:: REPLACE with proper decoding after decoding is implemented
                         writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                     }
                 }

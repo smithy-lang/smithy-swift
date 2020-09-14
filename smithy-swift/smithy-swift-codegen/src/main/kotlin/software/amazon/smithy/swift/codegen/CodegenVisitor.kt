@@ -25,7 +25,6 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
@@ -113,7 +112,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             protocolGenerator.generateProtocolUnitTests(ctx)
-            //FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
+            // FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
             generateTestTarget = true
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")

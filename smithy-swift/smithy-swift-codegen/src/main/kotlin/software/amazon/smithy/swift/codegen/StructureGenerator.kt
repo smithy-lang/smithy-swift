@@ -122,7 +122,6 @@ class StructureGenerator(
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
                     writer.write("\$L: \$D$terminator", memberName, memberSymbol)
                 }
-
             }
             writer.openBlock("{", "}") {
                 if (hasErrorTrait) {
@@ -133,7 +132,7 @@ class StructureGenerator(
                     writer.write("self.\$1L = \$1L", memberName)
                 }
             }
-        } else if(!hasErrorTrait && !hasMembers) {
+        } else if (!hasErrorTrait && !hasMembers) {
             writer.write("public init() {}")
         }
     }

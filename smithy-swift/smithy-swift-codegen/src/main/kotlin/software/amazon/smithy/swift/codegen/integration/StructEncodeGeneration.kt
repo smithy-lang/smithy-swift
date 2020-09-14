@@ -17,8 +17,6 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
@@ -83,7 +81,7 @@ class StructEncodeGeneration(
                         val symbol = ctx.symbolProvider.toSymbol(target)
                         val isBoxed = symbol.isBoxed()
                         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
-                        if(isBoxed) {
+                        if (isBoxed) {
                             writer.openBlock("if let $memberName = $memberName {", "}") {
                                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
                             }
@@ -102,7 +100,7 @@ class StructEncodeGeneration(
             is MemberShape -> ctx.model.expectShape(shape.target)
             else -> shape
         }
-        val optional = if((isBoxed && isUnwrapped) || !isBoxed)  "" else "?"
+        val optional = if ((isBoxed && isUnwrapped) || !isBoxed) "" else "?"
 
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)

@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License").
@@ -12,16 +12,16 @@
 // * express or implied. See the License for the specific language governing
 // * permissions and limitations under the License.
 // */
-//package software.amazon.smithy.swift.codegen
+// package software.amazon.smithy.swift.codegen
 //
-//import io.kotest.matchers.string.shouldContainOnlyOnce
-//import org.junit.jupiter.api.Assertions
-//import org.junit.jupiter.api.Test
-//import software.amazon.smithy.codegen.core.SymbolProvider
-//import software.amazon.smithy.model.shapes.ShapeId
-//import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+// import io.kotest.matchers.string.shouldContainOnlyOnce
+// import org.junit.jupiter.api.Assertions
+// import org.junit.jupiter.api.Test
+// import software.amazon.smithy.codegen.core.SymbolProvider
+// import software.amazon.smithy.model.shapes.ShapeId
+// import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 //
-//class HttpProtocolClientGeneratorTests : TestsBase() {
+// class HttpProtocolClientGeneratorTests : TestsBase() {
 //    private val commonTestContents: String
 //
 //    init {
@@ -301,4 +301,4 @@
 //        Assertions.assertEquals(openBraces, closedBraces)
 //        Assertions.assertEquals(openParens, closedParens)
 //    }
-//}
+// }

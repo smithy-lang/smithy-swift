@@ -14,8 +14,8 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.CodegenException
 import java.util.logging.Logger
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -27,12 +27,11 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.utils.OptionalUtils
-import javax.swing.plaf.synth.SynthTreeUI
 
 /**
  * Checks to see if shape is in the body of the http request
  */
-//TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
+// TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
 fun Shape.isInHttpBody(): Boolean {
 
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
@@ -115,10 +114,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 //            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
 //            ctx.delegator.useShapeWriter(structSymbol) { writer ->
 //                writer.write("extension ${structSymbol.name}: Decodable {}")
-////                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-////                    writer.addFoundationImport()
-////                    generateCodingKeysForStructure(ctx, writer, structureShape)
-////                    writer.write("") // need enter space between coding keys and decode implementation
+// //                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+// //                    writer.addFoundationImport()
+// //                    generateCodingKeysForStructure(ctx, writer, structureShape)
+// //                    writer.write("") // need enter space between coding keys and decode implementation
 //                    //TODO replace with full decode implementation in separate file
 //               // }
 //            }
@@ -264,18 +263,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderEncodedBodyAndReturn(ctx: ProtocolGenerator.GenerationContext,
-                                           writer: SwiftWriter,
-                                           inputShape: Shape,
-                                           requestBindings: Map<String,HttpBinding>) {
+    private fun renderEncodedBodyAndReturn(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        inputShape: Shape,
+        requestBindings: Map<String, HttpBinding>
+    ) {
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
-        if(hasHttpBody) {
-            var optionalTerminator  = ""
+        if (hasHttpBody) {
+            var optionalTerminator = ""
             if (httpPayload != null) {
                 val shape = ctx.model.expectShape(httpPayload.member.target)
-                optionalTerminator = if(ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
+                optionalTerminator = if (ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
                 renderExplicitPayload(ctx, httpPayload, writer)
             } else {
                 writer.openBlock("if try !self.allPropertiesAreNull() {", "} else {") {
@@ -287,9 +288,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.indent()
                 writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
                 writer.closeBlock("}")
-
             }
-
         } else {
             writer.write("return HttpRequest(method: method, endpoint: endpoint, headers: headers)")
         }
@@ -302,7 +301,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.openBlock("if let $memberName = self.$memberName {", "} else {") {
             when (target.type) {
                 ShapeType.BLOB -> {
-                    //FIXME handle streaming properly
+                    // FIXME handle streaming properly
                     val isBinaryStream =
                         ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
                     writer.write("let data = \$L", memberName)
@@ -317,7 +316,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     writer.write("let data = \$L.data(using: .utf8)", contents)
                     writer.write("let body = HttpBody.data(data)")
-
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     // delegate to the member encode function
@@ -348,7 +346,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
-            val queryValue = if(queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
+            val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
             writer.write("queryItems.append(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
         }
 
@@ -426,8 +424,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
         writer.write("var headers = HttpHeaders()")
-        //we only need the content type header in the request if there is an http body that is being sent
-        if(hasHttpBody) {
+        // we only need the content type header in the request if there is an http body that is being sent
+        if (hasHttpBody) {
             writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
         }
         headerBindings.forEach {
@@ -449,7 +447,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
-                   val memberNameWithExtension = formatHeaderOrQueryValue(
+                    val memberNameWithExtension = formatHeaderOrQueryValue(
                         ctx,
                         memberName,
                         it.member,

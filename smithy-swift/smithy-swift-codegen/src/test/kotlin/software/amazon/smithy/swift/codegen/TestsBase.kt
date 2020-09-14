@@ -137,7 +137,6 @@ abstract class TestsBase {
         return manifest.expectFileString("${namespace}Tests/$filename")
     }
 
-
     fun String.shouldSyntacticSanityCheck() {
         // sanity check the generated code for matching paranthesis
         var openBraces = 0

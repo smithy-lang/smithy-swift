@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {

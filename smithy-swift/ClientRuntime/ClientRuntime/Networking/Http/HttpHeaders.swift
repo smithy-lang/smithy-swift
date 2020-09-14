@@ -73,13 +73,12 @@ public struct HttpHeaders {
     /// The dictionary representation of all headers.
     ///
     /// This representation does not preserve the current order of the instance.
-    public var dictionary: [String: String] {
-        let namesAndValues = headers.map { ($0.name, $0.value) }
+    public var dictionary: [String: [String]] {
+        let namesAndValues = headers.map { ($0.name, [$0.value]) }
 
-        return Dictionary(namesAndValues, uniquingKeysWith: { first, last in
-            let array = [first, last]
-            return array.sorted { $0 < $1}.joined(separator: ", ")
-            })
+        return Dictionary(namesAndValues) { (first, last) -> [String] in
+            return first + last
+        }
     }
 }
 
@@ -105,7 +104,9 @@ extension URLRequest {
     /// Returns `allHTTPHeaderFields` as `HTTPHeaders`.
     public var headers: HttpHeaders {
         get { allHTTPHeaderFields.map(HttpHeaders.init) ?? HttpHeaders() }
-        set { allHTTPHeaderFields = newValue.dictionary }
+        set { allHTTPHeaderFields = newValue.dictionary.mapValues({ array -> String in
+            array.joined(separator: ", ")
+        }) }
     }
 }
 
