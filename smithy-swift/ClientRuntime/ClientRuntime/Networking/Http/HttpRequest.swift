@@ -16,7 +16,7 @@
 import Foundation
 
 public struct HttpRequest {
-    public var body: HttpBody?
+    public let body: HttpBody?
     public var headers: HttpHeaders
     public let endpoint: Endpoint
     public let method: HttpMethodType
@@ -40,8 +40,6 @@ extension HttpRequest {
         }
 
         var urlRequest = URLRequest(url: url)
-
-        //urlRequest.allHTTPHeaderFields = headers.dictionary
 
         urlRequest.httpMethod = method.rawValue
 

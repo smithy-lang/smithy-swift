@@ -48,6 +48,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
+        // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
             if (operation.input.isPresent) {

@@ -26,7 +26,15 @@ public struct HttpHeaders {
     public init(_ dictionary: [String: String]) {
         self.init()
 
-        dictionary.forEach { update(Header(name: $0.key, value: $0.value)) }
+        dictionary.forEach { add(name: $0.key, value: $0.value)}
+    }
+    
+    /// Creates an instance from a `[String: [String]]`. Duplicate case-insensitive names are collapsed into the last name
+    /// and value encountered.
+    public init(_ dictionary: [String: [String]]) {
+        self.init()
+
+        dictionary.forEach { key, value in value.forEach {add(name: key, value: $0) }}
     }
 
     /// Case-insensitively updates or appends an `HTTPHeader` into the instance using the provided `name` and `value`.

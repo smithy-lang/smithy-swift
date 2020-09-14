@@ -43,17 +43,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for (headerName, headerValue) in headers {
-            //NOTE this will not split http-dates correctly but the comparison will still work
-//            let isHeaderValueDate = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: headerValue) != nil
-//            if !isHeaderValueDate {
-//            let values = headerValue.components(separatedBy: ", ")
-//            for value in values {
-//                httpHeaders.add(name: headerName, value: value)
-//            }
-//            }
-//            else {
-                httpHeaders.add(name: headerName, value: headerValue)
-           // }
+            httpHeaders.add(name: headerName, value: headerValue)
         }
         
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
@@ -268,50 +258,24 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual array of Query Items to compare against
     */
     public func assertEqualHttpQueryItems(_ expected: [URLQueryItem], _ actual: [URLQueryItem]) {
-        
-        let expectedNamesAndValues = expected.map { ($0.name, [$0.value]) }
+        //take arrays of query items and convert to dictionary
+        let expectedNamesAndValues = expected.map { ($0.name, Set(arrayLiteral: $0.value)) }
         let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
-        let array = first + last
-        return array
-        }).compactMapValues { (values) -> Set<String?> in
-            var set = Set<String?>()
-            for value in values {
-                set.insert(value)
-            }
-            return set
-        }
+            return first.union(last)
+        })
         
-        let actualNamesAndValues = actual.map {($0.name, [$0.value])}
+        let actualNamesAndValues = actual.map {($0.name, Set(arrayLiteral: $0.value))}
         let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
-        let array = first + last
-        return array
-        }).compactMapValues { (values) -> Set<String?> in
-            var set = Set<String?>()
-            for value in values {
-                set.insert(value)
-            }
-            return set
-        }
+            return first.union(last)
+        })
 
         
         for expectedQueryItem in expected {
             var queryItemFound = false
-            XCTAssertTrue(actual.contains(expectedQueryItem))
+            XCTAssertTrue(actual.contains(expectedQueryItem), "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
             let actualQueryItemValue = actualMap[expectedQueryItem.name]
             XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" + " does not match actual query item [\(expectedQueryItem.name)=\(actualQueryItemValue)]")
-            //                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
-            // Compare the query item values
-//            for actualQueryItem in actual where expectedQueryItem.name == actualQueryItem.name {
-//                // considering case-sensitive query item names
-//                // query item found. compare values
-//                queryItemFound = true
-//                XCTAssertEqual(expectedQueryItem.value, actualQueryItem.value,
-//                               "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" +
-//                               " does not match actual query item [\(actualQueryItem.name)=\(actualQueryItem.value)]")
-//                break
-//            }
-            
-          //  XCTAssertTrue(queryItemFound, "Expected query item \(expectedQueryItem.name) is not found in actual query items")
+
         }
     }
 }

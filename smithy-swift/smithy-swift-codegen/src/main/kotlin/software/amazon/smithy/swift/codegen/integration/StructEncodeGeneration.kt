@@ -134,6 +134,7 @@ class StructEncodeGeneration(
                 }
                 renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
             }
+            // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> renderEncodeList(ctx, keyName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, keyName, false)
