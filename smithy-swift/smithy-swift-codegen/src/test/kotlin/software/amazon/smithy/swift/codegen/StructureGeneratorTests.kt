@@ -16,12 +16,14 @@
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import kotlin.streams.toList
 
 class StructureGeneratorTests : TestsBase() {
     @Test
@@ -58,6 +60,64 @@ class StructureGeneratorTests : TestsBase() {
                 "}"
 
         contents.shouldContain(expectedGeneratedStructure)
+    }
+
+    @Test
+    fun `it renders recursive nested shapes`() {
+        val structs = createStructureContainingNestedRecursiveShape()
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val writer = SwiftWriter("MockPackage")
+
+        for (struct in structs) {
+            val generator = StructureGenerator(model, provider, writer, struct)
+            generator.render()
+        }
+        val contents = writer.toString()
+        val expected =
+            """
+public class RecursiveShapesInputOutputNested1 {
+    public let foo: String?
+    public unowned let nested: RecursiveShapesInputOutputNested2?
+
+    public init (
+        foo: String? = nil,
+        nested: RecursiveShapesInputOutputNested2? = nil
+    )
+    {
+        self.foo = foo
+        self.nested = nested
+    }
+}
+
+public class RecursiveShapesInputOutputNested2 {
+    public let bar: String?
+    public unowned let recursiveMember: RecursiveShapesInputOutputNested1?
+
+    public init (
+        bar: String? = nil,
+        recursiveMember: RecursiveShapesInputOutputNested1? = nil
+    )
+    {
+        self.bar = bar
+        self.recursiveMember = recursiveMember
+    }
+}
+
+/// This *is* documentation about the shape.
+public class RecursiveShapesInputOutput {
+    public unowned let nested: RecursiveShapesInputOutputNested1?
+
+    public init (
+        nested: RecursiveShapesInputOutputNested1? = nil
+    )
+    {
+        self.nested = nested
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+
     }
 
     @Test
@@ -109,6 +169,22 @@ class StructureGeneratorTests : TestsBase() {
             )
         })
 
+        return assembler.assemble().unwrap()
+    }
+
+    private fun createModelWithStructureShapes(structs: List<StructureShape>): Model {
+        val assembler = Model.assembler()
+       // assembler.addShapes()
+        //assembler.addShapes(structs)
+        for (struct in structs) {
+            assembler.addShapes(struct)
+
+//            struct.allMembers.values.forEach(Consumer { shape: MemberShape? ->
+//                assembler.addShape(
+//                    shape
+//                )
+//            })
+        }
         return assembler.assemble().unwrap()
     }
 }

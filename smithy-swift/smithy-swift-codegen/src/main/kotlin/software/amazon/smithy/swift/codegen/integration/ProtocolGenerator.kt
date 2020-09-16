@@ -72,7 +72,7 @@ interface ProtocolGenerator {
     val protocol: ShapeId
 
     /**
-     * Get the name of the protocl
+     * Get the name of the protocol
      */
     val protocolName: String
         get() {

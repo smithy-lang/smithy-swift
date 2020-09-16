@@ -98,13 +98,13 @@ class UnionGenerator(
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("enum \$union.name:L {", "}\n") {
+        writer.openBlock("public enum \$union.name:L {", "}\n") {
             createUnionWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(String)")
         }
 
-        writer.openBlock("extension \$union.name:L : Codable, Equatable { ", "}") {
+        writer.openBlock("extension \$union.name:L : Codable { ", "}") {
 
             // Generate Coding Keys for serialization/deserialization
             generateCodingKeysEnumBlock()
@@ -133,8 +133,10 @@ class UnionGenerator(
 
     fun addEnumCaseToInitFromDecoderBlock(memberShape: MemberShape) {
         val enumName = memberShape.swiftEnumCaseName()
+        val shape = model.expectShape(memberShape.target)
+        val symbol = symbolProvider.toSymbol(shape)
         initFromDecoderBlockBuilder.add(
-                "if let value = try? container.decode(String.self, forKey: .$enumName) {\n" +
+                "if let value = try? container.decode(${symbol.name}.self, forKey: .$enumName) {\n" +
                 "    self = .$enumName(value)\n" +
                 "    return\n" +
                 "}")
@@ -158,7 +160,7 @@ class UnionGenerator(
 
     fun generateEncodeBlock() {
         encodeBlockBuilder.add("case let .sdkUnknown(value):\n    try container.encode(value, forKey: .sdkUnknown)")
-        writer.openBlock("func encode(to encoder: Encoder) throws {", "}") {
+        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
             writer.write("var container = encoder.container(keyedBy: CodingKeys.self)")
             writer.write("switch self {")
             writer.write(encodeBlockBuilder.joinToString("\n"))
@@ -173,7 +175,7 @@ class UnionGenerator(
             "    return\n" +
             "}")
 
-        writer.openBlock("init(from decoder: Decoder) throws {", "}") {
+        writer.openBlock("public init(from decoder: Decoder) throws {", "}") {
             writer.write("let container = try decoder.container(keyedBy: CodingKeys.self)")
             writer.write(initFromDecoderBlockBuilder.joinToString("\n"))
         }

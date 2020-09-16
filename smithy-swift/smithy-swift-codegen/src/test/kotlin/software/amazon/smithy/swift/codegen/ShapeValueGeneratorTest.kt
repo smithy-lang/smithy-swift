@@ -202,14 +202,14 @@ Set<String>(arrayLiteral:
 MyStruct(
     boolMember: true,
     doubleMember: 3.0,
-    enumMember: MyEnum(rawValue:"fooey")!,
+    enumMember: MyEnum(rawValue: "fooey")!,
     floatMember: 2,
     intMember: 1,
     nullMember: nil,
     stringMember: "v1",
     structMember: Nested(
         tsMember: Date(timeIntervalSince1970: 11223344)
-)
+    )
 )
 """.trimIndent()
 

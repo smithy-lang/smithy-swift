@@ -17,7 +17,9 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NeighborProviderIndex
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -31,8 +33,11 @@ class StructureGenerator(
     private val shape: StructureShape
 ) {
 
-    private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
+    private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(
+        it
+    ) }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
+    private val index = TopologicalIndex.of(model)
 
     init {
         for (member in membersSortedByName) {
@@ -51,13 +56,17 @@ class StructureGenerator(
         if (shape.hasTrait(ErrorTrait::class.java)) {
             renderErrorStructure()
         } else {
-            renderNonErrorStructure()
+            //handle nested recursive types
+            val isRecursive = index.isRecursive(shape.toShapeId())
+
+            renderNonErrorStructure(isRecursive)
         }
         writer.removeContext("struct.name")
     }
 
     /**
      * Generates an appropriate Swift type for a Smithy Structure shape without error trait.
+     * If the structure is a recursive nested type it will generate a swift class.
      *
      * For example, given the following Smithy model:
      *
@@ -87,9 +96,10 @@ class StructureGenerator(
      * }
      * ```
      */
-    private fun renderNonErrorStructure() {
+    private fun renderNonErrorStructure(isRecursive: Boolean) {
+        val declarationOfType = if(isRecursive) "class" else "struct"
         writer.writeShapeDocs(shape)
-        writer.openBlock("public struct \$struct.name:L {")
+        writer.openBlock("public $declarationOfType \$struct.name:L {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -97,11 +107,16 @@ class StructureGenerator(
             .write("")
     }
 
+
+
     private fun generateStructMembers() {
         membersSortedByName.forEach {
+            val isRecursiveShape = index.isRecursive(it)
+            //include modifier on recursive shapes to avoid retained reference cycle
+            val modifier = if(isRecursiveShape) "unowned " else ""
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-            writer.write("public let \$L: \$T", memberName, memberSymbol)
+            writer.write("public ${modifier}let \$L: \$T", memberName, memberSymbol)
         }
     }
 

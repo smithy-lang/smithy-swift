@@ -171,6 +171,14 @@ class ShapeValueGenerator(
                     is DocumentShape -> {
                         // TODO - deal with document shapes
                     }
+                    is UnionShape -> {
+                        val member = currShape.getMember(keyNode.value).orElseThrow {
+                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
+                        }
+                        memberShape = generator.model.expectShape(member.target)
+                        val memberName = generator.symbolProvider.toMemberName(member)
+                        writer.writeInline("\n\$L: ", memberName)
+                    }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }
                 i++

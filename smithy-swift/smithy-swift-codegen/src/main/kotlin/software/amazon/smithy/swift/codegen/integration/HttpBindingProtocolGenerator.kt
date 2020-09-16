@@ -103,27 +103,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to Decodable for all output shapes with an http body and their nested types
-//        val structuresNeedingDecodableConformance = resolveStructuresNeedingDecodableConformance(ctx)
-//        for (structureShape in structuresNeedingDecodableConformance) {
-//            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
-//            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
-//            val rootNamespace = ctx.settings.moduleName
-//            val encodeSymbol = Symbol.builder()
-//                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
-//                .name(structSymbol.name)
-//                .build()
-//            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
-//            ctx.delegator.useShapeWriter(structSymbol) { writer ->
-//                writer.write("extension ${structSymbol.name}: Decodable {}")
-// //                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-// //                    writer.addFoundationImport()
-// //                    generateCodingKeysForStructure(ctx, writer, structureShape)
-// //                    writer.write("") // need enter space between coding keys and decode implementation
-//                    //TODO replace with full decode implementation in separate file
-//               // }
-//            }
-//        }
+        val structuresNeedingDecodableConformance = resolveStructuresNeedingDecodableConformance(ctx)
+        for (structureShape in structuresNeedingDecodableConformance) {
+            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
+            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+            val rootNamespace = ctx.settings.moduleName
+            val decodeSymbol = Symbol.builder()
+                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
+                .name(structSymbol.name)
+                .build()
+            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
+            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
+                writer.openBlock("extension ${structSymbol.name}: Decodable {", "}") {
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                    writer.addFoundationImport()
+                    generateCodingKeysForStructure(ctx, writer, structureShape)
+                    writer.write("") // need enter space between coding keys and decode implementation
+                    StructDecodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                }
+            }
+        }
     }
+
 
     /**
      * Find and return the set of shapes that need `Encodable` conformance which includes top level input types with members in the http body
@@ -222,12 +223,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (op.input.isEmpty) {
             return
         }
-        val opIndex = ctx.model.getKnowledge(OperationIndex::class.java)
+        val opIndex = OperationIndex.of(ctx.model)
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
         val inputShape = ctx.model.expectShape(op.input.get())
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val queryBindings = requestBindings.values.filter { it.location == HttpBinding.Location.QUERY }
         val queryLiterals = httpTrait.uri.queryLiterals
@@ -515,7 +516,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
-    /**
+/**
      * Get all of the features that are used as middleware
      */
     open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
@@ -535,7 +536,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 { containedOperations.add(operation) }
             ) {
                 LOGGER.warning(
-                    "Unable to fetch $protocol protocol request bindings for ${operation.id} because " +
+                    "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
                             "it does not have an http binding trait"
                 )
             }
@@ -543,3 +544,4 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return containedOperations
     }
 }
+
