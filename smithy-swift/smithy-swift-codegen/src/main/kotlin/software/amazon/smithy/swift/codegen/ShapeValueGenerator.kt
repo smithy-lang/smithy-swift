@@ -119,7 +119,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 //  val symbol = symbolProvider.toSymbol(shape)
-                    ".data(using: .utf8)"
+                    ".data(using: .utf8)!"
             }
             else -> { "" }
         }
