@@ -72,10 +72,10 @@ class SessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate, URL
         let operation = self.operationQueue.networkOperations.first(where: {$0.task == task})
         guard let error = error else {
             //completed with error but error is nil? what to do here
-            operation?.finish(error: nil)
+            try? operation?.finish(error: nil)
            return
         }
-        operation?.receiveError(error: error)
+        try? operation?.receiveError(error: error)
 
     }
 

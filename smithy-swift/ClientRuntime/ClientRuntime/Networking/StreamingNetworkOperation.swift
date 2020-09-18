@@ -27,7 +27,7 @@ class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
             let urlRequest = try request.toUrlRequest()
             self.task = session.uploadTask(withStreamedRequest: urlRequest)
         } catch {
-            completion(.failure(ClientError.serializationFailed("Serializaation failed due to malformed url")))
+            try? completion(.failure(ClientError.serializationFailed("Serializaation failed due to malformed url")))
         }
 
     }
@@ -42,6 +42,6 @@ class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
     }
 
     override func finish(error: Error? = nil) {
-        super.finish(error: error)
+        try? super.finish(error: error)
     }
 }

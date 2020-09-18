@@ -51,13 +51,15 @@ class StructDecodeGeneration(
                 when (target) {
                     is CollectionShape -> {
                         //TODO
+                        writer.write("$memberName = nil")
                     }
                     is MapShape -> {
                         //TODO
+                        writer.write("$memberName = nil")
                     }
                     else -> {
                         val symbol = ctx.symbolProvider.toSymbol(target)
-                        writer.write("$memberName = try $valuesContainer.decode(${symbol.name}.self, forKey: .$memberName)")
+                        writer.write("$memberName = try $valuesContainer.decodeIfPresent(${symbol.name}.self, forKey: .$memberName)")
                     }
                 }
             }

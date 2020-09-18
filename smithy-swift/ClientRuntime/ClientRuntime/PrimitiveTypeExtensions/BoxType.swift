@@ -13,6 +13,10 @@
 // permissions and limitations under the License.
 //
 
-public typealias SdkResult<R, E> = Result<R, SdkError<E>>
+public final class Box<T> {
+    public var value: T
 
-public typealias NetworkResult = (Result<HttpResponse, Error>) throws -> Void
+    init(value: T) {
+        self.value = value
+    }
+}

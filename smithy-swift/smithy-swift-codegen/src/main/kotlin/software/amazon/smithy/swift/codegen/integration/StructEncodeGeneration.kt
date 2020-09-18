@@ -17,13 +17,12 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.*
 
 /**
  * Generates encode function for members bound to the payload.
@@ -95,6 +94,12 @@ class StructEncodeGeneration(
     }
 
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
+        val index = TopologicalIndex.of(ctx.model)
+        val isRecursiveMember = when(shape) {
+            is MemberShape -> shape.isRecursiveMember(index)
+            else -> false
+        }
+
         // target shape type to deserialize is either the shape itself or member.target
         val target = when (shape) {
             is MemberShape -> ctx.model.expectShape(shape.target)
@@ -106,7 +111,7 @@ class StructEncodeGeneration(
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
             is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
             is BlobShape -> "$memberName$optional.base64EncodedString()"
-            else -> memberName
+            else -> if(isRecursiveMember) "${memberName}.value" else memberName
         }
     }
     // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait

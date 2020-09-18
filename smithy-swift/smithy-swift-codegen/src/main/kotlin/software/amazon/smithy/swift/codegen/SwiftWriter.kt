@@ -38,7 +38,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         putFormatter('T', SwiftSymbolFormatter())
     }
 
-    internal val imports: ImportDeclarations = ImportDeclarations()
+    private val imports: ImportDeclarations = ImportDeclarations()
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
 
     companion object {
@@ -114,7 +114,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
                     }
                     return formatted
                 }
-//            is SymbolReference -> println("symbol ref")
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
             }
         }

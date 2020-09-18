@@ -76,13 +76,13 @@ class StructureGeneratorTests : TestsBase() {
         val contents = writer.toString()
         val expected =
             """
-public class RecursiveShapesInputOutputNested1 {
+public struct RecursiveShapesInputOutputNested1 {
     public let foo: String?
-    public unowned let nested: RecursiveShapesInputOutputNested2?
+    public let nested: Box<RecursiveShapesInputOutputNested2>?
 
     public init (
         foo: String? = nil,
-        nested: RecursiveShapesInputOutputNested2? = nil
+        nested: Box<RecursiveShapesInputOutputNested2>? = nil
     )
     {
         self.foo = foo
@@ -90,13 +90,13 @@ public class RecursiveShapesInputOutputNested1 {
     }
 }
 
-public class RecursiveShapesInputOutputNested2 {
+public struct RecursiveShapesInputOutputNested2 {
     public let bar: String?
-    public unowned let recursiveMember: RecursiveShapesInputOutputNested1?
+    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
 
     public init (
         bar: String? = nil,
-        recursiveMember: RecursiveShapesInputOutputNested1? = nil
+        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
     )
     {
         self.bar = bar
@@ -105,8 +105,66 @@ public class RecursiveShapesInputOutputNested2 {
 }
 
 /// This *is* documentation about the shape.
-public class RecursiveShapesInputOutput {
-    public unowned let nested: RecursiveShapesInputOutputNested1?
+public struct RecursiveShapesInputOutput {
+    public let nested: RecursiveShapesInputOutputNested1?
+
+    public init (
+        nested: RecursiveShapesInputOutputNested1? = nil
+    )
+    {
+        self.nested = nested
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+
+    }
+
+    @Test
+    fun `it renders recursive nested shapes in lists`() {
+        val structs = createStructureContainingNestedRecursiveShapeList()
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val writer = SwiftWriter("MockPackage")
+
+        for (struct in structs) {
+            val generator = StructureGenerator(model, provider, writer, struct)
+            generator.render()
+        }
+        val contents = writer.toString()
+        val expected =
+            """
+public struct RecursiveShapesInputOutputNestedList1 {
+    public let foo: String?
+    public let recursiveList: [RecursiveShapesInputOutputNested2]?
+
+    public init (
+        foo: String? = nil,
+        recursiveList: [RecursiveShapesInputOutputNested2]? = nil
+    )
+    {
+        self.foo = foo
+        self.recursiveList = recursiveList
+    }
+}
+
+public struct RecursiveShapesInputOutputNested2 {
+    public let bar: String?
+    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
+
+    public init (
+        bar: String? = nil,
+        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
+    )
+    {
+        self.bar = bar
+        self.recursiveMember = recursiveMember
+    }
+}
+
+/// This *is* documentation about the shape.
+public struct RecursiveShapesInputOutputLists {
+    public let nested: RecursiveShapesInputOutputNested1?
 
     public init (
         nested: RecursiveShapesInputOutputNested1? = nil

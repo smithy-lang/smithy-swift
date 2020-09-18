@@ -48,6 +48,9 @@ class ShapeValueGenerator(
             ShapeType.LIST, ShapeType.SET -> collectionDecl(writer, shape as CollectionShape) {
                 params.accept(nodeVisitor)
             }
+            ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
+                params.accept(nodeVisitor)
+            }
             else -> primitiveDecl(writer, shape) {
                 params.accept(nodeVisitor)
             }
@@ -66,6 +69,11 @@ class ShapeValueGenerator(
             .writeInline("\n)")
     }
 
+    private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
+        val symbol = symbolProvider.toSymbol(shape)
+        writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
+    }
+
     private fun mapDecl(writer: SwiftWriter, shape: MapShape, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
@@ -73,7 +81,6 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            .write("")
             .write("]")
 
         writer.popState()
@@ -176,8 +183,8 @@ class ShapeValueGenerator(
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
                         memberShape = generator.model.expectShape(member.target)
-                        val memberName = generator.symbolProvider.toMemberName(member)
-                        writer.writeInline("\n\$L: ", memberName)
+                        writer.writeInline("\$L(", keyNode.value)
+                        generator.writeShapeValueInline(writer, memberShape, valueNode)
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }

@@ -22,8 +22,32 @@ service Example {
         EmptyInputAndEmptyOutput,
         SimpleScalarProperties,
         StreamingTraits,
-        HttpPrefixHeaders
+        HttpPrefixHeaders,
+        RecursiveShapes,
+        JsonUnions
     ]
+}
+
+/// Recursive shapes
+@idempotent
+@http(uri: "/RecursiveShapes", method: "PUT")
+operation RecursiveShapes {
+    input: RecursiveShapesInputOutput,
+    output: RecursiveShapesInputOutput
+}
+
+structure RecursiveShapesInputOutput {
+    nested: RecursiveShapesInputOutputNested1
+}
+
+structure RecursiveShapesInputOutputNested1 {
+    foo: String,
+    nested: RecursiveShapesInputOutputNested2
+}
+
+structure RecursiveShapesInputOutputNested2 {
+    bar: String,
+    recursiveMember: RecursiveShapesInputOutputNested1,
 }
 
 @http(method: "POST", uri: "/smoketest/{label1}/foo")
@@ -512,3 +536,47 @@ map StringMap {
     key: String,
     value: String
 }
+
+/// This operation uses unions for inputs and outputs.
+@idempotent
+@http(uri: "/JsonUnions", method: "PUT")
+operation JsonUnions {
+    input: UnionInputOutput,
+    output: UnionInputOutput,
+}
+
+/// A shared structure that contains a single union member.
+structure UnionInputOutput {
+    contents: MyUnion
+}
+
+/// A union with a representative set of types for members.
+union MyUnion {
+    stringValue: String,
+    booleanValue: Boolean,
+    numberValue: Integer,
+    blobValue: Blob,
+}
+
+apply JsonUnions @httpRequestTests([
+    {
+        id: "RestJsonSerializeStringUnionValue",
+        documentation: "Serializes a string union value",
+        protocol: restJson1,
+        method: "PUT",
+        "uri": "/JsonUnions",
+        body: """
+            {
+                "contents": {
+                    "stringValue": "foo"
+                }
+            }""",
+        bodyMediaType: "application/json",
+        headers: {"Content-Type": "application/json"},
+        params: {
+            contents: {
+                stringValue: "foo"
+            }
+        }
+    }
+])

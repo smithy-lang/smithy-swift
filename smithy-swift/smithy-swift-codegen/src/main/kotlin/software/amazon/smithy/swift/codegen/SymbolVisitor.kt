@@ -47,6 +47,18 @@ fun Symbol.isBoxed(): Boolean {
 }
 
 /**
+ * Obtains the symbol for a recursive symbol to represent the symbol as Box<T>
+ */
+fun Symbol.recursiveSymbol(): Symbol {
+    return Symbol.builder()
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .name("Box<${name}>")
+        .putProperty("boxed", isBoxed())
+        .putProperty("defaultValue", defaultValue())
+        .build()
+}
+
+/**
  * Gets the default value for the symbol if present, else null
  */
 fun Symbol.defaultValue(): String? {

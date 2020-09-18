@@ -34,7 +34,7 @@ public class HttpClient {
     public func execute(request: HttpRequest, completion: @escaping NetworkResult) -> StreamingProvider? {
         switch request.body {
         case .data, .file, .none :
-            let operation = DataNetworkOperation(session: session, request: request, completion: completion)
+            guard let operation = try? DataNetworkOperation(session: session, request: request, completion: completion) else { return nil }
             operationQueue.addOperation(operation)
         case .stream:
             let streamingProvider = StreamingProvider()

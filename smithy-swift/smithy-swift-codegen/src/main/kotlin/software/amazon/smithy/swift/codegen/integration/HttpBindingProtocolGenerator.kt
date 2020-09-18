@@ -103,26 +103,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to Decodable for all output shapes with an http body and their nested types
-        val structuresNeedingDecodableConformance = resolveStructuresNeedingDecodableConformance(ctx)
-        for (structureShape in structuresNeedingDecodableConformance) {
-            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
-            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
-            val rootNamespace = ctx.settings.moduleName
-            val decodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
-                .name(structSymbol.name)
-                .build()
-            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
-            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-                writer.openBlock("extension ${structSymbol.name}: Decodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-                    writer.addFoundationImport()
-                    generateCodingKeysForStructure(ctx, writer, structureShape)
-                    writer.write("") // need enter space between coding keys and decode implementation
-                    StructDecodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
-                }
-            }
-        }
+//        val structuresNeedingDecodableConformance = resolveStructuresNeedingDecodableConformance(ctx)
+//        for (structureShape in structuresNeedingDecodableConformance) {
+//            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
+//            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+//            val rootNamespace = ctx.settings.moduleName
+//            val decodeSymbol = Symbol.builder()
+//                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
+//                .name(structSymbol.name)
+//                .build()
+//            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
+//            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
+//                writer.openBlock("extension ${structSymbol.name}: Decodable {", "}") {
+//                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+//                    writer.addFoundationImport()
+//                    generateCodingKeysForStructure(ctx, writer, structureShape)
+//                    writer.write("") // need enter space between coding keys and decode implementation
+//                    StructDecodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+//                }
+//            }
+//        }
     }
 
 

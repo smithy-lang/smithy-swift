@@ -14,3 +14,17 @@ structure RecursiveShapesInputOutputNested2 {
     bar: String,
     recursiveMember: RecursiveShapesInputOutputNested1,
 }
+
+structure RecursiveShapesInputOutputLists {
+    nested: RecursiveShapesInputOutputNestedList1
+}
+
+structure RecursiveShapesInputOutputNestedList1 {
+    foo: String,
+    recursiveList: RecursiveList
+}
+
+
+list RecursiveList {
+    member: RecursiveShapesInputOutputNested2
+}

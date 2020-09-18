@@ -536,6 +536,32 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     }
 
     @Test
+    fun `it encodes recursive boxed types correctly`() {
+        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested1+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            extension RecursiveShapesInputOutputNested1: Encodable {
+                private enum CodingKeys: String, CodingKey {
+                    case foo
+                    case nested
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let foo = foo {
+                        try container.encode(foo, forKey: .foo)
+                    }
+                    if let nested = nested {
+                        try container.encode(nested.value, forKey: .nested)
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
     fun `getSanitizedName generates Swifty name`() {
         val testProtocolName = "aws.rest-json-1.1"
         val sanitizedProtocolName = ProtocolGenerator.getSanitizedName(testProtocolName)

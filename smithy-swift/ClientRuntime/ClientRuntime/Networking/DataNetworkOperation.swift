@@ -17,20 +17,20 @@ import Foundation
 
 class DataNetworkOperation: NetworkOperation {
 
-    init(session: SessionProtocol, request: HttpRequest, completion: @escaping NetworkResult) {
+    init(session: SessionProtocol, request: HttpRequest, completion: @escaping NetworkResult) throws {
         super.init()
         self.completion = completion
         do {
         let urlRequest = try request.toUrlRequest()
         self.task = session.dataTask(with: urlRequest)
         } catch {
-            completion(.failure(ClientError.serializationFailed("Serialization failed due to malformed url")))
+            try? completion(.failure(ClientError.serializationFailed("Serialization failed due to malformed url")))
         }
     }
 
     override func receiveData(data: Data) {
         response?.content = .data(data)
-        completion?(Result.success(response!))
+        try? completion?(Result.success(response!))
         self.state = .finished
     }
 }
