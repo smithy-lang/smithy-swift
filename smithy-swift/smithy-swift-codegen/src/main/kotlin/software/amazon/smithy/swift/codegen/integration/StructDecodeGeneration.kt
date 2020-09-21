@@ -17,9 +17,12 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.isRecursiveMember
+import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 /**
  * Generates decode function for members bound to the payload.
@@ -58,8 +61,12 @@ class StructDecodeGeneration(
                         writer.write("$memberName = nil")
                     }
                     else -> {
-                        val symbol = ctx.symbolProvider.toSymbol(target)
-                        writer.write("$memberName = try $valuesContainer.decodeIfPresent(${symbol.name}.self, forKey: .$memberName)")
+                        var symbol = ctx.symbolProvider.toSymbol(target)
+                        val topologicalIndex = TopologicalIndex.of(ctx.model)
+                        if(member.isRecursiveMember(topologicalIndex)) {
+                            symbol = symbol.recursiveSymbol()
+                        }
+                        writer.write("$memberName = try $valuesContainer.decodeIfPresent(\$L.self, forKey: .\$L)", symbol, memberName)
                     }
                 }
             }

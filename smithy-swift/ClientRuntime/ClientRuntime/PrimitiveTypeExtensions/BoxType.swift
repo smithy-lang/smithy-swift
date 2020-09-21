@@ -13,10 +13,23 @@
 // permissions and limitations under the License.
 //
 
-public final class Box<T> {
+public final class Box<T> where T: Codable {
     public var value: T
 
     init(value: T) {
         self.value = value
+    }
+}
+
+extension Box: Codable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+    
+    public convenience init(from decoder: Decoder) throws {
+        let values = try decoder.singleValueContainer()
+        let value = try values.decode(T.self)
+        self.init(value: value)
     }
 }

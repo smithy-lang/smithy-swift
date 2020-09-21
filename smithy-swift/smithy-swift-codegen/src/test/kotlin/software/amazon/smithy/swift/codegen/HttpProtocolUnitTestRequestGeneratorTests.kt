@@ -250,7 +250,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         )
 
         let input = StreamingTraitsInputOutput(
-            blob: "blobby blob blob".data(using: .utf8),
+            blob: "blobby blob blob".data(using: .utf8)!,
             foo: "Foo"
         )
         do {
