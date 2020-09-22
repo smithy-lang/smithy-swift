@@ -392,6 +392,10 @@ operation TimestampInput {
     output: TimestampOutputResponse
 }
 
+list NestedTimestampList {
+    member: TimestampList
+}
+
 list TimestampList {
     @timestampFormat("http-date")
     member: Timestamp
@@ -444,6 +448,8 @@ structure TimestampOutputResponse {
 
     @timestampFormat("http-date")
     httpDate: Timestamp,
+
+    nestedTimestampList: NestedTimestampList,
 
     timestampList: TimestampList,
 

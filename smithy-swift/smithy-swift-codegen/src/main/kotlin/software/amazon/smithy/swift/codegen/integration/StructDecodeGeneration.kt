@@ -18,7 +18,10 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.TopologicalIndex
+import software.amazon.smithy.model.neighbor.RelationshipType
+import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -27,6 +30,7 @@ import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.isRecursiveMember
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 import java.sql.Time
+import java.sql.Timestamp
 
 /**
  * Generates decode function for members bound to the payload.
@@ -47,16 +51,18 @@ class StructDecodeGeneration(
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
+    var currentMember: MemberShape? = null
 
     fun render() {
-        var valuesContainer = "values"
+        var containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
-            writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", valuesContainer)
+            writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
                 val memberName = member.memberName
+                currentMember = member
                 when (target) {
-                    is CollectionShape -> renderDecodeListMember(member, memberName, valuesContainer)
+                    is CollectionShape -> renderDecodeListMember(target, memberName, containerName)
                     is MapShape -> {
                         //TODO
                         writer.write("$memberName = nil")
@@ -67,17 +73,23 @@ class StructDecodeGeneration(
                             .map { it.format }
                             .orElse(defaultTimestampFormat)
                         if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS){
-                            writeDecodeForPrimitive(target, member, valuesContainer)
+                            writeDecodeForPrimitive(target, member, containerName)
                         } else {
-                            val dateSymbol = getDateSymbolName(tsFormat)
-                            writer.write("let dateString = try $valuesContainer.decodeIfPresent(\$L.self, forKey: .\$L)", dateSymbol, memberName)
-                            val formatterName = "${memberName}Formatter"
-                            writeDateFormatter(formatterName, tsFormat, writer)
-                            writer.write("\$L = \$L.date(from: dateString)", memberName, formatterName)
+                            val dateSymbol = getSymbolName(target)
+                            val originalSymbol = ctx.symbolProvider.toSymbol(target)
+                            val dateString = "${memberName}DateString"
+                            val decodableMemberName = "${memberName}Decoded"
+                            writer.write("let \$L = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", dateString, dateSymbol, memberName)
+                            writer.write("var \$L: \$T = nil", decodableMemberName, originalSymbol)
+                            writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
+                                val formatterName = "${memberName}Formatter"
+                                writeDateFormatter(formatterName, tsFormat, writer)
+                                writer.write("\$L = \$L.date(from: \$L)", decodableMemberName, formatterName, dateString)
+                            }
+                            writer.write("\$L = \$L", memberName, decodableMemberName)
                         }
-
                     }
-                    else -> writeDecodeForPrimitive(target, member, valuesContainer)
+                    else -> writeDecodeForPrimitive(target, member, containerName)
                 }
             }
         }
@@ -93,13 +105,42 @@ class StructDecodeGeneration(
         writer.write("$memberName = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", symbol.name, memberName)
     }
 
-    private fun getDateSymbolName(tsFormat: TimestampFormatTrait.Format): String {
-        return when(tsFormat) {
-            TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date"
-            TimestampFormatTrait.Format.DATE_TIME -> "String"
-            TimestampFormatTrait.Format.HTTP_DATE -> "String"
-            else -> throw CodegenException("unknown timestamp format: $tsFormat")
+    private fun getSymbolName(shape: Shape): String {
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val walker = Walker(ctx.model)
+        if (symbol.name.contains("Date")) {
+            //if symbol name contains the string Date, check timestamp format. if the timestamp format is not epoch seconds,
+            // change Date to String to properly decode
+            val walkedShapes = walker.iterateShapes(shape) { relationship ->
+                when (relationship.relationshipType) {
+                    RelationshipType.MEMBER_TARGET,
+                    RelationshipType.STRUCTURE_MEMBER,
+                    RelationshipType.LIST_MEMBER,
+                    RelationshipType.SET_MEMBER,
+                    RelationshipType.MAP_VALUE,
+                    RelationshipType.UNION_MEMBER -> true
+                    else -> false
+                }
+            }
+            loop@ for (walkedShape in walkedShapes) {
+                return if (walkedShape.type == ShapeType.TIMESTAMP) {
+                    val tsFormat = walkedShape
+                        .getTrait(TimestampFormatTrait::class.java)
+                        .map { it.format }
+                        .orElse(defaultTimestampFormat)
+                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+                        symbol.name
+                    } else {
+                        symbol.name.replace("Date", "String")
+                    }
+                } else {
+                    continue@loop
+                }
+            }
+
+
         }
+        return symbol.name
     }
 
     private fun writeDateFormatter(formatterName: String, tsFormat: TimestampFormatTrait.Format, writer: SwiftWriter) {
@@ -113,62 +154,115 @@ class StructDecodeGeneration(
         }
     }
 
-    private fun renderDecodeListMember(member: MemberShape, memberName: String, containerName: String, level: Int = 0) {
-        val target = ctx.model.expectShape(member.target)
-        val symbolName = ctx.symbolProvider.toSymbol(target).name
-        when (target) {
+    private fun renderDecodeListMember(shape: Shape, memberName: String, containerName: String, level: Int = 0) {
+        val symbolName = getSymbolName(shape)
+        val originalSymbol = ctx.symbolProvider.toSymbol(shape)
+        val decodedMemberName = "${memberName}Decoded${level}"
+        val topLevelMemberName = currentMember!!.memberName
+        when (shape) {
             is CollectionShape -> {
-                val nestedTarget = ctx.model.expectShape(target.member.target)
-                renderDecodeListTarget(ctx, memberName, containerName, nestedTarget, member, level)
+                if (level == 0) {
+                    val listContainerName = "${memberName}Container"
+                    writer.write("let \$L = try values.decodeIfPresent(\$L.self, forKey: .\$L)",
+                        listContainerName,
+                        symbolName,
+                        memberName)
+
+                    writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
+                    writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
+                        renderDecodeListTarget(ctx, memberName, listContainerName, decodedMemberName, shape, level)
+                    }
+                    writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
+
+                } else {
+                    writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
+                    renderDecodeListTarget(ctx, memberName, memberName, decodedMemberName, shape, level)
+                    writer.write("$containerName.append($decodedMemberName)")
+                }
+            }
+            is TimestampShape -> {
+                val tsFormat = shape
+                    .getTrait(TimestampFormatTrait::class.java)
+                    .map { it.format }
+                    .orElse(defaultTimestampFormat)
+
+                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
+                    writer.write("$containerName.append($memberName)")
+                } else { //decode date as a string manually
+
+                    val formatterName = "${memberName}Formatter"
+                    writeDateFormatter(formatterName, tsFormat, writer)
+                    val dateName = "date${level - 1}"
+                    writer.openBlock("guard let $dateName = $formatterName.date(from: $memberName) else {", "}") {
+                        renderDecodingError(topLevelMemberName)
+                    }
+                    writer.write("$containerName.append($dateName)")
+                }
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
-            is MapShape -> renderDecodeListTarget(ctx, memberName, containerName, target, member, level)
-            else -> writeDecodeForPrimitive(target, member, containerName)
+            is MapShape -> renderDecodeListTarget(ctx, memberName, containerName, decodedMemberName, shape, level)
+            else -> {
+                writer.write("$containerName.append($memberName)")
+
+            }
         }
+    }
+
+    private fun renderDecodingError(memberName: String) {
+        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
     }
 
     private fun renderDecodeListTarget(
         ctx: ProtocolGenerator.GenerationContext,
         collectionName: String,
         topLevelContainerName: String,
+        decodedMemberName: String,
         targetShape: Shape,
-        memberShape: MemberShape,
         level: Int = 0
     ) {
-        val target = ctx.model.expectShape(memberShape.target)
-        val symbol = ctx.symbolProvider.toSymbol(target)
-        val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
 
+        val symbolName = getSymbolName(targetShape)
+        val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
+        writer.openBlock("for $iteratorName in $topLevelContainerName {", "}") {
             when (targetShape) {
+                is CollectionShape -> {
+                    val nestedTarget = ctx.model.expectShape(targetShape.member.target)
+                    renderDecodeListMember(nestedTarget, iteratorName, decodedMemberName, level + 1)
+
+                }
                 is TimestampShape -> {
 
                     val tsFormat = targetShape
                         .getTrait(TimestampFormatTrait::class.java)
                         .map { it.format }
                         .orElse(defaultTimestampFormat)
-                    if(tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
-                        writeDecodeForPrimitive(targetShape, memberShape, topLevelContainerName)
+                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
+                        //  writeDecodeForPrimitive(targetShape, memberShape, topLevelContainerName)
+                      //  renderDecodeListMember(targetShape, iteratorName, topLevelContainerName, level+1)
+                        writer.write("$decodedMemberName.append($collectionName)")
                     } else { //decode date as a string manually
-                        val nestedContainerName = "${collectionName}Container"
-                        val listContainer = "${collectionName}List"
-                        val symbolName = getDateSymbolName(tsFormat)
-                        writer.write("let \$L = try \$L.decodeIfPresent([\$L].self, forKey: .\$L)", nestedContainerName, topLevelContainerName, symbolName, collectionName)
-                        writer.write("var \$L = \$L()", listContainer, symbol.name)
-                        writer.openBlock("for timestamp in $nestedContainerName {", "}") {
-                            val formatterName = "${collectionName}Formatter"
-                            writeDateFormatter(formatterName, tsFormat, writer)
-                            writer.openBlock("guard let date = $formatterName.date(from: timestamp) else {", "}") {
-                                writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: $topLevelContainerName.codingPath + [CodingKeys.$collectionName], debugDescription: \"date cannot be properly deserialized\"))")
-                            }
-                            writer.write("$listContainer.append(date)")
+
+                        val formatterName = "${collectionName}Formatter"
+                        writeDateFormatter(formatterName, tsFormat, writer)
+                        val dateName = "date${level - 1}"
+                        writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
+                           renderDecodingError(collectionName)
                         }
+                        writer.write("$decodedMemberName.append($collectionName)")
+                       // renderDecodeListMember(targetShape, dateName, topLevelContainerName, level+1)
                     }
                 }
                 else -> {
 
-                    writer.write("\$1L = try $topLevelContainerName.decodeIfPresent(\$3L.self, .\$2L)", collectionName, collectionName, symbol.name)
+                    writer.write(
+                        "\$1L = try $topLevelContainerName.decodeIfPresent(\$3L.self, .\$2L)",
+                        collectionName,
+                        collectionName,
+                        symbolName
+                    )
                 }
             }
+        }
     }
 
 }
