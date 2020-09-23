@@ -130,7 +130,14 @@ class StructDecodeGenerationTests: TestsBase() {
                         }
                     }
                     intList = intListDecoded0
-                    intMap = nil
+                    let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    var intMapDecoded0 = [String:Int]()
+                    if let intMapContainer = intMapContainer {
+                        for (key0, intmap0) in intMapContainer {
+                            intMapDecoded0[key0] = intmap0
+                        }
+                    }
+                    intMap = intMapDecoded0
                 }
             }
             """.trimIndent()
@@ -232,11 +239,13 @@ class StructDecodeGenerationTests: TestsBase() {
                 public let enumMap: [String:MyEnum]?
                 public let blobMap: [String:Data]?
                 public let nestedMap: [String:[String:Int]]?
+                public let dateMap: [String:Date]?
             }
             
             extension MapOutputResponseBody: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case blobMap
+                    case dateMap
                     case enumMap
                     case intMap
                     case nestedMap
@@ -245,11 +254,62 @@ class StructDecodeGenerationTests: TestsBase() {
             
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
-                    intMap = nil
-                    structMap = nil
-                    enumMap = nil
-                    blobMap = nil
-                    nestedMap = nil
+                    let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    var intMapDecoded0 = [String:Int]()
+                    if let intMapContainer = intMapContainer {
+                        for (key0, intmap0) in intMapContainer {
+                            intMapDecoded0[key0] = intmap0
+                        }
+                    }
+                    intMap = intMapDecoded0
+                    let structMapContainer = try values.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
+                    var structMapDecoded0 = [String:ReachableOnlyThroughMap]()
+                    if let structMapContainer = structMapContainer {
+                        for (key0, structmap0) in structMapContainer {
+                            structMapDecoded0[key0] = structmap0
+                        }
+                    }
+                    structMap = structMapDecoded0
+                    let enumMapContainer = try values.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
+                    var enumMapDecoded0 = [String:MyEnum]()
+                    if let enumMapContainer = enumMapContainer {
+                        for (key0, enummap0) in enumMapContainer {
+                            enumMapDecoded0[key0] = enummap0
+                        }
+                    }
+                    enumMap = enumMapDecoded0
+                    let blobMapContainer = try values.decodeIfPresent([String:Data].self, forKey: .blobMap)
+                    var blobMapDecoded0 = [String:Data]()
+                    if let blobMapContainer = blobMapContainer {
+                        for (key0, blobmap0) in blobMapContainer {
+                            blobMapDecoded0[key0] = blobmap0
+                        }
+                    }
+                    blobMap = blobMapDecoded0
+                    let nestedMapContainer = try values.decodeIfPresent([String:[String:Int]].self, forKey: .nestedMap)
+                    var nestedMapDecoded0 = [String:[String:Int]]()
+                    if let nestedMapContainer = nestedMapContainer {
+                        for (key0, nestedmap0) in nestedMapContainer {
+                            var nestedmap0Decoded1 = [String:Int]()
+                            for (key1, intmap1) in nestedmap0 {
+                                nestedmap0Decoded1[key1] = intmap1
+                            }
+                            nestedMapDecoded0[key0] = nestedmap0Decoded1
+                        }
+                    }
+                    nestedMap = nestedMapDecoded0
+                    let dateMapContainer = try values.decodeIfPresent([String:String].self, forKey: .dateMap)
+                    var dateMapDecoded0 = [String:Date]()
+                    if let dateMapContainer = dateMapContainer {
+                        for (key0, datemap0) in dateMapContainer {
+                            let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                            guard let date0 = dateMapContainerFormatter.date(from: datemap0) else {
+                                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
+                            }
+                            dateMapDecoded0[key0] = date0
+                        }
+                    }
+                    dateMap = dateMapDecoded0
                 }
             }
             """.trimIndent()

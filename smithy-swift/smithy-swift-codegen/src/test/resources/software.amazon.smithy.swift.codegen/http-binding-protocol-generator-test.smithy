@@ -354,7 +354,8 @@ structure MapOutputResponse {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap,
-    nestedMap: NestedMap
+    nestedMap: NestedMap,
+    dateMap: DateMap
 }
 
 
