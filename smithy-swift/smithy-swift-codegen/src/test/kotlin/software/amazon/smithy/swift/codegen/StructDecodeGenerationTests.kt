@@ -25,7 +25,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class StructDecodeGenerationTests: TestsBase() {
+class StructDecodeGenerationTests : TestsBase() {
 
     var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
 

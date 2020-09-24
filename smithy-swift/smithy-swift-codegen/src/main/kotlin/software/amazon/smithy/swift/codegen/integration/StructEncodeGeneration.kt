@@ -95,7 +95,7 @@ class StructEncodeGeneration(
 
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
         val index = TopologicalIndex.of(ctx.model)
-        val isRecursiveMember = when(shape) {
+        val isRecursiveMember = when (shape) {
             is MemberShape -> shape.isRecursiveMember(index)
             else -> false
         }
@@ -111,7 +111,7 @@ class StructEncodeGeneration(
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
             is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
             is BlobShape -> "$memberName$optional.base64EncodedString()"
-            else -> if(isRecursiveMember) "${memberName}.value" else memberName
+            else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }
     // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait

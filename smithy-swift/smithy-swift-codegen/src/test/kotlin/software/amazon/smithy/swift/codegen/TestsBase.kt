@@ -126,7 +126,6 @@ abstract class TestsBase {
         val memberRecursiveMember = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember").target("smithy.example#RecursiveShapesInputOutputNested1").build()
         val memberBar = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String").build()
 
-
         val recursiveShapeNested2 = StructureShape.builder()
             .id("smithy.example#RecursiveShapesInputOutputNested2")
             .addMember(memberRecursiveMember)
@@ -171,8 +170,6 @@ abstract class TestsBase {
             .addMember(memberFoo)
             .addMember(memberNested)
             .build()
-
-
 
         val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputLists\$nested").target("smithy.example#RecursiveShapesInputOutputNested1").build()
 

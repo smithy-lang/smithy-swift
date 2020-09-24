@@ -19,8 +19,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.NeighborProviderIndex
-import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -33,11 +31,11 @@ fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
     var isRecursiveMember = false
 
     val shapeId = toShapeId()
-    //handle recursive types
+    // handle recursive types
     val loop = index.getRecursiveClosure(shapeId)
     if (loop.size > 0) {
-        //loop through set of paths and then array of paths to find if current member matches a member in that list
-        //if it does it is a recursive member that needs to be boxed as so
+        // loop through set of paths and then array of paths to find if current member matches a member in that list
+        // if it does it is a recursive member that needs to be boxed as so
         isRecursiveMember = loop.any { path -> path.endShape.id == shapeId }
     }
     return isRecursiveMember
@@ -127,13 +125,13 @@ class StructureGenerator(
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
 
-            //if shape is a collection or map shape which are COW in swift or is not recursive apply member normally
+            // if shape is a collection or map shape which are COW in swift or is not recursive apply member normally
             if ((shape is CollectionShape || shape is MapShape) || !isRecursiveMember) {
-                //apply member normally
+                // apply member normally
                 writer.write("public let \$L: \$T", memberName, memberSymbol)
             } else {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-                val symbol = if(isRecursiveMember) memberSymbol.recursiveSymbol() else memberSymbol
+                val symbol = if (isRecursiveMember) memberSymbol.recursiveSymbol() else memberSymbol
                 writer.write("public let \$L: \$T", memberName, symbol)
             }
         }
@@ -155,7 +153,7 @@ class StructureGenerator(
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
                     val isRecursive = member.isRecursiveMember(topologicalIndex)
-                    val symbolToUse = if(isRecursive) memberSymbol.recursiveSymbol() else memberSymbol
+                    val symbolToUse = if (isRecursive) memberSymbol.recursiveSymbol() else memberSymbol
                     writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
             }

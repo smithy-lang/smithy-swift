@@ -52,7 +52,7 @@ fun Symbol.isBoxed(): Boolean {
 fun Symbol.recursiveSymbol(): Symbol {
     return Symbol.builder()
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .name("Box<${name}>")
+        .name("Box<$name>")
         .putProperty("boxed", isBoxed())
         .putProperty("defaultValue", defaultValue())
         .build()

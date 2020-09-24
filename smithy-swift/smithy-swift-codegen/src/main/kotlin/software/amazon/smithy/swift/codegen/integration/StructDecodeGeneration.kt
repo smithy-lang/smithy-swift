@@ -65,7 +65,7 @@ class StructDecodeGeneration(
                             .getTrait(TimestampFormatTrait::class.java)
                             .map { it.format }
                             .orElse(defaultTimestampFormat)
-                        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS){
+                        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                             writeDecodeForPrimitive(target, member, containerName)
                         } else {
                             val dateSymbol = "String"
@@ -92,18 +92,18 @@ class StructDecodeGeneration(
         var symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = member.memberName
         val topologicalIndex = TopologicalIndex.of(ctx.model)
-        if(member.isRecursiveMember(topologicalIndex)) {
+        if (member.isRecursiveMember(topologicalIndex)) {
             symbol = symbol.recursiveSymbol()
         }
         writer.write("$memberName = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", symbol.name, memberName)
     }
 
-    //TODO remove this when we switch to a custom date type as this wont be necessary anymore
+    // TODO remove this when we switch to a custom date type as this wont be necessary anymore
     private fun getSymbolName(shape: Shape): String {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val walker = Walker(ctx.model)
         if (symbol.name.contains("Date")) {
-            //if symbol name contains the Date symbol, check timestamp format. if the timestamp format is not epoch seconds,
+            // if symbol name contains the Date symbol, check timestamp format. if the timestamp format is not epoch seconds,
             // change Date to String to properly decode
             val walkedShapes = walker.iterateShapes(shape) { relationship ->
                 when (relationship.relationshipType) {
@@ -136,7 +136,7 @@ class StructDecodeGeneration(
     }
 
     private fun writeDateFormatter(formatterName: String, tsFormat: TimestampFormatTrait.Format, writer: SwiftWriter) {
-        when(tsFormat) {
+        when (tsFormat) {
             TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = DateFormatter()", formatterName)
             // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
             // to custom date type
@@ -158,7 +158,7 @@ class StructDecodeGeneration(
     ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val decodedMemberName = "${memberName}Decoded${level}"
+        val decodedMemberName = "${memberName}Decoded$level"
         val topLevelMemberName = currentMember!!.memberName
         val insertMethod = when (ctx.model.expectShape(currentMember!!.target)) {
             is SetShape -> "insert"
@@ -177,12 +177,10 @@ class StructDecodeGeneration(
 
             writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
-                renderDecodeListTarget(nestedTarget,decodedMemberName, listContainerName, insertMethod, level)
+                renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, level)
             }
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
-
         } else {
-          //  writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
             renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
         }
     }
@@ -199,13 +197,13 @@ class StructDecodeGeneration(
                         .map { it.format }
                         .orElse(defaultTimestampFormat)
 
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
+                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
                         writer.write("$decodedMemberName.$insertMethod($iteratorName)")
-                    } else { //decode date as a string manually
+                    } else { // decode date as a string manually
 
                         val formatterName = "${iteratorName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
-                        val dateName = "date${level}"
+                        val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
                             renderDecodingError(topLevelMemberName)
                         }
@@ -213,15 +211,15 @@ class StructDecodeGeneration(
                     }
                 }
                 is CollectionShape -> {
-                    val nestedDecodedMemberName = "${iteratorName}Decoded${level}"
+                    val nestedDecodedMemberName = "${iteratorName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
                     writer.write("$decodedMemberName.$insertMethod($nestedDecodedMemberName)")
                 }
                 is MapShape -> {
-                    val nestedDecodedMemberName = "${collectionName}Decoded${level}"
+                    val nestedDecodedMemberName = "${collectionName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, level+1)
+                    renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
                     writer.write("$decodedMemberName.$insertMethod($nestedDecodedMemberName)")
                 }
                 else -> writer.write("$decodedMemberName.$insertMethod($iteratorName)")
@@ -232,7 +230,7 @@ class StructDecodeGeneration(
     private fun renderDecodeMapMember(shape: MapShape, memberName: String, containerName: String, level: Int = 0) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val decodedMemberName = "${memberName}Decoded${level}"
+        val decodedMemberName = "${memberName}Decoded$level"
         val topLevelMemberName = currentMember!!.memberName
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
@@ -265,16 +263,16 @@ class StructDecodeGeneration(
             when (valueTargetShape) {
                 is CollectionShape -> {
                     val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
-                    val nestedDecodedMemberName = "${valueIterator}Decoded${level}"
+                    val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level+1)
-                    writer.write("$decodedMemberName[key${level}] = $nestedDecodedMemberName")
+                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
+                    writer.write("$decodedMemberName[key$level] = $nestedDecodedMemberName")
                 }
-                is MapShape ->  {
-                    val nestedDecodedMemberName = "${valueIterator}Decoded${level}"
+                is MapShape -> {
+                    val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
-                    writer.write("$decodedMemberName[key${level}] = $nestedDecodedMemberName")
+                    writer.write("$decodedMemberName[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
                     val tsFormat = valueTargetShape
@@ -282,12 +280,12 @@ class StructDecodeGeneration(
                         .map { it.format }
                         .orElse(defaultTimestampFormat)
 
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
+                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
                         writer.write("$decodedMemberName[key$level] = $valueIterator")
-                    } else { //decode date as a string manually
+                    } else { // decode date as a string manually
                         val formatterName = "${mapName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
-                        val dateName = "date${level}"
+                        val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $valueIterator) else {", "}") {
                             renderDecodingError(topLevelMemberName)
                         }
@@ -295,12 +293,7 @@ class StructDecodeGeneration(
                     }
                 }
                 else -> writer.write("$decodedMemberName[key$level] = $valueIterator")
-
             }
-
-           // writer.write("$decodedMemberName[key${level}] = $valueIterator")
-
         }
     }
-
 }

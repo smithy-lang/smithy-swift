@@ -27,8 +27,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.utils.OptionalUtils
-import java.lang.reflect.Member
-import java.sql.Struct
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -104,11 +102,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        //separate decodable conformance to nested types from output shapes
-        //first loop through nested types and perform decodable implementation normally
-        //then loop through output shapes and perform creation of body struct with decodable implementation
+        // separate decodable conformance to nested types from output shapes
+        // first loop through nested types and perform decodable implementation normally
+        // then loop through output shapes and perform creation of body struct with decodable implementation
         val (structuresNeedingDecodableConformance, nestedStructuresNeedingDecodableConformance) = resolveStructuresNeedingDecodableConformance(ctx)
-        //handle nested shapes normally
+        // handle nested shapes normally
         for (structureShape in nestedStructuresNeedingDecodableConformance) {
             // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
             val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
@@ -127,28 +125,27 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     StructDecodeGeneration(ctx, structureShape.members().toList(), writer, defaultTimestampFormat).render()
                 }
             }
-
         }
-        //handle top level output shapes which includes creating a new http body struct to handle deserialization
+        // handle top level output shapes which includes creating a new http body struct to handle deserialization
         for (structureShape in structuresNeedingDecodableConformance) {
             // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
             val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
             val rootNamespace = ctx.settings.moduleName
             val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
 
-             val decodeSymbol = Symbol.builder()
+            val decodeSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
                 .name(structSymbol.name)
                 .build()
 
             ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
                 writer.openBlock("struct ${structSymbol.name}Body {", "}") {
-                    httpBodyMembers.forEach{
+                    httpBodyMembers.forEach {
                         val memberSymbol = ctx.symbolProvider.toSymbol(it)
                         writer.write("public let \$L: \$T", it.memberName, memberSymbol)
                     }
                 }
-                writer.write("") //add space between struct declaration and decodable conformance
+                writer.write("") // add space between struct declaration and decodable conformance
                 writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
                     writer.addFoundationImport()
@@ -159,7 +156,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
     }
-
 
     /**
      * Find and return the set of shapes that need `Encodable` conformance which includes top level input types with members in the http body
@@ -579,4 +575,3 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return containedOperations
     }
 }
-

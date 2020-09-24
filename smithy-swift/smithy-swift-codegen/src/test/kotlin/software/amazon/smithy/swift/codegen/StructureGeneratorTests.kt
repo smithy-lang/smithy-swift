@@ -23,7 +23,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
-import kotlin.streams.toList
 
 class StructureGeneratorTests : TestsBase() {
     @Test
@@ -117,7 +116,6 @@ public struct RecursiveShapesInputOutput {
 }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
-
     }
 
     @Test
@@ -175,7 +173,6 @@ public struct RecursiveShapesInputOutputLists {
 }
                 """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
-
     }
 
     @Test
