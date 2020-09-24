@@ -125,16 +125,16 @@ class StructDecodeGenerationTests: TestsBase() {
                     let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
                     var intListDecoded0 = [Int]()
                     if let intListContainer = intListContainer {
-                        for intlist0 in intListContainer {
-                            intListDecoded0.append(intlist0)
+                        for integer0 in intListContainer {
+                            intListDecoded0.append(integer0)
                         }
                     }
                     intList = intListDecoded0
                     let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
                     var intMapDecoded0 = [String:Int]()
                     if let intMapContainer = intMapContainer {
-                        for (key0, intmap0) in intMapContainer {
-                            intMapDecoded0[key0] = intmap0
+                        for (key0, integer0) in intMapContainer {
+                            intMapDecoded0[key0] = integer0
                         }
                     }
                     intMap = intMapDecoded0
@@ -150,79 +150,79 @@ class StructDecodeGenerationTests: TestsBase() {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct TimestampOutputResponseBody {
-                public let normal: Date?
-                public let dateTime: Date?
-                public let epochSeconds: Date?
-                public let httpDate: Date?
-                public let nestedTimestampList: [[Date]]?
-                public let timestampList: [Date]?
-            }
-            
-            extension TimestampOutputResponseBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
-                    case dateTime
-                    case epochSeconds
-                    case httpDate
-                    case nestedTimestampList
-                    case normal
-                    case timestampList
+struct TimestampOutputResponseBody {
+    public let normal: Date?
+    public let dateTime: Date?
+    public let epochSeconds: Date?
+    public let httpDate: Date?
+    public let nestedTimestampList: [[Date]]?
+    public let timestampList: [Date]?
+}
+
+extension TimestampOutputResponseBody: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case dateTime
+        case epochSeconds
+        case httpDate
+        case nestedTimestampList
+        case normal
+        case timestampList
+    }
+
+    public init (from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let normalDateString = try values.decodeIfPresent(String.self, forKey: .normal)
+        var normalDecoded: Date? = nil
+        if let normalDateString = normalDateString {
+            let normalFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            normalDecoded = normalFormatter.date(from: normalDateString)
+        }
+        normal = normalDecoded
+        let dateTimeDateString = try values.decodeIfPresent(String.self, forKey: .dateTime)
+        var dateTimeDecoded: Date? = nil
+        if let dateTimeDateString = dateTimeDateString {
+            let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
+        }
+        dateTime = dateTimeDecoded
+        epochSeconds = try values.decodeIfPresent(Date.self, forKey: .epochSeconds)
+        let httpDateDateString = try values.decodeIfPresent(String.self, forKey: .httpDate)
+        var httpDateDecoded: Date? = nil
+        if let httpDateDateString = httpDateDateString {
+            let httpDateFormatter = DateFormatter.rfc5322DateFormatter
+            httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
+        }
+        httpDate = httpDateDecoded
+        let nestedTimestampListContainer = try values.decodeIfPresent([[String]].self, forKey: .nestedTimestampList)
+        var nestedTimestampListDecoded0 = [[Date]]()
+        if let nestedTimestampListContainer = nestedTimestampListContainer {
+            for list0 in nestedTimestampListContainer {
+                var list0Decoded0 = [Date]()
+                for timestamp1 in list0 {
+                    let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                    guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
+                        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
+                    }
+                    list0Decoded0.append(date1)
                 }
-            
-                public init (from decoder: Decoder) throws {
-                    let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let normalDateString = try values.decodeIfPresent(String.self, forKey: .normal)
-                    var normalDecoded: Date? = nil
-                    if let normalDateString = normalDateString {
-                        let normalFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-                        normalDecoded = normalFormatter.date(from: normalDateString)
-                    }
-                    normal = normalDecoded
-                    let dateTimeDateString = try values.decodeIfPresent(String.self, forKey: .dateTime)
-                    var dateTimeDecoded: Date? = nil
-                    if let dateTimeDateString = dateTimeDateString {
-                        let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-                        dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
-                    }
-                    dateTime = dateTimeDecoded
-                    epochSeconds = try values.decodeIfPresent(Date.self, forKey: .epochSeconds)
-                    let httpDateDateString = try values.decodeIfPresent(String.self, forKey: .httpDate)
-                    var httpDateDecoded: Date? = nil
-                    if let httpDateDateString = httpDateDateString {
-                        let httpDateFormatter = DateFormatter.rfc5322DateFormatter
-                        httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
-                    }
-                    httpDate = httpDateDecoded
-                    let nestedTimestampListContainer = try values.decodeIfPresent([[String]].self, forKey: .nestedTimestampList)
-                    var nestedTimestampListDecoded0 = [[Date]]()
-                    if let nestedTimestampListContainer = nestedTimestampListContainer {
-                        for nestedtimestamplist0 in nestedTimestampListContainer {
-                            var nestedtimestamplist0Decoded1 = [Date]()
-                            for timestamplist1 in nestedtimestamplist0 {
-                                let timestamplist1Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-                                guard let date1 = timestamplist1Formatter.date(from: timestamplist1) else {
-                                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
-                                }
-                                nestedtimestamplist0Decoded1.append(date1)
-                            }
-                            nestedTimestampListDecoded0.append(nestedtimestamplist0Decoded1)
-                        }
-                    }
-                    nestedTimestampList = nestedTimestampListDecoded0
-                    let timestampListContainer = try values.decodeIfPresent([String].self, forKey: .timestampList)
-                    var timestampListDecoded0 = [Date]()
-                    if let timestampListContainer = timestampListContainer {
-                        for timestamplist0 in timestampListContainer {
-                            let timestamplist0Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-                            guard let date0 = timestamplist0Formatter.date(from: timestamplist0) else {
-                                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
-                            }
-                            timestampListDecoded0.append(date0)
-                        }
-                    }
-                    timestampList = timestampListDecoded0
-                }
+                nestedTimestampListDecoded0.append(list0Decoded0)
             }
+        }
+        nestedTimestampList = nestedTimestampListDecoded0
+        let timestampListContainer = try values.decodeIfPresent([String].self, forKey: .timestampList)
+        var timestampListDecoded0 = [Date]()
+        if let timestampListContainer = timestampListContainer {
+            for timestamp0 in timestampListContainer {
+                let timestamp0Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
+                }
+                timestampListDecoded0.append(date0)
+            }
+        }
+        timestampList = timestampListDecoded0
+    }
+}
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -233,83 +233,136 @@ class StructDecodeGenerationTests: TestsBase() {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct MapOutputResponseBody {
-                public let intMap: [String:Int]?
-                public let structMap: [String:ReachableOnlyThroughMap]?
-                public let enumMap: [String:MyEnum]?
-                public let blobMap: [String:Data]?
-                public let nestedMap: [String:[String:Int]]?
-                public let dateMap: [String:Date]?
+struct MapOutputResponseBody {
+    public let intMap: [String:Int]?
+    public let structMap: [String:ReachableOnlyThroughMap]?
+    public let enumMap: [String:MyEnum]?
+    public let blobMap: [String:Data]?
+    public let nestedMap: [String:[String:Int]]?
+    public let dateMap: [String:Date]?
+}
+
+extension MapOutputResponseBody: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case blobMap
+        case dateMap
+        case enumMap
+        case intMap
+        case nestedMap
+        case structMap
+    }
+
+    public init (from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
+        var intMapDecoded0 = [String:Int]()
+        if let intMapContainer = intMapContainer {
+            for (key0, integer0) in intMapContainer {
+                intMapDecoded0[key0] = integer0
+            }
+        }
+        intMap = intMapDecoded0
+        let structMapContainer = try values.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
+        var structMapDecoded0 = [String:ReachableOnlyThroughMap]()
+        if let structMapContainer = structMapContainer {
+            for (key0, reachableonlythroughmap0) in structMapContainer {
+                structMapDecoded0[key0] = reachableonlythroughmap0
+            }
+        }
+        structMap = structMapDecoded0
+        let enumMapContainer = try values.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
+        var enumMapDecoded0 = [String:MyEnum]()
+        if let enumMapContainer = enumMapContainer {
+            for (key0, myenum0) in enumMapContainer {
+                enumMapDecoded0[key0] = myenum0
+            }
+        }
+        enumMap = enumMapDecoded0
+        let blobMapContainer = try values.decodeIfPresent([String:Data].self, forKey: .blobMap)
+        var blobMapDecoded0 = [String:Data]()
+        if let blobMapContainer = blobMapContainer {
+            for (key0, blob0) in blobMapContainer {
+                blobMapDecoded0[key0] = blob0
+            }
+        }
+        blobMap = blobMapDecoded0
+        let nestedMapContainer = try values.decodeIfPresent([String:[String:Int]].self, forKey: .nestedMap)
+        var nestedMapDecoded0 = [String:[String:Int]]()
+        if let nestedMapContainer = nestedMapContainer {
+            for (key0, intmap0) in nestedMapContainer {
+                var intmap0Decoded0 = [String:Int]()
+                for (key1, integer1) in intmap0 {
+                    intmap0Decoded0[key1] = integer1
+                }
+                nestedMapDecoded0[key0] = intmap0Decoded0
+            }
+        }
+        nestedMap = nestedMapDecoded0
+        let dateMapContainer = try values.decodeIfPresent([String:String].self, forKey: .dateMap)
+        var dateMapDecoded0 = [String:Date]()
+        if let dateMapContainer = dateMapContainer {
+            for (key0, timestamp0) in dateMapContainer {
+                let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
+                }
+                dateMapDecoded0[key0] = date0
+            }
+        }
+        dateMap = dateMapDecoded0
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it decodes nested diverse shapes correctly`() {
+        val contents = getModelFileContents("example", "NestedShapesInputOutputBody+Decodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            struct NestedShapesInputOutputBody {
+                public let nestedListInDict: [String:[Date]]?
+                public let nestedDictInList: [[String:String]]?
             }
             
-            extension MapOutputResponseBody: Decodable {
+            extension NestedShapesInputOutputBody: Decodable {
                 private enum CodingKeys: String, CodingKey {
-                    case blobMap
-                    case dateMap
-                    case enumMap
-                    case intMap
-                    case nestedMap
-                    case structMap
+                    case nestedDictInList
+                    case nestedListInDict
                 }
             
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
-                    var intMapDecoded0 = [String:Int]()
-                    if let intMapContainer = intMapContainer {
-                        for (key0, intmap0) in intMapContainer {
-                            intMapDecoded0[key0] = intmap0
-                        }
-                    }
-                    intMap = intMapDecoded0
-                    let structMapContainer = try values.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
-                    var structMapDecoded0 = [String:ReachableOnlyThroughMap]()
-                    if let structMapContainer = structMapContainer {
-                        for (key0, structmap0) in structMapContainer {
-                            structMapDecoded0[key0] = structmap0
-                        }
-                    }
-                    structMap = structMapDecoded0
-                    let enumMapContainer = try values.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
-                    var enumMapDecoded0 = [String:MyEnum]()
-                    if let enumMapContainer = enumMapContainer {
-                        for (key0, enummap0) in enumMapContainer {
-                            enumMapDecoded0[key0] = enummap0
-                        }
-                    }
-                    enumMap = enumMapDecoded0
-                    let blobMapContainer = try values.decodeIfPresent([String:Data].self, forKey: .blobMap)
-                    var blobMapDecoded0 = [String:Data]()
-                    if let blobMapContainer = blobMapContainer {
-                        for (key0, blobmap0) in blobMapContainer {
-                            blobMapDecoded0[key0] = blobmap0
-                        }
-                    }
-                    blobMap = blobMapDecoded0
-                    let nestedMapContainer = try values.decodeIfPresent([String:[String:Int]].self, forKey: .nestedMap)
-                    var nestedMapDecoded0 = [String:[String:Int]]()
-                    if let nestedMapContainer = nestedMapContainer {
-                        for (key0, nestedmap0) in nestedMapContainer {
-                            var nestedmap0Decoded1 = [String:Int]()
-                            for (key1, intmap1) in nestedmap0 {
-                                nestedmap0Decoded1[key1] = intmap1
+                    let nestedListInDictContainer = try values.decodeIfPresent([String:[String]].self, forKey: .nestedListInDict)
+                    var nestedListInDictDecoded0 = [String:[Date]]()
+                    if let nestedListInDictContainer = nestedListInDictContainer {
+                        for (key0, timestamplist0) in nestedListInDictContainer {
+                            var timestamplist0Decoded0 = [Date]()
+                            for timestamp1 in timestamplist0 {
+                                let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                                guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
+                                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
+                                }
+                                timestamplist0Decoded0.append(date1)
                             }
-                            nestedMapDecoded0[key0] = nestedmap0Decoded1
+                            nestedListInDictDecoded0[key0] = timestamplist0Decoded0
                         }
                     }
-                    nestedMap = nestedMapDecoded0
-                    let dateMapContainer = try values.decodeIfPresent([String:String].self, forKey: .dateMap)
-                    var dateMapDecoded0 = [String:Date]()
-                    if let dateMapContainer = dateMapContainer {
-                        for (key0, datemap0) in dateMapContainer {
-                            let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-                            guard let date0 = dateMapContainerFormatter.date(from: datemap0) else {
-                                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
+                    nestedListInDict = nestedListInDictDecoded0
+                    let nestedDictInListContainer = try values.decodeIfPresent([[String:String]].self, forKey: .nestedDictInList)
+                    var nestedDictInListDecoded0 = [[String:String]]()
+                    if let nestedDictInListContainer = nestedDictInListContainer {
+                        for map0 in nestedDictInListContainer {
+                            var nestedDictInListContainerDecoded0 = [String:String]()
+                            for (key1, string1) in map0 {
+                                nestedDictInListContainerDecoded0[key1] = string1
                             }
-                            dateMapDecoded0[key0] = date0
+                            nestedDictInListDecoded0.append(nestedDictInListContainerDecoded0)
                         }
                     }
-                    dateMap = dateMapDecoded0
+                    nestedDictInList = nestedDictInListDecoded0
                 }
             }
             """.trimIndent()

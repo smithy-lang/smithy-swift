@@ -24,8 +24,30 @@ service Example {
         StreamingTraits,
         HttpPrefixHeaders,
         RecursiveShapes,
-        JsonUnions
+        JsonUnions,
+        NestedShapes
     ]
+}
+
+//Nested aggregate shapes
+@http(uri: "/NestedShapes", method: "PUT")
+operation NestedShapes {
+    input: NestedShapesInputOutput,
+    output: NestedShapesInputOutput
+}
+
+structure NestedShapesInputOutput {
+    nestedListInDict: NestedListInDict,
+    nestedDictInList: NestedDictInList
+}
+
+map NestedListInDict {
+   key: String,
+   value: TimestampList
+}
+
+list NestedDictInList {
+    member: StringMap
 }
 
 /// Recursive shapes
