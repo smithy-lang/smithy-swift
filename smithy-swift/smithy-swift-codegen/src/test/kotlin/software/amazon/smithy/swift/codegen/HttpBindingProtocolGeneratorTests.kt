@@ -77,6 +77,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     val newTestContext = newTestContext()
 
     init {
+        newTestContext.generator.generateSerializers(newTestContext.ctx)
         newTestContext.generator.generateProtocolClient(newTestContext.ctx)
         newTestContext.ctx.delegator.flushWriters()
     }

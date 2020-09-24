@@ -68,7 +68,7 @@ class StructDecodeGeneration(
                         if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS){
                             writeDecodeForPrimitive(target, member, containerName)
                         } else {
-                            val dateSymbol = getSymbolName(target)
+                            val dateSymbol = "String"
                             val originalSymbol = ctx.symbolProvider.toSymbol(target)
                             val dateString = "${memberName}DateString"
                             val decodableMemberName = "${memberName}Decoded"
@@ -98,11 +98,12 @@ class StructDecodeGeneration(
         writer.write("$memberName = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", symbol.name, memberName)
     }
 
+    //TODO remove this when we switch to a custom date type as this wont be necessary anymore
     private fun getSymbolName(shape: Shape): String {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val walker = Walker(ctx.model)
         if (symbol.name.contains("Date")) {
-            //if symbol name contains the string Date, check timestamp format. if the timestamp format is not epoch seconds,
+            //if symbol name contains the Date symbol, check timestamp format. if the timestamp format is not epoch seconds,
             // change Date to String to properly decode
             val walkedShapes = walker.iterateShapes(shape) { relationship ->
                 when (relationship.relationshipType) {
@@ -130,8 +131,6 @@ class StructDecodeGeneration(
                     continue@loop
                 }
             }
-
-
         }
         return symbol.name
     }
@@ -156,6 +155,11 @@ class StructDecodeGeneration(
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName}Decoded${level}"
         val topLevelMemberName = currentMember!!.memberName
+        val insertMethod = when(ctx.model.expectShape(currentMember!!.target)) {
+            is SetShape -> "insert"
+            is ListShape -> "append"
+            else -> ""
+        }
         when (shape) {
             is CollectionShape -> {
                 if (level == 0) {
@@ -174,7 +178,7 @@ class StructDecodeGeneration(
                 } else {
                     writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
                     renderDecodeList(memberName, memberName, decodedMemberName, shape, level)
-                    writer.write("$containerName.append($decodedMemberName)")
+                    writer.write("$containerName.$insertMethod($decodedMemberName)")
                 }
             }
             is TimestampShape -> {
@@ -184,7 +188,7 @@ class StructDecodeGeneration(
                     .orElse(defaultTimestampFormat)
 
                 if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { //if decoding a double decode as normal from [[Date]].self
-                    writer.write("$containerName.append($memberName)")
+                    writer.write("$containerName.$insertMethod($memberName)")
                 } else { //decode date as a string manually
 
                     val formatterName = "${memberName}Formatter"
@@ -193,15 +197,12 @@ class StructDecodeGeneration(
                     writer.openBlock("guard let $dateName = $formatterName.date(from: $memberName) else {", "}") {
                         renderDecodingError(topLevelMemberName)
                     }
-                    writer.write("$containerName.append($dateName)")
+                    writer.write("$containerName.$insertMethod($dateName)")
                 }
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> renderDecodeList(memberName, containerName, decodedMemberName, shape, level)
-            else -> {
-                writer.write("$containerName.append($memberName)")
-
-            }
+            else -> writer.write("$containerName.$insertMethod($memberName)")
         }
     }
 

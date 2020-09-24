@@ -398,7 +398,7 @@ list NestedTimestampList {
 }
 
 list TimestampList {
-    @timestampFormat("http-date")
+    @timestampFormat("date-time")
     member: Timestamp
 }
 
