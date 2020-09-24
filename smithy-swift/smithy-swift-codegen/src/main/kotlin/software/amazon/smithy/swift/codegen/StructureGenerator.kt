@@ -120,13 +120,10 @@ class StructureGenerator(
             .write("")
     }
 
-
-
     private fun generateStructMembers() {
         membersSortedByName.forEach {
             val isRecursiveMember = it.isRecursiveMember(topologicalIndex)
             val shape = model.expectShape(it.target)
-
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
 

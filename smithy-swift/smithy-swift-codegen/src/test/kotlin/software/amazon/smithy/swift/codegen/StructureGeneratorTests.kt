@@ -229,20 +229,4 @@ public struct RecursiveShapesInputOutputLists {
 
         return assembler.assemble().unwrap()
     }
-
-    private fun createModelWithStructureShapes(structs: List<StructureShape>): Model {
-        val assembler = Model.assembler()
-       // assembler.addShapes()
-        //assembler.addShapes(structs)
-        for (struct in structs) {
-            assembler.addShapes(struct)
-
-//            struct.allMembers.values.forEach(Consumer { shape: MemberShape? ->
-//                assembler.addShape(
-//                    shape
-//                )
-//            })
-        }
-        return assembler.assemble().unwrap()
-    }
 }
