@@ -185,17 +185,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "[${reference.name}]", true).addReference(reference).build()
+        val referenceTypeName = "${reference.name}${if (reference.isBoxed()) "?" else ""}"
+        return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        return createSymbolBuilder(shape, "[String:${reference.name}]", true).addReference(reference).build()
+        val referenceTypeName = "${reference.name}${if (reference.isBoxed()) "?" else ""}"
+        return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
+        val referenceTypeName = "${reference.name}${if (reference.isBoxed()) "?" else ""}"
+        return createSymbolBuilder(shape, "Set<$referenceTypeName>", true).addReference(reference)
             .build()
     }
 

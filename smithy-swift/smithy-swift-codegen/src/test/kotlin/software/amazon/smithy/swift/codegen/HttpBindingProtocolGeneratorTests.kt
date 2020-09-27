@@ -25,6 +25,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
@@ -44,11 +45,13 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
+        val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
 
         // TODO:: add response generator too
         HttpProtocolTestGenerator(
             ctx,
             requestTestBuilder,
+            responseTestBuilder,
             ignoredTests
         ).generateProtocolTests()
     }

@@ -30,6 +30,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 class HttpProtocolTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
+    private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -71,7 +72,7 @@ class HttpProtocolTestGenerator(
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
                             .build()
-                            .renderTestClass(testClassName)
+                            .renderTestClass(testClassName, "HttpRequestTestBase")
                     }
                 }
 
@@ -82,7 +83,27 @@ class HttpProtocolTestGenerator(
                     if (testCases.isEmpty()) {
                         return@ifPresent
                     }
-                    // TODO - generate response tests
+
+                    val testClassName = "${operation.id.name.capitalize()}ResponseTest"
+                    val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                        LOGGER.fine("Generating response protocol test cases for ${operation.id}")
+                        // import dependencies
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                        writer.addImport(ctx.settings.moduleName)
+                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.getPackageName())
+                        writer.addImport(SwiftDependency.XCTest.getPackageName())
+
+                        responseTestBuilder
+                            .writer(writer)
+                            .model(ctx.model)
+                            .symbolProvider(ctx.symbolProvider)
+                            .operation(operation)
+                            .serviceName(serviceSymbol.name)
+                            .testCases(testCases)
+                            .build()
+                            .renderTestClass(testClassName, "HttpResponseTestBase")
+                    }
                 }
 
             // 3. Generate test cases for each error on each operation.

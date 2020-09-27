@@ -34,7 +34,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             if let requiredHeader = requiredHeader {
                 headers.add(name: "RequiredHeader", value: requiredHeader)
             }
-            return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+            let body = HttpBody.data(try? encoder.encode(self))
+            return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
         }
         
         let greeting: String?
