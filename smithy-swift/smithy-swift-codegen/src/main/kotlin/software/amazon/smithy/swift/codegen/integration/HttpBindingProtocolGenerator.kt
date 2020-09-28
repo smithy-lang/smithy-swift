@@ -173,8 +173,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderInitOutputFromHttpResponse(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape)
-    {
+        op: OperationShape
+    ) {
         if (op.output.isEmpty) {
             return
         }
