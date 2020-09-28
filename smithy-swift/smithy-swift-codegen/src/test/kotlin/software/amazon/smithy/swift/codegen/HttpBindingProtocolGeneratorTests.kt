@@ -294,8 +294,10 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
-                            queryItems.append(queryItem)
+                            if let unwrappedQueryItemValue = queryItemValue {
+                                let queryItem = URLQueryItem(name: "qtimeList", value: String(unwrappedQueryItemValue.iso8601WithoutFractionalSeconds()))
+                                queryItems.append(queryItem)
+                            }
                         }
                     }
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -317,7 +319,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     }
                 }
             }
-            """.trimIndent()
+""".trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

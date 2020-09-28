@@ -17,7 +17,6 @@ package software.amazon.smithy.swift.codegen.integration
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -117,9 +116,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        //separate decodable conformance to nested types from output shapes
-        //first loop through nested types and perform decodable implementation normally
-        //then loop through output shapes and perform creation of body struct with decodable implementation
+        // separate decodable conformance to nested types from output shapes
+        // first loop through nested types and perform decodable implementation normally
+        // then loop through output shapes and perform creation of body struct with decodable implementation
         val (structuresNeedingDecodableConformance, nestedStructuresNeedingDecodableConformance) = resolveStructuresNeedingDecodableConformance(ctx)
         // handle nested shapes normally
         for (structureShape in nestedStructuresNeedingDecodableConformance) {
@@ -174,7 +173,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderInitOutputFromHttpResponse(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape) {
+        op: OperationShape)
+    {
         if (op.output.isEmpty) {
             return
         }
@@ -325,7 +325,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         else -> throw CodegenException("invalid member type for header collection: binding: $hdrBinding; member: $memberName")
                     }
                     val mapFn = if (conversion.isNotEmpty()) ".map { $conversion }" else ""
-                    var memberValue = "${memberName}HeaderValues${mapFn}"
+                    var memberValue = "${memberName}HeaderValues$mapFn"
                     if (memberTarget.isSetShape) {
                         memberValue = "Set(${memberName}HeaderValues)"
                     }
@@ -340,7 +340,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 writer.write("throw ClientError.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", invalidHeaderListErrorName, memberName)
                             }
                         }
-
                     } else {
                         writer.write("self.\$L = \$L", memberName, memberValue)
                     }
@@ -416,6 +415,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // document members
         // payload member(s)
         val bodyMembers: MutableList<String> = mutableListOf()
+        val queryMembers: MutableList<String> = mutableListOf()
         val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             bodyMembers.add(httpPayload.member.memberName)
@@ -430,7 +430,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             if (documentMembers.isNotEmpty()) {
                 documentMembers.forEach { member ->
-                    bodyMembers.add(member.memberName)
+                    if (member.hasTrait(HttpQueryTrait::class.java)) {
+                        queryMembers.add(member.memberName)
+                    } else {
+                        bodyMembers.add(member.memberName)
+                    }
                 }
             }
         }
@@ -453,6 +457,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             writer.dedent()
             writer.write("}")
+        }
+
+        // initialize query members
+        if (queryMembers.isNotEmpty()) {
+            queryMembers.sorted().forEach {
+                writer.write("self.$it = nil")
+            }
         }
     }
 
@@ -730,11 +741,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     HttpBinding.Location.HEADER,
                                     bindingIndex
                                 )
-                                writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String(${queryItemValue}))")
+                                writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                                 writer.write("queryItems.append(queryItem)")
                             }
                         } else {
-                            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String(${queryItemValue}))")
+                            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                             writer.write("queryItems.append(queryItem)")
                         }
                     }
@@ -820,10 +831,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     HttpBinding.Location.HEADER,
                                     bindingIndex
                                 )
-                                writer.write("headers.add(name: \"$paramName\", value: String(${headerValue}))")
+                                writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                             }
                         } else {
-                            writer.write("headers.add(name: \"$paramName\", value: String(${headerValue}))")
+                            writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                         }
                     }
                 } else {

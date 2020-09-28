@@ -120,18 +120,4 @@ class HttpHeadersTests: XCTestCase {
         urlSessionConfiguration.httpAdditionalHeaders = nil
         XCTAssertEqual(urlSessionConfiguration.headers.dictionary, [:])
     }
-    
-    func testRandom() {
-        var httpHeaders = HttpHeaders()
-        httpHeaders.add(name: "X-Foo-abc", value: "ABC")
-        httpHeaders.add(name: "X-Foo-abc", value: "CDE")
-        httpHeaders.add(name: "X-Foo-xyz", value: "XYZ")
-        httpHeaders.add(name: "X-Foo", value: "FOO")
-        print(httpHeaders.dictionary.keys.filter({$0.starts(with: "X-Foo-")}).isEmpty)
-        print(httpHeaders.dictionary["X-Foo-xyz"]?[0])
-        print(httpHeaders.headers.filter{ $0.name.starts(with: "X-Foo-")})
-        var dict = [String: Int]()
-        dict["a"] = 1
-        print(dict)
-    }
 }

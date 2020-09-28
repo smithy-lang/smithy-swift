@@ -14,11 +14,10 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
-import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
