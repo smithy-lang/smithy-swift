@@ -16,6 +16,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
@@ -38,8 +39,11 @@ class ShapeValueGenerator(
      */
     fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
+        val topologicalIndex = TopologicalIndex.of(model)
+        val isRecursiveMember = if (shape is MemberShape) shape.isRecursiveMember(topologicalIndex) else false
+
         when (shape.type) {
-            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get()) {
+            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), isRecursiveMember) {
                 params.accept(nodeVisitor)
             }
             ShapeType.MAP -> mapDecl(writer, shape.asMapShape().get()) {
@@ -57,10 +61,9 @@ class ShapeValueGenerator(
         }
     }
 
-    private fun structDecl(writer: SwiftWriter, shape: StructureShape, block: () -> Unit) {
-        val symbol = symbolProvider.toSymbol(shape)
+    private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
+        val symbol = if(isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
-
         writer.writeInline("\$L(", symbol.name)
             .indent()
             .call { block() }

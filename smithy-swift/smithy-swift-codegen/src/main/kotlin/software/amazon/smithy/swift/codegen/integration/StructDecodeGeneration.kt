@@ -33,12 +33,26 @@ import software.amazon.smithy.swift.codegen.recursiveSymbol
  *
  * e.g.
  * ```
- *    public init decode(from decoder: Decoder) throws {
- *       let values = decoder.container(keyedBy: CodingKeys.self)
- *       booleanList = try values.decode([Bool].self, forKey: .booleanList)
- *       enumList = try values.decode([MyEnum.self], forKey: .enumList)
- *       integerList = try values.decode([Int].self, forKey: .integerList)
- *   }
+    public init (from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
+        let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
+        var intListDecoded0 = [Int]()
+        if let intListContainer = intListContainer {
+            for integer0 in intListContainer {
+                intListDecoded0.append(integer0)
+            }
+        }
+        intList = intListDecoded0
+        let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
+        var intMapDecoded0 = [String:Int]()
+        if let intMapContainer = intMapContainer {
+            for (key0, integer0) in intMapContainer {
+                intMapDecoded0[key0] = integer0
+            }
+        }
+        intMap = intMapDecoded0
+    }
  * ```
  */
 class StructDecodeGeneration(
@@ -174,7 +188,6 @@ class StructDecodeGeneration(
                 symbolName,
                 memberName
             )
-
             writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
                 renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, level)
@@ -200,7 +213,6 @@ class StructDecodeGeneration(
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
                         writer.write("$decodedMemberName.$insertMethod($iteratorName)")
                     } else { // decode date as a string manually
-
                         val formatterName = "${iteratorName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
@@ -245,7 +257,6 @@ class StructDecodeGeneration(
             }
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
         } else {
-
             renderDecodeMapTarget(memberName, containerName, nestedTarget, level)
         }
     }

@@ -346,4 +346,66 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it creates a unit test for recursive shapes`() {
+        val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+    func testRestJsonRecursiveShapes() {
+        let expected = buildExpectedHttpRequest(
+            method: .put,
+            path: "/RecursiveShapes",
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            queryParams: [String](),
+            body: ""${'"'}
+            {
+                "nested": {
+                    "foo": "Foo1",
+                    "nested": {
+                        "bar": "Bar1",
+                        "recursiveMember": {
+                            "foo": "Foo2",
+                            "nested": {
+                                "bar": "Bar2"
+                            }
+                        }
+                    }
+                }
+            }
+            ""${'"'},
+            host: host
+        )
+
+        let input = RecursiveShapesInputOutput(
+            nested: RecursiveShapesInputOutputNested1(
+                foo: "Foo1",
+                nested: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1",
+                    recursiveMember: RecursiveShapesInputOutputNested1(
+                        foo: "Foo2",
+                        nested: RecursiveShapesInputOutputNested2(
+                            bar: "Bar2"
+                        )
+                    )
+                )
+            )
+        )
+        do {
+            let actual = try input.buildHttpRequest(method: .put, path: "/RecursiveShapes", encoder: JSONEncoder())
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }

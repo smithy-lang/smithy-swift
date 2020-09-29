@@ -48,9 +48,7 @@ class StructureGenerator(
     private val shape: StructureShape
 ) {
 
-    private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(
-        it
-    ) }
+    private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
     private val topologicalIndex = TopologicalIndex.of(model)
 
@@ -78,7 +76,7 @@ class StructureGenerator(
 
     /**
      * Generates an appropriate Swift type for a Smithy Structure shape without error trait.
-     * If the structure is a recursive nested type it will generate a swift class.
+     * If the structure is a recursive nested type it will generate a boxed member Box<T>.
      *
      * For example, given the following Smithy model:
      *
