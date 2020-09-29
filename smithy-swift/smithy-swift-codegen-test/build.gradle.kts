@@ -14,7 +14,6 @@
  */
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import software.amazon.smithy.swift.gradle.tasks.BuildGeneratedSDK
 
 extra["displayName"] = "Smithy :: Swift :: Codegen :: Test"
 extra["moduleName"] = "software.amazon.smithy.swift.codegen.test"

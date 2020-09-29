@@ -3,6 +3,7 @@ namespace com.test
 
 use aws.protocols#restJson1
 use smithy.test#httpRequestTests
+use smithy.test#httpResponseTests
 
 @restJson1
 service Example {
@@ -71,39 +72,6 @@ structure RecursiveShapesInputOutputNested2 {
     bar: String,
     recursiveMember: RecursiveShapesInputOutputNested1,
 }
-
-@http(method: "POST", uri: "/smoketest/{label1}/foo")
-operation SmokeTest {
-    input: SmokeTestRequest,
-    output: SmokeTestResponse,
-    errors: [SmokeTestError]
-}
-
-@http(method: "POST", uri: "/smoketest-duplicate/{label1}/foo")
-operation DuplicateInputTest {
-    // uses the same input type as another operation. Ensure that we only generate one instance of the serializer
-    input: SmokeTestRequest
-}
-
-structure SmokeTestRequest {
-    @httpHeader("X-Header1")
-    header1: String,
-
-    @httpHeader("X-Header2")
-    header2: String,
-
-    @httpQuery("Query1")
-    query1: String,
-
-    @required
-    @httpLabel
-    label1: String,
-
-    payload1: String,
-    payload2: Integer,
-    payload3: Nested
-}
-
 apply SmokeTest @httpRequestTests([
     {
         id: "SmokeTest",
@@ -145,26 +113,92 @@ apply SmokeTest @httpRequestTests([
     }
 ])
 
+@http(method: "POST", uri: "/smoketest/{label1}/foo")
+operation SmokeTest {
+    input: SmokeTestRequest,
+    output: SmokeTestResponse,
+    errors: [SmokeTestError]
+}
+
+@http(method: "POST", uri: "/smoketest-duplicate/{label1}/foo")
+operation DuplicateInputTest {
+    // uses the same input type as another operation. Ensure that we only generate one instance of the serializer
+    input: SmokeTestRequest
+}
+
+structure SmokeTestRequest {
+    @httpHeader("X-Header1")
+    header1: String,
+
+    @httpHeader("X-Header2")
+    header2: String,
+
+    @httpQuery("Query1")
+    query1: String,
+
+    @required
+    @httpLabel
+    label1: String,
+
+    payload1: String,
+    payload2: Integer,
+    payload3: Nested
+}
+
 structure Nested {
     member1: String,
     member2: String
 }
 
+apply SmokeTest @httpResponseTests([
+    {
+        id: "SmokeTest",
+        documentation: "DeSerializes a smoke test request with body, headers, query params, and prefixHeaders",
+        protocol: restJson1,
+        code: 200,
+        headers: {
+            "X-String": "Hello",
+            "X-Int": "1",
+            "X-Bool": "false"
+        },
+        body: """
+        {
+          "payload1": "explicit string",
+          "payload2": 1,
+          "payload3": {
+            "member1": "test string",
+            "member2": "test string 2"
+          }
+        }
+        """,
+        bodyMediaType: "application/json",
+        params: {
+            strHeader: "Hello",
+            intHeader: 1,
+            boolHeader: false,
+            payload1: "explicit string",
+            payload2: 1,
+            payload3: {
+              member1: "test string",
+              member2: "test string 2"
+            }
+        }
+    }
+])
+
 structure SmokeTestResponse {
-        @httpHeader("X-Header1")
+        @httpHeader("X-String")
         strHeader: String,
 
-        @httpHeader("X-Header2")
+        @httpHeader("X-Int")
         intHeader: Integer,
 
-        @httpHeader("X-Header3")
-        tsListHeader: TimestampList,
+        @httpHeader("X-Bool")
+        boolHeader: Boolean,
 
         payload1: String,
         payload2: Integer,
-        payload3: Nested,
-        @timestampFormat("date-time")
-        payload4: Timestamp
+        payload3: Nested
 }
 
 @error("client")
@@ -650,6 +684,41 @@ apply HttpPrefixHeaders @httpRequestTests([
     },
 ])
 
+apply HttpPrefixHeaders @httpResponseTests([
+    {
+        id: "RestJsonHttpPrefixHeadersAreNotPresent",
+        documentation: "No prefix headers are DeSerialized because the value is empty",
+        protocol: restJson1,
+        code: 200,
+        body: "",
+        headers: {
+            "X-Foo": "Foo"
+        },
+        params: {
+            foo: "Foo"
+        }
+    },
+    {
+        id: "RestJsonHttpPrefixHeadersPresent",
+        documentation: "Deserialize prefix headers",
+        protocol: restJson1,
+        code: 200,
+        body: "",
+        headers: {
+            "X-Foo": "Foo",
+            "X-Foo-abc": "ABC",
+            "X-Foo-xyz": "XYZ"
+        },
+        params: {
+            foo: "Foo",
+            fooMap: {
+                abc: "ABC",
+                xyz: "XYZ"
+            }
+        }
+    }
+])
+
 structure HttpPrefixHeadersInputOutput {
     @httpHeader("X-Foo")
     foo: String,
@@ -691,6 +760,28 @@ apply JsonUnions @httpRequestTests([
         protocol: restJson1,
         method: "PUT",
         "uri": "/JsonUnions",
+        body: """
+            {
+                "contents": {
+                    "stringValue": "foo"
+                }
+            }""",
+        bodyMediaType: "application/json",
+        headers: {"Content-Type": "application/json"},
+        params: {
+            contents: {
+                stringValue: "foo"
+            }
+        }
+    }
+])
+
+apply JsonUnions @httpResponseTests([
+    {
+        id: "RestJsonDeserializeStringUnionValue",
+        documentation: "Deserializes a string union value",
+        protocol: restJson1,
+        code: 200,
         body: """
             {
                 "contents": {
