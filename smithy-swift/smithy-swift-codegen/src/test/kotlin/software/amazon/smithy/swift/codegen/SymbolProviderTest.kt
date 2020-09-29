@@ -136,7 +136,7 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val listSymbol = provider.toSymbol(list)
 
-        assertEquals("[Record]", listSymbol.name)
+        assertEquals("[Record?]", listSymbol.name)
         assertEquals(true, listSymbol.isBoxed())
         assertEquals("nil", listSymbol.defaultValue())
     }
@@ -152,7 +152,7 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val setSymbol = provider.toSymbol(set)
 
-        assertEquals("Set<Record>", setSymbol.name)
+        assertEquals("Set<Record?>", setSymbol.name)
         assertEquals(true, setSymbol.isBoxed())
         assertEquals("nil", setSymbol.defaultValue())
     }
@@ -170,7 +170,7 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val mapSymbol = provider.toSymbol(map)
 
-        assertEquals("[String:Record]", mapSymbol.name)
+        assertEquals("[String:Record?]", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed())
         assertEquals("nil", mapSymbol.defaultValue())
     }

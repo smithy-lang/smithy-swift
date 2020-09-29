@@ -61,3 +61,18 @@ extension StringProtocol {
         return base64String
     }
 }
+
+/// Trims the String to remove leading and tailing whitespace, newline characters
+extension StringProtocol {
+    public func trim() -> String {
+        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+/// Removes the given prefix from the string if one exists
+extension StringProtocol {
+    public func removePrefix(_ prefix: String) -> String {
+        guard self.hasPrefix(prefix) else { return String(self) }
+        return String(self.dropFirst(prefix.count))
+    }
+}

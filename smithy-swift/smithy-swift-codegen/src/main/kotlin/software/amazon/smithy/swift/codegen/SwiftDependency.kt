@@ -22,7 +22,7 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
     BIG("", "BigNumber", "2.0", url = "https://github.com/mkrd/Swift-Big-Integer.git"),
     CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime"),
     XCTest("", "XCTest", "", ""),
-    SMITHY_TEST_UTIL("", "SmithyTestUtil", "0.1.0", "../../../../../../ClientRuntime");
+    SMITHY_TEST_UTIL("", "SmithyTestUtil", "0.1.0", "~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime");
 
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()

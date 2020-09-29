@@ -24,6 +24,10 @@ import software.amazon.smithy.utils.StringUtils.isBlank
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
 
+    companion object {
+        const val baseTestClassName = "HttpRequestTestBase"
+    }
+
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
         writer.write("")
