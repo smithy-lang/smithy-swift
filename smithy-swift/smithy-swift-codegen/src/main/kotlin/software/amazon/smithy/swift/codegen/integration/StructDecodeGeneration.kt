@@ -23,10 +23,7 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.isRecursiveMember
-import software.amazon.smithy.swift.codegen.recursiveSymbol
+import software.amazon.smithy.swift.codegen.*
 
 /**
  * Generates decode function for members bound to the payload.
@@ -194,7 +191,14 @@ class StructDecodeGeneration(
             }
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
         } else {
-            renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
+            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+            if(isBoxed) {
+                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
+                }
+            } else {
+                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
+            }
         }
     }
 

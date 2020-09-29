@@ -55,7 +55,7 @@ class UnionGeneratorTests : TestsBase() {
  Really long multi-line
  Documentation for MyUnion
  */
-public enum MyUnion {
+public enum MyUnion: Equatable {
     case foo(String)
     case baz(Int)
     /// Documentation for bar
@@ -143,7 +143,7 @@ extension MyUnion : Codable {
  Really long multi-line
  Documentation for MyUnion
  */
-public enum MyUnion {
+public enum MyUnion: Equatable {
     case foo(String)
     /// Documentation for bar
     case bar(Int)

@@ -56,46 +56,52 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
         val expectedContents =
             """
-    func testSmokeTest() {
-        let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "X-Bool": "false",
-                "X-Int": "1",
-                "X-String": "Hello"
-            ],
-            content: ResponseType.data(""${'"'}
-            {
-              "payload1": "explicit string",
-              "payload2": 1,
-              "payload3": {
-                "member1": "test string",
-                "member2": "test string 2"
-              }
-            }
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "X-Bool": "false",
+                    "X-Int": "1",
+                    "X-String": "Hello"
+                ],
+                content: ResponseType.data(""${'"'}
+                {
+                  "payload1": "explicit string",
+                  "payload2": 1,
+                  "payload3": {
+                    "member1": "test string",
+                    "member2": "test string 2"
+                  }
+                }
 
-            ""${'"'}.data(using: .utf8)),
-            host: host
-        )
-        let actual = SmokeTestResponse(httpResponse: httpResponse, decoder: JSONDecoder())
+                ""${'"'}.data(using: .utf8)),
+                host: host
+                ) else {
+                    XCTFail("Something is wrong with the created http response")
+                    return
+                }
+                let actual = try SmokeTestResponse(httpResponse: httpResponse, decoder: JSONDecoder())
 
-        let expected = SmokeTestResponse(
-            boolHeader: false,
-            intHeader: 1,
-            payload1: "explicit string",
-            payload2: 1,
-            payload3: Nested(
-                member1: "test string",
-                member2: "test string 2"
-            ),
-            strHeader: "Hello"
-        )
-        XCTAssertEqual(expected.strHeader, actual.strHeader)
-        XCTAssertEqual(expected.intHeader, actual.intHeader)
-        XCTAssertEqual(expected.boolHeader, actual.boolHeader)
-        XCTAssertEqual(expected.payload1, actual.payload1)
-        XCTAssertEqual(expected.payload2, actual.payload2)
-        XCTAssertEqual(expected.payload3, actual.payload3)
+                let expected = SmokeTestResponse(
+                    boolHeader: false,
+                    intHeader: 1,
+                    payload1: "explicit string",
+                    payload2: 1,
+                    payload3: Nested(
+                        member1: "test string",
+                        member2: "test string 2"
+                    ),
+                    strHeader: "Hello"
+                )
+                XCTAssertEqual(expected.strHeader, actual.strHeader)
+                XCTAssertEqual(expected.intHeader, actual.intHeader)
+                XCTAssertEqual(expected.boolHeader, actual.boolHeader)
+                XCTAssertEqual(expected.payload1, actual.payload1)
+                XCTAssertEqual(expected.payload2, actual.payload2)
+                XCTAssertEqual(expected.payload3, actual.payload3)
+            } catch let err {
+            XCTFail(err.localizedDescription)
+        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -108,26 +114,33 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
         val expectedContents =
             """
     func testRestJsonHttpPrefixHeadersPresent() {
-        let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "X-Foo": "Foo",
-                "X-Foo-abc": "ABC",
-                "X-Foo-xyz": "XYZ"
-            ],
-            host: host
-        )
-        let actual = HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "X-Foo": "Foo",
+                    "X-Foo-abc": "ABC",
+                    "X-Foo-xyz": "XYZ"
+                ],
+                host: host
+                ) else {
+                    XCTFail("Something is wrong with the created http response")
+                    return
+                }
+                let actual = try HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
 
-        let expected = HttpPrefixHeadersInputOutput(
-            foo: "Foo",
-            fooMap: [
-                "abc": "ABC",
-                "xyz": "XYZ"]
+                let expected = HttpPrefixHeadersInputOutput(
+                    foo: "Foo",
+                    fooMap: [
+                        "abc": "ABC",
+                        "xyz": "XYZ"]
 
-        )
-        XCTAssertEqual(expected.foo, actual.foo)
-        XCTAssertEqual(expected.fooMap, actual.fooMap)
+                )
+                XCTAssertEqual(expected.foo, actual.foo)
+                XCTAssertEqual(expected.fooMap, actual.fooMap)
+            } catch let err {
+            XCTFail(err.localizedDescription)
+        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -140,20 +153,27 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
         val expectedContents =
             """
     func testRestJsonHttpPrefixHeadersAreNotPresent() {
-        let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "X-Foo": "Foo"
-            ],
-            host: host
-        )
-        let actual = HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "X-Foo": "Foo"
+                ],
+                host: host
+                ) else {
+                    XCTFail("Something is wrong with the created http response")
+                    return
+                }
+                let actual = try HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
 
-        let expected = HttpPrefixHeadersInputOutput(
-            foo: "Foo"
-        )
-        XCTAssertEqual(expected.foo, actual.foo)
-        XCTAssertEqual(expected.fooMap, actual.fooMap)
+                let expected = HttpPrefixHeadersInputOutput(
+                    foo: "Foo"
+                )
+                XCTAssertEqual(expected.foo, actual.foo)
+                XCTAssertEqual(expected.fooMap, actual.fooMap)
+            } catch let err {
+            XCTFail(err.localizedDescription)
+        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -165,28 +185,35 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonDeSerializeStringUnionValue() {
-        let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "Content-Type": "application/json"
-            ],
-            content: ResponseType.data(""${'"'}
-            {
-                "contents": {
-                    "stringValue": "foo"
+    func testRestJsonDeserializeStringUnionValue() {
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "Content-Type": "application/json"
+                ],
+                content: ResponseType.data(""${'"'}
+                {
+                    "contents": {
+                        "stringValue": "foo"
+                    }
                 }
-            }
-            ""${'"'}.data(using: .utf8)),
-            host: host
-        )
-        let actual = UnionInputOutput(httpResponse: httpResponse, decoder: JSONDecoder())
+                ""${'"'}.data(using: .utf8)),
+                host: host
+                ) else {
+                    XCTFail("Something is wrong with the created http response")
+                    return
+                }
+                let actual = try UnionInputOutput(httpResponse: httpResponse, decoder: JSONDecoder())
 
-        let expected = UnionInputOutput(
-            contents: MyUnion.stringValue("foo")
+                let expected = UnionInputOutput(
+                    contents: MyUnion.stringValue("foo")
 
-        )
-        XCTAssertEqual(expected.contents, actual.contents)
+                )
+                XCTAssertEqual(expected.contents, actual.contents)
+            } catch let err {
+            XCTFail(err.localizedDescription)
+        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)

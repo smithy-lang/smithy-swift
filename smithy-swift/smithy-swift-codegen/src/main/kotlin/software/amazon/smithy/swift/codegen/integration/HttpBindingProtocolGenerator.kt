@@ -179,16 +179,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             return
         }
         val opIndex = OperationIndex.of(ctx.model)
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
+      //  val httpTrait = op.expectTrait(HttpTrait::class.java)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)
         val outputShape = ctx.model.expectShape(op.output.get())
-        val hasHttpBody = outputShape.members().filter { it.isInHttpBody() }.count() > 0
+       // val hasHttpBody = outputShape.members().filter { it.isInHttpBody() }.count() > 0
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val headerBindings = responseBindings.values
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
-        val contentType = bindingIndex.determineResponseContentType(op, defaultContentType).orElse(defaultContentType)
+       // val contentType = bindingIndex.determineResponseContentType(op, defaultContentType).orElse(defaultContentType)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/$outputShapeName+ResponseInit.swift")
@@ -336,9 +336,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     if (!collectionMemberTargetSymbol.isBoxed()) {
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
-                            writer.openBlock("guard let \$LHeaderValueTransformed = \$L else {", "}", memberName, conversion) {
+                            val transformedHeaderDeclaration = "${memberName}Transformed"
+                            writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
                                 writer.write("throw ClientError.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", invalidHeaderListErrorName, memberName)
                             }
+                            writer.write("return \$L", transformedHeaderDeclaration)
                         }
                     } else {
                         writer.write("self.\$L = \$L", memberName, memberValue)

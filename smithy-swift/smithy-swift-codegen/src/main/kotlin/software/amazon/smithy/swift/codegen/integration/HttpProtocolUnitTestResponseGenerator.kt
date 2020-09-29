@@ -39,16 +39,19 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
             val symbol = symbolProvider.toSymbol(it)
+            writer.openBlock("do {", "} catch let err {") {
             renderActualOutput(test, symbol.name)
             writer.write("")
             renderExpectedOutput(test, it)
             renderAssertions(test, it)
+            }.write("XCTFail(err.localizedDescription)").closeBlock("}")
         }
     }
 
     private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
         var responseDecoder = ""
-        writer.openBlock("let httpResponse = buildHttpResponse(")
+
+        writer.openBlock("guard let httpResponse = buildHttpResponse(")
             .call {
                 writer
                     .write("code: ${test.code},")
@@ -66,17 +69,24 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                                     }
                                 }
                                 // TODO:: handle streaming case?
-                                writer.write("content: ResponseType.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),", body)
+                                writer.write(
+                                    "content: ResponseType.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
+                                    body
+                                )
                             }
                         }
                     }
                     .write("host: host")
             }
-            .closeBlock(")")
+            .openBlock(") else {")
+            .write("XCTFail(\"Something is wrong with the created http response\")")
+            .write("return")
+            .closeBlock("}")
+
         if (responseDecoder.isNotBlank()) {
-            writer.write("let actual = $outputStructName(httpResponse: httpResponse, decoder: $responseDecoder)")
+            writer.write("let actual = try $outputStructName(httpResponse: httpResponse, decoder: $responseDecoder)")
         } else {
-            writer.write("let actual = $outputStructName(httpResponse: httpResponse)")
+            writer.write("let actual = try $outputStructName(httpResponse: httpResponse)")
         }
     }
 
@@ -90,11 +100,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     private fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val members = outputShape.members()
+        val members = outputShape.members().filter { !it.hasTrait(HttpQueryTrait::class.java) }
         for (member in members) {
-            if (!member.hasTrait(HttpQueryTrait::class.java)) {
-                val expectedMemberName = "expected.${symbolProvider.toMemberName(member)}"
-                val actualMemberName = "actual.${symbolProvider.toMemberName(member)}"
+            val expectedMemberName = "expected.${symbolProvider.toMemberName(member)}"
+            val actualMemberName = "actual.${symbolProvider.toMemberName(member)}"
+            if(member.isStructureShape) {
+                writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
+            } else {
                 writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
             }
         }

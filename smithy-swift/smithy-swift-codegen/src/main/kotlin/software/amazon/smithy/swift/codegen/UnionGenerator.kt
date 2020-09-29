@@ -98,7 +98,7 @@ class UnionGenerator(
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("public enum \$union.name:L {", "}\n") {
+        writer.openBlock("public enum \$union.name:L: Equatable {", "}\n") {
             createUnionWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(String)")

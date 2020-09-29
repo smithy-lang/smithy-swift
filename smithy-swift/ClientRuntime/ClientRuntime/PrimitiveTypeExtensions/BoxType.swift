@@ -13,11 +13,17 @@
 // permissions and limitations under the License.
 //
 
-public final class Box<T> where T: Codable {
+public final class Box<T> where T: Codable, T: Equatable {
     public var value: T
 
     init(value: T) {
         self.value = value
+    }
+}
+
+extension Box: Equatable {
+    public static func == (lhs: Box<T>, rhs: Box<T>) -> Bool {
+        return lhs.value == rhs.value
     }
 }
 
