@@ -72,7 +72,7 @@ class HttpProtocolTestGenerator(
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
                             .build()
-                            .renderTestClass(testClassName, "HttpRequestTestBase")
+                            .renderTestClass(testClassName, HttpProtocolUnitTestRequestGenerator.baseTestClassName)
                     }
                 }
 
@@ -102,7 +102,7 @@ class HttpProtocolTestGenerator(
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
                             .build()
-                            .renderTestClass(testClassName, "HttpResponseTestBase")
+                            .renderTestClass(testClassName, HttpProtocolUnitTestResponseGenerator.baseTestClassName)
                     }
                 }
 

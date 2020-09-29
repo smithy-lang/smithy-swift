@@ -71,7 +71,7 @@ extension StringProtocol {
 
 /// Removes the given prefix from the string if one exists
 extension StringProtocol {
-    public func removingPrefix(_ prefix: String) -> String {
+    public func removePrefix(_ prefix: String) -> String {
         guard self.hasPrefix(prefix) else { return String(self) }
         return String(self.dropFirst(prefix.count))
     }

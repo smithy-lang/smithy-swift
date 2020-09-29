@@ -191,7 +191,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val contentType = bindingIndex.determineResponseContentType(op, defaultContentType).orElse(defaultContentType)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$outputShapeName.swift")
+            .definitionFile("./$rootNamespace/models/$outputShapeName+ResponseInit.swift")
             .name(outputShapeName)
             .build()
 
@@ -200,15 +200,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $outputShapeName {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
-                    renderInitOutputComponentsFromHeaders(ctx, headerBindings, writer)
+                    renderInitMembersFromHeaders(ctx, headerBindings, writer)
                     // prefix headers
                     // spec: "Only a single structure member can be bound to httpPrefixHeaders"
                     responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
                         ?.let {
-                            renderInitOutputComponentsFromPrefixHeaders(ctx, it, writer)
+                            renderInitMembersFromPrefixHeaders(ctx, it, writer)
                         }
                     writer.write("")
-                    renderInitOutputComponentsFromPayload(responseBindings, outputShapeName, writer)
+                    renderInitMembersFromPayload(responseBindings, outputShapeName, writer)
                 }
             }
             writer.write("")
@@ -218,7 +218,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Render initialization of all output members bound to a response header
      */
-    private fun renderInitOutputComponentsFromHeaders(
+    private fun renderInitMembersFromHeaders(
         ctx: ProtocolGenerator.GenerationContext,
         bindings: List<HttpBinding>,
         writer: SwiftWriter
@@ -227,20 +227,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
             val memberName = hdrBinding.member.memberName
             val headerName = hdrBinding.locationName
-            writer.write("if let \$LHeaderValue = httpResponse.headers.value(for: \$S) {", memberName, headerName)
+            val headerDeclaration = "${memberName}HeaderValue"
+            writer.write("if let $headerDeclaration = httpResponse.headers.value(for: \$S) {", headerName)
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {
-                    val memberValue = stringToNumber(memberTarget,
-                        "${memberName}HeaderValue")
+                    val memberValue = stringToNumber(memberTarget, headerDeclaration)
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BlobShape -> {
-                    val memberValue = "${memberName}HeaderValue.data(using: .utf8)"
+                    val memberValue = "$headerDeclaration.data(using: .utf8)"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val memberValue = "Bool(${memberName}HeaderValue)"
+                    val memberValue = "Bool($headerDeclaration)"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
@@ -248,13 +248,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     when {
                         memberTarget.hasTrait(EnumTrait::class.java) -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            memberValue = "${enumSymbol.name}(rawValue: ${memberName}HeaderValue)"
+                            memberValue = "${enumSymbol.name}(rawValue: $headerDeclaration)"
                         }
                         memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
-                            memberValue = "try ${memberName}HeaderValue.base64EncodedString()"
+                            memberValue = "try $headerDeclaration.base64EncodedString()"
                         }
                         else -> {
-                            memberValue = "${memberName}HeaderValue"
+                            memberValue = headerDeclaration
                         }
                     }
                     writer.write("self.\$L = $memberValue", memberName)
@@ -265,10 +265,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         hdrBinding.member,
                         HttpBinding.Location.HEADER,
                         defaultTimestampFormat)
-                    var memberValue = doubleToDate("${memberName}HeaderValue", tsFormat)
+                    var memberValue = stringToDate(headerDeclaration, tsFormat)
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                        memberValue = doubleToDate("${memberName}HeaderValueDouble", tsFormat)
-                        writer.write("if let \$LHeaderValueDouble = Double(\$LHeaderValue) {", memberName, memberName)
+                        memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
+                        writer.write("if let ${headerDeclaration}Double = Double(\$LHeaderValue) {", memberName)
                         writer.indent()
                         writer.write("self.\$L = $memberValue", memberName)
                         writer.dedent()
@@ -307,7 +307,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            doubleToDate("\$0", tsFormat)
+                            stringToDate("\$0", tsFormat)
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"
@@ -361,7 +361,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderInitOutputComponentsFromPrefixHeaders(
+    private fun renderInitMembersFromPrefixHeaders(
         ctx: ProtocolGenerator.GenerationContext,
         binding: HttpBinding,
         writer: SwiftWriter
@@ -381,21 +381,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("let $keyCollName = httpResponse.headers.dictionary.keys\$L", filter)
         writer.openBlock("if (!$keyCollName.isEmpty) {")
             .write("var mapMember = [String: ${targetValueSymbol.name}]()")
-            .openBlock("for hdrKey in $keyCollName {")
+            .openBlock("for headerKey in $keyCollName {")
             .call {
                 val mapMemberValue = when (targetValueShape) {
-                    is StringShape -> "httpResponse.headers.dictionary[hdrKey]?[0]"
-                    is ListShape -> "httpResponse.headers.dictionary[hdrKey]"
-                    is SetShape -> "Set(httpResponse.headers.dictionary[hdrKey])"
+                    is StringShape -> "httpResponse.headers.dictionary[headerKey]?[0]"
+                    is ListShape -> "httpResponse.headers.dictionary[headerKey]"
+                    is SetShape -> "Set(httpResponse.headers.dictionary[headerKey])"
                     else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
                 }
                 // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...
                 writer.write("let mapMemberValue = $mapMemberValue")
                 if (prefix.isNotEmpty()) {
-                    writer.write("let mapMemberKey = hdrKey.removingPrefix(\$S)", prefix)
+                    writer.write("let mapMemberKey = headerKey.removePrefix(\$S)", prefix)
                     writer.write("mapMember[mapMemberKey] = mapMemberValue")
                 } else {
-                    writer.write("mapMember[hdrKey] = mapMemberValue")
+                    writer.write("mapMember[headerKey] = mapMemberValue")
                 }
             }
             .closeBlock("}")
@@ -407,7 +407,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("}")
     }
 
-    private fun renderInitOutputComponentsFromPayload(
+    private fun renderInitMembersFromPayload(
         responseBindings: Map<String, HttpBinding>,
         outputShapeName: String,
         writer: SwiftWriter
@@ -468,21 +468,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     // render conversion of string to appropriate number type
-    internal fun stringToNumber(shape: NumberShape, wrappedValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "Int8($wrappedValue)"
-        ShapeType.SHORT -> "Int16($wrappedValue)"
-        ShapeType.INTEGER -> "Int($wrappedValue)"
-        ShapeType.LONG -> "Int($wrappedValue)"
-        ShapeType.FLOAT -> "Float($wrappedValue)"
-        ShapeType.DOUBLE -> "Double($wrappedValue)"
+    internal fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
+        ShapeType.BYTE -> "Int8($stringValue)"
+        ShapeType.SHORT -> "Int16($stringValue)"
+        ShapeType.INTEGER -> "Int($stringValue)"
+        ShapeType.LONG -> "Int($stringValue)"
+        ShapeType.FLOAT -> "Float($stringValue)"
+        ShapeType.DOUBLE -> "Double($stringValue)"
         else -> throw CodegenException("unknown number shape: $shape")
     }
 
     // render conversion of string to Date based on the timestamp format
-    internal fun doubleToDate(wrappedValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-        TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date(timeIntervalSince1970: $wrappedValue)"
-        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithFractionalSeconds.date(from: $wrappedValue)"
-        TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $wrappedValue)"
+    internal fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
+        TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date(timeIntervalSince1970: $stringValue)"
+        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithFractionalSeconds.date(from: $stringValue)"
+        TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
         else -> throw CodegenException("unknown timestamp format: $tsFmt")
     }
 

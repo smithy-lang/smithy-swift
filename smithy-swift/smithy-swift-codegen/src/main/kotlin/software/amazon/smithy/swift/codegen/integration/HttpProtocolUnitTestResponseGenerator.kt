@@ -25,6 +25,10 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
 
+    companion object {
+        const val baseTestClassName = "HttpResponseTestBase"
+    }
+
     protected open val outputShape: Shape?
         get() {
             return operation.output.map {

@@ -778,8 +778,8 @@ apply JsonUnions @httpRequestTests([
 
 apply JsonUnions @httpResponseTests([
     {
-        id: "RestJsonDeSerializeStringUnionValue",
-        documentation: "DeSerializes a string union value",
+        id: "RestJsonDeserializeStringUnionValue",
+        documentation: "Deserializes a string union value",
         protocol: restJson1,
         code: 200,
         body: """

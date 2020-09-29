@@ -70,9 +70,9 @@ class StringExtensionsTests: XCTestCase {
     
     func testRemovingPrefixFromString() {
         let stringWithPrefix = "X-Foo-ABC"
-        XCTAssertEqual(stringWithPrefix.removingPrefix("X-Foo-"), "ABC")
+        XCTAssertEqual(stringWithPrefix.removePrefix("X-Foo-"), "ABC")
         
         let stringWithoutPrefix = "ABC"
-        XCTAssertEqual(stringWithoutPrefix.removingPrefix("X-Foo-"), "ABC")
+        XCTAssertEqual(stringWithoutPrefix.removePrefix("X-Foo-"), "ABC")
     }
 }

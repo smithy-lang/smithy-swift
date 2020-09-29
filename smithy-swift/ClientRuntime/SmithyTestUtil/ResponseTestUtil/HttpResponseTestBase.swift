@@ -18,7 +18,7 @@ import ClientRuntime
 import XCTest
 
 /**
- Includes Utility functions for Http Protocol Response DeSerialization Tests
+ Includes Utility functions for Http Protocol Response Deserialization Tests
  */
 open class HttpResponseTestBase: XCTestCase {
     /**
