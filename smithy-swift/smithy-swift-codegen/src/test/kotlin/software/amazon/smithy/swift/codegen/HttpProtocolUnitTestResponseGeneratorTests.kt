@@ -80,7 +80,9 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                     XCTFail("Something is wrong with the created http response")
                     return
                 }
-                let actual = try SmokeTestResponse(httpResponse: httpResponse, decoder: JSONDecoder())
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .secondsSince1970
+                let actual = try SmokeTestResponse(httpResponse: httpResponse, decoder: decoder)
 
                 let expected = SmokeTestResponse(
                     boolHeader: false,
@@ -204,7 +206,9 @@ class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                     XCTFail("Something is wrong with the created http response")
                     return
                 }
-                let actual = try UnionInputOutput(httpResponse: httpResponse, decoder: JSONDecoder())
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .secondsSince1970
+                let actual = try UnionInputOutput(httpResponse: httpResponse, decoder: decoder)
 
                 let expected = UnionInputOutput(
                     contents: MyUnion.stringValue("foo")

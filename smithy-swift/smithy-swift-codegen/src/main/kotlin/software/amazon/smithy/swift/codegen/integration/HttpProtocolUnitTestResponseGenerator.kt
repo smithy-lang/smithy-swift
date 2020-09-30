@@ -84,7 +84,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .closeBlock("}")
 
         if (responseDecoder.isNotBlank()) {
-            writer.write("let actual = try $outputStructName(httpResponse: httpResponse, decoder: $responseDecoder)")
+            writer.write("let decoder = $responseDecoder")
+            writer.write("decoder.dateDecodingStrategy = .secondsSince1970")
+            writer.write("let actual = try $outputStructName(httpResponse: httpResponse, decoder: decoder)")
         } else {
             writer.write("let actual = try $outputStructName(httpResponse: httpResponse)")
         }
