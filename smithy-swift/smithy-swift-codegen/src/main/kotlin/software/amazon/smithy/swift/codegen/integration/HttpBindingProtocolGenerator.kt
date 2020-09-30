@@ -179,16 +179,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             return
         }
         val opIndex = OperationIndex.of(ctx.model)
-      //  val httpTrait = op.expectTrait(HttpTrait::class.java)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)
         val outputShape = ctx.model.expectShape(op.output.get())
-       // val hasHttpBody = outputShape.members().filter { it.isInHttpBody() }.count() > 0
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val headerBindings = responseBindings.values
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
-       // val contentType = bindingIndex.determineResponseContentType(op, defaultContentType).orElse(defaultContentType)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/$outputShapeName+ResponseInit.swift")
@@ -529,7 +526,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     // render conversion of string to Date based on the timestamp format
     private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
         TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date(timeIntervalSince1970: $stringValue)"
-        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithFractionalSeconds.date(from: $stringValue)"
+        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: $stringValue)"
         TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
         else -> throw CodegenException("unknown timestamp format: $tsFmt")
     }

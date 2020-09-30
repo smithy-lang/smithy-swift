@@ -151,7 +151,7 @@ class StructDecodeGeneration(
             TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = DateFormatter()", formatterName)
             // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
             // to custom date type
-            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = DateFormatter.iso8601DateFormatterWithFractionalSeconds", formatterName)
+            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds", formatterName)
             TimestampFormatTrait.Format.HTTP_DATE -> writer.write("let \$L = DateFormatter.rfc5322DateFormatter", formatterName)
             else -> throw CodegenException("unknown timestamp format: $tsFormat")
         }

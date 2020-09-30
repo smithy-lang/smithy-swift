@@ -165,14 +165,14 @@ extension TimestampOutputResponseBody: Decodable {
         let normalDateString = try values.decodeIfPresent(String.self, forKey: .normal)
         var normalDecoded: Date? = nil
         if let normalDateString = normalDateString {
-            let normalFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            let normalFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             normalDecoded = normalFormatter.date(from: normalDateString)
         }
         normal = normalDecoded
         let dateTimeDateString = try values.decodeIfPresent(String.self, forKey: .dateTime)
         var dateTimeDecoded: Date? = nil
         if let dateTimeDateString = dateTimeDateString {
-            let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
         }
         dateTime = dateTimeDecoded
@@ -191,7 +191,7 @@ extension TimestampOutputResponseBody: Decodable {
                 var list0Decoded0 = [Date?]()
                 if let list0 = list0 {
                     for timestamp1 in list0 {
-                        let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                        let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
                         }
@@ -206,7 +206,7 @@ extension TimestampOutputResponseBody: Decodable {
         var timestampListDecoded0 = [Date?]()
         if let timestampListContainer = timestampListContainer {
             for timestamp0 in timestampListContainer {
-                let timestamp0Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                let timestamp0Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -295,7 +295,7 @@ extension MapOutputResponseBody: Decodable {
         var dateMapDecoded0 = [String:Date?]()
         if let dateMapContainer = dateMapContainer {
             for (key0, timestamp0) in dateMapContainer {
-                let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -330,7 +330,7 @@ extension NestedShapesInputOutputBody: Decodable {
                 var timestamplist0Decoded0 = [Date?]()
                 if let timestamplist0 = timestamplist0 {
                     for timestamp1 in timestamplist0 {
-                        let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+                        let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
                         }
