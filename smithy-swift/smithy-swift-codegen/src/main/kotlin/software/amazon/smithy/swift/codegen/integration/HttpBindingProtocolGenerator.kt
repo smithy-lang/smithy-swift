@@ -766,11 +766,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
                     // Handle cases where member is a List or Set type
-                    val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
                     var queryItemValue = formatHeaderOrQueryValue(
                         ctx,
                         "queryItemValue",
-                        memberTarget.member,
+                        it.member,
                         HttpBinding.Location.QUERY,
                         bindingIndex
                     )
@@ -783,7 +782,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     ctx,
                                     "unwrappedQueryItemValue",
                                     memberTarget.member,
-                                    HttpBinding.Location.HEADER,
+                                    HttpBinding.Location.QUERY,
                                     bindingIndex
                                 )
                                 writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
