@@ -214,4 +214,47 @@ MyStruct(
 
         contents.shouldContainOnlyOnce(expected)
     }
+
+    @Test
+    fun `it renders maps with null member`() {
+        val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
+        val structMember = MemberShape.builder().id("foo.bar#MyStruct\$stringMember").target("smithy.api#String").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(structMember)
+            .build()
+        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target("foo.bar#MyStruct").build()
+        val map = MapShape.builder()
+            .id("foo.bar#MyMap")
+            .key(keyMember)
+            .value(valueMember)
+            .build()
+        val model = Model.assembler()
+            .addShapes(map, keyMember, valueMember, struct, structMember)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
+        val writer = SwiftWriter("test")
+
+        val params = Node.objectNodeBuilder()
+            .withMember("k1", Node.nullNode())
+            .withMember("k2", Node.objectNodeBuilder()
+                .withMember("stringMember", "hi")
+                .build())
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, mapShape, params)
+        val contents = writer.toString()
+        val expected =
+            """
+            [
+                "k1": nil,
+                "k2": MyStruct(
+                    stringMember: "hi"
+                )]
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
 }

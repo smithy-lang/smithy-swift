@@ -88,9 +88,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 .write("")
             writer.openBlock("do {", "} catch let err {") {
-
+                writer.write("let encoder = \$L", requestEncoder)
+                writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
                 writer.write(
-                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: $requestEncoder)",
+                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: encoder)",
                     test.uri
                 )
 

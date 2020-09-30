@@ -75,4 +75,13 @@ class StringExtensionsTests: XCTestCase {
         let stringWithoutPrefix = "ABC"
         XCTAssertEqual(stringWithoutPrefix.removePrefix("X-Foo-"), "ABC")
     }
+    
+    func testDecodingBase64EncodedString() {
+        let base64EncodedString = "dHJ1ZQ=="
+        guard let decodedString = try? base64EncodedString.base64DecodedString() else {
+            XCTFail("Failed to decode a valid base64 encoded string")
+            return
+        }
+        XCTAssertEqual(decodedString, "true")
+    }
 }
