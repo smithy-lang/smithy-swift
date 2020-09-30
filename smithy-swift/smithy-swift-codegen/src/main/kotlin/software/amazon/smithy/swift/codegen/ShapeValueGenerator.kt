@@ -172,8 +172,11 @@ class ShapeValueGenerator(
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
                         writer.writeInline("\n\$S: ", keyNode.value)
-
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        if (valueNode.isNullNode) {
+                            writer.writeInline("nil")
+                        } else {
+                            generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        }
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
                         }
