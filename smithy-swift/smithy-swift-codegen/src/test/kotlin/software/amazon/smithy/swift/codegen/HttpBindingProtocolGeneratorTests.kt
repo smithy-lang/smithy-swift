@@ -340,9 +340,11 @@ extension ExplicitStructResponse {
                     let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
                     self.payload1 = output
                 }
-            }
+            } else {
+            self.payload1 = nil
         }
     }
+}
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
