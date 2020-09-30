@@ -106,7 +106,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         for (member in members) {
             val expectedMemberName = "expected.${symbolProvider.toMemberName(member)}"
             val actualMemberName = "actual.${symbolProvider.toMemberName(member)}"
-            if(member.isStructureShape) {
+            if (member.isStructureShape) {
                 writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
             } else {
                 writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)

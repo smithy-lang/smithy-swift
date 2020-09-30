@@ -193,7 +193,7 @@ class StructDecodeGeneration(
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
         } else {
             val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
-            if(isBoxed) {
+            if (isBoxed) {
                 writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                     renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
                 }
@@ -207,7 +207,7 @@ class StructDecodeGeneration(
         val iteratorName = "${shape.type.name.toLowerCase()}$level"
         val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val terminator = if(level == 0) "?" else ""
+        val terminator = if (level == 0) "?" else ""
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (shape) {
                 is TimestampShape -> {
@@ -232,13 +232,13 @@ class StructDecodeGeneration(
                     val nestedDecodedMemberName = "${iteratorName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
-                    writer.write("${decodedMemberName}?.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${collectionName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
-                    writer.write("${decodedMemberName}?.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
                 }
                 else -> writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
             }
@@ -277,7 +277,7 @@ class StructDecodeGeneration(
         val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
         val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
-        val terminator = if(level == 0) "?" else ""
+        val terminator = if (level == 0) "?" else ""
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
             when (valueTargetShape) {
                 is CollectionShape -> {
@@ -285,13 +285,13 @@ class StructDecodeGeneration(
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
-                    writer.write("${decodedMemberName}?[key$level] = $nestedDecodedMemberName")
+                    writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
-                    writer.write("${decodedMemberName}?[key$level] = $nestedDecodedMemberName")
+                    writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
                     val tsFormat = valueTargetShape

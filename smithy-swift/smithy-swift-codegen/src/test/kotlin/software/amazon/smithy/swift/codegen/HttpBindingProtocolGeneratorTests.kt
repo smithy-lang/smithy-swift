@@ -27,7 +27,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerato
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import kotlin.math.exp
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"

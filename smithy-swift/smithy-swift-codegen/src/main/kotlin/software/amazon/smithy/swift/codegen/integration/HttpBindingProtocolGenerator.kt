@@ -474,9 +474,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("if case .data(let data) = httpResponse.content,")
         writer.indent()
         writer.openBlock("let unwrappedData = data {", "} else {") {
-            when(target.type) {
+            when (target.type) {
                 ShapeType.DOCUMENT -> {
-                    //TODO deal with document type
+                    // TODO deal with document type
                     writer.write("self.\$L = nil", memberName)
                 }
                 ShapeType.STRING -> {
@@ -509,7 +509,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         writer.indent()
         writer.write("self.\$L = nil", memberName).dedent().closeBlock("}")
-
     }
 
     // render conversion of string to appropriate number type
@@ -769,7 +768,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     var queryItemValue = formatHeaderOrQueryValue(
                         ctx,
                         "queryItemValue",
-                        it.member,
+                        memberTarget.member,
                         HttpBinding.Location.QUERY,
                         bindingIndex
                     )

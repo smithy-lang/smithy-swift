@@ -138,8 +138,8 @@ class StructEncodeGeneration(
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                    if(isBoxed) {
-                        writer.openBlock("if let \$L = \$L {","}", keyName, keyName) {
+                    if (isBoxed) {
+                        writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
                             renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
                         }
                     }
@@ -150,7 +150,7 @@ class StructEncodeGeneration(
             else -> {
                 val extension = getShapeExtension(targetShape, keyName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                if(isBoxed) {
+                if (isBoxed) {
                     writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
                         writer.write("try $containerName.encode($extension)")
                     }
@@ -187,7 +187,7 @@ class StructEncodeGeneration(
                 else -> {
                     val shapeExtension = getShapeExtension(targetShape, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                    if(isBoxed) {
+                    if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", iteratorName, iteratorName) {
                             writer.write("try $topLevelContainerName.encode($shapeExtension)")
                         }
@@ -218,8 +218,8 @@ class StructEncodeGeneration(
             else -> {
                 val extension = getShapeExtension(targetShape, keyName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                val keyEnumName = if(level == 0) keyName else "Key(stringValue: key${level - 1})"
-                if(isBoxed) {
+                val keyEnumName = if (level == 0) keyName else "Key(stringValue: key${level - 1})"
+                if (isBoxed) {
                     writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
                         writer.write("try $containerName.encode($extension, forKey: .\$L)", keyEnumName)
                     }
@@ -265,7 +265,7 @@ class StructEncodeGeneration(
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
                     val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
-                    if(isBoxed) {
+                    if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
                             writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
                         }

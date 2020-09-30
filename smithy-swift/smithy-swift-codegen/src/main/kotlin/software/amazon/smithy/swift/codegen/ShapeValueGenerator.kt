@@ -62,7 +62,7 @@ class ShapeValueGenerator(
     }
 
     private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
-        val symbol = if(isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
+        val symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
         writer.writeInline("\$L(", symbol.name)
             .indent()
