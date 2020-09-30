@@ -248,7 +248,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             memberValue = "${enumSymbol.name}(rawValue: $headerDeclaration)"
                         }
                         memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
-                            memberValue = "try $headerDeclaration.base64EncodedString()"
+                            memberValue = "try $headerDeclaration.base64DecodedString()"
                         }
                         else -> {
                             memberValue = headerDeclaration

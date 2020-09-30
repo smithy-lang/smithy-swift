@@ -93,7 +93,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             query1: "Query 1"
         )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: encoder)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -139,7 +141,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             payload1: "explicit string"
         )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: encoder)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -180,7 +184,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         let input = EmptyInputAndEmptyOutputInput(
         )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -215,7 +221,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             stringValue: nil
         )
         do {
-            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -254,7 +262,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             foo: "Foo"
         )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -291,7 +301,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
         )
         do {
-            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -333,7 +345,9 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
         )
         do {
-            let actual = try input.buildHttpRequest(method: .put, path: "/JsonUnions", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/JsonUnions", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
