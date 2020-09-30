@@ -185,8 +185,9 @@ class StructDecodeGeneration(
                 symbolName,
                 memberName
             )
-            writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
+            writer.write("var \$L:\$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
+                writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
                 renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, level)
             }
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
@@ -206,6 +207,7 @@ class StructDecodeGeneration(
         val iteratorName = "${shape.type.name.toLowerCase()}$level"
         val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
+        val terminator = if(level == 0) "?" else ""
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (shape) {
                 is TimestampShape -> {
@@ -215,7 +217,7 @@ class StructDecodeGeneration(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        writer.write("$decodedMemberName.$insertMethod($iteratorName)")
+                        writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
                     } else { // decode date as a string manually
                         val formatterName = "${iteratorName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
@@ -223,22 +225,22 @@ class StructDecodeGeneration(
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
                             renderDecodingError(topLevelMemberName)
                         }
-                        writer.write("$decodedMemberName.$insertMethod($dateName)")
+                        writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
                 }
                 is CollectionShape -> {
                     val nestedDecodedMemberName = "${iteratorName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
-                    writer.write("$decodedMemberName.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("${decodedMemberName}?.$insertMethod($nestedDecodedMemberName)")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${collectionName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
-                    writer.write("$decodedMemberName.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("${decodedMemberName}?.$insertMethod($nestedDecodedMemberName)")
                 }
-                else -> writer.write("$decodedMemberName.$insertMethod($iteratorName)")
+                else -> writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
             }
         }
     }
@@ -255,8 +257,9 @@ class StructDecodeGeneration(
                 topLevelContainerName,
                 symbolName,
                 memberName)
-            writer.write("var \$L = \$L()", decodedMemberName, originalSymbol)
+            writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", topLevelContainerName, topLevelContainerName) {
+                writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
                 renderDecodeMapTarget(topLevelContainerName, decodedMemberName, nestedTarget, level)
             }
             writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
@@ -274,6 +277,7 @@ class StructDecodeGeneration(
         val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
         val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
+        val terminator = if(level == 0) "?" else ""
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
             when (valueTargetShape) {
                 is CollectionShape -> {
@@ -281,13 +285,13 @@ class StructDecodeGeneration(
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
-                    writer.write("$decodedMemberName[key$level] = $nestedDecodedMemberName")
+                    writer.write("${decodedMemberName}?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
-                    writer.write("$decodedMemberName[key$level] = $nestedDecodedMemberName")
+                    writer.write("${decodedMemberName}?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
                     val tsFormat = valueTargetShape
@@ -296,7 +300,7 @@ class StructDecodeGeneration(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        writer.write("$decodedMemberName[key$level] = $valueIterator")
+                        writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
                     } else { // decode date as a string manually
                         val formatterName = "${mapName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
@@ -304,10 +308,10 @@ class StructDecodeGeneration(
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $valueIterator) else {", "}") {
                             renderDecodingError(topLevelMemberName)
                         }
-                        writer.write("$decodedMemberName[key$level] = $dateName")
+                        writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
                 }
-                else -> writer.write("$decodedMemberName[key$level] = $valueIterator")
+                else -> writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
             }
         }
     }
