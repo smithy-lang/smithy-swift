@@ -480,31 +480,38 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             when(target.type) {
                 ShapeType.DOCUMENT -> {
                     //TODO deal with document type
+                    writer.write("self.\$L = nil", memberName)
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let responseDecoder = decoder {", "}") {
+                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
                             "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)
                     }
+                    writer.indent()
+                    writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.BLOB -> {
                     writer.write("self.\$L = unwrappedData", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
-                    writer.openBlock("if let responseDecoder = decoder {", "}") {
+                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
                             "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)
                     }
+                    writer.indent()
+                    writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
-        }.write("self.\$L = nil", memberName).closeBlock("}")
+        }
+        writer.indent()
+        writer.write("self.\$L = nil", memberName).dedent().closeBlock("}")
 
     }
 

@@ -339,9 +339,11 @@ extension ExplicitStructResponse {
                 if let responseDecoder = decoder {
                     let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
                     self.payload1 = output
+                } else {
+                    self.payload1 = nil
                 }
             } else {
-            self.payload1 = nil
+                self.payload1 = nil
         }
     }
 }
