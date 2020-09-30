@@ -208,7 +208,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             renderInitMembersFromPrefixHeaders(ctx, it, writer)
                         }
                     writer.write("")
-                    renderInitMembersFromPayload(responseBindings, outputShapeName, writer)
+                    renderInitMembersFromPayload(ctx, responseBindings, outputShapeName, writer)
                 }
             }
             writer.write("")
@@ -410,6 +410,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun renderInitMembersFromPayload(
+        ctx: ProtocolGenerator.GenerationContext,
         responseBindings: Map<String, HttpBinding>,
         outputShapeName: String,
         writer: SwiftWriter
@@ -420,7 +421,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val queryMembers: MutableList<String> = mutableListOf()
         val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            bodyMembers.add(httpPayload.member.memberName)
+            renderDeserializeExplicitPayload(ctx, httpPayload, writer)
         } else {
             // Unbound document members that should be deserialized from the document format for the protocol.
             // The generated code is the same across protocols and the serialization provider instance
@@ -469,6 +470,43 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    private fun renderDeserializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
+        val memberName = binding.member.memberName
+        val target = ctx.model.expectShape(binding.member.target)
+        val symbol = ctx.symbolProvider.toSymbol(target)
+        writer.write("if case .data(let data) = httpResponse.content,")
+        writer.indent()
+        writer.openBlock("let unwrappedData = data {", "}") {
+            when(target.type) {
+                ShapeType.DOCUMENT -> {
+                    //TODO deal with document type
+                }
+                ShapeType.STRING -> {
+                    writer.openBlock("if let responseDecoder = decoder {", "}") {
+                        writer.write(
+                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            symbol
+                        )
+                        writer.write("self.\$L = output", memberName)
+                    }
+                }
+                ShapeType.BLOB -> {
+                    writer.write("self.\$L = unwrappedData", memberName)
+                }
+                ShapeType.STRUCTURE, ShapeType.UNION -> {
+                    writer.openBlock("if let responseDecoder = decoder {", "}") {
+                        writer.write(
+                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            symbol
+                        )
+                        writer.write("self.\$L = output", memberName)
+                    }
+                }
+                else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
+            }
+        }
+    }
+
     // render conversion of string to appropriate number type
     internal fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
         ShapeType.BYTE -> "Int8($stringValue)"
@@ -481,7 +519,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     // render conversion of string to Date based on the timestamp format
-    internal fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
+    private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
         TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date(timeIntervalSince1970: $stringValue)"
         TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithFractionalSeconds.date(from: $stringValue)"
         TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
@@ -641,7 +679,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             if (httpPayload != null) {
                 val shape = ctx.model.expectShape(httpPayload.member.target)
                 optionalTerminator = if (ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
-                renderExplicitPayload(ctx, httpPayload, writer)
+                renderSerializeExplicitPayload(ctx, httpPayload, writer)
             } else {
                 writer.openBlock("if try !self.allPropertiesAreNull() {", "} else {") {
                     writer.write("let data = try encoder.encode(self)")
@@ -658,7 +696,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
+    private fun renderSerializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
         // explicit payload member as the sole payload
         val memberName = binding.member.memberName
         val target = ctx.model.expectShape(binding.member.target)

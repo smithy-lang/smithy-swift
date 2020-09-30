@@ -27,6 +27,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerato
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import kotlin.math.exp
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
@@ -81,6 +82,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     init {
         newTestContext.generator.generateSerializers(newTestContext.ctx)
         newTestContext.generator.generateProtocolClient(newTestContext.ctx)
+        newTestContext.generator.generateDeserializers(newTestContext.ctx)
         newTestContext.ctx.delegator.flushWriters()
     }
 
@@ -320,6 +322,28 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 }
             }
 """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates correct init for explicit struct payloads`() {
+        val contents = getModelFileContents("example", "ExplicitStructResponse+ResponseInit.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+extension ExplicitStructResponse {
+    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+
+        if case .data(let data) = httpResponse.content,
+            let unwrappedData = data {
+                if let responseDecoder = decoder {
+                    let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
+                    self.payload1 = output
+                }
+            }
+        }
+    }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
