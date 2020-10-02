@@ -334,15 +334,15 @@ extension ExplicitStructResponse {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
         if case .data(let data) = httpResponse.content,
-            let unwrappedData = data {
-                if let responseDecoder = decoder {
-                    let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
-                    self.payload1 = output
-                } else {
-                    self.payload1 = nil
-                }
+           let unwrappedData = data {
+            if let responseDecoder = decoder {
+                let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
+                self.payload1 = output
             } else {
                 self.payload1 = nil
+            }
+        } else {
+            self.payload1 = nil
         }
     }
 }

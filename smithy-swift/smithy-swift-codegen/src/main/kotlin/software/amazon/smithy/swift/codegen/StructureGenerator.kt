@@ -129,7 +129,7 @@ class StructureGenerator(
                 writer.write("public let \$L: \$T", memberName, memberSymbol)
             } else {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
-                val symbol = if (isRecursiveMember) memberSymbol.recursiveSymbol() else memberSymbol
+                val symbol = memberSymbol.recursiveSymbol()
                 writer.write("public let \$L: \$T", memberName, symbol)
             }
         }

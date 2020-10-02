@@ -471,9 +471,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = binding.member.memberName
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-        writer.write("if case .data(let data) = httpResponse.content,")
-        writer.indent()
-        writer.openBlock("let unwrappedData = data {", "} else {") {
+//        writer.write("if case .data(let data) = httpResponse.content,")
+//        writer.indent()
+        writer.openBlock("if case .data(let data) = httpResponse.content,\n   let unwrappedData = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     // TODO deal with document type
@@ -507,8 +507,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
         }
+        // writer.dedent()
         writer.indent()
-        writer.write("self.\$L = nil", memberName).dedent().closeBlock("}")
+        writer.write("self.\$L = nil", memberName).closeBlock("}")
     }
 
     // render conversion of string to appropriate number type

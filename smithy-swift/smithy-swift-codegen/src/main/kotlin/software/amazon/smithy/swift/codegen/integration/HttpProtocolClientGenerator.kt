@@ -137,12 +137,12 @@ class HttpProtocolClientGenerator(
     private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
         val inputShape = opIndex.getInput(op)
         val httpTrait = op.expectTrait(HttpTrait::class.java)
-        val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(model)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
-        if (inputShape.isEmpty()) {
+        if (inputShape.isEmpty) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
             // protocol request from the operation itself
             // TODO:: Replace host appropriately
@@ -180,24 +180,9 @@ class HttpProtocolClientGenerator(
         writer.openBlock("case .success(let httpResp):")
             .call {
                 writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
-                    writer.openBlock("if case .data(let data) = httpResp.content {", "}") {
-                        writer.openBlock("guard let data = data else {", "}") {
-                                writer.write("completion(.failure(SdkError<OperationError>.client(ClientError.dataNotFound(\"No data was returned to deserialize\"))))")
-                                writer.write("return")
-                        }
-
-                        writer.write("let responsePayload = ResponsePayload(body: data, decoder: self.decoder)")
-                        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-                        // TODO:: verify handling this deserialization case
-                        // val resultBlock = "let result: Result<$outputShapeName, SdkError<OperationError>> = responsePayload.decode()"
-
-                        // TODO:: generate more specific operation error
-//                        writer.write(resultBlock)
-//                        writer.write("    .mapError { failure in SdkError<OperationError>.client(failure) }")
-//                        writer.write("completion(result)")
-                        // TODO:: REPLACE with proper decoding after decoding is implemented
-                        writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
-                    }
+                    val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
+                    writer.write("let output = try \$L(httpResponse: httpResp, decoder: self.decoder)", outputShapeName)
+                    writer.write("completion(.success(output))")
                 }
                 // HTTP request failed to execute
                 writer.openBlock("else {", "}") {
@@ -205,6 +190,5 @@ class HttpProtocolClientGenerator(
                     writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
                 }
             }
-            .closeBlock("")
     }
 }
