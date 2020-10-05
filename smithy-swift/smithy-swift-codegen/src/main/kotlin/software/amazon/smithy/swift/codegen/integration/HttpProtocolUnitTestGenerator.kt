@@ -35,11 +35,12 @@ protected constructor(builder: Builder<T>) {
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!
     protected val serviceName: String = builder.serviceName!!
+    abstract val baseTestClassName: String
 
     /**
      * Render a test class and unit tests for the specified [testCases]
      */
-    fun renderTestClass(testClassName: String, baseTestClassName: String) {
+    fun renderTestClass(testClassName: String) {
         writer.write("")
             .openBlock("class $testClassName: $baseTestClassName {")
             // TODO:: Replace host appropriately

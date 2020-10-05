@@ -21,13 +21,13 @@ public final class Box<T> where T: Codable, T: Equatable {
     }
 }
 
-extension Box: Equatable {
+extension Box: Equatable where T: Equatable {
     public static func == (lhs: Box<T>, rhs: Box<T>) -> Bool {
         return lhs.value == rhs.value
     }
 }
 
-extension Box: Codable {
+extension Box: Codable where T: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(value)

@@ -122,6 +122,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 //  val symbol = symbolProvider.toSymbol(shape)
+                // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
                     ".data(using: .utf8)!"
             }
             else -> { "" }
@@ -234,12 +235,12 @@ class ShapeValueGenerator(
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
                 ShapeType.BIG_INTEGER -> {
-                    writer.addImport(SwiftDependency.BIG.getPackageName())
+                    writer.addImport(SwiftDependency.BIG.namespace)
                     writer.writeInline("BInt(\$L)", node.value)
                 }
 
                 ShapeType.BIG_DECIMAL -> {
-                    writer.addImport(SwiftDependency.BIG.getPackageName())
+                    writer.addImport(SwiftDependency.BIG.namespace)
                     writer.writeInline("BDecimal(\$L)", node.value)
                 }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")

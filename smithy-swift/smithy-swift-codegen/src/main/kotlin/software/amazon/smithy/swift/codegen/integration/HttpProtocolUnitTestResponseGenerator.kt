@@ -25,9 +25,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
 
-    companion object {
-        const val baseTestClassName = "HttpResponseTestBase"
-    }
+    override val baseTestClassName = "HttpResponseTestBase"
 
     protected open val outputShape: Shape?
         get() {
@@ -40,16 +38,16 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         outputShape?.let {
             val symbol = symbolProvider.toSymbol(it)
             writer.openBlock("do {", "} catch let err {") {
-            renderActualOutput(test, symbol.name)
-            writer.write("")
-            renderExpectedOutput(test, it)
-            renderAssertions(test, it)
+                renderActualOutput(test, symbol.name)
+                writer.write("")
+                renderExpectedOutput(test, it)
+                renderAssertions(test, it)
             }.write("XCTFail(err.localizedDescription)").closeBlock("}")
         }
     }
 
     private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
-        var responseDecoder = ""
+        var responseDecoder: String? = null
 
         writer.openBlock("guard let httpResponse = buildHttpResponse(")
             .call {
@@ -83,7 +81,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .write("return")
             .closeBlock("}")
 
-        if (responseDecoder.isNotBlank()) {
+        if (responseDecoder != null) {
             writer.write("let decoder = $responseDecoder")
             writer.write("decoder.dateDecodingStrategy = .secondsSince1970")
             writer.write("let actual = try $outputStructName(httpResponse: httpResponse, decoder: decoder)")
@@ -102,7 +100,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     private fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val members = outputShape.members().filter { !it.hasTrait(HttpQueryTrait::class.java) }
+        val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
         for (member in members) {
             val expectedMemberName = "expected.${symbolProvider.toMemberName(member)}"
             val actualMemberName = "actual.${symbolProvider.toMemberName(member)}"

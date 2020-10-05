@@ -28,17 +28,12 @@ import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
 fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
-    var isRecursiveMember = false
-
     val shapeId = toShapeId()
     // handle recursive types
     val loop = index.getRecursiveClosure(shapeId)
-    if (loop.size > 0) {
-        // loop through set of paths and then array of paths to find if current member matches a member in that list
-        // if it does it is a recursive member that needs to be boxed as so
-        isRecursiveMember = loop.any { path -> path.endShape.id == shapeId }
-    }
-    return isRecursiveMember
+    // loop through set of paths and then array of paths to find if current member matches a member in that list
+    // if it does it is a recursive member that needs to be boxed as so
+    return loop.any { path -> path.endShape.id == shapeId }
 }
 
 class StructureGenerator(
@@ -128,7 +123,7 @@ class StructureGenerator(
                 // apply member normally
                 writer.write("public let \$L: \$T", memberName, memberSymbol)
             } else {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                 val symbol = memberSymbol.recursiveSymbol()
                 writer.write("public let \$L: \$T", memberName, symbol)
             }

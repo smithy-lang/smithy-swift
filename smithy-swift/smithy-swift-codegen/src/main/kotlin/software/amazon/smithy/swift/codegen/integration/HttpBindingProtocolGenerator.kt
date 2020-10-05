@@ -74,7 +74,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension ${structSymbol.name}: Encodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
                     writer.write("") // need enter space between coding keys and encode implementation
@@ -132,7 +132,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
             ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
                 writer.openBlock("extension ${structSymbol.name}: Decodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
                     writer.write("") // need enter space between coding keys and decode implementation
@@ -161,7 +161,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 writer.write("") // add space between struct declaration and decodable conformance
                 writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     generateCodingKeysForStructure(ctx, writer, structureShape)
                     writer.write("") // need enter space between coding keys and decode implementation
@@ -193,7 +193,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
             writer.openBlock("extension $outputShapeName {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
@@ -241,17 +241,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
-                    val memberValue: String
-                    when {
+                    val memberValue = when {
                         memberTarget.hasTrait(EnumTrait::class.java) -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            memberValue = "${enumSymbol.name}(rawValue: $headerDeclaration)"
+                            "${enumSymbol.name}(rawValue: $headerDeclaration)"
                         }
                         memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
-                            memberValue = "try $headerDeclaration.base64DecodedString()"
+                            "try $headerDeclaration.base64DecodedString()"
                         }
                         else -> {
-                            memberValue = headerDeclaration
+                            headerDeclaration
                         }
                     }
                     writer.write("self.\$L = $memberValue", memberName)
@@ -412,10 +411,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         outputShapeName: String,
         writer: SwiftWriter
     ) {
-        // document members
-        // payload member(s)
-        val bodyMembers: MutableList<String> = mutableListOf()
-        val queryMembers: MutableList<String> = mutableListOf()
+        val bodyMembers = responseBindings.values
+            .filter { it.location == HttpBinding.Location.DOCUMENT }
+            .sortedBy { it.memberName }
+            .map { it.member.memberName }
+        val queryMembers = responseBindings.values
+                .filter { it.location == HttpBinding.Location.QUERY }
+            .sortedBy { it.memberName }
+            .map { it.member.memberName }
         val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderDeserializeExplicitPayload(ctx, httpPayload, writer)
@@ -423,47 +426,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // Unbound document members that should be deserialized from the document format for the protocol.
             // The generated code is the same across protocols and the serialization provider instance
             // passed into the function is expected to handle the formatting required by the protocol
-            val documentMembers = responseBindings.values
-                .filter { it.location == HttpBinding.Location.DOCUMENT }
-                .sortedBy { it.memberName }
-                .map { it.member }
-
-            if (documentMembers.isNotEmpty()) {
-                documentMembers.forEach { member ->
-                    if (member.hasTrait(HttpQueryTrait::class.java)) {
-                        queryMembers.add(member.memberName)
-                    } else {
-                        bodyMembers.add(member.memberName)
-                    }
+            if (bodyMembers.isNotEmpty()) {
+                writer.write("if case .data(let data) = httpResponse.content,")
+                writer.indent()
+                writer.write("let unwrappedData = data,")
+                writer.write("let responseDecoder = decoder {")
+                writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: unwrappedData)")
+                bodyMembers.sorted().forEach {
+                    writer.write("self.$it = output.$it")
                 }
+                writer.dedent()
+                writer.write("} else {")
+                writer.indent()
+                bodyMembers.sorted().forEach {
+                    writer.write("self.$it = nil")
+                }
+                writer.dedent()
+                writer.write("}")
             }
-        }
-
-        // initialize body members
-        if (bodyMembers.isNotEmpty()) {
-            writer.write("if case .data(let data) = httpResponse.content,")
-            writer.indent()
-            writer.write("let unwrappedData = data,")
-            writer.write("let responseDecoder = decoder {")
-            writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: unwrappedData)")
-            bodyMembers.sorted().forEach {
-                writer.write("self.$it = output.$it")
-            }
-            writer.dedent()
-            writer.write("} else {")
-            writer.indent()
-            bodyMembers.sorted().forEach {
-                writer.write("self.$it = nil")
-            }
-            writer.dedent()
-            writer.write("}")
         }
 
         // initialize query members
-        if (queryMembers.isNotEmpty()) {
-            queryMembers.sorted().forEach {
-                writer.write("self.$it = nil")
-            }
+        queryMembers.sorted().forEach {
+            writer.write("self.$it = nil")
         }
     }
 
@@ -471,8 +456,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = binding.member.memberName
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-//        writer.write("if case .data(let data) = httpResponse.content,")
-//        writer.indent()
         writer.openBlock("if case .data(let data) = httpResponse.content,\n   let unwrappedData = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
@@ -507,7 +490,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
         }
-        // writer.dedent()
         writer.indent()
         writer.write("self.\$L = nil", memberName).closeBlock("}")
     }
@@ -652,7 +634,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.getPackageName())
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(

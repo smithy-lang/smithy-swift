@@ -361,6 +361,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+// FIXME: fix shape value generator to properly generate recursive shapes using the box type
 //    @Test
 //    fun `it creates a unit test for recursive shapes`() {
 //        val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", newTestContext.manifest)

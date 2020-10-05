@@ -61,7 +61,7 @@ class StructDecodeGeneration(
     var currentMember: MemberShape? = null
 
     fun render() {
-        var containerName = "values"
+        val containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
@@ -71,31 +71,34 @@ class StructDecodeGeneration(
                 when (target) {
                     is CollectionShape -> renderDecodeListMember(target, memberName, containerName)
                     is MapShape -> renderDecodeMapMember(target, memberName, containerName)
-                    is TimestampShape -> {
-                        val tsFormat = member
-                            .getTrait(TimestampFormatTrait::class.java)
-                            .map { it.format }
-                            .orElse(defaultTimestampFormat)
-                        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                            writeDecodeForPrimitive(target, member, containerName)
-                        } else {
-                            val dateSymbol = "String"
-                            val originalSymbol = ctx.symbolProvider.toSymbol(target)
-                            val dateString = "${memberName}DateString"
-                            val decodableMemberName = "${memberName}Decoded"
-                            writer.write("let \$L = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", dateString, dateSymbol, memberName)
-                            writer.write("var \$L: \$T = nil", decodableMemberName, originalSymbol)
-                            writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
-                                val formatterName = "${memberName}Formatter"
-                                writeDateFormatter(formatterName, tsFormat, writer)
-                                writer.write("\$L = \$L.date(from: \$L)", decodableMemberName, formatterName, dateString)
-                            }
-                            writer.write("\$L = \$L", memberName, decodableMemberName)
-                        }
-                    }
+                    is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
                     else -> writeDecodeForPrimitive(target, member, containerName)
                 }
             }
+        }
+    }
+
+    private fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
+        val memberName = member.memberName
+        val tsFormat = member
+            .getTrait(TimestampFormatTrait::class.java)
+            .map { it.format }
+            .orElse(defaultTimestampFormat)
+        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+            writeDecodeForPrimitive(target, member, containerName)
+        } else {
+            val dateSymbol = "String"
+            val originalSymbol = ctx.symbolProvider.toSymbol(target)
+            val dateString = "${memberName}DateString"
+            val decodableMemberName = "${memberName}Decoded"
+            writer.write("let \$L = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", dateString, dateSymbol, memberName)
+            writer.write("var \$L: \$T = nil", decodableMemberName, originalSymbol)
+            writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
+                val formatterName = "${memberName}Formatter"
+                writeDateFormatter(formatterName, tsFormat, writer)
+                writer.write("\$L = \$L.date(from: \$L)", decodableMemberName, formatterName, dateString)
+            }
+            writer.write("\$L = \$L", memberName, decodableMemberName)
         }
     }
 

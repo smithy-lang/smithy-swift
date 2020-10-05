@@ -33,8 +33,4 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
             .build()
         return listOf(dependency)
     }
-
-    fun getPackageName(): String {
-        return namespace
-    }
 }
