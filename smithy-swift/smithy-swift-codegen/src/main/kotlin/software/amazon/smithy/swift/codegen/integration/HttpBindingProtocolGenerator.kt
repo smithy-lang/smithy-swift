@@ -411,10 +411,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         outputShapeName: String,
         writer: SwiftWriter
     ) {
-        val bodyMembers = responseBindings.values
-            .filter { it.location == HttpBinding.Location.DOCUMENT }
-            .sortedBy { it.memberName }
-            .map { it.member.memberName }
         val queryMembers = responseBindings.values
                 .filter { it.location == HttpBinding.Location.QUERY }
             .sortedBy { it.memberName }
@@ -426,6 +422,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // Unbound document members that should be deserialized from the document format for the protocol.
             // The generated code is the same across protocols and the serialization provider instance
             // passed into the function is expected to handle the formatting required by the protocol
+            val bodyMembers = responseBindings.values
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+                .map { it.member.memberName }
+
             if (bodyMembers.isNotEmpty()) {
                 writer.write("if case .data(let data) = httpResponse.content,")
                 writer.indent()
