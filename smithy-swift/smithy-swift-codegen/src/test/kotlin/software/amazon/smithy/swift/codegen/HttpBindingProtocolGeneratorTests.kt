@@ -16,7 +16,6 @@ package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
@@ -26,6 +25,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
@@ -45,11 +45,13 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
+        val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
 
         // TODO:: add response generator too
         HttpProtocolTestGenerator(
             ctx,
             requestTestBuilder,
+            responseTestBuilder,
             ignoredTests
         ).generateProtocolTests()
     }
@@ -79,6 +81,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
     init {
         newTestContext.generator.generateSerializers(newTestContext.ctx)
         newTestContext.generator.generateProtocolClient(newTestContext.ctx)
+        newTestContext.generator.generateDeserializers(newTestContext.ctx)
         newTestContext.ctx.delegator.flushWriters()
     }
 
@@ -292,8 +295,10 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
-                            queryItems.append(queryItem)
+                            if let unwrappedQueryItemValue = queryItemValue {
+                                let queryItem = URLQueryItem(name: "qtimeList", value: String(unwrappedQueryItemValue.iso8601WithoutFractionalSeconds()))
+                                queryItems.append(queryItem)
+                            }
                         }
                     }
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -315,224 +320,34 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     }
                 }
             }
-            """.trimIndent()
+""".trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
-    fun `it creates encodable conformance in correct file`() {
-        assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestRequest+Encodable.swift"))
-    }
-
-    @Test
-    fun `it creates encodable conformance for nested structures`() {
-        // test that a struct member of an input operation shape also gets encodable conformance
-        assertTrue(newTestContext.manifest.hasFile("/example/models/Nested+Encodable.swift"))
-        // these are non-top level shapes reachable from an operation input and thus require encodable conformance
-        assertTrue(newTestContext.manifest.hasFile("/example/models/Nested2+Encodable.swift"))
-        assertTrue(newTestContext.manifest.hasFile("/example/models/Nested3+Encodable.swift"))
-        assertTrue(newTestContext.manifest.hasFile("/example/models/Nested4+Encodable.swift"))
-    }
-
-    @Test
-    fun `it creates smoke test request encodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestRequest+Encodable.swift", newTestContext.manifest)
+    fun `it creates correct init for explicit struct payloads`() {
+        val contents = getModelFileContents("example", "ExplicitStructResponse+ResponseInit.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SmokeTestRequest: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case payload1
-                    case payload2
-                    case payload3
-                }
+extension ExplicitStructResponse {
+    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let payload1 = payload1 {
-                        try container.encode(payload1, forKey: .payload1)
-                    }
-                    if let payload2 = payload2 {
-                        try container.encode(payload2, forKey: .payload2)
-                    }
-                    if let payload3 = payload3 {
-                        try container.encode(payload3, forKey: .payload3)
-                    }
-                }
+        if case .data(let data) = httpResponse.content,
+           let unwrappedData = data {
+            if let responseDecoder = decoder {
+                let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
+                self.payload1 = output
+            } else {
+                self.payload1 = nil
             }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
+        } else {
+            self.payload1 = nil
+        }
     }
-
-    @Test
-    fun `it encodes nested documents with aggregate shapes`() {
-        val contents = getModelFileContents("example", "Nested4+Encodable.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension Nested4: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case intList
-                    case intMap
-                    case member1
-                }
-
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let intList = intList {
-                        var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
-                        for intlist0 in intList {
-                            try intListContainer.encode(intlist0)
-                        }
-                    }
-                    if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
-                        for (key0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                        }
-                    }
-                    if let member1 = member1 {
-                        try container.encode(member1, forKey: .member1)
-                    }
-                }
-            }
+}
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it provides encodable conformance to operation inputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampInputRequest+Encodable.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension TimestampInputRequest: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case dateTime
-                    case epochSeconds
-                    case httpDate
-                    case normal
-                    case timestampList
-                }
-            
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let dateTime = dateTime {
-                        try container.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
-                    }
-                    if let epochSeconds = epochSeconds {
-                        try container.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
-                    }
-                    if let httpDate = httpDate {
-                        try container.encode(httpDate.rfc5322(), forKey: .httpDate)
-                    }
-                    if let normal = normal {
-                        try container.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
-                    }
-                    if let timestampList = timestampList {
-                        var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
-                        for timestamplist0 in timestampList {
-                            try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
-                        }
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it encodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputRequest+Encodable.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension MapInputRequest: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case blobMap
-                    case dateMap
-                    case enumMap
-                    case intMap
-                    case structMap
-                }
-
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let blobMap = blobMap {
-                        var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
-                        for (key0, blobmap0) in blobMap {
-                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
-                        }
-                    }
-                    if let dateMap = dateMap {
-                        var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
-                        for (key0, datemap0) in dateMap {
-                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
-                        }
-                    }
-                    if let enumMap = enumMap {
-                        var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
-                        for (key0, enummap0) in enumMap {
-                            try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
-                        }
-                    }
-                    if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
-                        for (key0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                        }
-                    }
-                    if let structMap = structMap {
-                        var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
-                        for (key0, structmap0) in structMap {
-                            try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
-                        }
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it encodes nested enums correctly`() {
-        val contents = getModelFileContents("example", "EnumInputRequest+Encodable.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension EnumInputRequest: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case nestedWithEnum
-                }
-
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let nestedWithEnum = nestedWithEnum {
-                        try container.encode(nestedWithEnum, forKey: .nestedWithEnum)
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-
-        val contents2 = getModelFileContents("example", "NestedEnum+Encodable.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents2 =
-            """
-            extension NestedEnum: Encodable {
-                private enum CodingKeys: String, CodingKey {
-                    case myEnum
-                }
-
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let myEnum = myEnum {
-                        try container.encode(myEnum.rawValue, forKey: .myEnum)
-                    }
-                }
-            }
-            """.trimIndent()
-        contents2.shouldContainOnlyOnce(expectedContents2)
     }
 
     @Test

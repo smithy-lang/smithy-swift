@@ -17,12 +17,24 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+
+fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
+    val shapeId = toShapeId()
+    // handle recursive types
+    val loop = index.getRecursiveClosure(shapeId)
+    // loop through set of paths and then array of paths to find if current member matches a member in that list
+    // if it does it is a recursive member that needs to be boxed as so
+    return loop.any { path -> path.endShape.id == shapeId }
+}
 
 class StructureGenerator(
     private val model: Model,
@@ -33,6 +45,7 @@ class StructureGenerator(
 
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
+    private val topologicalIndex = TopologicalIndex.of(model)
 
     init {
         for (member in membersSortedByName) {
@@ -58,6 +71,7 @@ class StructureGenerator(
 
     /**
      * Generates an appropriate Swift type for a Smithy Structure shape without error trait.
+     * If the structure is a recursive nested type it will generate a boxed member Box<T>.
      *
      * For example, given the following Smithy model:
      *
@@ -89,7 +103,7 @@ class StructureGenerator(
      */
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
-        writer.openBlock("public struct \$struct.name:L {")
+        writer.openBlock("public struct \$struct.name:L: Equatable {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -99,9 +113,20 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
+            val isRecursiveMember = it.isRecursiveMember(topologicalIndex)
+            val shape = model.expectShape(it.target)
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-            writer.write("public let \$L: \$T", memberName, memberSymbol)
+
+            // if shape is a collection or map shape which are COW in swift or is not recursive apply member normally
+            if ((shape is CollectionShape || shape is MapShape) || !isRecursiveMember) {
+                // apply member normally
+                writer.write("public let \$L: \$T", memberName, memberSymbol)
+            } else {
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                val symbol = memberSymbol.recursiveSymbol()
+                writer.write("public let \$L: \$T", memberName, symbol)
+            }
         }
     }
 
@@ -120,7 +145,9 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                    val isRecursive = member.isRecursiveMember(topologicalIndex)
+                    val symbolToUse = if (isRecursive) memberSymbol.recursiveSymbol() else memberSymbol
+                    writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
             }
             writer.openBlock("{", "}") {

@@ -3,6 +3,7 @@ namespace com.test
 
 use aws.protocols#restJson1
 use smithy.test#httpRequestTests
+use smithy.test#httpResponseTests
 
 @restJson1
 service Example {
@@ -22,42 +23,55 @@ service Example {
         EmptyInputAndEmptyOutput,
         SimpleScalarProperties,
         StreamingTraits,
-        HttpPrefixHeaders
+        HttpPrefixHeaders,
+        RecursiveShapes,
+        JsonUnions,
+        NestedShapes
     ]
 }
 
-@http(method: "POST", uri: "/smoketest/{label1}/foo")
-operation SmokeTest {
-    input: SmokeTestRequest,
-    output: SmokeTestResponse,
-    errors: [SmokeTestError]
+//Nested aggregate shapes
+@http(uri: "/NestedShapes", method: "PUT")
+operation NestedShapes {
+    input: NestedShapesInputOutput,
+    output: NestedShapesInputOutput
 }
 
-@http(method: "POST", uri: "/smoketest-duplicate/{label1}/foo")
-operation DuplicateInputTest {
-    // uses the same input type as another operation. Ensure that we only generate one instance of the serializer
-    input: SmokeTestRequest
+structure NestedShapesInputOutput {
+    nestedListInDict: NestedListInDict,
+    nestedDictInList: NestedDictInList
 }
 
-structure SmokeTestRequest {
-    @httpHeader("X-Header1")
-    header1: String,
-
-    @httpHeader("X-Header2")
-    header2: String,
-
-    @httpQuery("Query1")
-    query1: String,
-
-    @required
-    @httpLabel
-    label1: String,
-
-    payload1: String,
-    payload2: Integer,
-    payload3: Nested
+map NestedListInDict {
+   key: String,
+   value: TimestampList
 }
 
+list NestedDictInList {
+    member: StringMap
+}
+
+/// Recursive shapes
+@idempotent
+@http(uri: "/RecursiveShapes", method: "PUT")
+operation RecursiveShapes {
+    input: RecursiveShapesInputOutput,
+    output: RecursiveShapesInputOutput
+}
+
+structure RecursiveShapesInputOutput {
+    nested: RecursiveShapesInputOutputNested1
+}
+
+structure RecursiveShapesInputOutputNested1 {
+    foo: String,
+    nested: RecursiveShapesInputOutputNested2
+}
+
+structure RecursiveShapesInputOutputNested2 {
+    bar: String,
+    recursiveMember: RecursiveShapesInputOutputNested1,
+}
 apply SmokeTest @httpRequestTests([
     {
         id: "SmokeTest",
@@ -99,13 +113,92 @@ apply SmokeTest @httpRequestTests([
     }
 ])
 
+@http(method: "POST", uri: "/smoketest/{label1}/foo")
+operation SmokeTest {
+    input: SmokeTestRequest,
+    output: SmokeTestResponse,
+    errors: [SmokeTestError]
+}
+
+@http(method: "POST", uri: "/smoketest-duplicate/{label1}/foo")
+operation DuplicateInputTest {
+    // uses the same input type as another operation. Ensure that we only generate one instance of the serializer
+    input: SmokeTestRequest
+}
+
+structure SmokeTestRequest {
+    @httpHeader("X-Header1")
+    header1: String,
+
+    @httpHeader("X-Header2")
+    header2: String,
+
+    @httpQuery("Query1")
+    query1: String,
+
+    @required
+    @httpLabel
+    label1: String,
+
+    payload1: String,
+    payload2: Integer,
+    payload3: Nested
+}
+
 structure Nested {
     member1: String,
     member2: String
 }
 
-structure SmokeTestResponse {
+apply SmokeTest @httpResponseTests([
+    {
+        id: "SmokeTest",
+        documentation: "DeSerializes a smoke test request with body, headers, query params, and prefixHeaders",
+        protocol: restJson1,
+        code: 200,
+        headers: {
+            "X-String": "Hello",
+            "X-Int": "1",
+            "X-Bool": "false"
+        },
+        body: """
+        {
+          "payload1": "explicit string",
+          "payload2": 1,
+          "payload3": {
+            "member1": "test string",
+            "member2": "test string 2"
+          }
+        }
+        """,
+        bodyMediaType: "application/json",
+        params: {
+            strHeader: "Hello",
+            intHeader: 1,
+            boolHeader: false,
+            payload1: "explicit string",
+            payload2: 1,
+            payload3: {
+              member1: "test string",
+              member2: "test string 2"
+            }
+        }
+    }
+])
 
+structure SmokeTestResponse {
+        @httpHeader("X-String")
+        strHeader: String,
+
+        @httpHeader("X-Int")
+        intHeader: Integer,
+
+        @httpHeader("X-Bool")
+        boolHeader: Boolean,
+
+        payload1: String,
+        payload2: Integer,
+        payload3: Nested
 }
 
 @error("client")
@@ -114,10 +207,16 @@ structure SmokeTestError {}
 
 @http(method: "POST", uri: "/explicit/string")
 operation ExplicitString {
-    input: ExplicitStringRequest
+    input: ExplicitStringRequest,
+    output: ExplicitStringResponse
 }
 
 structure ExplicitStringRequest {
+    @httpPayload
+    payload1: String
+}
+
+structure ExplicitStringResponse {
     @httpPayload
     payload1: String
 }
@@ -146,10 +245,16 @@ apply ExplicitString @httpRequestTests([
 
 @http(method: "POST", uri: "/explicit/blob")
 operation ExplicitBlob {
-    input: ExplicitBlobRequest
+    input: ExplicitBlobRequest,
+    output: ExplicitBlobResponse
 }
 
 structure ExplicitBlobRequest {
+    @httpPayload
+    payload1: Blob
+}
+
+structure ExplicitBlobResponse {
     @httpPayload
     payload1: Blob
 }
@@ -159,7 +264,8 @@ blob BodyStream
 
 @http(method: "POST", uri: "/explicit/blobstream")
 operation ExplicitBlobStream {
-    input: ExplicitBlobStreamRequest
+    input: ExplicitBlobStreamRequest,
+    output: ExplicitBlobStreamResponse
 }
 
 structure ExplicitBlobStreamRequest {
@@ -167,9 +273,15 @@ structure ExplicitBlobStreamRequest {
     payload1: BodyStream
 }
 
+structure ExplicitBlobStreamResponse {
+    @httpPayload
+    payload1: BodyStream
+}
+
 @http(method: "POST", uri: "/explicit/struct")
 operation ExplicitStruct {
-    input: ExplicitStructRequest
+    input: ExplicitStructRequest,
+    output: ExplicitStructResponse
 }
 
 structure Nested4 {
@@ -190,6 +302,11 @@ structure Nested2 {
 }
 
 structure ExplicitStructRequest {
+    @httpPayload
+    payload1: Nested2
+}
+
+structure ExplicitStructResponse {
     @httpPayload
     payload1: Nested2
 }
@@ -218,10 +335,19 @@ list BlobList {
 
 @http(method: "POST", uri: "/input/list")
 operation ListInput {
-    input: ListInputRequest
+    input: ListInputRequest,
+    output: ListOutputResponse
 }
 
 structure ListInputRequest {
+    enumList: EnumList,
+    intList: IntList,
+    structList: StructList,
+    nestedIntList: NestedIntList,
+    blobList: BlobList
+}
+
+structure ListOutputResponse {
     enumList: EnumList,
     intList: IntList,
     structList: StructList,
@@ -260,9 +386,15 @@ map DateMap {
     value: Timestamp
 }
 
+map NestedMap {
+    key: String,
+    value: IntMap
+}
+
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
-    input: MapInputRequest
+    input: MapInputRequest,
+    output: MapOutputResponse
 }
 
 structure MapInputRequest {
@@ -270,6 +402,15 @@ structure MapInputRequest {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap,
+    dateMap: DateMap
+}
+
+structure MapOutputResponse {
+    intMap: IntMap,
+    structMap: StructMap,
+    enumMap: EnumMap,
+    blobMap: BlobMap,
+    nestedMap: NestedMap,
     dateMap: DateMap
 }
 
@@ -304,10 +445,16 @@ structure EnumInputRequest {
 
 @http(method: "POST", uri: "/input/timestamp/{tsLabel}")
 operation TimestampInput {
-    input: TimestampInputRequest
+    input: TimestampInputRequest,
+    output: TimestampOutputResponse
+}
+
+list NestedTimestampList {
+    member: TimestampList
 }
 
 list TimestampList {
+    @timestampFormat("date-time")
     member: Timestamp
 }
 
@@ -346,6 +493,43 @@ structure TimestampInputRequest {
     tsLabel: Timestamp
 }
 
+structure TimestampOutputResponse {
+    // (protocol default)
+    normal: Timestamp,
+
+    @timestampFormat("date-time")
+    dateTime: Timestamp,
+
+    @timestampFormat("epoch-seconds")
+    epochSeconds: Timestamp,
+
+    @timestampFormat("http-date")
+    httpDate: Timestamp,
+
+    nestedTimestampList: NestedTimestampList,
+
+    timestampList: TimestampList,
+
+    @httpHeader("X-Date")
+    @timestampFormat("http-date")
+    headerHttpDate: Timestamp,
+
+    @httpHeader("X-Epoch")
+    @timestampFormat("epoch-seconds")
+    headerEpoch: Timestamp,
+
+    @httpQuery("qtime")
+    @timestampFormat("date-time")
+    queryTimestamp: Timestamp,
+
+    @httpQuery("qtimeList")
+    queryTimestampList: TimestampList,
+
+    @required
+    @httpLabel
+    tsLabel: Timestamp
+}
+
 @http(method: "POST", uri: "/input/blob")
 operation BlobInput {
     input: BlobInputRequest
@@ -358,9 +542,6 @@ structure BlobInputRequest {
     // smithy spec doesn't allow blobs for headers but strings with media type are also base64 encoded
     @httpHeader("X-Blob")
     headerMediaType: MyMediaHeader,
-
-    @httpQuery("qblob")
-    queryBlob: Blob,
 
     payloadBlob: Blob
 }
@@ -503,6 +684,41 @@ apply HttpPrefixHeaders @httpRequestTests([
     },
 ])
 
+apply HttpPrefixHeaders @httpResponseTests([
+    {
+        id: "RestJsonHttpPrefixHeadersAreNotPresent",
+        documentation: "No prefix headers are DeSerialized because the value is empty",
+        protocol: restJson1,
+        code: 200,
+        body: "",
+        headers: {
+            "X-Foo": "Foo"
+        },
+        params: {
+            foo: "Foo"
+        }
+    },
+    {
+        id: "RestJsonHttpPrefixHeadersPresent",
+        documentation: "Deserialize prefix headers",
+        protocol: restJson1,
+        code: 200,
+        body: "",
+        headers: {
+            "X-Foo": "Foo",
+            "X-Foo-abc": "ABC",
+            "X-Foo-xyz": "XYZ"
+        },
+        params: {
+            foo: "Foo",
+            fooMap: {
+                abc: "ABC",
+                xyz: "XYZ"
+            }
+        }
+    }
+])
+
 structure HttpPrefixHeadersInputOutput {
     @httpHeader("X-Foo")
     foo: String,
@@ -515,3 +731,69 @@ map StringMap {
     key: String,
     value: String
 }
+
+/// This operation uses unions for inputs and outputs.
+@idempotent
+@http(uri: "/JsonUnions", method: "PUT")
+operation JsonUnions {
+    input: UnionInputOutput,
+    output: UnionInputOutput,
+}
+
+/// A shared structure that contains a single union member.
+structure UnionInputOutput {
+    contents: MyUnion
+}
+
+/// A union with a representative set of types for members.
+union MyUnion {
+    stringValue: String,
+    booleanValue: Boolean,
+    numberValue: Integer,
+    blobValue: Blob,
+}
+
+apply JsonUnions @httpRequestTests([
+    {
+        id: "RestJsonSerializeStringUnionValue",
+        documentation: "Serializes a string union value",
+        protocol: restJson1,
+        method: "PUT",
+        "uri": "/JsonUnions",
+        body: """
+            {
+                "contents": {
+                    "stringValue": "foo"
+                }
+            }""",
+        bodyMediaType: "application/json",
+        headers: {"Content-Type": "application/json"},
+        params: {
+            contents: {
+                stringValue: "foo"
+            }
+        }
+    }
+])
+
+apply JsonUnions @httpResponseTests([
+    {
+        id: "RestJsonDeserializeStringUnionValue",
+        documentation: "Deserializes a string union value",
+        protocol: restJson1,
+        code: 200,
+        body: """
+            {
+                "contents": {
+                    "stringValue": "foo"
+                }
+            }""",
+        bodyMediaType: "application/json",
+        headers: {"Content-Type": "application/json"},
+        params: {
+            contents: {
+                stringValue: "foo"
+            }
+        }
+    }
+])

@@ -7,6 +7,6 @@
 
 import Foundation
 
-public struct JSONValue: Encodable {
+public struct JSONValue: Codable, Equatable {
     //TODO fill in with DocumentType code
 }

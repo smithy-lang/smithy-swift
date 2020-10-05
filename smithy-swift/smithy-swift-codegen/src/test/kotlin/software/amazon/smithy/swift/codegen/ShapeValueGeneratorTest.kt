@@ -55,8 +55,7 @@ class ShapeValueGeneratorTest {
 [
     "k1": 1,
     "k2": 2,
-    "k3": 3
-]
+    "k3": 3]
 """
 
         contents.shouldContainOnlyOnce(expected)
@@ -202,17 +201,60 @@ Set<String>(arrayLiteral:
 MyStruct(
     boolMember: true,
     doubleMember: 3.0,
-    enumMember: MyEnum(rawValue:"fooey")!,
+    enumMember: MyEnum(rawValue: "fooey")!,
     floatMember: 2,
     intMember: 1,
     nullMember: nil,
     stringMember: "v1",
     structMember: Nested(
         tsMember: Date(timeIntervalSince1970: 11223344)
-)
+    )
 )
 """.trimIndent()
 
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders maps with null member`() {
+        val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
+        val structMember = MemberShape.builder().id("foo.bar#MyStruct\$stringMember").target("smithy.api#String").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(structMember)
+            .build()
+        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target("foo.bar#MyStruct").build()
+        val map = MapShape.builder()
+            .id("foo.bar#MyMap")
+            .key(keyMember)
+            .value(valueMember)
+            .build()
+        val model = Model.assembler()
+            .addShapes(map, keyMember, valueMember, struct, structMember)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
+        val writer = SwiftWriter("test")
+
+        val params = Node.objectNodeBuilder()
+            .withMember("k1", Node.nullNode())
+            .withMember("k2", Node.objectNodeBuilder()
+                .withMember("stringMember", "hi")
+                .build())
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, mapShape, params)
+        val contents = writer.toString()
+        val expected =
+            """
+            [
+                "k1": nil,
+                "k2": MyStruct(
+                    stringMember: "hi"
+                )]
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
 }

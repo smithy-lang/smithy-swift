@@ -26,6 +26,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
+import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
@@ -95,6 +96,92 @@ abstract class TestsBase {
             .addMember(member3)
             .addTrait(DocumentationTrait("This *is* documentation about the shape."))
             .build()
+    }
+
+    /**
+     * This function produces a smithy model like:
+        structure RecursiveShapesInputOutput {
+        nested: RecursiveShapesInputOutputNested1
+        }
+
+        structure RecursiveShapesInputOutputNested1 {
+        foo: String,
+        nested: RecursiveShapesInputOutputNested2
+        }
+
+        structure RecursiveShapesInputOutputNested2 {
+        bar: String,
+        recursiveMember: RecursiveShapesInputOutputNested1,
+        }
+     */
+    protected fun createStructureContainingNestedRecursiveShape(): List<StructureShape> {
+        val shapes = mutableListOf<StructureShape>()
+        val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
+        val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
+        val recursiveShapeNested1 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested1")
+            .addMember(memberFoo)
+            .addMember(memberNested)
+            .build()
+        val memberRecursiveMember = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+        val memberBar = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String").build()
+
+        val recursiveShapeNested2 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2")
+            .addMember(memberRecursiveMember)
+            .addMember(memberBar)
+            .build()
+
+        val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutput\$nested").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+
+        val topLevelShape = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutput")
+            .addMember(member1)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
+        shapes.add(recursiveShapeNested1)
+        shapes.add(recursiveShapeNested2)
+        shapes.add(topLevelShape)
+        return shapes
+    }
+
+    protected fun createStructureContainingNestedRecursiveShapeList(): List<StructureShape> {
+        val shapes = mutableListOf<StructureShape>()
+
+        val memberRecursiveMember = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+        val memberBar = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String").build()
+
+        val recursiveShapeNested2 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2")
+            .addMember(memberRecursiveMember)
+            .addMember(memberBar)
+            .build()
+
+        val memberRecursiveList = MemberShape.builder().id("smithy.example#RecursiveList\$member").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+
+        val listShape = ListShape.builder()
+            .id("smithy.example#RecursiveList")
+            .addMember(memberRecursiveList)
+
+        val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNestedList1\$foo").target("smithy.api#String").build()
+        val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNestedList1\$recursiveList").target("smithy.example#RecursiveList").build()
+        val recursiveShapeNested1 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNestedList1")
+            .addMember(memberFoo)
+            .addMember(memberNested)
+            .build()
+
+        val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputLists\$nested").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+
+        val topLevelShape = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputLists")
+            .addMember(member1)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
+        shapes.add(recursiveShapeNested1)
+        shapes.add(recursiveShapeNested2)
+        shapes.add(topLevelShape)
+        return shapes
     }
 
     protected fun createStructureWithOptionalErrorMessage(): StructureShape {

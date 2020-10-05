@@ -16,6 +16,7 @@
 package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -39,7 +40,7 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(SwiftWriter.staticHeader)
         val expectedGeneratedStructure = "" +
                 "/// This *is* documentation about the shape.\n" +
-                "public struct MyStruct {\n" +
+                "public struct MyStruct: Equatable {\n" +
                 "    public let bar: Int\n" +
                 "    /// This *is* documentation about the member.\n" +
                 "    public let baz: Int?\n" +
@@ -58,6 +59,120 @@ class StructureGeneratorTests : TestsBase() {
                 "}"
 
         contents.shouldContain(expectedGeneratedStructure)
+    }
+
+    @Test
+    fun `it renders recursive nested shapes`() {
+        val structs = createStructureContainingNestedRecursiveShape()
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val writer = SwiftWriter("MockPackage")
+
+        for (struct in structs) {
+            val generator = StructureGenerator(model, provider, writer, struct)
+            generator.render()
+        }
+        val contents = writer.toString()
+        val expected =
+            """
+public struct RecursiveShapesInputOutputNested1: Equatable {
+    public let foo: String?
+    public let nested: Box<RecursiveShapesInputOutputNested2>?
+
+    public init (
+        foo: String? = nil,
+        nested: Box<RecursiveShapesInputOutputNested2>? = nil
+    )
+    {
+        self.foo = foo
+        self.nested = nested
+    }
+}
+
+public struct RecursiveShapesInputOutputNested2: Equatable {
+    public let bar: String?
+    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
+
+    public init (
+        bar: String? = nil,
+        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
+    )
+    {
+        self.bar = bar
+        self.recursiveMember = recursiveMember
+    }
+}
+
+/// This *is* documentation about the shape.
+public struct RecursiveShapesInputOutput: Equatable {
+    public let nested: RecursiveShapesInputOutputNested1?
+
+    public init (
+        nested: RecursiveShapesInputOutputNested1? = nil
+    )
+    {
+        self.nested = nested
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders recursive nested shapes in lists`() {
+        val structs = createStructureContainingNestedRecursiveShapeList()
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val writer = SwiftWriter("MockPackage")
+
+        for (struct in structs) {
+            val generator = StructureGenerator(model, provider, writer, struct)
+            generator.render()
+        }
+        val contents = writer.toString()
+        val expected =
+            """
+public struct RecursiveShapesInputOutputNestedList1: Equatable {
+    public let foo: String?
+    public let recursiveList: [RecursiveShapesInputOutputNested2?]?
+
+    public init (
+        foo: String? = nil,
+        recursiveList: [RecursiveShapesInputOutputNested2?]? = nil
+    )
+    {
+        self.foo = foo
+        self.recursiveList = recursiveList
+    }
+}
+
+public struct RecursiveShapesInputOutputNested2: Equatable {
+    public let bar: String?
+    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
+
+    public init (
+        bar: String? = nil,
+        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
+    )
+    {
+        self.bar = bar
+        self.recursiveMember = recursiveMember
+    }
+}
+
+/// This *is* documentation about the shape.
+public struct RecursiveShapesInputOutputLists: Equatable {
+    public let nested: RecursiveShapesInputOutputNested1?
+
+    public init (
+        nested: RecursiveShapesInputOutputNested1? = nil
+    )
+    {
+        self.nested = nested
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
     }
 
     @Test

@@ -82,17 +82,17 @@ open class NetworkOperation: Operation {
         response = HttpResponse(httpUrlResponse: urlResponse as! HTTPURLResponse, content: nil)
     }
 
-    open func receiveError(error: Error) {
-        completion?(.failure(error))
+    open func receiveError(error: Error) throws {
+        try completion?(.failure(error))
         self.state = .finished
     }
 
-    open func finish(error: Error? = nil) {
+    open func finish(error: Error? = nil) throws {
 
         if let error = error {
-            completion?(.failure(error))
+            try completion?(.failure(error))
         } else {
-            completion?(.success(response!))
+            try completion?(.success(response!))
         }
 
         self.state = .finished

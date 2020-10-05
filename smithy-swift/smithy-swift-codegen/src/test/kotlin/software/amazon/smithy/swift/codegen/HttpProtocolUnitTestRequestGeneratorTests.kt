@@ -89,11 +89,13 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             payload3: Nested(
                 member1: "test string",
                 member2: "test string 2"
-),
+            ),
             query1: "Query 1"
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: encoder)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -111,7 +113,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
     }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -137,9 +139,11 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
         let input = ExplicitStringRequest(
             payload1: "explicit string"
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: encoder)
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -157,7 +161,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
     }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -178,9 +182,11 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         )
 
         let input = EmptyInputAndEmptyOutputInput(
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -189,7 +195,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
     }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -213,9 +219,11 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
         let input = SimpleScalarPropertiesInputOutput(
             stringValue: nil
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -224,7 +232,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
     }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -250,11 +258,13 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         )
 
         let input = StreamingTraitsInputOutput(
-            blob: "blobby blob blob".data(using: .utf8),
+            blob: "blobby blob blob".data(using: .utf8)!,
             foo: "Foo"
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -263,8 +273,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
-    }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -288,12 +297,13 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
 
         let input = HttpPrefixHeadersInputOutput(
             foo: "Foo",
-            fooMap: [:            
-            ]
+            fooMap: [:]
 
-)
+        )
         do {
-            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: JSONEncoder())
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
                 XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
@@ -302,7 +312,115 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             XCTFail("Failed to encode the input. Error description: \(err)")
         }
     }
-                """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it creates a unit test for union shapes`() {
+        val contents = getTestFileContents("example", "JsonUnionsRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+    func testRestJsonSerializeStringUnionValue() {
+        let expected = buildExpectedHttpRequest(
+            method: .put,
+            path: "/JsonUnions",
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            queryParams: [String](),
+            body: ""${'"'}
+            {
+                "contents": {
+                    "stringValue": "foo"
+                }
+            }
+            ""${'"'},
+            host: host
+        )
+
+        let input = UnionInputOutput(
+            contents: MyUnion.stringValue("foo")
+
+        )
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/JsonUnions", encoder: encoder)
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+// FIXME: fix shape value generator to properly generate recursive shapes using the box type
+//    @Test
+//    fun `it creates a unit test for recursive shapes`() {
+//        val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", newTestContext.manifest)
+//        contents.shouldSyntacticSanityCheck()
+//        val expectedContents =
+//            """
+//    func testRestJsonRecursiveShapes() {
+//        let expected = buildExpectedHttpRequest(
+//            method: .put,
+//            path: "/RecursiveShapes",
+//            headers: [
+//                "Content-Type": "application/json"
+//            ],
+//            queryParams: [String](),
+//            body: ""${'"'}
+//            {
+//                "nested": {
+//                    "foo": "Foo1",
+//                    "nested": {
+//                        "bar": "Bar1",
+//                        "recursiveMember": {
+//                            "foo": "Foo2",
+//                            "nested": {
+//                                "bar": "Bar2"
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            ""${'"'},
+//            host: host
+//        )
+//
+//        let input = RecursiveShapesInputOutput(
+//            nested: RecursiveShapesInputOutputNested1(
+//                foo: "Foo1",
+//                nested: RecursiveShapesInputOutputNested2(
+//                    bar: "Bar1",
+//                    recursiveMember: RecursiveShapesInputOutputNested1(
+//                        foo: "Foo2",
+//                        nested: RecursiveShapesInputOutputNested2(
+//                            bar: "Bar2"
+//                        )
+//                    )
+//                )
+//            )
+//        )
+//        do {
+//            let actual = try input.buildHttpRequest(method: .put, path: "/RecursiveShapes", encoder: JSONEncoder())
+//            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+//                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+//                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+//                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+//            })
+//        } catch let err {
+//            XCTFail("Failed to encode the input. Error description: \(err)")
+//        }
+//    }
+// """
+//        contents.shouldContainOnlyOnce(expectedContents)
+//    }
 }

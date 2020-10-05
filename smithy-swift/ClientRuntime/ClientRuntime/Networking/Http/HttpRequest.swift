@@ -41,7 +41,9 @@ extension HttpRequest {
 
         var urlRequest = URLRequest(url: url)
         
-        urlRequest.allHTTPHeaderFields = headers.dictionary
+        urlRequest.allHTTPHeaderFields = headers.dictionary.mapValues({ (values) -> String in
+            values.joined(separator: ", ")
+        })
 
         urlRequest.httpMethod = method.rawValue
 

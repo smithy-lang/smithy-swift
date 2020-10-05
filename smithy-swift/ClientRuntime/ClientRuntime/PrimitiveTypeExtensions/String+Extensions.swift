@@ -52,12 +52,39 @@ extension StringProtocol {
     }
 }
 
+/// Encode the String using Base64 Encoding
 extension StringProtocol {
     public func base64EncodedString() throws -> String {
         let utf8Encoded = self.data(using: .utf8)
         guard let base64String = utf8Encoded?.base64EncodedString() else {
-            throw ClientError.serializationFailed("Failed to base64 encode a String")
+            throw ClientError.serializationFailed("Failed to base64 encode a string")
         }
         return base64String
+    }
+}
+
+/// Trims the String to remove leading and tailing whitespace, newline characters
+extension StringProtocol {
+    public func trim() -> String {
+        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+/// Removes the given prefix from the string if one exists
+extension StringProtocol {
+    public func removePrefix(_ prefix: String) -> String {
+        guard self.hasPrefix(prefix) else { return String(self) }
+        return String(self.dropFirst(prefix.count))
+    }
+}
+
+/// Decode the Base64 Encoded String
+extension StringProtocol {
+    public func base64DecodedString() throws -> String {
+        guard let base64EncodedData = Data(base64Encoded: String(self)),
+            let decodedString = String(data: base64EncodedData, encoding: .utf8) else {
+            throw ClientError.serializationFailed("Failed to decode a base64 encoded string")
+        }
+        return decodedString
     }
 }

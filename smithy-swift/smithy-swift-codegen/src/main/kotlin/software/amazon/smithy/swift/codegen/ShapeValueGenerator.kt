@@ -16,6 +16,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
@@ -38,8 +39,11 @@ class ShapeValueGenerator(
      */
     fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
+        val topologicalIndex = TopologicalIndex.of(model)
+        val isRecursiveMember = if (shape is MemberShape) shape.isRecursiveMember(topologicalIndex) else false
+
         when (shape.type) {
-            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get()) {
+            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), isRecursiveMember) {
                 params.accept(nodeVisitor)
             }
             ShapeType.MAP -> mapDecl(writer, shape.asMapShape().get()) {
@@ -48,22 +52,29 @@ class ShapeValueGenerator(
             ShapeType.LIST, ShapeType.SET -> collectionDecl(writer, shape as CollectionShape) {
                 params.accept(nodeVisitor)
             }
+            ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
+                params.accept(nodeVisitor)
+            }
             else -> primitiveDecl(writer, shape) {
                 params.accept(nodeVisitor)
             }
         }
     }
 
-    private fun structDecl(writer: SwiftWriter, shape: StructureShape, block: () -> Unit) {
-        val symbol = symbolProvider.toSymbol(shape)
+    private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
+        val symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
-
         writer.writeInline("\$L(", symbol.name)
             .indent()
             .call { block() }
             .dedent()
                 // TODO:: fix indentation when `writeInline` retains indent
             .writeInline("\n)")
+    }
+
+    private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
+        val symbol = symbolProvider.toSymbol(shape)
+        writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
     }
 
     private fun mapDecl(writer: SwiftWriter, shape: MapShape, block: () -> Unit) {
@@ -73,7 +84,6 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            .write("")
             .write("]")
 
         writer.popState()
@@ -112,7 +122,8 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 //  val symbol = symbolProvider.toSymbol(shape)
-                    ".data(using: .utf8)"
+                // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
+                    ".data(using: .utf8)!"
             }
             else -> { "" }
         }
@@ -162,14 +173,25 @@ class ShapeValueGenerator(
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
                         writer.writeInline("\n\$S: ", keyNode.value)
-
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        if (valueNode.isNullNode) {
+                            writer.writeInline("nil")
+                        } else {
+                            generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        }
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
                         }
                     }
                     is DocumentShape -> {
                         // TODO - deal with document shapes
+                    }
+                    is UnionShape -> {
+                        val member = currShape.getMember(keyNode.value).orElseThrow {
+                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
+                        }
+                        memberShape = generator.model.expectShape(member.target)
+                        writer.writeInline("\$L(", keyNode.value)
+                        generator.writeShapeValueInline(writer, memberShape, valueNode)
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }
@@ -213,12 +235,12 @@ class ShapeValueGenerator(
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
                 ShapeType.BIG_INTEGER -> {
-                    writer.addImport(SwiftDependency.BIG.getPackageName())
+                    writer.addImport(SwiftDependency.BIG.namespace)
                     writer.writeInline("BInt(\$L)", node.value)
                 }
 
                 ShapeType.BIG_DECIMAL -> {
-                    writer.addImport(SwiftDependency.BIG.getPackageName())
+                    writer.addImport(SwiftDependency.BIG.namespace)
                     writer.writeInline("BDecimal(\$L)", node.value)
                 }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")

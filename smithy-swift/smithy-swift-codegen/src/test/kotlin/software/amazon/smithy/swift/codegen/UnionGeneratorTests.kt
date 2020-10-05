@@ -49,59 +49,61 @@ class UnionGeneratorTests : TestsBase() {
 
         contents.shouldContain(SwiftWriter.staticHeader)
 
-        val expectedGeneratedEnum = "" +
-                "/**\n" +
-                " Really long multi-line\n" +
-                " Documentation for MyUnion\n" +
-                " */\n" +
-                "enum MyUnion {\n" +
-                "    /// Documentation for bar\n" +
-                "    case bar(Int)\n" +
-                "    case baz(Int)\n" +
-                "    case foo(String)\n" +
-                "    case sdkUnknown(String)\n" +
-                "}\n" +
-                "\n" +
-                "extension MyUnion : Codable, Equatable {\n" +
-                "    enum CodingKeys: String, CodingKey {\n" +
-                "        case bar\n" +
-                "        case baz\n" +
-                "        case foo\n" +
-                "        case sdkUnknown\n" +
-                "    }\n" +
-                "    func encode(to encoder: Encoder) throws {\n" +
-                "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
-                "        switch self {\n" +
-                "        case let .bar(value):\n" +
-                "            try container.encode(value, forKey: .bar)\n" +
-                "        case let .baz(value):\n" +
-                "            try container.encode(value, forKey: .baz)\n" +
-                "        case let .foo(value):\n" +
-                "            try container.encode(value, forKey: .foo)\n" +
-                "        case let .sdkUnknown(value):\n" +
-                "            try container.encode(value, forKey: .sdkUnknown)\n" +
-                "        }\n" +
-                "    }\n" +
-                "    init(from decoder: Decoder) throws {\n" +
-                "        let container = try decoder.container(keyedBy: CodingKeys.self)\n" +
-                "        if let value = try? container.decode(String.self, forKey: .bar) {\n" +
-                "            self = .bar(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .baz) {\n" +
-                "            self = .baz(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .foo) {\n" +
-                "            self = .foo(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        else {\n" +
-                "            self = .sdkUnknown(\"\")\n" +
-                "            return\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n"
+        val expectedGeneratedEnum =
+            """
+/**
+ Really long multi-line
+ Documentation for MyUnion
+ */
+public enum MyUnion: Equatable {
+    case foo(String)
+    case baz(Int)
+    /// Documentation for bar
+    case bar(Int)
+    case sdkUnknown(String)
+}
+
+extension MyUnion : Codable {
+    enum CodingKeys: String, CodingKey {
+        case foo
+        case baz
+        case bar
+        case sdkUnknown
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case let .foo(value):
+            try container.encode(value, forKey: .foo)
+        case let .baz(value):
+            try container.encode(value, forKey: .baz)
+        case let .bar(value):
+            try container.encode(value, forKey: .bar)
+        case let .sdkUnknown(value):
+            try container.encode(value, forKey: .sdkUnknown)
+        }
+    }
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let value = try? container.decode(String.self, forKey: .foo) {
+            self = .foo(value)
+            return
+        }
+        if let value = try? container.decode(Int.self, forKey: .baz) {
+            self = .baz(value)
+            return
+        }
+        if let value = try? container.decode(Int.self, forKey: .bar) {
+            self = .bar(value)
+            return
+        }
+        else {
+            self = .sdkUnknown("")
+            return
+        }
+    }
+}
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
     }
@@ -135,59 +137,61 @@ class UnionGeneratorTests : TestsBase() {
 
         contents.shouldContain(SwiftWriter.staticHeader)
 
-        val expectedGeneratedEnum = "" +
-                "/**\n" +
-                " Really long multi-line\n" +
-                " Documentation for MyUnion\n" +
-                " */\n" +
-                "enum MyUnion {\n" +
-                "    /// Documentation for bar\n" +
-                "    case bar(Int)\n" +
-                "    case foo(String)\n" +
-                "    case myStruct(MyStruct)\n" +
-                "    case sdkUnknown(String)\n" +
-                "}\n" +
-                "\n" +
-                "extension MyUnion : Codable, Equatable {\n" +
-                "    enum CodingKeys: String, CodingKey {\n" +
-                "        case bar\n" +
-                "        case foo\n" +
-                "        case myStruct\n" +
-                "        case sdkUnknown\n" +
-                "    }\n" +
-                "    func encode(to encoder: Encoder) throws {\n" +
-                "        var container = encoder.container(keyedBy: CodingKeys.self)\n" +
-                "        switch self {\n" +
-                "        case let .bar(value):\n" +
-                "            try container.encode(value, forKey: .bar)\n" +
-                "        case let .foo(value):\n" +
-                "            try container.encode(value, forKey: .foo)\n" +
-                "        case let .myStruct(value):\n" +
-                "            try container.encode(value, forKey: .myStruct)\n" +
-                "        case let .sdkUnknown(value):\n" +
-                "            try container.encode(value, forKey: .sdkUnknown)\n" +
-                "        }\n" +
-                "    }\n" +
-                "    init(from decoder: Decoder) throws {\n" +
-                "        let container = try decoder.container(keyedBy: CodingKeys.self)\n" +
-                "        if let value = try? container.decode(String.self, forKey: .bar) {\n" +
-                "            self = .bar(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .foo) {\n" +
-                "            self = .foo(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        if let value = try? container.decode(String.self, forKey: .myStruct) {\n" +
-                "            self = .myStruct(value)\n" +
-                "            return\n" +
-                "        }\n" +
-                "        else {\n" +
-                "            self = .sdkUnknown(\"\")\n" +
-                "            return\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n"
+        val expectedGeneratedEnum =
+            """
+/**
+ Really long multi-line
+ Documentation for MyUnion
+ */
+public enum MyUnion: Equatable {
+    case foo(String)
+    /// Documentation for bar
+    case bar(Int)
+    case myStruct(MyStruct)
+    case sdkUnknown(String)
+}
+
+extension MyUnion : Codable {
+    enum CodingKeys: String, CodingKey {
+        case foo
+        case bar
+        case myStruct
+        case sdkUnknown
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case let .foo(value):
+            try container.encode(value, forKey: .foo)
+        case let .bar(value):
+            try container.encode(value, forKey: .bar)
+        case let .myStruct(value):
+            try container.encode(value, forKey: .myStruct)
+        case let .sdkUnknown(value):
+            try container.encode(value, forKey: .sdkUnknown)
+        }
+    }
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let value = try? container.decode(String.self, forKey: .foo) {
+            self = .foo(value)
+            return
+        }
+        if let value = try? container.decode(Int.self, forKey: .bar) {
+            self = .bar(value)
+            return
+        }
+        if let value = try? container.decode(MyStruct.self, forKey: .myStruct) {
+            self = .myStruct(value)
+            return
+        }
+        else {
+            self = .sdkUnknown("")
+            return
+        }
+    }
+}
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
     }

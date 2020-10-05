@@ -17,13 +17,12 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.*
 
 /**
  * Generates encode function for members bound to the payload.
@@ -95,6 +94,12 @@ class StructEncodeGeneration(
     }
 
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
+        val index = TopologicalIndex.of(ctx.model)
+        val isRecursiveMember = when (shape) {
+            is MemberShape -> shape.isRecursiveMember(index)
+            else -> false
+        }
+
         // target shape type to deserialize is either the shape itself or member.target
         val target = when (shape) {
             is MemberShape -> ctx.model.expectShape(shape.target)
@@ -106,7 +111,7 @@ class StructEncodeGeneration(
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
             is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
             is BlobShape -> "$memberName$optional.base64EncodedString()"
-            else -> memberName
+            else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }
     // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
@@ -129,16 +134,29 @@ class StructEncodeGeneration(
                         topLevelContainerName,
                         keyName
                     )
+                    renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
+                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                    if (isBoxed) {
+                        writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
+                            renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
+                        }
+                    }
                 }
-                renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> renderEncodeList(ctx, keyName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, keyName, false)
-                writer.write("try $containerName.encode($extension)")
+                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                if (isBoxed) {
+                    writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
+                        writer.write("try $containerName.encode($extension)")
+                    }
+                } else {
+                    writer.write("try $containerName.encode($extension)")
+                }
             }
         }
     }
@@ -168,7 +186,14 @@ class StructEncodeGeneration(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(targetShape, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode(\$L)", shapeExtension)
+                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                    if (isBoxed) {
+                        writer.openBlock("if let \$L = \$L {", "}", iteratorName, iteratorName) {
+                            writer.write("try $topLevelContainerName.encode($shapeExtension)")
+                        }
+                    } else {
+                        writer.write("try $topLevelContainerName.encode($shapeExtension)")
+                    }
                 }
             }
         }
@@ -192,10 +217,14 @@ class StructEncodeGeneration(
             }
             else -> {
                 val extension = getShapeExtension(targetShape, keyName, false)
-                if (level == 0) {
-                    writer.write("try $containerName.encode($extension, forKey: .\$L)", keyName)
+                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                val keyEnumName = if (level == 0) keyName else "Key(stringValue: key${level - 1})"
+                if (isBoxed) {
+                    writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
+                        writer.write("try $containerName.encode($extension, forKey: .\$L)", keyEnumName)
+                    }
                 } else {
-                    writer.write("try $containerName.encode($extension, forKey: Key(stringValue: key${level - 1}))")
+                    writer.write("try $containerName.encode($extension, forKey: .\$L)", keyEnumName)
                 }
             }
         }
@@ -235,7 +264,14 @@ class StructEncodeGeneration(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+                    val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
+                    if (isBoxed) {
+                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
+                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+                        }
+                    } else {
+                        writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+                    }
                 }
             }
         }
