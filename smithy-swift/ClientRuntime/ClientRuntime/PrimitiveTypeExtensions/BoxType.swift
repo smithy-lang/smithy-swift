@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-public final class Box<T> where T: Codable, T: Equatable {
+public final class Box<T> {
     public var value: T
 
     init(value: T) {
