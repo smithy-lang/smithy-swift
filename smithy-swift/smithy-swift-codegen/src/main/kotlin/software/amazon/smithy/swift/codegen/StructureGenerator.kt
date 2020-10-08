@@ -131,16 +131,10 @@ class StructureGenerator(
     }
 
     private fun generateInitializerForStructure() {
-        val hasErrorTrait = shape.getTrait(HttpErrorTrait::class.java).isPresent
         val hasMembers = membersSortedByName.isNotEmpty()
 
-        // TODO:: handle the rendering of error and normal structures more separately
-        if (hasErrorTrait || hasMembers) {
+        if (hasMembers) {
             writer.openBlock("public init (", ")") {
-                if (hasErrorTrait) {
-                    writer.write("httpResponse: HttpResponse" + (if (hasMembers) "," else ""))
-                }
-
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
@@ -151,15 +145,12 @@ class StructureGenerator(
                 }
             }
             writer.openBlock("{", "}") {
-                if (hasErrorTrait) {
-                    writer.write("self.httpResponse = httpResponse")
-                }
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.write("self.\$1L = \$1L", memberName)
                 }
             }
-        } else if (!hasErrorTrait && !hasMembers) {
+        } else {
             writer.write("public init() {}")
         }
     }
@@ -183,18 +174,18 @@ class StructureGenerator(
      * ```
      * We will generate the following:
      * ```
-     * public struct ThrottlingError: HttpOperationError {
-     *     public var httpResponse: HttpResponse
-     *     public var retryable = true
-     *     public var type = .client
-     *     public var message: String
+     * public struct ThrottlingError: HttpServiceError {
+     *     public var headers: HttpHeaders?
+     *     public var message: String?
+     *     public var requestID: String?
+     *     public var retryable: Bool? = true
+     *     public var statusCode: HttpStatusCode?
+     *     public var type: ErrorType = .client
      *
      *     public init (
-     *         message: String,
-     *         httpResponse: HttpResponse
+     *         message: String
      *     )
      *     {
-     *         self.httpResponse = httpResponse
      *         self.message = message
      *     }
      * }
@@ -205,9 +196,9 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        var errorProtocol = "OperationError" // just a placeholder for now
+        var errorProtocol = "ServiceError"
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            errorProtocol = "HttpOperationError"
+            errorProtocol = "HttpServiceError"
         }
         writer.putContext("error.protocol", errorProtocol)
 
@@ -224,12 +215,13 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            writer.write("public var httpResponse: HttpResponse")
+            writer.write("public var headers: HttpHeaders?")
+            writer.write("public var statusCode: HttpStatusCode?")
         }
-
+        writer.write("public var message: String?")
+        writer.write("public var requestID: String?")
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
-        writer.write("public var retryable = \$L", isRetryable)
-
+        writer.write("public var retryable: Bool? = \$L", isRetryable)
         writer.write("public var type: ErrorType = .\$L", errorTrait.value)
 
         membersSortedByName.forEach {

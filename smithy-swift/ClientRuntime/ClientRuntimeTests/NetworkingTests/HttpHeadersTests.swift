@@ -58,7 +58,7 @@ class HttpHeadersTests: XCTestCase {
         var httpHeaders = HttpHeaders(headersAsDictionaryWithArray)
         httpHeaders.add(name: "header-item-1", value: "header-1-value")
 
-        headersAsDictionaryWithArray["header-item-1"] = ["header-1-value"]
+        headersAsDictionaryWithArray["header-item-1"]?.append("header-1-value")
 
         XCTAssertEqual(httpHeaders.dictionary, headersAsDictionaryWithArray)
     }

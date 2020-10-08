@@ -15,14 +15,7 @@
 
 import Foundation
 
-public protocol OperationError {
-    var retryable: Bool {get set}
-    var type: ErrorType {get set}
-
-}
-
-public enum ErrorType {
-    case server
-    case client
-    case unknown
+public protocol HttpServiceError: ServiceError {
+    var statusCode: HttpStatusCode? { get set }
+    var headers: HttpHeaders? { get set }
 }

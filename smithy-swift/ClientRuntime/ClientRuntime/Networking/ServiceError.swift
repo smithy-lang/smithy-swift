@@ -15,7 +15,14 @@
 
 import Foundation
 
-public protocol HttpOperationError: OperationError {
+public protocol ServiceError {
+    var retryable: Bool? { get set }
+    var type: ErrorType { get set }
+    var message: String? { get set }
+}
 
-    var httpResponse: HttpResponse { get set }
+public enum ErrorType {
+    case server
+    case client
+    case unknown
 }
