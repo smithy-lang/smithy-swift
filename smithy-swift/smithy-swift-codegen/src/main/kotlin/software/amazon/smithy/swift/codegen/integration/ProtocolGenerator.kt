@@ -70,6 +70,11 @@ interface ProtocolGenerator {
             .name("ServiceError")
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .build()
+
+        val DefaultUnknownServiceErrorSymbol: Symbol = Symbol.builder()
+            .name("UnknownServiceError")
+            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+            .build()
     }
 
     /**
@@ -92,11 +97,18 @@ interface ProtocolGenerator {
         }
 
     /**
-     * Get the symbol that should be used as the base class for generated service errors.
+     * Symbol that should be used as the base class for generated service errors.
      * It defaults to the ServiceError available in smithy-swift's client-runtime.
      */
     val serviceErrorProtocolSymbol: Symbol
         get() = DefaultServiceErrorProtocolSymbol
+
+    /**
+     * Symbol that should be used when the deserialized service error type cannot be determined
+     * It defaults to the UnknownServiceError available in smithy-swift's client-runtime.
+     */
+    val unknownServiceErrorSymbol: Symbol
+        get() = DefaultUnknownServiceErrorSymbol
 
     /**
      * Generate serializers required by the protocol

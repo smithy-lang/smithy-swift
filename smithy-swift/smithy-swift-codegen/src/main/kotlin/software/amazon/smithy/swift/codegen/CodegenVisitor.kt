@@ -95,7 +95,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         val serviceShapes: Set<Shape> = Walker(model).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
         var generateTestTarget = false
-        if (protocolGenerator != null) {
+        protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
                 model,
@@ -155,7 +155,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun serviceShape(shape: ServiceShape?): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, integrations).render()
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
         }
         return null
     }

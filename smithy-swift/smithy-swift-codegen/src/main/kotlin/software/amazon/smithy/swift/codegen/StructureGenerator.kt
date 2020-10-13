@@ -217,7 +217,10 @@ class StructureGenerator(
             writer.write("public var headers: HttpHeaders?")
             writer.write("public var statusCode: HttpStatusCode?")
         }
-        writer.write("public var message: String?")
+        // prevent duplicates if `message` is already included in the error structure members
+        if (!checkMemberExists("message")) {
+            writer.write("public var message: String?")
+        }
         writer.write("public var requestID: String?")
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
         writer.write("public var retryable: Bool? = \$L", isRetryable)
@@ -228,5 +231,15 @@ class StructureGenerator(
             writer.writeMemberDocs(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
+    }
+
+    private fun checkMemberExists(name: String): Boolean {
+        membersSortedByName.forEach {
+            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+            if (memberName == name) {
+                return true
+            }
+        }
+        return false
     }
 }

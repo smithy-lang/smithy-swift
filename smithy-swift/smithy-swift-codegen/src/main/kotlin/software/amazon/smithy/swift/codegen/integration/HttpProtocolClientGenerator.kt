@@ -68,9 +68,9 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
-        val topDownIndex = model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex = TopDownIndex.of(model)
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.defaultName() }
-        val operationsIndex = model.getKnowledge(OperationIndex::class.java)
+        val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
             operations.forEach {
@@ -109,7 +109,7 @@ class HttpProtocolClientGenerator(
                 val labelMemberName = binding.member.memberName
                 val formattedLabel: String
                 if (targetShape.isTimestampShape) {
-                    val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
+                    val bindingIndex = HttpBindingIndex.of(model)
                     val timestampFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.LABEL, TimestampFormatTrait.Format.DATE_TIME)
                     formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
                 } else if (targetShape.isStringShape) {
@@ -188,7 +188,7 @@ class HttpProtocolClientGenerator(
                 // HTTP request returned error
                 writer.openBlock("else {", "}") {
                     writer.openBlock("do {", "} catch let err {") {
-                        writer.write("let error = try \$L(from: httpResponse, decoder: self.decoder)", operationErrorName)
+                        writer.write("let error = try \$L(httpResponse: httpResponse, decoder: self.decoder)", operationErrorName)
                         writer.write("completion(.failure(SdkError<\$L>.service(error)))", operationErrorName)
                     }
                     writer.indent()

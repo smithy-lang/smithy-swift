@@ -47,7 +47,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     // can be overridden by implementations to more specific error protocol
-    open val unknownServiceErrorSymbol: Symbol = Symbol.builder()
+    override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
         .name("UnknownHttpServiceError")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
@@ -130,7 +130,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render operation error enum and it's init from HttpResponse for all operations
         val httpOperations = getHttpBindingOperations(ctx)
         httpOperations.forEach {
-            renderOperationErrorEnum(ctx, it)
+            renderInitOperationErrorFromErrorType(ctx, it)
             renderInitOperationErrorFromHttpResponse(ctx, it)
         }
 
@@ -276,31 +276,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderOperationErrorEnum(
+    // Initialize operation error given the errorType which is like a rawValue of error case encountered
+    private fun renderInitOperationErrorFromErrorType(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape
     ) {
         val errorShapes = op.errors.map { ctx.model.expectShape(it) as StructureShape }.toSet().sorted()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
+            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
             .name(operationErrorName)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName {", "}") {
-                for (errorShape in errorShapes) {
-                    val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
-                    writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)
-                }
-                val unknownServiceErrorType = unknownServiceErrorSymbol.name
-                writer.write("case unknown($unknownServiceErrorType)")
-                writer.write("")
+            val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
-                writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder?, message: String?, requestID: String? = nil) throws {", "}") {
+            writer.openBlock("extension \$L {","}", operationErrorName) {
+                writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
                     writer.write("switch errorType {")
                     for (errorShape in errorShapes) {
                         val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
@@ -310,7 +305,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("}")
                 }
             }
-            writer.write("")
         }
     }
 
@@ -321,7 +315,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape
     ) {
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
@@ -330,10 +324,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.openBlock("public init(from httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {", "}") {
-                writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
+            writer.openBlock("extension \$L {","}", operationErrorName) {
+                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
+                    writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
+                }
             }
-            writer.write("")
         }
     }
 
@@ -885,7 +880,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             var memberName = it.member.memberName
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
-            val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+            val bindingIndex = HttpBindingIndex.of(ctx.model)
 
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
@@ -967,7 +962,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         contentType: String,
         hasHttpBody: Boolean
     ) {
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         writer.write("var headers = HttpHeaders()")
         // we only need the content type header in the request if there is an http body that is being sent
         if (hasHttpBody) {
@@ -1111,7 +1106,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @return the list of operation shapes
      */
     open fun getHttpBindingOperations(ctx: ProtocolGenerator.GenerationContext): List<OperationShape> {
-        val topDownIndex: TopDownIndex = ctx.model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val containedOperations: MutableList<OperationShape> = mutableListOf()
         for (operation in topDownIndex.getContainedOperations(ctx.service)) {
             OptionalUtils.ifPresentOrElse(

@@ -39,62 +39,66 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val symbol = symbolProvider.toSymbol(it)
             writer.openBlock("do {", "} catch let err {") {
                 renderBuildHttpResponse(test)
+                writer.write("")
                 renderActualOutput(test, symbol.name)
                 writer.write("")
                 renderExpectedOutput(test, it)
+                writer.write("")
                 renderAssertions(test, it)
+                writer.write("")
             }
-            .write("XCTFail(err.localizedDescription)")
-            .closeBlock("}")
+            writer.indent()
+            writer.write("XCTFail(err.localizedDescription)")
+            writer.dedent()
+            writer.write("}")
         }
     }
 
     protected fun renderBuildHttpResponse(test: HttpResponseTestCase) {
-        writer.openBlock("guard let httpResponse = buildHttpResponse(")
-            .call {
-                writer
-                    .write("code: ${test.code},")
-                    .call { renderHeadersInHttpResponse(test) }
-                    .call {
-                        test.body.ifPresent { body ->
-                            if (body.isNotBlank() && body.isNotEmpty()) {
-                                // TODO:: handle streaming case?
-                                writer.write(
-                                    "content: ResponseType.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
-                                    body
-                                )
-                            }
-                        }
-                    }
-                    .write("host: host")
+        writer.openBlock("guard let httpResponse = buildHttpResponse(", ") else {") {
+            writer.write("code: ${test.code},")
+            renderHeadersInHttpResponse(test)
+            test.body.ifPresent { body ->
+                if (body.isNotBlank() && body.isNotEmpty()) {
+                    // TODO:: handle streaming case?
+                    writer.write(
+                        "content: ResponseType.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
+                        body
+                    )
+                }
             }
-            .openBlock(") else {")
-            .write("XCTFail(\"Something is wrong with the created http response\")")
-            .write("return")
-            .closeBlock("}")
+            writer.write("host: host")
+        }
+        writer.indent()
+        writer.write("XCTFail(\"Something is wrong with the created http response\")")
+        writer.write("return")
+        writer.dedent()
+        writer.write("}")
     }
 
     /*
     Resolves the Response Decoder to use based on the bodyMediaType trait of HttpResponseTestCase
      */
     protected fun resolveResponseDecoder(test: HttpResponseTestCase): String? {
-        if (test.bodyMediaType.isPresent) {
-            val bodyMediaType = test.bodyMediaType.get()
-            return when (bodyMediaType.toLowerCase()) {
-                "application/json" -> "JSONDecoder()"
-                "application/xml" -> "XMLDecoder()"
-                "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
-                else -> "JSONDecoder"
+        var responseDecoder: String? = null
+        test.body.ifPresent { body ->
+            if (body.isNotBlank() && body.isNotEmpty() && test.bodyMediaType.isPresent) {
+                val bodyMediaType = test.bodyMediaType.get()
+                responseDecoder = when (bodyMediaType.toLowerCase()) {
+                    "application/json" -> "JSONDecoder()"
+                    "application/xml" -> "XMLDecoder()"
+                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
+                    else -> "JSONDecoder"
+                }
             }
-        } else {
-            return null
         }
+        return responseDecoder
     }
 
     private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
         val responseDecoder = resolveResponseDecoder(test)
         renderResponseDecoderConfiguration(responseDecoder)
-        val decoderParameter = responseDecoder?.let { "" } ?: ", decoder: decoder"
+        val decoderParameter = responseDecoder?.let { ", decoder: decoder" } ?: ""
         writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStructName, decoderParameter)
     }
 
@@ -104,7 +108,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("decoder.dateDecodingStrategy = .secondsSince1970")
     }
 
-    private fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {
+    protected fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {
         // invoke the DSL builder for the input type
         writer.writeInline("\nlet expected = ")
             .call {

@@ -15,9 +15,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 
@@ -28,14 +26,19 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
-            val operationErrorType = operation.defaultName()
+            val operationErrorType = "${operation.defaultName()}Error"
             writer.openBlock("do {", "} catch let err {") {
                 renderBuildHttpResponse(test)
+                writer.write("")
                 renderInitOperationError(test, operationErrorType)
                 writer.write("")
                 renderCompareActualAndExpectedErrors(test, it, operationErrorType)
-                renderAssertions(test, it)
-            }.write("XCTFail(err.localizedDescription)").closeBlock("}")
+                writer.write("")
+            }
+            writer.indent()
+            writer.write("XCTFail(err.localizedDescription)")
+            writer.dedent()
+            writer.write("}")
         }
     }
 
@@ -43,17 +46,13 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val operationErrorVariableName = operationErrorType.decapitalize()
         val responseDecoder = resolveResponseDecoder(test)
         renderResponseDecoderConfiguration(responseDecoder)
-        val decoderParameter = responseDecoder?.let { "" } ?: ", decoder: decoder"
+        val decoderParameter = responseDecoder?.let { ", decoder: decoder" } ?: ""
 
-        writer.openBlock("guard let \$L = try? \$L(httpResponse: httpResponse\$L) else {",
-            "}",
+        writer.write("let \$L = try \$L(httpResponse: httpResponse\$L)",
             operationErrorVariableName,
             operationErrorType,
             decoderParameter
-        ) {
-            writer.write("XCTFail(\"Failed to deserialize the error shape\")")
-            writer.write("return")
-        }
+        )
     }
 
     private fun renderCompareActualAndExpectedErrors(
@@ -65,10 +64,18 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val errorVariableName = errorType.decapitalize()
 
         writer.openBlock("if case .\$L(let actual) = \$L {", "} else {", errorVariableName, operationErrorVariableName) {
-
+            renderExpectedOutput(test, errorShape)
+            renderAssertions(test, errorShape)
         }
         writer.indent()
         writer.write("XCTFail(\"The deserialized error type does not match expected type\")")
+        writer.dedent()
+        writer.write("}")
+    }
+
+    override fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
+        writer.write("XCTAssertEqual(actual.statusCode, HttpStatusCode(rawValue: \$L))", test.code)
+        super.renderAssertions(test, outputShape)
     }
 
     class Builder : HttpProtocolUnitTestResponseGenerator.Builder() {

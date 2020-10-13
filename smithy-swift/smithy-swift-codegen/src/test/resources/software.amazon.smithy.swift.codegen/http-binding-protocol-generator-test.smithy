@@ -26,7 +26,8 @@ service Example {
         HttpPrefixHeaders,
         RecursiveShapes,
         JsonUnions,
-        NestedShapes
+        NestedShapes,
+        GreetingWithErrors
     ]
 }
 
@@ -795,5 +796,89 @@ apply JsonUnions @httpResponseTests([
                 stringValue: "foo"
             }
         }
+    }
+])
+
+@http(uri: "/GreetingWithErrors", method: "PUT")
+operation GreetingWithErrors {
+    output: GreetingWithErrorsOutput,
+    errors: [InvalidGreeting, ComplexError, FooError]
+}
+
+structure GreetingWithErrorsOutput {
+    @httpHeader("X-Greeting")
+    greeting: String,
+}
+
+/// This error is thrown when an invalid greeting value is provided.
+@error("client")
+@httpError(400)
+structure InvalidGreeting {
+    Message: String,
+}
+
+/// This error is thrown when a request is invalid.
+@error("client")
+@httpError(403)
+structure ComplexError {
+    // Errors support HTTP bindings!
+    @httpHeader("X-Header")
+    Header: String,
+
+    TopLevel: String,
+
+    Nested: ComplexNestedErrorData,
+}
+
+structure ComplexNestedErrorData {
+    @jsonName("Fooooo")
+    Foo: String,
+}
+
+/// This error has test cases that test some of the dark corners of Amazon service
+/// framework history. It should only be implemented by clients.
+@error("server")
+@httpError(500)
+@tags(["client-only"])
+structure FooError {}
+
+apply ComplexError @httpResponseTests([
+    {
+        id: "RestJsonComplexErrorWithNoMessage",
+        documentation: "Serializes a complex error with no message member",
+        protocol: restJson1,
+        params: {
+            Header: "Header",
+            TopLevel: "Top level",
+            Nested: {
+                Foo: "bar"
+            }
+        },
+        code: 403,
+        headers: {
+            "Content-Type": "application/json",
+            "X-Header": "Header",
+            "X-Amzn-Errortype": "ComplexError",
+        },
+        body: """
+              {
+                  "TopLevel": "Top level",
+                  "Nested": {
+                      "Fooooo": "bar"
+                  }
+              }""",
+        bodyMediaType: "application/json",
+    }
+])
+
+apply FooError @httpResponseTests([
+    {
+        id: "RestJsonFooErrorUsingXAmznErrorType",
+        documentation: "Serializes the X-Amzn-ErrorType header. For an example service, see Amazon EKS.",
+        protocol: restJson1,
+        code: 500,
+        headers: {
+            "X-Amzn-Errortype": "FooError",
+        },
     }
 ])

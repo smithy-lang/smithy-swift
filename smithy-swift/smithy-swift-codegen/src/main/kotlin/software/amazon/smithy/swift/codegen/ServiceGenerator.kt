@@ -26,6 +26,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
 /*
@@ -36,12 +37,14 @@ class ServiceGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val integrations: List<SwiftIntegration>
+    private val writers: SwiftDelegator,
+    private val protocolGenerator: ProtocolGenerator? = null
 ) {
     private var service = settings.getService(model)
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
     }
+    private val rootNamespace = settings.moduleName
 
     companion object {
         /**
@@ -102,6 +105,10 @@ class ServiceGenerator(
             return symbolProvider.toSymbol(outputShape).name
         }
 
+        fun getOperationErrorShapeName(op: OperationShape): String {
+            return "${op.defaultName()}Error"
+        }
+
         fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
             val outputShape = opIndex.getOutput(op)
             return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
@@ -146,20 +153,50 @@ class ServiceGenerator(
      * ```
      */
     private fun renderSwiftProtocol() {
-        val topDownIndex = model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex = TopDownIndex.of(model)
         val operations = topDownIndex.getContainedOperations(service)
-        val operationsIndex = model.getKnowledge(OperationIndex::class.java)
+        val operationsIndex = OperationIndex.of(model)
 
         writer.writeShapeDocs(service)
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                     operations.forEach { op ->
                         renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
+                        renderOperationErrorEnum(op)
                     }
                 }
             .closeBlock("}")
             .write("")
     }
+
+    /*
+        Renders the Operation Error enum
+         */
+    private fun renderOperationErrorEnum(
+        op: OperationShape
+    ) {
+        val errorShapes = op.errors.map { model.expectShape(it) as StructureShape }.toSet().sorted()
+        val operationErrorName = getOperationErrorShapeName(op)
+        val operationErrorSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
+            .name(operationErrorName)
+            .build()
+        val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol
+
+        writers.useShapeWriter(operationErrorSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(unknownServiceErrorSymbol)
+            writer.openBlock("public enum $operationErrorName {", "}") {
+                for (errorShape in errorShapes) {
+                    val errorShapeName = symbolProvider.toSymbol(errorShape).name
+                    writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)
+                }
+                val unknownServiceErrorType = unknownServiceErrorSymbol.name
+                writer.write("case unknown($unknownServiceErrorType)")
+            }
+        }
+    }
+
 }
 
 /**

@@ -188,29 +188,31 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.staticHeader)
-        val expectedGeneratedStructure = "" +
-                "import ClientRuntime\n" +
-                "\n" +
-                "/// This *is* documentation about the shape.\n" +
-                "public struct MyError: HttpOperationError {\n" +
-                "    public var httpResponse: HttpResponse\n" +
-                "    public var retryable = true\n" +
-                "    public var type: ErrorType = .client\n" +
-                "    /// This *is* documentation about the member.\n" +
-                "    public var baz: Int?\n" +
-                "    public var message: String?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        httpResponse: HttpResponse,\n" +
-                "        baz: Int? = nil,\n" +
-                "        message: String? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.httpResponse = httpResponse\n" +
-                "        self.baz = baz\n" +
-                "        self.message = message\n" +
-                "    }\n" +
-                "}"
+        val expectedGeneratedStructure =
+            """
+                import ClientRuntime
+
+                /// This *is* documentation about the shape.
+                public struct MyError: ServiceError {
+                    public var headers: HttpHeaders?
+                    public var statusCode: HttpStatusCode?
+                    public var requestID: String?
+                    public var retryable: Bool? = true
+                    public var type: ErrorType = .client
+                    /// This *is* documentation about the member.
+                    public var baz: Int?
+                    public var message: String?
+
+                    public init (
+                        baz: Int? = nil,
+                        message: String? = nil
+                    )
+                    {
+                        self.baz = baz
+                        self.message = message
+                    }
+                }
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedStructure)
     }
