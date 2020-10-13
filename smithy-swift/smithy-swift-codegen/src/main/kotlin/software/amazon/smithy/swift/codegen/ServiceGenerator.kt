@@ -55,7 +55,6 @@ class ServiceGenerator(
             op: OperationShape,
             insideProtocol: Boolean = false
         ) {
-
             val operationName = op.camelCaseName()
             // Theoretically this shouldn't happen since we insert empty input/outputs for operations that don't have one or the other to allow for sdk evolution
             if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
@@ -66,10 +65,7 @@ class ServiceGenerator(
 
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
-
-            // TODO:: code generate operation specific errors
-            // val errorTypeName = "${op.defaultName()}OperationError"
-            val errorTypeName = "OperationError"
+            val errorTypeName = "${op.defaultName()}Error"
 
             val outputParam = "completion: @escaping (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
 

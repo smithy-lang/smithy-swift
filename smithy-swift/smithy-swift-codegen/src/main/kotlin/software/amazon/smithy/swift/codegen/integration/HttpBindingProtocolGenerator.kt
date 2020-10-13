@@ -33,7 +33,6 @@ import software.amazon.smithy.utils.OptionalUtils
  */
 // TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
 fun Shape.isInHttpBody(): Boolean {
-
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
             !this.hasTrait(HttpHeaderTrait::class.java) &&
             !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
@@ -46,6 +45,17 @@ fun Shape.isInHttpBody(): Boolean {
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
+
+    // can be overridden by implementations to more specific error protocol
+    open val unknownServiceErrorSymbol: Symbol = Symbol.builder()
+        .name("UnknownHttpServiceError")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .build()
+
+    override val serviceErrorProtocolSymbol: Symbol = Symbol.builder()
+    .name("HttpServiceError")
+    .addDependency(SwiftDependency.CLIENT_RUNTIME)
+    .build()
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
@@ -83,6 +93,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
     }
+
     // can be overridden by protocol for things like json name traits, xml keys etc.
     open fun generateCodingKeysForStructure(
         ctx: ProtocolGenerator.GenerationContext,
@@ -103,18 +114,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         // render init from HttpResponse for all output shapes
-        val outputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
+        val visitedOutputShapes: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
             if (operation.output.isPresent) {
                 val outputShapeId = operation.output.get()
-                if (outputShapesWithHttpBindings.contains(outputShapeId)) {
+                if (visitedOutputShapes.contains(outputShapeId)) {
                     // The output shape is referenced by more than one operation
                     continue
                 }
                 renderInitOutputFromHttpResponse(ctx, operation)
-                outputShapesWithHttpBindings.add(outputShapeId)
+                visitedOutputShapes.add(outputShapeId)
             }
         }
+
+        // render operation error enum and it's init from HttpResponse for all operations
+        val httpOperations = getHttpBindingOperations(ctx)
+        httpOperations.forEach {
+            renderOperationErrorEnum(ctx, it)
+            renderInitOperationErrorFromHttpResponse(ctx, it)
+        }
+
+        // render init from HttpResponse for all error types
+        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+        modeledErrors.forEach { renderInitErrorFromHttpResponse(ctx, it) }
 
         // separate decodable conformance to nested types from output shapes
         // first loop through nested types and perform decodable implementation normally
@@ -180,7 +202,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         val opIndex = OperationIndex.of(ctx.model)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)
-        val outputShape = ctx.model.expectShape(op.output.get())
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val headerBindings = responseBindings.values
@@ -207,6 +228,110 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("")
                     renderInitMembersFromPayload(ctx, responseBindings, outputShapeName, writer)
                 }
+            }
+            writer.write("")
+        }
+    }
+
+    private fun renderInitErrorFromHttpResponse(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: StructureShape
+    ) {
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
+        val responseBindings = bindingIndex.getResponseBindings(shape)
+        val headerBindings = responseBindings.values
+            .filter { it.location == HttpBinding.Location.HEADER }
+            .sortedBy { it.memberName }
+        val rootNamespace = ctx.settings.moduleName
+        val errorShapeName = ctx.symbolProvider.toSymbol(shape).name
+
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$errorShapeName+ResponseInit.swift")
+            .name(errorShapeName)
+            .build()
+
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addFoundationImport()
+            writer.addImport(serviceErrorProtocolSymbol)
+            writer.openBlock("extension \$L: \$L {", "}", errorShapeName, serviceErrorProtocolSymbol.name) {
+                writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
+                    renderInitMembersFromHeaders(ctx, headerBindings, writer)
+                    // prefix headers
+                    // spec: "Only a single structure member can be bound to httpPrefixHeaders"
+                    responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                        ?.let {
+                            renderInitMembersFromPrefixHeaders(ctx, it, writer)
+                        }
+                    writer.write("")
+                    renderInitMembersFromPayload(ctx, responseBindings, errorShapeName, writer)
+                    writer.write("")
+                    writer.write("self.headers = httpResponse.headers")
+                    writer.write("self.statusCode = httpResponse.statusCode")
+                    writer.write("self.requestID = requestID")
+                    writer.write("self.message = message")
+                }
+            }
+            writer.write("")
+        }
+    }
+
+    private fun renderOperationErrorEnum(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape
+    ) {
+        val errorShapes = op.errors.map { ctx.model.expectShape(it) as StructureShape }.toSet().sorted()
+        val operationErrorName = "${op.defaultName()}Error"
+        val rootNamespace = ctx.settings.moduleName
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
+            .name(operationErrorName)
+            .build()
+
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(unknownServiceErrorSymbol)
+            writer.openBlock("public enum $operationErrorName {", "}") {
+                for (errorShape in errorShapes) {
+                    val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
+                    writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)
+                }
+                val unknownServiceErrorType = unknownServiceErrorSymbol.name
+                writer.write("case unknown($unknownServiceErrorType)")
+                writer.write("")
+
+                writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder?, message: String?, requestID: String? = nil) throws {", "}") {
+                    writer.write("switch errorType {")
+                    for (errorShape in errorShapes) {
+                        val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
+                        writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeName.decapitalize(), errorShapeName)
+                    }
+                    writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
+                    writer.write("}")
+                }
+            }
+            writer.write("")
+        }
+    }
+
+    /* This is a default implementation that is expected to be overridden by serialization
+    protocol specific implementations to resolve the errorType
+     */
+    open fun renderInitOperationErrorFromHttpResponse(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape
+    ) {
+        val operationErrorName = "${op.defaultName()}Error"
+        val rootNamespace = ctx.settings.moduleName
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
+            .name(operationErrorName)
+            .build()
+
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.openBlock("public init(from httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {", "}") {
+                writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
             }
             writer.write("")
         }
@@ -541,19 +666,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
-     * Find and return the set of shapes that need `Decodable` conformance which includes top level outputs types with members returned in the http body
+     * Find and return the set of shapes that need `Decodable` conformance which includes top level output, error types with members returned in the http body
      * and their nested types.
-     * Operation outputs and all nested types will conform to `Decodable`.
+     * Operation outputs, errors and all nested types will conform to `Decodable`.
      *
      * @return The set of shapes that require a `Decodable` conformance and coding keys.
      */
     private fun resolveStructuresNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Pair<Set<StructureShape>, Set<StructureShape>> {
-        // all top level operation outputs with an http body must conform to Decodable
+        // all top level operation outputs, errors with an http body must conform to Decodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Decodable
         // get them all and return as one set to loop through
-        val outputShapes = resolveOperationOutputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
 
-        val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
+        val outputShapes = resolveOperationOutputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+        val errorShapes = resolveOperationErrorShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+
+        val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
             val outputShape = ctx.model.expectShape(it.output.get())
             outputShape.members()
             }
@@ -561,9 +688,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
 
-        val nested = walkNestedShapesRequiringSerde(ctx, topLevelMembers)
+        val topLevelErrorMembers = getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .flatMap { ctx.model.expectShape(it).members() }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
 
-        return Pair(outputShapes, nested)
+        val nested = walkNestedShapesRequiringSerde(ctx, topLevelOutputMembers.union(topLevelErrorMembers))
+
+        return Pair(outputShapes.union(errorShapes), nested)
     }
 
     private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
@@ -572,6 +706,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
         return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) as StructureShape }.toSet()
+    }
+
+    private fun resolveOperationErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+        return getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .map { ctx.model.expectShape(it) as StructureShape }
+            .toSet()
     }
 
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<StructureShape> {

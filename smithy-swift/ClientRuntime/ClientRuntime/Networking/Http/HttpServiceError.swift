@@ -13,8 +13,6 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 public protocol HttpServiceError: ServiceError {
     var statusCode: HttpStatusCode? { get set }
     var headers: HttpHeaders? { get set }

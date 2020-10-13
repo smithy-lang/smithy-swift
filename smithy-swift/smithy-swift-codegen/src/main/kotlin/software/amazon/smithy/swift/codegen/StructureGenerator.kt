@@ -26,6 +26,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
     val shapeId = toShapeId()
@@ -40,7 +41,8 @@ class StructureGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: StructureShape
+    private val shape: StructureShape,
+    private val protocolGenerator: ProtocolGenerator? = null
 ) {
 
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
@@ -174,7 +176,7 @@ class StructureGenerator(
      * ```
      * We will generate the following:
      * ```
-     * public struct ThrottlingError: HttpServiceError {
+     * public struct ThrottlingError: ServiceError {
      *     public var headers: HttpHeaders?
      *     public var message: String?
      *     public var requestID: String?
@@ -196,10 +198,7 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        var errorProtocol = "ServiceError"
-        if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            errorProtocol = "HttpServiceError"
-        }
+        val errorProtocol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
         writer.putContext("error.protocol", errorProtocol)
 
         writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
