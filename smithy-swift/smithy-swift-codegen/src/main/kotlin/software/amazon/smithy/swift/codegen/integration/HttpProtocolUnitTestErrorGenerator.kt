@@ -15,9 +15,9 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.swift.codegen.defaultName
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestResponseGenerator(builder) {
@@ -58,7 +58,8 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     private fun renderCompareActualAndExpectedErrors(
         test: HttpResponseTestCase,
         errorShape: Shape,
-        operationErrorType: String) {
+        operationErrorType: String
+    ) {
         val operationErrorVariableName = operationErrorType.decapitalize()
         val errorType = symbolProvider.toSymbol(errorShape).name
         val errorVariableName = errorType.decapitalize()

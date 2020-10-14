@@ -127,7 +127,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        // render operation error enum and it's init from HttpResponse for all operations
+        // render operation error enum initializer from HttpResponse for all operations
         val httpOperations = getHttpBindingOperations(ctx)
         httpOperations.forEach {
             renderInitOperationErrorFromErrorType(ctx, it)
@@ -294,7 +294,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport(unknownServiceErrorSymbol)
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
-            writer.openBlock("extension \$L {","}", operationErrorName) {
+            writer.openBlock("extension \$L {", "}", operationErrorName) {
                 writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
                     writer.write("switch errorType {")
                     for (errorShape in errorShapes) {
@@ -324,7 +324,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.openBlock("extension \$L {","}", operationErrorName) {
+            writer.openBlock("extension \$L {", "}", operationErrorName) {
                 writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
                     writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
                 }

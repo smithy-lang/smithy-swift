@@ -27,7 +27,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
 /*
 * Generates a Swift protocol for the service
@@ -171,7 +170,7 @@ class ServiceGenerator(
 
     /*
         Renders the Operation Error enum
-         */
+    */
     private fun renderOperationErrorEnum(
         op: OperationShape
     ) {
@@ -196,7 +195,6 @@ class ServiceGenerator(
             }
         }
     }
-
 }
 
 /**
