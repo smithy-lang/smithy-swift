@@ -36,7 +36,7 @@ class ServiceGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val writers: SwiftDelegator,
+    private val delegator: SwiftDelegator,
     private val protocolGenerator: ProtocolGenerator? = null
 ) {
     private var service = settings.getService(model)
@@ -67,7 +67,7 @@ class ServiceGenerator(
 
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
-            val errorTypeName = "${op.defaultName()}Error"
+            val errorTypeName = getOperationErrorShapeName(op)
 
             val outputParam = "completion: @escaping (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
 
@@ -182,7 +182,7 @@ class ServiceGenerator(
             .build()
         val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol
 
-        writers.useShapeWriter(operationErrorSymbol) { writer ->
+        delegator.useShapeWriter(operationErrorSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addImport(unknownServiceErrorSymbol)
             writer.openBlock("public enum $operationErrorName {", "}") {

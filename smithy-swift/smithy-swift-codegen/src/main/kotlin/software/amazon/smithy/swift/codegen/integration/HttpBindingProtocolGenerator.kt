@@ -531,10 +531,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         outputShapeName: String,
         writer: SwiftWriter
     ) {
-        val queryMembers = responseBindings.values
+        val queryMemberNames = responseBindings.values
                 .filter { it.location == HttpBinding.Location.QUERY }
-            .sortedBy { it.memberName }
-            .map { it.member.memberName }
+                .sortedBy { it.memberName }
+                .map { it.member.memberName }.toMutableSet()
+
         val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderDeserializeExplicitPayload(ctx, httpPayload, writer)
@@ -544,22 +545,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // passed into the function is expected to handle the formatting required by the protocol
             val bodyMembers = responseBindings.values
                 .filter { it.location == HttpBinding.Location.DOCUMENT }
-                .sortedBy { it.memberName }
-                .map { it.member.memberName }
 
-            if (bodyMembers.isNotEmpty()) {
+            val bodyMemberNames = mutableSetOf<String>()
+            bodyMembers.forEach {
+                if (it.member.hasTrait(HttpQueryTrait::class.java)) {
+                    queryMemberNames.add(it.memberName)
+                } else {
+                    bodyMemberNames.add(it.member.memberName)
+                }
+            }
+
+            if (bodyMemberNames.isNotEmpty()) {
                 writer.write("if case .data(let data) = httpResponse.content,")
                 writer.indent()
                 writer.write("let unwrappedData = data,")
                 writer.write("let responseDecoder = decoder {")
                 writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: unwrappedData)")
-                bodyMembers.sorted().forEach {
+                bodyMemberNames.sorted().forEach {
                     writer.write("self.$it = output.$it")
                 }
                 writer.dedent()
                 writer.write("} else {")
                 writer.indent()
-                bodyMembers.sorted().forEach {
+                bodyMemberNames.sorted().forEach {
                     writer.write("self.$it = nil")
                 }
                 writer.dedent()
@@ -568,7 +576,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         // initialize query members
-        queryMembers.sorted().forEach {
+        queryMemberNames.sorted().forEach {
             writer.write("self.$it = nil")
         }
     }
@@ -691,7 +699,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .toSet()
 
         val nested = walkNestedShapesRequiringSerde(ctx, topLevelOutputMembers.union(topLevelErrorMembers))
-
         return Pair(outputShapes.union(errorShapes), nested)
     }
 
