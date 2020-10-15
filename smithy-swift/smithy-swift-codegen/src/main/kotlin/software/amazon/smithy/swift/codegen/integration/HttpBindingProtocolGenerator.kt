@@ -101,12 +101,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         shape: StructureShape
     ) {
         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
-        val membersSortedByName: List<MemberShape> = shape.allMembers.values
-            .sortedBy { ctx.symbolProvider.toMemberName(it) }
+        val membersSortedByName: List<MemberShape> = shape.members()
+            .sortedBy { it.memberName }
             .filter { it.isInHttpBody() }
         writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
-                val memberName = ctx.symbolProvider.toMemberName(member)
+                val memberName = member.memberName
                 writer.write("case $memberName")
             }
         }
@@ -178,7 +178,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("struct ${structSymbol.name}Body {", "}") {
                     httpBodyMembers.forEach {
                         val memberSymbol = ctx.symbolProvider.toSymbol(it)
-                        writer.write("public let \$L: \$T", it.memberName, memberSymbol)
+                        writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                     }
                 }
                 writer.write("") // add space between struct declaration and decodable conformance
@@ -252,7 +252,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.addFoundationImport()
             writer.addImport(serviceErrorProtocolSymbol)
             writer.openBlock("extension \$L: \$L {", "}", errorShapeName, serviceErrorProtocolSymbol.name) {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
@@ -266,10 +265,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("")
                     renderInitMembersFromPayload(ctx, responseBindings, errorShapeName, writer)
                     writer.write("")
-                    writer.write("self.headers = httpResponse.headers")
-                    writer.write("self.statusCode = httpResponse.statusCode")
-                    writer.write("self.requestID = requestID")
-                    writer.write("self.message = message")
+                    writer.write("self._headers = httpResponse.headers")
+                    writer.write("self._statusCode = httpResponse.statusCode")
+                    writer.write("self._requestID = requestID")
+                    writer.write("self._message = message")
                 }
             }
             writer.write("")
@@ -342,7 +341,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         bindings.forEach { hdrBinding ->
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
-            val memberName = hdrBinding.member.memberName
+            val memberName = ctx.symbolProvider.toMemberName(hdrBinding.member)
             val headerName = hdrBinding.locationName
             val headerDeclaration = "${memberName}HeaderValue"
             writer.write("if let $headerDeclaration = httpResponse.headers.value(for: \$S) {", headerName)
@@ -491,7 +490,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val targetValueShape = ctx.model.expectShape(targetShape.value.target)
         val targetValueSymbol = ctx.symbolProvider.toSymbol(targetValueShape)
         val prefix = binding.locationName
-        val memberName = binding.member.memberName
+        val memberName = ctx.symbolProvider.toMemberName(binding.member)
 
         val keyCollName = "keysFor${memberName.capitalize()}"
         val filter = if (prefix.isNotEmpty()) ".filter({ $0.starts(with: \"$prefix\") })" else ""
@@ -531,10 +530,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         outputShapeName: String,
         writer: SwiftWriter
     ) {
-        val queryMemberNames = responseBindings.values
+        var queryMemberNames = responseBindings.values
                 .filter { it.location == HttpBinding.Location.QUERY }
                 .sortedBy { it.memberName }
-                .map { it.member.memberName }.toMutableSet()
+                .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
 
         val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
@@ -546,14 +545,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val bodyMembers = responseBindings.values
                 .filter { it.location == HttpBinding.Location.DOCUMENT }
 
-            val bodyMemberNames = mutableSetOf<String>()
-            bodyMembers.forEach {
-                if (it.member.hasTrait(HttpQueryTrait::class.java)) {
-                    queryMemberNames.add(it.memberName)
-                } else {
-                    bodyMemberNames.add(it.member.memberName)
-                }
-            }
+            queryMemberNames = queryMemberNames.union(
+                bodyMembers
+                    .filter { it.member.hasTrait(HttpQueryTrait::class.java) }
+                    .map { ctx.symbolProvider.toMemberName(it.member) }
+                    .toMutableSet()
+            ).toMutableSet()
+
+            val bodyMemberNames = bodyMembers
+                .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
+                .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
 
             if (bodyMemberNames.isNotEmpty()) {
                 writer.write("if case .data(let data) = httpResponse.content,")
@@ -582,7 +583,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun renderDeserializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
-        val memberName = binding.member.memberName
+        val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
         writer.openBlock("if case .data(let data) = httpResponse.content,\n   let unwrappedData = data {", "} else {") {
@@ -829,7 +830,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderSerializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
         // explicit payload member as the sole payload
-        val memberName = binding.member.memberName
+        val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         writer.openBlock("if let $memberName = self.$memberName {", "} else {") {
             when (target.type) {
@@ -884,7 +885,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         queryBindings.forEach {
-            var memberName = it.member.memberName
+            var memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val bindingIndex = HttpBindingIndex.of(ctx.model)
@@ -976,7 +977,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
         }
         headerBindings.forEach {
-            val memberName = it.member.memberName
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
 
@@ -1021,7 +1022,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         prefixHeaderBindings.forEach {
-            val memberName = it.member.memberName
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
 

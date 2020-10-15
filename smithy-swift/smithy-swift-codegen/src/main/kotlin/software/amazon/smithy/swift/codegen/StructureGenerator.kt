@@ -177,12 +177,13 @@ class StructureGenerator(
      * We will generate the following:
      * ```
      * public struct ThrottlingError: ServiceError {
-     *     public var headers: HttpHeaders?
+     *     public var _headers: HttpHeaders?
+     *     public var _message: String?
+     *     public var _requestID: String?
+     *     public var _retryable: Bool? = true
+     *     public var _statusCode: HttpStatusCode?
+     *     public var _type: ErrorType = .client
      *     public var message: String?
-     *     public var requestID: String?
-     *     public var retryable: Bool? = true
-     *     public var statusCode: HttpStatusCode?
-     *     public var type: ErrorType = .client
      *
      *     public init (
      *         message: String
@@ -214,17 +215,14 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            writer.write("public var headers: HttpHeaders?")
-            writer.write("public var statusCode: HttpStatusCode?")
+            writer.write("public var _headers: HttpHeaders?")
+            writer.write("public var _statusCode: HttpStatusCode?")
         }
-        // prevent duplicates if `message` is already included in the error structure members
-        if (!checkMemberExists("message")) {
-            writer.write("public var message: String?")
-        }
-        writer.write("public var requestID: String?")
+        writer.write("public var _message: String?")
+        writer.write("public var _requestID: String?")
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
-        writer.write("public var retryable: Bool? = \$L", isRetryable)
-        writer.write("public var type: ErrorType = .\$L", errorTrait.value)
+        writer.write("public var _retryable: Bool? = \$L", isRetryable)
+        writer.write("public var _type: ErrorType = .\$L", errorTrait.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
@@ -235,7 +233,7 @@ class StructureGenerator(
 
     private fun checkMemberExists(name: String): Boolean {
         membersSortedByName.forEach {
-            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+            val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             if (memberName == name) {
                 return true
             }

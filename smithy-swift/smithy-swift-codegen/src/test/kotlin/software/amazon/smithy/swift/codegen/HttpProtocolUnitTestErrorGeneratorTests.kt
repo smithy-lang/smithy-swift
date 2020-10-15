@@ -51,7 +51,7 @@ class GreetingWithErrorsFooErrorTest: HttpResponseTestBase {
 
                 let expected = FooError(
                 )
-                XCTAssertEqual(actual.statusCode, HttpStatusCode(rawValue: 500))
+                XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 500))
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }
@@ -105,16 +105,16 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             if case .complexError(let actual) = greetingWithErrorsError {
 
                 let expected = ComplexError(
-                    Header: "Header",
-                    Nested: ComplexNestedErrorData(
-                        Foo: "bar"
+                    header: "Header",
+                    nested: ComplexNestedErrorData(
+                        foo: "bar"
                     ),
-                    TopLevel: "Top level"
+                    topLevel: "Top level"
                 )
-                XCTAssertEqual(actual.statusCode, HttpStatusCode(rawValue: 403))
-                XCTAssertEqual(expected.Header, actual.Header)
-                XCTAssertEqual(expected.TopLevel, actual.TopLevel)
-                XCTAssertEqual(expected.Nested, actual.Nested)
+                XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(expected.header, actual.header)
+                XCTAssertEqual(expected.topLevel, actual.topLevel)
+                XCTAssertEqual(expected.nested, actual.nested)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }

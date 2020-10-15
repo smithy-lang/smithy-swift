@@ -189,7 +189,7 @@ class HttpProtocolClientGenerator(
                 writer.openBlock("else {", "}") {
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let error = try \$L(httpResponse: httpResponse, decoder: self.decoder)", operationErrorName)
-                        writer.write("completion(.failure(SdkError<\$L>.service(error)))", operationErrorName)
+                        writer.write("completion(.failure(SdkError.service(error)))")
                     }
                     writer.indent()
                     writer.write("completion(.failure(.client(.deserializationFailed(err))))")

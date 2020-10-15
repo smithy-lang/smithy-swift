@@ -121,7 +121,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun toMemberName(shape: MemberShape): String {
-        return escaper.escapeMemberName(shape.memberName)
+        return escaper.escapeMemberName(shape.memberName).decapitalize()
     }
 
     override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int", "0")

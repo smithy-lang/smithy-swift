@@ -194,11 +194,12 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
                 /// This *is* documentation about the shape.
                 public struct MyError: ServiceError {
-                    public var headers: HttpHeaders?
-                    public var statusCode: HttpStatusCode?
-                    public var requestID: String?
-                    public var retryable: Bool? = true
-                    public var type: ErrorType = .client
+                    public var _headers: HttpHeaders?
+                    public var _statusCode: HttpStatusCode?
+                    public var _message: String?
+                    public var _requestID: String?
+                    public var _retryable: Bool? = true
+                    public var _type: ErrorType = .client
                     /// This *is* documentation about the member.
                     public var baz: Int?
                     public var message: String?

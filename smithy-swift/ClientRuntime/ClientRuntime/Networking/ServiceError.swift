@@ -16,9 +16,9 @@
 import Foundation
 
 public protocol ServiceError {
-    var retryable: Bool? { get set }
-    var type: ErrorType { get set }
-    var message: String? { get set }
+    var _retryable: Bool? { get set }
+    var _type: ErrorType { get set }
+    var _message: String? { get set }
 }
 
 public enum ErrorType {

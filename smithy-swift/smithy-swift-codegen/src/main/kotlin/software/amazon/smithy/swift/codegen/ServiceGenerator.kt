@@ -183,7 +183,7 @@ class ServiceGenerator(
         val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol
 
         delegator.useShapeWriter(operationErrorSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            // writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addImport(unknownServiceErrorSymbol)
             writer.openBlock("public enum $operationErrorName {", "}") {
                 for (errorShape in errorShapes) {

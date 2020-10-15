@@ -15,16 +15,16 @@
 
 /// General networking protocol independent service error structure used when exact error could not be deduced during deserialization
 public struct UnknownServiceError: ServiceError {
-    public var message: String?
+    public var _message: String?
     
-    public var retryable: Bool? = false
+    public var _retryable: Bool? = false
     
-    public var type: ErrorType = .unknown
+    public var _type: ErrorType = .unknown
 }
 
 extension UnknownServiceError {
     public init(message: String? = nil) {
-        self.message = message
+        self._message = message
     }
 }
 
