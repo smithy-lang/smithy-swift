@@ -15,12 +15,14 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.utils.CaseUtils
 
@@ -63,6 +65,18 @@ interface ProtocolGenerator {
                 else -> throw CodegenException("unknown timestamp format: $tsFormat")
             }
         }
+
+        val DefaultServiceErrorProtocolSymbol: Symbol = Symbol.builder()
+            .name("ServiceError")
+            .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
+            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+            .build()
+
+        val DefaultUnknownServiceErrorSymbol: Symbol = Symbol.builder()
+            .name("UnknownServiceError")
+            .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
+            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+            .build()
     }
 
     /**
@@ -83,6 +97,20 @@ interface ProtocolGenerator {
             }
             return CaseUtils.toCamelCase(prefix) + getSanitizedName(protocol.name)
         }
+
+    /**
+     * Symbol that should be used as the base class for generated service errors.
+     * It defaults to the ServiceError available in smithy-swift's client-runtime.
+     */
+    val serviceErrorProtocolSymbol: Symbol
+        get() = DefaultServiceErrorProtocolSymbol
+
+    /**
+     * Symbol that should be used when the deserialized service error type cannot be determined
+     * It defaults to the UnknownServiceError available in smithy-swift's client-runtime.
+     */
+    val unknownServiceErrorSymbol: Symbol
+        get() = DefaultUnknownServiceErrorSymbol
 
     /**
      * Generate serializers required by the protocol

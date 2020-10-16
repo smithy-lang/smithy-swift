@@ -66,7 +66,7 @@ class StructDecodeGeneration(
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
-                val memberName = member.memberName
+                val memberName = ctx.symbolProvider.toMemberName(member)
                 currentMember = member
                 when (target) {
                     is CollectionShape -> renderDecodeListMember(target, memberName, containerName)
@@ -79,7 +79,7 @@ class StructDecodeGeneration(
     }
 
     private fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
-        val memberName = member.memberName
+        val memberName = ctx.symbolProvider.toMemberName(member)
         val tsFormat = member
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
@@ -104,7 +104,7 @@ class StructDecodeGeneration(
 
     private fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
-        val memberName = member.memberName
+        val memberName = ctx.symbolProvider.toMemberName(member)
         val topologicalIndex = TopologicalIndex.of(ctx.model)
         if (member.isRecursiveMember(topologicalIndex)) {
             symbol = symbol.recursiveSymbol()
@@ -248,7 +248,12 @@ class StructDecodeGeneration(
         }
     }
 
-    private fun renderDecodeMapMember(shape: MapShape, memberName: String, containerName: String, level: Int = 0) {
+    private fun renderDecodeMapMember(
+        shape: MapShape,
+        memberName: String,
+        containerName: String,
+        level: Int = 0
+    ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName}Decoded$level"

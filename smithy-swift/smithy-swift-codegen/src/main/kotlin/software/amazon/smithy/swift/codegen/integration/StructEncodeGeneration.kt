@@ -64,7 +64,7 @@ class StructEncodeGeneration(
             writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
-                val memberName = member.memberName
+                val memberName = ctx.symbolProvider.toMemberName(member)
                 when (target) {
                     is CollectionShape -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
@@ -123,35 +123,35 @@ class StructEncodeGeneration(
         return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isUnwrapped)
     }
 
-    private fun renderEncodeListMember(targetShape: Shape, keyName: String, containerName: String, level: Int = 0) {
+    private fun renderEncodeListMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
-                val topLevelContainerName = "${keyName}Container"
+                val topLevelContainerName = "${memberName}Container"
 
                 if (level == 0) {
                     writer.write(
                         "var \$L = $containerName.nestedUnkeyedContainer(forKey: .\$L)",
                         topLevelContainerName,
-                        keyName
+                        memberName
                     )
-                    renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
+                    renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                     if (isBoxed) {
-                        writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
-                            renderEncodeList(ctx, keyName, topLevelContainerName, targetShape, level)
+                        writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                            renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                         }
                     }
                 }
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
-            is MapShape -> renderEncodeList(ctx, keyName, containerName, targetShape, level)
+            is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
             else -> {
-                val extension = getShapeExtension(targetShape, keyName, false)
+                val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                 if (isBoxed) {
-                    writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
+                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension)")
                     }
                 } else {
@@ -199,28 +199,28 @@ class StructEncodeGeneration(
         }
     }
 
-    private fun renderEncodeMapMember(targetShape: Shape, keyName: String, containerName: String, level: Int = 0) {
+    private fun renderEncodeMapMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
-                val topLevelContainerName = "${keyName}Container"
+                val topLevelContainerName = "${memberName}Container"
                 writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
-                renderEncodeMap(ctx, keyName, topLevelContainerName, targetShape, level)
+                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
-                val topLevelContainerName = "${keyName}Container"
+                val topLevelContainerName = "${memberName}Container"
                 writer.write(
                     "var \$L = $containerName.nestedContainer(keyedBy: Key.self, forKey: .\$L)",
                     topLevelContainerName,
-                    keyName
+                    memberName
                 )
-                renderEncodeMap(ctx, keyName, topLevelContainerName, targetShape.value, level)
+                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level)
             }
             else -> {
-                val extension = getShapeExtension(targetShape, keyName, false)
+                val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                val keyEnumName = if (level == 0) keyName else "Key(stringValue: key${level - 1})"
+                val keyEnumName = if (level == 0) memberName else "Key(stringValue: key${level - 1})"
                 if (isBoxed) {
-                    writer.openBlock("if let \$L = \$L {", "}", keyName, keyName) {
+                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: .\$L)", keyEnumName)
                     }
                 } else {

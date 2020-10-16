@@ -88,3 +88,23 @@ extension StringProtocol {
         return decodedString
     }
 }
+
+extension String {
+    /// Returns a substring after the first occurrence of `separator` or original string if `separator` is absent
+    public func substringAfter(_ separator: String) -> String {
+        guard let range = self.range(of: separator) else {
+            return self
+        }
+        let substring = self[range.upperBound...]
+        return String(substring)
+    }
+    
+    /// Returns a substring before the first occurrence of `separator` or original string if `separator` is absent
+    public func substringBefore(_ separator: String) -> String {
+        guard let range = self.range(of: separator) else {
+            return self
+        }
+        let substring = self[..<range.lowerBound]
+        return String(substring)
+    }
+}

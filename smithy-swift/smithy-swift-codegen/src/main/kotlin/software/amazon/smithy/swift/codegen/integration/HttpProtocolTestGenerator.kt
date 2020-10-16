@@ -23,6 +23,7 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.defaultName
 
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.
@@ -31,6 +32,7 @@ class HttpProtocolTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
+    private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -40,8 +42,8 @@ class HttpProtocolTestGenerator(
      * Generates the API HTTP protocol tests defined in the smithy model.
      */
     fun generateProtocolTests() {
-        val operationIndex: OperationIndex = ctx.model.getKnowledge(OperationIndex::class.java)
-        val topDownIndex: TopDownIndex = ctx.model.getKnowledge(TopDownIndex::class.java)
+        val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
+        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
 
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
@@ -114,7 +116,30 @@ class HttpProtocolTestGenerator(
                         if (testCases.isEmpty()) {
                             return@ifPresent
                         }
-                        // TODO - generate response error tests
+                        // multiple error (tests) may be associated with a single operation,
+                        // use the operation name + error name as the class name
+                        val opName = operation.id.name.capitalize()
+                        val testClassName = "${opName}${error.defaultName()}Test"
+                        val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
+                        ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                            LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+                            // import dependencies
+                            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                            writer.addImport(ctx.settings.moduleName)
+                            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
+                            writer.addImport(SwiftDependency.XCTest.namespace)
+
+                            errorTestBuilder
+                                .error(error)
+                                .writer(writer)
+                                .model(ctx.model)
+                                .symbolProvider(ctx.symbolProvider)
+                                .operation(operation)
+                                .serviceName(serviceSymbol.name)
+                                .testCases(testCases)
+                                .build()
+                                .renderTestClass(testClassName)
+                        }
                     }
             }
         }

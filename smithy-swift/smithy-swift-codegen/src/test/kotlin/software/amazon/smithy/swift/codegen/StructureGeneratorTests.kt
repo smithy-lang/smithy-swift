@@ -38,26 +38,27 @@ class StructureGeneratorTests : TestsBase() {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.staticHeader)
-        val expectedGeneratedStructure = "" +
-                "/// This *is* documentation about the shape.\n" +
-                "public struct MyStruct: Equatable {\n" +
-                "    public let bar: Int\n" +
-                "    /// This *is* documentation about the member.\n" +
-                "    public let baz: Int?\n" +
-                "    public let foo: String?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        bar: Int = 0,\n" +
-                "        baz: Int? = nil,\n" +
-                "        foo: String? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.bar = bar\n" +
-                "        self.baz = baz\n" +
-                "        self.foo = foo\n" +
-                "    }\n" +
-                "}"
+        val expectedGeneratedStructure =
+            """
+                /// This *is* documentation about the shape.
+                public struct MyStruct: Equatable {
+                    public let bar: Int
+                    /// This *is* documentation about the member.
+                    public let baz: Int?
+                    public let foo: String?
 
+                    public init (
+                        bar: Int = 0,
+                        baz: Int? = nil,
+                        foo: String? = nil
+                    )
+                    {
+                        self.bar = bar
+                        self.baz = baz
+                        self.foo = foo
+                    }
+                }
+            """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)
     }
 
@@ -188,29 +189,32 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.staticHeader)
-        val expectedGeneratedStructure = "" +
-                "import ClientRuntime\n" +
-                "\n" +
-                "/// This *is* documentation about the shape.\n" +
-                "public struct MyError: HttpOperationError {\n" +
-                "    public var httpResponse: HttpResponse\n" +
-                "    public var retryable = true\n" +
-                "    public var type: ErrorType = .client\n" +
-                "    /// This *is* documentation about the member.\n" +
-                "    public var baz: Int?\n" +
-                "    public var message: String?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        httpResponse: HttpResponse,\n" +
-                "        baz: Int? = nil,\n" +
-                "        message: String? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.httpResponse = httpResponse\n" +
-                "        self.baz = baz\n" +
-                "        self.message = message\n" +
-                "    }\n" +
-                "}"
+        val expectedGeneratedStructure =
+            """
+                import ClientRuntime
+
+                /// This *is* documentation about the shape.
+                public struct MyError: ServiceError {
+                    public var _headers: HttpHeaders?
+                    public var _statusCode: HttpStatusCode?
+                    public var _message: String?
+                    public var _requestID: String?
+                    public var _retryable: Bool? = true
+                    public var _type: ErrorType = .client
+                    /// This *is* documentation about the member.
+                    public var baz: Int?
+                    public var message: String?
+
+                    public init (
+                        baz: Int? = nil,
+                        message: String? = nil
+                    )
+                    {
+                        self.baz = baz
+                        self.message = message
+                    }
+                }
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedStructure)
     }

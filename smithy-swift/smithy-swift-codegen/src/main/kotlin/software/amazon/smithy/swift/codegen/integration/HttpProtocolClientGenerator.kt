@@ -68,9 +68,9 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
-        val topDownIndex = model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex = TopDownIndex.of(model)
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.defaultName() }
-        val operationsIndex = model.getKnowledge(OperationIndex::class.java)
+        val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
             operations.forEach {
@@ -109,7 +109,7 @@ class HttpProtocolClientGenerator(
                 val labelMemberName = binding.member.memberName
                 val formattedLabel: String
                 if (targetShape.isTimestampShape) {
-                    val bindingIndex = model.getKnowledge(HttpBindingIndex::class.java)
+                    val bindingIndex = HttpBindingIndex.of(model)
                     val timestampFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.LABEL, TimestampFormatTrait.Format.DATE_TIME)
                     formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
                 } else if (targetShape.isStringShape) {
@@ -169,26 +169,35 @@ class HttpProtocolClientGenerator(
     private fun renderHttpClientErrorBlock() {
         writer.openBlock("case .failure(let httpClientErr):")
             .call {
-                // TODO:: make error more operation specific
-                writer.write("completion(.failure(SdkError<OperationError>.unknown(httpClientErr)))")
+                writer.write("completion(.failure(.client(ClientError.networkError(httpClientErr))))")
                 writer.write("return")
             }
             .closeBlock("")
     }
 
     private fun renderSuccessfulResponseBlock(opIndex: OperationIndex, op: OperationShape) {
-        writer.openBlock("case .success(let httpResp):")
+        val operationErrorName = "${op.defaultName()}Error"
+
+        writer.openBlock("case .success(let httpResponse):")
             .call {
-                writer.openBlock("if httpResp.statusCode == HttpStatusCode.ok {", "}") {
+                writer.openBlock("if (200..<300).contains(httpResponse.statusCode.rawValue) {", "}") {
                     val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-                    writer.write("let output = try \$L(httpResponse: httpResp, decoder: self.decoder)", outputShapeName)
+                    writer.write("let output = try \$L(httpResponse: httpResponse, decoder: self.decoder)", outputShapeName)
                     writer.write("completion(.success(output))")
                 }
-                // HTTP request failed to execute
+                // HTTP request returned error
                 writer.openBlock("else {", "}") {
-                    // TODO:: map the HttpError to a service specific error
-                    writer.write("completion(.failure(SdkError<OperationError>.service(ClientError.networkError(\"service error\") as! OperationError)))")
+                    writer.openBlock("do {", "} catch let err {") {
+                        writer.write("let error = try \$L(httpResponse: httpResponse, decoder: self.decoder)", operationErrorName)
+                        writer.write("completion(.failure(SdkError.service(error)))")
+                    }
+                    writer.indent()
+                    writer.write("completion(.failure(.client(.deserializationFailed(err))))")
+                    writer.write("return")
+                    writer.dedent()
+                    writer.write("}")
                 }
             }
+            .closeBlock("")
     }
 }

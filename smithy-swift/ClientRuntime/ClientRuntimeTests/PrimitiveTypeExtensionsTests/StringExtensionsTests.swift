@@ -84,4 +84,26 @@ class StringExtensionsTests: XCTestCase {
         }
         XCTAssertEqual(decodedString, "true")
     }
+    
+    func testSubstringAfter() {
+        let stringsAndMatches = [
+            "FooError": "FooError",
+            "ABC#FooError": "FooError",
+            "#": ""
+        ]
+        for (string, match) in stringsAndMatches {
+            XCTAssertEqual(string.substringAfter("#"), match)
+        }
+    }
+    
+    func testSubstringBefore() {
+        let stringsAndMatches = [
+            "FooError": "FooError",
+            "FooError:ABC": "FooError",
+            ":": ""
+        ]
+        for (string, match) in stringsAndMatches {
+            XCTAssertEqual(string.substringBefore(":"), match)
+        }
+    }
 }

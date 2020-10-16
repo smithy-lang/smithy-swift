@@ -43,5 +43,4 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
             XCTFail("HttpResponse Content unexpectedly found to be nil")
         }
     }
-
 }
