@@ -49,13 +49,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     // can be overridden by implementations to more specific error protocol
     override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
         .name("UnknownHttpServiceError")
+        .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     override val serviceErrorProtocolSymbol: Symbol = Symbol.builder()
-    .name("HttpServiceError")
-    .addDependency(SwiftDependency.CLIENT_RUNTIME)
-    .build()
+        .name("HttpServiceError")
+        .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .build()
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
