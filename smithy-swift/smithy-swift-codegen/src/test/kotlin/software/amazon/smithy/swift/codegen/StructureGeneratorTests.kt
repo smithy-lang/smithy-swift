@@ -38,26 +38,27 @@ class StructureGeneratorTests : TestsBase() {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.staticHeader)
-        val expectedGeneratedStructure = "" +
-                "/// This *is* documentation about the shape.\n" +
-                "public struct MyStruct: Equatable {\n" +
-                "    public let bar: Int\n" +
-                "    /// This *is* documentation about the member.\n" +
-                "    public let baz: Int?\n" +
-                "    public let foo: String?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        bar: Int = 0,\n" +
-                "        baz: Int? = nil,\n" +
-                "        foo: String? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.bar = bar\n" +
-                "        self.baz = baz\n" +
-                "        self.foo = foo\n" +
-                "    }\n" +
-                "}"
+        val expectedGeneratedStructure =
+            """
+                /// This *is* documentation about the shape.
+                public struct MyStruct: Equatable {
+                    public let bar: Int
+                    /// This *is* documentation about the member.
+                    public let baz: Int?
+                    public let foo: String?
 
+                    public init (
+                        bar: Int = 0,
+                        baz: Int? = nil,
+                        foo: String? = nil
+                    )
+                    {
+                        self.bar = bar
+                        self.baz = baz
+                        self.foo = foo
+                    }
+                }
+            """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)
     }
 

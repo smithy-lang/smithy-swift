@@ -68,11 +68,13 @@ interface ProtocolGenerator {
 
         val DefaultServiceErrorProtocolSymbol: Symbol = Symbol.builder()
             .name("ServiceError")
+            .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .build()
 
         val DefaultUnknownServiceErrorSymbol: Symbol = Symbol.builder()
             .name("UnknownServiceError")
+            .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .build()
     }

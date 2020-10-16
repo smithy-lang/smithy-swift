@@ -65,16 +65,15 @@ class StructEncodeGeneration(
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
                 val memberName = ctx.symbolProvider.toMemberName(member)
-                val memberCodingKey = member.memberName
                 when (target) {
                     is CollectionShape -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeListMember(target, memberName, memberCodingKey, containerName)
+                            renderEncodeListMember(target, memberName, containerName)
                         }
                     }
                     is MapShape -> {
                         writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeMapMember(target, memberName, memberCodingKey, containerName)
+                            renderEncodeMapMember(target, memberName, containerName)
                         }
                     }
                     else -> {
@@ -83,10 +82,10 @@ class StructEncodeGeneration(
                         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
                         if (isBoxed) {
                             writer.openBlock("if let $memberName = $memberName {", "}") {
-                                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberCodingKey)
+                                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
                             }
                         } else {
-                            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberCodingKey)
+                            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
                         }
                     }
                 }
@@ -124,7 +123,7 @@ class StructEncodeGeneration(
         return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isUnwrapped)
     }
 
-    private fun renderEncodeListMember(targetShape: Shape, memberName: String, memberCodingKey: String, containerName: String, level: Int = 0) {
+    private fun renderEncodeListMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
@@ -133,7 +132,7 @@ class StructEncodeGeneration(
                     writer.write(
                         "var \$L = $containerName.nestedUnkeyedContainer(forKey: .\$L)",
                         topLevelContainerName,
-                        memberCodingKey
+                        memberName
                     )
                     renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 } else {
@@ -174,13 +173,12 @@ class StructEncodeGeneration(
             when (targetShape) {
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                    renderEncodeListMember(nestedTarget, iteratorName, iteratorName, topLevelContainerName, level + 1)
+                    renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
                 }
                 is MapShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        "Key(stringValue: key)",
                         "Key(stringValue: key)",
                         topLevelContainerName,
                         level + 1
@@ -201,7 +199,7 @@ class StructEncodeGeneration(
         }
     }
 
-    private fun renderEncodeMapMember(targetShape: Shape, memberName: String, memberCodingKey: String, containerName: String, level: Int = 0) {
+    private fun renderEncodeMapMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
@@ -213,7 +211,7 @@ class StructEncodeGeneration(
                 writer.write(
                     "var \$L = $containerName.nestedContainer(keyedBy: Key.self, forKey: .\$L)",
                     topLevelContainerName,
-                    memberCodingKey
+                    memberName
                 )
                 renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level)
             }
@@ -251,7 +249,6 @@ class StructEncodeGeneration(
                     renderEncodeListMember(
                         nestedTarget,
                         valueIterator,
-                        valueIterator,
                         topLevelContainerName,
                         level + 1
                     )
@@ -260,7 +257,6 @@ class StructEncodeGeneration(
                     val nestedTarget = ctx.model.expectShape(target.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        valueIterator,
                         valueIterator,
                         topLevelContainerName,
                         level + 1

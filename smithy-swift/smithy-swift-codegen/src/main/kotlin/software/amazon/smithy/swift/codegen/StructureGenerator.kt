@@ -199,8 +199,8 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(structSymbol)
 
-        val errorProtocol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
-        writer.putContext("error.protocol", errorProtocol)
+        val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
+        writer.putContext("error.protocol", serviceErrorProtocolSymbol.name)
 
         writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
             .call { generateErrorStructMembers() }
