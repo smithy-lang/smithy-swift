@@ -73,7 +73,7 @@ open class MemberShapeDecodeGenerator(
             symbol = symbol.recursiveSymbol()
         }
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let \$L = try \$L.decodeIfPresent(\$L.self, forKey: .\$L)",decodedMemberName, containerName, symbol.name, memberName)
+        writer.write("let \$L = try \$L.decodeIfPresent(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
@@ -272,7 +272,7 @@ open class MemberShapeDecodeGenerator(
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember,level + 1)
+                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {

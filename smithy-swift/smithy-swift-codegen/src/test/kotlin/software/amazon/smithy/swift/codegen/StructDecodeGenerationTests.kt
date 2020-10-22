@@ -48,7 +48,6 @@ class StructDecodeGenerationTests : TestsBase() {
 
     init {
         newTestContext.generator.generateDeserializers(newTestContext.ctx)
-        newTestContext.generator.generateProtocolClient(newTestContext.ctx)
         newTestContext.ctx.delegator.flushWriters()
     }
 

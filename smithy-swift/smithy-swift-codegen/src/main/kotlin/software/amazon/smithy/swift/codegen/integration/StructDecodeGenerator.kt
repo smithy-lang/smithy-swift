@@ -53,7 +53,7 @@ class StructDecodeGenerator(
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-): MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
+) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     fun render() {
         val containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {

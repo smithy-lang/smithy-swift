@@ -89,7 +89,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("extension ${symbol.name}: Encodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                    when(shape) {
+                    when (shape) {
                         is StructureShape -> {
                             // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                             val httpBodyMembers = shape.members()
@@ -187,7 +187,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     val members = shape.members().toMutableList()
-                    when(shape) {
+                    when (shape) {
                         is StructureShape -> {
                             generateCodingKeysForMembers(ctx, writer, members)
                             writer.write("")

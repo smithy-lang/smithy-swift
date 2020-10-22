@@ -752,7 +752,40 @@ union MyUnion {
     booleanValue: Boolean,
     numberValue: Integer,
     blobValue: Blob,
+    timestampValue: Timestamp,
+    enumValue: FooEnum,
+    listValue: StringList,
+    mapValue: StringMap,
+    structureValue: GreetingWithErrorsOutput,
 }
+
+list StringList {
+    member: String,
+}
+
+@enum([
+    {
+        name: "FOO",
+        value: "Foo",
+    },
+    {
+        name: "BAZ",
+        value: "Baz",
+    },
+    {
+        name: "BAR",
+        value: "Bar",
+    },
+    {
+        name: "ONE",
+        value: "1",
+    },
+    {
+        name: "ZERO",
+        value: "0",
+    },
+])
+string FooEnum
 
 apply JsonUnions @httpRequestTests([
     {

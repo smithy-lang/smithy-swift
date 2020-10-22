@@ -17,11 +17,7 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.BoxTrait
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
 
@@ -58,7 +54,7 @@ class StructEncodeGenerator(
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-): MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
+) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
     fun render() {
         val containerName = "container"
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
