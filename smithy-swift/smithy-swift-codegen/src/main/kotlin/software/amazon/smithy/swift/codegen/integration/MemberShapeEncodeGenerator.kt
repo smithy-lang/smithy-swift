@@ -1,98 +1,48 @@
 /*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- *  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License").
- *  * You may not use this file except in compliance with the License.
- *  * A copy of the License is located at
- *  *
- *  *  http://aws.amazon.com/apache2.0
- *  *
- *  * or in the "license" file accompanying this file. This file is distributed
- *  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- *  * express or implied. See the License for the specific language governing
- *  * permissions and limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
  *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
-
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.TopologicalIndex
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.BlobShape
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.isRecursiveMember
 
-/**
- * Generates encode function for members bound to the payload.
- *
- * e.g.
- * ```
- *    public func encode(to encoder: Encoder) throws {
- *       var container = encoder.container(keyedBy: CodingKeys.self)
- *       try container.encode(booleanList, forKey: .booleanList)
- *       try container.encode(enumList, forKey: .enumList)
- *       try container.encode(integerList, forKey: .integerList)
- *       var nestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedStringList)
- *       if let nestedStringList = nestedStringList {
- *         for stringlist0 in nestedStringList {
- *            try nestedStringListContainer.encode(stringlist0)
- *          }
- *       }
- *       try container.encode(stringList, forKey: .stringList)
- *       try container.encode(stringSet, forKey: .stringSet)
- *       try container.encode(structureList, forKey: .structureList)
- *       var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
- *       if let timestampList = timestampList {
- *          for timestamp0 in timestampList {
- *              try timestampListContainer.encode(timestamp0.timeIntervalSince1970)
- *          }
-*        }
- *   }
- * ```
+/*
+Includes functions to help render conformance to Encodable protocol for shapes
  */
-class StructEncodeGeneration(
+open class MemberShapeEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
-    fun render() {
-        val containerName = "container"
-        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
-            writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
-            members.forEach { member ->
-                val target = ctx.model.expectShape(member.target)
-                val memberName = ctx.symbolProvider.toMemberName(member)
-                when (target) {
-                    is CollectionShape -> {
-                        writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeListMember(target, memberName, containerName)
-                        }
-                    }
-                    is MapShape -> {
-                        writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeMapMember(target, memberName, containerName)
-                        }
-                    }
-                    else -> {
-                        val symbol = ctx.symbolProvider.toSymbol(target)
-                        val isBoxed = symbol.isBoxed()
-                        val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
-                        if (isBoxed) {
-                            writer.openBlock("if let $memberName = $memberName {", "}") {
-                                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
-                            }
-                        } else {
-                            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
-                        }
-                    }
-                }
-            }
-        }
-    }
 
+    /*
+     Add custom extensions to be rendered to handle optional shapes and
+     special types like enum, timestamp, blob
+     */
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
         val index = TopologicalIndex.of(ctx.model)
         val isRecursiveMember = when (shape) {
@@ -114,6 +64,7 @@ class StructEncodeGeneration(
             else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }
+
     // timestamps are boxed by default so only pass in false if date is inside aggregate type and not labeled with box trait
     private fun encodeDateType(shape: Shape, memberName: String, isUnwrapped: Boolean = true): String {
         val tsFormat = shape
@@ -123,7 +74,8 @@ class StructEncodeGeneration(
         return ProtocolGenerator.getFormattedDateString(tsFormat, memberName, isUnwrapped)
     }
 
-    private fun renderEncodeListMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
+    // Render encoding of a member of list type
+    fun renderEncodeListMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
@@ -161,6 +113,7 @@ class StructEncodeGeneration(
         }
     }
 
+    // Iterate over and render encoding for all members of a list
     private fun renderEncodeList(
         ctx: ProtocolGenerator.GenerationContext,
         collectionName: String,
@@ -199,7 +152,8 @@ class StructEncodeGeneration(
         }
     }
 
-    private fun renderEncodeMapMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
+    // Render encoding of a member of Map type
+    fun renderEncodeMapMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
@@ -230,6 +184,7 @@ class StructEncodeGeneration(
         }
     }
 
+    // Iterate over and render encoding for all members of a map
     private fun renderEncodeMap(
         ctx: ProtocolGenerator.GenerationContext,
         mapName: String,
@@ -263,7 +218,8 @@ class StructEncodeGeneration(
                     )
                 }
                 else -> {
-                    val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
+                    val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(
+                        BoxTrait::class.java))
                     val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
                     if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
@@ -274,6 +230,21 @@ class StructEncodeGeneration(
                     }
                 }
             }
+        }
+    }
+
+    // Render default encoding of a member
+    fun renderSimpleEncodeMember(target: Shape, member: MemberShape, containerName: String) {
+        val symbol = ctx.symbolProvider.toSymbol(target)
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val isBoxed = symbol.isBoxed()
+        val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+            }
+        } else {
+            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
         }
     }
 }

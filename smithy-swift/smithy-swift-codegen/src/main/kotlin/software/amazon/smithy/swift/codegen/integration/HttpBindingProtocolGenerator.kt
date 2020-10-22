@@ -74,38 +74,54 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
         // render conformance to Encodable for all input shapes with an http body and their nested types
-        val structuresNeedingEncodableConformance = resolveStructuresNeedingEncodableConformance(ctx)
-        for (structureShape in structuresNeedingEncodableConformance) {
+        val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
+        for (shape in shapesNeedingEncodableConformance) {
             // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
-            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+            val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+            val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Encodable.swift")
-                .name(structSymbol.name)
+                .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
+                .name(symbolName)
                 .build()
-            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
+
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension ${structSymbol.name}: Encodable {", "}") {
+                writer.openBlock("extension ${symbol.name}: Encodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                    generateCodingKeysForStructure(ctx, writer, structureShape)
-                    writer.write("") // need enter space between coding keys and encode implementation
-                    StructEncodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                    when(shape) {
+                        is StructureShape -> {
+                            // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
+                            val httpBodyMembers = shape.members()
+                                .filter { it.isInHttpBody() }
+                                .toList()
+                            generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                            writer.write("") // need enter space between coding keys and encode implementation
+                            StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        }
+                        is UnionShape -> {
+                            // get all members of the union shape
+                            val unionMembers = shape.members().toMutableList()
+                            val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
+                            unionMembers.add(0, sdkUnknownMember)
+                            generateCodingKeysForMembers(ctx, writer, unionMembers)
+                            unionMembers.removeAt(0)
+                            writer.write("") // need enter space between coding keys and encode implementation
+                            UnionEncodeGenerator(ctx, unionMembers, writer, defaultTimestampFormat).render()
+                        }
+                    }
                 }
             }
         }
     }
 
     // can be overridden by protocol for things like json name traits, xml keys etc.
-    open fun generateCodingKeysForStructure(
+    open fun generateCodingKeysForMembers(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        shape: StructureShape
+        members: List<MemberShape>
     ) {
-        // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
-        val membersSortedByName: List<MemberShape> = shape.members()
-            .sortedBy { it.memberName }
-            .filter { it.isInHttpBody() }
+        val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
         writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
                 val originalMemberName = member.memberName
@@ -154,33 +170,48 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // separate decodable conformance to nested types from output shapes
         // first loop through nested types and perform decodable implementation normally
         // then loop through output shapes and perform creation of body struct with decodable implementation
-        val (structuresNeedingDecodableConformance, nestedStructuresNeedingDecodableConformance) = resolveStructuresNeedingDecodableConformance(ctx)
+        val (shapesNeedingDecodableConformance, nestedShapesNeedingDecodableConformance) = resolveShapesNeedingDecodableConformance(ctx)
         // handle nested shapes normally
-        for (structureShape in nestedStructuresNeedingDecodableConformance) {
+        for (shape in nestedShapesNeedingDecodableConformance) {
             // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
-            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+            val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+            val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
-
             val decodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${structSymbol.name}+Decodable.swift")
-                .name(structSymbol.name)
+                .definitionFile("./$rootNamespace/models/$symbolName+Decodable.swift")
+                .name(symbolName)
                 .build()
+
             ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-                writer.openBlock("extension ${structSymbol.name}: Decodable {", "}") {
+                writer.openBlock("extension $symbolName: Decodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                    generateCodingKeysForStructure(ctx, writer, structureShape)
-                    writer.write("") // need enter space between coding keys and decode implementation
-                    StructDecodeGeneration(ctx, structureShape.members().toList(), writer, defaultTimestampFormat).render()
+                    val members = shape.members().toMutableList()
+                    when(shape) {
+                        is StructureShape -> {
+                            generateCodingKeysForMembers(ctx, writer, members)
+                            writer.write("")
+                            StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                        }
+                        is UnionShape -> {
+                            val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
+                            members.add(0, sdkUnknownMember)
+                            generateCodingKeysForMembers(ctx, writer, members)
+                            writer.write("")
+                            members.removeAt(0)
+                            UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                        }
+                    }
                 }
             }
         }
+
         // handle top level output shapes which includes creating a new http body struct to handle deserialization
-        for (structureShape in structuresNeedingDecodableConformance) {
+        for (shape in shapesNeedingDecodableConformance) {
             // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
-            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(structureShape)
+            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val rootNamespace = ctx.settings.moduleName
-            val httpBodyMembers = structureShape.members().filter { it.isInHttpBody() }.toList()
+            val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
             val decodeSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
@@ -198,9 +229,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                    generateCodingKeysForStructure(ctx, writer, structureShape)
+                    generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                     writer.write("") // need enter space between coding keys and decode implementation
-                    StructDecodeGeneration(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                    StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
             }
         }
@@ -663,7 +694,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      *
      * @return The set of shapes that require a `Encodable` conformance and coding keys.
      */
-    private fun resolveStructuresNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         // get them all and return as one set to loop through
@@ -689,7 +720,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      *
      * @return The set of shapes that require a `Decodable` conformance and coding keys.
      */
-    private fun resolveStructuresNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Pair<Set<StructureShape>, Set<StructureShape>> {
+    private fun resolveShapesNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Pair<Set<Shape>, Set<Shape>> {
         // all top level operation outputs, errors with an http body must conform to Decodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Decodable
         // get them all and return as one set to loop through
@@ -716,23 +747,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return Pair(outputShapes.union(errorShapes), nested)
     }
 
-    private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) as StructureShape }.toSet()
+    private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) }.toSet()
     }
 
-    private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) as StructureShape }.toSet()
+    private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) }.toSet()
     }
 
-    private fun resolveOperationErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<StructureShape> {
+    private fun resolveOperationErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         return getHttpBindingOperations(ctx)
             .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) as StructureShape }
+            .map { ctx.model.expectShape(it) }
             .toSet()
     }
 
-    private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<StructureShape> {
-        val resolved = mutableSetOf<StructureShape>()
+    private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
+        val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
 
         // walk all the shapes in the set and find all other
@@ -748,9 +779,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     RelationshipType.UNION_MEMBER -> true
                     else -> false
                 }
-            }.forEach { walkedShape ->
-                if (walkedShape.type == ShapeType.STRUCTURE) {
-                    resolved.add(walkedShape as StructureShape)
+            }.forEach {
+                when (it) {
+                    is UnionShape -> resolved.add(it)
+                    is StructureShape -> resolved.add(it)
                 }
             }
         }

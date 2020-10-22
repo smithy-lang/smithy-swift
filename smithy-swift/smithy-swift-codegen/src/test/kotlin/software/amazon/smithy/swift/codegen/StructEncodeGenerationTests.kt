@@ -111,9 +111,6 @@ class StructEncodeGenerationTests : TestsBase() {
             
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let member1 = member1 {
-                        try container.encode(member1, forKey: .member1)
-                    }
                     if let intList = intList {
                         var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
                         for intlist0 in intList {
@@ -129,6 +126,9 @@ class StructEncodeGenerationTests : TestsBase() {
                                 try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                             }
                         }
+                    }
+                    if let member1 = member1 {
+                        try container.encode(member1, forKey: .member1)
                     }
                 }
             }
@@ -153,9 +153,6 @@ class StructEncodeGenerationTests : TestsBase() {
             
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let normal = normal {
-                        try container.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
-                    }
                     if let dateTime = dateTime {
                         try container.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
                     }
@@ -164,6 +161,9 @@ class StructEncodeGenerationTests : TestsBase() {
                     }
                     if let httpDate = httpDate {
                         try container.encode(httpDate.rfc5322(), forKey: .httpDate)
+                    }
+                    if let normal = normal {
+                        try container.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
                     }
                     if let timestampList = timestampList {
                         var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
@@ -196,30 +196,6 @@ class StructEncodeGenerationTests : TestsBase() {
             
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
-                        for (key0, intmap0) in intMap {
-                            if let intmap0 = intmap0 {
-                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                            }
-                        }
-                    }
-                    if let structMap = structMap {
-                        var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
-                        for (key0, structmap0) in structMap {
-                            if let structmap0 = structmap0 {
-                                try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
-                            }
-                        }
-                    }
-                    if let enumMap = enumMap {
-                        var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
-                        for (key0, enummap0) in enumMap {
-                            if let enummap0 = enummap0 {
-                                try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
-                            }
-                        }
-                    }
                     if let blobMap = blobMap {
                         var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
                         for (key0, blobmap0) in blobMap {
@@ -233,6 +209,30 @@ class StructEncodeGenerationTests : TestsBase() {
                         for (key0, datemap0) in dateMap {
                             if let datemap0 = datemap0 {
                                 try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
+                            }
+                        }
+                    }
+                    if let enumMap = enumMap {
+                        var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
+                        for (key0, enummap0) in enumMap {
+                            if let enummap0 = enummap0 {
+                                try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
+                            }
+                        }
+                    }
+                    if let intMap = intMap {
+                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
+                        for (key0, intmap0) in intMap {
+                            if let intmap0 = intmap0 {
+                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
+                            }
+                        }
+                    }
+                    if let structMap = structMap {
+                        var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
+                        for (key0, structmap0) in structMap {
+                            if let structmap0 = structmap0 {
+                                try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
                             }
                         }
                     }
