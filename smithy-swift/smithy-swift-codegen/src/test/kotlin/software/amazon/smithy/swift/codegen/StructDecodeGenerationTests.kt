@@ -48,7 +48,6 @@ class StructDecodeGenerationTests : TestsBase() {
 
     init {
         newTestContext.generator.generateDeserializers(newTestContext.ctx)
-        newTestContext.generator.generateProtocolClient(newTestContext.ctx)
         newTestContext.ctx.delegator.flushWriters()
     }
 
@@ -88,9 +87,12 @@ class StructDecodeGenerationTests : TestsBase() {
             
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
-                    payload1 = try values.decodeIfPresent(String.self, forKey: .payload1)
-                    payload2 = try values.decodeIfPresent(Int.self, forKey: .payload2)
-                    payload3 = try values.decodeIfPresent(Nested.self, forKey: .payload3)
+                    let payload1Decoded = try values.decodeIfPresent(String.self, forKey: .payload1)
+                    payload1 = payload1Decoded
+                    let payload2Decoded = try values.decodeIfPresent(Int.self, forKey: .payload2)
+                    payload2 = payload2Decoded
+                    let payload3Decoded = try values.decodeIfPresent(Nested.self, forKey: .payload3)
+                    payload3 = payload3Decoded
                 }
             }
             """.trimIndent()
@@ -112,7 +114,8 @@ class StructDecodeGenerationTests : TestsBase() {
             
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
-                    member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
+                    let member1Decoded = try values.decodeIfPresent(Int.self, forKey: .member1)
+                    member1 = member1Decoded
                     let intListContainer = try values.decodeIfPresent([Int?].self, forKey: .intList)
                     var intListDecoded0:[Int?]? = nil
                     if let intListContainer = intListContainer {
@@ -178,7 +181,8 @@ extension TimestampOutputResponseBody: Decodable {
             dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
         }
         dateTime = dateTimeDecoded
-        epochSeconds = try values.decodeIfPresent(Date.self, forKey: .epochSeconds)
+        let epochSecondsDecoded = try values.decodeIfPresent(Date.self, forKey: .epochSeconds)
+        epochSeconds = epochSecondsDecoded
         let httpDateDateString = try values.decodeIfPresent(String.self, forKey: .httpDate)
         var httpDateDecoded: Date? = nil
         if let httpDateDateString = httpDateDateString {

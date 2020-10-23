@@ -160,7 +160,9 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
-        addDeclareMemberReferences(builder, shape.members())
+        if (shape is UnionShape) {
+            addDeclareMemberReferences(builder, shape.allMembers.values)
+        }
         return builder.build()
     }
 

@@ -56,52 +56,11 @@ class UnionGeneratorTests : TestsBase() {
  Documentation for MyUnion
  */
 public enum MyUnion: Equatable {
-    case foo(String)
-    case baz(Int)
+    case foo(String?)
+    case baz(Int?)
     /// Documentation for bar
     case bar(Int)
-    case sdkUnknown(String)
-}
-
-extension MyUnion : Codable {
-    enum CodingKeys: String, CodingKey {
-        case foo
-        case baz
-        case bar
-        case sdkUnknown
-    }
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case let .foo(value):
-            try container.encode(value, forKey: .foo)
-        case let .baz(value):
-            try container.encode(value, forKey: .baz)
-        case let .bar(value):
-            try container.encode(value, forKey: .bar)
-        case let .sdkUnknown(value):
-            try container.encode(value, forKey: .sdkUnknown)
-        }
-    }
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let value = try? container.decode(String.self, forKey: .foo) {
-            self = .foo(value)
-            return
-        }
-        if let value = try? container.decode(Int.self, forKey: .baz) {
-            self = .baz(value)
-            return
-        }
-        if let value = try? container.decode(Int.self, forKey: .bar) {
-            self = .bar(value)
-            return
-        }
-        else {
-            self = .sdkUnknown("")
-            return
-        }
-    }
+    case sdkUnknown(String?)
 }
             """.trimIndent()
 
@@ -144,52 +103,11 @@ extension MyUnion : Codable {
  Documentation for MyUnion
  */
 public enum MyUnion: Equatable {
-    case foo(String)
+    case foo(String?)
     /// Documentation for bar
     case bar(Int)
-    case myStruct(MyStruct)
-    case sdkUnknown(String)
-}
-
-extension MyUnion : Codable {
-    enum CodingKeys: String, CodingKey {
-        case foo
-        case bar
-        case myStruct
-        case sdkUnknown
-    }
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case let .foo(value):
-            try container.encode(value, forKey: .foo)
-        case let .bar(value):
-            try container.encode(value, forKey: .bar)
-        case let .myStruct(value):
-            try container.encode(value, forKey: .myStruct)
-        case let .sdkUnknown(value):
-            try container.encode(value, forKey: .sdkUnknown)
-        }
-    }
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let value = try? container.decode(String.self, forKey: .foo) {
-            self = .foo(value)
-            return
-        }
-        if let value = try? container.decode(Int.self, forKey: .bar) {
-            self = .bar(value)
-            return
-        }
-        if let value = try? container.decode(MyStruct.self, forKey: .myStruct) {
-            self = .myStruct(value)
-            return
-        }
-        else {
-            self = .sdkUnknown("")
-            return
-        }
-    }
+    case myStruct(MyStruct?)
+    case sdkUnknown(String?)
 }
             """.trimIndent()
 

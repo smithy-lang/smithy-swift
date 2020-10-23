@@ -1,84 +1,47 @@
 /*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- *  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License").
- *  * You may not use this file except in compliance with the License.
- *  * A copy of the License is located at
- *  *
- *  *  http://aws.amazon.com/apache2.0
- *  *
- *  * or in the "license" file accompanying this file. This file is distributed
- *  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- *  * express or implied. See the License for the specific language governing
- *  * permissions and limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
  *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
-
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.SetShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.isRecursiveMember
+import software.amazon.smithy.swift.codegen.recursiveSymbol
 
-/**
- * Generates decode function for members bound to the payload.
- *
- * e.g.
- * ```
-    public init (from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
-        let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
-        var intListDecoded0 = [Int]()
-        if let intListContainer = intListContainer {
-            for integer0 in intListContainer {
-                intListDecoded0.append(integer0)
-            }
-        }
-        intList = intListDecoded0
-        let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
-        var intMapDecoded0 = [String:Int]()
-        if let intMapContainer = intMapContainer {
-            for (key0, integer0) in intMapContainer {
-                intMapDecoded0[key0] = integer0
-            }
-        }
-        intMap = intMapDecoded0
-    }
- * ```
+/*
+Includes functions to help render conformance to Decodable protocol for shapes
  */
-class StructDecodeGeneration(
+open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
-    var currentMember: MemberShape? = null
-
-    fun render() {
-        val containerName = "values"
-        writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
-            writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
-            members.forEach { member ->
-                val target = ctx.model.expectShape(member.target)
-                val memberName = ctx.symbolProvider.toMemberName(member)
-                currentMember = member
-                when (target) {
-                    is CollectionShape -> renderDecodeListMember(target, memberName, containerName)
-                    is MapShape -> renderDecodeMapMember(target, memberName, containerName)
-                    is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
-                    else -> writeDecodeForPrimitive(target, member, containerName)
-                }
-            }
-        }
-    }
-
-    private fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
+    fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val tsFormat = member
             .getTrait(TimestampFormatTrait::class.java)
@@ -90,26 +53,28 @@ class StructDecodeGeneration(
             val dateSymbol = "String"
             val originalSymbol = ctx.symbolProvider.toSymbol(target)
             val dateString = "${memberName}DateString"
-            val decodableMemberName = "${memberName}Decoded"
+            val decodedMemberName = "${memberName}Decoded"
             writer.write("let \$L = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", dateString, dateSymbol, memberName)
-            writer.write("var \$L: \$T = nil", decodableMemberName, originalSymbol)
+            writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
                 val formatterName = "${memberName}Formatter"
                 writeDateFormatter(formatterName, tsFormat, writer)
-                writer.write("\$L = \$L.date(from: \$L)", decodableMemberName, formatterName, dateString)
+                writer.write("\$L = \$L.date(from: \$L)", decodedMemberName, formatterName, dateString)
             }
-            writer.write("\$L = \$L", memberName, decodableMemberName)
+            renderAssigningDecodedMember(member, decodedMemberName)
         }
     }
 
-    private fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
+    fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val topologicalIndex = TopologicalIndex.of(ctx.model)
         if (member.isRecursiveMember(topologicalIndex)) {
             symbol = symbol.recursiveSymbol()
         }
-        writer.write("$memberName = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", symbol.name, memberName)
+        val decodedMemberName = "${memberName}Decoded"
+        writer.write("let \$L = try \$L.decodeIfPresent(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
+        renderAssigningDecodedMember(member, decodedMemberName)
     }
 
     // TODO remove this when we switch to a custom date type as this wont be necessary anymore
@@ -160,21 +125,22 @@ class StructDecodeGeneration(
         }
     }
 
-    private fun renderDecodingError(memberName: String) {
+    private fun renderDecodingDateError(member: MemberShape) {
+        val memberName = member.memberName
         writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
     }
 
-    private fun renderDecodeListMember(
+    fun renderDecodeListMember(
         shape: CollectionShape,
         memberName: String,
         containerName: String,
+        topLevelMember: MemberShape,
         level: Int = 0
     ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName}Decoded$level"
-        val topLevelMemberName = currentMember!!.memberName
-        val insertMethod = when (ctx.model.expectShape(currentMember!!.target)) {
+        val insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
             is SetShape -> "insert"
             is ListShape -> "append"
             else -> "append"
@@ -191,24 +157,32 @@ class StructDecodeGeneration(
             writer.write("var \$L:\$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
                 writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
-                renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, level)
+                renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, topLevelMember, level)
             }
-            writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
+            renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
             val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
             if (isBoxed) {
                 writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
+                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
                 }
             } else {
-                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, level)
+                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
             }
         }
     }
 
-    private fun renderDecodeListTarget(shape: Shape, decodedMemberName: String, collectionName: String, insertMethod: String, level: Int = 0) {
+    /*
+    Simple assignment of the decode value to the member.
+    Can be overridden to allow post processing of the decoded value before assigning it to the member.
+     */
+    open fun renderAssigningDecodedMember(topLevelMember: MemberShape, decodedMemberName: String) {
+        val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember)
+        writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
+    }
+
+    private fun renderDecodeListTarget(shape: Shape, decodedMemberName: String, collectionName: String, insertMethod: String, topLevelMember: MemberShape, level: Int = 0) {
         val iteratorName = "${shape.type.name.toLowerCase()}$level"
-        val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val terminator = if (level == 0) "?" else ""
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
@@ -226,7 +200,7 @@ class StructDecodeGeneration(
                         writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
-                            renderDecodingError(topLevelMemberName)
+                            renderDecodingDateError(topLevelMember)
                         }
                         writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
@@ -234,13 +208,13 @@ class StructDecodeGeneration(
                 is CollectionShape -> {
                     val nestedDecodedMemberName = "${iteratorName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
+                    renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${collectionName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, level + 1)
+                    renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
                 }
                 else -> writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
@@ -248,16 +222,16 @@ class StructDecodeGeneration(
         }
     }
 
-    private fun renderDecodeMapMember(
+    fun renderDecodeMapMember(
         shape: MapShape,
         memberName: String,
         containerName: String,
+        topLevelMember: MemberShape,
         level: Int = 0
     ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName}Decoded$level"
-        val topLevelMemberName = currentMember!!.memberName
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
             val topLevelContainerName = "${memberName}Container"
@@ -268,11 +242,11 @@ class StructDecodeGeneration(
             writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", topLevelContainerName, topLevelContainerName) {
                 writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
-                renderDecodeMapTarget(topLevelContainerName, decodedMemberName, nestedTarget, level)
+                renderDecodeMapTarget(topLevelContainerName, decodedMemberName, nestedTarget, topLevelMember, level)
             }
-            writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
+            renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            renderDecodeMapTarget(memberName, containerName, nestedTarget, level)
+            renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
         }
     }
 
@@ -280,10 +254,10 @@ class StructDecodeGeneration(
         mapName: String,
         decodedMemberName: String,
         valueTargetShape: Shape,
+        topLevelMember: MemberShape,
         level: Int = 0
     ) {
         val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
-        val topLevelMemberName = currentMember!!.memberName
         val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
         val terminator = if (level == 0) "?" else ""
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
@@ -292,13 +266,13 @@ class StructDecodeGeneration(
                     val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
+                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
-                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, level + 1)
+                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
@@ -314,7 +288,7 @@ class StructDecodeGeneration(
                         writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $valueIterator) else {", "}") {
-                            renderDecodingError(topLevelMemberName)
+                            renderDecodingDateError(topLevelMember)
                         }
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
