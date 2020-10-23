@@ -218,8 +218,7 @@ open class MemberShapeEncodeGenerator(
                     )
                 }
                 else -> {
-                    val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(
-                        BoxTrait::class.java))
+                    val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
                     val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
                     if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {

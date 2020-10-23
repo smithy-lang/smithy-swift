@@ -34,7 +34,7 @@ import software.amazon.smithy.swift.codegen.isRecursiveMember
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 /*
-Includes functions to help render conformance to Encodable protocol for shapes
+Includes functions to help render conformance to Decodable protocol for shapes
  */
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -125,7 +125,7 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    private fun renderDecodingError(member: MemberShape) {
+    private fun renderDecodingDateError(member: MemberShape) {
         val memberName = member.memberName
         writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
     }
@@ -200,7 +200,7 @@ open class MemberShapeDecodeGenerator(
                         writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
-                            renderDecodingError(topLevelMember)
+                            renderDecodingDateError(topLevelMember)
                         }
                         writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
@@ -288,7 +288,7 @@ open class MemberShapeDecodeGenerator(
                         writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
                         writer.openBlock("guard let $dateName = $formatterName.date(from: $valueIterator) else {", "}") {
-                            renderDecodingError(topLevelMember)
+                            renderDecodingDateError(topLevelMember)
                         }
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }

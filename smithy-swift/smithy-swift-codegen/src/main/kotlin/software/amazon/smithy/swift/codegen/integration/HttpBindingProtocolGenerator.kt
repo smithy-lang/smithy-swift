@@ -86,7 +86,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension ${symbol.name}: Encodable {", "}") {
+                writer.openBlock("extension $symbolName: Encodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     when (shape) {
@@ -101,11 +101,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         is UnionShape -> {
                             // get all members of the union shape
-                            val unionMembers = shape.members().toMutableList()
+                            val unionMembers = shape.members().toList()
                             val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
-                            unionMembers.add(0, sdkUnknownMember)
-                            generateCodingKeysForMembers(ctx, writer, unionMembers)
-                            unionMembers.removeAt(0)
+                            val unionMembersForCodingKeys = unionMembers.toMutableList()
+                            unionMembersForCodingKeys.add(0, sdkUnknownMember)
+                            generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
                             writer.write("") // need enter space between coding keys and encode implementation
                             UnionEncodeGenerator(ctx, unionMembers, writer, defaultTimestampFormat).render()
                         }
@@ -186,7 +186,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("extension $symbolName: Decodable {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                    val members = shape.members().toMutableList()
+                    val members = shape.members().toList()
                     when (shape) {
                         is StructureShape -> {
                             generateCodingKeysForMembers(ctx, writer, members)
@@ -195,10 +195,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         is UnionShape -> {
                             val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
-                            members.add(0, sdkUnknownMember)
-                            generateCodingKeysForMembers(ctx, writer, members)
+                            val unionMembersForCodingKeys = members.toMutableList()
+                            unionMembersForCodingKeys.add(0, sdkUnknownMember)
+                            generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
                             writer.write("")
-                            members.removeAt(0)
                             UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
                         }
                     }
