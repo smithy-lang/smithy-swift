@@ -37,7 +37,7 @@ class ShapeValueGenerator(
      * @param shape the shape that will be declared.
      * @param params parameters to fill the generated shape declaration.
      */
-    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node,isRecursiveMember: Boolean = false) {
+    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node, isRecursiveMember: Boolean = false) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
 
         when (shape.type) {
@@ -62,7 +62,7 @@ class ShapeValueGenerator(
     private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
         var symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
 
-        if(isRecursiveMember) {
+        if (isRecursiveMember) {
             writer.writeInline("\$L(", symbol.name)
                 .indent()
                 .writeInline("\nvalue: ")
@@ -77,7 +77,7 @@ class ShapeValueGenerator(
                 // TODO:: fix indentation when `writeInline` retains indent
             .writeInline("\n)")
 
-        if(isRecursiveMember) {
+        if (isRecursiveMember) {
             writer.dedent()
                 .writeInline("\n)")
         }
