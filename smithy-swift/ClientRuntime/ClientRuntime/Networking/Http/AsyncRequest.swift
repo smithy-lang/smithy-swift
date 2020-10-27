@@ -15,9 +15,11 @@
 
 import Foundation
 
-public struct HttpRequest {
-    public let body: HttpBody?
-    public var headers: HttpHeaders
+
+public struct AsyncRequest {
+    public var body: HttpBody?
+    public let headers: HttpHeaders
+    public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
@@ -32,7 +34,7 @@ public struct HttpRequest {
     }
 }
 
-extension HttpRequest {
+extension AsyncRequest {
     public func toUrlRequest() throws -> URLRequest {
         guard let url = endpoint.url else {
 

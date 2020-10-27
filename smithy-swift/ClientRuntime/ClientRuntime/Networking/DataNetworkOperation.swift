@@ -17,7 +17,7 @@ import Foundation
 
 class DataNetworkOperation: NetworkOperation {
 
-    init(session: SessionProtocol, request: HttpRequest, completion: @escaping NetworkResult) throws {
+    init(session: SessionProtocol, request: AsyncRequest, completion: @escaping NetworkResult) {
         super.init()
         self.completion = completion
         do {

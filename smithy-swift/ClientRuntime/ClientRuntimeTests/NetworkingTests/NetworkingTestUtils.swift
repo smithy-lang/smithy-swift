@@ -19,8 +19,8 @@ import XCTest
 
 class NetworkingTestUtils: XCTestCase {
 
-    var mockHttpDataRequest: HttpRequest!
-    var mockHttpStreamRequest: HttpRequest!
+    var mockHttpDataRequest: AsyncRequest!
+    var mockHttpStreamRequest: AsyncRequest!
     var expectedMockRequestURL: URL!
     var expectedMockRequestData: Data!
     var mockOperationQueue: OperationQueue!
@@ -46,7 +46,7 @@ class NetworkingTestUtils: XCTestCase {
         headers.add(name: "header-item-name", value: "header-item-value")
 
         let httpBody = HttpBody.data(expectedMockRequestData)
-        mockHttpDataRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        mockHttpDataRequest = AsyncRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
     }
 
     /*
@@ -58,7 +58,7 @@ class NetworkingTestUtils: XCTestCase {
         headers.add(name: "header-item-name", value: "header-item-value")
 
         let httpBody = HttpBody.stream(InputStream(data: expectedMockRequestData))
-        mockHttpStreamRequest = HttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        mockHttpStreamRequest = AsyncRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
     }
 
     func getMockEndpoint() -> Endpoint {

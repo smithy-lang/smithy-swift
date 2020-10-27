@@ -31,7 +31,7 @@ public class HttpClient {
         self.operationQueue = config.operationQueue
     }
 
-    public func execute(request: HttpRequest, completion: @escaping NetworkResult) -> StreamingProvider? {
+    public func execute(request: AsyncRequest, completion: @escaping NetworkResult) -> StreamingProvider? {
         switch request.body {
         case .data, .file, .none :
             guard let operation = try? DataNetworkOperation(session: session, request: request, completion: completion) else { return nil }
