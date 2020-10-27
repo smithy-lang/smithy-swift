@@ -60,6 +60,49 @@ operation RecursiveShapes {
     output: RecursiveShapesInputOutput
 }
 
+apply RecursiveShapes @httpRequestTests([
+    {
+        id: "RestJsonRecursiveShapes",
+        documentation: "Serializes recursive structures",
+        protocol: restJson1,
+        method: "PUT",
+        uri: "/RecursiveShapes",
+        body: """
+              {
+                  "nested": {
+                      "foo": "Foo1",
+                      "nested": {
+                          "bar": "Bar1",
+                          "recursiveMember": {
+                              "foo": "Foo2",
+                              "nested": {
+                                  "bar": "Bar2"
+                              }
+                          }
+                      }
+                  }
+              }""",
+        bodyMediaType: "application/json",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        params: {
+            nested: {
+                foo: "Foo1",
+                nested: {
+                    bar: "Bar1",
+                    recursiveMember: {
+                        foo: "Foo2",
+                        nested: {
+                            bar: "Bar2"
+                        }
+                    }
+                }
+            }
+        }
+    }
+])
+
 structure RecursiveShapesInputOutput {
     nested: RecursiveShapesInputOutputNested1
 }

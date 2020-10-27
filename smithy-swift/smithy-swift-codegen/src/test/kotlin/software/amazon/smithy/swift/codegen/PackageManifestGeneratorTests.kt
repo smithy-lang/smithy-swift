@@ -63,7 +63,7 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
                     "            from: 2.0\n" +
                     "        ),\n" +
-                    "        .package(path: \"~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime\"),\n" +
+                    "        .package(path: \"/Users/sadiredd/Documents/smithy-swift/smithy-swift/ClientRuntime\"),\n" +
                     "    ]")
     }
 
