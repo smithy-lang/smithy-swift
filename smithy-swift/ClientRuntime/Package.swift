@@ -19,23 +19,19 @@ let package = Package(
             name: "ClientRuntime",
             dependencies: [
                 .product(name: "AwsCommonRuntimeKit", package: "AwsCrt")
-            ],
-            path: "./ClientRuntime"
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime"],
-            path: "./ClientRuntimeTests"
+            dependencies: ["ClientRuntime"]
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"],
-            path: "./SmithyTestUtil"
+            dependencies: ["ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"],
-            path: "./SmithyTestUtilTests"
-        )
+            dependencies: ["SmithyTestUtil"]
+)
     ]
 )
