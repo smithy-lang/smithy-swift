@@ -37,10 +37,8 @@ class ShapeValueGenerator(
      * @param shape the shape that will be declared.
      * @param params parameters to fill the generated shape declaration.
      */
-    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node) {
+    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node, isRecursiveMember: Boolean = false) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
-        val topologicalIndex = TopologicalIndex.of(model)
-        val isRecursiveMember = if (shape is MemberShape) shape.isRecursiveMember(topologicalIndex) else false
 
         when (shape.type) {
             ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), isRecursiveMember) {
@@ -62,14 +60,52 @@ class ShapeValueGenerator(
     }
 
     private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
-        val symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
-        // invoke the generated DSL builder for the class
+        var symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
+
+        /*
+            The following line changes the generated code from structure instantiation to
+            Box<T> class instantiation for recursive members.
+
+            Changes the instantiation of recursive structure from:-
+                RecursiveShapesInputOutputNested1(
+                    foo: "Foo1",
+                    nested: RecursiveShapesInputOutputNested2(
+                        bar: "Bar1"
+                    )
+                 )
+
+            To:-
+            RecursiveShapesInputOutputNested1(
+            foo: "Foo1",
+            nested: Box<RecursiveShapesInputOutputNested2>(
+                value: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1"
+                )
+            )
+        )
+        */
+        if (isRecursiveMember) {
+            writer.writeInline("\$L(", symbol.name)
+                .indent()
+                .writeInline("\nvalue: ")
+
+            symbol = symbolProvider.toSymbol(shape)
+        }
+        /*
+            The only change with recursive member is that "Box<T>( value: " appended
+            and the rest of the logic is same as non-recursive members. So, there is no "else" here.
+         */
         writer.writeInline("\$L(", symbol.name)
             .indent()
             .call { block() }
             .dedent()
                 // TODO:: fix indentation when `writeInline` retains indent
             .writeInline("\n)")
+
+        if (isRecursiveMember) {
+            writer.dedent()
+                .writeInline("\n)")
+        }
     }
 
     private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
@@ -157,6 +193,8 @@ class ShapeValueGenerator(
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
+                        val topologicalIndex = TopologicalIndex.of(generator.model)
+                        val isRecursiveMember = member.isRecursiveMember(topologicalIndex)
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
                         // NOTE - `write()` appends a newline and keeps indentation,
@@ -165,7 +203,7 @@ class ShapeValueGenerator(
                         // This is our workaround for the moment to keep indentation but not insert
                         // a newline at the end.
                         writer.writeInline("\n\$L: ", memberName)
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        generator.writeShapeValueInline(writer, memberShape, valueNode, isRecursiveMember)
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
                         }

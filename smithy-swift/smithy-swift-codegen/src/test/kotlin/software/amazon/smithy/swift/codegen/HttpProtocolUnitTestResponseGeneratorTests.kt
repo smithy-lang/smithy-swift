@@ -235,4 +235,75 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it creates a unit test for recursive shapes`() {
+        val contents = getTestFileContents("example", "RecursiveShapesResponseTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+
+        val expectedContents =
+            """
+    func testRestJsonRecursiveShapes() {
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "Content-Type": "application/json"
+                ],
+                content: ResponseType.data(""${'"'}
+                {
+                    "nested": {
+                        "foo": "Foo1",
+                        "nested": {
+                            "bar": "Bar1",
+                            "recursiveMember": {
+                                "foo": "Foo2",
+                                "nested": {
+                                    "bar": "Bar2"
+                                }
+                            }
+                        }
+                    }
+                }
+                ""${'"'}.data(using: .utf8)),
+                host: host
+            ) else {
+                XCTFail("Something is wrong with the created http response")
+                return
+            }
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            let actual = try RecursiveShapesInputOutput(httpResponse: httpResponse, decoder: decoder)
+
+            let expected = RecursiveShapesInputOutput(
+                nested: RecursiveShapesInputOutputNested1(
+                    foo: "Foo1",
+                    nested: Box<RecursiveShapesInputOutputNested2>(
+                        value: RecursiveShapesInputOutputNested2(
+                            bar: "Bar1",
+                            recursiveMember: Box<RecursiveShapesInputOutputNested1>(
+                                value: RecursiveShapesInputOutputNested1(
+                                    foo: "Foo2",
+                                    nested: Box<RecursiveShapesInputOutputNested2>(
+                                        value: RecursiveShapesInputOutputNested2(
+                                            bar: "Bar2"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+
+            XCTAssertEqual(expected.nested, actual.nested)
+
+        } catch let err {
+            XCTFail(err.localizedDescription)
+        }
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
