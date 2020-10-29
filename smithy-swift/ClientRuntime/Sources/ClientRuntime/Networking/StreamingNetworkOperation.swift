@@ -13,35 +13,37 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
 
-class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
+//import Foundation
+//
+//class StreamingNetworkOperation: NetworkOperation, StreamDelegate {
+//
+//    var streamingProvider: StreamingProvider?
+//
+//    init(session: SessionProtocol, request: AsyncRequest, streamingProvider: StreamingProvider, completion: @escaping NetworkResult) {
+//        super.init()
+//        self.completion = completion
+//        self.streamingProvider = streamingProvider
+//        do {
+//            let urlRequest = try request.toUrlRequest()
+//            self.task = session.uploadTask(withStreamedRequest: urlRequest)
+//        } catch {
+//            completion(.failure(ClientError.serializationFailed("Serializaation failed due to malformed url")))
+//        }
+//
+//    }
+//
+//    override func receiveData(data: Data) {
+//
+//        if let stream = streamingProvider?.boundStreams.output {
+//                var bytes = Array(data)
+//                stream.write(&bytes, maxLength: bytes.count)
+//                response?.content = .stream(stream)
+//        }
+//    }
+//
+//    override func finish(error: Error? = nil) {
+//        super.finish(error: error)
+//    }
+//}
 
-    var streamingProvider: StreamingProvider?
-
-    init(session: SessionProtocol, request: AsyncRequest, streamingProvider: StreamingProvider, completion: @escaping NetworkResult) {
-        super.init()
-        self.completion = completion
-        self.streamingProvider = streamingProvider
-        do {
-            let urlRequest = try request.toUrlRequest()
-            self.task = session.uploadTask(withStreamedRequest: urlRequest)
-        } catch {
-            try? completion(.failure(ClientError.serializationFailed("Serialization failed due to malformed url")))
-        }
-
-    }
-
-    override func receiveData(data: Data) {
-
-        if let stream = streamingProvider?.boundStreams.output {
-                var bytes = Array(data)
-                stream.write(&bytes, maxLength: bytes.count)
-                response?.content = .stream(stream)
-        }
-    }
-
-    override func finish(error: Error? = nil) {
-        try? super.finish(error: error)
-    }
-}

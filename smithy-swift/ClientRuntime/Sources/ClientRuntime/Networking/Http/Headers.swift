@@ -13,9 +13,9 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
+import AwsCommonRuntimeKit
 
-public struct HttpHeaders {
+public struct Headers {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -107,27 +107,14 @@ public struct Header {
     }
 }
 
-extension URLRequest {
-    /// Returns `allHTTPHeaderFields` as `HTTPHeaders`.
-    public var headers: HttpHeaders {
-        get { allHTTPHeaderFields.map(HttpHeaders.init) ?? HttpHeaders() }
-        set { allHTTPHeaderFields = newValue.dictionary.mapValues({ array -> String in
-            array.joined(separator: ", ")
-        }) }
+extension Headers {
+    func toHttpHeaders() -> HttpHeaders {
+        let httpHeaders = HttpHeaders()
+        let headers = self.headers
+        for header in headers {
+            httpHeaders.add(name: header.name, value: header.value)
+        }
+        return httpHeaders
     }
 }
 
-extension HTTPURLResponse {
-    /// Returns `allHeaderFields` as `HTTPHeaders`.
-    public var headers: HttpHeaders {
-        (allHeaderFields as? [String: String]).map(HttpHeaders.init) ?? HttpHeaders()
-    }
-}
-
-public extension URLSessionConfiguration {
-    /// Returns `httpAdditionalHeaders` as `HTTPHeaders`.
-    var headers: HttpHeaders {
-        get { (httpAdditionalHeaders as? [String: String]).map(HttpHeaders.init) ?? HttpHeaders() }
-        set { httpAdditionalHeaders = newValue.dictionary }
-    }
-}

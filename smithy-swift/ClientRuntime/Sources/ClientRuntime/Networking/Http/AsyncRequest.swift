@@ -14,18 +14,20 @@
 //
 
 import Foundation
+import AwsCommonRuntimeKit
 
 
 public struct AsyncRequest {
     public var body: HttpBody?
-    public let headers: HttpHeaders
+    public let headers: Headers
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
-
+    
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
-                headers: HttpHeaders,
+                headers: Headers,
+                queryItems: [URLQueryItem]? = nil,
                 body: HttpBody? = nil) {
         self.method = method
         self.endpoint = endpoint
@@ -35,6 +37,7 @@ public struct AsyncRequest {
 }
 
 extension AsyncRequest {
+<<<<<<< HEAD
     public func toUrlRequest() throws -> URLRequest {
         guard let url = endpoint.url else {
 
@@ -49,20 +52,31 @@ extension AsyncRequest {
 
         urlRequest.httpMethod = method.rawValue
 
+=======
+    
+    public func toHttpRequest() -> HttpRequest {
+        let httpRequest = HttpRequest(headers: headers.toHttpHeaders())
+        httpRequest.method = method.rawValue
+        var bodyToSend: InputStream?
+>>>>>>> c554e87... saving progress
         switch body {
         case .data(let data):
-            urlRequest.httpBody = data
-        case .stream(let stream):
-            if let stream = stream {
-                urlRequest.httpBodyStream = stream
+            if let data = data {
+                bodyToSend = InputStream(data: data)
+            } else {
+                bodyToSend = nil
             }
-        case .none:
-            urlRequest.httpBody = nil
         case .file(let url):
-            print(url) //convert to data here or input stream
-            let data = try Data(contentsOf: url)
-            urlRequest.httpBody = data
+            bodyToSend = InputStream(url: url)
+        case .stream(let stream):
+            bodyToSend = stream
+        case .none:
+            bodyToSend = nil
         }
-        return urlRequest
+        if let bodyToSend = bodyToSend {
+            httpRequest.body = AwsInputStream(bodyToSend)
+        }
+        
+        return httpRequest
     }
 }

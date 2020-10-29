@@ -13,8 +13,22 @@
 // permissions and limitations under the License.
 //
 
-import AwsCommonRuntimeKit
+import Foundation
 
-public class AwsCrtAsyncHttpStreamAdapter {
-    private let connection: HttpConnection
+public class SdkHttpClient {
+
+    let engine: HttpClientEngine
+
+    public init(engine: HttpClientEngine, config: HttpClientConfiguration) {
+        self.engine = engine
+       
+    }
+
+    public func execute(request: AsyncRequest, completion: @escaping NetworkResult) throws {
+        try engine.execute(request: request, completion: completion)
+    }
+    
+    public func close() {
+        engine.close()
+    }
 }
