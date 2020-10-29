@@ -15,10 +15,6 @@
 
 import Foundation
 
-extension InputStream {
-
-}
-
 extension OutputStream {
     public func write<DataType: DataProtocol>(_ data: DataType) throws -> Int {
         var buffer = Array(data)
