@@ -62,6 +62,28 @@ class ShapeValueGenerator(
     private fun structDecl(writer: SwiftWriter, shape: StructureShape, isRecursiveMember: Boolean, block: () -> Unit) {
         var symbol = if (isRecursiveMember) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
 
+        /*
+            The following line changes the generated code from structure instantiation to
+            Box<T> class instantiation for recursive members.
+
+            Changes the instantiation of recursive structure from:-
+                RecursiveShapesInputOutputNested1(
+                    foo: "Foo1",
+                    nested: RecursiveShapesInputOutputNested2(
+                        bar: "Bar1"
+                    )
+                 )
+
+            To:-
+            RecursiveShapesInputOutputNested1(
+            foo: "Foo1",
+            nested: Box<RecursiveShapesInputOutputNested2>(
+                value: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1"
+                )
+            )
+        )
+        */
         if (isRecursiveMember) {
             writer.writeInline("\$L(", symbol.name)
                 .indent()
@@ -69,7 +91,10 @@ class ShapeValueGenerator(
 
             symbol = symbolProvider.toSymbol(shape)
         }
-
+        /*
+            The only change with recursive member is that "Box<T>( value: " appended
+            and the rest of the logic is same as non-recursive members. So, there is no "else" here.
+         */
         writer.writeInline("\$L(", symbol.name)
             .indent()
             .call { block() }
