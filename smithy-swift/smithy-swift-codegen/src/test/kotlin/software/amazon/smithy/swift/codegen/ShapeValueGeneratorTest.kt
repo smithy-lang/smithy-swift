@@ -20,8 +20,10 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import java.lang.reflect.Member
 
 class ShapeValueGeneratorTest {
 
@@ -256,5 +258,141 @@ MyStruct(
                 )]
             """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders recursive member`() {
+
+
+        val shapes = mutableListOf<StructureShape>()
+        val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
+        val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
+        val recursiveShapeNested1 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested1")
+            .addMember(memberFoo)
+            .addMember(memberNested)
+            .build()
+        val memberRecursiveMember = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+        val memberBar = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String").build()
+
+        val recursiveShapeNested2 = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2")
+            .addMember(memberRecursiveMember)
+            .addMember(memberBar)
+            .build()
+
+        val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutput\$nested").target("smithy.example#RecursiveShapesInputOutputNested1").build()
+
+        val topLevelShape = StructureShape.builder()
+            .id("smithy.example#RecursiveShapesInputOutput")
+            .addMember(member1)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
+        shapes.add(recursiveShapeNested1)
+        shapes.add(recursiveShapeNested2)
+        shapes.add(topLevelShape)
+
+
+        val model = Model.assembler()
+            .addShapes(recursiveShapeNested1, recursiveShapeNested2, topLevelShape)
+            .addShapes(memberFoo, memberNested, memberRecursiveMember,memberBar, member1)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+
+
+        /* 1. Test the RecursiveShapesInputOutputNested1 Struct:
+            structure RecursiveShapesInputOutputNested1 {
+                foo: String,
+                nested: RecursiveShapesInputOutputNested2
+            }
+        * */
+        var structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutputNested1"))
+        var writer = SwiftWriter("test")
+        var params = Node.objectNodeBuilder()
+            .withMember("foo", "Foo1")
+            .withMember("nested", Node.objectNodeBuilder()
+                .withMember("bar", "Bar1")
+                .build()
+            )
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
+        var contents = writer.toString()
+
+        var expected = """
+        RecursiveShapesInputOutputNested1(
+            foo: "Foo1",
+            nested: Box<RecursiveShapesInputOutputNested2>(
+                value: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1"
+                )
+            )
+        )
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+
+
+
+        /* 2. Test the RecursiveShapesInputOutputNested2 Struct:
+            structure RecursiveShapesInputOutputNested2 {
+                bar: String,
+                recursiveMember: RecursiveShapesInputOutputNested1
+            }
+        * */
+        structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutputNested2"))
+        writer = SwiftWriter("test")
+        params = Node.objectNodeBuilder()
+            .withMember("bar", "Bar1")
+            .withMember("recursiveMember", Node.objectNodeBuilder()
+                .withMember("foo", "Foo1")
+                .build()
+            )
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
+        contents = writer.toString()
+
+        expected = """
+        RecursiveShapesInputOutputNested2(
+            bar: "Bar1",
+            recursiveMember: Box<RecursiveShapesInputOutputNested1>(
+                value: RecursiveShapesInputOutputNested1(
+                    foo: "Foo1"
+                )
+            )
+        )
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+
+
+
+        /* 3. Test the RecursiveShapesInputOutput Struct:
+            structure RecursiveShapesInputOutput {
+                nested: RecursiveShapesInputOutputNested1
+            }
+        * */
+        structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutput"))
+        writer = SwiftWriter("test")
+        params = Node.objectNodeBuilder()
+            .withMember("nested", Node.objectNodeBuilder()
+                .withMember("foo", "Foo1")
+                .build()
+            )
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
+        contents = writer.toString()
+
+        expected = """
+        RecursiveShapesInputOutput(
+            nested: RecursiveShapesInputOutputNested1(
+                foo: "Foo1"
+            )
+        )
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+
     }
 }
