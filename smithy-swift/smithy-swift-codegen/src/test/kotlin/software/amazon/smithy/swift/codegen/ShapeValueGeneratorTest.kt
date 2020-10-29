@@ -23,7 +23,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import java.lang.reflect.Member
 
 class ShapeValueGeneratorTest {
 
@@ -263,7 +262,6 @@ MyStruct(
     @Test
     fun `it renders recursive member`() {
 
-
         val shapes = mutableListOf<StructureShape>()
         val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
         val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
@@ -292,15 +290,13 @@ MyStruct(
         shapes.add(recursiveShapeNested2)
         shapes.add(topLevelShape)
 
-
         val model = Model.assembler()
             .addShapes(recursiveShapeNested1, recursiveShapeNested2, topLevelShape)
-            .addShapes(memberFoo, memberNested, memberRecursiveMember,memberBar, member1)
+            .addShapes(memberFoo, memberNested, memberRecursiveMember, memberBar, member1)
             .assemble()
             .unwrap()
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
-
 
         /* 1. Test the RecursiveShapesInputOutputNested1 Struct:
             structure RecursiveShapesInputOutputNested1 {
@@ -333,8 +329,6 @@ MyStruct(
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
 
-
-
         /* 2. Test the RecursiveShapesInputOutputNested2 Struct:
             structure RecursiveShapesInputOutputNested2 {
                 bar: String,
@@ -366,8 +360,6 @@ MyStruct(
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
 
-
-
         /* 3. Test the RecursiveShapesInputOutput Struct:
             structure RecursiveShapesInputOutput {
                 nested: RecursiveShapesInputOutputNested1
@@ -393,6 +385,5 @@ MyStruct(
         )
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
-
     }
 }
