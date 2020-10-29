@@ -44,7 +44,7 @@ class PodSpecGeneratorTests : TestsBase() {
 
         val manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "example")
-        val mockDependencies = getMockDependenciesFromModel(model, provider)
+        val mockDependencies = getMockDependenciesFromModel(model, provider).toSet()
 
         writePodspec(settings, manifest, mockDependencies)
         val podspec = manifest.getFileString("/example.podspec").get()

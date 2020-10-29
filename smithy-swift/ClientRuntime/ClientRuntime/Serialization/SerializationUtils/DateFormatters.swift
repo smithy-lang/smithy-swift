@@ -20,77 +20,53 @@ extension DateFormatter {
     Configures RFC 5322(822) Date Formatter
     https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
     */
-    static let rfc5322DateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EE, dd MMM yyyy HH:mm:ss zzz"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(abbreviation: "GMT")
-        return formatter
-    }()
+    public static let rfc5322DateFormatter: DateFormatter =
+        getDateFormatter(
+            dateFormat: "EE, dd MMM yyyy HH:mm:ss zzz",
+            timeZone: TimeZone(secondsFromGMT: 0)!
+    )
     
     /*
     Configures ISO 8601 Date Formatter With Fractional Seconds
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithFractionalSeconds: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
+    public static let iso8601DateFormatterWithFractionalSeconds =
+        getDateFormatter(
+            dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+            timeZone: TimeZone(secondsFromGMT: 0)!
+    )
     
     /*
     Configures default ISO 8601 Date Formatter
     https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     */
-    static let iso8601DateFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
-        return ISO8601DateFormatter()
-    }()
+    public static let iso8601DateFormatterWithoutFractionalSeconds: DateFormatter =
+        getDateFormatter(
+            dateFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+            timeZone: TimeZone(secondsFromGMT: 0)!
+    )
     
-    /*
-    Configures an Epoch Seconds based formatter.
-    Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
-    */
-    static let epochSecondsDateFormatter: EpochSecondsDateFormatter = {
-        return EpochSecondsDateFormatter()
-    }()
-}
-
-/*
- Configures an Epoch Seconds based formatter.
- Based on the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
- */
-struct EpochSecondsDateFormatter: DateFormatterProtocol {
-    func date(from string: String) -> Date? {
-        guard let double = Double(string) else {
-            return nil
-        }
-        return date(from: double)
-    }
-    
-    func string(from date: Date) -> String {
-        return String(date.timeIntervalSince1970)
-    }
-    
-    func date(from double: Double) -> Date? {
-        return Date(timeIntervalSince1970: double)
-    }
-    
-    func double(from date: Date) -> Double {
-        return date.timeIntervalSince1970
+    private static func getDateFormatter(dateFormat: String, timeZone: TimeZone) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = dateFormat
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        return formatter
     }
 }
 
-enum DateDecodingError: Error {
-    case parseError
-}
 
-/*
- Common protocol for normal and specialized date formatters
- */
-public protocol DateFormatterProtocol {
-    func date(from string: String) -> Date?
-    func string(from date: Date) -> String
+public extension Date {
+    func iso8601FractionalSeconds() -> String {
+        let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+        return formatter.string(from: self)
+    }
+    func iso8601WithoutFractionalSeconds() -> String {
+        let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+        return formatter.string(from: self)
+    }
+    func rfc5322() -> String {
+        let formatter = DateFormatter.rfc5322DateFormatter
+        return formatter.string(from: self)
+    }
 }
-
-extension DateFormatter: DateFormatterProtocol {}
-extension ISO8601DateFormatter: DateFormatterProtocol {}

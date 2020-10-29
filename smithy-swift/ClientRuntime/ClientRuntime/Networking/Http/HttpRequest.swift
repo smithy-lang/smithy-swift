@@ -16,21 +16,18 @@
 import Foundation
 
 public struct HttpRequest {
-    public var body: HttpBody?
-    public let headers: HttpHeaders
-    public let queryItems: [URLQueryItem]?
+    public let body: HttpBody?
+    public var headers: HttpHeaders
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
                 headers: HttpHeaders,
-                queryItems: [URLQueryItem]? = nil,
                 body: HttpBody? = nil) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
-        self.queryItems = queryItems
         self.body = body
     }
 }
@@ -43,8 +40,10 @@ extension HttpRequest {
         }
 
         var urlRequest = URLRequest(url: url)
-
-        urlRequest.allHTTPHeaderFields = headers.dictionary
+        
+        urlRequest.allHTTPHeaderFields = headers.dictionary.mapValues({ (values) -> String in
+            values.joined(separator: ", ")
+        })
 
         urlRequest.httpMethod = method.rawValue
 

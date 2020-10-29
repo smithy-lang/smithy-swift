@@ -18,7 +18,6 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.UnionShape
 
 /**
@@ -40,44 +39,11 @@ import software.amazon.smithy.model.shapes.UnionShape
  *
  * ```
  * enum Attacker {
- *     case lion(Lion)
- *     case bear(Bear)
- *     case sdkUnknown(String)
+ *     case lion(Lion?)
+ *     case bear(Bear?)
+ *     case sdkUnknown(String?)
  * }
  *
- * extension Attacker : Equatable, Codable {
- *     enum CodingKeys : String, CodingKey {
- *         case lion
- *         case bear
- *         case sdkUnknown
- *     }
- *
- *     func encode(to encoder: Encoder) throws {
- *         var container = encoder.container(keyedBy: CodingKeys.self)
- *         switch self {
- *         case let .lion(value):
- *         try container.encode(value, forKey: .lion)
- *         case let .bear(value):
- *         try container.encode(value, forKey: .bear)
- *         case let .sdkUnknown(value):
- *         try container.encode(value, forKey: .sdkUnknown)
- *         }
- *     }
- *
- *     init(from decoder: Decoder) throws {
- *         let container = try decoder.container(keyedBy: CodingKeys.self)
- *         if let value = try? container.decode(String.self, forKey: .lion) {
- *             self = .lion(value)
- *             return
- *         } else if let value = try? container.decode(Int.self, forKey: .bear) {
- *             self = .bear(value)
- *             return
- *         } else {
- *             self = .sdkUnknown("")
- *             return
- *         }
- *     }
- * }
  */
 
 class UnionGenerator(
@@ -91,99 +57,19 @@ class UnionGenerator(
         symbolProvider.toSymbol(shape)
     }
 
-    var codingKeysBuilder: MutableList<String> = mutableListOf<String>()
-    var encodeBlockBuilder: MutableList<String> = mutableListOf<String>()
-    var initFromDecoderBlockBuilder: MutableList<String> = mutableListOf<String>()
-
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
-        writer.openBlock("enum \$union.name:L {", "}\n") {
-            createUnionWriterContexts()
+        writer.openBlock("public enum \$union.name:L: Equatable {", "}\n") {
+            shape.allMembers.values.forEach {
+                writer.writeMemberDocs(model, it)
+                val enumCaseName = symbolProvider.toMemberName(it)
+                val enumCaseAssociatedType = symbolProvider.toSymbol(it)
+                writer.write("case \$L(\$T)", enumCaseName, enumCaseAssociatedType)
+            }
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(String)")
-        }
-
-        writer.openBlock("extension \$union.name:L : Codable, Equatable { ", "}") {
-
-            // Generate Coding Keys for serialization/deserialization
-            generateCodingKeysEnumBlock()
-
-            // Generate custom encoder
-            generateEncodeBlock()
-
-            // Generate custom decoder
-            generateInitFromDecoderBlock()
+            writer.write("case sdkUnknown(String?)")
         }
         writer.removeContext("union.name")
-    }
-
-    fun addEnumCaseToEnum(memberShape: MemberShape) {
-        writer.writeMemberDocs(model, memberShape)
-        writer.write("case ${memberShape.swiftEnumCaseName()}(${memberShape.swiftEnumAssociatedValueType()})")
-    }
-
-    fun addEnumCaseToCodingKeysEnum(memberShape: MemberShape) {
-        codingKeysBuilder.add("case ${memberShape.swiftEnumCaseName()}")
-    }
-
-    fun addEnumCaseToEncodeBlock(memberShape: MemberShape) {
-        encodeBlockBuilder.add("case let .${memberShape.swiftEnumCaseName()}(value):\n    try container.encode(value, forKey: .${memberShape.swiftEnumCaseName()})")
-    }
-
-    fun addEnumCaseToInitFromDecoderBlock(memberShape: MemberShape) {
-        val enumName = memberShape.swiftEnumCaseName()
-        initFromDecoderBlockBuilder.add(
-                "if let value = try? container.decode(String.self, forKey: .$enumName) {\n" +
-                "    self = .$enumName(value)\n" +
-                "    return\n" +
-                "}")
-    }
-
-    fun createUnionWriterContexts() {
-        shape.getAllMembers().values.forEach {
-            addEnumCaseToEnum(it)
-            addEnumCaseToCodingKeysEnum(it)
-            addEnumCaseToEncodeBlock(it)
-            addEnumCaseToInitFromDecoderBlock(it)
-        }
-    }
-
-    fun generateCodingKeysEnumBlock() {
-        codingKeysBuilder.add("case sdkUnknown")
-        writer.openBlock("enum CodingKeys: String, CodingKey {", "}") {
-            writer.write(codingKeysBuilder.joinToString("\n"))
-        }
-    }
-
-    fun generateEncodeBlock() {
-        encodeBlockBuilder.add("case let .sdkUnknown(value):\n    try container.encode(value, forKey: .sdkUnknown)")
-        writer.openBlock("func encode(to encoder: Encoder) throws {", "}") {
-            writer.write("var container = encoder.container(keyedBy: CodingKeys.self)")
-            writer.write("switch self {")
-            writer.write(encodeBlockBuilder.joinToString("\n"))
-            writer.write("}")
-        }
-    }
-
-    fun generateInitFromDecoderBlock() {
-        initFromDecoderBlockBuilder.add(
-            "else {\n" +
-            "    self = .sdkUnknown(\"\")\n" +
-            "    return\n" +
-            "}")
-
-        writer.openBlock("init(from decoder: Decoder) throws {", "}") {
-            writer.write("let container = try decoder.container(keyedBy: CodingKeys.self)")
-            writer.write(initFromDecoderBlockBuilder.joinToString("\n"))
-        }
-    }
-
-    fun MemberShape.swiftEnumCaseName(): String {
-        return symbolProvider.toMemberName(this)
-    }
-
-    fun MemberShape.swiftEnumAssociatedValueType(): String {
-        return symbolProvider.toSymbol(this).name
     }
 }

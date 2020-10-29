@@ -63,7 +63,7 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
                     "            from: 2.0\n" +
                     "        ),\n" +
-                    "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
+                    "        .package(path: \"~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime\"),\n" +
                     "    ]")
     }
 
@@ -91,7 +91,7 @@ class PackageManifestGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders package manifest file with correct targets block`() {
-        writePackageManifest(settings, manifest, mockDependencies)
+        writePackageManifest(settings, manifest, mockDependencies, true)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
@@ -102,8 +102,17 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "                \"BigNumber\", \"ClientRuntime\"\n" +
                     "            ],\n" +
                     "            path: \"./MockSDK\"\n" +
+                    "        ),\n" +
+                    "        .testTarget(\n" +
+                    "            name: \"MockSDKTests\",\n" +
+                    "            dependencies: [\n" +
+                    "                \"MockSDK\",\n" +
+                    "                \"SmithyTestUtil\"\n" +
+                    "            ],\n" +
+                    "            path: \"./MockSDKTests\"\n" +
                     "        )\n" +
-                    "    ]")
+                    "    ]"
+            )
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {

@@ -23,7 +23,7 @@ public struct HttpResponse: HttpUrlResponse {
 
     public var statusCode: HttpStatusCode
 
-    init(httpUrlResponse: HTTPURLResponse, content: ResponseType?) {
+    public init(httpUrlResponse: HTTPURLResponse, content: ResponseType?) {
         self.content = content
         self.statusCode = HttpStatusCode(rawValue: httpUrlResponse.statusCode)!
         self.headers = httpUrlResponse.headers

@@ -51,3 +51,60 @@ extension StringProtocol {
         self = lowercasingFirstLetter()
     }
 }
+
+/// Encode the String using Base64 Encoding
+extension StringProtocol {
+    public func base64EncodedString() throws -> String {
+        let utf8Encoded = self.data(using: .utf8)
+        guard let base64String = utf8Encoded?.base64EncodedString() else {
+            throw ClientError.serializationFailed("Failed to base64 encode a string")
+        }
+        return base64String
+    }
+}
+
+/// Trims the String to remove leading and tailing whitespace, newline characters
+extension StringProtocol {
+    public func trim() -> String {
+        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+/// Removes the given prefix from the string if one exists
+extension StringProtocol {
+    public func removePrefix(_ prefix: String) -> String {
+        guard self.hasPrefix(prefix) else { return String(self) }
+        return String(self.dropFirst(prefix.count))
+    }
+}
+
+/// Decode the Base64 Encoded String
+extension StringProtocol {
+    public func base64DecodedString() throws -> String {
+        guard let base64EncodedData = Data(base64Encoded: String(self)),
+            let decodedString = String(data: base64EncodedData, encoding: .utf8) else {
+            throw ClientError.serializationFailed("Failed to decode a base64 encoded string")
+        }
+        return decodedString
+    }
+}
+
+extension String {
+    /// Returns a substring after the first occurrence of `separator` or original string if `separator` is absent
+    public func substringAfter(_ separator: String) -> String {
+        guard let range = self.range(of: separator) else {
+            return self
+        }
+        let substring = self[range.upperBound...]
+        return String(substring)
+    }
+    
+    /// Returns a substring before the first occurrence of `separator` or original string if `separator` is absent
+    public func substringBefore(_ separator: String) -> String {
+        guard let range = self.range(of: separator) else {
+            return self
+        }
+        let substring = self[..<range.lowerBound]
+        return String(substring)
+    }
+}

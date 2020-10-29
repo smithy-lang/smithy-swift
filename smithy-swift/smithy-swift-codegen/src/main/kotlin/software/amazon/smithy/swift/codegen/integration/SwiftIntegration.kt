@@ -17,12 +17,9 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import java.awt.Shape
-import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
@@ -45,9 +42,8 @@ interface SwiftIntegration {
      *
      * @return Returns the sort order, defaulting to 0.
      */
-    fun getOrder(): Byte {
-        return 0
-    }
+    val order: Byte
+        get() = 0
 
     /**
      * Preprocess the model before code generation.
@@ -56,13 +52,11 @@ interface SwiftIntegration {
      * This can be used to remove unsupported features, remove traits
      * from shapes (e.g., make members optional), etc.
      *
-     * @param context Plugin context.
+     * @param model model definition.
      * @param settings Setting used to generate.
      * @return Returns the updated model.
      */
-    fun preprocessModel(context: PluginContext, settings: SwiftSettings): Model? {
-        return context.model
-    }
+    fun preprocessModel(model: Model, settings: SwiftSettings): Model = model
 
     /**
      * Updates the [SymbolProvider] used when generating code.
@@ -120,83 +114,13 @@ interface SwiftIntegration {
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
         definedShape: Shape
-    )
+    ) {
+        // pass
+    }
 
     /**
-     * Writes additional files.
-     *
-     * <pre>
-     * `public class MyIntegration: SwiftIntegration {
-     * fun writeAdditionalFiles(
-     * settings: SwiftSettings,
-     * model: Model,
-     * symbolProvider: SymbolProvider,
-     * writerFactory: (String, (SwiftWriter) -> Unit) -> Unit
-     * ) {
-     * writerFactory("foo.swift", { it.write("// Hello!")})
-     * }
-     * }
-    `</pre> *
-     *
-     * @param settings Settings used to generate.
-     * @param model Model to generate from.
-     * @param symbolProvider Symbol provider used for codegen.
-     * @param writerFactory A factory function that takes the name of a file
-     * to write and a closure that receives a
-     * [SwiftWriter] to perform the actual writing to the file.
+     * Get the list of protocol generators to register
      */
-    fun writeAdditionalFiles(
-        settings: SwiftSettings,
-        model: Model?,
-        symbolProvider: SymbolProvider?,
-        writerFactory: (String, (SwiftWriter) -> Unit) -> Unit
-    )
-
-    /**
-     * Adds additional client config interface fields.
-     *
-     *
-     * Implementations of this method are expected to add fields to the
-     * "ClientDefaults" interface of a generated client. This interface
-     * contains fields that are either statically generated from
-     * a model or are dependent on the runtime that a client is running in.
-     * Implementations are expected to write interface field names and
-     * their type signatures, each followed by a semicolon (;). Any number
-     * of fields can be added, and any [Symbol] or
-     * [SymbolReference] objects that are written to the writer are
-     * automatically imported, and any of their contained
-     * [SymbolDependency] values are automatically added to the
-     * generated `package.json` file.
-     *
-     *
-     * For example, the following code adds two fields to a client:
-     *
-     * <pre>
-     * `public final class MyIntegration implements SwiftIntegration {
-     * public void addConfigInterfaceFields(
-     * SwiftSettings settings,
-     * Model model,
-     * SymbolProvider symbolProvider,
-     * SwiftWriter writer
-     * ) {
-     * writer.writeDocs("The docs for foo...")
-     * writer.write("foo?: string;")
-     *
-     * writer.writeDocs("The docs for bar...")
-     * writer.write("bar?: string;")
-     * }
-     * }
-    `</pre> *
-     *
-     * @param settings Settings used to generate.
-     * @param model Model to generate from.
-     * @param symbolProvider Symbol provider used for codegen.
-     * @param writer TypeScript writer to write to.
-     */
-    fun addConfigInterfaceFields(
-        settings: SwiftSettings,
-        model: Model,
-        symbolProvider: SymbolProvider,
-        writer: SwiftWriter
-    )
+    val protocolGenerators: List<ProtocolGenerator>
+        get() = listOf()
 }

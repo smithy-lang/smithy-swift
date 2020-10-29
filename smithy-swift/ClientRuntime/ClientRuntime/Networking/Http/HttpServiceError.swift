@@ -13,16 +13,7 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
-public protocol OperationError {
-    var retryable: Bool {get set}
-    var type: ErrorType {get set}
-
-}
-
-public enum ErrorType {
-    case server
-    case client
-    case unknown
+public protocol HttpServiceError: ServiceError {
+    var _statusCode: HttpStatusCode? { get set }
+    var _headers: HttpHeaders? { get set }
 }
