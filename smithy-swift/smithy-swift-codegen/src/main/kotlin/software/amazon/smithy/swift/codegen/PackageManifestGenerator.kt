@@ -21,7 +21,7 @@ import software.amazon.smithy.utils.CodeWriter
 fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>, generateTestTarget: Boolean = false) {
 
     // filter duplicates in dependencies
-    val distinctDependencies = dependencies.distinctBy { it.packageName }
+    var distinctDependencies = dependencies.distinctBy { it.packageName }
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -61,7 +61,9 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             writer.openBlock(".target(", "),") {
                 writer.write("name: \"${settings.moduleName}\",")
                 writer.openBlock("dependencies: [", "],") {
-                    writer.write(distinctDependencies.map { "\"${it.packageName}\"" }.joinToString(separator = ", "))
+                    var str = distinctDependencies.map { "\"${it.packageName}\"" }.joinToString(separator = ", ")
+                    str = str.replace("\"BigNumber\"",".product(name: \"Numerics\", package: \"swift-numerics\")")
+                    writer.write(str)
                 }
                 writer.write("path: \"./${settings.moduleName}\"")
             }

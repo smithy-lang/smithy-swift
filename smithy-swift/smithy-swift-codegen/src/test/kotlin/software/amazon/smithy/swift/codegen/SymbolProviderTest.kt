@@ -122,7 +122,7 @@ class SymbolProviderTest : TestsBase() {
 
         assertEquals("BigNumber", memberSymbol.namespace)
         assertEquals(true, memberSymbol.isBoxed())
-        assertEquals("BInt", memberSymbol.name)
+        assertEquals("Complex<Int>", memberSymbol.name)
     }
 
     @Test fun `creates lists`() {
