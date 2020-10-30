@@ -141,7 +141,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "Complex<Double>")
 
     private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, namespace = "BigNumber", boxed = true)
+        return createSymbolBuilder(shape, symbolName, namespace = "Numerics", boxed = true)
             .addDependency(SwiftDependency.BIG)
             .build()
     }

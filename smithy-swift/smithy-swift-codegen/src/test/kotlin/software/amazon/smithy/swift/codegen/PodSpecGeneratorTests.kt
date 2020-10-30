@@ -49,7 +49,7 @@ class PodSpecGeneratorTests : TestsBase() {
         writePodspec(settings, manifest, mockDependencies)
         val podspec = manifest.getFileString("/example.podspec").get()
         assertNotNull(podspec)
-        podspec.shouldContain("spec.dependency 'BigNumber', '0.0.5'")
+        podspec.shouldContain("spec.dependency 'Numerics', '0.0.5'")
         podspec.shouldContain("spec.dependency 'ClientRuntime', '0.1.0'")
         podspec.shouldContain("spec.homepage     = '$homepage'")
     }
