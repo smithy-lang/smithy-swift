@@ -23,15 +23,12 @@ class NetworkingTestUtils: XCTestCase {
     var mockHttpStreamRequest: AsyncRequest!
     var expectedMockRequestURL: URL!
     var expectedMockRequestData: Data!
-    var mockOperationQueue: OperationQueue!
 
     override func setUp() {
         super.setUp()
         expectedMockRequestURL = URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value")!
         let mockRequestBody = "{\"parameter\": \"value\"}"
         expectedMockRequestData = mockRequestBody.data(using: .utf8)
-        mockOperationQueue = OperationQueue()
-        mockOperationQueue.name = "mock-operation-queue"
         setMockHttpDataRequest()
         setMockHttpStreamRequest()
     }
@@ -41,7 +38,7 @@ class NetworkingTestUtils: XCTestCase {
      */
     func setMockHttpDataRequest() {
         let endpoint = getMockEndpoint()
-        var headers = HttpHeaders()
+        var headers = Headers()
 
         headers.add(name: "header-item-name", value: "header-item-value")
 
@@ -54,7 +51,7 @@ class NetworkingTestUtils: XCTestCase {
      */
     func setMockHttpStreamRequest() {
         let endpoint = getMockEndpoint()
-        var headers = HttpHeaders()
+        var headers = Headers()
         headers.add(name: "header-item-name", value: "header-item-value")
 
         let httpBody = HttpBody.stream(InputStream(data: expectedMockRequestData))

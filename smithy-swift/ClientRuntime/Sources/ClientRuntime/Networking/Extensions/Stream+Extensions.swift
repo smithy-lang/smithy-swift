@@ -17,6 +17,7 @@ import Foundation
 
 extension OutputStream {
     public func write<DataType: DataProtocol>(_ data: DataType) throws -> Int {
+        open()
         var buffer = Array(data)
         let result = self.write(&buffer, maxLength: buffer.count)
         if result < 0 {
@@ -24,6 +25,7 @@ extension OutputStream {
         } else {
             return result
         }
+        close()
     }
 }
 

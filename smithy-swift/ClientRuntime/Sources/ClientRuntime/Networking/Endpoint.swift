@@ -15,14 +15,14 @@
 
 import Foundation
 
-public struct Endpoint {
+public struct Endpoint: Hashable {
     public let path: String
     public let queryItems: [URLQueryItem]?
     public let protocolType: ProtocolType?
     public let host: String
-    public let port: Int?
+    public let port: Int16
 
-    public init(host: String, path: String, port: Int? = nil, queryItems: [URLQueryItem]? = nil, protocolType: ProtocolType? = .https) {
+    public init(host: String, path: String, port: Int16 = 443, queryItems: [URLQueryItem]? = nil, protocolType: ProtocolType? = .https) {
         self.host = host
         self.path = path
         self.port = port
@@ -41,9 +41,7 @@ public extension Endpoint {
         components.path = path
         components.queryItems = queryItems
         //for local development
-        if let port = port {
-        components.port = port
-        }
+        components.port = Int(port)
 
         return components.url
     }

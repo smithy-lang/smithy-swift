@@ -16,11 +16,9 @@
 import XCTest
 import ClientRuntime
 
-/*
-// TODO:: fix failing tests
 class StreamExtensionsTests: XCTestCase {
     
-    let testString = "test@123//"
+    let testString = "test@123"
     var dataForStream: Data!
     
     override func setUp() {
@@ -33,7 +31,7 @@ class StreamExtensionsTests: XCTestCase {
         let readData = try? inputStream.readData(maxLength: 4)
         XCTAssertNotNil(readData)
         
-//        print(String(data: readData!, encoding: .utf8))
+        print(String(data: readData!, encoding: .utf8))
     }
 
     func testWritingDataToOutputStream() {
@@ -51,4 +49,4 @@ class StreamExtensionsTests: XCTestCase {
         print(writtenBytesCount)
     }
 }
-*/
+

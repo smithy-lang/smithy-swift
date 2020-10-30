@@ -15,5 +15,5 @@
 
 public protocol HttpServiceError: ServiceError {
     var _statusCode: HttpStatusCode? { get set }
-    var _headers: HttpHeaders? { get set }
+    var _headers: Headers? { get set }
 }

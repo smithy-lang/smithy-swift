@@ -16,7 +16,7 @@
 import Foundation
 
 protocol HttpUrlResponse {
-    var headers: Headers { get set }
+    var headers: Headers? { get set }
     var content: ResponseType? { get set}
-    var statusCode: HttpStatusCode {get set}
+    var statusCode: HttpStatusCode? {get set}
 }

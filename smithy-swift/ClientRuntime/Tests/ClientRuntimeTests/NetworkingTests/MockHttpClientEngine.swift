@@ -14,21 +14,20 @@
 //
 
 import Foundation
+@testable import ClientRuntime
 
-public struct HttpResponse: HttpUrlResponse {
-
-    public var headers: Headers?
-
-    public var content: ResponseType?
-
-    public var statusCode: HttpStatusCode?
-    
-    init() {} //creates an empty instance
-
-    public init(headers: Headers?, content: ResponseType?, statusCode: HttpStatusCode) {
-        self.content = content
-        self.statusCode = statusCode
-        self.headers = headers
+class MockHttpClientEngine: HttpClientEngine {
+    func close() {
+        //do nothing cuz fake engine
     }
-
+    
+    func successHttpResponse(request: AsyncRequest) -> HttpResponse {
+        return HttpResponse(headers: nil, content: .none, statusCode: HttpStatusCode.ok)
+    }
+    
+    func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
+        completion(.success(successHttpResponse(request: request)))
+    }
 }
+
+

@@ -29,9 +29,9 @@ open class HttpRequestTestBase: XCTestCase {
                                          headers: [String: String],
                                          queryParams: [String],
                                          body: String?,
-                                         host: String) -> HttpRequest {
+                                         host: String) -> AsyncRequest {
         var queryItems = [URLQueryItem]()
-        var httpHeaders = HttpHeaders()
+        var httpHeaders = Headers()
         
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
@@ -49,20 +49,20 @@ open class HttpRequestTestBase: XCTestCase {
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
         
         guard let body = body else {
-            return HttpRequest(method: method,
+            return AsyncRequest(method: method,
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
         //handle empty string body cases that should still create a request
         //without the body
         if body == "" || body == "{}" {
-            return HttpRequest(method: method,
+            return AsyncRequest(method: method,
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
     
         let httpBody = HttpBody.data(body.data(using: .utf8))
-        return HttpRequest(method: method,
+        return AsyncRequest(method: method,
                            endpoint: endPoint,
                            headers: httpHeaders,
                            body: httpBody)
@@ -99,7 +99,7 @@ open class HttpRequestTestBase: XCTestCase {
      /// - Parameter actual: Actual `HttpRequest` to compare against
      /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
      */
-    public func assertEqual(_ expected: HttpRequest, _ actual: HttpRequest, _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
+    public func assertEqual(_ expected: AsyncRequest, _ actual: AsyncRequest, _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
         // assert headers match
         assertEqualHttpHeaders(expected.headers, actual.headers)
         
@@ -189,7 +189,7 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpHeaders`
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
-    public func assertEqualHttpHeaders(_ expected: HttpHeaders, _ actual: HttpHeaders) {
+    public func assertEqualHttpHeaders(_ expected: Headers, _ actual: Headers) {
         //in order to properly compare header values where actual is an array and expected comes in as a comma separated string
         //take actual and join them with a comma and then separate them by comma (to in effect get the same separated list as expected)
         //take expected and separate them by comma

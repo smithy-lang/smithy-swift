@@ -33,32 +33,15 @@ public struct AsyncRequest {
         self.endpoint = endpoint
         self.headers = headers
         self.body = body
+        self.queryItems = queryItems
     }
 }
 
 extension AsyncRequest {
-<<<<<<< HEAD
-    public func toUrlRequest() throws -> URLRequest {
-        guard let url = endpoint.url else {
-
-            throw ClientError.serializationFailed("Serialization failed with the url")
-        }
-
-        var urlRequest = URLRequest(url: url)
-        
-        urlRequest.allHTTPHeaderFields = headers.dictionary.mapValues({ (values) -> String in
-            values.joined(separator: ", ")
-        })
-
-        urlRequest.httpMethod = method.rawValue
-
-=======
-    
     public func toHttpRequest() -> HttpRequest {
         let httpRequest = HttpRequest(headers: headers.toHttpHeaders())
         httpRequest.method = method.rawValue
         var bodyToSend: InputStream?
->>>>>>> c554e87... saving progress
         switch body {
         case .data(let data):
             if let data = data {
@@ -73,8 +56,8 @@ extension AsyncRequest {
         case .none:
             bodyToSend = nil
         }
-        if let bodyToSend = bodyToSend {
-            httpRequest.body = AwsInputStream(bodyToSend)
+        if let body = bodyToSend {
+            httpRequest.body = AwsInputStream(body)
         }
         
         return httpRequest

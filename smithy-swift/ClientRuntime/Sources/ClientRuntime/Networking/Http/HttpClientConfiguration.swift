@@ -19,17 +19,25 @@ public class HttpClientConfiguration {
     public var protocolType: ProtocolType
     //initialize with default headers
     public var defaultHeaders: Headers
+    
+    public let maxConnectionsPerEndpoint: Int
+    
+    public let windowSize: Int
+    
+    let verifyPeer: Bool
 
-    public var protocolClasses: [AnyClass]?
-
-    //add any other properties here you want to give the service operations control over to be mappted to the urlsessionconfig below
+    //add any other properties here you want to give the service operations control over to be mapped to CRT Engine
 
     public init(protocolType: ProtocolType = .https,
                 defaultHeaders: Headers = Headers(),
-                protocolClasses: [AnyClass]? = nil) {
+                maxConnectionsPerEndpoint: Int,
+                windowSize: Int,
+                verifyPeer: Bool) {
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
-        self.protocolClasses = protocolClasses
+        self.windowSize = windowSize
+        self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
+        self.verifyPeer = verifyPeer
     }
 }
 

@@ -17,7 +17,7 @@
 public struct UnknownHttpServiceError: HttpServiceError {
     public var _statusCode: HttpStatusCode?
     
-    public var _headers: HttpHeaders?
+    public var _headers: Headers?
     
     public var _message: String?
     

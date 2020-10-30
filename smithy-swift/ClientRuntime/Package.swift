@@ -32,6 +32,6 @@ let package = Package(
         .testTarget(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"]
-)
+        )
     ]
 )

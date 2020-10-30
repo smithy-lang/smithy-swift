@@ -41,14 +41,12 @@ open class HttpResponseTestBase: XCTestCase {
             return nil
         }
         
-        guard let httpUrlResponse = HTTPURLResponse(url: url,
-                                                    statusCode: code,
-                                                    httpVersion: "1.1",
-                                                    headerFields: headers) else {
-            XCTFail("Failed to construct HttpURLResponse")
-            return nil
+        var internalHeaders: Headers?
+        if let headers = headers {
+            internalHeaders = Headers(headers)
         }
         
-        return HttpResponse(httpUrlResponse: httpUrlResponse, content: content)
+        return HttpResponse(headers: internalHeaders, content: content, statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
+        
     }
 }

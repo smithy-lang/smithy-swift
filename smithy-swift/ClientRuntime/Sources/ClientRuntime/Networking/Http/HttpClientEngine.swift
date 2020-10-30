@@ -8,6 +8,6 @@
 import Foundation
 
 public protocol HttpClientEngine {
-    func execute(request: AsyncRequest, completion: @escaping NetworkResult) throws
+    func execute(request: AsyncRequest, completion: @escaping NetworkResult)
     func close()
 }

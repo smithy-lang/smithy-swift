@@ -112,9 +112,17 @@ extension Headers {
         let httpHeaders = HttpHeaders()
         let headers = self.headers
         for header in headers {
-            httpHeaders.add(name: header.name, value: header.value)
+            _ = httpHeaders.add(name: header.name, value: header.value)
         }
         return httpHeaders
+    }
+    
+    init(httpHeaders: HttpHeaders) {
+        self.init()
+        let headers = httpHeaders.getAll()
+        headers.forEach { (header) in
+            add(name: header.name, value: header.value)
+        }
     }
 }
 
