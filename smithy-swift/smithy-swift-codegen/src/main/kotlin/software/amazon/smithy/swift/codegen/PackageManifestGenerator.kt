@@ -21,7 +21,7 @@ import software.amazon.smithy.utils.CodeWriter
 fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>, generateTestTarget: Boolean = false) {
 
     // filter duplicates in dependencies
-    var distinctDependencies = dependencies.distinctBy { it.packageName }
+    val distinctDependencies = dependencies.distinctBy { it.packageName }
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()

@@ -63,7 +63,7 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "            url: \"https://github.com/apple/swift-numerics\",\n" +
                     "            from: 0.0.5\n" +
                     "        ),\n" +
-                    "        .package(path: \"/Users/sadiredd/Documents/smithy-swift/smithy-swift/ClientRuntime\"),\n" +
+                    "        .package(path: \"~/Projects/Amplify/amplify-codegen/smithy-swift/ClientRuntime\"),\n" +
                     "    ]")
     }
 
