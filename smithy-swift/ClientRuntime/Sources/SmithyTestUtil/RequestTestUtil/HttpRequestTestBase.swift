@@ -221,7 +221,7 @@ open class HttpRequestTestBase: XCTestCase {
             
             XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
                            "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
-                           " does not match actual header value \(actual.dictionary[expectedHeaderName])]")
+                            " does not match actual header value \(String(describing: actual.dictionary[expectedHeaderName]))]")
         }
     }
     
@@ -234,8 +234,8 @@ open class HttpRequestTestBase: XCTestCase {
         // match all the components of Endpoint
         XCTAssertEqual(expected.path, actual.path, "Expected Endpoint path: \(expected.path) does not match the actual Endpoint path: \(actual.path)")
         XCTAssertEqual(expected.protocolType, actual.protocolType,
-                       "Expected Endpoint protocolType: \(expected.protocolType)" +
-                       " does not match the actual Endpoint protocolType: \(actual.protocolType)")
+                       "Expected Endpoint protocolType: \(String(describing: expected.protocolType))" +
+                        " does not match the actual Endpoint protocolType: \(String(describing: actual.protocolType))")
         XCTAssertEqual(expected.host, actual.host, "Expected Endpoint host: \(expected.host) does not match the actual Endpoint host: \(actual.host)")
         XCTAssertEqual(expected.port, actual.port, "Expected Endpoint port: \(expected.port) does not match the actual Endpoint port: \(actual.port)")
         
@@ -271,10 +271,9 @@ open class HttpRequestTestBase: XCTestCase {
 
         
         for expectedQueryItem in expected {
-            var queryItemFound = false
             XCTAssertTrue(actual.contains(expectedQueryItem), "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
             let actualQueryItemValue = actualMap[expectedQueryItem.name]
-            XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(expectedQueryItem.value)]" + " does not match actual query item [\(expectedQueryItem.name)=\(actualQueryItemValue)]")
+            XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(String(describing: expectedQueryItem.value))]" + " does not match actual query item [\(expectedQueryItem.name)=\(String(describing: actualQueryItemValue))]")
 
         }
     }

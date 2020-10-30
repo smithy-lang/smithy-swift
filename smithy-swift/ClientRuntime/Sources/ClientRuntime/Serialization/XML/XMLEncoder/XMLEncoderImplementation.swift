@@ -239,7 +239,7 @@ extension XMLEncoderImplementation {
             return addToXMLContainer(value)
         } else if T.self == Decimal.self || T.self == NSDecimalNumber.self,
             let value = value as? Decimal {
-            return try addToXMLContainer(value)
+            return addToXMLContainer(value)
         }
 
         let depth = storage.count

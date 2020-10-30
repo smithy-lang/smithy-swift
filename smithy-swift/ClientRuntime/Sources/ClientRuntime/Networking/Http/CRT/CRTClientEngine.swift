@@ -32,7 +32,7 @@ public class CRTClientEngine: HttpClientEngine {
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    public init(config: HttpClientConfiguration) throws {
+    public init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         let elg = EventLoopGroup(threadCount: 1)
         let hostResolver = DefaultHostResolver(eventLoopGroup: elg, maxHosts: 8, maxTTL: 30)
@@ -72,7 +72,7 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool!
     }
     
-    private func createHttpHeaders(endpoint: Endpoint, request: inout AsyncRequest) -> HttpHeaders {
+    private func addHttpHeaders(endpoint: Endpoint, request: AsyncRequest) -> HttpRequest {
         
         var headers = request.headers
         if headers.value(for: CRTClientEngine.HOST_HEADER) == nil {
@@ -96,7 +96,7 @@ public class CRTClientEngine: HttpClientEngine {
             headers.add(name: CRTClientEngine.CONTENT_LENGTH, value: contentLength)
         }
         
-        return request.headers.toHttpHeaders()
+        return request.toHttpRequest()
     }
     
     public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
@@ -126,7 +126,8 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func makeHttpRequestOptions(_ request: AsyncRequest) -> (HttpRequestOptions, HttpResponse) {
         var response = HttpResponse()
-        let requestOptions = HttpRequestOptions(request: request.toHttpRequest()) { (stream, headerBlock, httpHeaders) in
+        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
             response.headers = Headers(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
             print(headerBlock)

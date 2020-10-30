@@ -23,9 +23,9 @@ extension OutputStream {
         if result < 0 {
             throw self.streamError ?? POSIXError(.EIO)
         } else {
+            close()
             return result
         }
-        close()
     }
 }
 

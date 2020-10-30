@@ -19,25 +19,13 @@ public class HttpClientConfiguration {
     public var protocolType: ProtocolType
     //initialize with default headers
     public var defaultHeaders: Headers
-    
-    public let maxConnectionsPerEndpoint: Int
-    
-    public let windowSize: Int
-    
-    let verifyPeer: Bool
 
-    //add any other properties here you want to give the service operations control over to be mapped to CRT Engine
+    //add any other properties here you want to give the service operations control over to be mapped to the Http Client
 
     public init(protocolType: ProtocolType = .https,
-                defaultHeaders: Headers = Headers(),
-                maxConnectionsPerEndpoint: Int,
-                windowSize: Int,
-                verifyPeer: Bool) {
+                defaultHeaders: Headers = Headers()) {
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
-        self.windowSize = windowSize
-        self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
-        self.verifyPeer = verifyPeer
     }
 }
 

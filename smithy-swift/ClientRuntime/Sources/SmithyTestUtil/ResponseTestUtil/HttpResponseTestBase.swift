@@ -29,24 +29,15 @@ open class HttpResponseTestBase: XCTestCase {
                                   headers: [String: String]? = nil,
                                   content: ResponseType? = nil,
                                   host: String) -> HttpResponse? {
-        let urlString: String
-        if let path = path {
-            urlString = host + path
-        } else {
-            urlString = host
-        }
-        
-        guard let url = URL(string: urlString) else {
-            XCTFail("Failed to construct URL for HttpURLResponse")
-            return nil
-        }
         
         var internalHeaders: Headers?
         if let headers = headers {
             internalHeaders = Headers(headers)
         }
         
-        return HttpResponse(headers: internalHeaders, content: content, statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
+        return HttpResponse(headers: internalHeaders,
+                            content: content,
+                            statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
         
     }
 }

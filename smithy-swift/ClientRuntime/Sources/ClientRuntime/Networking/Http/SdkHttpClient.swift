@@ -24,7 +24,7 @@ public class SdkHttpClient {
         self.engine = engine
         } else {
             //CRT is the default engine
-            self.engine = try CRTClientEngine(config: config)
+            self.engine = try CRTClientEngine()
         }
        
     }

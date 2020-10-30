@@ -31,7 +31,7 @@ class StreamExtensionsTests: XCTestCase {
         let readData = try? inputStream.readData(maxLength: 4)
         XCTAssertNotNil(readData)
         
-        print(String(data: readData!, encoding: .utf8))
+        print(String(data: readData!, encoding: .utf8) ?? "")
     }
 
     func testWritingDataToOutputStream() {
@@ -46,7 +46,7 @@ class StreamExtensionsTests: XCTestCase {
         let writtenBytesCount = try? outputStream.write(dataForStream)
         
         XCTAssertNotNil(writtenBytesCount)
-        print(writtenBytesCount)
+        print(writtenBytesCount ?? 0)
     }
 }
 

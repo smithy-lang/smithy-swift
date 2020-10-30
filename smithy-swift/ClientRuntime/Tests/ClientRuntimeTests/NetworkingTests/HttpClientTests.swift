@@ -23,7 +23,7 @@ class HttpClientTests: NetworkingTestUtils {
 
     override func setUp() {
         super.setUp()
-        let httpClientConfiguration = HttpClientConfiguration(maxConnectionsPerEndpoint: 2, windowSize: 1064, verifyPeer: true)
+        let httpClientConfiguration = HttpClientConfiguration()
         httpClient = try! SdkHttpClient(engine: mockClient, config: httpClientConfiguration)
     }
 
