@@ -120,7 +120,7 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("Numerics", memberSymbol.namespace)
+        assertEquals("ComplexModule", memberSymbol.namespace)
         assertEquals(true, memberSymbol.isBoxed())
         assertEquals("Complex<Int>", memberSymbol.name)
     }

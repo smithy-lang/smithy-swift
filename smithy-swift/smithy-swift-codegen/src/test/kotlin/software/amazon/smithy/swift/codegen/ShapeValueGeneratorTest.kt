@@ -29,7 +29,7 @@ class ShapeValueGeneratorTest {
     @Test
     fun `it renders maps`() {
         val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
-        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target("smithy.api#Integer").build()
+        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target("smithy.api#BigInteger").build()
         val map = MapShape.builder()
             .id("foo.bar#MyMap")
             .key(keyMember)

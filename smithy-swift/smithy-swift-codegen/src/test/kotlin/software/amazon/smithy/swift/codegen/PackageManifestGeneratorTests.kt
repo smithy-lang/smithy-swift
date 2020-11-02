@@ -99,7 +99,7 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "        .target(\n" +
                     "            name: \"MockSDK\",\n" +
                     "            dependencies: [\n" +
-                    "                .product(name: \"Numerics\", package: \"swift-numerics\"), \"ClientRuntime\"\n" +
+                    "                .product(name: \"ComplexModule\", package: \"swift-numerics\"), \"ClientRuntime\"\n" +
                     "            ],\n" +
                     "            path: \"./MockSDK\"\n" +
                     "        ),\n" +
