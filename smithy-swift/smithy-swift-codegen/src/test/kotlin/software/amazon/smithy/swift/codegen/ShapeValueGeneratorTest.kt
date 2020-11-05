@@ -430,5 +430,4 @@ MyStruct(
 
         contents.shouldContainOnlyOnce(expected)
     }
-
 }
