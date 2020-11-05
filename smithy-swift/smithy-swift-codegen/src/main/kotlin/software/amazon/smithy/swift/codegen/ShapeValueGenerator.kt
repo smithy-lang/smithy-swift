@@ -274,7 +274,7 @@ class ShapeValueGenerator(
 
                 ShapeType.BIG_INTEGER -> {
                     writer.addImport(SwiftDependency.BIG.namespace)
-                    writer.writeInline("Complex(\$L)", node.value)
+                    writer.writeInline( "(Int64)(String(\$L))" ,node.value.toLong() )
                 }
 
                 ShapeType.BIG_DECIMAL -> {

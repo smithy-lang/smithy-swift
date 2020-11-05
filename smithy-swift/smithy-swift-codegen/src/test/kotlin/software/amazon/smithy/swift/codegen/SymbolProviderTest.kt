@@ -122,7 +122,7 @@ class SymbolProviderTest : TestsBase() {
 
         assertEquals("ComplexModule", memberSymbol.namespace)
         assertEquals(true, memberSymbol.isBoxed())
-        assertEquals("Complex<Int>", memberSymbol.name)
+        assertEquals("Int64", memberSymbol.name)
     }
 
     @Test fun `creates lists`() {
