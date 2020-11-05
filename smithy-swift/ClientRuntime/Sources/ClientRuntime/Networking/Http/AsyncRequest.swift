@@ -39,8 +39,10 @@ public struct AsyncRequest {
 
 extension AsyncRequest {
     public func toHttpRequest() -> HttpRequest {
-        let httpRequest = HttpRequest(headers: headers.toHttpHeaders())
+        let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
+        httpRequest.path = endpoint.path
+        httpRequest.addHeaders(headers: headers.toHttpHeaders())
         var bodyToSend: InputStream?
         switch body {
         case .data(let data):

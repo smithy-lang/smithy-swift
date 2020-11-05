@@ -33,6 +33,7 @@ public class CRTClientEngine: HttpClientEngine {
     private let maxConnectionsPerEndpoint: Int
     
     public init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
+        AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         let elg = EventLoopGroup(threadCount: 1)
         let hostResolver = DefaultHostResolver(eventLoopGroup: elg, maxHosts: 8, maxTTL: 30)
@@ -138,5 +139,9 @@ public class CRTClientEngine: HttpClientEngine {
         }
         
         return (requestOptions, response)
+    }
+    
+    deinit {
+        AwsCommonRuntimeKit.cleanUp()
     }
 }
