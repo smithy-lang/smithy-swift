@@ -274,12 +274,12 @@ class ShapeValueGenerator(
 
                 ShapeType.BIG_INTEGER -> {
                     writer.addImport(SwiftDependency.BIG.namespace)
-                    writer.writeInline( "(Int64)(String(\$L))" ,node.value.toLong() )
+                    writer.writeInline( "(Int64)(String(\$L))" ,node.value )
                 }
 
                 ShapeType.BIG_DECIMAL -> {
                     writer.addImport(SwiftDependency.BIG.namespace)
-                    writer.writeInline("Complex(\$L)", node.value)
+                    writer.writeInline("Complex(\$L)", (node.value as Double).toBigDecimal())
                 }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }

@@ -410,7 +410,7 @@ MyStruct(
         val writer = SwiftWriter("test")
 
         val params = Node.objectNodeBuilder()
-                .withMember("bigDecimalMember", 25613525352378.5241)
+                .withMember("bigDecimalMember", 25613525352378.523)
                 .withMember("bigIntMember", 31825352653626)
                 .withMember("bigIntMemberNegative", -31825352653626)
                 .build()
@@ -419,10 +419,12 @@ MyStruct(
         val contents = writer.toString()
 
         val expected = """
+import ComplexModule
+
 MyStruct(
-    bigDecimalMember: Complex(25613525352378.5241),
+    bigDecimalMember: Complex(25613525352378.523),
     bigIntMember: (Int64)(String(31825352653626)),
-    bigIntMemberNegative: (Int64)(String(-31825352653626)),
+    bigIntMemberNegative: (Int64)(String(-31825352653626))
 )
 """.trimIndent()
 
