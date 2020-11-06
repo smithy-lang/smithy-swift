@@ -35,7 +35,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been complete")
         var headers = Headers()
         headers.add(name: "TEST", value: "testHeader")
-        let request = AsyncRequest(method: .get, endpoint: Endpoint(host: "amazon.com", path: ""), headers: headers, body: nil)
+        let request = AsyncRequest(method: .get, endpoint: Endpoint(host: "example.com"), headers: headers, body: nil)
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):

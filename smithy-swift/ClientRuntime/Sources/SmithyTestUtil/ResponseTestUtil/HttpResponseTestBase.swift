@@ -35,7 +35,7 @@ open class HttpResponseTestBase: XCTestCase {
             internalHeaders = Headers(headers)
         }
         
-        return HttpResponse(headers: internalHeaders,
+        return HttpResponse(headers: internalHeaders!,
                             content: content,
                             statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
         

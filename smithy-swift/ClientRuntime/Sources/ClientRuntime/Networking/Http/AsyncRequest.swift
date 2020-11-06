@@ -16,10 +16,10 @@
 import Foundation
 import AwsCommonRuntimeKit
 
-
-public struct AsyncRequest {
+// we need to maintain a reference to this same request while we add headers in the CRT engine so that is why it's a class
+public class AsyncRequest {
     public var body: HttpBody?
-    public let headers: Headers
+    public var headers: Headers
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType

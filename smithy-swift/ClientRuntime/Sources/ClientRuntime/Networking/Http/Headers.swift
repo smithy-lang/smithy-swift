@@ -110,7 +110,7 @@ public struct Header {
 extension Headers {
     func toHttpHeaders() -> HttpHeaders {
         let httpHeaders = HttpHeaders()
-        let headers = self.headers
+        
         for header in headers {
             _ = httpHeaders.add(name: header.name, value: header.value)
         }
@@ -119,6 +119,13 @@ extension Headers {
     
     init(httpHeaders: HttpHeaders) {
         self.init()
+        let headers = httpHeaders.getAll()
+        headers.forEach { (header) in
+            add(name: header.name, value: header.value)
+        }
+    }
+    
+    public mutating func addAll(httpHeaders: HttpHeaders) {
         let headers = httpHeaders.getAll()
         headers.forEach { (header) in
             add(name: header.name, value: header.value)

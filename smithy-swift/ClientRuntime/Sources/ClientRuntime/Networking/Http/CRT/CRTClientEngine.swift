@@ -96,7 +96,7 @@ public class CRTClientEngine: HttpClientEngine {
         if headers.value(for: CRTClientEngine.CONTENT_LENGTH) == nil {
             headers.add(name: CRTClientEngine.CONTENT_LENGTH, value: contentLength)
         }
-        
+        request.headers = headers
         return request.toHttpRequest()
     }
     
@@ -105,12 +105,20 @@ public class CRTClientEngine: HttpClientEngine {
         connectionMgr.acquireConnection().then { (result) in
             switch result {
             case .success(let connection):
-                var (requestOptions, response) = self.makeHttpRequestOptions(request)
+                let (requestOptions, future) = self.makeHttpRequestOptions(request)
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
-                let statusCode = Int(stream.getResponseStatusCode())
-                response.statusCode = HttpStatusCode(rawValue: statusCode)
-                completion(.success(response))
+                future.then { (result) in
+                    switch result{
+                    case .success(var response):
+                        let statusCode = Int(stream.getResponseStatusCode())
+                        response.statusCode = HttpStatusCode(rawValue: statusCode)
+                        completion(.success(response))
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                    
+                }
             case .failure(let error):
                 completion(.failure(error))
             }
@@ -125,20 +133,28 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     
-    public func makeHttpRequestOptions(_ request: AsyncRequest) -> (HttpRequestOptions, HttpResponse) {
+    public func makeHttpRequestOptions(_ request: AsyncRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
+        let future = Future<HttpResponse>()
         var response = HttpResponse()
         let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
-            response.headers = Headers(httpHeaders: httpHeaders)
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+            response.headers?.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
             print(headerBlock)
         } onIncomingBody: { (stream, data) in
             response.content = ResponseType.data(data)
         } onStreamComplete: { (stream, errorCode) in
-            response.statusCode = HttpStatusCode(rawValue: Int(errorCode))
+           
+            if errorCode != 0 {
+                let error = AwsError(errorCode:errorCode)
+                future.fail(CrtError.crtError(error))
+            }
+            future.fulfill(response)
         }
         
-        return (requestOptions, response)
+        return (requestOptions, future)
     }
     
     deinit {

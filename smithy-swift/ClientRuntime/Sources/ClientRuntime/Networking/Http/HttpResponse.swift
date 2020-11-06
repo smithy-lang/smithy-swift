@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct HttpResponse: HttpUrlResponse {
+public class HttpResponse: HttpUrlResponse {
 
     public var headers: Headers?
 
@@ -23,9 +23,11 @@ public struct HttpResponse: HttpUrlResponse {
 
     public var statusCode: HttpStatusCode?
     
-    init() {} //creates an empty instance
+    init(headers: Headers = Headers()) {
+        self.headers = headers
+    } //creates an empty instance
 
-    public init(headers: Headers?, content: ResponseType?, statusCode: HttpStatusCode) {
+    public init(headers: Headers = Headers(), content: ResponseType?, statusCode: HttpStatusCode) {
         self.content = content
         self.statusCode = statusCode
         self.headers = headers
