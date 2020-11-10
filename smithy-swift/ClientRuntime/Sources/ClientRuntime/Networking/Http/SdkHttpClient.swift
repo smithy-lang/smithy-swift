@@ -19,14 +19,13 @@ public class SdkHttpClient {
     
     let engine: HttpClientEngine
     
-    public init(engine: HttpClientEngine?, config: HttpClientConfiguration) throws {
+    public init(engine: HttpClientEngine? = nil, config: HttpClientConfiguration) throws {
         if let engine = engine {
             self.engine = engine
         } else {
             //CRT is the default engine
             self.engine = try CRTClientEngine()
         }
-        
     }
     
     public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {

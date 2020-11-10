@@ -101,7 +101,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                             queryItems.append(queryItem)
                         }
                         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                        var headers = HttpHeaders()
+                        var headers = Headers()
                         headers.add(name: "Content-Type", value: "application/json")
                         if let header1 = header1 {
                             headers.add(name: "X-Header1", value: String(header1))
@@ -133,7 +133,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "text/plain")
                     if let payload1 = self.payload1 {
                         let data = payload1.data(using: .utf8)
@@ -159,7 +159,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
                         let data = payload1
@@ -185,7 +185,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
                         let data = payload1
@@ -211,7 +211,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/json")
                     if let payload1 = self.payload1 {
                         let data = try encoder.encode(payload1)
@@ -237,7 +237,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/json")
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
@@ -263,7 +263,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/json")
                     if let enumHeader = enumHeader {
                         headers.add(name: "X-EnumHeader", value: String(enumHeader.rawValue))
@@ -304,7 +304,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         }
                     }
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = HttpHeaders()
+                    var headers = Headers()
                     headers.add(name: "Content-Type", value: "application/json")
                     if let headerEpoch = headerEpoch {
                         headers.add(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))

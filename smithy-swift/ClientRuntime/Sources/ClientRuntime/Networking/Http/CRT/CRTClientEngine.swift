@@ -115,7 +115,7 @@ public class CRTClientEngine: HttpClientEngine {
                     switch result{
                     case .success(let response):
                         let statusCode = Int(stream.getResponseStatusCode())
-                        response.statusCode = HttpStatusCode(rawValue: statusCode)
+                        response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
                         completion(.success(response))
                     case .failure(let error):
                         completion(.failure(error))
@@ -146,10 +146,10 @@ public class CRTClientEngine: HttpClientEngine {
         let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
         var incomingData = Data()
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
-            response.headers?.addAll(httpHeaders: httpHeaders)
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
+            response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
             print(headerBlock)
         } onIncomingBody: { (stream, data) in
             incomingData.append(data)

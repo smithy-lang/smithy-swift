@@ -17,14 +17,15 @@ import Foundation
 
 public class HttpResponse: HttpUrlResponse {
 
-    public var headers: Headers?
+    public var headers: Headers
 
     public var content: ResponseType?
 
-    public var statusCode: HttpStatusCode?
+    public var statusCode: HttpStatusCode
     
-    init(headers: Headers = Headers()) {
+    init(headers: Headers = Headers(), statusCode: HttpStatusCode = HttpStatusCode.notFound) {
         self.headers = headers
+        self.statusCode = statusCode
     } //creates an empty instance
 
     public init(headers: Headers = Headers(), content: ResponseType?, statusCode: HttpStatusCode) {

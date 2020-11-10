@@ -43,9 +43,8 @@ public final class AddOperationShapes {
          * @return a model with unique operation input and output shapes
          */
         fun execute(model: Model, serviceShape: ServiceShape, moduleName: String): Model {
-            val topDownIndex: TopDownIndex =
-                model.getKnowledge(TopDownIndex::class.java)
-            val opIndex: OperationIndex = model.getKnowledge(OperationIndex::class.java)
+            val topDownIndex: TopDownIndex = TopDownIndex.of(model)
+            val opIndex: OperationIndex = OperationIndex.of(model)
             val operations = topDownIndex.getContainedOperations(serviceShape)
             val modelBuilder: Model.Builder = model.toBuilder()
             for (operation in operations) {
