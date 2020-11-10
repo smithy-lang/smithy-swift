@@ -31,11 +31,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         super.tearDown()
     }
     
-    func testMakeHttpRequest() {
-        let expectation = XCTestExpectation(description: "Request has been complete")
+    func testMakeHttpGetRequest() {
+        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
-        headers.add(name: "TEST", value: "testHeader")
-        let request = AsyncRequest(method: .get, endpoint: Endpoint(host: "example.com"), headers: headers, body: nil)
+        headers.add(name: "Content-type", value: "application/json")
+        let request = AsyncRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers, body: nil)
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -51,4 +51,36 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         
         wait(for: [expectation], timeout: 10.0)
     }
+    
+    func testMakeHttpPostRequest() {
+        //used https://httpbin.org
+        let expectation = XCTestExpectation(description: "Request has been completed")
+        var headers = Headers()
+        headers.add(name: "Content-type", value: "application/json")
+        let body = TestBody(test: "testval")
+        let encoder = JSONEncoder()
+        let encodedData = try! encoder.encode(body)
+        let request = AsyncRequest(method: .post,
+                                   endpoint: Endpoint(host: "httpbin.org", path: "/post"),
+                                   headers: headers,
+                                   body: HttpBody.data(encodedData))
+        httpClient.execute(request: request) { result in
+            switch result {
+            case .success(let response):
+                XCTAssertNotNil(response)
+                XCTAssert(response.statusCode == HttpStatusCode.ok)
+                expectation.fulfill()
+            case .failure(let error):
+                print(error)
+                XCTFail(error.localizedDescription)
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 20.0)
+    }
+}
+
+struct TestBody: Encodable {
+    let test: String
 }

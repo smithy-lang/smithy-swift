@@ -23,7 +23,7 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testAsyncRequestToHttpRequest() {
-        let httpRequest = mockHttpDataRequest.toHttpRequest()
+        let httpRequest = try! mockHttpDataRequest.toHttpRequest()
 
         XCTAssertNotNil(httpRequest)
         for index in 0...(httpRequest.headerCount - 1) {

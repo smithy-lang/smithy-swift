@@ -13,6 +13,7 @@
 // permissions and limitations under the License.
 
 import AwsCommonRuntimeKit
+import Foundation
 
 public class CRTClientEngine: HttpClientEngine {
     //TODO: implement Logger
@@ -73,7 +74,7 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool!
     }
     
-    private func addHttpHeaders(endpoint: Endpoint, request: AsyncRequest) -> HttpRequest {
+    private func addHttpHeaders(endpoint: Endpoint, request: AsyncRequest) throws -> HttpRequest {
         
         var headers = request.headers
         if headers.value(for: CRTClientEngine.HOST_HEADER) == nil {
@@ -83,12 +84,13 @@ public class CRTClientEngine: HttpClientEngine {
         if headers.value(for: CRTClientEngine.CONNECTION) == nil {
             headers.add(name: CRTClientEngine.CONNECTION, value: CRTClientEngine.KEEP_ALIVE)
         }
-        let contentLength = request.body.map { (body) -> String in
+        let contentLength = try request.body.map { (body) -> String in
             switch body {
             case .data(let data):
                 return String(data?.count ?? 0)
             case .stream(let stream):
-                return String(stream?.length ?? 0)
+                let data = try stream?.readData(maxLength: CRTClientEngine.DEFAULT_STREAM_WINDOW_SIZE)
+                return String(data?.count ?? 0)
             default:
                 return String(0)
             }
@@ -97,7 +99,7 @@ public class CRTClientEngine: HttpClientEngine {
             headers.add(name: CRTClientEngine.CONTENT_LENGTH, value: contentLength)
         }
         request.headers = headers
-        return request.toHttpRequest()
+        return try request.toHttpRequest()
     }
     
     public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
@@ -105,12 +107,13 @@ public class CRTClientEngine: HttpClientEngine {
         connectionMgr.acquireConnection().then { (result) in
             switch result {
             case .success(let connection):
-                let (requestOptions, future) = self.makeHttpRequestOptions(request)
+                do {
+                let (requestOptions, future) = try self.makeHttpRequestOptions(request)
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
                     switch result{
-                    case .success(var response):
+                    case .success(let response):
                         let statusCode = Int(stream.getResponseStatusCode())
                         response.statusCode = HttpStatusCode(rawValue: statusCode)
                         completion(.success(response))
@@ -118,6 +121,9 @@ public class CRTClientEngine: HttpClientEngine {
                         completion(.failure(error))
                     }
                     
+                }
+                } catch (let err) {
+                    completion(.failure(err))
                 }
             case .failure(let error):
                 completion(.failure(error))
@@ -133,10 +139,12 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     
-    public func makeHttpRequestOptions(_ request: AsyncRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
+    public func makeHttpRequestOptions(_ request: AsyncRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        var response = HttpResponse()
-        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let response = HttpResponse()
+
+        let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
+        var incomingData = Data()
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
             response.headers?.addAll(httpHeaders: httpHeaders)
@@ -144,13 +152,16 @@ public class CRTClientEngine: HttpClientEngine {
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
             print(headerBlock)
         } onIncomingBody: { (stream, data) in
-            response.content = ResponseType.data(data)
-        } onStreamComplete: { (stream, errorCode) in
+            incomingData.append(data)
+            
+        } onStreamComplete: { (stream, error) in
            
-            if errorCode != 0 {
-                let error = AwsError(errorCode:errorCode)
-                future.fail(CrtError.crtError(error))
+            if case let CRTError.crtError(unwrappedError) = error {
+                if unwrappedError.errorCode != 0 {
+                    future.fail(error)
+                }
             }
+            response.content = ResponseType.data(incomingData)
             future.fulfill(response)
         }
         

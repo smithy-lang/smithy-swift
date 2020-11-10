@@ -15,6 +15,20 @@
 
 import Foundation
 
+extension InputStream {
+    public func readData(maxLength length: Int) throws -> Data {
+        open()
+        var buffer = [UInt8](repeating: 0, count: length)
+        let result = self.read(&buffer, maxLength: buffer.count)
+        if result < 0 {
+            throw self.streamError ?? POSIXError(.EIO)
+        } else {
+            close()
+            return Data(buffer.prefix(result))
+        }
+    }
+}
+
 extension OutputStream {
     public func write<DataType: DataProtocol>(_ data: DataType) throws -> Int {
         open()
@@ -28,5 +42,4 @@ extension OutputStream {
         }
     }
 }
-
 

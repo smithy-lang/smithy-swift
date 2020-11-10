@@ -38,28 +38,47 @@ public class AsyncRequest {
 }
 
 extension AsyncRequest {
-    public func toHttpRequest() -> HttpRequest {
+    public func toHttpRequest() throws -> HttpRequest {
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
         httpRequest.path = endpoint.path
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
-        var bodyToSend: InputStream?
+        var awsInputStream: AwsInputStream?
         switch body {
         case .data(let data):
             if let data = data {
-                bodyToSend = InputStream(data: data)
+                let byteBuffer = ByteBuffer(size: data.count)
+                let byteBufferWithData = byteBuffer.put(data)
+                awsInputStream = AwsInputStream(byteBufferWithData)
             } else {
-                bodyToSend = nil
+                awsInputStream = nil
             }
         case .file(let url):
-            bodyToSend = InputStream(url: url)
+            do {
+                let fileHandle = try FileHandle(forReadingFrom: url)
+                awsInputStream = AwsInputStream(fileHandle)
+            } catch (let err) {
+                throw ClientError.serializationFailed("Reading from file failed. Check path to file. Error: " + err.localizedDescription)
+            }
         case .stream(let stream):
-            bodyToSend = stream
+            //TODO: refactor ability to stream appropriately and get buffer capacity here
+            do {
+                let data = try stream?.readData(maxLength: 1024)
+                if let data = data {
+                    let byteBuffer = ByteBuffer(size: data.count)
+                    let byteBufferWithData = byteBuffer.put(data)
+                    awsInputStream = AwsInputStream(byteBufferWithData)
+                } else {
+                    awsInputStream = nil
+                }
+            } catch (let err) {
+                throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
+            }
         case .none:
-            bodyToSend = nil
+            awsInputStream = nil
         }
-        if let body = bodyToSend {
-            httpRequest.body = AwsInputStream(body)
+        if let inputStream = awsInputStream {
+            httpRequest.body = inputStream
         }
         
         return httpRequest
