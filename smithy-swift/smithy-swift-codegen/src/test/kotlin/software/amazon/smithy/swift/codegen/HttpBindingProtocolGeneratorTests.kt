@@ -94,7 +94,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
                 """
                 extension SmokeTestRequest: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         if let query1 = query1 {
                             let queryItem = URLQueryItem(name: "Query1", value: String(query1))
@@ -113,9 +113,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                             let data = try encoder.encode(self)
                             let body = HttpBody.data(data)
                             headers.add(name: "Content-Length", value: String(data.count))
-                            return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                            return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                         } else {
-                            return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                            return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                         }
                     }
                 }
@@ -130,7 +130,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitStringRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -139,9 +139,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = payload1.data(using: .utf8)
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -156,7 +156,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitBlobRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -165,9 +165,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = payload1
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -182,7 +182,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitBlobStreamRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -191,9 +191,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = payload1
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -208,7 +208,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitStructRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -217,9 +217,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = try encoder.encode(payload1)
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -234,7 +234,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ListInputRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -243,9 +243,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -260,7 +260,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension EnumInputRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
                     var headers = Headers()
@@ -272,9 +272,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
@@ -289,7 +289,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension TimestampInputRequest: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> HttpRequest {
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     if let queryTimestamp = queryTimestamp {
                         let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
@@ -316,9 +316,9 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
                         headers.add(name: "Content-Length", value: String(data.count))
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
                     } else {
-                        return HttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        return AsyncRequest(method: method, endpoint: endpoint, headers: headers)
                     }
                 }
             }
