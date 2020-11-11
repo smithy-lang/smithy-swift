@@ -26,7 +26,7 @@ public class HttpResponse: HttpUrlResponse {
     init(headers: Headers = Headers(), statusCode: HttpStatusCode = HttpStatusCode.notFound) {
         self.headers = headers
         self.statusCode = statusCode
-    } //creates an empty instance
+    }
 
     public init(headers: Headers = Headers(), content: ResponseType?, statusCode: HttpStatusCode) {
         self.content = content
