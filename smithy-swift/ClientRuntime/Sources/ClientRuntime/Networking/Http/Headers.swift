@@ -56,6 +56,18 @@ public struct Headers {
 
         headers.replaceSubrange(index...index, with: [header])
     }
+    
+    /// Case-insensitively updates or appends the provided `name` and `value` into the headers instance.
+    ///
+    /// - Parameter header: The `HTTPHeader` to update or append.
+    public mutating func update(name: String, value: String) {
+        guard let index = headers.index(of: name) else {
+            add(name: name, value: value)
+            return
+        }
+        let header = Header(name: name, value: value)
+        headers.replaceSubrange(index...index, with: [header])
+    }
 
     /// Case-insensitively removes an `HTTPHeader`, if it exists, from the instance.
     ///

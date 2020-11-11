@@ -13,14 +13,10 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 public class HttpResponse: HttpUrlResponse {
 
     public var headers: Headers
-
     public var content: ResponseType?
-
     public var statusCode: HttpStatusCode
     
     init(headers: Headers = Headers(), statusCode: HttpStatusCode = HttpStatusCode.notFound) {
@@ -33,5 +29,4 @@ public class HttpResponse: HttpUrlResponse {
         self.statusCode = statusCode
         self.headers = headers
     }
-
 }

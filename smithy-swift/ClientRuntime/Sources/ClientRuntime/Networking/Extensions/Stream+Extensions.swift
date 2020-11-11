@@ -21,6 +21,7 @@ extension InputStream {
         var buffer = [UInt8](repeating: 0, count: length)
         let result = self.read(&buffer, maxLength: buffer.count)
         if result < 0 {
+            close()
             throw self.streamError ?? POSIXError(.EIO)
         } else {
             close()
@@ -35,6 +36,7 @@ extension OutputStream {
         var buffer = Array(data)
         let result = self.write(&buffer, maxLength: buffer.count)
         if result < 0 {
+            close()
             throw self.streamError ?? POSIXError(.EIO)
         } else {
             close()

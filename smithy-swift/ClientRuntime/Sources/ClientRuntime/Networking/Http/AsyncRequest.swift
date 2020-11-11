@@ -43,22 +43,20 @@ extension AsyncRequest {
         httpRequest.method = method.rawValue
         httpRequest.path = endpoint.path
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
-        var awsInputStream: AwsInputStream?
+        var awsInputStream: AwsInputStream? = nil
         switch body {
         case .data(let data):
             if let data = data {
                 let byteBuffer = ByteBuffer(size: data.count)
                 let byteBufferWithData = byteBuffer.put(data)
                 awsInputStream = AwsInputStream(byteBufferWithData)
-            } else {
-                awsInputStream = nil
             }
         case .file(let url):
             do {
                 let fileHandle = try FileHandle(forReadingFrom: url)
                 awsInputStream = AwsInputStream(fileHandle)
             } catch (let err) {
-                throw ClientError.serializationFailed("Reading from file failed. Check path to file. Error: " + err.localizedDescription)
+                throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: " + err.localizedDescription)
             }
         case .stream(let stream):
             //TODO: refactor ability to stream appropriately and get buffer capacity here
@@ -68,14 +66,12 @@ extension AsyncRequest {
                     let byteBuffer = ByteBuffer(size: data.count)
                     let byteBufferWithData = byteBuffer.put(data)
                     awsInputStream = AwsInputStream(byteBufferWithData)
-                } else {
-                    awsInputStream = nil
                 }
             } catch (let err) {
                 throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
             }
         case .none:
-            awsInputStream = nil
+            break //do nothing as inputstream is already nil
         }
         if let inputStream = awsInputStream {
             httpRequest.body = inputStream

@@ -16,12 +16,12 @@ import AwsCommonRuntimeKit
 import Foundation
 
 public class CRTClientEngine: HttpClientEngine {
-    //TODO: implement Logger
+    //TODO: implement Logger and logging statements throughout this file
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
     //constants needed
     private static var HOST_HEADER = "Host"
-    private static var CONTENT_LENGTH = "Content-Length"
-    private static var CONNECTION = "Connection"
+    private static var CONTENT_LENGTH_HEADER = "Content-Length"
+    private static var CONNECTION_HEADER = "Connection"
     private static var KEEP_ALIVE = "keep-alive"
     private static var AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private static var DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
@@ -63,41 +63,37 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     private func getOrCreateConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
-        var connectionPool = connectionPools[endpoint]
         
-        if connectionPool == nil {
+        guard let connectionPool = connectionPools[endpoint] else {
             let newConnectionPool = createConnectionPool(endpoint: endpoint)
             connectionPools[endpoint] = newConnectionPool //save in dictionary
-            connectionPool = newConnectionPool
+            return newConnectionPool
         }
         
-        return connectionPool!
+        return connectionPool
     }
     
     private func addHttpHeaders(endpoint: Endpoint, request: AsyncRequest) throws -> HttpRequest {
         
         var headers = request.headers
-        if headers.value(for: CRTClientEngine.HOST_HEADER) == nil {
-            headers.add(name: CRTClientEngine.HOST_HEADER, value: endpoint.host)
-        }
+        headers.update(name: CRTClientEngine.HOST_HEADER, value: endpoint.host)
+        headers.update(name: CRTClientEngine.CONNECTION_HEADER, value: CRTClientEngine.KEEP_ALIVE)
         
-        if headers.value(for: CRTClientEngine.CONNECTION) == nil {
-            headers.add(name: CRTClientEngine.CONNECTION, value: CRTClientEngine.KEEP_ALIVE)
-        }
         let contentLength = try request.body.map { (body) -> String in
             switch body {
             case .data(let data):
                 return String(data?.count ?? 0)
             case .stream(let stream):
+                //FIXME refactor streaming end to end to properly work
                 let data = try stream?.readData(maxLength: CRTClientEngine.DEFAULT_STREAM_WINDOW_SIZE)
                 return String(data?.count ?? 0)
             default:
                 return String(0)
             }
         } ?? "0"
-        if headers.value(for: CRTClientEngine.CONTENT_LENGTH) == nil {
-            headers.add(name: CRTClientEngine.CONTENT_LENGTH, value: contentLength)
-        }
+       
+        headers.update(name: CRTClientEngine.CONTENT_LENGTH_HEADER, value: contentLength)
+        
         request.headers = headers
         return try request.toHttpRequest()
     }
@@ -105,6 +101,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         connectionMgr.acquireConnection().then { (result) in
+            //TODO add logger statement here
             switch result {
             case .success(let connection):
                 do {
@@ -112,6 +109,7 @@ public class CRTClientEngine: HttpClientEngine {
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
+                    //TODO add logger statement here
                     switch result{
                     case .success(let response):
                         let statusCode = Int(stream.getResponseStatusCode())
@@ -146,16 +144,17 @@ public class CRTClientEngine: HttpClientEngine {
         let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
         var incomingData = Data()
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
+            //TODO add logger statement here
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
-            print(headerBlock)
+            print(headerBlock) //TODO: change to a log statement
         } onIncomingBody: { (stream, data) in
+            //TODO add logger statement here
             incomingData.append(data)
-            
         } onStreamComplete: { (stream, error) in
-           
+           //TODO add logger statement here
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     future.fail(error)

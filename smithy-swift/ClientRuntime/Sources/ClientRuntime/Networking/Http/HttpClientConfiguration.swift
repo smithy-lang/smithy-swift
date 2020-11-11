@@ -13,8 +13,6 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 public class HttpClientConfiguration {
     public var protocolType: ProtocolType
     //initialize with default headers
