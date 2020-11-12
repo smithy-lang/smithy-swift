@@ -61,12 +61,16 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             writer.openBlock(".target(", "),") {
                 writer.write("name: \"${settings.moduleName}\",")
                 writer.openBlock("dependencies: [", "],") {
-                    var str = distinctDependencies.map { "\"${it.packageName}\"" }.joinToString(separator = ", ")
                     for (dependency in distinctDependencies) {
-                        if (dependency.packageName.equals(SwiftDependency.BIG.namespace))
-                            str = str.replace("\"" + dependency.packageName + "\"", dependency.dependencyType)
+
+                        writer.openBlock(".product(", "),") {
+                            writer.write("name: \"${dependency.packageName}\",")
+                            writer.write("package: \"${dependency.expectProperty("packageName", String::class.java)}\"")
+                        }
+
+//                        writer.write(".product(name: \""+dependency.packageName+"\", package: \""+
+//                                dependency.expectProperty("packageName", String::class.java)+"\"),")
                     }
-                    writer.write(str)
                 }
                 writer.write("path: \"./${settings.moduleName}\"")
             }
