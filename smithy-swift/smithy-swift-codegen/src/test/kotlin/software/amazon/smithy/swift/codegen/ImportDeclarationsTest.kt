@@ -28,7 +28,7 @@ class ImportDeclarationsTest {
         decls.addImport("ComplexModule")
 
         val statements = decls.toString()
-        val expected = "import Foundation\nimport Numerics"
+        val expected = "import Foundation\nimport ComplexModule"
         assertEquals(expected, statements)
     }
 
