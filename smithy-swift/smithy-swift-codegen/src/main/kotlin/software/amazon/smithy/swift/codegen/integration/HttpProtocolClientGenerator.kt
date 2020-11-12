@@ -51,13 +51,13 @@ class HttpProtocolClientGenerator(
 
     private fun renderClientInitialization(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
-            writer.write("let client: HttpClient")
+            writer.write("let client: SdkHttpClient")
             features.forEach { feat ->
                 feat.addImportsAndDependencies(writer)
                 feat.renderInstantiation(writer)
             }
-            writer.openBlock("init(config: HttpClientConfiguration = HttpClientConfiguration()) {", "}") {
-                writer.write("client = HttpClient(config: config)")
+            writer.openBlock("init(config: HttpClientConfiguration = HttpClientConfiguration()) throws {", "}") {
+                writer.write("client = try SdkHttpClient(config: config)")
                 features.forEach { feat ->
                     if (feat.needsConfigure) {
                         feat.renderConfiguration(writer)
@@ -148,8 +148,8 @@ class HttpProtocolClientGenerator(
             // TODO:: Replace host appropriately
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)")
-            writer.write("let headers = HttpHeaders()")
-            writer.write("let request = HttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
+            writer.write("let headers = Headers()")
+            writer.write("let request = SdkHttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
@@ -182,8 +182,18 @@ class HttpProtocolClientGenerator(
             .call {
                 writer.openBlock("if (200..<300).contains(httpResponse.statusCode.rawValue) {", "}") {
                     val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-                    writer.write("let output = try \$L(httpResponse: httpResponse, decoder: self.decoder)", outputShapeName)
-                    writer.write("completion(.success(output))")
+                    writer.openBlock("do {", "} catch let err {") {
+                        writer.write(
+                            "let output = try \$L(httpResponse: httpResponse, decoder: self.decoder)",
+                            outputShapeName
+                        )
+                        writer.write("completion(.success(output))")
+                    }
+                    writer.indent()
+                    writer.write("completion(.failure(.client(.deserializationFailed(err))))")
+                    writer.write("return")
+                    writer.dedent()
+                    writer.write("}")
                 }
                 // HTTP request returned error
                 writer.openBlock("else {", "}") {
