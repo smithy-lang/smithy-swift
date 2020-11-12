@@ -386,4 +386,48 @@ MyStruct(
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
+
+    @Test
+    fun `it renders struct with BigInteger and BigDecimal`() {
+        val member1 = MemberShape.builder().id("foo.bar#MyStruct\$bigDecimalMember").target("smithy.api#BigDecimal").build()
+        val member2 = MemberShape.builder().id("foo.bar#MyStruct\$bigIntMember").target("smithy.api#BigInteger").build()
+        val member3 = MemberShape.builder().id("foo.bar#MyStruct\$bigIntMemberNegative").target("smithy.api#BigInteger").build()
+
+        val struct = StructureShape.builder()
+                .id("foo.bar#MyStruct")
+                .addMember(member1)
+                .addMember(member2)
+                .addMember(member3)
+                .build()
+        val model = Model.assembler()
+                .addShapes(struct, member1, member2, member3)
+                .assemble()
+                .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+
+        val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
+        val writer = SwiftWriter("test")
+
+        val params = Node.objectNodeBuilder()
+                .withMember("bigDecimalMember", 25613525352378.523)
+                .withMember("bigIntMember", 31825352653626)
+                .withMember("bigIntMemberNegative", -31825352653626)
+                .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+import ComplexModule
+
+MyStruct(
+    bigDecimalMember: Complex(25613525352378.523),
+    bigIntMember: Array(String(31825352653626).utf8),
+    bigIntMemberNegative: Array(String(-31825352653626).utf8)
+)
+""".trimIndent()
+
+        contents.shouldContainOnlyOnce(expected)
+    }
 }

@@ -25,10 +25,10 @@ class ImportDeclarationsTest {
         val decls = ImportDeclarations()
 
         decls.addImport("Foundation")
-        decls.addImport("BigNumber")
+        decls.addImport("ComplexModule")
 
         val statements = decls.toString()
-        val expected = "import BigNumber\nimport Foundation"
+        val expected = "import ComplexModule\nimport Foundation"
         assertEquals(expected, statements)
     }
 

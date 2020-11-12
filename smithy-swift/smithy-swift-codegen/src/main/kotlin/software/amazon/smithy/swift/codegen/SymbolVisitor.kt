@@ -136,12 +136,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "BInt")
+    /*
+    TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol, we need to
+            change  [UInt8] to Complex<Integer>. Apple's work is being tracked in apple/swift-numerics#5
+     */
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "[UInt8]")
 
-    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "BDouble")
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "Complex<Double>")
 
     private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, namespace = "BigNumber", boxed = true)
+        return createSymbolBuilder(shape, symbolName, namespace = "ComplexModule", boxed = true)
             .addDependency(SwiftDependency.BIG)
             .build()
     }

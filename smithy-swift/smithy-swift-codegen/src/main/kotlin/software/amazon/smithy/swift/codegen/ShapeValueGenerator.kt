@@ -272,14 +272,19 @@ class ShapeValueGenerator(
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
+                /*
+                TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol,
+                        we need to change "Array(String($L).utf8)" to Complex<Integer>. Apple's work is being
+                        tracked in apple/swift-numerics#5
+                 */
                 ShapeType.BIG_INTEGER -> {
                     writer.addImport(SwiftDependency.BIG.namespace)
-                    writer.writeInline("BInt(\$L)", node.value)
+                    writer.writeInline("Array(String(\$L).utf8)", node.value)
                 }
 
                 ShapeType.BIG_DECIMAL -> {
                     writer.addImport(SwiftDependency.BIG.namespace)
-                    writer.writeInline("BDecimal(\$L)", node.value)
+                    writer.writeInline("Complex(\$L)", (node.value as Double).toBigDecimal())
                 }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }
