@@ -177,7 +177,7 @@ class StructureGenerator(
      * We will generate the following:
      * ```
      * public struct ThrottlingError: ServiceError {
-     *     public var _headers: HttpHeaders?
+     *     public var _headers: Headers?
      *     public var _message: String?
      *     public var _requestID: String?
      *     public var _retryable: Bool? = true
@@ -215,7 +215,7 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
         if (shape.getTrait(HttpErrorTrait::class.java).isPresent) {
-            writer.write("public var _headers: HttpHeaders?")
+            writer.write("public var _headers: Headers?")
             writer.write("public var _statusCode: HttpStatusCode?")
         }
         writer.write("public var _message: String?")
