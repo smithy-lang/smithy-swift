@@ -136,7 +136,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "Int64")
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "[UInt8]")
 
     override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "Complex<Double>")
 

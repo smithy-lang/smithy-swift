@@ -423,8 +423,8 @@ import ComplexModule
 
 MyStruct(
     bigDecimalMember: Complex(25613525352378.523),
-    bigIntMember: (Int64)(String(31825352653626)),
-    bigIntMemberNegative: (Int64)(String(-31825352653626))
+    bigIntMember: Array(String(31825352653626).utf8),
+    bigIntMemberNegative: Array(String(-31825352653626).utf8)
 )
 """.trimIndent()
 
