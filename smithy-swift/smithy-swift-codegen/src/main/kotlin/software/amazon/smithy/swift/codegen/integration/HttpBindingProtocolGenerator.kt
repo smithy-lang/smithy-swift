@@ -828,7 +828,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
@@ -862,14 +862,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("let data = try encoder.encode(self)")
                     writer.write("let body = HttpBody.data(data)")
                     writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-                    writer.write("return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
+                    writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
                 }
                 writer.indent()
-                writer.write("return AsyncRequest(method: method, endpoint: endpoint, headers: headers)")
+                writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
                 writer.closeBlock("}")
             }
         } else {
-            writer.write("return AsyncRequest(method: method, endpoint: endpoint, headers: headers)")
+            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
         }
     }
 
@@ -910,10 +910,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
 
             writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-            writer.write("return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
+            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
         }
         writer.indent()
-        writer.write("return AsyncRequest(method: method, endpoint: endpoint, headers: headers)")
+        writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
         writer.closeBlock("}")
     }
 

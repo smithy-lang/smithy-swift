@@ -14,6 +14,6 @@
 //
 
 public protocol HttpClientEngine {
-    func execute(request: AsyncRequest, completion: @escaping NetworkResult)
+    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult)
     func close()
 }

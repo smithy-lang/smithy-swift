@@ -22,7 +22,7 @@ class HttpRequestTests: NetworkingTestUtils {
         super.setUp()
     }
 
-    func testAsyncRequestToHttpRequest() {
+    func testSdkHttpRequestToHttpRequest() {
         let httpRequest = try! mockHttpDataRequest.toHttpRequest()
 
         XCTAssertNotNil(httpRequest)

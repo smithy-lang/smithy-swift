@@ -29,7 +29,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          headers: [String: String],
                                          queryParams: [String],
                                          body: String?,
-                                         host: String) -> AsyncRequest {
+                                         host: String) -> SdkHttpRequest {
         var queryItems = [URLQueryItem]()
         var httpHeaders = Headers()
         
@@ -49,20 +49,20 @@ open class HttpRequestTestBase: XCTestCase {
         let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
         
         guard let body = body else {
-            return AsyncRequest(method: method,
+            return SdkHttpRequest(method: method,
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
         //handle empty string body cases that should still create a request
         //without the body
         if body == "" || body == "{}" {
-            return AsyncRequest(method: method,
+            return SdkHttpRequest(method: method,
                                endpoint: endPoint,
                                headers: httpHeaders)
         }
     
         let httpBody = HttpBody.data(body.data(using: .utf8))
-        return AsyncRequest(method: method,
+        return SdkHttpRequest(method: method,
                            endpoint: endPoint,
                            headers: httpHeaders,
                            body: httpBody)
@@ -99,7 +99,7 @@ open class HttpRequestTestBase: XCTestCase {
      /// - Parameter actual: Actual `HttpRequest` to compare against
      /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
      */
-    public func assertEqual(_ expected: AsyncRequest, _ actual: AsyncRequest, _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
+    public func assertEqual(_ expected: SdkHttpRequest, _ actual: SdkHttpRequest, _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
         // assert headers match
         assertEqualHttpHeaders(expected.headers, actual.headers)
         

@@ -21,11 +21,11 @@ class MockHttpClientEngine: HttpClientEngine {
         //do nothing cuz fake engine
     }
     
-    func successHttpResponse(request: AsyncRequest) -> HttpResponse {
+    func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
         return HttpResponse(content: .none, statusCode: HttpStatusCode.ok)
     }
     
-    func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
+    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         completion(.success(successHttpResponse(request: request)))
     }
 }

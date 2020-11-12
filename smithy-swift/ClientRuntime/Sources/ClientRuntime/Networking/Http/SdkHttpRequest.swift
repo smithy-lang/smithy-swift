@@ -17,7 +17,7 @@ import Foundation
 import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers in the CRT engine so that is why it's a class
-public class AsyncRequest {
+public class SdkHttpRequest {
     public var body: HttpBody?
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
@@ -37,7 +37,7 @@ public class AsyncRequest {
     }
 }
 
-extension AsyncRequest {
+extension SdkHttpRequest {
     public func toHttpRequest() throws -> HttpRequest {
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue

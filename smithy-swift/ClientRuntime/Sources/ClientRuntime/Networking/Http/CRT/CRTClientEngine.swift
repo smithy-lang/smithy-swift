@@ -73,7 +73,7 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool
     }
     
-    private func addHttpHeaders(endpoint: Endpoint, request: AsyncRequest) throws -> HttpRequest {
+    private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) throws -> HttpRequest {
         
         var headers = request.headers
         headers.update(name: CRTClientEngine.HOST_HEADER, value: endpoint.host)
@@ -98,7 +98,7 @@ public class CRTClientEngine: HttpClientEngine {
         return try request.toHttpRequest()
     }
     
-    public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
+    public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         connectionMgr.acquireConnection().then { (result) in
             //TODO add logger statement here
@@ -137,7 +137,7 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     
-    public func makeHttpRequestOptions(_ request: AsyncRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
+    public func makeHttpRequestOptions(_ request: SdkHttpRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
         let response = HttpResponse()
 

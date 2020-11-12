@@ -19,5 +19,5 @@ public protocol HttpRequestBinding {
 
   // Build the HttpRequest using the input method and path
   // Does not encode the request
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest
 }

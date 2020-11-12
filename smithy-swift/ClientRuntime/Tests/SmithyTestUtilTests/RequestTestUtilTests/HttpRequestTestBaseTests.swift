@@ -21,7 +21,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = requiredQuery {
@@ -35,7 +35,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                 headers.add(name: "RequiredHeader", value: requiredHeader)
             }
             let body = HttpBody.data(try? encoder.encode(self))
-            return AsyncRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
         }
         
         let greeting: String?

@@ -26,7 +26,7 @@ public class SdkHttpClient {
         }
     }
     
-    public func execute(request: AsyncRequest, completion: @escaping NetworkResult) {
+    public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         engine.execute(request: request, completion: completion)
     }
     

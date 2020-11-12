@@ -129,7 +129,7 @@ enum MockError: Error {
 extension CodableRequest: HttpRequestBinding {
     func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
         let body = HttpBody.data(try encoder.encode(self))
-        return AsyncRequest(method: method,
+        return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
                             headers: Headers(),
@@ -138,8 +138,8 @@ extension CodableRequest: HttpRequestBinding {
 }
 
 extension CodableXMLRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
-        return AsyncRequest(method: method,
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
                             headers: Headers())
@@ -147,8 +147,8 @@ extension CodableXMLRequest: HttpRequestBinding {
 }
 
 extension CodableRequestThatThrows: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
-        return AsyncRequest(method: method,
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
                             headers: Headers())
@@ -156,9 +156,9 @@ extension CodableRequestThatThrows: HttpRequestBinding {
 }
 
 extension CodableRequestWithPayload: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
         let body = HttpBody.data(self.payload)
-        return AsyncRequest(method: method,
+        return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
                             headers: Headers(),

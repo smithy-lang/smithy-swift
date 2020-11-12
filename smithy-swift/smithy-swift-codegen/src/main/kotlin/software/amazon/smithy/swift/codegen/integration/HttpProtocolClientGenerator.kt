@@ -149,7 +149,7 @@ class HttpProtocolClientGenerator(
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)")
             writer.write("let headers = Headers()")
-            writer.write("let request = AsyncRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
+            writer.write("let request = SdkHttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")

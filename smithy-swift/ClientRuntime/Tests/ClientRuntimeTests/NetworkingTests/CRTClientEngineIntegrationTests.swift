@@ -35,7 +35,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
-        let request = AsyncRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers, body: nil)
+        let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers, body: nil)
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -60,7 +60,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
-        let request = AsyncRequest(method: .post,
+        let request = SdkHttpRequest(method: .post,
                                    endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                    headers: headers,
                                    body: HttpBody.data(encodedData))

@@ -30,12 +30,12 @@ open class HttpResponseTestBase: XCTestCase {
                                   content: ResponseType? = nil,
                                   host: String) -> HttpResponse? {
         
-        var internalHeaders: Headers?
+        var internalHeaders: Headers = Headers()
         if let headers = headers {
             internalHeaders = Headers(headers)
         }
         
-        return HttpResponse(headers: internalHeaders!,
+        return HttpResponse(headers: internalHeaders,
                             content: content,
                             statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
         
