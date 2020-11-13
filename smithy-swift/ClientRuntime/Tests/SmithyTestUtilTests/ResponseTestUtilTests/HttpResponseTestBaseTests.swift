@@ -31,7 +31,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
             return
         }
         
-        XCTAssertEqual(headers, httpResponse.headers?.dictionary.mapValues({ (values) -> String in
+        XCTAssertEqual(headers, httpResponse.headers.dictionary.mapValues({ (values) -> String in
             values.joined(separator: ", ")
         }))
         

@@ -127,7 +127,7 @@ enum MockError: Error {
 }
 
 extension CodableRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> AsyncRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
         let body = HttpBody.data(try encoder.encode(self))
         return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
