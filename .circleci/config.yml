@@ -106,6 +106,9 @@ jobs:
       - with_cache:
           steps:
             - run:
+                name: Clone aws-crt-swift
+                command: git clone git@github.com:awslabs/aws-crt-swift.git ~/Projects/Amplify/SwiftSDK/aws-crt-swift
+            - run:
                 name: Build Smithy Kotlin
                 working_directory: ~/project/smithy-kotlin
                 command: ./gradlew build -x test -x jvmTest
