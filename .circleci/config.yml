@@ -168,6 +168,7 @@ jobs:
             mkdir -p ~/Projects/Amplify/SwiftSDK/
             cd ~/Projects/Amplify/SwiftSDK/
             git clone -b futures-implementation git@github.com:awslabs/aws-crt-swift.git
+            git submodule update —init
             cd -
       - run:
           name: Generate XCodeProject
