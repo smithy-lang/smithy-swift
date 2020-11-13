@@ -21,6 +21,9 @@ commands:
         type: steps
     steps:
     - run:
+        name: Clone aws-crt-swift
+        command: git clone git@github.com:awslabs/aws-crt-swift.git ~/Projects/Amplify/SwiftSDK/aws-crt-swift
+    - run:
         command: find . -name 'build.gradle.kts' | sort | xargs cat | shasum | awk '{print
           $1}' > /tmp/gradle_cache_seed
         name: Generate Cache Checksum
@@ -105,9 +108,6 @@ jobs:
       - checkout
       - with_cache:
           steps:
-            - run:
-                name: Clone aws-crt-swift
-                command: git clone git@github.com:awslabs/aws-crt-swift.git ~/Projects/Amplify/SwiftSDK/aws-crt-swift
             - run:
                 name: Build Smithy Kotlin
                 working_directory: ~/project/smithy-kotlin
