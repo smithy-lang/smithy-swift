@@ -21,12 +21,6 @@ commands:
         type: steps
     steps:
     - run:
-        name: Clone aws-crt-swift
-        command: |
-            mkdir -p ~/Projects/Amplify/SwiftSDK/
-            cd ~/Projects/Amplify/SwiftSDK/
-            git clone git@github.com:awslabs/aws-crt-swift.git
-    - run:
         command: find . -name 'build.gradle.kts' | sort | xargs cat | shasum | awk '{print
           $1}' > /tmp/gradle_cache_seed
         name: Generate Cache Checksum
@@ -168,6 +162,12 @@ jobs:
     steps:
       - checkout
       - pre_start_ios_simulator
+      - run:
+          name: Clone aws-crt-swift
+          command: |
+            mkdir -p ~/Projects/Amplify/SwiftSDK/
+            cd ~/Projects/Amplify/SwiftSDK/
+            git clone git@github.com:awslabs/aws-crt-swift.git
       - run:
           name: Generate XCodeProject
           working_directory: ~/project/smithy-swift/ClientRuntime
