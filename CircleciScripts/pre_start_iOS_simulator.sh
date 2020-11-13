@@ -26,7 +26,7 @@ if [[ $? -eq 1 ]] ; then
 fi
 
 # destinationspecifier for xcodebuild commands
-destination="platform=iOS Simulator,id=${test_device_id}"
+destination="id=${test_device_id}"
 echo "destination: ${destination}"
 echo "export destination='$destination'" >> $BASH_ENV
 
