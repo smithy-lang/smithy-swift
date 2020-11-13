@@ -178,7 +178,7 @@ jobs:
           name: Unit Test ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            xcodebuild test -enableCodeCoverage YES ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
+            xcodebuild test -enableCodeCoverage YES -scheme ClientRuntime-Package -destination "${destination}"
             bash <(curl -s https://codecov.io/bash)
       - run:
           name: Install swiftlint
