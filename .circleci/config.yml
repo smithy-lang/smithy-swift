@@ -168,8 +168,9 @@ jobs:
             mkdir -p ~/Projects/Amplify/SwiftSDK/
             cd ~/Projects/Amplify/SwiftSDK/
             git clone -b futures-implementation git@github.com:awslabs/aws-crt-swift.git
-            git submodule update —init
-            cd -
+            cd aws-crt-swift
+            git submodule update --init --recursive
+            cd
       - run:
           name: Generate XCodeProject
           working_directory: ~/project/smithy-swift/ClientRuntime
