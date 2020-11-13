@@ -170,20 +170,15 @@ jobs:
             git clone -b futures-implementation --recursive git@github.com:awslabs/aws-crt-swift.git
             cd -
       - run:
-          name: Generate XCodeProject
-          working_directory: ~/project/smithy-swift/ClientRuntime
-          command: |
-            swift package generate-xcodeproj
-      - run:
           name: Build ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            xcodebuild build -project ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
+            xcodebuild build ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
       - run:
           name: Unit Test ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            xcodebuild test -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
+            xcodebuild test -enableCodeCoverage YES ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
             bash <(curl -s https://codecov.io/bash)
       - run:
           name: Install swiftlint
