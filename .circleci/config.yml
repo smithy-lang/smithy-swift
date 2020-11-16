@@ -107,6 +107,7 @@ jobs:
             cd ~/Projects/Amplify/SwiftSDK/
             git clone --recursive git@github.com:awslabs/aws-crt-swift.git
             cd -
+            rm -rf ~/Library/Developer/Xcode/DerivedData
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/ClientRuntime
@@ -146,7 +147,8 @@ jobs:
                   mkdir -p ~/Projects/Amplify/SwiftSDK/
                   cd ~/Projects/Amplify/SwiftSDK/
                   git clone --recursive git@github.com:awslabs/aws-crt-swift.git
-                  cd -         
+                  cd -
+                  rm -rf ~/Library/Developer/Xcode/DerivedData
             - run:
                 name: Build Smithy Swift
                 working_directory: ~/project
