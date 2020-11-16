@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(path: "~/Documents/aws-crt-swift")
+        .package(path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift")
     ],
     targets: [
         .target(
