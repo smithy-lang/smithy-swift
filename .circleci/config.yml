@@ -94,68 +94,6 @@ commands:
             bash CircleciScripts/pre_start_iOS_simulator.sh
 
 jobs:
-  build_smithy_kotlin:
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
-      - with_cache:
-          steps:
-            - run:
-                name: Build Smithy Kotlin
-                working_directory: ~/project/smithy-kotlin
-                command: ./gradlew build -x test -x jvmTest
-            - persist_to_workspace:
-                root: .
-                paths:
-                  - smithy-kotlin/build
-                  - smithy-kotlin/*/build
-                  - smithy-kotlin/client-runtime/*/build
-
-  test_smithy_kotlin:
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - with_cache:
-          steps:
-            - run:
-                working_directory: ~/project/smithy-kotlin
-                name: Run tests
-                command: |
-                  ./gradlew test
-      - collect_test_results:
-          test_results_path: ""
-          reports_path: ""
-
-  lint_smithy_kotlin:
-    # Remove if parallelism is not desired
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          working_directory: ~/project/smithy-kotlin
-          name: Run ktlint
-          command: |
-            ./gradlew ktlint
-  
   build_and_unittest_swift_client_runtime:
     macos:
       xcode: "12.1.0"
@@ -262,14 +200,6 @@ jobs:
 workflows:
   version: 2
 
-  build_and_test_kotlin_codegen:
-    jobs:
-    - build_smithy_kotlin
-    - test_smithy_kotlin:
-        requires:
-          - build_smithy_kotlin
-    - lint_smithy_kotlin
-  
   build_and_test_smithy_swift:
     jobs:
     - build_and_unittest_swift_client_runtime:
