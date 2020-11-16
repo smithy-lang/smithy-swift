@@ -14,7 +14,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import java.util.*
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -28,7 +27,6 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
 
 /**
  * Renders an implementation of a service interface for HTTP protocol

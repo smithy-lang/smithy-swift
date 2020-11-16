@@ -17,9 +17,7 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
 
 /**
  * Generates encode function for members bound to the payload.

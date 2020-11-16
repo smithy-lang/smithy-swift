@@ -18,8 +18,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.*
-import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 
 /**

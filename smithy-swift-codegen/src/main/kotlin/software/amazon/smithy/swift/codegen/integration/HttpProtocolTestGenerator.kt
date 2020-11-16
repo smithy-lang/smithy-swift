@@ -14,7 +14,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex

@@ -16,11 +16,8 @@
 package software.amazon.smithy.swift.codegen
 
 import java.util.logging.Logger
-import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
