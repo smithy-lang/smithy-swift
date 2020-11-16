@@ -26,5 +26,3 @@ public class HttpClientConfiguration {
         self.defaultHeaders = defaultHeaders
     }
 }
-
-

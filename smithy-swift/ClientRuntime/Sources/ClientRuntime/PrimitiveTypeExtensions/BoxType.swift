@@ -39,5 +39,3 @@ extension Box: Codable where T: Codable {
         self.init(value: value)
     }
 }
-
-

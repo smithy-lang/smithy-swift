@@ -49,4 +49,3 @@ class StreamExtensionsTests: XCTestCase {
         print(writtenBytesCount ?? 0)
     }
 }
-

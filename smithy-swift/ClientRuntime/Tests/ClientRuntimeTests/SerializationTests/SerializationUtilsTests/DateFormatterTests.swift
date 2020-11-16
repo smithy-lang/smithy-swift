@@ -215,7 +215,7 @@ class DateFormatterTests: XCTestCase {
         XCTAssertEqual(calendar.component(.second, from: date), components.second,
                        "Failed to match second for \(dateString)")
         
-        if (components.nanoSecond != nil) {
+        if components.nanoSecond != nil {
             XCTAssertEqual(calendar.component(.nanosecond, from: date), components.nanoSecond,
                            "Failed to match nano second for \(dateString)")
         }

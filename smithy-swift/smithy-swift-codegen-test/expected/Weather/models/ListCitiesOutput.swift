@@ -14,6 +14,6 @@
 //
 
 struct ListCitiesOutput {
-    public let items:[CitySummary]
+    public let items: [CitySummary]
     public let nextToken: String?
 }

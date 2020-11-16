@@ -110,7 +110,7 @@ public class CRTClientEngine: HttpClientEngine {
                 stream.activate()
                 future.then { (result) in
                     //TODO add logger statement here
-                    switch result{
+                    switch result {
                     case .success(let response):
                         let statusCode = Int(stream.getResponseStatusCode())
                         response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
@@ -120,7 +120,7 @@ public class CRTClientEngine: HttpClientEngine {
                     }
                     
                 }
-                } catch (let err) {
+                } catch let err {
                     completion(.failure(err))
                 }
             case .failure(let error):
@@ -136,7 +136,6 @@ public class CRTClientEngine: HttpClientEngine {
         }
     }
     
-    
     public func makeHttpRequestOptions(_ request: SdkHttpRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
         let response = HttpResponse()
@@ -150,10 +149,10 @@ public class CRTClientEngine: HttpClientEngine {
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
             print(headerBlock) //TODO: change to a log statement
-        } onIncomingBody: { (stream, data) in
+        } onIncomingBody: { (_, data) in
             //TODO add logger statement here
             incomingData.append(data)
-        } onStreamComplete: { (stream, error) in
+        } onStreamComplete: { (_, error) in
            //TODO add logger statement here
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {

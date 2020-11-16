@@ -44,7 +44,7 @@ extension SdkHttpRequest {
         httpRequest.method = method.rawValue
         httpRequest.path = endpoint.path
       
-        var awsInputStream: AwsInputStream? = nil
+        var awsInputStream: AwsInputStream?
         switch body {
         case .data(let data):
             if let data = data {
@@ -56,7 +56,7 @@ extension SdkHttpRequest {
             do {
                 let fileHandle = try FileHandle(forReadingFrom: url)
                 awsInputStream = AwsInputStream(fileHandle)
-            } catch (let err) {
+            } catch let err {
                 throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: " + err.localizedDescription)
             }
         case .stream(let stream):
@@ -68,7 +68,7 @@ extension SdkHttpRequest {
                     let byteBufferWithData = byteBuffer.put(data)
                     awsInputStream = AwsInputStream(byteBufferWithData)
                 }
-            } catch (let err) {
+            } catch let err {
                 throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
             }
         case .none:

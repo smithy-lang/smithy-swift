@@ -23,8 +23,8 @@ public extension Reflection {
 
         let mirror = Mirror(reflecting: self)
 
-        return mirror.children.filter{
-            if case Optional<Any>.some(_) = $0.value {
+        return mirror.children.filter {
+            if case Any?.some(_) = $0.value {
                    return false
                } else {
                    return true

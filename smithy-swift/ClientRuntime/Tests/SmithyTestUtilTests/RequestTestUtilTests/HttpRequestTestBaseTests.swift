@@ -114,8 +114,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
             assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
         })
-        }
-        catch {
+        } catch {
             XCTFail("Encoding of request failed")
         }
     }

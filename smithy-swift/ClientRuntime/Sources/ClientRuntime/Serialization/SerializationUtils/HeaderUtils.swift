@@ -18,7 +18,7 @@ import Foundation
 /// Expands the compact Header Representation of List of any type except Dates
 public func splitHeaderListValues(_ value: String?) -> [String]? {
     guard let value = value else { return nil}
-    return value.components(separatedBy: ",").map{ $0.trim() }
+    return value.components(separatedBy: ",").map { $0.trim() }
 }
 
 /// Expands the compact HTTP Header Representation of List of Dates
@@ -27,9 +27,9 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
     
     let separator = ","
     let totalSeparators = value.components(separatedBy: separator).count - 1
-    if (totalSeparators <= 1) {
+    if totalSeparators <= 1 {
         return [value]
-    } else if (totalSeparators % 2 == 0) {
+    } else if totalSeparators % 2 == 0 {
         throw ClientError.deserializationFailed(HeaderDeserializationError.invalidTimestampHeaderList(value: value))
     }
     
@@ -40,12 +40,12 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
 
     for i in 1...value.count {
         let currIdx = value.index(value.startIndex, offsetBy: i-1)
-        if (value[currIdx] == ",") {
+        if value[currIdx] == "," {
             cnt += 1
         }
 
         // split on every other ','
-        if (cnt > 1) {
+        if cnt > 1 {
             startIdx = value.index(value.startIndex, offsetBy: start)
             splits.append(String(value[startIdx..<currIdx]).trim())
             start = i + 1
@@ -53,7 +53,7 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
         }
     }
 
-    if (start < value.count) {
+    if start < value.count {
         startIdx = value.index(value.startIndex, offsetBy: start)
         splits.append(String(value[startIdx..<value.endIndex]).trim())
     }

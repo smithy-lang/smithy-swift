@@ -23,11 +23,11 @@ class HeaderUtilsTests: XCTestCase {
             XCTFail("splitting header list values unexpectedly returned nil")
             return
         }
-        XCTAssertEqual([1], headerCollectionValues.map{ Int($0) })
-        XCTAssertEqual([1, 2, 3], splitHeaderListValues("1,2,3")?.map{ Int($0) })
+        XCTAssertEqual([1], headerCollectionValues.map { Int($0) })
+        XCTAssertEqual([1, 2, 3], splitHeaderListValues("1,2,3")?.map { Int($0) })
         // Trim whitespaces in beginning and end of string components
-        XCTAssertEqual([1, 2, 3], splitHeaderListValues(" 1, 2, 3 ")?.map{ Int($0) })
-        XCTAssertEqual([nil, 1], splitHeaderListValues(",1")?.map{ Int($0) })
+        XCTAssertEqual([1, 2, 3], splitHeaderListValues(" 1, 2, 3 ")?.map { Int($0) })
+        XCTAssertEqual([nil, 1], splitHeaderListValues(",1")?.map { Int($0) })
     }
     
     func testSplitHttpDateHeaderListValues() {

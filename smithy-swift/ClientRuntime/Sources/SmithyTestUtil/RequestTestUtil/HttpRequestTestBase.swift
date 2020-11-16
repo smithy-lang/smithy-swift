@@ -268,7 +268,6 @@ open class HttpRequestTestBase: XCTestCase {
         let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
             return first.union(last)
         })
-
         
         for expectedQueryItem in expected {
             XCTAssertTrue(actual.contains(expectedQueryItem), "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
