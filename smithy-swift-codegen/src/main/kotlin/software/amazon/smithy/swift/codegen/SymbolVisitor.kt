@@ -15,9 +15,12 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.codegen.core.*
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
@@ -73,7 +76,7 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
-    ShapeVisitor<Symbol> {
+        ShapeVisitor<Symbol> {
 
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
     private var escaper: Escaper

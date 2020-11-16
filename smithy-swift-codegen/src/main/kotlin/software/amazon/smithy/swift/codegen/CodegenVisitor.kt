@@ -22,8 +22,11 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
+import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import java.util.*
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
