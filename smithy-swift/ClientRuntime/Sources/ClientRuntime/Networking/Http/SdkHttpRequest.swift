@@ -41,10 +41,10 @@ public class SdkHttpRequest {
 extension SdkHttpRequest {
     public func toHttpRequest() throws -> HttpRequest {
         let httpHeaders = headers.toHttpHeaders()
-        let httpRequest = HttpRequest(headers: httpHeaders)
+        let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
         httpRequest.path = endpoint.path
-      
+        httpRequest.addHeaders(headers: httpHeaders)
         var awsInputStream: AwsInputStream?
         switch body {
         case .data(let data):
