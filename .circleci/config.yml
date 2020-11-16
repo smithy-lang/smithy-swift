@@ -84,91 +84,97 @@ commands:
             destination: Reports
             path: build/reports/tests/test/
 
+  pre_start_ios_simulator:
+    description: >-
+      Pre-start iOS Simulator, as the build may fail if it takes too long to start up during that step
+    steps:
+      - run:
+          name: Pre-start iOS Simulator
+          command: |
+            bash CircleciScripts/pre_start_iOS_simulator.sh
+
 jobs:
-  build:
+  build_and_unittest_swift_client_runtime:
+    macos:
+      xcode: "12.1.0"
+    steps:
+      - checkout
+      - pre_start_ios_simulator
+      - run:
+          name: Clone aws-crt-swift
+          command: |
+            rm -rf ~/Library/Developer/Xcode/DerivedData
+            mkdir -p ~/Projects/Amplify/SwiftSDK/
+            cd ~/Projects/Amplify/SwiftSDK/
+            git clone --recursive git@github.com:awslabs/aws-crt-swift.git
+            cd -
+      - run:
+          name: Build ClientRuntime
+          working_directory: ~/project/ClientRuntime
+          command: |
+            xcodebuild -scheme ClientRuntime-Package -destination "${destination}"
+      - run:
+          name: Unit Test ClientRuntime
+          working_directory: ~/project/ClientRuntime
+          command: |
+            xcodebuild test -enableCodeCoverage YES -scheme ClientRuntime-Package -destination "${destination}"
+            bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: Install swiftlint
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+      - run:
+          name: Lint ClientRuntime
+          working_directory: ~/project/ClientRuntime
+          command: |
+            swiftlint
+
+  build_smithy_swift:
+    macos:
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
     steps:
       - checkout
       - with_cache:
+          cache_key: "macOSv2"
           steps:
             - run:
-                name: Build Smithy Kotlin
-                working_directory: ~/project/smithy-kotlin
-                command: ./gradlew build -x test -x jvmTest
-            - persist_to_workspace:
-                root: .
-                paths:
-                  - smithy-kotlin/build
-                  - smithy-kotlin/*/build
-                  - smithy-kotlin/client-runtime/*/build
+                name: Clone aws-crt-swift
+                command: |
+                  rm -rf ~/Library/Developer/Xcode/DerivedData
+                  mkdir -p ~/Projects/Amplify/SwiftSDK/
+                  cd ~/Projects/Amplify/SwiftSDK/
+                  git clone --recursive git@github.com:awslabs/aws-crt-swift.git
+                  cd -
             - run:
                 name: Build Smithy Swift
-                working_directory: ~/project/smithy-swift
+                working_directory: ~/project
                 command: ./gradlew build -x test
             - persist_to_workspace:
                 root: .
                 paths:
-                  - smithy-swift/build
-                  - smithy-swift/*/build
-  test_smithy_kotlin:
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - with_cache:
-          steps:
-            - run:
-                working_directory: ~/project/smithy-kotlin
-                name: Run tests
-                command: |
-                  ./gradlew test
-      - collect_test_results:
-          test_results_path: ""
-          reports_path: ""
+                  - ./build
+                  - ./*/build
 
-  lint_smithy_kotlin:
-    # Remove if parallelism is not desired
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          working_directory: ~/project/smithy-kotlin
-          name: Run ktlint
-          command: |
-            ./gradlew ktlint
   test_smithy_swift:
+    macos:
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
     steps:
       - checkout
       - attach_workspace:
           at: .
       - with_cache:
+          cache_key: "macOSv2"
           steps:
             - run:
-                working_directory: ~/project/smithy-swift
+                working_directory: ~/project
                 name: Run tests
                 command: |
                   ./gradlew test
@@ -177,33 +183,44 @@ jobs:
           reports_path: ""
 
   lint_smithy_swift:
-    # Remove if parallelism is not desired
+    macos:
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          working_directory: ~/project/smithy-swift
+          working_directory: ~/project
           name: Run ktlint
           command: |
             ./gradlew ktlint
-
+            
 workflows:
   version: 2
-  workflow:
+
+  build_and_test_smithy_swift:
     jobs:
-    - build
-    - test_smithy_kotlin:
+    - build_and_unittest_swift_client_runtime:
+        filters:
+            branches:
+              only:
+                - swift-client-runtime
+    - build_smithy_swift:
         requires:
-          - build
-    - lint_smithy_kotlin
+          - build_and_unittest_swift_client_runtime
+        filters:
+            branches:
+              only:
+                - swift-client-runtime
     - test_smithy_swift:
         requires:
-          - build
-    - lint_smithy_swift
+          - build_smithy_swift
+        filters:
+            branches:
+              only:
+                - swift-client-runtime
+    - lint_smithy_swift  
