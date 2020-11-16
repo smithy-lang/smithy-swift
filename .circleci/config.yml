@@ -154,8 +154,8 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - build
-                  - */build
+                  - ./build
+                  - ./*/build
 
   test_smithy_swift:
     macos:
