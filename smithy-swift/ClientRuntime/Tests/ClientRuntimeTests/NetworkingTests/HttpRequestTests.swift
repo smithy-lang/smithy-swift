@@ -23,12 +23,23 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkHttpRequestToHttpRequest() {
-        let httpRequest = try! mockHttpDataRequest.toHttpRequest()
+        let endpoint = Endpoint(host: "host.com", path: "/")
+        var headers = Headers()
 
+        headers.add(name: "header-item-name", value: "header-item-value")
+
+        let httpBody = HttpBody.data(expectedMockRequestData)
+        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        do {
+        var httpRequest = try mockHttpRequest.toHttpRequest()
+        withUnsafePointer(to: &httpRequest) {
+            print("http request has address: \($0)")
+        }
+    
         XCTAssertNotNil(httpRequest)
         for index in 0...(httpRequest.headerCount - 1) {
             let header1 = httpRequest.headers[index]
-            let header2 = mockHttpDataRequest.headers.headers[index]
+            let header2 = mockHttpRequest.headers.headers[index]
             XCTAssertEqual(header1.name, header2.name)
             XCTAssertEqual(header1.value, header2.value)
         }
@@ -37,6 +48,10 @@ class HttpRequestTests: NetworkingTestUtils {
 
         if let bodyLength = httpRequest.body?.length {
             XCTAssertEqual(Int(bodyLength), expectedMockRequestData.count)
+        }
+        } catch let err {
+            print(err)
+            XCTFail()
         }
        
     }
