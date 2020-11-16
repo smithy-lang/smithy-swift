@@ -203,6 +203,13 @@ jobs:
           cache_key: "macOSv2"
           steps:
             - run:
+                name: Clone aws-crt-swift
+                command: |
+                  mkdir -p ~/Projects/Amplify/SwiftSDK/
+                  cd ~/Projects/Amplify/SwiftSDK/
+                  git clone -b futures-implementation --recursive git@github.com:awslabs/aws-crt-swift.git
+                  cd -         
+            - run:
                 name: Build Smithy Swift
                 working_directory: ~/project/smithy-swift
                 command: ./gradlew build -x test
