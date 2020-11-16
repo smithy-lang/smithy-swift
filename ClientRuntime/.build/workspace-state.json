@@ -1,0 +1,1 @@
+{"object": {"artifacts": [], "dependencies": [{"basedOn": null, "packageRef": {"identity": "aws-crt-swift", "kind": "local", "name": "AwsCrt", "path": "/Users/sadiredd/Documents/aws-crt-swift"}, "state": {"name": "local"}, "subpath": "aws-crt-swift"}]}, "version": 4}

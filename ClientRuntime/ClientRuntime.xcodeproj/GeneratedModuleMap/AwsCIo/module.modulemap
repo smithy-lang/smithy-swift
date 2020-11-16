@@ -1,0 +1,4 @@
+module AwsCIo {
+    umbrella "/Users/sadiredd/Documents/aws-crt-swift/aws-common-runtime/aws-c-io/include"
+    export *
+}

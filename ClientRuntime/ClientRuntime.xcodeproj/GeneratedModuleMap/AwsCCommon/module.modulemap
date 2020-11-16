@@ -1,0 +1,4 @@
+module AwsCCommon {
+    umbrella "/Users/sadiredd/Documents/aws-crt-swift/aws-common-runtime/aws-c-common/include"
+    export *
+}

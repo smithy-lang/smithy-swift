@@ -1,7 +1,0 @@
-.build/
-.swiftpm/
-ClientRuntime/.build/
-ClientRuntime/ClientRuntime.xcodeproj
-ClientRuntime/ClientRuntime.xcodeproj/
-
-

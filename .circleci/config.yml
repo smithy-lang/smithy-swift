@@ -109,12 +109,12 @@ jobs:
             cd -
       - run:
           name: Build ClientRuntime
-          working_directory: ~/project/smithy-swift/ClientRuntime
+          working_directory: ~/project/ClientRuntime
           command: |
             xcodebuild -scheme ClientRuntime-Package -destination "${destination}"
       - run:
           name: Unit Test ClientRuntime
-          working_directory: ~/project/smithy-swift/ClientRuntime
+          working_directory: ~/project/ClientRuntime
           command: |
             xcodebuild test -enableCodeCoverage YES -scheme ClientRuntime-Package -destination "${destination}"
             bash <(curl -s https://codecov.io/bash)
@@ -124,7 +124,7 @@ jobs:
             HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
       - run:
           name: Lint ClientRuntime
-          working_directory: ~/project/smithy-swift/ClientRuntime
+          working_directory: ~/project/ClientRuntime
           command: |
             swiftlint
 
@@ -149,13 +149,13 @@ jobs:
                   cd -         
             - run:
                 name: Build Smithy Swift
-                working_directory: ~/project/smithy-swift
+                working_directory: ~/project
                 command: ./gradlew build -x test
             - persist_to_workspace:
                 root: .
                 paths:
-                  - smithy-swift/build
-                  - smithy-swift/*/build
+                  - build
+                  - */build
 
   test_smithy_swift:
     macos:
@@ -172,7 +172,7 @@ jobs:
           cache_key: "macOSv2"
           steps:
             - run:
-                working_directory: ~/project/smithy-swift
+                working_directory: ~/project
                 name: Run tests
                 command: |
                   ./gradlew test
@@ -192,7 +192,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          working_directory: ~/project/smithy-swift
+          working_directory: ~/project
           name: Run ktlint
           command: |
             ./gradlew ktlint

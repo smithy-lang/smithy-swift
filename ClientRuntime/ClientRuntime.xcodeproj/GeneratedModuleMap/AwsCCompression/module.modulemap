@@ -1,0 +1,4 @@
+module AwsCCompression {
+    umbrella "/Users/sadiredd/Documents/aws-crt-swift/aws-common-runtime/aws-c-compression/include"
+    export *
+}
