@@ -25,7 +25,8 @@ struct XMLUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     // MARK: - Initialization
 
     /// Initializes `self` by referencing the given decoder and container.
-    init(referencing decoder: XMLDecoderImplementation, wrapping container: XMLSharedContainer<XMLArrayBasedContainer>) {
+    init(referencing decoder: XMLDecoderImplementation,
+         wrapping container: XMLSharedContainer<XMLArrayBasedContainer>) {
         self.decoder = decoder
         self.container = container
         codingPath = decoder.codingPath

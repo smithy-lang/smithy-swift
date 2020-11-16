@@ -69,7 +69,8 @@ struct XMLUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         return nestedKeyedContainer(keyedBy: NestedKey.self)
     }
 
-    public mutating func nestedKeyedContainer<NestedKey>(keyedBy _: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+    public mutating func nestedKeyedContainer<NestedKey>(keyedBy _: NestedKey.Type)
+    -> KeyedEncodingContainer<NestedKey> {
         codingPath.append(XMLKey(index: count))
         defer { self.codingPath.removeLast() }
 

@@ -162,7 +162,9 @@ struct XMLKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
 
         let elements = container.unboxed.elements[key.stringValue]
 
-        if let containsKeyed = elements as? [XMLKeyBasedContainer], containsKeyed.count == 1, let keyed = containsKeyed.first {
+        if let containsKeyed = elements as? [XMLKeyBasedContainer],
+           containsKeyed.count == 1,
+           let keyed = containsKeyed.first {
             return XMLUnkeyedDecodingContainer(
                 referencing: decoder,
                 wrapping: XMLSharedContainer(keyed.elements.map(XMLSimpleKeyBasedContainer.init))
@@ -272,7 +274,11 @@ extension XMLKeyedDecodingContainer {
 
         // If we are looking at a coding key value intrinsic where the expected type is `String` and
         // the value is empty, return `""`.
-        if strategy(key) != .attribute, elements.isEmpty, attributes.isEmpty, type == String.self, key.stringValue == "", let emptyString = "" as? T {
+        if strategy(key) != .attribute, elements.isEmpty,
+           attributes.isEmpty,
+           type == String.self,
+           key.stringValue == "",
+           let emptyString = "" as? T {
             return emptyString
         }
 

@@ -187,7 +187,8 @@ extension XMLDecoderImplementation {
         case let singleKeyedBox as XMLSimpleKeyBasedContainer:
             if let value = singleKeyedBox.element as? B {
                 return value
-            } else if let box = singleKeyedBox.element as? XMLKeyBasedContainer, let value = box.elements[""].first as? B {
+            } else if let box = singleKeyedBox.element as? XMLKeyBasedContainer,
+                      let value = box.elements[""].first as? B {
                 return value
             } else {
                 throw error

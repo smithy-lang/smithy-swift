@@ -27,7 +27,7 @@ public class StreamingProvider: NSObject, StreamDelegate {
                                inputStream: &inputOrNil,
                                outputStream: &outputOrNil)
         guard let input = inputOrNil, let output = outputOrNil else {
-            fatalError("On return of `getBoundStreams`, both `inputStream` and `outputStream` will contain non-nil streams.")
+            fatalError("On return of `getBoundStreams`, both `inputStream` and `outputStream` contain non-nil streams.")
         }
         // configure and open output stream
         output.delegate = self

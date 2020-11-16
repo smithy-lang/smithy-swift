@@ -36,7 +36,8 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-            queryItems.append(URLQueryItem(name: queryParamComponents[0], value: queryParamComponents[1].removingPercentEncoding))
+            queryItems.append(URLQueryItem(name: queryParamComponents[0],
+                                           value: queryParamComponents[1].removingPercentEncoding))
             } else {
                 queryItems.append(URLQueryItem(name: queryParamComponents[0], value: nil))
             }
@@ -99,7 +100,9 @@ open class HttpRequestTestBase: XCTestCase {
      /// - Parameter actual: Actual `HttpRequest` to compare against
      /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
      */
-    public func assertEqual(_ expected: SdkHttpRequest, _ actual: SdkHttpRequest, _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
+    public func assertEqual(_ expected: SdkHttpRequest,
+                            _ actual: SdkHttpRequest,
+                            _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
         // assert headers match
         assertEqualHttpHeaders(expected.headers, actual.headers)
         
@@ -130,7 +133,9 @@ open class HttpRequestTestBase: XCTestCase {
                     XCTFail("actual data in HttpBody is nil but expected is not")
                     return
                 }
-                XCTAssertEqual(expectedData, actualData, "The expected and Actual data inside the HttpBody do not match")
+                XCTAssertEqual(expectedData,
+                               actualData,
+                               "The expected and Actual data inside the HttpBody do not match")
             } else {
                 XCTFail("The expected HttpBody is not Data Type")
             }
@@ -190,10 +195,10 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
     public func assertEqualHttpHeaders(_ expected: Headers, _ actual: Headers) {
-        //in order to properly compare header values where actual is an array and expected comes in as a comma separated string
-        //take actual and join them with a comma and then separate them by comma (to in effect get the same separated list as expected)
-        //take expected and separate them by comma
-        //then throw both actual and expected comma separated arrays in a set and compare sets
+        //in order to properly compare header values where actual is an array and expected comes in
+        // as a comma separated string take actual and join them with a comma and then separate them
+        // by comma (to in effect get the same separated list as expected) take expected and separate them
+        // by comma then throw both actual and expected comma separated arrays in a set and compare sets
         let sortedActualHeaders = actual.dictionary.mapValues({ (values) -> Set<String> in
             let joinedValues = values.joined(separator: ", ")
             let splitValues = joinedValues.components(separatedBy: ", ")
@@ -221,7 +226,8 @@ open class HttpRequestTestBase: XCTestCase {
             
             XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
                            "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
-                            " does not match actual header value \(String(describing: actual.dictionary[expectedHeaderName]))]")
+                            " does not match actual header value" +
+                            "\(String(describing: actual.dictionary[expectedHeaderName]))]")
         }
     }
     
@@ -232,15 +238,25 @@ open class HttpRequestTestBase: XCTestCase {
     */
     public func assertEqualEndpoint(_ expected: Endpoint, _ actual: Endpoint) {
         // match all the components of Endpoint
-        XCTAssertEqual(expected.path, actual.path, "Expected Endpoint path: \(expected.path) does not match the actual Endpoint path: \(actual.path)")
+        XCTAssertEqual(expected.path,
+                       actual.path,
+                       "Expected Endpoint path: \(expected.path) does not match the" +
+                        "actual Endpoint path: \(actual.path)")
         XCTAssertEqual(expected.protocolType, actual.protocolType,
                        "Expected Endpoint protocolType: \(String(describing: expected.protocolType))" +
                         " does not match the actual Endpoint protocolType: \(String(describing: actual.protocolType))")
-        XCTAssertEqual(expected.host, actual.host, "Expected Endpoint host: \(expected.host) does not match the actual Endpoint host: \(actual.host)")
-        XCTAssertEqual(expected.port, actual.port, "Expected Endpoint port: \(expected.port) does not match the actual Endpoint port: \(actual.port)")
+        XCTAssertEqual(expected.host,
+                       actual.host,
+                       "Expected Endpoint host: \(expected.host) does not match the" +
+                        "actual Endpoint host: \(actual.host)")
+        XCTAssertEqual(expected.port,
+                       actual.port,
+                       "Expected Endpoint port: \(expected.port) does not match the " +
+                        "actual Endpoint port: \(actual.port)")
         
         guard let expectedQueryItems = expected.queryItems else {
-            XCTAssertNil(actual.queryItems, "expected query items in Endpoint is nil but actual are not")
+            XCTAssertNil(actual.queryItems,
+                         "expected query items in Endpoint is nil but actual are not")
             return
         }
         
@@ -270,9 +286,15 @@ open class HttpRequestTestBase: XCTestCase {
         })
         
         for expectedQueryItem in expected {
-            XCTAssertTrue(actual.contains(expectedQueryItem), "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
+            XCTAssertTrue(actual.contains(expectedQueryItem),
+                          "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
             let actualQueryItemValue = actualMap[expectedQueryItem.name]
-            XCTAssertEqual(actualQueryItemValue, expectedMap[expectedQueryItem.name], "Expected query item [\(expectedQueryItem.name)=\(String(describing: expectedQueryItem.value))]" + " does not match actual query item [\(expectedQueryItem.name)=\(String(describing: actualQueryItemValue))]")
+            XCTAssertEqual(actualQueryItemValue,
+                           expectedMap[expectedQueryItem.name],
+                           "Expected query item [\(expectedQueryItem.name)=" +
+                           "\(String(describing: expectedQueryItem.value))]" +
+                           " does not match actual query item [\(expectedQueryItem.name)" +
+                            "=\(String(describing: actualQueryItemValue))]")
 
         }
     }

@@ -29,8 +29,8 @@ public struct CRTClientEngineConfig {
     let verifyPeer: Bool
     
     public init(maxConnectionsPerEndpoint: Int = 50,
-         windowSize: Int = 16 * 1024 * 1024,
-         verifyPeer: Bool = true) {
+                windowSize: Int = 16 * 1024 * 1024,
+                verifyPeer: Bool = true) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer

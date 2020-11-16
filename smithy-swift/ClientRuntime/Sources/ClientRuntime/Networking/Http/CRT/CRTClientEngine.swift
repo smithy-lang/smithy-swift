@@ -144,10 +144,12 @@ public class CRTClientEngine: HttpClientEngine {
         var incomingData = Data()
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
             //TODO add logger statement here
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+                ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { (stream, headerBlock) in
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode())) ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+                ?? HttpStatusCode.notFound
             print(headerBlock) //TODO: change to a log statement
         } onIncomingBody: { (_, data) in
             //TODO add logger statement here

@@ -23,7 +23,11 @@ public struct Endpoint: Hashable {
     public let port: Int16
     
     //TODO: figure out if port is provided by any smithy trait
-    public init(host: String, path: String = "/", port: Int16 = 443, queryItems: [URLQueryItem]? = nil, protocolType: ProtocolType? = .https) {
+    public init(host: String,
+                path: String = "/",
+                port: Int16 = 443,
+                queryItems: [URLQueryItem]? = nil,
+                protocolType: ProtocolType? = .https) {
         self.host = host
         self.path = path
         self.port = port

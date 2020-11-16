@@ -72,7 +72,8 @@ open class XMLEncoder {
 
         /// Encode the `Date` as a custom value encoded by the given closure.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
+        /// If the closure fails to encode a value into the given encoder, the encoder will encode an
+        /// empty automatic container in its place.
         case custom((Date, Encoder) throws -> Void)
     }
 
@@ -95,7 +96,8 @@ open class XMLEncoder {
 
         /// Encode the `Data` as a custom value encoded by the given closure.
         ///
-        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty automatic container in its place.
+        /// If the closure fails to encode a value into the given encoder, the encoder will encode an empty
+        /// automatic container in its place.
         case custom((Data, Encoder) throws -> Void)
     }
 
@@ -128,9 +130,11 @@ open class XMLEncoder {
         /// 3. Lowercases the entire string
         /// 4. Preserves starting and ending `_`.
         ///
-        /// For example, `oneTwoThree` becomes `one_two_three`. `_oneTwoThree_` becomes `_one_two_three_`.
+        /// For example, `oneTwoThree` becomes `one_two_three`. `_oneTwoThree_`
+        /// becomes `_one_two_three_`.
         ///
-        /// - Note: Using a key encoding strategy has a nominal performance cost, as each string key has to be converted.
+        /// - Note: Using a key encoding strategy has a nominal performance cost, as each string
+        /// key has to be converted.
         case convertToSnakeCase
 
         /// Same as convertToSnakeCase, but using `-` instead of `_`
@@ -209,11 +213,12 @@ open class XMLEncoder {
                 // should treat as its own word
                 let nextCharacterAfterCapital = stringKey.index(after: upperCaseRange.lowerBound)
                 if lowerCaseRange.lowerBound == nextCharacterAfterCapital {
-                    // The next character after capital is a lower case character and therefore not a word boundary.
-                    // Continue searching for the next upper case for the boundary.
+                    // The next character after capital is a lower case character and therefore
+                    // not a word boundary. Continue searching for the next upper case for the boundary.
                     wordStart = upperCaseRange.lowerBound
                 } else {
-                    // There was a range of >1 capital letters. Turn those into a word, stopping at the capital before the lower case character.
+                    // There was a range of >1 capital letters. Turn those into a word, stopping at the
+                    // capital before the lower case character.
                     let beforeLowerIndex = stringKey.index(before: lowerCaseRange.lowerBound)
                     words.append(upperCaseRange.lowerBound..<beforeLowerIndex)
 

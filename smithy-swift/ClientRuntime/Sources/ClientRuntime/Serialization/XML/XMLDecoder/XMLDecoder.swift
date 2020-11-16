@@ -141,10 +141,12 @@ open class XMLDecoder {
         /// Converting from snake case to camel case:
         /// 1. Capitalizes the word starting after each `_`
         /// 2. Removes all `_`
-        /// 3. Preserves starting and ending `_` (as these are often used to indicate private variables or other metadata).
-        /// For example, `one_two_three` becomes `oneTwoThree`. `_one_two_three_` becomes `_oneTwoThree_`.
+        /// 3. Preserves starting and ending `_` (as these are often used to indicate private variables
+        /// or other metadata). For example, `one_two_three` becomes `oneTwoThree`.
+        /// `_one_two_three_` becomes `_oneTwoThree_`.
         ///
-        /// - Note: Using a key decoding strategy has a nominal performance cost, as each string key has to be inspected for the `_` character.
+        /// - Note: Using a key decoding strategy has a nominal performance cost, as each string key has to be
+        /// inspected for the `_` character.
         case convertFromSnakeCase
 
         /// Convert from "kebab-case" to "kebabCase" before attempting
@@ -217,9 +219,11 @@ open class XMLDecoder {
             let result: String
             if leadingSeparatorRange.isEmpty, trailingSeparatorRange.isEmpty {
                 result = joinedString
-            } else if !leadingSeparatorRange.isEmpty, !trailingSeparatorRange.isEmpty {
+            } else if !leadingSeparatorRange.isEmpty,
+                      !trailingSeparatorRange.isEmpty {
                 // Both leading and trailing underscores
-                result = String(stringKey[leadingSeparatorRange]) + joinedString + String(stringKey[trailingSeparatorRange])
+                result = String(stringKey[leadingSeparatorRange]) +
+                    joinedString + String(stringKey[trailingSeparatorRange])
             } else if !leadingSeparatorRange.isEmpty {
                 // Just leading
                 result = String(stringKey[leadingSeparatorRange]) + joinedString
@@ -341,7 +345,8 @@ open class XMLDecoder {
     /// - parameter type: The type of the box to decode.
     /// - parameter data: The data to decode from.
     /// - returns: A box of the requested type.
-    /// - throws: `DecodingError.dataCorrupted` if values requested from the payload are corrupted, or if the given data is not valid XML.
+    /// - throws: `DecodingError.dataCorrupted` if values requested from the payload are corrupted,
+    /// or if the given data is not valid XML.
     /// - throws: An error if any box throws an error during decoding.
     open func decode<T: Decodable>(
         _ type: T.Type,

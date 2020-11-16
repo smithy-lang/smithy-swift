@@ -16,7 +16,8 @@
 import Foundation
 import AwsCommonRuntimeKit
 
-// we need to maintain a reference to this same request while we add headers in the CRT engine so that is why it's a class
+// we need to maintain a reference to this same request while we add headers
+// in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
     public var body: HttpBody?
     public var headers: Headers
@@ -57,7 +58,8 @@ extension SdkHttpRequest {
                 let fileHandle = try FileHandle(forReadingFrom: url)
                 awsInputStream = AwsInputStream(fileHandle)
             } catch let err {
-                throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: " + err.localizedDescription)
+                throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: "
+                 + err.localizedDescription)
             }
         case .stream(let stream):
             //TODO: refactor ability to stream appropriately and get buffer capacity here

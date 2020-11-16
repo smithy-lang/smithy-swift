@@ -19,7 +19,7 @@ struct XMLNullContainer: XMLSimpleContainer {
 }
 
 extension XMLNullContainer: Equatable {
-    static func ==(_: XMLNullContainer, _: XMLNullContainer) -> Bool {
+    static func == (_: XMLNullContainer, _: XMLNullContainer) -> Bool {
         return true
     }
 }

@@ -173,7 +173,10 @@ extension XMLElementRepresentable {
 
 extension XMLElementRepresentable {
 
-    init(key: String, isStringBoxCDATA isCDATA: Bool, box: XMLArrayBasedContainer, attributes: [XMLAttributeRepresentable] = []) {
+    init(key: String,
+         isStringBoxCDATA isCDATA: Bool,
+         box: XMLArrayBasedContainer,
+         attributes: [XMLAttributeRepresentable] = []) {
         self.init(
             key: key,
             elements: box.map { XMLElementRepresentable(key: key, isStringBoxCDATA: isCDATA, box: $0) },
@@ -181,7 +184,10 @@ extension XMLElementRepresentable {
         )
     }
 
-    init(key: String, isStringBoxCDATA isCDATA: Bool, box: XMLKeyBasedContainer, attributes: [XMLAttributeRepresentable] = []) {
+    init(key: String,
+         isStringBoxCDATA isCDATA: Bool,
+         box: XMLKeyBasedContainer,
+         attributes: [XMLAttributeRepresentable] = []) {
         var elements: [XMLElementRepresentable] = []
 
         for (key, box) in box.elements {
