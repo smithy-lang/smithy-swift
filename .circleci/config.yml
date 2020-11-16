@@ -105,7 +105,7 @@ jobs:
           command: |
             mkdir -p ~/Projects/Amplify/SwiftSDK/
             cd ~/Projects/Amplify/SwiftSDK/
-            git clone -b futures-implementation --recursive git@github.com:awslabs/aws-crt-swift.git
+            git clone --recursive git@github.com:awslabs/aws-crt-swift.git
             cd -
       - run:
           name: Build ClientRuntime
