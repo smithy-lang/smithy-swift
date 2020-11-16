@@ -1,4 +1,0 @@
-module AwsCAuth {
-    umbrella "/Users/sadiredd/Documents/aws-crt-swift/aws-common-runtime/aws-c-auth/include"
-    export *
-}
