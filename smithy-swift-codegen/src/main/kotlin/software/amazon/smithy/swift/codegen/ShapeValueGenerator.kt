@@ -18,8 +18,21 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.*
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.node.ArrayNode
+import software.amazon.smithy.model.node.BooleanNode
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeVisitor
+import software.amazon.smithy.model.node.NullNode
+import software.amazon.smithy.model.node.NumberNode
+import software.amazon.smithy.model.node.ObjectNode
+import software.amazon.smithy.model.node.StringNode
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DocumentShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 
 /**
