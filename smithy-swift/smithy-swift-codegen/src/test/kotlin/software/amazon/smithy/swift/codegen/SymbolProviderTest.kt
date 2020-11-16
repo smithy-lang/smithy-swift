@@ -120,9 +120,9 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("BigNumber", memberSymbol.namespace)
+        assertEquals("ComplexModule", memberSymbol.namespace)
         assertEquals(true, memberSymbol.isBoxed())
-        assertEquals("BInt", memberSymbol.name)
+        assertEquals("[UInt8]", memberSymbol.name)
     }
 
     @Test fun `creates lists`() {

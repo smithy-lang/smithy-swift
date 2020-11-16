@@ -158,25 +158,27 @@ jobs:
   
   build_and_unittest_swift_client_runtime:
     macos:
-      xcode: "11.4.1"
+      xcode: "12.1.0"
     steps:
       - checkout
       - pre_start_ios_simulator
       - run:
-          name: Generate XCodeProject
-          working_directory: ~/project/smithy-swift/ClientRuntime
+          name: Clone aws-crt-swift
           command: |
-            swift package generate-xcodeproj
+            mkdir -p ~/Projects/Amplify/SwiftSDK/
+            cd ~/Projects/Amplify/SwiftSDK/
+            git clone -b futures-implementation --recursive git@github.com:awslabs/aws-crt-swift.git
+            cd -
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            xcodebuild build -project ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
+            xcodebuild -scheme ClientRuntime-Package -destination "${destination}"
       - run:
           name: Unit Test ClientRuntime
           working_directory: ~/project/smithy-swift/ClientRuntime
           command: |
-            xcodebuild test -enableCodeCoverage YES -project ClientRuntime.xcodeproj -scheme ClientRuntime-Package -sdk iphonesimulator -destination "${destination}"
+            xcodebuild test -enableCodeCoverage YES -scheme ClientRuntime-Package -destination "${destination}"
             bash <(curl -s https://codecov.io/bash)
       - run:
           name: Install swiftlint
@@ -190,7 +192,7 @@ jobs:
 
   build_smithy_swift:
     macos:
-      xcode: "11.4.1"
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -212,7 +214,7 @@ jobs:
 
   test_smithy_swift:
     macos:
-      xcode: "11.4.1"
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -235,7 +237,7 @@ jobs:
 
   lint_smithy_swift:
     macos:
-      xcode: "11.4.1"
+      xcode: "12.1.0"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"

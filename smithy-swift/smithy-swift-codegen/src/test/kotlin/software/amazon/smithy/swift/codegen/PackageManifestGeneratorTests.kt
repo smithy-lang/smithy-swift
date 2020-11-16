@@ -60,8 +60,8 @@ class PackageManifestGeneratorTests : TestsBase() {
         packageManifest.shouldContain(
             "dependencies: [\n" +
                     "        .package(\n" +
-                    "            url: \"https://github.com/mkrd/Swift-Big-Integer.git\",\n" +
-                    "            from: 2.0\n" +
+                    "            url: \"https://github.com/apple/swift-numerics\",\n" +
+                    "            from: 0.0.5\n" +
                     "        ),\n" +
                     "        .package(path: \"~/Projects/Amplify/SwiftSDK/smithy-swift/smithy-swift/ClientRuntime\"),\n" +
                     "    ]")
@@ -99,7 +99,14 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "        .target(\n" +
                     "            name: \"MockSDK\",\n" +
                     "            dependencies: [\n" +
-                    "                \"BigNumber\", \"ClientRuntime\"\n" +
+                    "                .product(\n" +
+                    "                    name: \"ComplexModule\",\n" +
+                    "                    package: \"swift-numerics\"\n" +
+                    "                ),\n" +
+                    "                .product(\n" +
+                    "                    name: \"ClientRuntime\",\n" +
+                    "                    package: \"ClientRuntime\"\n" +
+                    "                ),\n" +
                     "            ],\n" +
                     "            path: \"./MockSDK\"\n" +
                     "        ),\n" +
