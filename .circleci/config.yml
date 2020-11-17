@@ -108,6 +108,13 @@ jobs:
             cd ~/Projects/Amplify/SwiftSDK/
             git clone --recursive git@github.com:awslabs/aws-crt-swift.git
             cd -
+      - run: 
+          name: Circleci Workaround for SPM and xcodebuild
+          command: |
+            sudo defaults write com.apple.dt.Xcode IDEPackageSupportUseBuiltinSCM YES
+            rm ~/.ssh/id_rsa || true
+            for ip in $(dig @8.8.8.8 bitbucket.org +short); do ssh-keyscan bitbucket.org,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts || true 
+            for ip in $(dig @8.8.8.8 github.com +short); do ssh-keyscan github.com,$ip 
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/ClientRuntime
