@@ -96,7 +96,7 @@ commands:
 jobs:
   build_and_unittest_swift_client_runtime:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     steps:
       - checkout
       - pre_start_ios_simulator
@@ -131,7 +131,7 @@ jobs:
 
   build_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -161,7 +161,7 @@ jobs:
 
   test_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -184,7 +184,7 @@ jobs:
 
   lint_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
