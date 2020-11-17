@@ -148,12 +148,12 @@ public class CRTClientEngine: HttpClientEngine {
 
         let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
         var incomingData = Data()
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, headerBlock, httpHeaders) in
+        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.info("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
-        } onIncomingHeadersBlockDone: { [self] (stream, headerBlock) in
+        } onIncomingHeadersBlockDone: { [self] (stream, _) in
             logger.info("header block is done")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound

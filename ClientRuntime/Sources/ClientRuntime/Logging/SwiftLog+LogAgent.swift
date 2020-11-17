@@ -27,7 +27,13 @@ extension Logger: LogAgent {
         }
     }
     
-    func log(level: LogLevel, message: String, metadata: [String : String], source: String, file: String, function: String, line: UInt) {
+    func log(level: LogLevel,
+             message: String,
+             metadata: [String: String],
+             source: String,
+             file: String,
+             function: String,
+             line: UInt) {
         let mappedDict = metadata.mapValues { (value) -> MetadataValue in
             return MetadataValue.string(value)
         }
@@ -38,9 +44,7 @@ extension Logger: LogAgent {
     }
     
     var name: String {
-        get {
             return label
-        }
     }
     
     func info(_ message: String) {

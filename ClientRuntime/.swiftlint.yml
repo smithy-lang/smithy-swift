@@ -1,5 +1,6 @@
 excluded:
   - Tests
+  - .build
 
 analyzer_rules:
   - unused_import
@@ -15,6 +16,7 @@ disabled_rules:
   - cyclomatic_complexity
   - file_length
   - syntactic_sugar
+  - unused_capture_list
 
 opt_in_rules:
   - empty_count

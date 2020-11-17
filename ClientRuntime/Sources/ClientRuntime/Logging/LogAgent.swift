@@ -34,4 +34,3 @@ protocol LogAgent {
     func trace(_ message: String)
     func fatal(_ message: String)
 }
-
