@@ -50,4 +50,8 @@ public extension Endpoint {
 
         return components.url
     }
+    
+    var urlString: String {
+        return host + "/"  + path
+    }
 }

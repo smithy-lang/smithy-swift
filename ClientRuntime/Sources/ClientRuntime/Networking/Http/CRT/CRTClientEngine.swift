@@ -13,18 +13,19 @@
 // permissions and limitations under the License.
 
 import AwsCommonRuntimeKit
-import Foundation
+import struct Foundation.Data
+import Logging
 
 public class CRTClientEngine: HttpClientEngine {
-    //TODO: implement Logger and logging statements throughout this file
+    
+    private var logger: LogAgent
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
-    //constants needed
-    private static var HOST_HEADER = "Host"
-    private static var CONTENT_LENGTH_HEADER = "Content-Length"
-    private static var CONNECTION_HEADER = "Connection"
-    private static var KEEP_ALIVE = "keep-alive"
-    private static var AWS_COMMON_RUNTIME = "AwsCommonRuntime"
-    private static var DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
+    private let HOST_HEADER = "Host"
+    private let CONTENT_LENGTH_HEADER = "Content-Length"
+    private let CONNECTION_HEADER = "Connection"
+    private let KEEP_ALIVE = "keep-alive"
+    private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
+    private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
     private let bootstrap: ClientBootstrap
     private let socketOptions: SocketOptions
@@ -45,6 +46,7 @@ public class CRTClientEngine: HttpClientEngine {
         self.tlsContextOptions = tlsContextOptions
         self.tlsContext = try TlsContext(options: tlsContextOptions, mode: .client)
         self.windowSize = config.windowSize
+        self.logger = Logger(label: "CRTClientEngine")
     }
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
@@ -59,6 +61,8 @@ public class CRTClientEngine: HttpClientEngine {
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
                                                   enableManualWindowManagement: true)
+        logger.info("Creating connection pool for \(endpoint.urlString)" +
+            "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
     }
     
@@ -76,8 +80,8 @@ public class CRTClientEngine: HttpClientEngine {
     private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) throws -> HttpRequest {
         
         var headers = request.headers
-        headers.update(name: CRTClientEngine.HOST_HEADER, value: endpoint.host)
-        headers.update(name: CRTClientEngine.CONNECTION_HEADER, value: CRTClientEngine.KEEP_ALIVE)
+        headers.update(name: HOST_HEADER, value: endpoint.host)
+        headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
         let contentLength = try request.body.map { (body) -> String in
             switch body {
@@ -85,14 +89,14 @@ public class CRTClientEngine: HttpClientEngine {
                 return String(data?.count ?? 0)
             case .stream(let stream):
                 //FIXME refactor streaming end to end to properly work
-                let data = try stream?.readData(maxLength: CRTClientEngine.DEFAULT_STREAM_WINDOW_SIZE)
+                let data = try stream?.readData(maxLength: DEFAULT_STREAM_WINDOW_SIZE)
                 return String(data?.count ?? 0)
             default:
                 return String(0)
             }
         } ?? "0"
        
-        headers.update(name: CRTClientEngine.CONTENT_LENGTH_HEADER, value: contentLength)
+        headers.update(name: CONTENT_LENGTH_HEADER, value: contentLength)
         
         request.headers = headers
         return try request.toHttpRequest()
@@ -100,8 +104,8 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
-        connectionMgr.acquireConnection().then { (result) in
-            //TODO add logger statement here
+        connectionMgr.acquireConnection().then { [self] (result) in
+            logger.info("connection was acquired to: \(request.endpoint.urlString)")
             switch result {
             case .success(let connection):
                 do {
@@ -109,13 +113,14 @@ public class CRTClientEngine: HttpClientEngine {
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
-                    //TODO add logger statement here
                     switch result {
                     case .success(let response):
+                        logger.info("Future of response came back with success: \(response)")
                         let statusCode = Int(stream.getResponseStatusCode())
                         response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
                         completion(.success(response))
                     case .failure(let error):
+                        logger.error("Future of response came back with an error: \(error)")
                         completion(.failure(error))
                     }
                     
@@ -131,7 +136,8 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     public func close() {
-        for (_, value) in connectionPools {
+        for (endpoint, value) in connectionPools {
+            logger.info("connection to endpoint: \(endpoint.urlString)")
             value.closePendingConnections()
         }
     }
@@ -142,22 +148,23 @@ public class CRTClientEngine: HttpClientEngine {
 
         let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
         var incomingData = Data()
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { (stream, headerBlock, httpHeaders) in
-            //TODO add logger statement here
+        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, headerBlock, httpHeaders) in
+            logger.info("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
-        } onIncomingHeadersBlockDone: { (stream, headerBlock) in
+        } onIncomingHeadersBlockDone: { [self] (stream, headerBlock) in
+            logger.info("header block is done")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
-            print(headerBlock) //TODO: change to a log statement
-        } onIncomingBody: { (_, data) in
-            //TODO add logger statement here
+        } onIncomingBody: { [self] (_, data) in
+            logger.info("incoming data")
             incomingData.append(data)
-        } onStreamComplete: { (_, error) in
-           //TODO add logger statement here
+        } onStreamComplete: { [self] (_, error) in
+            logger.info("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
+                    logger.error("Response encountered an error: \(error)")
                     future.fail(error)
                 }
             }
