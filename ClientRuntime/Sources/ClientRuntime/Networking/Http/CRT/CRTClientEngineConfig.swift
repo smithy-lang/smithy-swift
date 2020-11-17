@@ -14,7 +14,7 @@
 
 import Foundation
 
-public struct CRTClientEngineConfig {
+struct CRTClientEngineConfig {
     
     /// Max connections the manager can contain per endpoint
     let maxConnectionsPerEndpoint: Int

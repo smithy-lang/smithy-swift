@@ -16,7 +16,7 @@ import AwsCommonRuntimeKit
 import struct Foundation.Data
 import Logging
 
-public class CRTClientEngine: HttpClientEngine {
+class CRTClientEngine: HttpClientEngine {
     
     private var logger: LogAgent
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
