@@ -16,10 +16,22 @@
 import AwsCommonRuntimeKit
 
 protocol LogAgent {
+    ///name of the struct or class where the logger was instantiated from
     var name: String {get}
     
+    /// Get or set the configured log level.
     var level: LogLevel {get set}
     
+    /// This method is called when a `LogAgent` must emit a log message.
+    ///
+    /// - parameters:
+    ///     - level: The `LogLevel` the message was logged at.
+    ///     - message: The message to log.
+    ///     - metadata: The metadata associated to this log message as a dictionary
+    ///     - source: The source where the log message originated, for example the logging module.
+    ///     - file: The file the log message was emitted from.
+    ///     - function: The function the log line was emitted from.
+    ///     - line: The line the log message was emitted from.
     func log(level: LogLevel,
              message: String,
              metadata: [String: String],
@@ -27,10 +39,22 @@ protocol LogAgent {
              file: String,
              function: String,
              line: UInt)
+    
+    /// Log a message passing with the `LogLevel.trace` log level.
     func info(_ message: String)
+    
+    /// Log a message passing with the `LogLevel.warn` log level.
     func warn(_ message: String)
+    
+    /// Log a message passing with the `LogLevel.debug` log level.
     func debug(_ message: String)
+    
+    /// Log a message passing with the `LogLevel.error` log level.
     func error(_ message: String)
+    
+    /// Log a message passing with the `LogLevel.trace` log level.
     func trace(_ message: String)
+    
+    /// Log a message passing with the `LogLevel.fatal` log level.
     func fatal(_ message: String)
 }
