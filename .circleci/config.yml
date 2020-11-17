@@ -205,22 +205,10 @@ workflows:
   build_and_test_smithy_swift:
     jobs:
     - build_and_unittest_swift_client_runtime:
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
     - build_smithy_swift:
         requires:
           - build_and_unittest_swift_client_runtime
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
     - test_smithy_swift:
         requires:
           - build_smithy_swift
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
     - lint_smithy_swift  
