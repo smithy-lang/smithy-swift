@@ -34,27 +34,64 @@ protocol LogAgent {
     ///     - line: The line the log message was emitted from.
     func log(level: LogLevel,
              message: String,
-             metadata: [String: String],
+             metadata: [String: String]?,
              source: String,
              file: String,
              function: String,
              line: UInt)
     
+
+}
+
+extension LogAgent {
+    
+    internal static func currentModule(filePath: String = #file) -> String {
+        let utf8All = filePath.utf8
+        return filePath.utf8.lastIndex(of: UInt8(ascii: "/")).flatMap { lastSlash -> Substring? in
+            utf8All[..<lastSlash].lastIndex(of: UInt8(ascii: "/")).map { secondLastSlash -> Substring in
+                filePath[utf8All.index(after: secondLastSlash) ..< lastSlash]
+            }
+        }.map {
+            String($0)
+        } ?? "n/a"
+    }
+    
+    func log(level: LogLevel,
+             message: String,
+             metadata: [String: String]? = nil,
+             source: String = Self.currentModule(),
+             file: String = #file,
+             function: String = #function,
+             line: UInt = #line) {
+        log(level: level, message: message, metadata: metadata, source: source, file: file, function: function, line: line)
+    }
     /// Log a message passing with the `LogLevel.trace` log level.
-    func info(_ message: String)
+    func info(_ message: String) {
+        self.log(level: LogLevel.info, message: message)
+    }
     
     /// Log a message passing with the `LogLevel.warn` log level.
-    func warn(_ message: String)
+    func warn(_ message: String) {
+        self.log(level: LogLevel.warn, message: message)
+    }
     
     /// Log a message passing with the `LogLevel.debug` log level.
-    func debug(_ message: String)
+    func debug(_ message: String) {
+        self.log(level: LogLevel.debug, message: message)
+    }
     
     /// Log a message passing with the `LogLevel.error` log level.
-    func error(_ message: String)
+    func error(_ message: String) {
+        self.log(level: LogLevel.error, message: message)
+    }
     
     /// Log a message passing with the `LogLevel.trace` log level.
-    func trace(_ message: String)
+    func trace(_ message: String) {
+        self.log(level: LogLevel.trace, message: message)
+    }
     
     /// Log a message passing with the `LogLevel.fatal` log level.
-    func fatal(_ message: String)
+    func fatal(_ message: String) {
+        self.log(level: LogLevel.fatal, message: message)
+    }
 }

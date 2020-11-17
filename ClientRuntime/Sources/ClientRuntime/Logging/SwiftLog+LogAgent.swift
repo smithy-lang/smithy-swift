@@ -31,9 +31,9 @@ extension Logger: LogAgent {
              message: String,
              metadata: [String: String],
              source: String,
-             file: String,
-             function: String,
-             line: UInt) {
+             file: String = #file,
+             function: String = #function,
+             line: UInt = #line) {
         let mappedDict = metadata.mapValues { (value) -> MetadataValue in
             return MetadataValue.string(value)
         }
