@@ -39,8 +39,6 @@ protocol LogAgent {
              file: String,
              function: String,
              line: UInt)
-    
-
 }
 
 extension LogAgent {
@@ -58,31 +56,67 @@ extension LogAgent {
     
     /// Log a message passing with the `LogLevel.trace` log level.
     func info(_ message: String) {
-        self.log(level: LogLevel.info, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.info,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
     
     /// Log a message passing with the `LogLevel.warn` log level.
     func warn(_ message: String) {
-        self.log(level: LogLevel.warn, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.warn,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
     
     /// Log a message passing with the `LogLevel.debug` log level.
     func debug(_ message: String) {
-        self.log(level: LogLevel.debug, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.debug,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
     
     /// Log a message passing with the `LogLevel.error` log level.
     func error(_ message: String) {
-        self.log(level: LogLevel.error, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.error,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
     
     /// Log a message passing with the `LogLevel.trace` log level.
     func trace(_ message: String) {
-        self.log(level: LogLevel.trace, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.trace,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
     
     /// Log a message passing with the `LogLevel.fatal` log level.
     func fatal(_ message: String) {
-        self.log(level: LogLevel.fatal, message: message, metadata: nil, source: Self.currentModule(), file: #file, function: #function, line: #line)
+        self.log(level: LogLevel.fatal,
+                 message: message,
+                 metadata: nil,
+                 source: Self.currentModule(),
+                 file: #file,
+                 function: #function,
+                 line: #line)
     }
 }

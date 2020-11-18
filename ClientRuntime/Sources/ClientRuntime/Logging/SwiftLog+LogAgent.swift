@@ -27,6 +27,10 @@ extension Logger: LogAgent {
         }
     }
     
+    var name: String {
+            return label
+    }
+    
     func log(level: LogLevel,
              message: String,
              metadata: [String: String]?,
@@ -41,10 +45,6 @@ extension Logger: LogAgent {
                  Message(stringLiteral: message),
                  metadata: mappedDict,
                  source: source)
-    }
-    
-    var name: String {
-            return label
     }
     
     func info(_ message: String) {
