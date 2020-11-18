@@ -29,12 +29,12 @@ extension Logger: LogAgent {
     
     func log(level: LogLevel,
              message: String,
-             metadata: [String: String],
+             metadata: [String: String]?,
              source: String,
-             file: String = #file,
-             function: String = #function,
-             line: UInt = #line) {
-        let mappedDict = metadata.mapValues { (value) -> MetadataValue in
+             file: String,
+             function: String,
+             line: UInt) {
+        let mappedDict = metadata?.mapValues { (value) -> MetadataValue in
             return MetadataValue.string(value)
         }
         self.log(level: Level.init(rawValue: level.stringValue) ?? Level.info,
