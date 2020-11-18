@@ -96,7 +96,7 @@ commands:
 jobs:
   build_and_unittest_swift_client_runtime:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     steps:
       - checkout
       - pre_start_ios_simulator
@@ -108,6 +108,13 @@ jobs:
             cd ~/Projects/Amplify/SwiftSDK/
             git clone --recursive git@github.com:awslabs/aws-crt-swift.git
             cd -
+      - run: 
+          name: Circleci Workaround for SPM and xcodebuild
+          command: |
+            sudo defaults write com.apple.dt.Xcode IDEPackageSupportUseBuiltinSCM YES
+            rm ~/.ssh/id_rsa || true
+            for ip in $(dig @8.8.8.8 bitbucket.org +short); do ssh-keyscan bitbucket.org,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts || true 
+            for ip in $(dig @8.8.8.8 github.com +short); do ssh-keyscan github.com,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts || true 
       - run:
           name: Build ClientRuntime
           working_directory: ~/project/ClientRuntime
@@ -131,7 +138,7 @@ jobs:
 
   build_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -161,7 +168,7 @@ jobs:
 
   test_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -184,7 +191,7 @@ jobs:
 
   lint_smithy_swift:
     macos:
-      xcode: "12.1.0"
+      xcode: "12.1.1"
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
@@ -204,23 +211,11 @@ workflows:
 
   build_and_test_smithy_swift:
     jobs:
-    - build_and_unittest_swift_client_runtime:
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
+    - build_and_unittest_swift_client_runtime
     - build_smithy_swift:
         requires:
           - build_and_unittest_swift_client_runtime
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
     - test_smithy_swift:
         requires:
           - build_smithy_swift
-        filters:
-            branches:
-              only:
-                - swift-client-runtime
     - lint_smithy_swift  

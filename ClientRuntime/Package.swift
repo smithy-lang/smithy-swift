@@ -12,13 +12,15 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift")
+        .package(path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0")
     ],
     targets: [
         .target(
             name: "ClientRuntime",
             dependencies: [
-                .product(name: "AwsCommonRuntimeKit", package: "AwsCrt")
+                .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
+                .product(name: "Logging", package: "swift-log")
             ]
         ),
         .testTarget(
