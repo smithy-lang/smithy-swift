@@ -54,7 +54,7 @@ extension LogAgent {
         } ?? "n/a"
     }
     
-    /// Log a message passing with the `LogLevel.trace` log level.
+    /// Log a message passing with the `LogLevel.info` log level.
     func info(_ message: String) {
         self.log(level: LogLevel.info,
                  message: message,
