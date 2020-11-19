@@ -28,7 +28,7 @@ open class HttpResponseTestBase: XCTestCase {
     public func buildHttpResponse(code: Int,
                                   path: String? = nil,
                                   headers: [String: String]? = nil,
-                                  content: HttpBody? = nil,
+                                  content: HttpBody = HttpBody.data(nil),
                                   host: String) -> HttpResponse? {
         
         var internalHeaders: Headers = Headers()

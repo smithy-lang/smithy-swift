@@ -35,7 +35,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
-        let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers, body: nil)
+        let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers)
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -123,12 +123,12 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         stream.stream { (status, byteBuffer, error) in
             switch status {
             case .receivedData:
-                print(byteBuffer?.length)
+                
                 dataExpectation.fulfill()
             case .streamEnded:
                 streamEndedExpectation.fulfill()
             case .errorOccurred:
-                print(error)
+                XCTFail(error?.localizedDescription ?? "unknown error")
             }
         }
         let request = SdkHttpRequest(method: .post,
@@ -139,14 +139,14 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-                if let content = response.body {
-                    if case let HttpBody.stream(stream) = content {
-                        if let stream = stream {
-                            let bytes = stream.byteBuffer.toData().count
-                            XCTAssert(bytes == 379)
-                        }
+            
+                if case let HttpBody.stream(stream) = response.body {
+                    if let stream = stream {
+                        let bytes = stream.byteBuffer.toData().count
+                        XCTAssert(bytes == 379)
                     }
                 }
+            
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
             case .failure(let error):

@@ -19,7 +19,7 @@ import AwsCommonRuntimeKit
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public var body: HttpBody?
+    public var body: HttpBody
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
@@ -29,7 +29,7 @@ public class SdkHttpRequest {
                 endpoint: Endpoint,
                 headers: Headers,
                 queryItems: [URLQueryItem]? = nil,
-                body: HttpBody? = nil) {
+                body: HttpBody = HttpBody.none) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers

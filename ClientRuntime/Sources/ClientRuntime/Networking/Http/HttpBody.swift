@@ -19,4 +19,5 @@ import struct Foundation.Data
 public enum HttpBody {
     case data(Data?)
     case stream(StreamSource?)
+    case none
 }

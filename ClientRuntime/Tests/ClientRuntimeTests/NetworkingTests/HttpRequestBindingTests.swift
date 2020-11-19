@@ -48,7 +48,7 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         
         XCTAssertEqual(httpRequest.endpoint.path, uri)
         XCTAssertEqual(httpRequest.method, .post)
-        XCTAssertNil(httpRequest.body)
+
         } catch {
           
         }

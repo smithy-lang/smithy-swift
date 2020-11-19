@@ -82,8 +82,8 @@ class CRTClientEngine: HttpClientEngine {
         headers.update(name: HOST_HEADER, value: endpoint.host)
         headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
-        let contentLength = request.body.map { (body) -> String in
-            switch body {
+        let contentLength: String = {
+            switch request.body {
             case .data(let data):
                 return String(data?.count ?? 0)
             case .stream(let stream):
@@ -92,8 +92,10 @@ class CRTClientEngine: HttpClientEngine {
                 } else {
                     return "0"
                 }
+            case .none:
+                return "0"
             }
-        } ?? "0"
+        }()
         
         headers.update(name: CONTENT_LENGTH_HEADER, value: contentLength)
         
@@ -148,6 +150,9 @@ class CRTClientEngine: HttpClientEngine {
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
         let stream = StreamSource(byteBuffer: incomingByteBuffer)
+        if case let HttpBody.stream(unwrappedStream) = request.body {
+            stream.streamResponse = unwrappedStream?.streamResponse
+        }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
@@ -183,10 +188,9 @@ class CRTClientEngine: HttpClientEngine {
                 case .data:
                     return HttpBody.data(incomingByteBuffer.toData())
                 case .stream:
-                    
                     return HttpBody.stream(stream)
                 case .none:
-                    return HttpBody.data(nil)
+                    return HttpBody.none
                 }
             }()
                 
