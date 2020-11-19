@@ -216,6 +216,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
+
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
@@ -244,7 +245,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             }
         }
         
-        wait(for: [expectation], timeout: 20.0)
+        wait(for: [expectation, dataExpectation, streamEndedExpectation], timeout: 20.0)
     }
 }
 
