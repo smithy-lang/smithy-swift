@@ -151,6 +151,7 @@ class CRTClientEngine: HttpClientEngine {
         let incomingByteBuffer = ByteBuffer(size: 0)
         let stream = StreamSource(byteBuffer: incomingByteBuffer)
         if case let HttpBody.stream(unwrappedStream) = request.body {
+            //this doesn't seem right. maybe i should store an input ByteBuffer and an output ByteBuffer inside StreamSource?
             stream.streamResponse = unwrappedStream?.streamResponse
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in

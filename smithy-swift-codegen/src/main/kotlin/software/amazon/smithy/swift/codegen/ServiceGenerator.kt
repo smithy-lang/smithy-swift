@@ -86,7 +86,7 @@ class ServiceGenerator(
                 )
             } else {
                 writer.write(
-                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamingProvider, \$L)",
+                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamSource, \$L)",
                     operationName,
                     inputParam,
                     outputParam
@@ -108,7 +108,7 @@ class ServiceGenerator(
             return "${op.defaultName()}Error"
         }
 
-        fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
+        private fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
             val outputShape = opIndex.getOutput(op)
             return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
         }

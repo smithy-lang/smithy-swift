@@ -163,17 +163,3 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 struct TestBody: Encodable {
     let test: String
 }
-
-struct TestStreamBody: Encodable {
-    let stream: StreamSource
-    let someOtherProp: String
-    
-    enum CodingKeys: String, CodingKey {
-        case someOtherProp
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(someOtherProp, forKey: .someOtherProp)
-    }
-}
