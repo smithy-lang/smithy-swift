@@ -139,14 +139,6 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-            
-                if case let HttpBody.stream(stream) = response.body {
-                    if let stream = stream {
-                        let bytes = stream.byteBuffer.toData().count
-                        XCTAssert(bytes == 379)
-                    }
-                }
-            
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
             case .failure(let error):
