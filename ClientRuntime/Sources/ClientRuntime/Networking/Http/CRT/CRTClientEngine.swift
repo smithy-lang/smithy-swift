@@ -88,7 +88,7 @@ class CRTClientEngine: HttpClientEngine {
                 return String(data?.count ?? 0)
             case .stream(let stream):
                 if let stream = stream {
-                    return String(stream.byteBuffer.length)
+                    return String(stream.inputByteBuffer.length)
                 } else {
                     return "0"
                 }
@@ -149,10 +149,10 @@ class CRTClientEngine: HttpClientEngine {
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
-        let stream = StreamSource(byteBuffer: incomingByteBuffer)
+        var stream: StreamSource? = nil
         if case let HttpBody.stream(unwrappedStream) = request.body {
-            //this doesn't seem right. maybe i should store an input ByteBuffer and an output ByteBuffer inside StreamSource?
-            stream.streamResponse = unwrappedStream?.streamResponse
+            stream = unwrappedStream
+            stream?.outputByteBuffer = incomingByteBuffer
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
@@ -167,7 +167,7 @@ class CRTClientEngine: HttpClientEngine {
             logger.debug("incoming data")
             incomingByteBuffer.allocate(data.count)
             incomingByteBuffer.put(data)
-            if let streamClosure = stream.streamResponse {
+            if let streamClosure = stream?.streamResponse {
                 streamClosure(.receivedData, incomingByteBuffer, nil)
             }
         } onStreamComplete: { [self] (_, error) in
@@ -175,13 +175,13 @@ class CRTClientEngine: HttpClientEngine {
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let streamClosure = stream.streamResponse {
+                    if let streamClosure = stream?.streamResponse {
                         streamClosure(.errorOccurred, incomingByteBuffer, StreamErrors.unknown(error))
                     }
                     future.fail(error)
                 }
             }
-            if let streamClosure = stream.streamResponse {
+            if let streamClosure = stream?.streamResponse {
                 streamClosure(.streamEnded, incomingByteBuffer, nil)
             }
             response.body = {

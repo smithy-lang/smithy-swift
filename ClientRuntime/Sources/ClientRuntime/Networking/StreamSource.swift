@@ -10,24 +10,25 @@ import struct Foundation.Data
 
 public class StreamSource {
     public typealias StreamClosure = (StreamStatus, ByteBuffer?, StreamErrors?) -> Void
-    var byteBuffer: ByteBuffer
+    var inputByteBuffer: ByteBuffer
+    var outputByteBuffer: ByteBuffer?
 
     var streamResponse: StreamClosure?
     
-    init(byteBuffer: ByteBuffer) {
-        self.byteBuffer = byteBuffer
+    init(inputByteBuffer: ByteBuffer) {
+        self.inputByteBuffer = inputByteBuffer
     }
     
     public convenience init(data: Data) {
         let byteBuffer = ByteBuffer(data: data)
-        self.init(byteBuffer: byteBuffer)
+        self.init(inputByteBuffer: byteBuffer)
     }
 
     public func stream(closure: @escaping StreamClosure) {
         streamResponse = closure
     }
     
-    public func toData() -> Data {
-        return byteBuffer.toData()
+    public func toData() -> Data? {
+        return outputByteBuffer?.toData()
     }
 }
