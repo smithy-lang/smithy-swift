@@ -207,7 +207,7 @@ class CRTClientEngine: HttpClientEngine {
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let streamClosure = stream.streamResponse {
+                    if let streamClosure = stream?.streamResponse {
                         streamClosure(.errorOccurred, incomingByteBuffer, StreamErrors.unknown(error))
                     }
                     future.fail(error)
