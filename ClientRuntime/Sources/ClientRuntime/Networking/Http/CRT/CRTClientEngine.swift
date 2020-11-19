@@ -221,7 +221,6 @@ class CRTClientEngine: HttpClientEngine {
         return (requestOptions, future)
     }
     
-    
     deinit {
         AwsCommonRuntimeKit.cleanUp()
     }
