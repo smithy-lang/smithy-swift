@@ -13,17 +13,20 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
     let operation: String
     let serviceName: String
     let outputError: OutputError.Type
+    let request: SdkHttpRequest
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
                 outputType: Output.Type,
                 outputError: OutputError.Type,
+                request: SdkHttpRequest,
                 operation: String,
                 serviceName: String) {
         self.encoder = encoder
         self.decoder = decoder
         self.outputType = outputType
         self.outputError = outputError
+        self.request = request
         self.operation = operation
         self.serviceName = serviceName
     }
