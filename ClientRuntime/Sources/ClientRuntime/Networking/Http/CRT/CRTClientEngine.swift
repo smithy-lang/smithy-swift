@@ -221,7 +221,6 @@ class CRTClientEngine: HttpClientEngine {
             }
             
             response.body = HttpBody.data(incomingByteBuffer.toData())
-                
             future.fulfill(response)
         }
         
