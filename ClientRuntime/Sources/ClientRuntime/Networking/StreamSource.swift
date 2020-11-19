@@ -43,7 +43,6 @@ struct DataStreamSource: StreamSource {
     public mutating func onError(error: StreamError) {
         self.error = error
     }
-    
 }
 
 struct FileStreamSource: StreamSource {
