@@ -13,7 +13,6 @@
 // permissions and limitations under the License.
 
 import AwsCommonRuntimeKit
-import struct Foundation.Data
 import Logging
 
 class CRTClientEngine: HttpClientEngine {
@@ -62,7 +61,7 @@ class CRTClientEngine: HttpClientEngine {
                                                   maxConnections: maxConnectionsPerEndpoint,
                                                   enableManualWindowManagement: true)
         logger.debug("Creating connection pool for \(endpoint.urlString)" +
-            "with max connections: \(maxConnectionsPerEndpoint)")
+                        "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
     }
     
@@ -83,23 +82,23 @@ class CRTClientEngine: HttpClientEngine {
         headers.update(name: HOST_HEADER, value: endpoint.host)
         headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
-        let contentLength = try request.body.map { (body) -> String in
+        let contentLength = request.body.map { (body) -> String in
             switch body {
             case .data(let data):
                 return String(data?.count ?? 0)
             case .stream(let stream):
-                //FIXME refactor streaming end to end to properly work
-                let data = try stream?.readData(maxLength: DEFAULT_STREAM_WINDOW_SIZE)
-                return String(data?.count ?? 0)
-            default:
-                return String(0)
+                if let stream = stream {
+                    return String(stream.byteBuffer.length)
+                } else {
+                    return "0"
+                }
             }
         } ?? "0"
-       
+        
         headers.update(name: CONTENT_LENGTH_HEADER, value: contentLength)
         
         request.headers = headers
-        return try request.toHttpRequest()
+        return request.toHttpRequest()
     }
     
     public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
@@ -109,22 +108,22 @@ class CRTClientEngine: HttpClientEngine {
             switch result {
             case .success(let connection):
                 do {
-                let (requestOptions, future) = try self.makeHttpRequestOptions(request)
-                let stream = connection.makeRequest(requestOptions: requestOptions)
-                stream.activate()
-                future.then { (result) in
-                    switch result {
-                    case .success(let response):
-                        logger.debug("Future of response came back with success: \(response)")
-                        let statusCode = Int(stream.getResponseStatusCode())
-                        response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
-                        completion(.success(response))
-                    case .failure(let error):
-                        logger.error("Future of response came back with an error: \(error)")
-                        completion(.failure(error))
+                    let (requestOptions, future) = try self.makeHttpRequestOptions(request)
+                    let stream = connection.makeRequest(requestOptions: requestOptions)
+                    stream.activate()
+                    future.then { (result) in
+                        switch result {
+                        case .success(let response):
+                            logger.debug("Future of response came back with success: \(response)")
+                            let statusCode = Int(stream.getResponseStatusCode())
+                            response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
+                            completion(.success(response))
+                        case .failure(let error):
+                            logger.error("Future of response came back with an error: \(error)")
+                            completion(.failure(error))
+                        }
+                        
                     }
-                    
-                }
                 } catch let err {
                     completion(.failure(err))
                 }
@@ -132,7 +131,7 @@ class CRTClientEngine: HttpClientEngine {
                 completion(.failure(error))
             }
         }
-
+        
     }
     
     public func close() {
@@ -144,10 +143,11 @@ class CRTClientEngine: HttpClientEngine {
     
     public func makeHttpRequestOptions(_ request: SdkHttpRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let response = HttpResponse()
-
         let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
-        var incomingData = Data()
+        
+        let response = HttpResponse()
+        let incomingByteBuffer = ByteBuffer(size: 0)
+        let stream = StreamSource(byteBuffer: incomingByteBuffer)
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
@@ -159,21 +159,43 @@ class CRTClientEngine: HttpClientEngine {
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
-            incomingData.append(data)
+            incomingByteBuffer.allocate(data.count)
+            incomingByteBuffer.put(data)
+            if let streamClosure = stream.streamResponse {
+                streamClosure(.receivedData, incomingByteBuffer, nil)
+            }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
+                    if let streamClosure = stream.streamResponse {
+                        streamClosure(.errorOccurred, incomingByteBuffer, StreamErrors.unknown(error))
+                    }
                     future.fail(error)
                 }
             }
-            response.content = ResponseType.data(incomingData)
+            if let streamClosure = stream.streamResponse {
+                streamClosure(.streamEnded, incomingByteBuffer, nil)
+            }
+            response.body = {
+                switch request.body {
+                case .data:
+                    return HttpBody.data(incomingByteBuffer.toData())
+                case .stream:
+                    
+                    return HttpBody.stream(stream)
+                case .none:
+                    return HttpBody.data(nil)
+                }
+            }()
+                
             future.fulfill(response)
         }
         
         return (requestOptions, future)
     }
+    
     
     deinit {
         AwsCommonRuntimeKit.cleanUp()

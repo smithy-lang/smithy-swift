@@ -16,6 +16,7 @@
 @testable import SmithyTestUtil
 import ClientRuntime
 import XCTest
+import AwsCommonRuntimeKit
 
 class HttpResponseTestBaseTests: HttpResponseTestBase {
     let host = "myapi.host.com"
@@ -24,7 +25,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
         let statusCode = 200
         let headers = ["headerKey1": "headerValue1", "headerKey2": "headerValue2"]
         let bodyData = "{\"greeting\": \"Hello There\"}".data(using: .utf8)!
-        let content = ResponseType.data(bodyData)
+        let content = HttpBody.data(bodyData)
         
         guard let httpResponse = buildHttpResponse(code: statusCode, headers: headers, content: content, host: host) else {
             XCTFail("Failed to build Http Response")
@@ -37,7 +38,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
         
         XCTAssertEqual(HttpStatusCode(rawValue: statusCode), httpResponse.statusCode)
         
-        if case .data(let actualData) = httpResponse.content {
+        if case .data(let actualData) = httpResponse.body {
             XCTAssertEqual(bodyData, actualData)
         } else {
             XCTFail("HttpResponse Content unexpectedly found to be nil")

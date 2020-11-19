@@ -12,11 +12,11 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
-
-import Foundation
+import AwsCommonRuntimeKit
+import struct Foundation.URL
+import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)
-    case stream(InputStream?)
-    case file(URL)
+    case stream(StreamSource?)
 }

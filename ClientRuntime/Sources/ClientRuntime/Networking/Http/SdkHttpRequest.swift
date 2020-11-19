@@ -39,7 +39,7 @@ public class SdkHttpRequest {
 }
 
 extension SdkHttpRequest {
-    public func toHttpRequest() throws -> HttpRequest {
+    public func toHttpRequest() -> HttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
@@ -49,32 +49,15 @@ extension SdkHttpRequest {
         switch body {
         case .data(let data):
             if let data = data {
-                let byteBuffer = ByteBuffer(size: data.count)
-                byteBuffer.put(data)
+                let byteBuffer = ByteBuffer(data: data)
                 awsInputStream = AwsInputStream(byteBuffer)
             }
-        case .file(let url):
-            do {
-                let fileHandle = try FileHandle(forReadingFrom: url)
-                awsInputStream = AwsInputStream(fileHandle)
-            } catch let err {
-                throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: "
-                 + err.localizedDescription)
-            }
         case .stream(let stream):
-            //TODO: refactor ability to stream appropriately and get buffer capacity here
-            do {
-                let data = try stream?.readData(maxLength: 1024)
-                if let data = data {
-                    let byteBuffer = ByteBuffer(size: data.count)
-                    byteBuffer.put(data)
-                    awsInputStream = AwsInputStream(byteBuffer)
-                }
-            } catch let err {
-                throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
+            if let stream = stream {
+                awsInputStream = AwsInputStream(stream.byteBuffer)
             }
         case .none:
-            break //do nothing as inputstream is already nil
+            awsInputStream = nil
         }
         if let inputStream = awsInputStream {
             httpRequest.body = inputStream

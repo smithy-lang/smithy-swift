@@ -13,10 +13,10 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
+import AwsCommonRuntimeKit
 
 protocol HttpUrlResponse {
     var headers: Headers { get set }
-    var content: ResponseType? { get set}
+    var body: HttpBody? { get set}
     var statusCode: HttpStatusCode {get set}
 }

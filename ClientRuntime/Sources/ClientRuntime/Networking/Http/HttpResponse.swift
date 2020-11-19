@@ -12,11 +12,12 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
+import AwsCommonRuntimeKit
 
 public class HttpResponse: HttpUrlResponse {
 
     public var headers: Headers
-    public var content: ResponseType?
+    public var body: HttpBody?
     public var statusCode: HttpStatusCode
     
     init(headers: Headers = Headers(), statusCode: HttpStatusCode = HttpStatusCode.notFound) {
@@ -24,8 +25,8 @@ public class HttpResponse: HttpUrlResponse {
         self.statusCode = statusCode
     }
 
-    public init(headers: Headers = Headers(), content: ResponseType?, statusCode: HttpStatusCode) {
-        self.content = content
+    public init(headers: Headers = Headers(), body: HttpBody?, statusCode: HttpStatusCode) {
+        self.body = body
         self.statusCode = statusCode
         self.headers = headers
     }

@@ -13,9 +13,6 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 public enum StreamErrors: Error {
-    case uploadFailed
-    case unknown
+    case unknown(Error)
 }
