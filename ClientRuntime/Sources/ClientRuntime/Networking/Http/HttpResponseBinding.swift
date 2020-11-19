@@ -13,8 +13,6 @@
 // permissions and limitations under the License.
 //
 
-public protocol HttpRequestBinding {
-
-  // Build the HttpRequest using the input method and path
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest
+public protocol HttpResponseBinding {
+    init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws
 }
