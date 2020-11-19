@@ -76,7 +76,7 @@ class CRTClientEngine: HttpClientEngine {
         return connectionPool
     }
     
-    private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) throws -> HttpRequest {
+    private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
         
         var headers = request.headers
         headers.update(name: HOST_HEADER, value: endpoint.host)
@@ -109,25 +109,21 @@ class CRTClientEngine: HttpClientEngine {
             logger.debug("connection was acquired to: \(request.endpoint.urlString)")
             switch result {
             case .success(let connection):
-                do {
-                    let (requestOptions, future) = try self.makeHttpRequestOptions(request)
-                    let stream = connection.makeRequest(requestOptions: requestOptions)
-                    stream.activate()
-                    future.then { (result) in
-                        switch result {
-                        case .success(let response):
-                            logger.debug("Future of response came back with success: \(response)")
-                            let statusCode = Int(stream.getResponseStatusCode())
-                            response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
-                            completion(.success(response))
-                        case .failure(let error):
-                            logger.error("Future of response came back with an error: \(error)")
-                            completion(.failure(error))
-                        }
-                        
+                let (requestOptions, future) = self.makeHttpRequestOptions(request)
+                let stream = connection.makeRequest(requestOptions: requestOptions)
+                stream.activate()
+                future.then { (result) in
+                    switch result {
+                    case .success(let response):
+                        logger.debug("Future of response came back with success: \(response)")
+                        let statusCode = Int(stream.getResponseStatusCode())
+                        response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
+                        completion(.success(response))
+                    case .failure(let error):
+                        logger.error("Future of response came back with an error: \(error)")
+                        completion(.failure(error))
                     }
-                } catch let err {
-                    completion(.failure(err))
+                    
                 }
             case .failure(let error):
                 completion(.failure(error))
@@ -143,9 +139,9 @@ class CRTClientEngine: HttpClientEngine {
         }
     }
     
-    public func makeHttpRequestOptions(_ request: SdkHttpRequest) throws -> (HttpRequestOptions, Future<HttpResponse>) {
+    public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let requestWithHeaders =  try addHttpHeaders(endpoint: request.endpoint, request: request)
+        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
