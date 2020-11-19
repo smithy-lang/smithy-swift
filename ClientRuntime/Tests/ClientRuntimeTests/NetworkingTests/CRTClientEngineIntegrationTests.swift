@@ -123,7 +123,6 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         stream.stream { (status, byteBuffer, error) in
             switch status {
             case .receivedData:
-                
                 dataExpectation.fulfill()
             case .streamEnded:
                 streamEndedExpectation.fulfill()
@@ -148,7 +147,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             }
         }
         
-        wait(for: [expectation], timeout: 20.0)
+        wait(for: [expectation, dataExpectation, streamEndedExpectation], timeout: 20.0)
     }
 }
 
