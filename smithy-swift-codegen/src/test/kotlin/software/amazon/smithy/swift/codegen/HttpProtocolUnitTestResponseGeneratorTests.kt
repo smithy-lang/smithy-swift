@@ -65,7 +65,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                     "X-Int": "1",
                     "X-String": "Hello"
                 ],
-                content: ResponseType.data(""${'"'}
+                content: HttpBody.data(""${'"'}
                 {
                   "payload1": "explicit string",
                   "payload2": 1,
@@ -204,7 +204,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                 headers: [
                     "Content-Type": "application/json"
                 ],
-                content: ResponseType.data(""${'"'}
+                content: HttpBody.data(""${'"'}
                 {
                     "contents": {
                         "stringValue": "foo"
@@ -250,7 +250,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                 headers: [
                     "Content-Type": "application/json"
                 ],
-                content: ResponseType.data(""${'"'}
+                content: HttpBody.data(""${'"'}
                 {
                     "nested": {
                         "foo": "Foo1",

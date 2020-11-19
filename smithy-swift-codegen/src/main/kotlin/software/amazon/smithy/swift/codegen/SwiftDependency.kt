@@ -20,7 +20,7 @@ import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
 enum class SwiftDependency(val type: String, val namespace: String, val version: String, val url: String, var packageName: String) : SymbolDependencyContainer {
     // Note: "namespace" is sub module in the full library "packageName". We use the namespace to minimize the module import. But, the entire package is "packageName"
-    BIG("", "ComplexModule", "0.0.5", url = "https://github.com/apple/swift-numerics", packageName = "swift-numerics"),
+    BIG("", "ComplexModule", "0.0.5", "https://github.com/apple/swift-numerics", packageName = "swift-numerics"),
     CLIENT_RUNTIME("", "ClientRuntime", "0.1.0", "../../../../../../ClientRuntime", "ClientRuntime"),
     XCTest("", "XCTest", "", "", ""),
     SMITHY_TEST_UTIL("", "SmithyTestUtil", "0.1.0", "../../../../../../ClientRuntime", "ClientRuntime");
@@ -31,7 +31,7 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
             .packageName(namespace)
             .version(version)
             .putProperty("url", url)
-            .putProperty("packageName", packageName)
+            .putProperty("swiftPackageName", packageName)
             .build()
         return listOf(dependency)
     }

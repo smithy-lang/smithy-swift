@@ -149,7 +149,7 @@ class CRTClientEngine: HttpClientEngine {
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
-        var stream: StreamSource? = nil
+        var stream: StreamSource?
         if case let HttpBody.stream(unwrappedStream) = request.body {
             stream = unwrappedStream
             stream?.outputByteBuffer = incomingByteBuffer

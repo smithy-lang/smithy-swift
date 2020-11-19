@@ -21,3 +21,18 @@ public enum HttpBody {
     case stream(StreamSource?)
     case none
 }
+
+extension HttpBody: Equatable {
+    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
+        switch (lhs, rhs) {
+        case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
+            return unwrappedlhsData == unwrappedRhsData
+        case (.stream, .stream):
+            return true
+        case (.none, .none):
+            return true
+        default:
+            return false
+        }
+    }
+}
