@@ -65,6 +65,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
                                      body: HttpBody.data(encodedData))
+
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -118,6 +119,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
                                      body: HttpBody.streamSink(.defaultDataProvider()))
+
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -137,7 +139,9 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         wait(for: [expectation], timeout: 20.0)
     }
     
+
     func testMakeHttpStreamRequestReceiveOneByte() {
+
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
@@ -176,10 +180,16 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
                                      headers: headers,
                                      body: HttpBody.streamSink(.defaultDataProvider()))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
+
+        let body = TestBody(test: "testval")
+        let encoder = JSONEncoder()
+        let encodedData = try! encoder.encode(body)
+        let stream = StreamSource(data: encodedData)
+        let request = SdkHttpRequest(method: .post,
+                                     endpoint: Endpoint(host: "httpbin.org", path: "/post"),
+                                     headers: headers,
+                                     body: HttpBody.stream(stream))
+
                 if case let HttpBody.streamSink(unwrappedStream) = response.body {
                     XCTAssert(unwrappedStream.toData()?.count == 3000)
                 }
@@ -194,10 +204,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         
         wait(for: [expectation], timeout: 20.0)
     }
-    
-    func testMakeHttpStreamRequestFromData() {
+
+    func testMakeHttpStreamRequestDynamic() {
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
+        let dataExpectation = XCTestExpectation(description: "data was received")
+        let streamEndedExpectation = XCTestExpectation(description: "stream has ended")
+
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         let body = TestBody(test: "testval")
@@ -208,10 +221,20 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
                                      body: HttpBody.streamSource(.fromData(data: encodedData)))
+
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
+
+                if let content = response.body {
+                    if case let HttpBody.stream(stream) = content {
+                        if let stream = stream {
+                            let bytes = stream.byteBuffer.toData().count
+                            XCTAssert(bytes == 379)
+                        }
+                    }
+                }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
             case .failure(let error):
@@ -245,10 +268,22 @@ class MockSinkStream: StreamSink {
     func onError(error: StreamError) {
         self.error = error
     }
-    
-    
 }
 
 struct TestBody: Encodable {
     let test: String
+}
+
+struct TestStreamBody: Encodable {
+    let stream: StreamSource
+    let someOtherProp: String
+    
+    enum CodingKeys: String, CodingKey {
+        case someOtherProp
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(someOtherProp, forKey: .someOtherProp)
+    }
 }
