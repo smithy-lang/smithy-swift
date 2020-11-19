@@ -206,7 +206,6 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
-       
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
@@ -225,6 +224,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                         }
                     }
                 }
+            
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
             case .failure(let error):

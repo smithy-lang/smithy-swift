@@ -8,7 +8,6 @@ import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)
-<<<<<<< HEAD
     case streamSource(StreamSourceProvider)
     case streamSink(StreamSinkProvider)
     case none
@@ -36,7 +35,4 @@ public extension HttpBody {
     static var empty: HttpBody {
         .data(nil)
     }
-=======
-    case stream(StreamSource?)
->>>>>>> 420ac61... feat: adding in streaming
 }
