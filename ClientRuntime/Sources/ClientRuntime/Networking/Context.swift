@@ -17,17 +17,17 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
-                outputType: Output.Type,
-                outputError: OutputError.Type,
-                request: SdkHttpRequest,
+                outputType: Output,
+                outputError: OutputError,
                 operation: String,
-                serviceName: String) {
+                serviceName: String,
+                request: SdkHttpRequest) {
         self.encoder = encoder
         self.decoder = decoder
         self.outputType = outputType
         self.outputError = outputError
-        self.request = request
         self.operation = operation
         self.serviceName = serviceName
+        self.request = request
     }
 }
