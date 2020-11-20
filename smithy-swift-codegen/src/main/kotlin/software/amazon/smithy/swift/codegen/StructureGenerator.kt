@@ -116,12 +116,20 @@ class StructureGenerator(
     private fun generateStructMembers() {
         membersSortedByName.forEach {
             val isRecursiveMember = it.isRecursiveMember(topologicalIndex)
-            val shape = model.expectShape(it.target)
+
+//            val shape = model.expectShape(it.target)
+            /*
+            var shape = model.expectShape(it.target)
+            if( shape is StructureShape && it.hasTrait(SwiftBoxTrait::class.java))
+                shape = StructureShape.builder().id(shape.id).addTrait(SwiftBoxTrait()).build()
+            */
+            val shape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
+
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
 
             // if shape is a collection or map shape which are COW in swift or is not recursive apply member normally
-            if ((shape is CollectionShape || shape is MapShape) || !isRecursiveMember) {
+            if ((shape is CollectionShape || shape is MapShape) || !shape.hasTrait(SwiftBoxTrait::class.java)) {
                 // apply member normally
                 writer.write("public let \$L: \$T", memberName, memberSymbol)
             } else {
@@ -142,7 +150,7 @@ class StructureGenerator(
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
                     val isRecursive = member.isRecursiveMember(topologicalIndex)
-                    val symbolToUse = if (isRecursive) memberSymbol.recursiveSymbol() else memberSymbol
+                    val symbolToUse = if (member.hasTrait(SwiftBoxTrait::class.java)) memberSymbol.recursiveSymbol() else memberSymbol
                     writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
             }
