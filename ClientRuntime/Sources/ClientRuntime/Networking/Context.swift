@@ -17,8 +17,8 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
-                outputType: Output,
-                outputError: OutputError,
+                outputType: Output.Type,
+                outputError: OutputError.Type,
                 operation: String,
                 serviceName: String,
                 request: SdkHttpRequest) {
