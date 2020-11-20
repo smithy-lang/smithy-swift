@@ -30,6 +30,11 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.*
 
 /**
+ * Section name used when rendering the encoder and decoder in the initializer of the client
+ */
+const val SECTION_CLIENT_INIT_SERDE = "service-init-serde"
+
+/**
  * Renders an implementation of a service interface for HTTP protocol
  */
 class HttpProtocolClientGenerator(
@@ -67,10 +72,15 @@ class HttpProtocolClientGenerator(
                         feat.renderConfiguration(writer)
                     }
                 }
-                writer.write("self.encoder = config.encoder")
-                writer.write("self.decoder = config.decoder")
+                writer.withState(SECTION_CLIENT_INIT_SERDE) {
+                    writer.write("self.encoder = config.encoder")
+                    writer.write("self.decoder = config.decoder")
+                }
+
                 writer.write("self.config = config")
             }
+
+
         }
     }
 

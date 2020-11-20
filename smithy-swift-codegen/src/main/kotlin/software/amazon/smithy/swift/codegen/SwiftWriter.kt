@@ -28,6 +28,27 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
 
+/**
+ * Handles preserving existing text on section when writing new text.
+ */
+fun <T : CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
+    onSection(sectionName) { previousText ->
+        write(previousText)
+        block(this)
+    }
+    return this
+}
+
+/**
+ * Similar to `CodeWriter.withBlock()` but using `pushState()`.
+ */
+fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
+    pushState(state)
+    block(this)
+    popState()
+    return this
+}
+
 class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()
