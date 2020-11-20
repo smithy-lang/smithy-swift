@@ -117,7 +117,9 @@ abstract class TestsBase {
     protected fun createStructureContainingNestedRecursiveShape(): List<StructureShape> {
         val shapes = mutableListOf<StructureShape>()
         val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
-        val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
+        var memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
+        memberNested = memberNested.toBuilder().addTrait(SwiftBoxTrait()).build()
+
         val recursiveShapeNested1 = StructureShape.builder()
             .id("smithy.example#RecursiveShapesInputOutputNested1")
             .addMember(memberFoo)
