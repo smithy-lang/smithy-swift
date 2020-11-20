@@ -107,6 +107,9 @@ class HttpProtocolClientGenerator(
                 configFieldsSortedByName.forEach {
                     writer.write("self.\$1L = \$1L", it.name)
                 }
+                writer.write("self.encoder = config.encoder")
+                writer.write("self.decoder = config.decoder")
+                writer.write("self.config = config")
             }
         }
     }
