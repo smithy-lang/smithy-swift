@@ -287,7 +287,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
-            writer.openBlock("extension $outputShapeName {", "}") {
+            writer.openBlock("extension $outputShapeName: HttpResponseBinding {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
                     renderInitMembersFromHeaders(ctx, headerBindings, writer)
                     // prefix headers

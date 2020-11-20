@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-public class Configuration {
+open class Configuration {
     public var encoder: RequestEncoder?
     public var decoder: ResponseDecoder?
     public let httpClientEngine: HttpClientEngine?

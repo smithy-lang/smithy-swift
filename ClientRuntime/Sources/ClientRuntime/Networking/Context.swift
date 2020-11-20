@@ -13,28 +13,26 @@
 // permissions and limitations under the License.
 //
 
-public struct Context<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
+public class Context<Output, OutputError> where Output: HttpResponseBinding,
+                                                OutputError: HttpResponseBinding {
     let encoder: RequestEncoder
     let decoder: ResponseDecoder
-    let outputType: Output
+    let outputType: Output.Type
     let operation: String
     let serviceName: String
-    let request: SdkHttpRequest
-    let outputError: OutputError
+    let outputError: OutputError.Type
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
-                outputType: Output,
-                outputError: OutputError,
+                outputType: Output.Type,
+                outputError: OutputError.Type,
                 operation: String,
-                serviceName: String,
-                request: SdkHttpRequest) {
+                serviceName: String) {
         self.encoder = encoder
         self.decoder = decoder
         self.outputType = outputType
         self.outputError = outputError
         self.operation = operation
         self.serviceName = serviceName
-        self.request = request
     }
 }
