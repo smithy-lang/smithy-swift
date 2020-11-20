@@ -2,8 +2,12 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.BoxTrait
+import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.SetShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.transform.ModelTransformer
 
 object RecursiveShapeBoxer {
@@ -83,9 +87,8 @@ object RecursiveShapeBoxer {
 
     fun extractShapeOfMember(model: Model, memberShape: MemberShape): Shape {
         var shape = model.expectShape(memberShape.target)
-        if( shape is StructureShape && memberShape.hasTrait(SwiftBoxTrait::class.java))
+        if (shape is StructureShape && memberShape.hasTrait(SwiftBoxTrait::class.java))
             shape = StructureShape.builder().id(shape.id).addTrait(SwiftBoxTrait()).build()
         return shape
     }
-
 }

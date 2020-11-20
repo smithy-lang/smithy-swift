@@ -16,7 +16,6 @@
 package software.amazon.smithy.swift.codegen
 
 import java.util.logging.Logger
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.codegen.core.ReservedWordsBuilder
@@ -367,5 +366,4 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                     !Character.isDigit(value.first())
         }
     }
-
 }
