@@ -36,5 +36,6 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
         SwiftCodegenPlugin().execute(context)
+        val x = 1
     }
 }
