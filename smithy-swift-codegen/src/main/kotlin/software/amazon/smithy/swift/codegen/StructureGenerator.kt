@@ -116,13 +116,6 @@ class StructureGenerator(
     private fun generateStructMembers() {
         membersSortedByName.forEach {
             val isRecursiveMember = it.isRecursiveMember(topologicalIndex)
-
-//            val shape = model.expectShape(it.target)
-            /*
-            var shape = model.expectShape(it.target)
-            if( shape is StructureShape && it.hasTrait(SwiftBoxTrait::class.java))
-                shape = StructureShape.builder().id(shape.id).addTrait(SwiftBoxTrait()).build()
-            */
             val shape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
 
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

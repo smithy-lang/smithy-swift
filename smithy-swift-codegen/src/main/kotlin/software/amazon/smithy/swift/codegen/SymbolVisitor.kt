@@ -246,12 +246,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
-        /*
-        var targetShape =
-            model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
-        if( targetShape is StructureShape && shape.hasTrait(SwiftBoxTrait::class.java))
-            targetShape = StructureShape.builder().id(targetShape.id).addTrait(SwiftBoxTrait()).build()
-         */
         val targetShape = RecursiveShapeBoxer.extractShapeOfMember(model, shape)
         return toSymbol(targetShape)
     }
@@ -342,13 +336,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .build()
             builder.addReference(ref)
 
-            /*
-            var targetShape = model.expectShape(it.target)
-            if( targetShape is StructureShape && it.hasTrait(SwiftBoxTrait::class.java))
-                targetShape = StructureShape.builder().id(targetShape.id).addTrait(SwiftBoxTrait()).build()
-             */
             val targetShape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
-
             if (targetShape is CollectionShape) {
                 val targetSymbol = toSymbol(targetShape)
                 targetSymbol.references.forEach { builder.addReference(it) }
