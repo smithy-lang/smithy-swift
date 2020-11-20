@@ -48,7 +48,7 @@ class ServiceGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders swift protocols in separate file`() {
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = createModelFromSmithy("service-generator-test-operations.smithy")
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
 
