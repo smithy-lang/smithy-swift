@@ -53,8 +53,8 @@ extension SdkHttpRequest {
                 awsInputStream = AwsInputStream(byteBuffer)
             }
         case .stream(let stream):
-            if let stream = stream {
-                awsInputStream = AwsInputStream(stream.inputByteBuffer)
+            if let stream = stream?.inputByteBuffer {
+                awsInputStream = AwsInputStream(stream)
             }
         case .none:
             awsInputStream = nil

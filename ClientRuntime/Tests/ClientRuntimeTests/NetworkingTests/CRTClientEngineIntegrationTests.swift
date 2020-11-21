@@ -128,6 +128,12 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                 streamEndedExpectation.fulfill()
             case .errorOccurred:
                 XCTFail(error?.localizedDescription ?? "unknown error")
+            case .notAvailable:
+                break
+            case .readyForData:
+                break
+            case .openSuccessful:
+                break
             }
         }
         let request = SdkHttpRequest(method: .post,

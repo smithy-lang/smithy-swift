@@ -14,7 +14,10 @@
 //
 
 public enum StreamStatus {
+    case notAvailable
     case streamEnded
     case errorOccurred
     case receivedData
+    case readyForData
+    case openSuccessful
 }

@@ -13,6 +13,6 @@
 // permissions and limitations under the License.
 //
 
-public enum StreamErrors: Error {
+public enum StreamError: Error {
     case unknown(Error)
 }

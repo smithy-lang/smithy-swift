@@ -21,7 +21,7 @@ public class HttpResponse: HttpUrlResponse {
     public var statusCode: HttpStatusCode
     
     init(headers: Headers = Headers(),
-         statusCode: HttpStatusCode = HttpStatusCode.notFound,
+         statusCode: HttpStatusCode = HttpStatusCode.processing,
          body: HttpBody = HttpBody.none) {
         self.headers = headers
         self.statusCode = statusCode

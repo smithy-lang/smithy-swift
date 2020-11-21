@@ -82,22 +82,22 @@ class CRTClientEngine: HttpClientEngine {
         headers.update(name: HOST_HEADER, value: endpoint.host)
         headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
-        let contentLength: String = {
+        let contentLength: Int64 = {
             switch request.body {
             case .data(let data):
-                return String(data?.count ?? 0)
+                return Int64(data?.count ?? 0)
             case .stream(let stream):
-                if let stream = stream {
-                    return String(stream.inputByteBuffer.length)
+                if let length = stream?.inputByteBuffer?.length {
+                    return length
                 } else {
-                    return "0"
+                    return 0
                 }
             case .none:
-                return "0"
+                return 0
             }
         }()
         
-        headers.update(name: CONTENT_LENGTH_HEADER, value: contentLength)
+        headers.update(name: CONTENT_LENGTH_HEADER, value: "\(contentLength)")
         
         request.headers = headers
         return request.toHttpRequest()
@@ -109,7 +109,7 @@ class CRTClientEngine: HttpClientEngine {
             logger.debug("connection was acquired to: \(request.endpoint.urlString)")
             switch result {
             case .success(let connection):
-                let (requestOptions, future) = self.makeHttpRequestOptions(request)
+                let (requestOptions, future) = makeHttpRequestOptions(request)
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
@@ -161,24 +161,25 @@ class CRTClientEngine: HttpClientEngine {
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
-            incomingByteBuffer.allocate(data.count)
             incomingByteBuffer.put(data)
-            if let streamClosure = stream?.streamResponse {
-                streamClosure(.receivedData, incomingByteBuffer, nil)
+            if let stream = stream {
+                stream.receiveData(streamStatus: .receivedData, byteBuffer: incomingByteBuffer, error: nil)
             }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let streamClosure = stream?.streamResponse {
-                        streamClosure(.errorOccurred, incomingByteBuffer, StreamErrors.unknown(error))
+                    if let stream = stream {
+                        stream.receiveData(streamStatus: .errorOccurred,
+                                           byteBuffer: incomingByteBuffer,
+                                           error: StreamError.unknown(error))
                     }
                     future.fail(error)
                 }
             }
-            if let streamClosure = stream?.streamResponse {
-                streamClosure(.streamEnded, incomingByteBuffer, nil)
+            if let stream = stream {
+                stream.receiveData(streamStatus: .streamEnded, byteBuffer: incomingByteBuffer, error: nil)
             }
             response.body = {
                 switch request.body {
