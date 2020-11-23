@@ -18,7 +18,8 @@ import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)
-    case stream(StreamSource?)
+    case streamSource(StreamSource)
+    case streamSink(StreamSink)
     case none
 }
 
@@ -27,7 +28,9 @@ extension HttpBody: Equatable {
         switch (lhs, rhs) {
         case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
             return unwrappedlhsData == unwrappedRhsData
-        case (.stream, .stream):
+        case (.streamSource, .streamSource):
+            return true
+        case (.streamSink, .streamSink):
             return true
         case (.none, .none):
             return true

@@ -15,6 +15,7 @@
 
 import XCTest
 @testable import ClientRuntime
+import AwsCommonRuntimeKit
 
 class CRTClientEngineIntegrationTests: NetworkingTestUtils {
     
@@ -80,7 +81,34 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         wait(for: [expectation], timeout: 20.0)
     }
     
-    func testMakeHttpStreamRequest() {
+    func testMakeHttpStreamRequestDynamicReceive() {
+        //used https://httpbin.org
+        let expectation = XCTestExpectation(description: "Request has been completed")
+        let dataReceivedExpectation = XCTestExpectation(description: "Data was received")
+        var headers = Headers()
+        headers.add(name: "Content-type", value: "application/json")
+        let stream = MockSinkStream(testExpectation: dataReceivedExpectation)
+        let request = SdkHttpRequest(method: .get,
+                                     endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
+                                     headers: headers,
+                                     body: HttpBody.streamSink(stream))
+        httpClient.execute(request: request) { result in
+            switch result {
+            case .success(let response):
+                XCTAssertNotNil(response)
+                XCTAssert(response.statusCode == HttpStatusCode.ok)
+                expectation.fulfill()
+            case .failure(let error):
+                print(error)
+                XCTFail(error.localizedDescription)
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation, dataReceivedExpectation], timeout: 20.0)
+    }
+    
+    func testMakeHttpStreamRequestFromData() {
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
@@ -88,11 +116,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
-        let stream = StreamSource(data: encodedData)
+        let stream = fromData(data: encodedData)
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
-                                     body: HttpBody.stream(stream))
+                                     body: HttpBody.streamSource(stream))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -108,53 +136,26 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         
         wait(for: [expectation], timeout: 20.0)
     }
+}
+
+struct MockSinkStream: StreamSink {
+    var receivedData: Data?
+    var error: StreamError?
+    let testExpectation: XCTestExpectation
     
-    func testMakeHttpStreamRequestDynamic() {
-        //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
-        let dataExpectation = XCTestExpectation(description: "data was received")
-        let streamEndedExpectation = XCTestExpectation(description: "stream has ended")
-        var headers = Headers()
-        headers.add(name: "Content-type", value: "application/json")
-        let body = TestBody(test: "testval")
-        let encoder = JSONEncoder()
-        let encodedData = try! encoder.encode(body)
-        let stream = StreamSource(data: encodedData)
-        stream.stream { (status, byteBuffer, error) in
-            switch status {
-            case .receivedData:
-                dataExpectation.fulfill()
-            case .streamEnded:
-                streamEndedExpectation.fulfill()
-            case .errorOccurred:
-                XCTFail(error?.localizedDescription ?? "unknown error")
-            case .notAvailable:
-                break
-            case .readyForData:
-                break
-            case .openSuccessful:
-                break
-            }
-        }
-        let request = SdkHttpRequest(method: .post,
-                                     endpoint: Endpoint(host: "httpbin.org", path: "/post"),
-                                     headers: headers,
-                                     body: HttpBody.stream(stream))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation, dataExpectation, streamEndedExpectation], timeout: 20.0)
+    public init(testExpectation: XCTestExpectation) {
+        self.testExpectation = testExpectation
     }
+    mutating func receiveData(readFrom buffer: ByteBuffer) {
+        receivedData?.append(buffer.toData())
+        testExpectation.fulfill()
+    }
+    
+    mutating func onError(error: StreamError) {
+        self.error = error
+    }
+    
+    
 }
 
 struct TestBody: Encodable {

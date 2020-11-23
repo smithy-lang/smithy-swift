@@ -86,13 +86,9 @@ class CRTClientEngine: HttpClientEngine {
             switch request.body {
             case .data(let data):
                 return Int64(data?.count ?? 0)
-            case .stream(let stream):
-                if let length = stream?.inputByteBuffer?.length {
-                    return length
-                } else {
-                    return 0
-                }
-            case .none:
+            case .streamSource(let stream):
+                return stream.contentLength
+            case .none, .streamSink:
                 return 0
             }
         }()
@@ -145,10 +141,9 @@ class CRTClientEngine: HttpClientEngine {
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
-        var stream: StreamSource?
-        if case let HttpBody.stream(unwrappedStream) = request.body {
-            stream = unwrappedStream
-            stream?.outputByteBuffer = incomingByteBuffer
+        var streamSink: StreamSink?
+        if case let HttpBody.streamSink(unwrappedStream) = request.body { //we know they want to receive a stream via their request body type
+            streamSink = unwrappedStream
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
@@ -162,32 +157,33 @@ class CRTClientEngine: HttpClientEngine {
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             incomingByteBuffer.put(data)
-            if let stream = stream {
-                stream.receiveData(streamStatus: .receivedData, byteBuffer: incomingByteBuffer, error: nil)
+            if var streamSink = streamSink {
+                let byteBuffer = ByteBuffer(data: data)
+                streamSink.receiveData(readFrom: byteBuffer)
             }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let stream = stream {
-                        stream.receiveData(streamStatus: .errorOccurred,
-                                           byteBuffer: incomingByteBuffer,
-                                           error: StreamError.unknown(error))
+                    if var streamSink = streamSink {
+                        streamSink.onError(error: StreamError.unknown(error))
                     }
                     future.fail(error)
                 }
             }
-            if let stream = stream {
-                stream.receiveData(streamStatus: .streamEnded, byteBuffer: incomingByteBuffer, error: nil)
-            }
+
             response.body = {
                 switch request.body {
                 case .data:
                     return HttpBody.data(incomingByteBuffer.toData())
-                case .stream:
-                    return HttpBody.stream(stream)
-                case .none:
+                case .streamSink:
+                    if let streamSink = streamSink {
+                        return HttpBody.streamSink(streamSink)
+                    } else {
+                        return HttpBody.none
+                    }
+                case .none, .streamSource:
                     return HttpBody.none
                 }
             }()

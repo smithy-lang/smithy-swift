@@ -52,11 +52,12 @@ extension SdkHttpRequest {
                 let byteBuffer = ByteBuffer(data: data)
                 awsInputStream = AwsInputStream(byteBuffer)
             }
-        case .stream(let stream):
-            if let stream = stream?.inputByteBuffer {
-                awsInputStream = AwsInputStream(stream)
-            }
-        case .none:
+        case .streamSource(let stream):
+                let byteBuffer = ByteBuffer(size: 1024)
+                stream.sendData(writeTo: byteBuffer)
+                awsInputStream = AwsInputStream(byteBuffer)
+            
+        case .none, .streamSink:
             awsInputStream = nil
         }
         if let inputStream = awsInputStream {

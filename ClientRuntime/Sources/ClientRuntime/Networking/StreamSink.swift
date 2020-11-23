@@ -13,11 +13,12 @@
 // permissions and limitations under the License.
 //
 
-public enum StreamStatus {
-    case notAvailable
-    case streamEnded
-    case errorOccurred
-    case receivedData
-    case readyForData
-    case openSuccessful
+import AwsCommonRuntimeKit
+import struct Foundation.Data
+
+//TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
+@available(*, message: "This streaming interface is unstable currently for dynamic streaming")
+public protocol StreamSink {
+    mutating func receiveData(readFrom buffer: ByteBuffer)
+    mutating func onError(error: StreamError)
 }

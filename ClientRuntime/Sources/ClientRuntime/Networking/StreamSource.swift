@@ -15,39 +15,72 @@
 
 import AwsCommonRuntimeKit
 import struct Foundation.Data
+import class Foundation.FileManager
+import struct Foundation.URL
 
-public class StreamSource {
-    public typealias StreamClosure = (StreamStatus, ByteBuffer?, StreamError?) -> Void
-    var inputByteBuffer: ByteBuffer?
-    var outputByteBuffer: ByteBuffer?
-    var bufferSize: Int64
+@available(*, message: "This streaming interface is unstable currently for dynamic streaming")
+public protocol StreamSource {
+    var contentLength: Int64 {get set}
+    @discardableResult
+    func sendData(writeTo buffer: ByteBuffer) -> Bool
+    mutating func onError(error: StreamError)
+}
+
+struct DataStreamSource: StreamSource {
     
-    var streamStatus: StreamStatus
-    
-    var streamResponse: StreamClosure?
-    
-    init(inputByteBuffer: ByteBuffer) {
-        self.inputByteBuffer = inputByteBuffer
-        self.bufferSize = inputByteBuffer.length
-        self.streamStatus = .notAvailable
+    let data: Data
+    var error: StreamError?
+    var contentLength: Int64
+    public init(data: Data) {
+        self.data = data
+        self.contentLength = Int64(data.count)
     }
     
-    public convenience init(data: Data) {
-        let byteBuffer = ByteBuffer(data: data)
-        self.init(inputByteBuffer: byteBuffer)
+    public func sendData(writeTo buffer: ByteBuffer) -> Bool {
+        buffer.put(data)
+        return true
     }
     
-    public func stream(closure: @escaping StreamClosure) {
-        streamResponse = closure
+    public mutating func onError(error: StreamError) {
+        self.error = error
     }
     
-    public func toData() -> Data? {
-        return outputByteBuffer?.toData()
+}
+
+struct FileStreamSource: StreamSource {
+    let filePath: String
+    var error: StreamError?
+    var contentLength: Int64
+    let data: Data?
+    
+    public init(filePath: String) {
+        self.filePath = filePath
+        let fileManager = FileManager.default
+        self.data = fileManager.contents(atPath: filePath)
+        self.contentLength = Int64(data?.count ?? 0)
     }
     
-    func receiveData(streamStatus: StreamStatus, byteBuffer: ByteBuffer, error: StreamError?) {
-        if let streamResponse = streamResponse {
-            streamResponse(streamStatus, byteBuffer, error)
+    public func sendData(writeTo buffer: ByteBuffer) -> Bool {
+        if let data = data {
+        buffer.put(data)
+        return true
+        } else {
+            return false
         }
     }
+    
+    public mutating func onError(error: StreamError) {
+        self.error = error
+    }
 }
+
+   
+public func fromData(data: Data) -> StreamSource {
+    return DataStreamSource(data: data)
+}
+
+public func fromFile(filePath: String) -> StreamSource {
+    return FileStreamSource(filePath: filePath)
+}
+
+
