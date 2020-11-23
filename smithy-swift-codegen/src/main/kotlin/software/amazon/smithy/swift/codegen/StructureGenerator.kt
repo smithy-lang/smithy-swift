@@ -115,7 +115,7 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
-            val shape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
+            val shape = RecursiveShapeBoxer.extractShapeWithTrait(model, it)
 
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)

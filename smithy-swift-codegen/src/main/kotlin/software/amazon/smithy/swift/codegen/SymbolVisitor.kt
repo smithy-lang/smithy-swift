@@ -246,7 +246,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
-        val targetShape = RecursiveShapeBoxer.extractShapeOfMember(model, shape)
+        val targetShape = RecursiveShapeBoxer.extractShapeWithTrait(model, shape)
         return toSymbol(targetShape)
     }
 
@@ -336,7 +336,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .build()
             builder.addReference(ref)
 
-            val targetShape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
+            val targetShape = RecursiveShapeBoxer.extractShapeWithTrait(model, it)
             if (targetShape is CollectionShape) {
                 val targetSymbol = toSymbol(targetShape)
                 targetSymbol.references.forEach { builder.addReference(it) }

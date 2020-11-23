@@ -85,7 +85,7 @@ object RecursiveShapeBoxer {
         } != null
     }
 
-    fun extractShapeOfMember(model: Model, memberShape: MemberShape): Shape {
+    fun extractShapeWithTrait(model: Model, memberShape: MemberShape): Shape {
         var shape = model.expectShape(memberShape.target)
         if (shape is StructureShape && memberShape.hasTrait(SwiftBoxTrait::class.java))
             shape = shape.asStructureShape().get().toBuilder().addTrait(SwiftBoxTrait()).build()
