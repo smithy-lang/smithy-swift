@@ -16,7 +16,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.ArrayNode
 import software.amazon.smithy.model.node.BooleanNode
@@ -206,7 +205,7 @@ class ShapeValueGenerator(
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
-                        val isRecursiveMember  = member.hasTrait(SwiftBoxTrait::class.java)
+                        val isRecursiveMember = member.hasTrait(SwiftBoxTrait::class.java)
                         memberShape = generator.model.expectShape(member.target)
 //                        memberShape = RecursiveShapeBoxer.extractShapeOfMember(generator.model, member)
                         val memberName = generator.symbolProvider.toMemberName(member)
