@@ -7,7 +7,6 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.transform.ModelTransformer
 
 object RecursiveShapeBoxer {
@@ -83,12 +82,5 @@ object RecursiveShapeBoxer {
                 else -> it.hasTrait(SwiftBoxTrait::class.java)
             }
         } != null
-    }
-
-    fun extractShapeWithTrait(model: Model, memberShape: MemberShape): Shape {
-        var shape = model.expectShape(memberShape.target)
-        if (shape is StructureShape && memberShape.hasTrait(SwiftBoxTrait::class.java))
-            shape = shape.asStructureShape().get().toBuilder().addTrait(SwiftBoxTrait()).build()
-        return shape
     }
 }

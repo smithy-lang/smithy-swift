@@ -19,8 +19,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -115,20 +113,14 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
-            val shape = RecursiveShapeBoxer.extractShapeWithTrait(model, it)
-
-            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+            var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
 
-            // if shape is a collection or map shape which are COW in swift or is not recursive apply member normally
-            if ((shape is CollectionShape || shape is MapShape) || !shape.hasTrait(SwiftBoxTrait::class.java)) {
-                // apply member normally
-                writer.write("public let \$L: \$T", memberName, memberSymbol)
-            } else {
+            if (it.hasTrait(SwiftBoxTrait::class.java)) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                val symbol = memberSymbol.recursiveSymbol()
-                writer.write("public let \$L: \$T", memberName, symbol)
+                memberSymbol = memberSymbol.recursiveSymbol()
             }
+            writer.write("public let \$L: \$T", memberName, memberSymbol)
         }
     }
 

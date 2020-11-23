@@ -16,6 +16,7 @@
 package software.amazon.smithy.swift.codegen
 
 import java.util.logging.Logger
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
 import software.amazon.smithy.codegen.core.ReservedWordsBuilder
@@ -246,7 +247,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
-        val targetShape = RecursiveShapeBoxer.extractShapeWithTrait(model, shape)
+        val targetShape = model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
         return toSymbol(targetShape)
     }
 
@@ -336,7 +337,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .build()
             builder.addReference(ref)
 
-            val targetShape = RecursiveShapeBoxer.extractShapeWithTrait(model, it)
+            val targetShape = model.expectShape(it.target)
             if (targetShape is CollectionShape) {
                 val targetSymbol = toSymbol(targetShape)
                 targetSymbol.references.forEach { builder.addReference(it) }

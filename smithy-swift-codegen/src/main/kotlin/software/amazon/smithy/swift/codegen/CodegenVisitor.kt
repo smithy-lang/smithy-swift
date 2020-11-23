@@ -37,7 +37,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-    private var model: Model
+    private val model: Model
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
@@ -59,9 +59,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
         // Add operation input/output shapes if not provided for future evolution of sdk
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
-
+        // Add recursive shapes trait
+        resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         model = resolvedModel
-        model = RecursiveShapeBoxer.transform(model)
 
         service = settings.getService(model)
 
