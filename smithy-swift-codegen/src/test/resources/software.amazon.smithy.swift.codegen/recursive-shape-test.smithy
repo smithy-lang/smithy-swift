@@ -1,6 +1,18 @@
 $version: "1.0"
 namespace smithy.example
 
+service Example {
+    version: "1.0.0",
+    operations: [
+        RecursiveShapes
+    ]
+}
+
+operation RecursiveShapes {
+    input: RecursiveShapesInputOutput,
+    output: RecursiveShapesInputOutput
+}
+
 structure RecursiveShapesInputOutput {
     nested: RecursiveShapesInputOutputNested1
 }

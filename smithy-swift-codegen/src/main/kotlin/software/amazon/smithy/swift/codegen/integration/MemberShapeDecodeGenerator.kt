@@ -15,7 +15,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.CollectionShape
@@ -27,10 +26,10 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.isBoxed
-import software.amazon.smithy.swift.codegen.isRecursiveMember
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 /*
@@ -68,8 +67,7 @@ open class MemberShapeDecodeGenerator(
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val topologicalIndex = TopologicalIndex.of(ctx.model)
-        if (member.isRecursiveMember(topologicalIndex)) {
+        if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
         val decodedMemberName = "${memberName}Decoded"

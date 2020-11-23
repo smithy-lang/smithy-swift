@@ -17,6 +17,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 
 /**
@@ -112,6 +113,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         // invoke the DSL builder for the input type
         writer.writeInline("\nlet expected = ")
             .call {
+                model = RecursiveShapeBoxer.transform(model)
                 ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, outputShape, test.params)
             }
             .write("")

@@ -270,7 +270,9 @@ MyStruct(
 
         val shapes = mutableListOf<StructureShape>()
         val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
-        val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested").target("smithy.example#RecursiveShapesInputOutputNested2").build()
+        var memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested")
+                .target("smithy.example#RecursiveShapesInputOutputNested2").build()
+
         val recursiveShapeNested1 = StructureShape.builder()
             .id("smithy.example#RecursiveShapesInputOutputNested1")
             .addMember(memberFoo)
@@ -296,11 +298,13 @@ MyStruct(
         shapes.add(recursiveShapeNested2)
         shapes.add(topLevelShape)
 
-        val model = Model.assembler()
+        var model = Model.assembler()
             .addShapes(recursiveShapeNested1, recursiveShapeNested2, topLevelShape)
             .addShapes(memberFoo, memberNested, memberRecursiveMember, memberBar, member1)
             .assemble()
             .unwrap()
+
+        model = RecursiveShapeBoxer.transform(model) // Transform the model for recursive boxing change
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
 
@@ -357,10 +361,8 @@ MyStruct(
         expected = """
         RecursiveShapesInputOutputNested2(
             bar: "Bar1",
-            recursiveMember: Box<RecursiveShapesInputOutputNested1>(
-                value: RecursiveShapesInputOutputNested1(
-                    foo: "Foo1"
-                )
+            recursiveMember: RecursiveShapesInputOutputNested1(
+                foo: "Foo1"
             )
         )
         """.trimIndent()

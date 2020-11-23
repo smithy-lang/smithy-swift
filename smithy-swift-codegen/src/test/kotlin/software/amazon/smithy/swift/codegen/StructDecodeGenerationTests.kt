@@ -38,6 +38,7 @@ class StructDecodeGenerationTests : TestsBase() {
         val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        model = RecursiveShapeBoxer.transform(model)
         val delegator = SwiftDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
@@ -376,6 +377,54 @@ extension NestedShapesInputOutputBody: Decodable {
         nestedDictInList = nestedDictInListDecoded0
     }
 }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it decodes recursive boxed types correctly`() {
+        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested1+Decodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+            extension RecursiveShapesInputOutputNested1: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case foo
+                    case nested
+                }
+
+                public init (from decoder: Decoder) throws {
+                    let values = try decoder.container(keyedBy: CodingKeys.self)
+                    let fooDecoded = try values.decodeIfPresent(String.self, forKey: .foo)
+                    foo = fooDecoded
+                    let nestedDecoded = try values.decodeIfPresent(Box<RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    nested = nestedDecoded
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes one side of the recursive shape`() {
+        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested2+Decodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+            extension RecursiveShapesInputOutputNested2: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case bar
+                    case recursiveMember
+                }
+
+                public init (from decoder: Decoder) throws {
+                    let values = try decoder.container(keyedBy: CodingKeys.self)
+                    let barDecoded = try values.decodeIfPresent(String.self, forKey: .bar)
+                    bar = barDecoded
+                    let recursiveMemberDecoded = try values.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
+                    recursiveMember = recursiveMemberDecoded
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

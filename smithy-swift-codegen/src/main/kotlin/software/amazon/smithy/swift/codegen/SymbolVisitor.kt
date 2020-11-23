@@ -247,8 +247,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
-        val targetShape =
-            model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
+        val targetShape = model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
         return toSymbol(targetShape)
     }
 

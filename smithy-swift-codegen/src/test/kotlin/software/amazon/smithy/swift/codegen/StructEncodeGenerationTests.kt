@@ -37,6 +37,7 @@ class StructEncodeGenerationTests : TestsBase() {
         val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        model = RecursiveShapeBoxer.transform(model)
         val delegator = SwiftDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
@@ -301,6 +302,32 @@ class StructEncodeGenerationTests : TestsBase() {
                     }
                     if let nested = nested {
                         try container.encode(nested.value, forKey: .nested)
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes one side of the recursive shape`() {
+        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested2+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+            extension RecursiveShapesInputOutputNested2: Encodable {
+                private enum CodingKeys: String, CodingKey {
+                    case bar
+                    case recursiveMember
+                }
+
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let bar = bar {
+                        try container.encode(bar, forKey: .bar)
+                    }
+                    if let recursiveMember = recursiveMember {
+                        try container.encode(recursiveMember, forKey: .recursiveMember)
                     }
                 }
             }

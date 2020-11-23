@@ -92,11 +92,11 @@ public struct RecursiveShapesInputOutputNested1: Equatable {
 
 public struct RecursiveShapesInputOutputNested2: Equatable {
     public let bar: String?
-    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
+    public let recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
         bar: String? = nil,
-        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
+        recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
     {
         self.bar = bar
@@ -149,11 +149,11 @@ public struct RecursiveShapesInputOutputNestedList1: Equatable {
 
 public struct RecursiveShapesInputOutputNested2: Equatable {
     public let bar: String?
-    public let recursiveMember: Box<RecursiveShapesInputOutputNested1>?
+    public let recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
         bar: String? = nil,
-        recursiveMember: Box<RecursiveShapesInputOutputNested1>? = nil
+        recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
     {
         self.bar = bar
