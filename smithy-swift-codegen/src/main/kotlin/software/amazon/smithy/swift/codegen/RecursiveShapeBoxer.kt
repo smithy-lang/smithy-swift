@@ -12,10 +12,10 @@ import software.amazon.smithy.model.transform.ModelTransformer
 
 object RecursiveShapeBoxer {
     /**
-     * Transform a model which may contain recursive shapes into a model annotated with [RustBoxTrait]
+     * Transform a model which may contain recursive shapes into a model annotated with [SwiftBoxTrait]
      *
-     * When recursive shapes do NOT go through a List, Map, or Set, they must be boxed in Rust. This function will
-     * iteratively find loops & add the `RustBox` trait in a deterministic way until it reaches a fixed point.
+     * When recursive shapes do NOT go through a List, Map, or Set, they must be boxed in Swift. This function will
+     * iteratively find loops & add the `SwiftBoxTrait` trait in a deterministic way until it reaches a fixed point.
      *
      * This function MUST be deterministic (always choose the same shapes to `Box`). If it is not, that is a bug. Even so
      * this function may cause backward compatibility issues in certain pathological cases where a changes to recursive
@@ -31,7 +31,7 @@ object RecursiveShapeBoxer {
     }
 
     /**
-     * If [model] contains a recursive loop that must be boxed, apply one instance of [RustBoxTrait] return the new model.
+     * If [model] contains a recursive loop that must be boxed, apply one instance of [SwiftBoxTrait] return the new model.
      * If [model] contains no loops, return null.
      */
     private fun transformInner(model: Model): Model? {
@@ -71,7 +71,7 @@ object RecursiveShapeBoxer {
     }
 
     /**
-     * Check if a List<Shape> contains a shape which will use a pointer when represented in Rust, avoiding the
+     * Check if a List<Shape> contains a shape which will use a pointer when represented in Swift, avoiding the
      * need to add more Boxes
      */
     private fun containsIndirection(loop: List<Shape>): Boolean {

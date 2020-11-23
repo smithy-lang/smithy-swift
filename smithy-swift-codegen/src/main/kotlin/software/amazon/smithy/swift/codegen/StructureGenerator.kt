@@ -115,7 +115,6 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
-            val isRecursiveMember = it.isRecursiveMember(topologicalIndex)
             val shape = RecursiveShapeBoxer.extractShapeOfMember(model, it)
 
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
@@ -142,7 +141,6 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    val isRecursive = member.isRecursiveMember(topologicalIndex)
                     val symbolToUse = if (member.hasTrait(SwiftBoxTrait::class.java)) memberSymbol.recursiveSymbol() else memberSymbol
                     writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
