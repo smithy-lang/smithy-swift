@@ -50,8 +50,8 @@ extension SdkHttpRequest {
         case .data(let data):
             if let data = data {
                 let byteBuffer = ByteBuffer(size: data.count)
-                let byteBufferWithData = byteBuffer.put(data)
-                awsInputStream = AwsInputStream(byteBufferWithData)
+                byteBuffer.put(data)
+                awsInputStream = AwsInputStream(byteBuffer)
             }
         case .file(let url):
             do {
@@ -67,8 +67,8 @@ extension SdkHttpRequest {
                 let data = try stream?.readData(maxLength: 1024)
                 if let data = data {
                     let byteBuffer = ByteBuffer(size: data.count)
-                    let byteBufferWithData = byteBuffer.put(data)
-                    awsInputStream = AwsInputStream(byteBufferWithData)
+                    byteBuffer.put(data)
+                    awsInputStream = AwsInputStream(byteBuffer)
                 }
             } catch let err {
                 throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
