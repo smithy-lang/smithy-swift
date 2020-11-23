@@ -206,9 +206,9 @@ class ShapeValueGenerator(
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
-                        val topologicalIndex = TopologicalIndex.of(generator.model)
-                        val isRecursiveMember = member.isRecursiveMember(topologicalIndex)
+                        val isRecursiveMember  = member.hasTrait(SwiftBoxTrait::class.java)
                         memberShape = generator.model.expectShape(member.target)
+//                        memberShape = RecursiveShapeBoxer.extractShapeOfMember(generator.model, member)
                         val memberName = generator.symbolProvider.toMemberName(member)
                         // NOTE - `write()` appends a newline and keeps indentation,
                         // `writeInline()` doesn't keep indentation but also doesn't append a newline

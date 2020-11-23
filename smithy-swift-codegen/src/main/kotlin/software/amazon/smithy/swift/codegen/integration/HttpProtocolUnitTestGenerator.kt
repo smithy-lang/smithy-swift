@@ -30,7 +30,7 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
 protected constructor(builder: Builder<T>) {
 
     protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
-    protected val model: Model = builder.model!!
+    protected var model: Model = builder.model!!
     private val testCases: List<T> = builder.testCases!!
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!

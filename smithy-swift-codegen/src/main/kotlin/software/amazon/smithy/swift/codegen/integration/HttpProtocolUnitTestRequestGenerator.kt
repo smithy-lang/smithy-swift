@@ -15,6 +15,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.utils.StringUtils.isBlank
 
@@ -59,6 +60,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderOperationBlock(test: HttpRequestTestCase) {
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
+            model = RecursiveShapeBoxer.transform(model)
             // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
             var bodyAssertMethod = "assertEqualHttpBodyData"

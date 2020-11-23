@@ -282,13 +282,11 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                     nested: Box<RecursiveShapesInputOutputNested2>(
                         value: RecursiveShapesInputOutputNested2(
                             bar: "Bar1",
-                            recursiveMember: Box<RecursiveShapesInputOutputNested1>(
-                                value: RecursiveShapesInputOutputNested1(
-                                    foo: "Foo2",
-                                    nested: Box<RecursiveShapesInputOutputNested2>(
-                                        value: RecursiveShapesInputOutputNested2(
-                                            bar: "Bar2"
-                                        )
+                            recursiveMember: RecursiveShapesInputOutputNested1(
+                                foo: "Foo2",
+                                nested: Box<RecursiveShapesInputOutputNested2>(
+                                    value: RecursiveShapesInputOutputNested2(
+                                        bar: "Bar2"
                                     )
                                 )
                             )

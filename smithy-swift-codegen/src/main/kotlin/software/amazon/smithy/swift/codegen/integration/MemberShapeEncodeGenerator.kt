@@ -25,10 +25,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.isBoxed
-import software.amazon.smithy.swift.codegen.isRecursiveMember
+import software.amazon.smithy.swift.codegen.*
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
@@ -44,9 +41,8 @@ open class MemberShapeEncodeGenerator(
      special types like enum, timestamp, blob
      */
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
-        val index = TopologicalIndex.of(ctx.model)
         val isRecursiveMember = when (shape) {
-            is MemberShape -> shape.isRecursiveMember(index)
+            is MemberShape -> shape.hasTrait(SwiftBoxTrait::class.java)
             else -> false
         }
 
