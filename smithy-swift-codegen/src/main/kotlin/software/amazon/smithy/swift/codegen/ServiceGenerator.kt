@@ -76,20 +76,28 @@ class ServiceGenerator(
             writer.writeShapeDocs(op)
 
             val hasOutputStream = operationHasOutputStream(model, opIndex, op)
+            val hasInputStream = operationHasInputStream(model, opIndex, op)
             val accessSpecifier = if (insideProtocol) "" else "public "
-            if (!hasOutputStream) {
+            if (!hasOutputStream && !hasInputStream) {
                 writer.write(
                     "${accessSpecifier}func \$L(\$L${paramTerminator}\$L)",
                     operationName,
                     inputParam,
                     outputParam
                 )
-            } else {
+            } else if(hasInputStream) {
                 writer.write(
-                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamingHandler: StreamSource, \$L)",
-                    operationName,
-                    inputParam,
-                    outputParam
+                        "${accessSpecifier}func \$L(\$L${paramTerminator}streamSource: StreamSource, \$L)",
+                        operationName,
+                        inputParam,
+                        outputParam
+                )
+            } else if(hasOutputStream) {
+                writer.write(
+                        "${accessSpecifier}func \$L(\$L${paramTerminator}streamSink: StreamSink, \$L)",
+                        operationName,
+                        inputParam,
+                        outputParam
                 )
             }
         }
@@ -111,6 +119,11 @@ class ServiceGenerator(
         private fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
             val outputShape = opIndex.getOutput(op)
             return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
+        }
+
+        private fun operationHasInputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
+            val inputShape = opIndex.getInput(op)
+            return inputShape.map { it.hasStreamingMember(model) }.orElse(false)
         }
     }
 
