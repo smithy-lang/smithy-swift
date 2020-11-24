@@ -14,10 +14,16 @@
 //
 
 import AwsCommonRuntimeKit
+import class Foundation.FileHandle
+import struct Foundation.Data
+import class Foundation.FileManager
 
 //TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")
-public protocol StreamSink {
-    mutating func receiveData(readFrom buffer: ByteBuffer)
-    mutating func onError(error: StreamError)
+public protocol StreamSink: class {
+    func receiveData(readFrom buffer: ByteBuffer)
+    func onError(error: StreamError)
 }
+
+
+

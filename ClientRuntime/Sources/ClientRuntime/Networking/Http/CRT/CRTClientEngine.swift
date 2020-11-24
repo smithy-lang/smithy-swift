@@ -172,7 +172,7 @@ class CRTClientEngine: HttpClientEngine {
                     future.fail(error)
                 }
             }
-
+            print(streamSink)
             response.body = {
                 switch request.body {
                 case .data:
