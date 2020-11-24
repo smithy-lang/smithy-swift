@@ -91,7 +91,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(stream))
+                                     body: HttpBody.streamSink(.provider(stream)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -111,22 +111,20 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
     func testMakeHttpStreamRequestReceive() {
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
-        let dataReceivedExpectation = XCTestExpectation(description: "Data was received")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
-        let stream = MockSinkStream(testExpectation: dataReceivedExpectation)
+        
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(stream))
+                                     body: HttpBody.streamSink(.defaultDataProvider()))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-               // if case let HttpBody.streamSink(unwrappedStream) = response.body {
-                    //let stream = unwrappedStream as! MockSinkStream
-                    XCTAssert(stream.receivedData.count == 1024)
-                //}
+                if case let HttpBody.streamSink(unwrappedStream) = response.body {
+                    XCTAssert(unwrappedStream.toData()?.count == 1024)
+                }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
             case .failure(let error):
@@ -136,7 +134,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             }
         }
         
-        wait(for: [expectation, dataReceivedExpectation], timeout: 20.0)
+        wait(for: [expectation], timeout: 20.0)
     }
     
     func testMakeHttpStreamRequestFromData() {

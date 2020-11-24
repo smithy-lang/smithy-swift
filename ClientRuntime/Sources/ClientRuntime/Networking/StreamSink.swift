@@ -25,5 +25,70 @@ public protocol StreamSink: class {
     func onError(error: StreamError)
 }
 
+public class DataStreamSink: StreamSink {
+    public var data: Data
+    public var error: StreamError?
+    
+    init() {
+        self.data = Data()
+    }
+    
+    public func receiveData(readFrom buffer: ByteBuffer) {
+        data.append(buffer.toData())
+    }
+    
+    public func onError(error: StreamError) {
+        self.error = error
+    }
+}
 
+public class FileStreamSink: StreamSink {
+    public var fileHandle: FileHandle?
+    public var error: StreamError?
+    
+    init(filePath: String) {
+       
+        let fileManager = FileManager.default
+        fileManager.createFile(atPath: filePath, contents: nil)
+        self.fileHandle = FileHandle(forWritingAtPath: filePath)
+    }
+    
+    public func receiveData(readFrom buffer: ByteBuffer) {
+        fileHandle?.write(buffer.toData())
+    }
+    
+    public func onError(error: StreamError) {
+        self.error = error
+    }
+}
 
+public enum StreamSinkProvider {
+    case provider(StreamSink)
+}
+
+extension StreamSinkProvider {
+    public static func defaultDataProvider() -> StreamSinkProvider {
+        return .provider(DataStreamSink())
+    }
+    
+    public static func defaultFileProvider(filePath: String) -> StreamSinkProvider {
+        return .provider(FileStreamSink(filePath: filePath))
+    }
+    
+    public func toData() -> Data? {
+        let dataStream = self.unwrap() as? DataStreamSink
+        return dataStream?.data
+    }
+    
+    public func toFile() -> FileHandle? {
+        let fileStream = self.unwrap() as? FileStreamSink
+        return fileStream?.fileHandle
+    }
+    
+    func unwrap() -> StreamSink {
+        if case let StreamSinkProvider.provider(unwrapped) = self {
+            return unwrapped
+        }
+        fatalError() //this should never happen since only one case
+    }
+}

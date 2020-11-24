@@ -143,7 +143,7 @@ class CRTClientEngine: HttpClientEngine {
         let incomingByteBuffer = ByteBuffer(size: 0)
         var streamSink: StreamSink?
         if case let HttpBody.streamSink(unwrappedStream) = request.body { //we know they want to receive a stream via their request body type
-            streamSink = unwrappedStream
+            streamSink = unwrappedStream.unwrap()
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
@@ -157,7 +157,7 @@ class CRTClientEngine: HttpClientEngine {
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             incomingByteBuffer.put(data)
-            if var streamSink = streamSink {
+            if let streamSink = streamSink {
                 let byteBuffer = ByteBuffer(data: data)
                 streamSink.receiveData(readFrom: byteBuffer)
             }
@@ -166,20 +166,20 @@ class CRTClientEngine: HttpClientEngine {
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if var streamSink = streamSink {
+                    if let streamSink = streamSink {
                         streamSink.onError(error: StreamError.unknown(error))
                     }
                     future.fail(error)
                 }
             }
-            print(streamSink)
+            
             response.body = {
                 switch request.body {
                 case .data:
                     return HttpBody.data(incomingByteBuffer.toData())
                 case .streamSink:
                     if let streamSink = streamSink {
-                        return HttpBody.streamSink(streamSink)
+                        return HttpBody.streamSink(.provider(streamSink))
                     } else {
                         return HttpBody.none
                     }
