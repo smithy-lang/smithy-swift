@@ -85,14 +85,14 @@ class ServiceGenerator(
                     inputParam,
                     outputParam
                 )
-            } else if(hasInputStream) {
+            } else if (hasInputStream) {
                 writer.write(
                         "${accessSpecifier}func \$L(\$L${paramTerminator}streamSource: StreamSource, \$L)",
                         operationName,
                         inputParam,
                         outputParam
                 )
-            } else if(hasOutputStream) {
+            } else if (hasOutputStream) {
                 writer.write(
                         "${accessSpecifier}func \$L(\$L${paramTerminator}streamSink: StreamSink, \$L)",
                         operationName,
