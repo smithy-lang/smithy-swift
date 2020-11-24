@@ -14,7 +14,6 @@
 //
 
 import AwsCommonRuntimeKit
-import struct Foundation.Data
 
 //TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")

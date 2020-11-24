@@ -116,11 +116,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
-        let stream = fromData(data: encodedData)
+       
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
-                                     body: HttpBody.streamSource(stream))
+                                     body: HttpBody.streamSource(.fromData(data: encodedData)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):

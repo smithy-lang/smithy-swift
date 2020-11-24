@@ -31,7 +31,7 @@ struct DataStreamSource: StreamSource {
     let data: Data
     var error: StreamError?
     var contentLength: Int64
-    public init(data: Data) {
+    init(data: Data) {
         self.data = data
         self.contentLength = Int64(data.count)
     }
@@ -53,7 +53,7 @@ struct FileStreamSource: StreamSource {
     var contentLength: Int64
     let data: Data?
     
-    public init(filePath: String) {
+    init(filePath: String) {
         self.filePath = filePath
         let fileManager = FileManager.default
         self.data = fileManager.contents(atPath: filePath)
@@ -74,13 +74,27 @@ struct FileStreamSource: StreamSource {
     }
 }
 
-   
-public func fromData(data: Data) -> StreamSource {
-    return DataStreamSource(data: data)
+public enum StreamSourceProvider {
+    case provider(StreamSource)
 }
 
-public func fromFile(filePath: String) -> StreamSource {
-    return FileStreamSource(filePath: filePath)
+extension StreamSourceProvider {
+    public static func fromData(data: Data) -> StreamSourceProvider {
+        return .provider(DataStreamSource(data: data))
+    }
+    
+    public static func fromFile(filePath: String) -> StreamSourceProvider {
+        return .provider(FileStreamSource(filePath: filePath))
+    }
+    
+    func unwrap() -> StreamSource {
+        if case let StreamSourceProvider.provider(unwrapped) = self {
+            return unwrapped
+        }
+        fatalError() //this should never happen
+    }
 }
+
+
 
 

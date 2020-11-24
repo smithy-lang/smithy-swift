@@ -18,7 +18,7 @@ import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)
-    case streamSource(StreamSource)
+    case streamSource(StreamSourceProvider)
     case streamSink(StreamSink)
     case none
 }

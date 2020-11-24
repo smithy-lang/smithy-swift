@@ -87,7 +87,7 @@ class CRTClientEngine: HttpClientEngine {
             case .data(let data):
                 return Int64(data?.count ?? 0)
             case .streamSource(let stream):
-                return stream.contentLength
+                return stream.unwrap().contentLength
             case .none, .streamSink:
                 return 0
             }
