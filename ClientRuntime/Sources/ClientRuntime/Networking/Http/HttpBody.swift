@@ -39,3 +39,10 @@ extension HttpBody: Equatable {
         }
     }
 }
+
+public extension HttpBody {
+
+    static var empty: HttpBody {
+        .data(nil)
+    }
+}

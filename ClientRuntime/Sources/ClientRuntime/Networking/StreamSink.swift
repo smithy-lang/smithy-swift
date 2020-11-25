@@ -29,8 +29,8 @@ public class DataStreamSink: StreamSink {
     public var data: Data
     public var error: StreamError?
     
-    init() {
-        self.data = Data()
+    init(data: Data = Data()) {
+        self.data = data
     }
     
     public func receiveData(readFrom buffer: ByteBuffer) {
@@ -85,6 +85,8 @@ extension StreamSinkProvider {
         return fileStream?.fileHandle
     }
     
+    /// This function is a util to enhance developer experience. This enum only has one case so this function
+    /// provides an easy way to unwrap the single case to get the associated value quicker and easier.
     func unwrap() -> StreamSink {
         if case let StreamSinkProvider.provider(unwrapped) = self {
             return unwrapped
