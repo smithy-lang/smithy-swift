@@ -64,7 +64,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                     for (dependency in distinctDependencies) {
                         writer.openBlock(".product(", "),") {
                             writer.write("name: \"${dependency.packageName}\",")
-                            writer.write("package: \"${dependency.expectProperty("packageName", String::class.java)}\"")
+                            writer.write("package: \"${dependency.expectProperty("swiftPackageName", String::class.java)}\"")
                         }
                     }
                 }
@@ -75,7 +75,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                     writer.write("name: \"${settings.moduleName}Tests\",")
                     writer.openBlock("dependencies: [", "],") {
                         writer.write("\$S,", settings.moduleName)
-                        writer.write("\$S", "SmithyTestUtil")
+                        writer.write(".product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")")
                     }
                     writer.write("path: \"./${settings.moduleName}Tests\"")
                 }

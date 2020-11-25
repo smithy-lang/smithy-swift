@@ -63,7 +63,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 if (body.isNotBlank() && body.isNotEmpty()) {
                     // TODO:: handle streaming case?
                     writer.write(
-                        "content: ResponseType.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
+                        "content: HttpBody.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
                         body
                     )
                 }

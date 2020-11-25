@@ -335,7 +335,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 extension ExplicitStructResponse {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
-        if case .data(let data) = httpResponse.content,
+        if case .data(let data) = httpResponse.body,
            let unwrappedData = data {
             if let responseDecoder = decoder {
                 let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)

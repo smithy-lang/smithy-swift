@@ -114,7 +114,7 @@ class PackageManifestGeneratorTests : TestsBase() {
                     "            name: \"MockSDKTests\",\n" +
                     "            dependencies: [\n" +
                     "                \"MockSDK\",\n" +
-                    "                \"SmithyTestUtil\"\n" +
+                    "                .product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")\n" +
                     "            ],\n" +
                     "            path: \"./MockSDKTests\"\n" +
                     "        )\n" +

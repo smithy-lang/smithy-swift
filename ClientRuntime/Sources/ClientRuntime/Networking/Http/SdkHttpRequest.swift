@@ -19,7 +19,7 @@ import AwsCommonRuntimeKit
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public var body: HttpBody?
+    public var body: HttpBody
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
@@ -29,7 +29,7 @@ public class SdkHttpRequest {
                 endpoint: Endpoint,
                 headers: Headers,
                 queryItems: [URLQueryItem]? = nil,
-                body: HttpBody? = nil) {
+                body: HttpBody = HttpBody.none) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
@@ -39,7 +39,7 @@ public class SdkHttpRequest {
 }
 
 extension SdkHttpRequest {
-    public func toHttpRequest() throws -> HttpRequest {
+    public func toHttpRequest(bufferSize: Int = 1024) -> HttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
@@ -49,32 +49,16 @@ extension SdkHttpRequest {
         switch body {
         case .data(let data):
             if let data = data {
-                let byteBuffer = ByteBuffer(size: data.count)
-                byteBuffer.put(data)
+                let byteBuffer = ByteBuffer(data: data)
                 awsInputStream = AwsInputStream(byteBuffer)
             }
-        case .file(let url):
-            do {
-                let fileHandle = try FileHandle(forReadingFrom: url)
-                awsInputStream = AwsInputStream(fileHandle)
-            } catch let err {
-                throw ClientError.serializationFailed("Opening the file handle failed. Check path to file. Error: "
-                 + err.localizedDescription)
-            }
-        case .stream(let stream):
-            //TODO: refactor ability to stream appropriately and get buffer capacity here
-            do {
-                let data = try stream?.readData(maxLength: 1024)
-                if let data = data {
-                    let byteBuffer = ByteBuffer(size: data.count)
-                    byteBuffer.put(data)
-                    awsInputStream = AwsInputStream(byteBuffer)
-                }
-            } catch let err {
-                throw ClientError.serializationFailed("Reading from stream failed: " + err.localizedDescription)
-            }
-        case .none:
-            break //do nothing as inputstream is already nil
+        case .streamSource(let stream):
+                let byteBuffer = ByteBuffer(size: bufferSize)
+                stream.unwrap().sendData(writeTo: byteBuffer)
+                awsInputStream = AwsInputStream(byteBuffer)
+            
+        case .none, .streamSink:
+            awsInputStream = nil
         }
         if let inputStream = awsInputStream {
             httpRequest.body = inputStream

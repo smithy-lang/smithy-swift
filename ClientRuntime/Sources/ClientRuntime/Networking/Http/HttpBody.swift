@@ -12,11 +12,37 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
-
-import Foundation
+import AwsCommonRuntimeKit
+import struct Foundation.URL
+import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)
-    case stream(InputStream?)
-    case file(URL)
+    case streamSource(StreamSourceProvider)
+    case streamSink(StreamSinkProvider)
+    case none
+}
+
+extension HttpBody: Equatable {
+    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
+        switch (lhs, rhs) {
+        case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
+            return unwrappedlhsData == unwrappedRhsData
+        case (.streamSource, .streamSource):
+            return false
+        case (.streamSink, .streamSink):
+            return false
+        case (.none, .none):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+public extension HttpBody {
+
+    static var empty: HttpBody {
+        .data(nil)
+    }
 }

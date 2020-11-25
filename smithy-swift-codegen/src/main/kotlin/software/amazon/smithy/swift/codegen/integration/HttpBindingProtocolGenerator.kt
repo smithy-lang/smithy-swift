@@ -628,7 +628,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
 
             if (bodyMemberNames.isNotEmpty()) {
-                writer.write("if case .data(let data) = httpResponse.content,")
+                writer.write("if case .data(let data) = httpResponse.body,")
                 writer.indent()
                 writer.write("let unwrappedData = data,")
                 writer.write("let responseDecoder = decoder {")
@@ -657,7 +657,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-        writer.openBlock("if case .data(let data) = httpResponse.content,\n   let unwrappedData = data {", "} else {") {
+        writer.openBlock("if case .data(let data) = httpResponse.body,\n   let unwrappedData = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     // TODO deal with document type

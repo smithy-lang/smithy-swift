@@ -156,8 +156,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                         "})"
                     ) {
-                        writer.write("XCTAssertNil(actualHttpBody, \"The actual HttpBody is not nil as expected\")")
-                        writer.write("XCTAssertNil(expectedHttpBody, \"The expected HttpBody is not nil as expected\")")
+                        writer.write("XCTAssert(actualHttpBody == HttpBody.none, \"The actual HttpBody is not none as expected\")")
+                        writer.write("XCTAssert(expectedHttpBody == HttpBody.none, \"The expected HttpBody is not none as expected\")")
                     }
                 }
             }

@@ -22,7 +22,7 @@ class MockHttpClientEngine: HttpClientEngine {
     }
     
     func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
-        return HttpResponse(content: .none, statusCode: HttpStatusCode.ok)
+        return HttpResponse(body: HttpBody.empty, statusCode: HttpStatusCode.ok)
     }
     
     func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {

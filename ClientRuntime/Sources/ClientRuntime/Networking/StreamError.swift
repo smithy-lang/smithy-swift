@@ -13,10 +13,6 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
-public enum ResponseType {
-    case data(Data?)
-    case stream(OutputStream?)
-    case file(URL)
+public enum StreamError: Error {
+    case unknown(Error)
 }

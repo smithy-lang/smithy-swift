@@ -84,7 +84,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     "X-Amzn-Errortype": "ComplexError",
                     "X-Header": "Header"
                 ],
-                content: ResponseType.data(""${'"'}
+                content: HttpBody.data(""${'"'}
                 {
                     "TopLevel": "Top level",
                     "Nested": {

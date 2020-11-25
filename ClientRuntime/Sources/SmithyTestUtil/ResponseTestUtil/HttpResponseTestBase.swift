@@ -16,6 +16,7 @@
 import Foundation
 import ClientRuntime
 import XCTest
+import class AwsCommonRuntimeKit.ByteBuffer
 
 /**
  Includes Utility functions for Http Protocol Response Deserialization Tests
@@ -27,7 +28,7 @@ open class HttpResponseTestBase: XCTestCase {
     public func buildHttpResponse(code: Int,
                                   path: String? = nil,
                                   headers: [String: String]? = nil,
-                                  content: ResponseType? = nil,
+                                  content: HttpBody = HttpBody.empty,
                                   host: String) -> HttpResponse? {
         
         var internalHeaders: Headers = Headers()
@@ -36,7 +37,7 @@ open class HttpResponseTestBase: XCTestCase {
         }
         
         return HttpResponse(headers: internalHeaders,
-                            content: content,
+                            body: content,
                             statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
         
     }

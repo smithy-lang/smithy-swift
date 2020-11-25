@@ -188,8 +188,8 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             encoder.dateEncodingStrategy = .secondsSince1970
             let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
-                XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
+                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
+                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
@@ -225,8 +225,8 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             encoder.dateEncodingStrategy = .secondsSince1970
             let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
-                XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
+                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
+                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
@@ -305,8 +305,8 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             encoder.dateEncodingStrategy = .secondsSince1970
             let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: encoder)
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNil(actualHttpBody, "The actual HttpBody is not nil as expected")
-                XCTAssertNil(expectedHttpBody, "The expected HttpBody is not nil as expected")
+                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
+                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
