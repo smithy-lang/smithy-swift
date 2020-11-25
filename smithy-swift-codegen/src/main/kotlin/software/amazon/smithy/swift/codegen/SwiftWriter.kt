@@ -49,6 +49,15 @@ fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
     return this
 }
 
+// Used for sections, deals with delimiter occurring within set but not trailing or leading.
+fun CodeWriter.appendWithDelimiter(previousText: Any?, text: String, delimiter: String = ", ") {
+    when {
+        previousText !is String -> error("Unexpected type ${previousText?.javaClass?.canonicalName ?: "[UNKNOWN]"}")
+        previousText.isEmpty() -> write(text)
+        else -> write("$previousText$delimiter$text")
+    }
+}
+
 class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()

@@ -33,6 +33,14 @@ import software.amazon.smithy.swift.codegen.*
  * Section name used when rendering the encoder and decoder in the initializer of the client
  */
 const val SECTION_CLIENT_INIT_SERDE = "service-init-serde"
+/**
+ * Section name used when rendering the declaration of the config class
+ */
+const val SECTION_CONFIG__INHERITANCE = "config-inheritance-type"
+/**
+ * Section name used when rendering the default implementation static function
+ */
+const val SECTION_DEFAULT_CONFIG_IMPLEMENTATION = "default_config_implementation"
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -42,7 +50,8 @@ class HttpProtocolClientGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val serviceShape: ServiceShape,
-    private val features: List<HttpFeature>
+    private val features: List<HttpFeature>,
+    private val configFields: List<ConfigField>
 ) {
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
@@ -64,7 +73,7 @@ class HttpProtocolClientGenerator(
                 feat.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("init(config: Configuration = Configuration()) throws {", "}") {
+            writer.openBlock("init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
                 writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 features.forEach { feat ->
                     feat.renderInstantiation(writer)
@@ -79,8 +88,61 @@ class HttpProtocolClientGenerator(
 
                 writer.write("self.config = config")
             }
+            writer.write("")
+            renderConfig(serviceSymbol)
+        }
+    }
 
+    private fun renderConfig(serviceSymbol: Symbol) {
+        registerSections(serviceSymbol)
 
+        writer.openBlock("public class ${serviceSymbol.name}Configuration: Configuration {", "}") {
+            writer.write("")
+            configFields.forEach {
+                writer.write("public let ${it.name}: ${it.type.name}")
+            }
+            renderConfigInit()
+            writer.write("")
+            renderStaticDefault(serviceSymbol)
+        }
+    }
+
+    private fun registerSections(serviceSymbol: Symbol) {
+        writer.onSection(SECTION_CONFIG__INHERITANCE) {text ->
+            writer.appendWithDelimiter(text, "Configuration")
+        }
+
+        writer.onSection(SECTION_DEFAULT_CONFIG_IMPLEMENTATION) {
+            writer.write("return ${serviceSymbol.name}Configuration()")
+        }
+    }
+
+    private fun renderConfigInit() {
+        if (configFields.isNotEmpty()) {
+            val configFieldsSortedByName = configFields.sortedBy { it.name }
+            writer.openBlock("public init (", ")") {
+                for ((index, member) in configFieldsSortedByName.withIndex()) {
+                    val memberName = member.name
+                    val memberSymbol = member.type.name
+                    if (memberName == null || memberSymbol == null) continue
+                    val terminator = if (index == configFieldsSortedByName.size - 1) "" else ","
+                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                }
+            }
+            writer.openBlock("{", "}") {
+                configFieldsSortedByName.forEach {
+                    writer.write("self.\$1L = \$1L", it.name)
+                }
+            }
+        } else {
+            writer.write("public init() { self.init() }")
+        }
+    }
+
+    private fun renderStaticDefault(serviceSymbol: Symbol) {
+        writer.openBlock("public static func `default`() throws -> ${serviceSymbol.name}Configuration {", "}") {
+            writer.pushState(SECTION_DEFAULT_CONFIG_IMPLEMENTATION)
+            writer.popState()
         }
     }
 

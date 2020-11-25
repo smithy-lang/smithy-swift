@@ -33,7 +33,7 @@
         val serviceShapeIdWithNamespace = "smithy.example#Example"
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf())
+        val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf(), mutableListOf())
         generator.render()
         commonTestContents = writer.toString()
     }
@@ -49,12 +49,22 @@
                     let encoder: RequestEncoder
                     let decoder: ResponseDecoder
                 
-                    init(config: Configuration = Configuration()) throws {
+                    init(config: ExampleClientConfiguration) throws {
                         client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                         self.encoder = config.encoder
                         self.decoder = config.decoder
                         self.config = config
                     }
+                
+                    public class ExampleClientConfiguration: Configuration {
+                
+                        public init() { self.init() }
+                
+                        public static func `default`() throws -> ExampleClientConfiguration {
+                            return ExampleClientConfiguration()
+                        }
+                    }
+                }
             """.trimIndent()
         )
     }
