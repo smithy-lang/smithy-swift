@@ -29,9 +29,9 @@ extension HttpBody: Equatable {
         case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
             return unwrappedlhsData == unwrappedRhsData
         case (.streamSource, .streamSource):
-            return true
+            return false
         case (.streamSink, .streamSink):
-            return true
+            return false
         case (.none, .none):
             return true
         default:

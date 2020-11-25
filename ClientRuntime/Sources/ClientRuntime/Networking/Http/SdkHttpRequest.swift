@@ -39,7 +39,7 @@ public class SdkHttpRequest {
 }
 
 extension SdkHttpRequest {
-    public func toHttpRequest() -> HttpRequest {
+    public func toHttpRequest(bufferSize: Int = 1024) -> HttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
@@ -53,7 +53,7 @@ extension SdkHttpRequest {
                 awsInputStream = AwsInputStream(byteBuffer)
             }
         case .streamSource(let stream):
-                let byteBuffer = ByteBuffer(size: 1024)
+                let byteBuffer = ByteBuffer(size: bufferSize)
                 stream.unwrap().sendData(writeTo: byteBuffer)
                 awsInputStream = AwsInputStream(byteBuffer)
             

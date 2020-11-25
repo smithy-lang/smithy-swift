@@ -87,7 +87,7 @@ class CRTClientEngine: HttpClientEngine {
             case .data(let data):
                 return Int64(data?.count ?? 0)
             case .streamSource(let stream):
-                return stream.unwrap().contentLength
+                return stream.unwrap().contentLength //TODO: implement dynamic streaming with transfer-encoded-chunk header
             case .none, .streamSink:
                 return 0
             }
@@ -96,16 +96,22 @@ class CRTClientEngine: HttpClientEngine {
         headers.update(name: CONTENT_LENGTH_HEADER, value: "\(contentLength)")
         
         request.headers = headers
-        return request.toHttpRequest()
+        return request.toHttpRequest(bufferSize: windowSize)
     }
     
     public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+        let isStreaming = { () -> Bool in
+            switch request.body {
+            case .streamSink, .streamSource: return true
+            default: return false
+            }
+        }()
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         connectionMgr.acquireConnection().then { [self] (result) in
             logger.debug("connection was acquired to: \(request.endpoint.urlString)")
             switch result {
             case .success(let connection):
-                let (requestOptions, future) = makeHttpRequestOptions(request)
+                let (requestOptions, future) = isStreaming ? makeHttpRequestStreamOptions(request) : makeHttpRequestOptions(request)
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
@@ -135,12 +141,11 @@ class CRTClientEngine: HttpClientEngine {
         }
     }
     
-    public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
+    public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
         let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
-        
         let response = HttpResponse()
-        let incomingByteBuffer = ByteBuffer(size: 0)
+        
         var streamSink: StreamSink?
         if case let HttpBody.streamSink(unwrappedStream) = request.body { //we know they want to receive a stream via their request body type
             streamSink = unwrappedStream.unwrap()
@@ -156,7 +161,7 @@ class CRTClientEngine: HttpClientEngine {
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
-            incomingByteBuffer.put(data)
+            
             if let streamSink = streamSink {
                 let byteBuffer = ByteBuffer(data: data)
                 streamSink.receiveData(readFrom: byteBuffer)
@@ -172,21 +177,48 @@ class CRTClientEngine: HttpClientEngine {
                     future.fail(error)
                 }
             }
-            
-            response.body = {
-                switch request.body {
-                case .data:
-                    return HttpBody.data(incomingByteBuffer.toData())
-                case .streamSink:
-                    if let streamSink = streamSink {
-                        return HttpBody.streamSink(.provider(streamSink))
-                    } else {
-                        return HttpBody.none
-                    }
-                case .none, .streamSource:
-                    return HttpBody.none
+             
+            if let streamSink = streamSink {
+                response.body = HttpBody.streamSink(.provider(streamSink))
+            } else {
+                response.body = HttpBody.none
+            }
+    
+            future.fulfill(response)
+        }
+        
+        return (requestOptions, future)
+    }
+    
+    public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
+        let future = Future<HttpResponse>()
+        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        
+        let response = HttpResponse()
+        let incomingByteBuffer = ByteBuffer(size: 0)
+
+        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
+            logger.debug("headers were received")
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+                ?? HttpStatusCode.notFound
+            response.headers.addAll(httpHeaders: httpHeaders)
+        } onIncomingHeadersBlockDone: { [self] (stream, _) in
+            logger.debug("header block is done")
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
+                ?? HttpStatusCode.notFound
+        } onIncomingBody: { [self] (_, data) in
+            logger.debug("incoming data")
+            incomingByteBuffer.put(data)
+        } onStreamComplete: { [self] (_, error) in
+            logger.debug("stream completed")
+            if case let CRTError.crtError(unwrappedError) = error {
+                if unwrappedError.errorCode != 0 {
+                    logger.error("Response encountered an error: \(error)")
+                    future.fail(error)
                 }
-            }()
+            }
+            
+            response.body = HttpBody.data(incomingByteBuffer.toData())
                 
             future.fulfill(response)
         }
