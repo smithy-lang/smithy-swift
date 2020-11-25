@@ -27,7 +27,6 @@ public protocol StreamSource {
 }
 
 struct DataStreamSource: StreamSource {
-    
     let data: Data
     var error: StreamError?
     var contentLength: Int64
@@ -94,7 +93,3 @@ extension StreamSourceProvider {
         fatalError() //this should never happen since only one case
     }
 }
-
-
-
-
