@@ -235,7 +235,6 @@ class HttpProtocolClientGenerator(
             writer.write("let method = HttpMethodType.$httpMethod")
             writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)")
         }
-        //
     }
 
     private fun renderHttpRequestExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
