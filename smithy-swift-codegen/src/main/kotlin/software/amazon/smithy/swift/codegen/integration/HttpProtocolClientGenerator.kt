@@ -36,7 +36,7 @@ const val SECTION_CLIENT_INIT_SERDE = "service-init-serde"
 /**
  * Section name used when rendering the declaration of the config class
  */
-const val SECTION_CONFIG__INHERITANCE = "config-inheritance-type"
+const val SECTION_CONFIG__INHERITANCE = "configInheritanceType"
 /**
  * Section name used when rendering the default implementation static function
  */
@@ -95,16 +95,19 @@ class HttpProtocolClientGenerator(
 
     private fun renderConfig(serviceSymbol: Symbol) {
         registerSections(serviceSymbol)
-
-        writer.openBlock("public class ${serviceSymbol.name}Configuration: Configuration {", "}") {
-            writer.write("")
-            configFields.forEach {
-                writer.write("public let ${it.name}: ${it.type.name}")
-            }
+        writer.pushState(SECTION_CONFIG__INHERITANCE)
+        writer.write("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG__INHERITANCE} {")
+        writer.write("")
+        writer.indent()
+        configFields.forEach {
+            writer.write("public let ${it.name}: ${it.type.name}")
             renderConfigInit()
             writer.write("")
             renderStaticDefault(serviceSymbol)
         }
+        writer.dedent()
+        writer.closeBlock("}")
+        writer.popState()
     }
 
     private fun registerSections(serviceSymbol: Symbol) {
