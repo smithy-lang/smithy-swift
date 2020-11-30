@@ -95,19 +95,16 @@ class HttpProtocolClientGenerator(
 
     private fun renderConfig(serviceSymbol: Symbol) {
         registerSections(serviceSymbol)
-        writer.pushState(SECTION_CONFIG__INHERITANCE)
-        writer.write("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG__INHERITANCE} {")
+        writer.write("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG__INHERITANCE} {", "")
         writer.write("")
         writer.indent()
         configFields.forEach {
             writer.write("public let ${it.name}: ${it.type.name}")
-            renderConfigInit()
-            writer.write("")
-            renderStaticDefault(serviceSymbol)
         }
-        writer.dedent()
+        renderConfigInit()
+        writer.write("")
+        renderStaticDefault(serviceSymbol)
         writer.closeBlock("}")
-        writer.popState()
     }
 
     private fun registerSections(serviceSymbol: Symbol) {
