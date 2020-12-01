@@ -80,7 +80,7 @@ class SwiftDelegator(
      */
     fun useShapeWriter(
         symbol: Symbol,
-        writerConsumer: (SwiftWriter) -> Unit
+        block: (SwiftWriter) -> Unit
     ) {
         val writer: SwiftWriter = checkoutWriter(symbol.definitionFile)
 
@@ -99,7 +99,7 @@ class SwiftDelegator(
             }
         }
 
-        writerConsumer(writer)
+        block(writer)
         writer.popState()
     }
 
@@ -127,7 +127,7 @@ class SwiftDelegator(
         block(writer)
     }
 
-    private fun checkoutWriter(filename: String): SwiftWriter {
+    private fun     checkoutWriter(filename: String): SwiftWriter {
         val formattedFilename = Paths.get(filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) { SwiftWriter(settings.moduleName) }

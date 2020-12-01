@@ -62,7 +62,7 @@ import software.amazon.smithy.utils.StringUtils
 private const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
 // Boolean property indicating this symbol should be boxed
-private const val BOXED_KEY: String = "boxed"
+const val BOXED_KEY: String = "boxed"
 
 /**
  * Test if a symbol is boxed or not

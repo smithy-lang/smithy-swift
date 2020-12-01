@@ -36,7 +36,7 @@ const val SECTION_CLIENT_INIT_SERDE = "service-init-serde"
 /**
  * Section name used when rendering the declaration of the config class
  */
-const val SECTION_CONFIG__INHERITANCE = "configInheritanceType"
+const val SECTION_CONFIG_INHERITANCE = "configInheritanceType"
 /**
  * Section name used when rendering the default implementation static function
  */
@@ -80,10 +80,7 @@ class HttpProtocolClientGenerator(
                     if (feat.needsConfigure) {
                         feat.renderConfiguration(writer)
                     }
-                }
-                writer.withState(SECTION_CLIENT_INIT_SERDE) {
-                    writer.write("self.encoder = config.encoder")
-                    writer.write("self.decoder = config.decoder")
+                    feat.renderInitialization(writer, "config")
                 }
 
                 writer.write("self.config = config")
@@ -95,20 +92,19 @@ class HttpProtocolClientGenerator(
 
     private fun renderConfig(serviceSymbol: Symbol) {
         registerSections(serviceSymbol)
-        writer.write("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG__INHERITANCE} {", "")
-        writer.write("")
-        writer.indent()
-        configFields.forEach {
-            writer.write("public let ${it.name}: ${it.type.name}")
+        writer.openBlock("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG_INHERITANCE} {", "}", "") {
+            writer.write("")
+            configFields.forEach {
+                writer.write("public let ${it.name}: ${it.type}")
+            }
+            renderConfigInit()
+            writer.write("")
+            renderStaticDefault(serviceSymbol)
         }
-        renderConfigInit()
-        writer.write("")
-        renderStaticDefault(serviceSymbol)
-        writer.closeBlock("}")
     }
 
     private fun registerSections(serviceSymbol: Symbol) {
-        writer.onSection(SECTION_CONFIG__INHERITANCE) {text ->
+        writer.onSection(SECTION_CONFIG_INHERITANCE) {text ->
             writer.appendWithDelimiter(text, "Configuration")
         }
 
@@ -123,10 +119,10 @@ class HttpProtocolClientGenerator(
             writer.openBlock("public init (", ")") {
                 for ((index, member) in configFieldsSortedByName.withIndex()) {
                     val memberName = member.name
-                    val memberSymbol = member.type.name
-                    if (memberName == null || memberSymbol == null) continue
+                    val memberSymbol = member.type
+                    if (memberName == null) continue
                     val terminator = if (index == configFieldsSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                    writer.write("\$L: \$L$terminator", memberName, memberSymbol)
                 }
             }
             writer.openBlock("{", "}") {
@@ -134,8 +130,6 @@ class HttpProtocolClientGenerator(
                     writer.write("self.\$1L = \$1L", it.name)
                 }
             }
-        } else {
-            writer.write("public init() { self.init() }")
         }
     }
 
@@ -244,7 +238,7 @@ class HttpProtocolClientGenerator(
         writer.indent(5).write("  decoder: decoder,")
         writer.write("  outputType: ${outputShapeName}.self,")
         writer.write("  outputError: ${operationErrorName}.self,")
-        writer.write("  operation: ${op.camelCaseName()},")
+        writer.write("  operation: \"${op.camelCaseName()}\",")
         writer.write("  serviceName: serviceName)")
         writer.dedent(5)
         writer.write("client.execute(request: request, context: context, completion: completion)")

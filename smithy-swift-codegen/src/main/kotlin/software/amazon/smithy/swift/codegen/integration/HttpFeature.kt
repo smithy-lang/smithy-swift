@@ -38,6 +38,17 @@ interface HttpFeature {
     fun renderConfiguration(writer: SwiftWriter) {}
 
     /**
+     * Render the initialization of a feature inside the class
+     *
+     * Example
+     * ```
+     * self.encoder = config.encoder ?? encoder
+     * self.decoder = config.decoder ?? decoder
+     * ```
+     */
+    fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {}
+
+    /**
      * Register any imports or dependencies that will be needed to use this feature at runtime
      */
     fun addImportsAndDependencies(writer: SwiftWriter) {}
@@ -49,9 +60,9 @@ interface HttpFeature {
  * @property requestEncoderOptions Map of options to set on the request encoder instance
  */
 abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
-    override val name: String = "HttpRequestEncoder"
+    override val name: String = "encoder"
     override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let encoder = $requestEncoderName()")
+        writer.write("let \$L = $requestEncoderName()", name)
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {
@@ -59,6 +70,10 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
                 requestEncoderOptionName, requestEncoderOptionValue ->
             writer.write("encoder.$requestEncoderOptionName = $requestEncoderOptionValue")
         }
+    }
+
+    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
+        writer.write("self.encoder = \$L.encoder ?? \$L", nameOfConfigObject, name)
     }
 }
 
@@ -68,9 +83,9 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
  * @property requestDecoderOptions Map of options to set on the request decoder instance
  */
 abstract class HttpResponseDecoder(private val requestDecoderName: String, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
-    override val name: String = "HttpRequestDecoder"
+    override val name: String = "decoder"
     override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let decoder = $requestDecoderName()")
+        writer.write("let \$L = $requestDecoderName()", name)
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {
@@ -78,5 +93,9 @@ abstract class HttpResponseDecoder(private val requestDecoderName: String, priva
                 requestDecoderOptionName, requestDecoderOptionValue ->
             writer.write("decoder.$requestDecoderOptionName = $requestDecoderOptionValue")
         }
+    }
+
+    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
+        writer.write("self.decoder = \$L.decoder ?? \$L", nameOfConfigObject, name)
     }
 }

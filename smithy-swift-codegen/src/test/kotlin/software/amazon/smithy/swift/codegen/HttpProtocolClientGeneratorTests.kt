@@ -58,8 +58,6 @@
                 
                     public class ExampleClientConfiguration: Configuration {
                 
-                        public init() { self.init() }
-                
                         public static func `default`() throws -> ExampleClientConfiguration {
                             return ExampleClientConfiguration()
                         }
