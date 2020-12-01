@@ -51,7 +51,7 @@ class HttpProtocolClientGenerator(
     private val writer: SwiftWriter,
     private val serviceShape: ServiceShape,
     private val features: List<HttpFeature>,
-    private val configFields: List<ConfigField>
+    private val serviceConfig: ServiceConfig
 ) {
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
@@ -91,29 +91,25 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderConfig(serviceSymbol: Symbol) {
-        registerSections(serviceSymbol)
-        writer.openBlock("public class ${serviceSymbol.name}Configuration: \${L@$SECTION_CONFIG_INHERITANCE} {", "}", "") {
+
+        val configFields = serviceConfig.getConfigFields()
+        val inheritance = serviceConfig.getTypeInheritance()
+        writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
             configFields.forEach {
-                writer.write("public let ${it.name}: ${it.type}")
+                writer.write("public var ${it.name}: ${it.type}")
             }
-            renderConfigInit()
             writer.write("")
-            renderStaticDefault(serviceSymbol)
+            renderConfigInit(configFields)
+            writer.write("")
+            serviceConfig.renderConvienceInits(serviceSymbol)
+            writer.write("")
+            serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
         }
     }
 
-    private fun registerSections(serviceSymbol: Symbol) {
-        writer.onSection(SECTION_CONFIG_INHERITANCE) {text ->
-            writer.appendWithDelimiter(text, "Configuration")
-        }
 
-        writer.onSection(SECTION_DEFAULT_CONFIG_IMPLEMENTATION) {
-            writer.write("return ${serviceSymbol.name}Configuration()")
-        }
-    }
-
-    private fun renderConfigInit() {
+    private fun renderConfigInit(configFields: List<ConfigField>) {
         if (configFields.isNotEmpty()) {
             val configFieldsSortedByName = configFields.sortedBy { it.name }
             writer.openBlock("public init (", ")") {
@@ -130,13 +126,6 @@ class HttpProtocolClientGenerator(
                     writer.write("self.\$1L = \$1L", it.name)
                 }
             }
-        }
-    }
-
-    private fun renderStaticDefault(serviceSymbol: Symbol) {
-        writer.openBlock("public static func `default`() throws -> ${serviceSymbol.name}Configuration {", "}") {
-            writer.pushState(SECTION_DEFAULT_CONFIG_IMPLEMENTATION)
-            writer.popState()
         }
     }
 

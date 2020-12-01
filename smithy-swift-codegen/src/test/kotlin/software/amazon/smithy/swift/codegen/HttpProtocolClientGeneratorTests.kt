@@ -19,7 +19,7 @@
  import org.junit.jupiter.api.Test
  import software.amazon.smithy.codegen.core.SymbolProvider
  import software.amazon.smithy.model.shapes.ShapeId
- import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+ import software.amazon.smithy.swift.codegen.integration.*
 
  class HttpProtocolClientGeneratorTests : TestsBase() {
     private val commonTestContents: String
@@ -33,7 +33,11 @@
         val serviceShapeIdWithNamespace = "smithy.example#Example"
         val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val generator = HttpProtocolClientGenerator(model, provider, writer, service, mutableListOf(), mutableListOf())
+        val features = mutableListOf<HttpFeature>()
+        features.add(DefaultRequestEncoder())
+        features.add(DefaultResponseDecoder())
+        val config = DefaultConfig(writer)
+        val generator = HttpProtocolClientGenerator(model, provider, writer, service, features, config)
         generator.render()
         commonTestContents = writer.toString()
     }

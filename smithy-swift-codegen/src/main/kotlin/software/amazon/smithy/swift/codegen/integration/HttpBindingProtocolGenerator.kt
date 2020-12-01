@@ -1160,8 +1160,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val features = getHttpFeatures(ctx)
-            val configFields = getConfigFields(ctx)
-            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, configFields).render()
+            val config = getConfigClass(writer)
+            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config).render()
         }
     }
 
@@ -1178,12 +1178,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Get all of the features that are used as middleware
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
+        val features = mutableListOf<HttpFeature>()
+        features.add(DefaultRequestEncoder())
+        features.add(DefaultResponseDecoder())
+        return features
+    }
 
-    /**
-     * Get all of the config fields that will be plumbed through via middleware
-     */
-    open fun getConfigFields(ctx: ProtocolGenerator.GenerationContext): List<ConfigField> = listOf()
+    open fun getConfigClass(writer: SwiftWriter): ServiceConfig {
+        return DefaultConfig(writer)
+    }
 
     /**
      * Get the operations with HTTP Bindings.
@@ -1208,3 +1212,5 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return containedOperations
     }
 }
+
+class DefaultConfig(writer: SwiftWriter): ServiceConfig(writer) {}
