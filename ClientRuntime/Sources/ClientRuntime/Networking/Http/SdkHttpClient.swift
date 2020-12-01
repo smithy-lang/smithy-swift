@@ -40,8 +40,7 @@ public class SdkHttpClient {
                         completion(.failure(.client(.deserializationFailed(err))))
                         return
                     }
-                }
-                else {
+                } else {
                     do {
                         let error = try OutputError(httpResponse: httpResponse,
                                                     decoder: context.decoder)

@@ -194,4 +194,3 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         Assertions.assertEquals(openParens, closedParens)
     }
 }
-
