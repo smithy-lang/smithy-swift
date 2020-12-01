@@ -84,7 +84,7 @@ class HttpProtocolClientGenerator(
             writer.write("")
             renderConfigInit(configFields)
             writer.write("")
-            serviceConfig.renderConvienceInits(serviceSymbol)
+            serviceConfig.renderConvenienceInits(serviceSymbol)
             writer.write("")
             serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
         }
