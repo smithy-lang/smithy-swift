@@ -27,7 +27,11 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.camelCaseName
+import software.amazon.smithy.swift.codegen.defaultName
 
 /**
  * Section name used when rendering the encoder and decoder in the initializer of the client
@@ -107,7 +111,6 @@ class HttpProtocolClientGenerator(
             serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
         }
     }
-
 
     private fun renderConfigInit(configFields: List<ConfigField>) {
         if (configFields.isNotEmpty()) {
@@ -204,7 +207,7 @@ class HttpProtocolClientGenerator(
         val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
-        //TODO: remove this if block after synthetic input/outputs are completely done
+        // TODO: remove this if block after synthetic input/outputs are completely done
         if (inputShape.isEmpty) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
             // protocol request from the operation itself
@@ -225,8 +228,8 @@ class HttpProtocolClientGenerator(
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
         writer.write("let context = Context(encoder: encoder,")
         writer.indent(5).write("  decoder: decoder,")
-        writer.write("  outputType: ${outputShapeName}.self,")
-        writer.write("  outputError: ${operationErrorName}.self,")
+        writer.write("  outputType: $outputShapeName.self,")
+        writer.write("  outputError: $operationErrorName.self,")
         writer.write("  operation: \"${op.camelCaseName()}\",")
         writer.write("  serviceName: serviceName)")
         writer.dedent(5)

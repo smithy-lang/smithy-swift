@@ -2,7 +2,6 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.utils.ToSmithyBuilder
 
 /**
  * Represents a config field on a client config struct.
@@ -29,7 +28,6 @@ abstract class ServiceConfig(val writer: SwiftWriter) {
     }
 
     open fun renderConvienceInits(serviceSymbol: Symbol) {
-        //pass none needed for default white label sdk config
+        // pass none needed for default white label sdk config
     }
-
 }

@@ -1,27 +1,31 @@
- /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
- */
- package software.amazon.smithy.swift.codegen
+/*
+* Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
+package software.amazon.smithy.swift.codegen
 
- import io.kotest.matchers.string.shouldContainOnlyOnce
- import org.junit.jupiter.api.Assertions
- import org.junit.jupiter.api.Test
- import software.amazon.smithy.codegen.core.SymbolProvider
- import software.amazon.smithy.model.shapes.ShapeId
- import software.amazon.smithy.swift.codegen.integration.*
+import io.kotest.matchers.string.shouldContainOnlyOnce
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.swift.codegen.integration.DefaultConfig
+import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
+import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
+import software.amazon.smithy.swift.codegen.integration.HttpFeature
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 
- class HttpProtocolClientGeneratorTests : TestsBase() {
+class HttpProtocolClientGeneratorTests : TestsBase() {
     private val commonTestContents: String
 
     init {
@@ -76,11 +80,11 @@
         commonTestContents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
     }
 
-     //FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
+    // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
 //     @Test
 //     fun `it renders operation bodies`() {
 //         val expectedBodies = listOf(
-//"""
+// """
 //    public func getFoo(input: GetFooRequest, completion: @escaping (SdkResult<GetFooResponse, GetFooError>) -> Void)
 //    {
 //        do {
@@ -98,8 +102,8 @@
 //            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
 //        }
 //    }
-//""",
-//"""
+// """,
+// """
 //    public func getFooNoOutput(input: GetFooRequest, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
 //    {
 //        do {
@@ -117,8 +121,8 @@
 //            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
 //        }
 //    }
-//""",
-//"""
+// """,
+// """
 //    public func getFooStreamingInput(input: GetFooStreamingRequest, completion: @escaping (SdkResult<GetFooResponse, GetFooStreamingInputError>) -> Void)
 //    {
 //        do {
@@ -136,8 +140,8 @@
 //            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
 //        }
 //    }
-//""",
-//"""
+// """,
+// """
 //    public func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamSource, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputError>) -> Void)
 //    {
 //        do {
@@ -155,8 +159,8 @@
 //            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
 //        }
 //    }
-//""",
-//"""
+// """,
+// """
 //    public func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamingHandler: StreamSource, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputNoInputError>) -> Void)
 //    {
 //        do {
@@ -174,7 +178,7 @@
 //            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
 //        }
 //    }
-//"""
+// """
 //         )
 //         expectedBodies.forEach {
 //             commonTestContents.shouldContainOnlyOnce(it)
@@ -199,4 +203,4 @@
         Assertions.assertEquals(openBraces, closedBraces)
         Assertions.assertEquals(openParens, closedParens)
     }
- }
+}

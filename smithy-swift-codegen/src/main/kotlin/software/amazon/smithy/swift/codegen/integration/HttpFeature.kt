@@ -102,7 +102,7 @@ abstract class HttpResponseDecoder(private val requestDecoderName: String, priva
 
 class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpRequestEncoder("encoder", requestEncoderOptions) {
     override fun renderInstantiation(writer: SwiftWriter) {
-        //render nothing as we are relying on an encoder passed via the config object
+        // render nothing as we are relying on an encoder passed via the config object
     }
     override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
         writer.write("self.encoder = \$L.encoder", nameOfConfigObject)
@@ -110,7 +110,7 @@ class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String
 }
 class DefaultResponseDecoder(private val responseDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpResponseDecoder("decoder", responseDecoderOptions) {
     override fun renderInstantiation(writer: SwiftWriter) {
-        //render nothing as we are relying on an encoder passed via the config object
+        // render nothing as we are relying on an encoder passed via the config object
     }
     override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
         writer.write("self.decoder = \$L.decoder", nameOfConfigObject)

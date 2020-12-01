@@ -127,7 +127,7 @@ class SwiftDelegator(
         block(writer)
     }
 
-    private fun     checkoutWriter(filename: String): SwiftWriter {
+    private fun checkoutWriter(filename: String): SwiftWriter {
         val formattedFilename = Paths.get(filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) { SwiftWriter(settings.moduleName) }
