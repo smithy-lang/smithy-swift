@@ -61,7 +61,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 

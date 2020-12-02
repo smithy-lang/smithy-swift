@@ -25,7 +25,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 

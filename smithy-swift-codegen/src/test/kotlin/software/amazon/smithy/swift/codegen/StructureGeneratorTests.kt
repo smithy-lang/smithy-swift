@@ -67,7 +67,7 @@ class StructureGeneratorTests : TestsBase() {
     @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
-        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 
@@ -124,7 +124,7 @@ public struct RecursiveShapesInputOutput: Equatable {
     @Test
     fun `it renders recursive nested shapes in lists`() {
         val structs = createStructureContainingNestedRecursiveShapeList()
-        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 

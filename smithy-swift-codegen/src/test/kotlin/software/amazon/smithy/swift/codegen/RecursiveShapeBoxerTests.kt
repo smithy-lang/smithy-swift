@@ -19,7 +19,7 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
 
     @Test
     fun `add the box trait to recursive shapes`() {
-        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
         val transformed = RecursiveShapeBoxer.transform(model)
 
         val traitedMember = "smithy.example#RecursiveShapesInputOutputNested1\$nested"
@@ -33,7 +33,7 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
 
     @Test
     fun `add the box trait to recursive shapes during integration with SwiftCodegenPlugin`() {
-        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-test.smithy")
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
         SwiftCodegenPlugin().execute(context)
