@@ -31,8 +31,30 @@ public struct MiddlewareStack<Output: HttpResponseBinding, OutputError: HttpResp
             futures.append(middleware.respond(to: context))
         }
         
+        for middleware in serializeMiddleware {
+            futures.append(middleware.respond(to: context))
+        }
         
-        client.execute(context: context, completion: completion)
+        for middleware in buildMiddleware {
+            futures.append(middleware.respond(to: context))
+        }
         
+        for middleware in finalizeMiddleware {
+            futures.append(middleware.respond(to: context))
+        }
+        //todo: remove this to where it should go?
+        for middleware in deserializeMiddleware {
+            futures.append(middleware.respond(to: context))
+        }
+        
+        let future = Future.whenAllComplete(futures)
+        future.then { (result) in
+            switch result {
+            case .failure(let error):
+                completion(.failure(.client(.deserializationFailed(error))))
+            case .success(_):
+                client.execute(context: context, completion: completion)
+            }
+        }
     }
 }
