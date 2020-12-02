@@ -19,6 +19,7 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
                 decoder: ResponseDecoder,
                 outputType: Output.Type,
                 outputError: OutputError.Type,
+                request: SdkHttpRequest,
                 operation: String,
                 serviceName: String,
                 request: SdkHttpRequest) {
@@ -26,6 +27,7 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
         self.decoder = decoder
         self.outputType = outputType
         self.outputError = outputError
+        self.request = request
         self.operation = operation
         self.serviceName = serviceName
         self.request = request

@@ -16,14 +16,13 @@ public class SdkHttpClient {
         }
     }
     
-    public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         engine.execute(request: request, completion: completion)
     }
     
-    public func execute<OutputType, OutputError>(request: SdkHttpRequest,
-                                                 context: Context<OutputType, OutputError>,
+    public func execute<OutputType, OutputError>(context: Context<OutputType, OutputError>,
                                                  completion: @escaping (SdkResult<OutputType, OutputError>) -> Void) {
-        engine.execute(request: request) { (httpResult) in
+        engine.execute(request: context.request) { (httpResult) in
             
             switch httpResult {
             case .failure(let httpClientErr):
