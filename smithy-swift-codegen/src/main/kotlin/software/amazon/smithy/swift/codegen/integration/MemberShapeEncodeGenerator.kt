@@ -14,13 +14,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.MapShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -89,9 +83,10 @@ open class MemberShapeEncodeGenerator(
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                     if (isBoxed) {
-                        writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                            renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
-                        }
+//                        writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+//                            renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
+//                        }
+                        renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                     }
                 }
             }
@@ -99,14 +94,15 @@ open class MemberShapeEncodeGenerator(
             is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
-                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                if (isBoxed) {
-                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                        writer.write("try $containerName.encode($extension)")
-                    }
-                } else {
-                    writer.write("try $containerName.encode($extension)")
-                }
+                // Change for Sparse support:
+//                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+//                if (isBoxed) {
+//                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+//                        writer.write("try $containerName.encode($extension)")
+//                    }
+//                } else {
+                writer.write("try $containerName.encode($extension)")
+//                }
             }
         }
     }

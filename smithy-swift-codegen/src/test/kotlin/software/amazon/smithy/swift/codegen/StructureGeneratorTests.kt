@@ -17,8 +17,10 @@ package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import org.junit.jupiter.api.Assertions
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -65,7 +67,7 @@ class StructureGeneratorTests : TestsBase() {
     @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 
@@ -122,7 +124,7 @@ public struct RecursiveShapesInputOutput: Equatable {
     @Test
     fun `it renders recursive nested shapes in lists`() {
         val structs = createStructureContainingNestedRecursiveShapeList()
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = createModelFromSmithy("recursive-shape-sparse-trait-test.smithy")
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 
@@ -135,11 +137,11 @@ public struct RecursiveShapesInputOutput: Equatable {
             """
 public struct RecursiveShapesInputOutputNestedList1: Equatable {
     public let foo: String?
-    public let recursiveList: [RecursiveShapesInputOutputNested2?]?
+    public let recursiveList: [RecursiveShapesInputOutputNested2]?
 
     public init (
         foo: String? = nil,
-        recursiveList: [RecursiveShapesInputOutputNested2?]? = nil
+        recursiveList: [RecursiveShapesInputOutputNested2]? = nil
     )
     {
         self.foo = foo
@@ -229,5 +231,25 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         })
 
         return assembler.assemble().unwrap()
+    }
+
+    @Test
+    fun `check for dense datatypes`() {
+        val model = createModelFromSmithy("sparse-trait-test.smithy")
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        SwiftCodegenPlugin().execute(context)
+
+        val jsonListsInputOutput = manifest
+            .getFileString("example/models/JsonListsInputOutput.swift").get()
+        Assertions.assertNotNull(jsonListsInputOutput)
+        jsonListsInputOutput.shouldContain("public struct JsonListsInputOutput: Equatable {\n" +
+                "    public let booleanList: [Bool]?\n" +
+                "    public let integerList: [Int]?\n" +
+                "    public let nestedStringList: [[String]]?\n" +
+                "    public let sparseStringList: [String?]?\n" +
+                "    public let stringList: [String]?\n" +
+                "    public let stringSet: Set<String>?\n" +
+                "    public let timestampList: [Date]?")
     }
 }

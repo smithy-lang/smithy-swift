@@ -36,7 +36,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         val ignoredTests = setOf(
-            "RestJsonListsSerializeNull", // TODO - sparse lists not supported - this test needs removed
+//            "RestJsonListsSerializeNull", // TODO - sparse lists not supported - this test needs removed
             "RestJsonSerializesNullMapValues", // TODO - sparse maps not supported - this test needs removed
             // FIXME - document type not fully supported yet
             "InlineDocumentInput",
@@ -61,7 +61,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
@@ -297,10 +297,8 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            if let unwrappedQueryItemValue = queryItemValue {
-                                let queryItem = URLQueryItem(name: "qtimeList", value: String(unwrappedQueryItemValue.iso8601WithoutFractionalSeconds()))
-                                queryItems.append(queryItem)
-                            }
+                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
+                            queryItems.append(queryItem)
                         }
                     }
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -357,5 +355,21 @@ extension ExplicitStructResponse {
         val testProtocolName = "aws.rest-json-1.1"
         val sanitizedProtocolName = ProtocolGenerator.getSanitizedName(testProtocolName)
         sanitizedProtocolName.shouldBeEqualComparingTo("AWSRestJson1_1")
+    }
+
+    @Test
+    fun `httpResponseCodeOutput response init content`() {
+        val contents = getModelFileContents("example", "HttpResponseCodeOutput+ResponseInit.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+extension HttpResponseCodeOutput {
+    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+
+        self.status = httpResponse.statusCode.rawValue
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
     }
 }

@@ -39,16 +39,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.HttpHeaderTrait
-import software.amazon.smithy.model.traits.HttpLabelTrait
-import software.amazon.smithy.model.traits.HttpPayloadTrait
-import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
-import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.model.traits.MediaTypeTrait
-import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -481,7 +472,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "Bool(\$0)"
                         }
-                        is NumberShape -> stringToNumber(collectionMemberTarget, "\$0")
+                        is NumberShape -> stringToNumber(collectionMemberTarget, "\$0")+"!"
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -493,14 +484,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            stringToDate("\$0", tsFormat)
+                            stringToDate("\$0", tsFormat)+"!"
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"
                             when {
                                 collectionMemberTarget.hasTrait(EnumTrait::class.java) -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "${enumSymbol.name}(rawValue: \$0)"
+                                    "${enumSymbol.name}(rawValue: \$0)!"
                                 }
                                 collectionMemberTarget.hasTrait(MediaTypeTrait::class.java) -> {
                                     "try \$0.base64EncodedString()"
@@ -650,6 +641,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // initialize query members
         queryMemberNames.sorted().forEach {
             writer.write("self.$it = nil")
+        }
+
+        val responseCodeTraitMembers = responseBindings.values
+            .filter { it.member.hasTrait(HttpResponseCodeTrait::class.java) }
+            .toMutableSet()
+        if (responseCodeTraitMembers.isNotEmpty()) {
+            responseCodeTraitMembers.forEach {
+                writer.write("self.${it.locationName.toLowerCase()} = httpResponse.statusCode.rawValue")
+            }
         }
     }
 
@@ -976,17 +976,30 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
                         if (collectionMemberTargetSymbol.isBoxed()) {
-                            writer.openBlock("if let unwrappedQueryItemValue = queryItemValue {", "}") {
-                                queryItemValue = formatHeaderOrQueryValue(
-                                    ctx,
-                                    "unwrappedQueryItemValue",
-                                    memberTarget.member,
-                                    HttpBinding.Location.QUERY,
-                                    bindingIndex
-                                )
-                                writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-                                writer.write("queryItems.append(queryItem)")
-                            }
+//                            if( ! (memberTarget is ListShape) ) {
+//                                writer.openBlock("if let unwrappedQueryItemValue = queryItemValue {", "}") {
+//                                    queryItemValue = formatHeaderOrQueryValue(
+//                                        ctx,
+//                                        "unwrappedQueryItemValue",
+//                                        memberTarget.member,
+//                                        HttpBinding.Location.QUERY,
+//                                        bindingIndex
+//                                    )
+//                                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
+//                                    writer.write("queryItems.append(queryItem)")
+//                                }
+//                            }
+//                            else {
+                            queryItemValue = formatHeaderOrQueryValue(
+                                ctx,
+                                "queryItemValue",
+                                memberTarget.member,
+                                HttpBinding.Location.QUERY,
+                                bindingIndex
+                            )
+                            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
+                            writer.write("queryItems.append(queryItem)")
+//                            }
                         } else {
                             writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                             writer.write("queryItems.append(queryItem)")
@@ -1066,16 +1079,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                         if (collectionMemberTargetSymbol.isBoxed()) {
-                            writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                headerValue = formatHeaderOrQueryValue(
-                                    ctx,
-                                    "unwrappedHeaderValue",
-                                    memberTarget.member,
-                                    HttpBinding.Location.HEADER,
-                                    bindingIndex
-                                )
-                                writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
-                            }
+//                            if( ! (memberTarget is ListShape) ) {
+//                                writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
+//                                    headerValue = formatHeaderOrQueryValue(
+//                                        ctx,
+//                                        "unwrappedHeaderValue",
+//                                        memberTarget.member,
+//                                        HttpBinding.Location.HEADER,
+//                                        bindingIndex
+//                                    )
+//                                    writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
+//                                }
+//                            }
+//                            else {
+                            headerValue = formatHeaderOrQueryValue(
+                                ctx,
+                                "headerValue",
+                                memberTarget.member,
+                                HttpBinding.Location.HEADER,
+                                bindingIndex
+                            )
+                            writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
+//                            }
                         } else {
                             writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                         }

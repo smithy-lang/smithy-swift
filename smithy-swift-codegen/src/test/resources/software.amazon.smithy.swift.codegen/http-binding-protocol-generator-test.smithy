@@ -27,8 +27,17 @@ service Example {
         RecursiveShapes,
         JsonUnions,
         NestedShapes,
-        GreetingWithErrors
+        GreetingWithErrors,
+        JsonLists,
+        HttpResponseCode
     ]
+}
+
+@idempotent
+@http(uri: "/JsonLists", method: "PUT")
+operation JsonLists {
+    input: JsonListsInputOutput,
+    output: JsonListsInputOutput
 }
 
 //Nested aggregate shapes
@@ -1000,3 +1009,45 @@ apply FooError @httpResponseTests([
         },
     }
 ])
+
+structure JsonListsInputOutput {
+    stringList: StringList,
+    sparseStringList: SparseStringList,
+    booleanList: BooleanList,
+    stringSet: StringSet,
+    integerList: IntegerList,
+    timestampList: TimestampList,
+    nestedStringList: NestedStringList
+}
+
+list NestedStringList {
+    member: StringList
+}
+
+list BooleanList {
+    member: Boolean
+}
+
+set StringSet {
+    member: String
+}
+
+list IntegerList {
+    member: Integer
+}
+
+@sparse
+list SparseStringList {
+    member: String
+}
+
+@idempotent
+@http(uri: "/HttpResponseCode", method: "PUT")
+operation HttpResponseCode {
+    output: HttpResponseCodeOutput
+}
+
+structure HttpResponseCodeOutput {
+    @httpResponseCode
+    Status: Integer
+}

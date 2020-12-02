@@ -159,14 +159,14 @@ open class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
-            if (isBoxed) {
-                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
-                }
-            } else {
-                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
-            }
+//            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+//            if (isBoxed) {
+//                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+//                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+//                }
+//            } else {
+            renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+//            }
         }
     }
 

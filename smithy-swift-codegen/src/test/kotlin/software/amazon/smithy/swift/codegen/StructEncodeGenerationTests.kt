@@ -26,7 +26,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class StructEncodeGenerationTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
@@ -114,9 +114,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     if let intList = intList {
                         var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
                         for intlist0 in intList {
-                            if let intlist0 = intlist0 {
-                                try intListContainer.encode(intlist0)
-                            }
+                            try intListContainer.encode(intlist0)
                         }
                     }
                     if let intMap = intMap {
@@ -168,9 +166,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     if let timestampList = timestampList {
                         var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
-                            if let timestamplist0 = timestamplist0 {
-                                try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
-                            }
+                            try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
                         }
                     }
                 }
@@ -331,6 +327,56 @@ class StructEncodeGenerationTests : TestsBase() {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `sparse string list content`() {
+        val contents = getModelFileContents("example", "JsonListsInputOutput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+extension JsonListsInputOutput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case booleanList
+        case integerList
+        case nestedStringList
+        case sparseStringList
+        case stringList
+        case stringSet
+        case timestampList
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let booleanList = booleanList {
+            var booleanListContainer = container.nestedUnkeyedContainer(forKey: .booleanList)
+            for booleanlist0 in booleanList {
+                try booleanListContainer.encode(booleanlist0)
+            }
+        }
+        if let integerList = integerList {
+            var integerListContainer = container.nestedUnkeyedContainer(forKey: .integerList)
+            for integerlist0 in integerList {
+                try integerListContainer.encode(integerlist0)
+            }
+        }
+        if let nestedStringList = nestedStringList {
+            var nestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedStringList)
+            for nestedstringlist0 in nestedStringList {
+                var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
+                for stringlist1 in nestedstringlist0 {
+                    try nestedstringlist0Container.encode(stringlist1)
+                }
+            }
+        }
+        if let sparseStringList = sparseStringList {
+            var sparseStringListContainer = container.nestedUnkeyedContainer(forKey: .sparseStringList)
+            for sparsestringlist0 in sparseStringList {
+                try sparseStringListContainer.encode(sparsestringlist0)
+            }
+        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

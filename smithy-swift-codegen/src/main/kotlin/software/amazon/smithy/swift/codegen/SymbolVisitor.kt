@@ -53,6 +53,7 @@ import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.StringUtils
 
@@ -221,7 +222,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (reference.isBoxed()) "?" else ""
+//        var suffix = if (reference.isBoxed()) "?" else ""
+        val suffix = if(shape.hasTrait(SparseTrait::class.java)) "?" else ""
         val referenceTypeName = "${reference.name}$suffix"
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
@@ -235,7 +237,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (reference.isBoxed()) "?" else ""
+//        val suffix = if (reference.isBoxed()) "?" else ""
+        val suffix = if(shape.hasTrait(SparseTrait::class.java)) "?" else ""
         val referenceTypeName = "${reference.name}$suffix"
         return createSymbolBuilder(shape, "Set<$referenceTypeName>", true).addReference(reference)
             .build()

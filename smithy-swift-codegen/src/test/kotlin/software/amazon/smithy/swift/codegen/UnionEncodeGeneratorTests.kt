@@ -23,7 +23,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class UnionEncodeGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
@@ -118,9 +118,7 @@ class UnionEncodeGeneratorTests : TestsBase() {
                             if let listValue = listValue {
                                 var listValueContainer = container.nestedUnkeyedContainer(forKey: .listValue)
                                 for stringlist0 in listValue {
-                                    if let stringlist0 = stringlist0 {
-                                        try listValueContainer.encode(stringlist0)
-                                    }
+                                    try listValueContainer.encode(stringlist0)
                                 }
                             }
                         case let .mapValue(mapValue):

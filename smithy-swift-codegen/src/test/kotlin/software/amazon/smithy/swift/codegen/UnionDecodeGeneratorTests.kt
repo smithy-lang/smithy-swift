@@ -23,7 +23,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class UnionDecodeGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
+    var model = createModelFromSmithy("http-binding-protocol-generator-sparse-trait-test.smithy")
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
@@ -139,10 +139,10 @@ class UnionDecodeGeneratorTests : TestsBase() {
                         self = .enumValue(enumValue)
                         return
                     }
-                    let listValueContainer = try values.decodeIfPresent([String?].self, forKey: .listValue)
-                    var listValueDecoded0:[String?]? = nil
+                    let listValueContainer = try values.decodeIfPresent([String].self, forKey: .listValue)
+                    var listValueDecoded0:[String]? = nil
                     if let listValueContainer = listValueContainer {
-                        listValueDecoded0 = [String?]()
+                        listValueDecoded0 = [String]()
                         for string0 in listValueContainer {
                             listValueDecoded0?.append(string0)
                         }
