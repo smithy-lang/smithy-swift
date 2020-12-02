@@ -39,7 +39,17 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
+import software.amazon.smithy.model.traits.HttpResponseCodeTrait
+import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -472,7 +482,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "Bool(\$0)"
                         }
-                        is NumberShape -> stringToNumber(collectionMemberTarget, "\$0")+"!"
+                        is NumberShape -> stringToNumber(collectionMemberTarget, "\$0") + "!"
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -484,7 +494,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            stringToDate("\$0", tsFormat)+"!"
+                            stringToDate("\$0", tsFormat) + "!"
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"

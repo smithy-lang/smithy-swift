@@ -29,7 +29,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 /*
