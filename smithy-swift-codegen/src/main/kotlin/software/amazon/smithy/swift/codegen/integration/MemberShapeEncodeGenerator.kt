@@ -220,13 +220,13 @@ open class MemberShapeEncodeGenerator(
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
                     val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
-                    if (isBoxed) {
-                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
-                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-                        }
-                    } else {
-                        writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-                    }
+//                    if (isBoxed) {
+//                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
+//                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+//                        }
+//                    } else {
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+//                    }
                 }
             }
         }

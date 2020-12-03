@@ -151,10 +151,10 @@ class UnionDecodeGeneratorTests : TestsBase() {
                         self = .listValue(listValue)
                         return
                     }
-                    let mapValueContainer = try values.decodeIfPresent([String:String?].self, forKey: .mapValue)
-                    var mapValueDecoded0: [String:String?]? = nil
+                    let mapValueContainer = try values.decodeIfPresent([String:String].self, forKey: .mapValue)
+                    var mapValueDecoded0: [String:String]? = nil
                     if let mapValueContainer = mapValueContainer {
-                        mapValueDecoded0 = [String:String?]()
+                        mapValueDecoded0 = [String:String]()
                         for (key0, string0) in mapValueContainer {
                             mapValueDecoded0?[key0] = string0
                         }

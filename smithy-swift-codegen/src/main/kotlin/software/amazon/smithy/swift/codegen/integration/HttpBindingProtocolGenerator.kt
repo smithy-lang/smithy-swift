@@ -1171,20 +1171,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             HttpBinding.Location.HEADER,
                             bindingIndex
                         )
-                        if (mapValueShapeTargetSymbol.isBoxed()) {
-                            writer.openBlock("if let unwrappedPrefixHeaderMapValue = prefixHeaderMapValue {", "}") {
-                                headerValue = formatHeaderOrQueryValue(
-                                    ctx,
-                                    "unwrappedPrefixHeaderMapValue",
-                                    it.member,
-                                    HttpBinding.Location.HEADER,
-                                    bindingIndex
-                                )
-                                writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                            }
-                        } else {
-                            writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                        }
+//                        if (mapValueShapeTargetSymbol.isBoxed()) {
+//                            writer.openBlock("if let unwrappedPrefixHeaderMapValue = prefixHeaderMapValue {", "}") {
+//                                headerValue = formatHeaderOrQueryValue(
+//                                    ctx,
+//                                    "unwrappedPrefixHeaderMapValue",
+//                                    it.member,
+//                                    HttpBinding.Location.HEADER,
+//                                    bindingIndex
+//                                )
+//                                writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+//                            }
+//                        } else {
+                        writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+//                        }
                     }
                 }
             }

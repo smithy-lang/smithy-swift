@@ -174,7 +174,7 @@ class SymbolProviderTest : TestsBase() {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
         val mapSymbol = provider.toSymbol(map)
 
-        assertEquals("[String:Record?]", mapSymbol.name)
+        assertEquals("[String:Record]", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed())
         assertEquals("nil", mapSymbol.defaultValue())
     }

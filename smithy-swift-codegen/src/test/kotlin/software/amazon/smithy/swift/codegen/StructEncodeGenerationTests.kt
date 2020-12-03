@@ -120,9 +120,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     if let intMap = intMap {
                         var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (key0, intmap0) in intMap {
-                            if let intmap0 = intmap0 {
-                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                            }
+                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                         }
                     }
                     if let member1 = member1 {
@@ -195,41 +193,31 @@ class StructEncodeGenerationTests : TestsBase() {
                     if let blobMap = blobMap {
                         var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
                         for (key0, blobmap0) in blobMap {
-                            if let blobmap0 = blobmap0 {
-                                try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
-                            }
+                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let dateMap = dateMap {
                         var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
                         for (key0, datemap0) in dateMap {
-                            if let datemap0 = datemap0 {
-                                try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
-                            }
+                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let enumMap = enumMap {
                         var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
                         for (key0, enummap0) in enumMap {
-                            if let enummap0 = enummap0 {
-                                try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
-                            }
+                            try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
                         }
                     }
                     if let intMap = intMap {
                         var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (key0, intmap0) in intMap {
-                            if let intmap0 = intmap0 {
-                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                            }
+                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                         }
                     }
                     if let structMap = structMap {
                         var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
                         for (key0, structmap0) in structMap {
-                            if let structmap0 = structmap0 {
-                                try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
-                            }
+                            try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
                         }
                     }
                 }

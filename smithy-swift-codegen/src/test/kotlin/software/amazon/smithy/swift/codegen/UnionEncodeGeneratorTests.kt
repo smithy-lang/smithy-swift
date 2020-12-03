@@ -125,9 +125,7 @@ class UnionEncodeGeneratorTests : TestsBase() {
                             if let mapValue = mapValue {
                                 var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapValue)
                                 for (key0, stringmap0) in mapValue {
-                                    if let stringmap0 = stringmap0 {
-                                        try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: key0))
-                                    }
+                                    try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: key0))
                                 }
                             }
                         case let .numberValue(numberValue):

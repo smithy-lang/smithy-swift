@@ -230,7 +230,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val suffix = if (reference.isBoxed()) "?" else ""
+//        val suffix = if (reference.isBoxed()) "?" else ""
+        val suffix = if (shape.hasTrait(SparseTrait::class.java)) "?" else ""
         val referenceTypeName = "${reference.name}$suffix"
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
     }
