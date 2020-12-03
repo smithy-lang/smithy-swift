@@ -14,47 +14,23 @@
 //
 import AwsCommonRuntimeKit
 
-public struct MiddlewareStack<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
-    let context: Context<Output, OutputError>
-    	
-    public var initializeMiddleware: [Middleware]
-    public var serializeMiddleware: [Middleware]
-    public var buildMiddleware: [Middleware]
-    public var finalizeMiddleware: [Middleware]
-    public var deserializeMiddleware: [Middleware]
+public struct MiddlewareStack {
     
-    func handleMiddleware(context: Context<Output, OutputError>,
-                          client: SdkHttpClient,
-                          completion: @escaping (SdkResult<Output, OutputError>) -> Void) {
-        var futures = [Future<Void>]()
-        for middleware in initializeMiddleware {
-            futures.append(middleware.respond(to: context))
-        }
-        
-        for middleware in serializeMiddleware {
-            futures.append(middleware.respond(to: context))
-        }
-        
-        for middleware in buildMiddleware {
-            futures.append(middleware.respond(to: context))
-        }
-        
-        for middleware in finalizeMiddleware {
-            futures.append(middleware.respond(to: context))
-        }
-        //todo: remove this to where it should go?
-        for middleware in deserializeMiddleware {
-            futures.append(middleware.respond(to: context))
-        }
-        
-        let future = Future.whenAllComplete(futures)
-        future.then { (result) in
-            switch result {
-            case .failure(let error):
-                completion(.failure(.client(.deserializationFailed(error))))
-            case .success(_):
-                client.execute(context: context, completion: completion)
-            }
-        }
+    public var initializeMiddleware: InitializeMiddleware
+    public var serializeMiddleware: SerializeMiddleware
+    public var buildMiddleware: BuildMiddleware
+    public var finalizeMiddleware: FinalizeMiddleware
+    public var deserializeMiddleware: DeserializeMiddleware
+    
+    public init(initializeMiddleware: InitializeMiddleware,
+                serializeMiddleware: SerializeMiddleware,
+                buildMiddleware: BuildMiddleware,
+                finalizeMiddleware: FinalizeMiddleware,
+                deserializeMiddleware: DeserializeMiddleware) {
+        self.initializeMiddleware = initializeMiddleware
+        self.serializeMiddleware = serializeMiddleware
+        self.buildMiddleware = buildMiddleware
+        self.finalizeMiddleware = finalizeMiddleware
+        self.deserializeMiddleware = deserializeMiddleware
     }
 }

@@ -15,5 +15,15 @@
 import AwsCommonRuntimeKit
 
 public protocol Middleware {
-    func respond<Output, OutputError>(to context: Context<Output, OutputError>) -> Future<Void>
+    //unique id for the middleware
+    var id: Int {get set}
+    
+    // Performs the middleware's handling of the input, returning the output,
+    // or error. The middleware can invoke the next Responder if handling should
+    // continue.
+    func handleMiddleware<Input: HttpRequestBinding,
+                          Output,
+                          OutputError>(to context: Context<Output, OutputError>,
+                                                                          input: Input,
+                                                                          next: Responder) -> Future<Void>
 }
