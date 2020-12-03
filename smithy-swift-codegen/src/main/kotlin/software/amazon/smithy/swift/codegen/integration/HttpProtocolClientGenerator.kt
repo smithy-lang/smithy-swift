@@ -77,6 +77,7 @@ class HttpProtocolClientGenerator(
                 writer.write("self.config = config")
             }
             writer.write("")
+            //FIXME: possible move generation of the config to a separate file or above the service client
             renderConfig(serviceSymbol)
         }
     }
