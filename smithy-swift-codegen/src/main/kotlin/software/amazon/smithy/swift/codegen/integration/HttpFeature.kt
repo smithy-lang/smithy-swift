@@ -6,6 +6,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
  * HttpFeature interface that allows middleware customizations to be registered and configured
  * with the protocol generator
  */
+// FIXME: rename this interface to be something more appropriate for the Swift SDK architecture
+// as this is specific to the Kotlin SDK
 interface HttpFeature {
     // the name of the feature to install
     val name: String

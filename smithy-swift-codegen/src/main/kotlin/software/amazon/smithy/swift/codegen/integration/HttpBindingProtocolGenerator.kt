@@ -1179,10 +1179,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Get all of the features that are used as middleware
      */
     open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
-        val features = mutableListOf<HttpFeature>()
-        features.add(DefaultRequestEncoder())
-        features.add(DefaultResponseDecoder())
-        return features
+        return mutableListOf(
+            DefaultRequestEncoder(),
+            DefaultResponseDecoder()
+        )
     }
 
     open fun getConfigClass(writer: SwiftWriter): ServiceConfig {
