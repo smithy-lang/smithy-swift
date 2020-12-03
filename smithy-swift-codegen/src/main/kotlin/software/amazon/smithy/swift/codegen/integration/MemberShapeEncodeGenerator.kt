@@ -89,9 +89,6 @@ open class MemberShapeEncodeGenerator(
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                     if (isBoxed) {
-//                        writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-//                            renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
-//                        }
                         renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                     }
                 }
@@ -100,15 +97,7 @@ open class MemberShapeEncodeGenerator(
             is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
-                // Change for Sparse support:
-//                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-//                if (isBoxed) {
-//                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-//                        writer.write("try $containerName.encode($extension)")
-//                    }
-//                } else {
                 writer.write("try $containerName.encode($extension)")
-//                }
             }
         }
     }
@@ -219,14 +208,7 @@ open class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
-//                    if (isBoxed) {
-//                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
-//                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-//                        }
-//                    } else {
                     writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-//                    }
                 }
             }
         }

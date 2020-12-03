@@ -985,35 +985,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-                        if (collectionMemberTargetSymbol.isBoxed()) {
-//                            if( ! (memberTarget is ListShape) ) {
-//                                writer.openBlock("if let unwrappedQueryItemValue = queryItemValue {", "}") {
-//                                    queryItemValue = formatHeaderOrQueryValue(
-//                                        ctx,
-//                                        "unwrappedQueryItemValue",
-//                                        memberTarget.member,
-//                                        HttpBinding.Location.QUERY,
-//                                        bindingIndex
-//                                    )
-//                                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-//                                    writer.write("queryItems.append(queryItem)")
-//                                }
-//                            }
-//                            else {
-                            queryItemValue = formatHeaderOrQueryValue(
-                                ctx,
-                                "queryItemValue",
-                                memberTarget.member,
-                                HttpBinding.Location.QUERY,
-                                bindingIndex
-                            )
-                            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-                            writer.write("queryItems.append(queryItem)")
-//                            }
-                        } else {
-                            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-                            writer.write("queryItems.append(queryItem)")
-                        }
+                        writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
+                        writer.write("queryItems.append(queryItem)")
                     }
                 } else {
                     memberName = formatHeaderOrQueryValue(
@@ -1088,32 +1061,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        if (collectionMemberTargetSymbol.isBoxed()) {
-//                            if( ! (memberTarget is ListShape) ) {
-//                                writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-//                                    headerValue = formatHeaderOrQueryValue(
-//                                        ctx,
-//                                        "unwrappedHeaderValue",
-//                                        memberTarget.member,
-//                                        HttpBinding.Location.HEADER,
-//                                        bindingIndex
-//                                    )
-//                                    writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
-//                                }
-//                            }
-//                            else {
-                            headerValue = formatHeaderOrQueryValue(
-                                ctx,
-                                "headerValue",
-                                memberTarget.member,
-                                HttpBinding.Location.HEADER,
-                                bindingIndex
-                            )
-                            writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
-//                            }
-                        } else {
-                            writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
-                        }
+                        writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
                     val memberNameWithExtension = formatHeaderOrQueryValue(
@@ -1171,20 +1119,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             HttpBinding.Location.HEADER,
                             bindingIndex
                         )
-//                        if (mapValueShapeTargetSymbol.isBoxed()) {
-//                            writer.openBlock("if let unwrappedPrefixHeaderMapValue = prefixHeaderMapValue {", "}") {
-//                                headerValue = formatHeaderOrQueryValue(
-//                                    ctx,
-//                                    "unwrappedPrefixHeaderMapValue",
-//                                    it.member,
-//                                    HttpBinding.Location.HEADER,
-//                                    bindingIndex
-//                                )
-//                                writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-//                            }
-//                        } else {
                         writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-//                        }
                     }
                 }
             }
