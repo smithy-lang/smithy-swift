@@ -14,12 +14,17 @@
 //
 import AwsCommonRuntimeKit
 
-struct InitializeMiddleware: Middleware {
-    func respond<Output, OutputError>(to context: Context<Output, OutputError>) -> Future<Void> where Output : HttpResponseBinding, OutputError : HttpResponseBinding {
-        //prepares input
-        //adds idempotency token provider
-        //sets any default params
-        //presigned URLS
-        return Future<Void>()
+public struct InitializeMiddleware: Middleware {
+    public var id: Int
+    //key is the id of the middleware and value is the position
+    var ids: [String: Position]
+
+    
+    public func handleMiddleware<Input, Output, OutputError>(to context: Context<Output, OutputError>, input: Input, next: Responder) -> Future<Void> where Input : HttpRequestBinding, Output : HttpResponseBinding, OutputError : HttpResponseBinding {
+                //prepares input
+                //adds idempotency token provider
+                //sets any default params
+                //presigned URLS
+                return Future<Void>()
     }
 }
