@@ -29,7 +29,8 @@ service Example {
         NestedShapes,
         GreetingWithErrors,
         JsonLists,
-        HttpResponseCode
+        HttpResponseCode,
+        JsonMaps
     ]
 }
 
@@ -38,6 +39,12 @@ service Example {
 operation JsonLists {
     input: JsonListsInputOutput,
     output: JsonListsInputOutput
+}
+
+@http(uri: "/JsonMaps", method: "POST")
+operation JsonMaps {
+    input: JsonMapsInputOutput,
+    output: JsonMapsInputOutput
 }
 
 //Nested aggregate shapes
@@ -1050,4 +1057,64 @@ operation HttpResponseCode {
 structure HttpResponseCodeOutput {
     @httpResponseCode
     Status: Integer
+}
+
+
+structure JsonMapsInputOutput {
+    denseStructMap: DenseStructMap,
+    sparseStructMap: SparseStructMap,
+    denseNumberMap: DenseNumberMap,
+    denseBooleanMap: DenseBooleanMap,
+    denseStringMap: DenseStringMap,
+    sparseNumberMap: SparseNumberMap,
+    sparseBooleanMap: SparseBooleanMap,
+    sparseStringMap: SparseStringMap,
+}
+
+structure GreetingStruct {
+    hi: String
+}
+
+map DenseStructMap {
+    key: String,
+    value: GreetingStruct
+}
+
+@sparse
+map SparseStructMap {
+    key: String,
+    value: GreetingStruct
+}
+
+map DenseBooleanMap {
+    key: String,
+    value: Boolean
+}
+
+map DenseNumberMap {
+    key: String,
+    value: Integer
+}
+
+map DenseStringMap {
+    key: String,
+    value: String
+}
+
+@sparse
+map SparseStringMap {
+    key: String,
+    value: String
+}
+
+@sparse
+map SparseBooleanMap {
+    key: String,
+    value: Boolean
+}
+
+@sparse
+map SparseNumberMap {
+    key: String,
+    value: Integer
 }
