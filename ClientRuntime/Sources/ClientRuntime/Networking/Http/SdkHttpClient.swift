@@ -56,6 +56,7 @@ public class SdkHttpClient {
                                                     decoder: context.decoder)
                         completion(.failure(SdkError.service(error)))
                     } catch let err {
+                        //TODO: double check that this is the error we should be passing back to the service client.
                         completion(.failure(.client(.deserializationFailed(err))))
                         return
                     }

@@ -13,6 +13,9 @@
 // permissions and limitations under the License.
 //
 
+/// This class is used by the service clients as the base class for configuration.
+/// At code generation time, a service client configuration is generated to inherit from this class.
+/// Anything contained in this class should be basics that all service clients can set while anything generated should be service specific.
 open class Configuration {
     public var encoder: RequestEncoder?
     public var decoder: ResponseDecoder?

@@ -34,19 +34,6 @@ import software.amazon.smithy.swift.codegen.camelCaseName
 import software.amazon.smithy.swift.codegen.defaultName
 
 /**
- * Section name used when rendering the encoder and decoder in the initializer of the client
- */
-const val SECTION_CLIENT_INIT_SERDE = "service-init-serde"
-/**
- * Section name used when rendering the declaration of the config class
- */
-const val SECTION_CONFIG_INHERITANCE = "configInheritanceType"
-/**
- * Section name used when rendering the default implementation static function
- */
-const val SECTION_DEFAULT_CONFIG_IMPLEMENTATION = "default_config_implementation"
-
-/**
  * Renders an implementation of a service interface for HTTP protocol
  */
 class HttpProtocolClientGenerator(
