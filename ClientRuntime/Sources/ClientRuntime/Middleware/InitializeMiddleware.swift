@@ -14,17 +14,41 @@
 //
 import AwsCommonRuntimeKit
 
+public struct InitializeResponder : Responder {
+    public typealias Input = HttpRequestBinding
+    
+    public typealias Output = SdkHttpRequest
+    
+    public typealias OutputError = ClientError
+    
+    public func respond(to context: ExecutionContext,
+                                                    input: Input) -> (Output, OutputError?) {
+        //adds idempotency token provider
+        //sets any default params
+        //presigned URLS
+
+        do {
+        let input = try! input.buildHttpRequest(method: context.method,
+                                                        path: context.path,
+                                                        encoder: context.encoder)
+        }
+
+        return(input, nil)
+    }
+    
+    
+}
+
 public struct InitializeMiddleware: Middleware {
+
+    public typealias Responder = InitializeResponder
+    
     public var id: Int
     //key is the id of the middleware and value is the position
     var ids: [String: Position]
-
     
-    public func handleMiddleware<Input, Output, OutputError>(to context: Context<Output, OutputError>, input: Input, next: Responder) -> Future<Void> where Input : HttpRequestBinding, Output : HttpResponseBinding, OutputError : HttpResponseBinding {
-                //prepares input
-                //adds idempotency token provider
-                //sets any default params
-                //presigned URLS
-                return Future<Void>()
+    public func handleMiddleware(to context: ExecutionContext, next: InitializeResponder) -> Future<Void> {
+        let input = InitializeResponder()
+        next.respond(to: context, input: input)
     }
 }
