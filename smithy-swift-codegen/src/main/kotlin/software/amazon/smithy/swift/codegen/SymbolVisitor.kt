@@ -236,8 +236,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (shape.hasTrait(SparseTrait::class.java)) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
+        val referenceTypeName = "${reference.name}"
         return createSymbolBuilder(shape, "Set<$referenceTypeName>", true).addReference(reference)
             .build()
     }

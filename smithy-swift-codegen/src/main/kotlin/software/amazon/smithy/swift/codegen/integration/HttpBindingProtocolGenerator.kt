@@ -482,7 +482,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "Bool(\$0)"
                         }
-                        is NumberShape -> stringToNumber(collectionMemberTarget, "\$0") + "!"
+                        is NumberShape -> "("+stringToNumber(collectionMemberTarget, "\$0") + " ?? 0)"
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -494,7 +494,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            stringToDate("\$0", tsFormat) + "!"
+                            "("+stringToDate("\$0", tsFormat) + " ?? Date())"
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"
