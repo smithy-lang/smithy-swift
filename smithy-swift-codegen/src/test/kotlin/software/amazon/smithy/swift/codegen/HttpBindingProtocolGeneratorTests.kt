@@ -361,7 +361,7 @@ extension ExplicitStructResponse: HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension HttpResponseCodeOutput {
+extension HttpResponseCodeOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
         self.status = httpResponse.statusCode.rawValue
