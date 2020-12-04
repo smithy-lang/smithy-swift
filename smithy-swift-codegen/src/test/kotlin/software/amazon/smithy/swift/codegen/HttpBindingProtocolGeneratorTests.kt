@@ -328,7 +328,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructResponse {
+extension ExplicitStructResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
         if case .data(let data) = httpResponse.body,

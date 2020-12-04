@@ -30,6 +30,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.camelCaseName
 import software.amazon.smithy.swift.codegen.defaultName
 
 /**
@@ -40,7 +41,8 @@ class HttpProtocolClientGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val serviceShape: ServiceShape,
-    private val features: List<HttpFeature>
+    private val features: List<HttpFeature>,
+    private val serviceConfig: ServiceConfig
 ) {
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
@@ -54,16 +56,65 @@ class HttpProtocolClientGenerator(
     private fun renderClientInitialization(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: SdkHttpClient")
+            writer.write("let config: Configuration")
+            writer.write("let serviceName = \"${serviceSymbol.name}\"")
+            writer.write("let encoder: RequestEncoder")
+            writer.write("let decoder: ResponseDecoder")
             features.forEach { feat ->
                 feat.addImportsAndDependencies(writer)
-                feat.renderInstantiation(writer)
             }
-            writer.openBlock("init(config: HttpClientConfiguration = HttpClientConfiguration()) throws {", "}") {
-                writer.write("client = try SdkHttpClient(config: config)")
+            writer.write("")
+            writer.openBlock("init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
+                writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 features.forEach { feat ->
+                    feat.renderInstantiation(writer)
                     if (feat.needsConfigure) {
                         feat.renderConfiguration(writer)
                     }
+                    feat.renderInitialization(writer, "config")
+                }
+
+                writer.write("self.config = config")
+            }
+            writer.write("")
+            // FIXME: possible move generation of the config to a separate file or above the service client
+            renderConfig(serviceSymbol)
+        }
+    }
+
+    private fun renderConfig(serviceSymbol: Symbol) {
+
+        val configFields = serviceConfig.getConfigFields()
+        val inheritance = serviceConfig.getTypeInheritance()
+        writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
+            writer.write("")
+            configFields.forEach {
+                writer.write("public var ${it.name}: ${it.type}")
+            }
+            writer.write("")
+            renderConfigInit(configFields)
+            writer.write("")
+            serviceConfig.renderConvienceInits(serviceSymbol)
+            writer.write("")
+            serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
+        }
+    }
+
+    private fun renderConfigInit(configFields: List<ConfigField>) {
+        if (configFields.isNotEmpty()) {
+            val configFieldsSortedByName = configFields.sortedBy { it.name }
+            writer.openBlock("public init (", ")") {
+                for ((index, member) in configFieldsSortedByName.withIndex()) {
+                    val memberName = member.name
+                    val memberSymbol = member.type
+                    if (memberName == null) continue
+                    val terminator = if (index == configFieldsSortedByName.size - 1) "" else ","
+                    writer.write("\$L: \$L$terminator", memberName, memberSymbol)
+                }
+            }
+            writer.openBlock("{", "}") {
+                configFieldsSortedByName.forEach {
+                    writer.write("self.\$1L = \$1L", it.name)
                 }
             }
         }
@@ -144,6 +195,7 @@ class HttpProtocolClientGenerator(
         val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
+        // TODO: remove this if block after synthetic input/outputs are completely done
         if (inputShape.isEmpty) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
             // protocol request from the operation itself
@@ -160,56 +212,15 @@ class HttpProtocolClientGenerator(
     }
 
     private fun renderHttpRequestExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
-        writer.openBlock("client.execute(request: request) { httpResult in", "}") {
-            writer.openBlock("switch httpResult { ", "}") {
-                renderHttpClientErrorBlock()
-                renderSuccessfulResponseBlock(opIndex, op)
-            }
-        }
-    }
-
-    private fun renderHttpClientErrorBlock() {
-        writer.openBlock("case .failure(let httpClientErr):")
-            .call {
-                writer.write("completion(.failure(.client(ClientError.networkError(httpClientErr))))")
-                writer.write("return")
-            }
-            .closeBlock("")
-    }
-
-    private fun renderSuccessfulResponseBlock(opIndex: OperationIndex, op: OperationShape) {
         val operationErrorName = "${op.defaultName()}Error"
-
-        writer.openBlock("case .success(let httpResponse):")
-            .call {
-                writer.openBlock("if (200..<300).contains(httpResponse.statusCode.rawValue) {", "}") {
-                    val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-                    writer.openBlock("do {", "} catch let err {") {
-                        writer.write(
-                            "let output = try \$L(httpResponse: httpResponse, decoder: self.decoder)",
-                            outputShapeName
-                        )
-                        writer.write("completion(.success(output))")
-                    }
-                    writer.indent()
-                    writer.write("completion(.failure(.client(.deserializationFailed(err))))")
-                    writer.write("return")
-                    writer.dedent()
-                    writer.write("}")
-                }
-                // HTTP request returned error
-                writer.openBlock("else {", "}") {
-                    writer.openBlock("do {", "} catch let err {") {
-                        writer.write("let error = try \$L(httpResponse: httpResponse, decoder: self.decoder)", operationErrorName)
-                        writer.write("completion(.failure(SdkError.service(error)))")
-                    }
-                    writer.indent()
-                    writer.write("completion(.failure(.client(.deserializationFailed(err))))")
-                    writer.write("return")
-                    writer.dedent()
-                    writer.write("}")
-                }
-            }
-            .closeBlock("")
+        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
+        writer.write("let context = Context(encoder: encoder,")
+        writer.indent(5).write("  decoder: decoder,")
+        writer.write("  outputType: $outputShapeName.self,")
+        writer.write("  outputError: $operationErrorName.self,")
+        writer.write("  operation: \"${op.camelCaseName()}\",")
+        writer.write("  serviceName: serviceName)")
+        writer.dedent(5)
+        writer.write("client.execute(request: request, context: context, completion: completion)")
     }
 }

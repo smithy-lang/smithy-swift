@@ -87,7 +87,8 @@ class CRTClientEngine: HttpClientEngine {
             case .data(let data):
                 return Int64(data?.count ?? 0)
             case .streamSource(let stream):
-                return stream.unwrap().contentLength //TODO: implement dynamic streaming with transfer-encoded-chunk header
+                //TODO: implement dynamic streaming with transfer-encoded-chunk header
+                return stream.unwrap().contentLength
             case .none, .streamSink:
                 return 0
             }
@@ -111,7 +112,8 @@ class CRTClientEngine: HttpClientEngine {
             logger.debug("connection was acquired to: \(request.endpoint.urlString)")
             switch result {
             case .success(let connection):
-                let (requestOptions, future) = isStreaming ? makeHttpRequestStreamOptions(request) : makeHttpRequestOptions(request)
+                let (requestOptions, future) = isStreaming ?
+                    makeHttpRequestStreamOptions(request) : makeHttpRequestOptions(request)
                 let stream = connection.makeRequest(requestOptions: requestOptions)
                 stream.activate()
                 future.then { (result) in
@@ -125,7 +127,6 @@ class CRTClientEngine: HttpClientEngine {
                         logger.error("Future of response came back with an error: \(error)")
                         completion(.failure(error))
                     }
-                    
                 }
             case .failure(let error):
                 completion(.failure(error))
@@ -147,7 +148,8 @@ class CRTClientEngine: HttpClientEngine {
         let response = HttpResponse()
         
         var streamSink: StreamSink?
-        if case let HttpBody.streamSink(unwrappedStream) = request.body { //we know they want to receive a stream via their request body type
+        if case let HttpBody.streamSink(unwrappedStream) = request.body {
+            //we know they want to receive a stream via their request body type
             streamSink = unwrappedStream.unwrap()
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
@@ -219,7 +221,6 @@ class CRTClientEngine: HttpClientEngine {
             }
             
             response.body = HttpBody.data(incomingByteBuffer.toData())
-                
             future.fulfill(response)
         }
         

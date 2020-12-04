@@ -53,10 +53,9 @@ extension SdkHttpRequest {
                 awsInputStream = AwsInputStream(byteBuffer)
             }
         case .streamSource(let stream):
-                let byteBuffer = ByteBuffer(size: bufferSize)
-                stream.unwrap().sendData(writeTo: byteBuffer)
-                awsInputStream = AwsInputStream(byteBuffer)
-            
+            let byteBuffer = ByteBuffer(size: bufferSize)
+            stream.unwrap().sendData(writeTo: byteBuffer)
+            awsInputStream = AwsInputStream(byteBuffer)
         case .none, .streamSink:
             awsInputStream = nil
         }
