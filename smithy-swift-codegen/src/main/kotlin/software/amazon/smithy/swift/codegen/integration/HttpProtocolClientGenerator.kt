@@ -184,7 +184,7 @@ class HttpProtocolClientGenerator(
         }
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("let path = \"$uri\"")
+        writer.write("let path = \"\$L\"", uri)
     }
 
     private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
