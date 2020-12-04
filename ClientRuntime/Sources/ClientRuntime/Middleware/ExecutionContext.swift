@@ -5,31 +5,25 @@
 
 /// This class is used to pass context from the service clients to the middleware of the sdk
 /// in order to decorate and execute the request as well as handle serde.
-public class Context<Output, OutputError> where Output: HttpResponseBinding,
-                                                OutputError: HttpResponseBinding {
+public class ExecutionContext {
     let encoder: RequestEncoder
     let decoder: ResponseDecoder
-    let outputType: Output.Type
     let operation: String
     let serviceName: String
-    let outputError: OutputError.Type
-    let request: SdkHttpRequest
+    let method: HttpMethodType
+    let path: String
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
-                outputType: Output.Type,
-                outputError: OutputError.Type,
-                request: SdkHttpRequest,
                 operation: String,
-                serviceName: String,
-                request: SdkHttpRequest) {
+                method: HttpMethodType,
+                path: String,
+                serviceName: String) {
         self.encoder = encoder
         self.decoder = decoder
-        self.outputType = outputType
-        self.outputError = outputError
-        self.request = request
         self.operation = operation
+        self.method = method
+        self.path = path
         self.serviceName = serviceName
-        self.request = request
     }
 }

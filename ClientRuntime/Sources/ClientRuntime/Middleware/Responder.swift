@@ -15,5 +15,8 @@
 import AwsCommonRuntimeKit
 
 public protocol Responder {
-    func respond<Output, OutputError>(to context: Context<Output, OutputError>) -> Future<Void>
+    associatedtype Input
+    associatedtype Output
+    associatedtype OutputError: Error
+    func respond(to context: ExecutionContext, input: Input) -> (Output, OutputError?)
 }
