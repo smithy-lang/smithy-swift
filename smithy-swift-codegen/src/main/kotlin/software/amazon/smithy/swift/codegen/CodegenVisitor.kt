@@ -71,7 +71,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
         symbolProvider = resolvedSymbolProvider
 
-        writers = SwiftDelegator(settings, model, fileManifest, symbolProvider)
+        writers = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
 
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
     }
@@ -83,7 +83,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         settings: SwiftSettings
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
-        val serviceIndex = model.getKnowledge(ServiceIndex::class.java)
+        val serviceIndex = ServiceIndex.of(model)
 
         try {
             val protocolTrait = settings.resolveServiceProtocol(serviceIndex, service, generators.keys)
@@ -113,16 +113,16 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             )
 
             LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
-            protocolGenerator.generateSerializers(ctx)
-            protocolGenerator.generateDeserializers(ctx)
+            generateSerializers(ctx)
+            generateDeserializers(ctx)
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
-            protocolGenerator.generateProtocolUnitTests(ctx)
+            generateProtocolUnitTests(ctx)
             // FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
             generateTestTarget = true
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
-            protocolGenerator.generateProtocolClient(ctx)
+            generateProtocolClient(ctx)
         }
 
         println("Flushing swift writers")
@@ -160,8 +160,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 
-    override fun serviceShape(shape: ServiceShape?): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
+    override fun serviceShape(shape: ServiceShape): Void? {
+
+        writers.useShapeWriter(shape) {
+            writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
         }
         return null
     }

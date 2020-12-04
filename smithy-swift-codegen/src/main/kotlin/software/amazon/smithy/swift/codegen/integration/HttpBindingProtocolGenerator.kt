@@ -287,7 +287,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
-            writer.openBlock("extension $outputShapeName {", "}") {
+            writer.openBlock("extension $outputShapeName: HttpResponseBinding {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
                     renderInitMembersFromHeaders(ctx, headerBindings, writer)
                     // prefix headers
@@ -1160,7 +1160,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val features = getHttpFeatures(ctx)
-            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features).render()
+            val config = getConfigClass(writer)
+            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config).render()
         }
     }
 
@@ -1174,10 +1175,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
-/**
+    /**
      * Get all of the features that are used as middleware
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
+        return mutableListOf(
+            DefaultRequestEncoder(),
+            DefaultResponseDecoder()
+        )
+    }
+
+    open fun getConfigClass(writer: SwiftWriter): ServiceConfig {
+        return DefaultConfig(writer)
+    }
 
     /**
      * Get the operations with HTTP Bindings.
@@ -1202,3 +1212,5 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return containedOperations
     }
 }
+
+class DefaultConfig(writer: SwiftWriter) : ServiceConfig(writer)

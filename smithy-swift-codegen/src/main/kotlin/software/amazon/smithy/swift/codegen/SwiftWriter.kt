@@ -28,6 +28,36 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
 
+/**
+ * Handles preserving existing text on section when writing new text.
+ */
+fun <T : CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
+    onSection(sectionName) { previousText ->
+        write(previousText)
+        block(this)
+    }
+    return this
+}
+
+/**
+ * Similar to `CodeWriter.withBlock()` but using `pushState()`.
+ */
+fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
+    pushState(state)
+    block(this)
+    popState()
+    return this
+}
+
+// Used for sections, deals with delimiter occurring within set but not trailing or leading.
+fun CodeWriter.appendWithDelimiter(previousText: Any?, text: String, delimiter: String = ", ") {
+    when {
+        previousText !is String -> error("Unexpected type ${previousText?.javaClass?.canonicalName ?: "[UNKNOWN]"}")
+        previousText.isEmpty() -> write(text)
+        else -> write("$previousText$delimiter$text")
+    }
+}
+
 class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()
