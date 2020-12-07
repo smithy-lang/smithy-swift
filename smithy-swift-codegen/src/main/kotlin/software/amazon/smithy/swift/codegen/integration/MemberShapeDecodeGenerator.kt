@@ -29,6 +29,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 /*
@@ -158,7 +159,14 @@ open class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+            if (isBoxed) {
+                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+                }
+            } else {
+                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+            }
         }
     }
 

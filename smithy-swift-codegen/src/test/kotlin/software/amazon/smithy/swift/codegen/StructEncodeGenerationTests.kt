@@ -108,7 +108,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     case intMap
                     case member1
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
@@ -187,7 +187,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     case intMap
                     case structMap
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let blobMap = blobMap {
@@ -354,8 +354,10 @@ extension JsonListsInputOutput: Encodable {
             var nestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedStringList)
             for nestedstringlist0 in nestedStringList {
                 var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
-                for stringlist1 in nestedstringlist0 {
-                    try nestedstringlist0Container.encode(stringlist1)
+                if let nestedstringlist0 = nestedstringlist0 {
+                    for stringlist1 in nestedstringlist0 {
+                        try nestedstringlist0Container.encode(stringlist1)
+                    }
                 }
             }
         }
@@ -365,6 +367,26 @@ extension JsonListsInputOutput: Encodable {
                 try sparseStringListContainer.encode(sparsestringlist0)
             }
         }
+        if let stringList = stringList {
+            var stringListContainer = container.nestedUnkeyedContainer(forKey: .stringList)
+            for stringlist0 in stringList {
+                try stringListContainer.encode(stringlist0)
+            }
+        }
+        if let stringSet = stringSet {
+            var stringSetContainer = container.nestedUnkeyedContainer(forKey: .stringSet)
+            for stringset0 in stringSet {
+                try stringSetContainer.encode(stringset0)
+            }
+        }
+        if let timestampList = timestampList {
+            var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
+            for timestamplist0 in timestampList {
+                try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
+            }
+        }
+    }
+}
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

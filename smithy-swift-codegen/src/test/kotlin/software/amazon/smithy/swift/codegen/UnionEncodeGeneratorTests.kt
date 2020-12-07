@@ -98,7 +98,7 @@ class UnionEncodeGeneratorTests : TestsBase() {
                     case structureValue
                     case timestampValue
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     switch self {

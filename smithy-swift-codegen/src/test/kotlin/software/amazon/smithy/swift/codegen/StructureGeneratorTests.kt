@@ -246,7 +246,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         jsonListsInputOutput.shouldContain("public struct JsonListsInputOutput: Equatable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
-                "    public let nestedStringList: [[String]]?\n" +
+                "    public let nestedStringList: [[String]?]?\n" +
                 "    public let sparseStringList: [String?]?\n" +
                 "    public let stringList: [String]?\n" +
                 "    public let stringSet: Set<String>?\n" +

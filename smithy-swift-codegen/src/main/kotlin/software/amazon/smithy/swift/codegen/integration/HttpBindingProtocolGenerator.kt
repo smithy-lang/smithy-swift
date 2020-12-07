@@ -501,7 +501,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             when {
                                 collectionMemberTarget.hasTrait(EnumTrait::class.java) -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "${enumSymbol.name}(rawValue: \$0)!"
+                                    "(${enumSymbol.name}(rawValue: \$0) ?? ${enumSymbol.name}(rawValue: \"Bar\")!)"
                                 }
                                 collectionMemberTarget.hasTrait(MediaTypeTrait::class.java) -> {
                                     "try \$0.base64EncodedString()"

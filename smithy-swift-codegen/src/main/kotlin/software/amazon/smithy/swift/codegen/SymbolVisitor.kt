@@ -222,22 +222,31 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (shape.hasTrait(SparseTrait::class.java)) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
+        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseOrListOrMapMember(shape, reference)
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val suffix = if (shape.hasTrait(SparseTrait::class.java)) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
+        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseOrListOrMapMember(shape, reference)
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
+    }
+
+    private fun getSuffixBasedOnSparseOrListOrMapMember(shape: Shape, symbol: Symbol): String {
+        val memberShape = symbol.properties.get("shape")
+        return when (
+            shape.hasTrait(SparseTrait::class.java) ||
+                memberShape is MapShape ||
+                memberShape is ListShape
+        ) {
+            true -> "?"
+            false -> ""
+        }
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        val referenceTypeName = "${reference.name}"
-        return createSymbolBuilder(shape, "Set<$referenceTypeName>", true).addReference(reference)
+        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
             .build()
     }
 
