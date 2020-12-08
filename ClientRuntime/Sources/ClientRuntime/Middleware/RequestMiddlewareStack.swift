@@ -14,14 +14,14 @@
 //
 import AwsCommonRuntimeKit
 
-public struct RequestMiddlewareStack {
+public struct RequestMiddlewareStack<Input> {
     
-    public var initializeMiddleware: InitializeMiddleware
+    public var initializeMiddleware: InitializeStep
     public var serializeMiddleware: SerializeMiddleware
     public var finalizeMiddleware: FinalizeMiddleware
 
     
-    public init(initializeMiddleware: InitializeMiddleware,
+    public init(initializeMiddleware: InitializeStep,
                 serializeMiddleware: SerializeMiddleware,
                 finalizeMiddleware: FinalizeMiddleware) {
         self.initializeMiddleware = initializeMiddleware

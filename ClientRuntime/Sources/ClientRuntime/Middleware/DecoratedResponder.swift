@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-public enum Position: Int {
-    case before = 0
-    case after = 1
-}
+//public protocol DecoratedResponder {
+//    var next: Responder {get set}
+//    var with: Middleware { get set}
+//}

@@ -13,7 +13,10 @@
 // permissions and limitations under the License.
 //
 
-public enum Position: Int {
-    case before = 0
-    case after = 1
+extension Dictionary {
+    subscript(i:Int) -> (key:Key,value:Value) {
+        get {
+            return self[index(startIndex, offsetBy: i)];
+        }
+    }
 }

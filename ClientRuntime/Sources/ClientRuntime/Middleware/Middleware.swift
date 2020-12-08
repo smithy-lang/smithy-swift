@@ -14,14 +14,12 @@
 //
 import AwsCommonRuntimeKit
 
+public typealias HandleInitialize = (_ context: ExecutionContext, _ input: Any) -> (Any, Error?)
 public protocol Middleware {
     //unique id for the middleware
     var id: String {get set}
+   
+    var middleware: HandleInitialize { get set }
     
-    // Performs the middleware's handling of the input, returning the output,
-    // or error. The middleware can invoke the next Responder if handling should
-    // continue.
-    func handleMiddleware(to context: ExecutionContext,
-                          input: Any,
-                          next: Responder) -> (Any?, Error?)
+    func run(context: ExecutionContext, input: Any, next: HandleInitialize) -> (Any, Error?)
 }
