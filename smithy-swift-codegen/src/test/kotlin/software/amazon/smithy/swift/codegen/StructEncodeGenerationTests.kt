@@ -108,23 +108,19 @@ class StructEncodeGenerationTests : TestsBase() {
                     case intMap
                     case member1
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
                         var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
                         for intlist0 in intList {
-                            if let intlist0 = intlist0 {
-                                try intListContainer.encode(intlist0)
-                            }
+                            try intListContainer.encode(intlist0)
                         }
                     }
                     if let intMap = intMap {
                         var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (key0, intmap0) in intMap {
-                            if let intmap0 = intmap0 {
-                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                            }
+                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                         }
                     }
                     if let member1 = member1 {
@@ -168,9 +164,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     if let timestampList = timestampList {
                         var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
-                            if let timestamplist0 = timestamplist0 {
-                                try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
-                            }
+                            try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
                         }
                     }
                 }
@@ -193,47 +187,37 @@ class StructEncodeGenerationTests : TestsBase() {
                     case intMap
                     case structMap
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let blobMap = blobMap {
                         var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
                         for (key0, blobmap0) in blobMap {
-                            if let blobmap0 = blobmap0 {
-                                try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
-                            }
+                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let dateMap = dateMap {
                         var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
                         for (key0, datemap0) in dateMap {
-                            if let datemap0 = datemap0 {
-                                try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
-                            }
+                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: key0))
                         }
                     }
                     if let enumMap = enumMap {
                         var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
                         for (key0, enummap0) in enumMap {
-                            if let enummap0 = enummap0 {
-                                try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
-                            }
+                            try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: key0))
                         }
                     }
                     if let intMap = intMap {
                         var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (key0, intmap0) in intMap {
-                            if let intmap0 = intmap0 {
-                                try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
-                            }
+                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
                         }
                     }
                     if let structMap = structMap {
                         var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
                         for (key0, structmap0) in structMap {
-                            if let structmap0 = structmap0 {
-                                try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
-                            }
+                            try structMapContainer.encode(structmap0, forKey: Key(stringValue: key0))
                         }
                     }
                 }
@@ -331,6 +315,152 @@ class StructEncodeGenerationTests : TestsBase() {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes structure with sparse list`() {
+        val contents = getModelFileContents("example", "JsonListsInputOutput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+extension JsonListsInputOutput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case booleanList
+        case integerList
+        case nestedStringList
+        case sparseStringList
+        case stringList
+        case stringSet
+        case timestampList
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let booleanList = booleanList {
+            var booleanListContainer = container.nestedUnkeyedContainer(forKey: .booleanList)
+            for booleanlist0 in booleanList {
+                try booleanListContainer.encode(booleanlist0)
+            }
+        }
+        if let integerList = integerList {
+            var integerListContainer = container.nestedUnkeyedContainer(forKey: .integerList)
+            for integerlist0 in integerList {
+                try integerListContainer.encode(integerlist0)
+            }
+        }
+        if let nestedStringList = nestedStringList {
+            var nestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedStringList)
+            for nestedstringlist0 in nestedStringList {
+                var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
+                if let nestedstringlist0 = nestedstringlist0 {
+                    for stringlist1 in nestedstringlist0 {
+                        try nestedstringlist0Container.encode(stringlist1)
+                    }
+                }
+            }
+        }
+        if let sparseStringList = sparseStringList {
+            var sparseStringListContainer = container.nestedUnkeyedContainer(forKey: .sparseStringList)
+            for sparsestringlist0 in sparseStringList {
+                try sparseStringListContainer.encode(sparsestringlist0)
+            }
+        }
+        if let stringList = stringList {
+            var stringListContainer = container.nestedUnkeyedContainer(forKey: .stringList)
+            for stringlist0 in stringList {
+                try stringListContainer.encode(stringlist0)
+            }
+        }
+        if let stringSet = stringSet {
+            var stringSetContainer = container.nestedUnkeyedContainer(forKey: .stringSet)
+            for stringset0 in stringSet {
+                try stringSetContainer.encode(stringset0)
+            }
+        }
+        if let timestampList = timestampList {
+            var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
+            for timestamplist0 in timestampList {
+                try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
+            }
+        }
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes structure with sparse map`() {
+        val contents = getModelFileContents("example", "JsonMapsInputOutput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+extension JsonMapsInputOutput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case denseBooleanMap
+        case denseNumberMap
+        case denseStringMap
+        case denseStructMap
+        case sparseBooleanMap
+        case sparseNumberMap
+        case sparseStringMap
+        case sparseStructMap
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let denseBooleanMap = denseBooleanMap {
+            var denseBooleanMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseBooleanMap)
+            for (key0, densebooleanmap0) in denseBooleanMap {
+                try denseBooleanMapContainer.encode(densebooleanmap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let denseNumberMap = denseNumberMap {
+            var denseNumberMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseNumberMap)
+            for (key0, densenumbermap0) in denseNumberMap {
+                try denseNumberMapContainer.encode(densenumbermap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let denseStringMap = denseStringMap {
+            var denseStringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseStringMap)
+            for (key0, densestringmap0) in denseStringMap {
+                try denseStringMapContainer.encode(densestringmap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let denseStructMap = denseStructMap {
+            var denseStructMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseStructMap)
+            for (key0, densestructmap0) in denseStructMap {
+                try denseStructMapContainer.encode(densestructmap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let sparseBooleanMap = sparseBooleanMap {
+            var sparseBooleanMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseBooleanMap)
+            for (key0, sparsebooleanmap0) in sparseBooleanMap {
+                try sparseBooleanMapContainer.encode(sparsebooleanmap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let sparseNumberMap = sparseNumberMap {
+            var sparseNumberMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseNumberMap)
+            for (key0, sparsenumbermap0) in sparseNumberMap {
+                try sparseNumberMapContainer.encode(sparsenumbermap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let sparseStringMap = sparseStringMap {
+            var sparseStringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseStringMap)
+            for (key0, sparsestringmap0) in sparseStringMap {
+                try sparseStringMapContainer.encode(sparsestringmap0, forKey: Key(stringValue: key0))
+            }
+        }
+        if let sparseStructMap = sparseStructMap {
+            var sparseStructMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseStructMap)
+            for (key0, sparsestructmap0) in sparseStructMap {
+                try sparseStructMapContainer.encode(sparsestructmap0, forKey: Key(stringValue: key0))
+            }
+        }
+    }
+}
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

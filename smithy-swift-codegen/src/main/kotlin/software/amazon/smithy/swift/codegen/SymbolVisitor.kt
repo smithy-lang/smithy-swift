@@ -43,6 +43,7 @@ import software.amazon.smithy.model.shapes.ResourceShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.ShortShape
@@ -53,6 +54,7 @@ import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.StringUtils
 
@@ -221,23 +223,31 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (reference.isBoxed()) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
+        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseTrait(shape, shape.member.target)
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val suffix = if (reference.isBoxed()) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
+        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseTrait(shape, shape.value.target)
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
+    }
+
+    private fun getSuffixBasedOnSparseTrait(shape: Shape, memberShapeId: ShapeId): String {
+        val memberShape = model.getShape(memberShapeId).get()
+        return when (
+            shape.hasTrait(SparseTrait::class.java) ||
+                memberShape is MapShape ||
+                memberShape is ListShape
+        ) {
+            true -> "?"
+            false -> ""
+        }
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        val suffix = if (reference.isBoxed()) "?" else ""
-        val referenceTypeName = "${reference.name}$suffix"
-        return createSymbolBuilder(shape, "Set<$referenceTypeName>", true).addReference(reference)
+        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
             .build()
     }
 

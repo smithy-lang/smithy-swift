@@ -73,7 +73,12 @@ open class MemberShapeEncodeGenerator(
     }
 
     // Render encoding of a member of list type
-    fun renderEncodeListMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
+    fun renderEncodeListMember(
+        targetShape: Shape,
+        memberName: String,
+        containerName: String,
+        level: Int = 0
+    ) {
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
@@ -99,14 +104,7 @@ open class MemberShapeEncodeGenerator(
             is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
-                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                if (isBoxed) {
-                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                        writer.write("try $containerName.encode($extension)")
-                    }
-                } else {
-                    writer.write("try $containerName.encode($extension)")
-                }
+                writer.write("try $containerName.encode($extension)")
             }
         }
     }
@@ -217,14 +215,7 @@ open class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
-                    if (isBoxed) {
-                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
-                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-                        }
-                    } else {
-                        writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-                    }
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
                 }
             }
         }

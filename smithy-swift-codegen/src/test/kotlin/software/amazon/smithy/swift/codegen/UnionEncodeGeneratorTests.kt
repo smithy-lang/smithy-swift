@@ -98,7 +98,7 @@ class UnionEncodeGeneratorTests : TestsBase() {
                     case structureValue
                     case timestampValue
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     switch self {
@@ -118,18 +118,14 @@ class UnionEncodeGeneratorTests : TestsBase() {
                             if let listValue = listValue {
                                 var listValueContainer = container.nestedUnkeyedContainer(forKey: .listValue)
                                 for stringlist0 in listValue {
-                                    if let stringlist0 = stringlist0 {
-                                        try listValueContainer.encode(stringlist0)
-                                    }
+                                    try listValueContainer.encode(stringlist0)
                                 }
                             }
                         case let .mapValue(mapValue):
                             if let mapValue = mapValue {
                                 var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapValue)
                                 for (key0, stringmap0) in mapValue {
-                                    if let stringmap0 = stringmap0 {
-                                        try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: key0))
-                                    }
+                                    try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: key0))
                                 }
                             }
                         case let .numberValue(numberValue):

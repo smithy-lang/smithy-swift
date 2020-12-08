@@ -18,7 +18,9 @@ package software.amazon.smithy.swift.codegen
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import java.util.function.Consumer
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -135,11 +137,11 @@ public struct RecursiveShapesInputOutput: Equatable {
             """
 public struct RecursiveShapesInputOutputNestedList1: Equatable {
     public let foo: String?
-    public let recursiveList: [RecursiveShapesInputOutputNested2?]?
+    public let recursiveList: [RecursiveShapesInputOutputNested2]?
 
     public init (
         foo: String? = nil,
-        recursiveList: [RecursiveShapesInputOutputNested2?]? = nil
+        recursiveList: [RecursiveShapesInputOutputNested2]? = nil
     )
     {
         self.foo = foo
@@ -229,5 +231,73 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         })
 
         return assembler.assemble().unwrap()
+    }
+
+    @Test
+    fun `check for sparse and dense datatypes in list`() {
+        val model = createModelFromSmithy("sparse-trait-test.smithy")
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        SwiftCodegenPlugin().execute(context)
+
+        val jsonListsInputOutput = manifest
+            .getFileString("example/models/JsonListsInputOutput.swift").get()
+        Assertions.assertNotNull(jsonListsInputOutput)
+        jsonListsInputOutput.shouldContain("public struct JsonListsInputOutput: Equatable {\n" +
+                "    public let booleanList: [Bool]?\n" +
+                "    public let integerList: [Int]?\n" +
+                "    public let nestedStringList: [[String]?]?\n" +
+                "    public let sparseStringList: [String?]?\n" +
+                "    public let stringList: [String]?\n" +
+                "    public let stringSet: Set<String>?\n" +
+                "    public let timestampList: [Date]?")
+    }
+
+    @Test
+    fun `check for sparse and dense datatypes in maps`() {
+        val model = createModelFromSmithy("sparse-trait-test.smithy")
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        SwiftCodegenPlugin().execute(context)
+
+        val jsonListsInputOutput = manifest
+            .getFileString("example/models/JsonMapsInputOutput.swift").get()
+        Assertions.assertNotNull(jsonListsInputOutput)
+        val expectedStructWithSparseDenseMaps =
+            """
+                public struct JsonMapsInputOutput: Equatable {
+                    public let denseBooleanMap: [String:Bool]?
+                    public let denseNumberMap: [String:Int]?
+                    public let denseStringMap: [String:String]?
+                    public let denseStructMap: [String:GreetingStruct]?
+                    public let sparseBooleanMap: [String:Bool?]?
+                    public let sparseNumberMap: [String:Int?]?
+                    public let sparseStringMap: [String:String?]?
+                    public let sparseStructMap: [String:GreetingStruct?]?
+
+                    public init (
+                        denseBooleanMap: [String:Bool]? = nil,
+                        denseNumberMap: [String:Int]? = nil,
+                        denseStringMap: [String:String]? = nil,
+                        denseStructMap: [String:GreetingStruct]? = nil,
+                        sparseBooleanMap: [String:Bool?]? = nil,
+                        sparseNumberMap: [String:Int?]? = nil,
+                        sparseStringMap: [String:String?]? = nil,
+                        sparseStructMap: [String:GreetingStruct?]? = nil
+                    )
+                    {
+                        self.denseBooleanMap = denseBooleanMap
+                        self.denseNumberMap = denseNumberMap
+                        self.denseStringMap = denseStringMap
+                        self.denseStructMap = denseStructMap
+                        self.sparseBooleanMap = sparseBooleanMap
+                        self.sparseNumberMap = sparseNumberMap
+                        self.sparseStringMap = sparseStringMap
+                        self.sparseStructMap = sparseStructMap
+                    }
+                }
+            """.trimIndent()
+
+        jsonListsInputOutput.shouldContain(expectedStructWithSparseDenseMaps)
     }
 }
