@@ -23,7 +23,6 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -78,8 +77,7 @@ open class MemberShapeEncodeGenerator(
         targetShape: Shape,
         memberName: String,
         containerName: String,
-        level: Int = 0,
-        sparseTrait: Boolean = false
+        level: Int = 0
     ) {
         when (targetShape) {
             is CollectionShape -> {
@@ -106,14 +104,7 @@ open class MemberShapeEncodeGenerator(
             is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
-//                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-//                if (sparseTrait) {
-//                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-//                        writer.write("try $containerName.encode($extension)")
-//                    }
-//                } else {
                 writer.write("try $containerName.encode($extension)")
-//                }
             }
         }
     }
@@ -131,10 +122,7 @@ open class MemberShapeEncodeGenerator(
             when (targetShape) {
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                    if (targetShape.hasTrait(SparseTrait:: class.java))
-                        renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1, true)
-                    else
-                        renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
+                    renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
                 }
                 is MapShape -> {
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
@@ -175,8 +163,7 @@ open class MemberShapeEncodeGenerator(
                     topLevelContainerName,
                     memberName
                 )
-                var sparseTrait = targetShape.hasTrait(SparseTrait:: class.java)
-                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level, sparseTrait)
+                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level)
             }
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
@@ -199,8 +186,7 @@ open class MemberShapeEncodeGenerator(
         mapName: String,
         topLevelContainerName: String,
         valueTargetShape: Shape,
-        level: Int = 0,
-        sparseTrait: Boolean = false
+        level: Int = 0
     ) {
         val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
         val target = when (valueTargetShape) {
@@ -229,14 +215,7 @@ open class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-//                    val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
-//                    if (sparseTrait) {
-//                        writer.openBlock("if let \$L = \$L {", "}", valueIterator, valueIterator) {
-//                            writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-//                        }
-//                    } else {
                     writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
-//                    }
                 }
             }
         }
