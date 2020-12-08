@@ -12,18 +12,21 @@ public class ExecutionContext {
     let serviceName: String
     let method: HttpMethodType
     let path: String
+    let attributes: Attributes
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
                 operation: String,
                 method: HttpMethodType,
                 path: String,
-                serviceName: String) {
+                serviceName: String,
+                attributes: Attributes) {
         self.encoder = encoder
         self.decoder = decoder
         self.operation = operation
         self.method = method
         self.path = path
         self.serviceName = serviceName
+        self.attributes = attributes
     }
 }

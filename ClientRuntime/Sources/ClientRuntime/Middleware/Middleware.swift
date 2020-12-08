@@ -15,13 +15,13 @@
 import AwsCommonRuntimeKit
 
 public protocol Middleware {
-    associatedtype Responder
     //unique id for the middleware
-    var id: Int {get set}
+    var id: String {get set}
     
     // Performs the middleware's handling of the input, returning the output,
     // or error. The middleware can invoke the next Responder if handling should
     // continue.
     func handleMiddleware(to context: ExecutionContext,
-                          next: Responder) -> Future<Void>
+                          input: Any,
+                          next: Responder) -> (Any?, Error?)
 }

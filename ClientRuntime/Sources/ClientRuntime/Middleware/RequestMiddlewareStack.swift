@@ -14,23 +14,18 @@
 //
 import AwsCommonRuntimeKit
 
-public struct MiddlewareStack {
+public struct RequestMiddlewareStack {
     
     public var initializeMiddleware: InitializeMiddleware
     public var serializeMiddleware: SerializeMiddleware
-    public var buildMiddleware: BuildMiddleware
     public var finalizeMiddleware: FinalizeMiddleware
-    public var deserializeMiddleware: DeserializeMiddleware
+
     
     public init(initializeMiddleware: InitializeMiddleware,
                 serializeMiddleware: SerializeMiddleware,
-                buildMiddleware: BuildMiddleware,
-                finalizeMiddleware: FinalizeMiddleware,
-                deserializeMiddleware: DeserializeMiddleware) {
+                finalizeMiddleware: FinalizeMiddleware) {
         self.initializeMiddleware = initializeMiddleware
         self.serializeMiddleware = serializeMiddleware
-        self.buildMiddleware = buildMiddleware
-        self.finalizeMiddleware = finalizeMiddleware
-        self.deserializeMiddleware = deserializeMiddleware
+        self.finalizeMiddleware = finalizeMiddleware 
     }
 }

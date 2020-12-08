@@ -13,3 +13,82 @@
 // permissions and limitations under the License.
 //
 
+struct IdItem {
+    let id: String
+}
+
+struct RelativeOrder {
+    var order: [String]
+    
+    mutating func add(position: Position, ids: [String]) {
+        if ids.count == 0 { return}
+        var unDuplicatedList = ids
+        for index in  0...(ids.count - 1) {
+            let id = ids[index]
+            if order.contains(id) {
+                //if order already has the id, remove it from the list so it is not re-inserted
+                unDuplicatedList.remove(at: index)
+            }
+        }
+        
+        switch position {
+        case .after:
+            order.append(contentsOf: unDuplicatedList)
+        case .before:
+            order.insert(contentsOf: unDuplicatedList, at: 0)
+        }
+    }
+    
+    mutating func insert(relativeTo: String, position: Position, ids: [String]) {
+        if ids.count == 0 {return}
+        let indexOfRelativeItem = order.firstIndex(of: relativeTo)
+        if let indexOfRelativeItem = indexOfRelativeItem {
+            switch position {
+            
+            case .before:
+                order.insert(contentsOf: ids, at: indexOfRelativeItem - 1)
+            case .after:
+                order.insert(contentsOf: ids, at: indexOfRelativeItem)
+            }
+    
+        }
+    }
+    
+    func has(id: String) -> Bool {
+       return order.contains(id)
+    }
+    
+    mutating func clear() {
+        order.removeAll()
+    }
+}
+
+struct OrderedGroup {
+    //order of the keys
+    let order: RelativeOrder
+    //id:name
+    var items: [String: IdItem]
+    
+    mutating func add(item: IdItem, position: Position) {
+        if !item.id.isEmpty {
+            items[item.id] = item
+        }
+    }
+    
+    mutating func insert(idItem: IdItem, relativeTo: String, position: Position) {
+        items[idItem.id] = idItem
+    }
+    
+    func get(id: String)-> IdItem? {
+        return items[id]
+    }
+    
+    //use the ordered keys array to sort the dictionary
+    func getOrder() -> [String: IdItem] {
+        var sorted = [String: IdItem]()
+        for key in order.order {
+            sorted[key] = items[key]
+        }
+        return sorted
+    }
+}
