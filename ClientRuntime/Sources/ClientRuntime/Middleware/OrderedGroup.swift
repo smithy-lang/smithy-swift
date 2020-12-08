@@ -87,10 +87,6 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
     }
 }
 
-struct IdItem {
-    let id: String
-}
-
 struct RelativeOrder {
     var order: [String]
     
@@ -137,32 +133,35 @@ struct RelativeOrder {
     }
 }
 
-struct OrderedGroup {
+public struct OrderedGroup {
     //order of the keys
     let order: RelativeOrder
     //id:name
-    var items: [String: IdItem]
-    
-    mutating func add(item: IdItem, position: Position) {
-        if !item.id.isEmpty {
-            items[item.id] = item
+    var items: [String: Middleware] {
+        get {
+        var sorted = [String: Middleware]()
+        for key in order.order {
+            sorted[key] = self.items[key]
+        }
+        return sorted
+        }
+        set {
+        
         }
     }
     
-    mutating func insert(idItem: IdItem, relativeTo: String, position: Position) {
-        items[idItem.id] = idItem
+    mutating func add(middleware: Middleware, position: Position) {
+        if !middleware.id.isEmpty {
+            items[middleware.id] = middleware
+        }
     }
     
-    func get(id: String)-> IdItem? {
+    mutating func insert(middleware: Middleware, relativeTo: String, position: Position) {
+        items[middleware.id] = middleware
+    }
+    
+    func get(id: String)-> Middleware? {
         return items[id]
     }
     
-    //use the ordered keys array to sort the dictionary
-    func getOrder() -> [String: IdItem] {
-        var sorted = [String: IdItem]()
-        for key in order.order {
-            sorted[key] = items[key]
-        }
-        return sorted
-    }
 }

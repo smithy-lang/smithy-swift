@@ -14,47 +14,44 @@
 //
 import AwsCommonRuntimeKit
 
-public struct InitializeResponder : Responder {
-    public func respond(to context: ExecutionContext, input: Any) -> (Any?, Error?) {
-        
-        do {
-        let inputCasted = input as? HttpRequestBinding
-        let input = try inputCasted?.buildHttpRequest(method: context.method,
-                                                        path: context.path,
-                                                        encoder: context.encoder)
-            
-            //adds idempotency token provider
-            //sets any default params
-            //presigned URLS
-            if let input = input {
-                return(input, nil)
-            } else {
-                return (nil, nil)
-            }
-        }
-        catch let err {
-            return(nil, err)
-        }
+//public struct InitializeHandler<Input> {
+//   // public let next: InitializeHandler<Input>
+//    public func respond(to context: ExecutionContext, input: Input) -> (SdkHttpRequest, Error?) {
+//       // return next.respond(to: context, input: input)
+//    }
+//}
 
+public struct InitializeMiddleware: Middleware {
+    
+    public var middleware: HandleInitialize
+    
+    public var id: String //unique id for the middleware, 2 of the same are not allowed
+    
+    public func run(context: ExecutionContext, input: Any, next: HandleInitialize) -> (Any, Error?) {
+        let (output, error) = middleware(context, input)
+        if let error = error {
+            return (output, error) //stop the chain and return the error
+        }
+        return next(context, output) //otherwise call next on the chain
     }
-    
-    
 }
 
-public struct InitializeStep: Middleware{
+
+public struct InitializeStep{
 
     public var id: String = "Initialize stack step"
     
     //provides the ordered grouping of initialize middleware to be invoked on a handler
-    public let ids: OrderedGroup
+    public var ids: OrderedGroup
     
-    public func handleMiddleware(to context: ExecutionContext, input: Any, next: Responder) -> (Any?, Error?) {
-        let order = ids.getOrder()
-        var responder = next
-        for index in (order.count-1)...0 {
-            responder = order
-        }
-        let (output, outputError) = next.respond(to: context, input: input)
-        return (output, outputError)
+    public func handleMiddleware(to context: ExecutionContext, input: Any, next: HandleInitialize) -> (SdkHttpRequest?, Error?) {
+        let order = ids.items
+        let firstMiddleware = order[0].value
+        let (output, outputError) = firstMiddleware.run(context: context,input: input,next: next)
+        return (output as? SdkHttpRequest, outputError)
+    }
+    
+    public mutating func add(middleware: InitializeMiddleware, position: Position) {
+        ids.add(middleware: middleware, position: position)
     }
 }
