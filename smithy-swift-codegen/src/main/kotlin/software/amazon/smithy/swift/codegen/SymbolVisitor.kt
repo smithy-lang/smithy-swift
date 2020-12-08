@@ -24,7 +24,33 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.BigDecimalShape
+import software.amazon.smithy.model.shapes.BigIntegerShape
+import software.amazon.smithy.model.shapes.BlobShape
+import software.amazon.smithy.model.shapes.BooleanShape
+import software.amazon.smithy.model.shapes.ByteShape
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DocumentShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
+import software.amazon.smithy.model.shapes.IntegerShape
+import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.LongShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ResourceShape
+import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.SetShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.ShapeVisitor
+import software.amazon.smithy.model.shapes.ShortShape
+import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -211,7 +237,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val memberShape = model.getShape(memberShapeId).get()
         return when (
             shape.hasTrait(SparseTrait::class.java) ||
-                memberShape is MapShape  ||
+                memberShape is MapShape ||
                 memberShape is ListShape
         ) {
             true -> "?"
