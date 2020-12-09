@@ -13,6 +13,10 @@
 // permissions and limitations under the License.
 //
 
-public struct DeserializeMiddleware {
-    
+public protocol Handler {
+    associatedtype TContext
+    associatedtype TSubject
+    associatedtype TError: Error
+       
+    func handle(context: TContext, subject: TSubject) -> Result<TSubject, TError>
 }

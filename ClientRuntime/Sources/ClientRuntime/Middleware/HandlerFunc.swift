@@ -13,6 +13,4 @@
 // permissions and limitations under the License.
 //
 
-public struct SerializeMiddleware {
-    
-}
+typealias HandlerFunc<TContext, TSubject, TError: Error> = (TContext, TSubject) -> Result<TSubject, TError>

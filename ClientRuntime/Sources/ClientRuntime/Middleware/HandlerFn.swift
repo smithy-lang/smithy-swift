@@ -13,6 +13,16 @@
 // permissions and limitations under the License.
 //
 
-public struct FinalizeMiddleware {
+struct HandlerFn<TContext: Any, TSubject: Any, TError: Error> : Handler {
+   
+    let _handler: HandlerFunc<TContext, TSubject, TError>
+    
+    init(_ handler: @escaping HandlerFunc<TContext, TSubject, TError>) {
+        self._handler = handler
+    }
+
+    func handle(context: TContext, subject: TSubject) -> Result<TSubject, TError> {
+        return _handler(context, subject)
+    }
     
 }

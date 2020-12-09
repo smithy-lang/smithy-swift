@@ -14,12 +14,14 @@
 //
 import AwsCommonRuntimeKit
 
-public typealias HandleInitialize = (_ context: ExecutionContext, _ input: Any) -> (Any, Error?)
 public protocol Middleware {
-    //unique id for the middleware
-    var id: String {get set}
-   
-    var middleware: HandleInitialize { get set }
+    associatedtype TContext
+    associatedtype TSubject
+    associatedtype TError: Error
     
-    func run(context: ExecutionContext, input: Any, next: HandleInitialize) -> (Any, Error?)
+    /// The middleware ID
+    var id: String { get }
+    
+    func handle<H:Handler>(context: TContext, subject: TSubject, next: H) -> Result<TSubject, TError>
+        where H.TContext == TContext, H.TSubject == TSubject, H.TError == TError
 }
