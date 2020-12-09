@@ -9,6 +9,7 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
     public var id: String
 
     public init<M: Middleware>(_ realMiddleware: M)
+
     where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         if let alreadyErased = realMiddleware as? AnyMiddleware<MInput, MOutput, Context> {
             self = alreadyErased
@@ -18,6 +19,7 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self.id = realMiddleware.id
         self._handle = realMiddleware.handle
     }
+
     
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         

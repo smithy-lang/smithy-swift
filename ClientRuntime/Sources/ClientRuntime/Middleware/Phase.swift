@@ -13,6 +13,8 @@
 // permissions and limitations under the License.
 //
 
-public struct DeserializeMiddleware {
-    
+public struct Phase<TContext, TSubject, TError: Error> {
+    let name: String
+    var orderedMiddleware: OrderedGroup<TContext, TSubject, TError>
 }
+

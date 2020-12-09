@@ -133,13 +133,13 @@ struct RelativeOrder {
     }
 }
 
-public struct OrderedGroup {
+public struct OrderedGroup<TSubject, TContext, TError: Error> {
     //order of the keys
     let order: RelativeOrder
     //id:name
-    var items: [String: Middleware] {
+    var items: [String: AnyMiddleware<TSubject, TContext, TError>] {
         get {
-        var sorted = [String: Middleware]()
+            var sorted = [String: AnyMiddleware<TSubject, TContext, TError>]()
         for key in order.order {
             sorted[key] = self.items[key]
         }
@@ -150,17 +150,20 @@ public struct OrderedGroup {
         }
     }
     
-    mutating func add(middleware: Middleware, position: Position) {
+    mutating func add(middleware: AnyMiddleware<TSubject, TContext, TError>,
+                      position: Position) {
         if !middleware.id.isEmpty {
             items[middleware.id] = middleware
         }
     }
     
-    mutating func insert(middleware: Middleware, relativeTo: String, position: Position) {
+    mutating func insert(middleware: AnyMiddleware<TSubject, TContext, TError>,
+                         relativeTo: String,
+                         position: Position) {
         items[middleware.id] = middleware
     }
     
-    func get(id: String)-> Middleware? {
+    func get(id: String)-> AnyMiddleware<TSubject, TContext, TError>? {
         return items[id]
     }
     

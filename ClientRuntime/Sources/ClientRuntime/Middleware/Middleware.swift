@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public typealias HandleInitialize = (_ context: ExecutionContext, _ input: Any) -> (Any, Error?)
 public protocol Middleware {
     associatedtype MInput
     associatedtype MOutput
