@@ -13,37 +13,28 @@ import software.amazon.smithy.utils.ToSmithyBuilder
  *
  * Must only be used as a runtime trait-only applied to shapes based on model processing
  */
-class SyntheticClone private constructor(builder: Builder) : AbstractTrait(ID, builder.sourceLocation), ToSmithyBuilder<SyntheticClone?> {
-    private val archetype: ShapeId?
-
-    /**
-     * Get the archetype shape that this clone is based on.
-     *
-     * @return the original archetype shape
-     */
-    fun getArchetype(): ShapeId? {
-        return archetype
-    }
+class SyntheticClone private constructor(builder: Builder) : AbstractTrait(ID, builder.sourceLocation), ToSmithyBuilder<SyntheticClone> {
+    val archetype: ShapeId
 
     override fun createNode(): Node {
         throw CodegenException("attempted to serialize runtime only trait")
     }
 
-    override fun toBuilder(): SmithyBuilder<SyntheticClone?>? {
+    override fun toBuilder(): SmithyBuilder<SyntheticClone> {
         return builder()
-                .archetype(getArchetype())
+                .archetype(archetype)
     }
 
     /**
      * Builder for [SyntheticClone].
      */
     class Builder : AbstractTraitBuilder<SyntheticClone, Builder>() {
-        var archetype: ShapeId? = null
+        lateinit var archetype: ShapeId
         override fun build(): SyntheticClone {
             return SyntheticClone(this)
         }
 
-        fun archetype(archetype: ShapeId?): Builder {
+        fun archetype(archetype: ShapeId): Builder {
             this.archetype = archetype
             return this
         }

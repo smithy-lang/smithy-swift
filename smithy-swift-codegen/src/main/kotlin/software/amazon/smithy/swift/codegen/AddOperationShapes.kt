@@ -56,14 +56,14 @@ public final class AddOperationShapes {
                             cloneOperationShape(operationId, (model.expectShape(shapeId) as StructureShape),
                                     "Input")
                         }
-                        .orElseGet { emptyOperationStructure(operationId, "Input", moduleName) }!!
+                        .orElseGet { emptyOperationStructure(operationId, "Input", moduleName) }
 
                 val outputShape = operation.output
                         .map { shapeId ->
                             cloneOperationShape(operationId, (model.expectShape(shapeId) as StructureShape),
                                     "Output")
                         }
-                        .orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }!!
+                        .orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }
 
                 // Add new input/output to model
                 modelBuilder.addShape(inputShape)
@@ -95,11 +95,11 @@ public final class AddOperationShapes {
             operationShapeId: ShapeId,
             structureShape: StructureShape,
             suffix: String
-        ): StructureShape? {
-            return cloneShape(structureShape, operationShapeId.name + suffix) as StructureShape?
+        ): StructureShape {
+            return cloneShape(structureShape, operationShapeId.name + suffix) as StructureShape
         }
 
-        private fun cloneShape(shape: Shape, cloneShapeName: String): Shape? {
+        private fun cloneShape(shape: Shape, cloneShapeName: String): Shape {
             val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, cloneShapeName)
             val builder = StructureShape.Builder()
                     .id(cloneShapeId)
