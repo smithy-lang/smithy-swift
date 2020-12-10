@@ -29,12 +29,11 @@ import software.amazon.smithy.model.shapes.StructureShape
 /**
  * Ensures that each operation has a unique input and output shape.
  */
-// TODO: decide between this approach vs additive approach with inputs and fix outputs to create synthetic outputs to avoid possible future added outputs.
 public final class AddOperationShapes {
 
     companion object {
         private val LOGGER = Logger.getLogger(javaClass.name)
-        private const val SYNTHETIC_NAMESPACE = "smithy.go.synthetic"
+        private const val SYNTHETIC_NAMESPACE = "smithy.swift.synthetic"
         /**
          * Processes the given model and returns a new model ensuring service operation has an unique input and output
          * synthesized shape.

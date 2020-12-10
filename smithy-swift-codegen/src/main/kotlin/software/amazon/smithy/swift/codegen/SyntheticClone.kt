@@ -50,7 +50,7 @@ class SyntheticClone private constructor(builder: Builder) : AbstractTrait(ID, b
     }
 
     companion object {
-        val ID = ShapeId.from("smithy.go.traits#SyntheticClone")
+        val ID = ShapeId.from("smithy.swift.traits#SyntheticClone")
         private const val ARCHETYPE = "archetype"
 
         /**
