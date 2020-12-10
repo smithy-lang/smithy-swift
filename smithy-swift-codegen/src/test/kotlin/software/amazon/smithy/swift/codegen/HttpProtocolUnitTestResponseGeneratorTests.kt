@@ -84,9 +84,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            let actual = try SmokeTestResponse(httpResponse: httpResponse, decoder: decoder)
+            let actual = try SmokeTestOutput(httpResponse: httpResponse, decoder: decoder)
 
-            let expected = SmokeTestResponse(
+            let expected = SmokeTestOutput(
                 boolHeader: false,
                 intHeader: 1,
                 payload1: "explicit string",
@@ -134,9 +134,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                 return
             }
 
-            let actual = try HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
+            let actual = try HttpPrefixHeadersOutput(httpResponse: httpResponse)
 
-            let expected = HttpPrefixHeadersInputOutput(
+            let expected = HttpPrefixHeadersOutput(
                 foo: "Foo",
                 fooMap: [
                     "abc": "ABC",
@@ -174,9 +174,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
                 return
             }
 
-            let actual = try HttpPrefixHeadersInputOutput(httpResponse: httpResponse)
+            let actual = try HttpPrefixHeadersOutput(httpResponse: httpResponse)
 
-            let expected = HttpPrefixHeadersInputOutput(
+            let expected = HttpPrefixHeadersOutput(
                 foo: "Foo"
             )
 
@@ -219,9 +219,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            let actual = try UnionInputOutput(httpResponse: httpResponse, decoder: decoder)
+            let actual = try JsonUnionsOutput(httpResponse: httpResponse, decoder: decoder)
 
-            let expected = UnionInputOutput(
+            let expected = JsonUnionsOutput(
                 contents: MyUnion.stringValue("foo")
 
             )
@@ -274,9 +274,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            let actual = try RecursiveShapesInputOutput(httpResponse: httpResponse, decoder: decoder)
+            let actual = try RecursiveShapesOutput(httpResponse: httpResponse, decoder: decoder)
 
-            let expected = RecursiveShapesInputOutput(
+            let expected = RecursiveShapesOutput(
                 nested: RecursiveShapesInputOutputNested1(
                     foo: "Foo1",
                     nested: Box<RecursiveShapesInputOutputNested2>(

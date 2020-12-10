@@ -54,7 +54,7 @@ class StructDecodeGenerationTests : TestsBase() {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestResponseBody+Decodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputBody+Decodable.swift"))
     }
 
     @Test
@@ -69,23 +69,23 @@ class StructDecodeGenerationTests : TestsBase() {
 
     @Test
     fun `it creates smoke test request decodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestResponseBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct SmokeTestResponseBody {
+            struct SmokeTestOutputBody {
                 public let payload1: String?
                 public let payload2: Int?
                 public let payload3: Nested?
             }
-            
-            extension SmokeTestResponseBody: Decodable {
+
+            extension SmokeTestOutputBody: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
                     case payload3
                 }
-            
+
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let payload1Decoded = try values.decodeIfPresent(String.self, forKey: .payload1)
@@ -112,7 +112,7 @@ class StructDecodeGenerationTests : TestsBase() {
                     case intMap
                     case member1
                 }
-            
+
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try values.decodeIfPresent(Int.self, forKey: .member1)
@@ -143,11 +143,11 @@ class StructDecodeGenerationTests : TestsBase() {
 
     @Test
     fun `it provides decodable conformance to operation outputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampOutputResponseBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "TimestampInputOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct TimestampOutputResponseBody {
+struct TimestampInputOutputBody {
     public let normal: Date?
     public let dateTime: Date?
     public let epochSeconds: Date?
@@ -156,7 +156,7 @@ struct TimestampOutputResponseBody {
     public let timestampList: [Date]?
 }
 
-extension TimestampOutputResponseBody: Decodable {
+extension TimestampInputOutputBody: Decodable {
     private enum CodingKeys: String, CodingKey {
         case dateTime
         case epochSeconds
@@ -231,11 +231,11 @@ extension TimestampOutputResponseBody: Decodable {
 
     @Test
     fun `it decodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapOutputResponseBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct MapOutputResponseBody {
+struct MapInputOutputBody {
     public let intMap: [String:Int]?
     public let structMap: [String:ReachableOnlyThroughMap]?
     public let enumMap: [String:MyEnum]?
@@ -244,7 +244,7 @@ struct MapOutputResponseBody {
     public let dateMap: [String:Date]?
 }
 
-extension MapOutputResponseBody: Decodable {
+extension MapInputOutputBody: Decodable {
     private enum CodingKeys: String, CodingKey {
         case blobMap
         case dateMap
@@ -326,16 +326,16 @@ extension MapOutputResponseBody: Decodable {
 
     @Test
     fun `it decodes nested diverse shapes correctly`() {
-        val contents = getModelFileContents("example", "NestedShapesInputOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "NestedShapesOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct NestedShapesInputOutputBody {
+struct NestedShapesOutputBody {
     public let nestedListInDict: [String:[Date]?]?
     public let nestedDictInList: [[String:String]?]?
 }
 
-extension NestedShapesInputOutputBody: Decodable {
+extension NestedShapesOutputBody: Decodable {
     private enum CodingKeys: String, CodingKey {
         case nestedDictInList
         case nestedListInDict

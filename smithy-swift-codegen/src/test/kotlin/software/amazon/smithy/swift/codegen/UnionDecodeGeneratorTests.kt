@@ -49,7 +49,7 @@ class UnionDecodeGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/UnionInputOutputBody+Decodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsOutputBody+Decodable.swift"))
     }
 
     @Test
@@ -59,19 +59,19 @@ class UnionDecodeGeneratorTests : TestsBase() {
 
     @Test
     fun `it decodes a union member in an operation body`() {
-        val contents = getModelFileContents("example", "UnionInputOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonUnionsOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct UnionInputOutputBody {
+            struct JsonUnionsOutputBody {
                 public let contents: MyUnion?
             }
-            
-            extension UnionInputOutputBody: Decodable {
+
+            extension JsonUnionsOutputBody: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case contents
                 }
-            
+
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let contentsDecoded = try values.decodeIfPresent(MyUnion.self, forKey: .contents)
@@ -101,7 +101,7 @@ class UnionDecodeGeneratorTests : TestsBase() {
                     case structureValue
                     case timestampValue
                 }
-            
+
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let stringValueDecoded = try values.decodeIfPresent(String.self, forKey: .stringValue)

@@ -75,13 +75,13 @@ class ServiceGeneratorTests : TestsBase() {
     @Test
     fun `it renders swift func signatures correctly`() {
         val expectedSignatures = listOf(
-                "func getFooStreamingInput(input: GetFooStreamingRequest, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooResponse, GetFooStreamingInputError>) -> Void)",
-                "func getFooNoOutput(input: GetFooRequest, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)",
-                "func getFooStreamingOutput(input: GetFooRequest, streamSink: StreamSink, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputError>) -> Void)",
-                "func getFoo(input: GetFooRequest, completion: @escaping (SdkResult<GetFooResponse, GetFooError>) -> Void)",
-                "func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooResponse, GetFooNoInputError>) -> Void)",
-                "func getFooStreamingInputNoOutput(input: GetFooStreamingRequest, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)",
-                "func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamSink: StreamSink, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputNoInputError>) -> Void)"
+                "func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)",
+                "func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)",
+                "func getFooStreamingOutput(input: GetFooStreamingOutputInput, streamSink: StreamSink, completion: @escaping (SdkResult<GetFooStreamingOutputOutput, GetFooStreamingOutputError>) -> Void)",
+                "func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)",
+                "func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)",
+                "func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)",
+                "func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamSink: StreamSink, completion: @escaping (SdkResult<GetFooStreamingOutputNoInputOutput, GetFooStreamingOutputNoInputError>) -> Void)"
         )
         expectedSignatures.forEach {
             commonTestContents.shouldContainOnlyOnce(it)

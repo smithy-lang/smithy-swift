@@ -87,11 +87,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates smoke test request builder`() {
-        val contents = getModelFileContents("example", "SmokeTestRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-                extension SmokeTestRequest: HttpRequestBinding, Reflection {
+                extension SmokeTestInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                         var queryItems: [URLQueryItem] = [URLQueryItem]()
                         if let query1 = query1 {
@@ -123,11 +123,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request for explicit string payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStringRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStringInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExplicitStringRequest: HttpRequestBinding, Reflection {
+            extension ExplicitStringInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -149,11 +149,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request for explicit blob payloads`() {
-        val contents = getModelFileContents("example", "ExplicitBlobRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExplicitBlobRequest: HttpRequestBinding, Reflection {
+            extension ExplicitBlobInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -175,11 +175,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request for explicit streaming blob payloads`() {
-        val contents = getModelFileContents("example", "ExplicitBlobStreamRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobStreamInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExplicitBlobStreamRequest: HttpRequestBinding, Reflection {
+            extension ExplicitBlobStreamInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -201,11 +201,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExplicitStructRequest: HttpRequestBinding, Reflection {
+            extension ExplicitStructInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -227,11 +227,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request for operation inputs with lists`() {
-        val contents = getModelFileContents("example", "ListInputRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ListInputInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ListInputRequest: HttpRequestBinding, Reflection {
+            extension ListInputInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -253,11 +253,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it builds request with enums as raw values in the header`() {
-        val contents = getModelFileContents("example", "EnumInputRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension EnumInputRequest: HttpRequestBinding, Reflection {
+            extension EnumInputInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
@@ -282,11 +282,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates http builder for timestamps with format`() {
-        val contents = getModelFileContents("example", "TimestampInputRequest+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "TimestampInputInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension TimestampInputRequest: HttpRequestBinding, Reflection {
+            extension TimestampInputInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
                     var queryItems: [URLQueryItem] = [URLQueryItem]()
                     if let queryTimestamp = queryTimestamp {
@@ -324,11 +324,11 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructResponse+ResponseInit.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructOutput+ResponseInit.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructResponse: HttpResponseBinding {
+extension ExplicitStructOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
         if case .data(let data) = httpResponse.body,
