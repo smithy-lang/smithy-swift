@@ -12,18 +12,21 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
-import AwsCommonRuntimeKit
 
 public struct MiddlewareStack<TContext, TSubject, TError: Error> {
     
-    var root: AnyMiddleware<TContext, TSubject, TError>
+    var root: AnyMiddleware<TContext, TSubject, TError>?
     var phases: [Phase<TContext, TSubject, TError>]
     
     init(phases: Phase<TContext, TSubject, TError>...) {
-        let firstPhase = phases[0]
-        let middleware = firstPhase.orderedMiddleware.items[0].value  //get first item of the list of middleware and get value
-        self.root = middleware
+        
         self.phases = phases
+        if phases.count > 1 {
+            if let orderedMiddleware = phases.first?.orderedMiddleware,
+               let middleware = orderedMiddleware.orderedItems.first?.value{
+                self.root = middleware
+            }
+        }
     }
     
     func execute(context: TContext,
@@ -33,8 +36,9 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         let handlerFn = HandlerFn(next)
         var handler = AnyHandler<TContext, TSubject, TError>(handlerFn)
         for phase in phases {
-            let order = phase.orderedMiddleware.items
-            for index in stride(from: 0, to: order.count - 1, by: -1) {
+            let order = phase.orderedMiddleware.orderedItems
+            let reversedCollection = (0...(order.count-1)).reversed()
+            for index in reversedCollection {
                 let composedHandler = ComposedHandler(handler, order[index].value)
                 handler = AnyHandler(composedHandler)
             }
@@ -43,11 +47,18 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         return result
     }
     
-    func intercept<M:Middleware>(phase: Phase<TContext, TSubject, TError>, position: Position, middleware: M)
+    mutating func intercept<M:Middleware>(phase: Phase<TContext, TSubject, TError>, position: Position, middleware: M)
     where M.TContext == TContext, M.TSubject == TSubject, M.TError == TError
     {
-        var phaseToBeEdited = phases.first { $0.name == phase.name}
-        phaseToBeEdited?.orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
+        guard let index = phases.firstIndex(where: { $0.name == phase.name}) else { return }
+        var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
+        orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
+        phases[index].orderedMiddleware = orderedMiddleware
+        
+        let firstPhase = phases[0]
+        if let middleware = firstPhase.orderedMiddleware.orderedItems.first?.value {
+            self.root = middleware
+        }
     }
     
     /// Convenience function for passing a closure directly:

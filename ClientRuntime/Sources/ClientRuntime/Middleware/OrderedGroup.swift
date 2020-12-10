@@ -14,9 +14,9 @@
 //
 
 struct RelativeOrder {
-    var order: [String]
+    var order: [String] = []
     
-    mutating func add(position: Position, ids: [String]) {
+    mutating func add(position: Position, ids: String...) {
         if ids.count == 0 { return}
         var unDuplicatedList = ids
         for index in  0...(ids.count - 1) {
@@ -35,7 +35,7 @@ struct RelativeOrder {
         }
     }
     
-    mutating func insert(relativeTo: String, position: Position, ids: [String]) {
+    mutating func insert(relativeTo: String, position: Position, ids: String...) {
         if ids.count == 0 {return}
         let indexOfRelativeItem = order.firstIndex(of: relativeTo)
         if let indexOfRelativeItem = indexOfRelativeItem {
@@ -61,36 +61,37 @@ struct RelativeOrder {
 
 public struct OrderedGroup<TSubject, TContext, TError: Error> {
     //order of the keys
-    let order: RelativeOrder
+    var order = RelativeOrder()
     //id:name
-    var items: [String: AnyMiddleware<TSubject, TContext, TError>] {
-        get {
-            var sorted = [String: AnyMiddleware<TSubject, TContext, TError>]()
+    private var _items: [String: AnyMiddleware<TSubject, TContext, TError>] = [:]
+    
+    var orderedItems: [String: AnyMiddleware<TSubject, TContext, TError>] {
+        var sorted = [String: AnyMiddleware<TSubject, TContext, TError>]()
         for key in order.order {
-            sorted[key] = self.items[key]
+            sorted[key] = self._items[key]
         }
         return sorted
-        }
-        set {
-        
-        }
     }
+    
+    public init() {}
     
     mutating func add(middleware: AnyMiddleware<TSubject, TContext, TError>,
                       position: Position) {
         if !middleware.id.isEmpty {
-            items[middleware.id] = middleware
+            _items[middleware.id] = middleware
+            order.add(position: position, ids: middleware.id)
         }
     }
     
     mutating func insert(middleware: AnyMiddleware<TSubject, TContext, TError>,
                          relativeTo: String,
                          position: Position) {
-        items[middleware.id] = middleware
+        _items[middleware.id] = middleware
+        order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
     
     func get(id: String)-> AnyMiddleware<TSubject, TContext, TError>? {
-        return items[id]
+        return _items[id]
     }
     
 }

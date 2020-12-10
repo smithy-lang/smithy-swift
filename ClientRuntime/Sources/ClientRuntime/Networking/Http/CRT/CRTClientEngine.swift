@@ -50,7 +50,7 @@ class CRTClientEngine: HttpClientEngine {
                                                   tlsOptions: tlsConnectionOptions,
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
-                                                  enableManualWindowManagement: true)
+                                                  enableManualWindowManagement: false) //not using backpressure yet
         logger.debug("Creating connection pool for \(endpoint.urlString)" +
                         "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)

@@ -16,5 +16,10 @@
 public struct Phase<TContext, TSubject, TError: Error> {
     let name: String
     var orderedMiddleware: OrderedGroup<TContext, TSubject, TError>
+    
+    public init(name: String) {
+        self.name = name
+        self.orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
+    }
 }
 
