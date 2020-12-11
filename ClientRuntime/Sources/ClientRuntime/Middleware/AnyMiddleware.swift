@@ -29,6 +29,14 @@ public struct AnyMiddleware<TContext, TSubject, TError: Error> : Middleware {
         self.id = realMiddleware.id
         self._handle = realMiddleware.handle
     }
+    
+    public init<H: Handler>(handler: H, id: String) where H.TContext == TContext, H.TSubject == TSubject, H.TError == TError {
+        
+        self._handle = { context, subject, handler in
+            handler.handle(context: context, subject: subject)
+        }
+        self.id = id
+    }
 
     public func handle<H>(context: TContext, subject: TSubject, next: H) -> Result<TSubject, TError>
         where H : Handler, H.TContext == TContext, H.TSubject == TSubject, H.TError == TError

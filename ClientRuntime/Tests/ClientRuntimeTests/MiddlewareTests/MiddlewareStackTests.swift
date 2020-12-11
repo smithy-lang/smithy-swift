@@ -27,7 +27,7 @@ class MiddlewareStackTests: XCTestCase {
     }
     
     
-    func testMiddlewareStack() {
+    func testMiddlewareStackSuccessInterceptAfter() {
         let testPhase = Phase<TestContext, String, Error>(name: "Test")
         var stack = MiddlewareStack(phases: testPhase)
         stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
@@ -39,6 +39,62 @@ class MiddlewareStackTests: XCTestCase {
         switch result {
         case .success(let string):
             XCTAssert(string == "is now a dog")
+        case .failure(_):
+            XCTFail()
+        }
+    }
+    
+    func testMiddlewareStackFailureInterceptAfter() {
+        let testPhase = Phase<TestContext, String, Error>(name: "Test")
+        var stack = MiddlewareStack(phases: testPhase)
+        stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
+        let context = TestContext()
+        let result = stack.execute(context: context, subject: "is a cat") { (context, string) -> Result<String, Error> in
+            XCTAssert(string == "is now a dog")
+            let error = MiddlewareError.unknown("an unknown error occurred")
+            return .failure(error)
+        }
+        switch result {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            if case let MiddlewareError.unknown(unwrappedError) = error {
+                XCTAssert(unwrappedError == "an unknown error occurred")
+            }
+        }
+    }
+    
+    func testMiddlewareInterceptWithHandlerInterceptAfter() {
+        let testPhase = Phase<TestContext, String, Error>(name: "Test")
+        var stack = MiddlewareStack(phases: testPhase)
+        stack.intercept(testPhase, position: .after) { (context, subject) -> Result<String, Error> in
+            var newSubject = subject //copy original subject to new string
+            newSubject = "is now a dog" // change original subject
+            return .success(newSubject)
+        }
+        let context = TestContext()
+        let result = stack.execute(context: context, subject: "is a cat")
+        switch result {
+        case .success(let string):
+            XCTAssert(string == "is now a dog")
+        case .failure(_):
+            XCTFail()
+        }
+    }
+    
+    func testMiddlewareInterceptWithHandlerInterceptBefore() {
+        let testPhase = Phase<TestContext, String, Error>(name: "Test")
+        var stack = MiddlewareStack(phases: testPhase)
+        stack.intercept(testPhase, position: .before) { (context, subject) -> Result<String, Error> in
+            var newSubject = subject //copy original subject to new string
+            newSubject = "is a cat" // change original subject
+            return .success(newSubject)
+        }
+        let context = TestContext()
+        let result = stack.execute(context: context, subject: "is now a dog")
+        switch result {
+        case .success(let string):
+            XCTAssert(string == "is a cat")
         case .failure(_):
             XCTFail()
         }
