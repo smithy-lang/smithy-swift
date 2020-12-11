@@ -53,7 +53,7 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestRequest+Encodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestInput+Encodable.swift"))
     }
 
     @Test
@@ -68,11 +68,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it creates smoke test request encodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestRequest+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SmokeTestRequest: Encodable {
+            extension SmokeTestInput: Encodable {
                 private enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
@@ -134,11 +134,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it provides encodable conformance to operation inputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampInputRequest+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "TimestampInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension TimestampInputRequest: Encodable {
+            extension TimestampInputInput: Encodable {
                 private enum CodingKeys: String, CodingKey {
                     case dateTime
                     case epochSeconds
@@ -146,7 +146,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     case normal
                     case timestampList
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let dateTime = dateTime {
@@ -175,11 +175,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it encodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputRequest+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MapInputRequest: Encodable {
+            extension MapInputInput: Encodable {
                 private enum CodingKeys: String, CodingKey {
                     case blobMap
                     case dateMap
@@ -228,11 +228,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it encodes nested enums correctly`() {
-        val contents = getModelFileContents("example", "EnumInputRequest+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension EnumInputRequest: Encodable {
+            extension EnumInputInput: Encodable {
                 private enum CodingKeys: String, CodingKey {
                     case nestedWithEnum
                 }
@@ -278,7 +278,7 @@ class StructEncodeGenerationTests : TestsBase() {
                     case foo
                     case nested
                 }
-            
+
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let foo = foo {
@@ -321,11 +321,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it encodes structure with sparse list`() {
-        val contents = getModelFileContents("example", "JsonListsInputOutput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonListsInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonListsInputOutput: Encodable {
+extension JsonListsInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case booleanList
         case integerList
@@ -393,11 +393,11 @@ extension JsonListsInputOutput: Encodable {
 
     @Test
     fun `it encodes structure with sparse map`() {
-        val contents = getModelFileContents("example", "JsonMapsInputOutput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonMapsInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonMapsInputOutput: Encodable {
+extension JsonMapsInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case denseBooleanMap
         case denseNumberMap

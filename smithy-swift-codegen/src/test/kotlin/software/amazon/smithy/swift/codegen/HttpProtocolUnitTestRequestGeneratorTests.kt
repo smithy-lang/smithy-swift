@@ -80,7 +80,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = SmokeTestRequest(
+        let input = SmokeTestInput(
             header1: "Foo",
             header2: "Bar",
             label1: "label",
@@ -137,7 +137,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = ExplicitStringRequest(
+        let input = ExplicitStringInput(
             payload1: "explicit string"
         )
         do {
@@ -217,7 +217,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = SimpleScalarPropertiesInputOutput(
+        let input = SimpleScalarPropertiesInput(
             stringValue: nil
         )
         do {
@@ -257,7 +257,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = StreamingTraitsInputOutput(
+        let input = StreamingTraitsInput(
             blob: "blobby blob blob".data(using: .utf8)!,
             foo: "Foo"
         )
@@ -295,7 +295,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = HttpPrefixHeadersInputOutput(
+        let input = HttpPrefixHeadersInput(
             foo: "Foo",
             fooMap: [:]
 
@@ -340,7 +340,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = UnionInputOutput(
+        let input = JsonUnionsInput(
             contents: MyUnion.stringValue("foo")
 
         )
@@ -394,7 +394,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
             host: host
         )
 
-        let input = RecursiveShapesInputOutput(
+        let input = RecursiveShapesInput(
             nested: RecursiveShapesInputOutputNested1(
                 foo: "Foo1",
                 nested: Box<RecursiveShapesInputOutputNested2>(

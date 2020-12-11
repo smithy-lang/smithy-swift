@@ -38,11 +38,27 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
         val context = buildMockPluginContext(model, manifest)
         SwiftCodegenPlugin().execute(context)
 
-        val recursiveShapesInputOutput = manifest
-                .getFileString("example/models/RecursiveShapesInputOutput.swift").get()
-        Assertions.assertNotNull(recursiveShapesInputOutput)
-        recursiveShapesInputOutput.shouldContain(
-                "public struct RecursiveShapesInputOutput: Equatable {\n" +
+        val recursiveShapesInput = manifest
+                .getFileString("example/models/RecursiveShapesInput.swift").get()
+        Assertions.assertNotNull(recursiveShapesInput)
+        recursiveShapesInput.shouldContain(
+                "public struct RecursiveShapesInput: Equatable {\n" +
+                        "    public let nested: RecursiveShapesInputOutputNested1?\n" +
+                        "\n" +
+                        "    public init (\n" +
+                        "        nested: RecursiveShapesInputOutputNested1? = nil\n" +
+                        "    )\n" +
+                        "    {\n" +
+                        "        self.nested = nested\n" +
+                        "    }\n" +
+                        "}"
+        )
+
+        val recursiveShapesOutput = manifest
+                .getFileString("example/models/RecursiveShapesOutput.swift").get()
+        Assertions.assertNotNull(recursiveShapesOutput)
+        recursiveShapesOutput.shouldContain(
+                "public struct RecursiveShapesOutput: Equatable {\n" +
                         "    public let nested: RecursiveShapesInputOutputNested1?\n" +
                         "\n" +
                         "    public init (\n" +

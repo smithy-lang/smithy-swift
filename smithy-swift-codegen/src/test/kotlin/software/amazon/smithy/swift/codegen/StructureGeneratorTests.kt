@@ -235,15 +235,31 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
     @Test
     fun `check for sparse and dense datatypes in list`() {
+        /*  Also the integration test for model evolution: Struct JsonListsInputOutput is generating 2
+            separate structs for input and output with members given in smithy model, without creating
+            additional structs in the model
+         */
         val model = createModelFromSmithy("sparse-trait-test.smithy")
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
         SwiftCodegenPlugin().execute(context)
 
-        val jsonListsInputOutput = manifest
-            .getFileString("example/models/JsonListsInputOutput.swift").get()
-        Assertions.assertNotNull(jsonListsInputOutput)
-        jsonListsInputOutput.shouldContain("public struct JsonListsInputOutput: Equatable {\n" +
+        val jsonListsInput = manifest
+            .getFileString("example/models/JsonListsInput.swift").get()
+        Assertions.assertNotNull(jsonListsInput)
+        jsonListsInput.shouldContain("public struct JsonListsInput: Equatable {\n" +
+                "    public let booleanList: [Bool]?\n" +
+                "    public let integerList: [Int]?\n" +
+                "    public let nestedStringList: [[String]?]?\n" +
+                "    public let sparseStringList: [String?]?\n" +
+                "    public let stringList: [String]?\n" +
+                "    public let stringSet: Set<String>?\n" +
+                "    public let timestampList: [Date]?")
+
+        val jsonListsOutput = manifest
+                .getFileString("example/models/JsonListsOutput.swift").get()
+        Assertions.assertNotNull(jsonListsOutput)
+        jsonListsOutput.shouldContain("public struct JsonListsOutput: Equatable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
@@ -255,17 +271,60 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
     @Test
     fun `check for sparse and dense datatypes in maps`() {
+        /*  Also the integration test for model evolution: Struct JsonListsInputOutput is generating 2
+            separate structs for input and output with members given in smithy model, without creating
+            additional structs in the model
+         */
         val model = createModelFromSmithy("sparse-trait-test.smithy")
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
         SwiftCodegenPlugin().execute(context)
 
-        val jsonListsInputOutput = manifest
-            .getFileString("example/models/JsonMapsInputOutput.swift").get()
-        Assertions.assertNotNull(jsonListsInputOutput)
-        val expectedStructWithSparseDenseMaps =
+        val jsonMapsInput = manifest
+            .getFileString("example/models/JsonMapsInput.swift").get()
+        Assertions.assertNotNull(jsonMapsInput)
+        val expectedJsonMapsInput =
             """
-                public struct JsonMapsInputOutput: Equatable {
+                public struct JsonMapsInput: Equatable {
+                    public let denseBooleanMap: [String:Bool]?
+                    public let denseNumberMap: [String:Int]?
+                    public let denseStringMap: [String:String]?
+                    public let denseStructMap: [String:GreetingStruct]?
+                    public let sparseBooleanMap: [String:Bool?]?
+                    public let sparseNumberMap: [String:Int?]?
+                    public let sparseStringMap: [String:String?]?
+                    public let sparseStructMap: [String:GreetingStruct?]?
+
+                    public init (
+                        denseBooleanMap: [String:Bool]? = nil,
+                        denseNumberMap: [String:Int]? = nil,
+                        denseStringMap: [String:String]? = nil,
+                        denseStructMap: [String:GreetingStruct]? = nil,
+                        sparseBooleanMap: [String:Bool?]? = nil,
+                        sparseNumberMap: [String:Int?]? = nil,
+                        sparseStringMap: [String:String?]? = nil,
+                        sparseStructMap: [String:GreetingStruct?]? = nil
+                    )
+                    {
+                        self.denseBooleanMap = denseBooleanMap
+                        self.denseNumberMap = denseNumberMap
+                        self.denseStringMap = denseStringMap
+                        self.denseStructMap = denseStructMap
+                        self.sparseBooleanMap = sparseBooleanMap
+                        self.sparseNumberMap = sparseNumberMap
+                        self.sparseStringMap = sparseStringMap
+                        self.sparseStructMap = sparseStructMap
+                    }
+                }
+            """.trimIndent()
+        jsonMapsInput.shouldContain(expectedJsonMapsInput)
+
+        val jsonMapsOutput = manifest
+                .getFileString("example/models/JsonMapsOutput.swift").get()
+        Assertions.assertNotNull(jsonMapsOutput)
+        val expectedJsonMapsOutput =
+                """
+                public struct JsonMapsOutput: Equatable {
                     public let denseBooleanMap: [String:Bool]?
                     public let denseNumberMap: [String:Int]?
                     public let denseStringMap: [String:String]?
@@ -298,6 +357,6 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                 }
             """.trimIndent()
 
-        jsonListsInputOutput.shouldContain(expectedStructWithSparseDenseMaps)
+        jsonMapsOutput.shouldContain(expectedJsonMapsOutput)
     }
 }
