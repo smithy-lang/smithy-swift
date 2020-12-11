@@ -136,7 +136,7 @@ struct RelativeOrder {
 public struct OrderedGroup<TSubject, TContext, TError: Error> {
     //order of the keys
     var order = RelativeOrder()
-    //id:name
+    //key here is name of the middleware aka the id property of the middleware
     private var _items: [String: AnyMiddleware<TSubject, TContext, TError>] = [:]
     
     var orderedItems: [String: AnyMiddleware<TSubject, TContext, TError>] {

@@ -13,4 +13,16 @@
 // permissions and limitations under the License.
 //
 
-typealias HandlerFunc<TContext, TSubject, TError: Error> = (TContext, TSubject) -> Result<TSubject, TError>
+struct HandlerFunctionWrapper<TContext: Any, TSubject: Any, TError: Error> : Handler {
+   
+    let _handler: HandlerFunction<TContext, TSubject, TError>
+    
+    init(_ handler: @escaping HandlerFunction<TContext, TSubject, TError>) {
+        self._handler = handler
+    }
+
+    func handle(context: TContext, subject: TSubject) -> Result<TSubject, TError> {
+        return _handler(context, subject)
+    }
+    
+}

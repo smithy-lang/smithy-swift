@@ -19,6 +19,14 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self.id = realMiddleware.id
         self._handle = realMiddleware.handle
     }
+    
+    public init<H: Handler>(handler: H, id: String) where H.TContext == TContext, H.TSubject == TSubject, H.TError == TError {
+        
+        self._handle = { context, subject, handler in
+            handler.handle(context: context, subject: subject)
+        }
+        self.id = id
+    }
 
     
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput, H.Context == Context {
