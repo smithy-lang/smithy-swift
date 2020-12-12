@@ -67,7 +67,7 @@ class MiddlewareStackTests: XCTestCase {
     func testMiddlewareInterceptWithHandlerInterceptAfter() {
         let testPhase = Phase<TestContext, String, Error>(name: "Test")
         var stack = MiddlewareStack(phases: testPhase)
-        stack.intercept(testPhase, position: .after) { (context, subject) -> Result<String, Error> in
+        stack.intercept(testPhase, position: .after, id: "AfterTest") { (context, subject) -> Result<String, Error> in
             var newSubject = subject //copy original subject to new string
             newSubject = "is now a dog" // change original subject
             return .success(newSubject)
@@ -85,7 +85,7 @@ class MiddlewareStackTests: XCTestCase {
     func testMiddlewareInterceptWithHandlerInterceptBefore() {
         let testPhase = Phase<TestContext, String, Error>(name: "Test")
         var stack = MiddlewareStack(phases: testPhase)
-        stack.intercept(testPhase, position: .before) { (context, subject) -> Result<String, Error> in
+        stack.intercept(testPhase, position: .before, id: "BeforeTest") { (context, subject) -> Result<String, Error> in
             var newSubject = subject //copy original subject to new string
             newSubject = "is a cat" // change original subject
             return .success(newSubject)

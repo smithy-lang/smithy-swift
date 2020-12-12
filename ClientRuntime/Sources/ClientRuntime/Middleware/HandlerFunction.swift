@@ -13,4 +13,4 @@
 // permissions and limitations under the License.
 //
 
-typealias HandlerFunction<TContext, TSubject, TError: Error> = (TContext, TSubject) -> Result<TSubject, TError>
+public typealias HandlerFunction<TContext, TSubject, TError: Error> = (TContext, TSubject) -> Result<TSubject, TError>

@@ -16,6 +16,10 @@
 public struct AttributeKey<ValueType>: Hashable {
     let name: String
     
+    public init(name: String) {
+        self.name = name
+    }
+    
     func toString() -> String {
         return "ExecutionAttributeKey: \(name)"
     }
@@ -24,19 +28,21 @@ public struct AttributeKey<ValueType>: Hashable {
 public struct Attributes {
     var attributes: [Int: Any] = [Int: Any]()
     
-    func get<T: Any>(key: AttributeKey<T>) -> T? {
+    public init() {}
+    
+    public func get<T: Any>(key: AttributeKey<T>) -> T? {
         return attributes[key.hashValue] as? T
     }
     
-    func contains<T>(key: AttributeKey<T>) -> Bool {
+    public func contains<T>(key: AttributeKey<T>) -> Bool {
         return attributes[key.hashValue] != nil
     }
     
-    mutating func set<T: Any>(key: AttributeKey<T>, value: T) {
+    public mutating func set<T: Any>(key: AttributeKey<T>, value: T) {
         attributes[key.hashValue] = value
     }
     
-    mutating func remove<T>(key: AttributeKey<T>) {
+    public mutating func remove<T>(key: AttributeKey<T>) {
         attributes.removeValue(forKey: key.hashValue)
     }
 }
