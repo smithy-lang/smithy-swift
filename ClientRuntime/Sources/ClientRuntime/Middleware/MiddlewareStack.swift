@@ -15,7 +15,6 @@
 
 public struct MiddlewareStack<TContext, TSubject, TError: Error> {
     
-    var root: AnyMiddleware<TContext, TSubject, TError>?
     var phases: [Phase<TContext, TSubject, TError>]
     var defaultHandler: HandlerFunction<TContext, TSubject, TError>
     
@@ -25,13 +24,6 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         }) {
         
         self.phases = phases
-       
-        if phases.count > 1 {
-            if let orderedMiddleware = phases.first?.orderedMiddleware,
-               let middleware = orderedMiddleware.orderedItems.first?.value{
-                self.root = middleware
-            }
-        }
         self.defaultHandler = defaultHandler
     }
     /// This execute will execute the stack and use either a next you set when you instantiated the stack or the default in the chain
@@ -76,8 +68,6 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
         phases[index].orderedMiddleware = orderedMiddleware
-        
-        resetRoot()
     }
     
     /// Convenience function for passing a closure directly:
@@ -98,15 +88,5 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
         phases[index].orderedMiddleware = orderedMiddleware
-        
-        //reset root
-        resetRoot()
-    }
-    /// resets the root function that is called when the stack is kicked off
-    private mutating func resetRoot() {
-        let firstPhase = phases[0]
-        if let middleware = firstPhase.orderedMiddleware.orderedItems.first?.value {
-            self.root = middleware
-        }
     }
 }

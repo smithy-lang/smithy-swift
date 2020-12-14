@@ -87,6 +87,7 @@ public class SdkHttpClient {
                         let decoder = context.getDecoder()
                         let error = try OutputError(httpResponse: httpResponse,
                                                     decoder: decoder)
+                        
                         completion(.failure(SdkError.service(error)))
                     } catch let err {
                         completion(.failure(.client(.deserializationFailed(err))))

@@ -13,19 +13,13 @@
 // permissions and limitations under the License.
 //
 
-public struct HttpResponseStack<OutputType: HttpResponseBinding, OutputError: HttpResponseBinding> {
-    var middleware: MiddlewareStack<HttpResponseContext, OutputType, ClientError>
-    var outputType: OutputType.Type
-    var outputError: OutputError.Type
+public struct HttpResponseStack {
+    var middleware: MiddlewareStack<HttpResponseContext, Any, Error>
 
-    public init(outputType: OutputType.Type,
-                outputError: OutputError.Type) {
-
-        self.outputType = outputType
-        self.outputError = outputError
+    public init() {
         var middleware = MiddlewareStack<HttpResponseContext,
-                                          OutputType,
-                                          ClientError>(phases: HttpResponsePhases.deserialize.getPhase(),
+                                          Any,
+                                          Error>(phases: HttpResponsePhases.deserialize.getPhase(),
                                                        HttpResponsePhases.finalize.getPhase())
         
         middleware.intercept(HttpResponsePhases.deserialize.getPhase(), position: .before, id: "Deserialize") { (context, subject) -> Result<OutputType, ClientError> in
@@ -43,14 +37,14 @@ public struct HttpResponseStack<OutputType: HttpResponseBinding, OutputError: Ht
         self.middleware = middleware
     }
     
-    public func execute(context: HttpResponseContext, subject: OutputType) -> Result<OutputType, ClientError> {
+    public func execute(context: HttpResponseContext, subject: Any) -> Result<Any, Error> {
         middleware.execute(context: context, subject: subject)
     }
     
     public mutating func add(to phase: HttpResponsePhases,
                     position: Position,
                     id: String,
-                    handler: @escaping HandlerFunction<HttpResponseContext, OutputType, ClientError>) {
+                    handler: @escaping HandlerFunction<HttpResponseContext, Any, Error>) {
         
         middleware.intercept(phase.getPhase(), position: position, id: id, handler: handler)
     }

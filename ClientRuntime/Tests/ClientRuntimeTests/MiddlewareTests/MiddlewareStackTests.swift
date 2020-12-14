@@ -117,5 +117,22 @@ struct TestMiddleware: Middleware {
     typealias TError = Error
 }
 
+struct BuildRequestMiddleware<Input: HttpRequestBinding>: Middleware {
+    var id: String = "BuildRequest"
+    
+    let inputType: Input.Type
+    
+    func handle<H>(context: TestContext, subject: SdkHttpRequest, next: H) -> Result<SdkHttpRequest, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
+        return try inputType.
+    }
+    
+    typealias TContext = TestContext
+    
+    typealias TSubject = String
+    
+    typealias TError = Error
+}
+
+
 struct TestContext {
 }
