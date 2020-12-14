@@ -14,20 +14,21 @@
 //
 
 public struct HttpRequestStack {
-    var middleware: MiddlewareStack<HttpRequestContext, SdkHttpRequest, ClientError>
+    var middlewareStack: MiddlewareStack<HttpRequestContext, SdkHttpRequest, ClientError>
 
     public init() {
 
         
-        self.middleware = MiddlewareStack<HttpRequestContext,
+        let middlewareStack = MiddlewareStack<HttpRequestContext,
                                           SdkHttpRequest,
                                           ClientError>(phases: HttpRequestPhases.initialize.getPhase(),
                                                        HttpRequestPhases.build.getPhase(),
                                                        HttpRequestPhases.finalize.getPhase())
+        self.middlewareStack = middlewareStack
     }
     
     public func execute(context: HttpRequestContext, subject: SdkHttpRequest) -> Result<SdkHttpRequest, ClientError> {
-        middleware.execute(context: context, subject: subject)
+        middlewareStack.execute(context: context, subject: subject)
     }
     
     public mutating func add(to phase: HttpRequestPhases,
@@ -35,7 +36,13 @@ public struct HttpRequestStack {
                     id: String,
                     handler: @escaping HandlerFunction<HttpRequestContext, SdkHttpRequest, ClientError>) {
         
-        middleware.intercept(phase.getPhase(), position: position, id: id, handler: handler)
+        middlewareStack.intercept(phase.getPhase(), position: position, id: id, handler: handler)
+    }
+    
+    public mutating func add(to phase: HttpRequestPhases, position: Position, middleware: AnyMiddleware<HttpRequestContext, SdkHttpRequest, ClientError>){
+        middlewareStack.intercept(phase: phase.getPhase(),
+                             position: position,
+                             middleware: middleware)
     }
 }
 

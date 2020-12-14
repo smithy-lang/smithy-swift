@@ -54,47 +54,47 @@ public class SdkHttpClient {
         }
     }
     
-    public func execute<ResponseSubject: HttpResponseBinding,
-                        OutputError: HttpResponseBinding>(request: SdkHttpRequest,
-                                                          responseContext: HttpResponseContextBuilder,
-                                                          responseSubject: ResponseSubject.Type,
-                                                          responseStack: HttpResponseStack<ResponseSubject, OutputError>,
-                                                          outputError: OutputError.Type,
-                                                          completion: @escaping (SdkResult<ResponseSubject, OutputError>) -> Void) {
-        engine.execute(request: request) { (httpResult) in
-            
-            switch httpResult {
-            case .failure(let httpClientErr):
-                completion(.failure(.client(ClientError.networkError(httpClientErr))))
-                return
+    public func execute<Output, OutputError>(requestContext: HttpRequestContextBuilder,
+                        requestStack: HttpRequestStack,
+                        responseContext: HttpResponseContextBuilder,
+                        responseStack: HttpResponseStack,
+                        completion: @escaping (SdkResult<Output, OutputError>) -> Void) {
+        let request = requestStack.execute(context: requestContext.build(), subject: SdkHttpRequest(method: .get,
+                                                                                                    endpoint: Endpoint(host: ""),
+                                                                                                    headers: Headers())) //need to turn this into a builder
+        switch request {
+        case .success(let request):
+            engine.execute(request: request) { (httpResult) in
                 
-            case .success(let httpResponse):
-                if (200..<300).contains(httpResponse.statusCode.rawValue) {
-                    let context = responseContext
-                        .withResponse(value: httpResponse)
-                        .build()
-                    let response = responseStack.execute(context: context,
-                                                         subject: responseSubject)
-                    switch response {
-                    case .failure(let error):
-                        completion(.failure(.client(.deserializationFailed(error))))
-                    case .success(let response):
-                        completion(.success(response))
-                    }
-                } else {
-                    do {
-                        let context = responseContext.build()
-                        let decoder = context.getDecoder()
-                        let error = try OutputError(httpResponse: httpResponse,
-                                                    decoder: decoder)
-                        
-                        completion(.failure(SdkError.service(error)))
-                    } catch let err {
-                        completion(.failure(.client(.deserializationFailed(err))))
-                        return
+                switch httpResult {
+                case .failure(let httpClientErr):
+                    completion(.failure(.client(ClientError.networkError(httpClientErr))))
+                    return
+                    
+                case .success(let httpResponse):
+                    if (200..<300).contains(httpResponse.statusCode.rawValue) {
+                        let context = responseContext
+                            .withResponse(value: httpResponse)
+                            .build()
+                        let response = responseStack.execute(context: context,
+                                                             subject: httpResponse)
+                        switch response {
+                        case .failure(let error):
+                            if let mappedError = error as? SdkError<OutputError> {
+                            completion(.failure(mappedError))
+                            } else {
+                                completion(.failure(SdkError.unknown(error)))
+                            }
+                        case .success(let response):
+                            completion(.success(response as! Output))
+                        }
+                    } else {
+
                     }
                 }
             }
+        case .failure(let error):
+            completion(.failure(.client(error)))
         }
     }
     
