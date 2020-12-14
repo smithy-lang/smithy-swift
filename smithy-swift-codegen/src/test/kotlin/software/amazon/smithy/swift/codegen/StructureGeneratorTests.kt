@@ -64,6 +64,54 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedStructure)
     }
 
+
+    @Test
+    fun `it renders struct with primitive types`() {
+        val model = createModelFromSmithy("primitive-type-encode-test.smithy")
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        SwiftCodegenPlugin().execute(context)
+
+        val primitiveTypesInput = manifest
+                .getFileString("example/models/PrimitiveTypesInput.swift").get()
+        Assertions.assertNotNull(primitiveTypesInput)
+        primitiveTypesInput.shouldContain("public struct PrimitiveTypesInput: Equatable {\n" +
+                "    public let booleanVal: Bool?\n" +
+                "    public let intVal: Int?\n" +
+                "    public let longVal: Int?\n" +
+                "    public let primitiveBooleanVal: Bool\n" +
+                "    public let primitiveIntVal: Int\n" +
+                "    public let primitiveLongVal: Int\n" +
+                "    public let primitiveShortVal: Int16\n" +
+                "    public let shortVal: Int16?\n" +
+                "    public let str: String?\n" +
+                "\n" +
+                "    public init (\n" +
+                "        booleanVal: Bool? = nil,\n" +
+                "        intVal: Int? = nil,\n" +
+                "        longVal: Int? = nil,\n" +
+                "        primitiveBooleanVal: Bool = false,\n" +
+                "        primitiveIntVal: Int = 0,\n" +
+                "        primitiveLongVal: Int = 0,\n" +
+                "        primitiveShortVal: Int16 = 0,\n" +
+                "        shortVal: Int16? = nil,\n" +
+                "        str: String? = nil\n" +
+                "    )\n" +
+                "    {\n" +
+                "        self.booleanVal = booleanVal\n" +
+                "        self.intVal = intVal\n" +
+                "        self.longVal = longVal\n" +
+                "        self.primitiveBooleanVal = primitiveBooleanVal\n" +
+                "        self.primitiveIntVal = primitiveIntVal\n" +
+                "        self.primitiveLongVal = primitiveLongVal\n" +
+                "        self.primitiveShortVal = primitiveShortVal\n" +
+                "        self.shortVal = shortVal\n" +
+                "        self.str = str\n" +
+                "    }\n" +
+                "}")
+    }
+
+
     @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()

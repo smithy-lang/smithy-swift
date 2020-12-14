@@ -232,7 +232,8 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+            if(!target.id.name.startsWith("Primitive"))
+                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
         }
     }
 }
