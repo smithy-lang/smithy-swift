@@ -64,7 +64,6 @@ class StructureGeneratorTests : TestsBase() {
         contents.shouldContain(expectedGeneratedStructure)
     }
 
-
     @Test
     fun `it renders struct with primitive types`() {
         val model = createModelFromSmithy("primitive-type-encode-test.smithy")
@@ -110,7 +109,6 @@ class StructureGeneratorTests : TestsBase() {
                 "    }\n" +
                 "}")
     }
-
 
     @Test
     fun `it renders recursive nested shapes`() {
