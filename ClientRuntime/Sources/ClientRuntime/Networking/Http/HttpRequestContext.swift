@@ -19,6 +19,18 @@ public struct HttpRequestContext {
     public init(executionContext:Attributes) {
         self.executionContext = executionContext
     }
+    
+    func getPath() -> String {
+         return executionContext.get(key: AttributeKey<String>(name: "Path"))!
+    }
+    
+    func getMethod() -> HttpMethodType {
+        return executionContext.get(key: AttributeKey<HttpMethodType>(name: "Method"))!
+    }
+    
+    func getEncoder() -> RequestEncoder {
+        return executionContext.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
+    }
 }
 
 public class HttpRequestContextBuilder {

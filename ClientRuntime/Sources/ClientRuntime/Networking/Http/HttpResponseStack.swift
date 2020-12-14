@@ -21,19 +21,6 @@ public struct HttpResponseStack {
                                           Any,
                                           Error>(phases: HttpResponsePhases.deserialize.getPhase(),
                                                        HttpResponsePhases.finalize.getPhase())
-        
-        middleware.intercept(HttpResponsePhases.deserialize.getPhase(), position: .before, id: "Deserialize") { (context, subject) -> Result<OutputType, ClientError> in
-            let decoder = context.getDecoder()
-            let httpResponse = context.response
-            do {
-                let output = try outputType.init(httpResponse: httpResponse,
-                                        decoder: decoder)
-                return .success(output)
-            }
-            catch(let error) {
-                return .failure(ClientError.deserializationFailed(error))
-            }
-        }
         self.middleware = middleware
     }
     
