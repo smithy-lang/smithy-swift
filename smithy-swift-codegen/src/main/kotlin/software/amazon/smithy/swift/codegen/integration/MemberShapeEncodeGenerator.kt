@@ -232,8 +232,12 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            if (!target.id.name.startsWith("Primitive"))
-                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+            if (target.id.name.startsWith("Primitive")) {
+                val value = if (symbol.name.equals("Bool")) "false" else "0"
+                writer.openBlock("if $memberName != $value {", "}") {
+                    writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+                }
+            }
         }
     }
 }

@@ -466,7 +466,7 @@ extension JsonMapsInput: Encodable {
     }
 
     @Test
-    fun `encode excludes primitive types`() {
+    fun `encode checks for 0 or false for primitive types`() {
         val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
@@ -494,6 +494,18 @@ extension PrimitiveTypesInput: Encodable {
         }
         if let longVal = longVal {
             try container.encode(longVal, forKey: .longVal)
+        }
+        if primitiveBooleanVal != false {
+            try container.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
+        }
+        if primitiveIntVal != 0 {
+            try container.encode(primitiveIntVal, forKey: .primitiveIntVal)
+        }
+        if primitiveLongVal != 0 {
+            try container.encode(primitiveLongVal, forKey: .primitiveLongVal)
+        }
+        if primitiveShortVal != 0 {
+            try container.encode(primitiveShortVal, forKey: .primitiveShortVal)
         }
         if let shortVal = shortVal {
             try container.encode(shortVal, forKey: .shortVal)
