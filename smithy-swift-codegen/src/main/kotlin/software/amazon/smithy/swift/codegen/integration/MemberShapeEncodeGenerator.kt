@@ -19,6 +19,7 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
@@ -232,9 +233,10 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            val value = when (symbol.name) {
-                "Int", "Int8", "Int16" -> 0 // PrimitiveInteger, PrimitiveByte, PrimitiveShort case
-                "Float", "Double" -> 0.0
+            // All primitive types cases
+            val value = when (target.type) {
+                ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT, ShapeType.LONG -> 0
+                ShapeType.FLOAT, ShapeType.DOUBLE -> 0.0
                 else -> false // PrimitiveBoolean case
             }
             writer.openBlock("if $memberName != $value {", "}") {
