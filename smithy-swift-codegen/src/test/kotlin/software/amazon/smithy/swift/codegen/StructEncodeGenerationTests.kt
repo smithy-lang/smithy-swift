@@ -474,9 +474,15 @@ extension JsonMapsInput: Encodable {
 extension PrimitiveTypesInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case booleanVal
+        case byteVal
+        case doubleVal
+        case floatVal
         case intVal
         case longVal
         case primitiveBooleanVal
+        case primitiveByteVal
+        case primitiveDoubleVal
+        case primitiveFloatVal
         case primitiveIntVal
         case primitiveLongVal
         case primitiveShortVal
@@ -489,6 +495,15 @@ extension PrimitiveTypesInput: Encodable {
         if let booleanVal = booleanVal {
             try container.encode(booleanVal, forKey: .booleanVal)
         }
+        if let byteVal = byteVal {
+            try container.encode(byteVal, forKey: .byteVal)
+        }
+        if let doubleVal = doubleVal {
+            try container.encode(doubleVal, forKey: .doubleVal)
+        }
+        if let floatVal = floatVal {
+            try container.encode(floatVal, forKey: .floatVal)
+        }
         if let intVal = intVal {
             try container.encode(intVal, forKey: .intVal)
         }
@@ -497,6 +512,15 @@ extension PrimitiveTypesInput: Encodable {
         }
         if primitiveBooleanVal != false {
             try container.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
+        }
+        if primitiveByteVal != 0 {
+            try container.encode(primitiveByteVal, forKey: .primitiveByteVal)
+        }
+        if primitiveDoubleVal != 0.0 {
+            try container.encode(primitiveDoubleVal, forKey: .primitiveDoubleVal)
+        }
+        if primitiveFloatVal != 0.0 {
+            try container.encode(primitiveFloatVal, forKey: .primitiveFloatVal)
         }
         if primitiveIntVal != 0 {
             try container.encode(primitiveIntVal, forKey: .primitiveIntVal)

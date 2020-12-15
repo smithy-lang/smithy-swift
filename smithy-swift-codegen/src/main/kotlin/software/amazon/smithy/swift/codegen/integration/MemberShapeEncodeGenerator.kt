@@ -232,11 +232,13 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            if (target.id.name.startsWith("Primitive")) {
-                val value = if (symbol.name.equals("Bool")) "false" else "0"
-                writer.openBlock("if $memberName != $value {", "}") {
-                    writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
-                }
+            val value = when(symbol.name) {
+                "Int", "Int8", "Int16" -> 0  // PrimitiveInteger, PrimitiveByte, PrimitiveShort case
+                "Float", "Double" -> 0.0
+                else -> false // PrimitiveBoolean case
+            }
+            writer.openBlock("if $memberName != $value {", "}") {
+                writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         }
     }

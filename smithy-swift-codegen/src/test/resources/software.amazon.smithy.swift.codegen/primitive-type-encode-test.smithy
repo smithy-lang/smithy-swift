@@ -26,5 +26,11 @@ structure PrimitiveTypesStruct {
     longVal: Long,
     primitiveLongVal: PrimitiveLong,
     booleanVal: Boolean,
-    primitiveBooleanVal: PrimitiveBoolean
+    primitiveBooleanVal: PrimitiveBoolean,
+    floatVal: Float,
+    primitiveFloatVal: PrimitiveFloat,
+    doubleVal: Double,
+    primitiveDoubleVal: PrimitiveDouble,
+    byteVal: Byte,
+    primitiveByteVal: PrimitiveByte
 }
