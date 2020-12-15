@@ -232,8 +232,8 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            val value = when(symbol.name) {
-                "Int", "Int8", "Int16" -> 0  // PrimitiveInteger, PrimitiveByte, PrimitiveShort case
+            val value = when (symbol.name) {
+                "Int", "Int8", "Int16" -> 0 // PrimitiveInteger, PrimitiveByte, PrimitiveShort case
                 "Float", "Double" -> 0.0
                 else -> false // PrimitiveBoolean case
             }
