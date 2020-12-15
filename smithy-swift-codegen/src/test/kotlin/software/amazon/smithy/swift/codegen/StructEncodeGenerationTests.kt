@@ -464,4 +464,82 @@ extension JsonMapsInput: Encodable {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `encode checks for 0 or false for primitive types`() {
+        val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension PrimitiveTypesInput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case booleanVal
+        case byteVal
+        case doubleVal
+        case floatVal
+        case intVal
+        case longVal
+        case primitiveBooleanVal
+        case primitiveByteVal
+        case primitiveDoubleVal
+        case primitiveFloatVal
+        case primitiveIntVal
+        case primitiveLongVal
+        case primitiveShortVal
+        case shortVal
+        case str
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let booleanVal = booleanVal {
+            try container.encode(booleanVal, forKey: .booleanVal)
+        }
+        if let byteVal = byteVal {
+            try container.encode(byteVal, forKey: .byteVal)
+        }
+        if let doubleVal = doubleVal {
+            try container.encode(doubleVal, forKey: .doubleVal)
+        }
+        if let floatVal = floatVal {
+            try container.encode(floatVal, forKey: .floatVal)
+        }
+        if let intVal = intVal {
+            try container.encode(intVal, forKey: .intVal)
+        }
+        if let longVal = longVal {
+            try container.encode(longVal, forKey: .longVal)
+        }
+        if primitiveBooleanVal != false {
+            try container.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
+        }
+        if primitiveByteVal != 0 {
+            try container.encode(primitiveByteVal, forKey: .primitiveByteVal)
+        }
+        if primitiveDoubleVal != 0.0 {
+            try container.encode(primitiveDoubleVal, forKey: .primitiveDoubleVal)
+        }
+        if primitiveFloatVal != 0.0 {
+            try container.encode(primitiveFloatVal, forKey: .primitiveFloatVal)
+        }
+        if primitiveIntVal != 0 {
+            try container.encode(primitiveIntVal, forKey: .primitiveIntVal)
+        }
+        if primitiveLongVal != 0 {
+            try container.encode(primitiveLongVal, forKey: .primitiveLongVal)
+        }
+        if primitiveShortVal != 0 {
+            try container.encode(primitiveShortVal, forKey: .primitiveShortVal)
+        }
+        if let shortVal = shortVal {
+            try container.encode(shortVal, forKey: .shortVal)
+        }
+        if let str = str {
+            try container.encode(str, forKey: .str)
+        }
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
