@@ -464,4 +464,46 @@ extension JsonMapsInput: Encodable {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `encode excludes primitive types`() {
+        val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension PrimitiveTypesInput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case booleanVal
+        case intVal
+        case longVal
+        case primitiveBooleanVal
+        case primitiveIntVal
+        case primitiveLongVal
+        case primitiveShortVal
+        case shortVal
+        case str
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let booleanVal = booleanVal {
+            try container.encode(booleanVal, forKey: .booleanVal)
+        }
+        if let intVal = intVal {
+            try container.encode(intVal, forKey: .intVal)
+        }
+        if let longVal = longVal {
+            try container.encode(longVal, forKey: .longVal)
+        }
+        if let shortVal = shortVal {
+            try container.encode(shortVal, forKey: .shortVal)
+        }
+        if let str = str {
+            try container.encode(str, forKey: .str)
+        }
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
