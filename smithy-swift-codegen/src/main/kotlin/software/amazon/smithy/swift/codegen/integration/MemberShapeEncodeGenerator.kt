@@ -233,15 +233,20 @@ open class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
-            // All primitive types cases
-            val value = when (target.type) {
-                ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT, ShapeType.LONG -> 0
-                ShapeType.FLOAT, ShapeType.DOUBLE -> 0.0
-                else -> false // PrimitiveBoolean case
-            }
-            writer.openBlock("if $memberName != $value {", "}") {
+            val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
+                    ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN)
+            if (primitiveSymbols.contains(target.type)) {
+                // All primitive type cases
+                val value = when (target.type) {
+                    ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT, ShapeType.LONG -> 0
+                    ShapeType.FLOAT, ShapeType.DOUBLE -> 0.0
+                    else -> false // PrimitiveBoolean case
+                }
+                writer.openBlock("if $memberName != $value {", "}") {
+                    writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+                }
+            } else
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
-            }
         }
     }
 }
