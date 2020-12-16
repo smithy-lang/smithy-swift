@@ -1,9 +1,10 @@
-//
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 //  XMLUnkeyedDecodingContainer.swift
 //  XMLCoder
-//
-// TODO:: Add copyrights
-//
 
 import Foundation
 
