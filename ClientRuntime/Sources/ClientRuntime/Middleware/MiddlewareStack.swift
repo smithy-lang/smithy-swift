@@ -20,6 +20,7 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         var handler = AnyHandler<TContext, TSubject, TError>(handlerFn)
         for phase in phases {
             let order = phase.orderedMiddleware.orderedItems
+            if order.count == 0 { continue } // if there is no middleware continue to the next phase
             let reversedCollection = (0...(order.count-1)).reversed()
             for index in reversedCollection {
                 let composedHandler = ComposedHandler(handler, order[index].value)
