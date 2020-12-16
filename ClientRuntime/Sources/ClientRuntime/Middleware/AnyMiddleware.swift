@@ -22,12 +22,11 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
     
     public init<H: Handler>(handler: H, id: String) where H.TContext == TContext, H.TSubject == TSubject, H.TError == TError {
         
-        self._handle = { context, subject, handler in
-            handler.handle(context: context, subject: subject)
+        self._handle = { context, result, handler in
+            handler.handle(context: context, result: result)
         }
         self.id = id
     }
-
     
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         

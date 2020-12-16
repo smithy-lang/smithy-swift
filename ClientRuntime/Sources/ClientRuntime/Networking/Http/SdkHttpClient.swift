@@ -33,7 +33,6 @@ public class SdkHttpClient {
     public func close() {
         engine.close()
     }
-    
 }
 
 struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
