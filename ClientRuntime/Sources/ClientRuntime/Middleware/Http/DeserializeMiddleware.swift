@@ -8,15 +8,17 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
     public init() {}
     
     public func handle<H>(context: HttpResponseContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
-        let decoder = context.getDecoder()
-        let httpResponse = context.response
-        do {
-            let output = try Output(httpResponse: httpResponse,
-                                    decoder: decoder)
-            return next.handle(context: context, result: .success(output))
-        }
-        catch(let error) {
-            return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
+        return result.flatMap { (subject) -> Result<Any, Error> in
+            let decoder = context.getDecoder()
+            let httpResponse = context.response
+            do {
+                let output = try Output(httpResponse: httpResponse,
+                                        decoder: decoder)
+                return next.handle(context: context, result: .success(output))
+            }
+            catch(let error) {
+                return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
+            }
         }
     }
     
