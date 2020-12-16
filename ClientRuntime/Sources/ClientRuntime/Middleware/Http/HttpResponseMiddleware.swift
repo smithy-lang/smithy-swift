@@ -24,7 +24,6 @@ public struct HttpResponseMiddleware<OutputError: HttpResponseBinding>: Middlewa
                 return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
             }
         }
-
     }
     
     public typealias TContext = HttpResponseContext
