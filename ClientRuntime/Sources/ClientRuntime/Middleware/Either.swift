@@ -1,5 +1,5 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- // SPDX-License-Identifier: Apache-2.0.
+// SPDX-License-Identifier: Apache-2.0.
 
 /// This type is either set to type A or type B
 enum Either<A, B> {

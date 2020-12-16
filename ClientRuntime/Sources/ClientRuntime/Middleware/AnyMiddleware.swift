@@ -1,5 +1,5 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- // SPDX-License-Identifier: Apache-2.0.
+// SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware protocol
 public struct AnyMiddleware<TContext, TSubject, TError: Error>: Middleware {
