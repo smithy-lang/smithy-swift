@@ -20,6 +20,7 @@ public class SdkHttpClient {
         engine.execute(request: request, completion: completion)
     }
     
+    //to be removed
     public func execute<OutputType, OutputError>(context: Context<OutputType, OutputError>,
                                                  completion: @escaping (SdkResult<OutputType, OutputError>) -> Void) {
         
@@ -71,24 +72,22 @@ public class SdkHttpClient {
                 case .failure(let httpClientErr):
                     completion(.failure(.client(ClientError.networkError(httpClientErr))))
                     return
-                    
                 case .success(let httpResponse):
-                    if (200..<300).contains(httpResponse.statusCode.rawValue) {
-                        let context = responseContext
-                            .withResponse(value: httpResponse)
-                            .build()
-                        let response = responseStack.execute(context: context,
-                                                             subject: httpResponse)
-                        switch response {
-                        case .failure(let error):
-                            if let mappedError = error as? SdkError<OutputError> {
-                                completion(.failure(mappedError))
-                            } else {
-                                completion(.failure(SdkError.unknown(error)))
-                            }
-                        case .success(let response):
-                            completion(.success(response as! Output))
+                    
+                    let context = responseContext
+                        .withResponse(value: httpResponse)
+                        .build()
+                    let response = responseStack.execute(context: context,
+                                                         subject: httpResponse)
+                    switch response {
+                    case .failure(let error):
+                        if let mappedError = error as? SdkError<OutputError> {
+                            completion(.failure(mappedError))
+                        } else {
+                            completion(.failure(SdkError.unknown(error)))
                         }
+                    case .success(let response):
+                        completion(.success(response as! Output))
                     }
                 }
             }
