@@ -1,10 +1,9 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-
+//
 //  XMLDecoder.swift
 //  XMLParser
+//
+// TODO:: Add copyrights
+//
 
 import Foundation
 
