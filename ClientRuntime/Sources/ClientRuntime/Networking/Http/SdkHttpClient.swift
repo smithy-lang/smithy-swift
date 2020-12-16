@@ -54,14 +54,15 @@ public class SdkHttpClient {
         }
     }
     
-    public func execute<Output, OutputError>(requestContext: HttpRequestContextBuilder,
-                        requestStack: HttpRequestStack,
-                        responseContext: HttpResponseContextBuilder,
-                        responseStack: HttpResponseStack,
-                        completion: @escaping (SdkResult<Output, OutputError>) -> Void) {
-        let request = requestStack.execute(context: requestContext.build(), subject: SdkHttpRequest(method: .get,
-                                                                                                    endpoint: Endpoint(host: ""),
-                                                                                                    headers: Headers())) //need to turn this into a builder
+    public func execute<Output, OutputError>(requestContext: HttpRequestContext,
+                                             requestStack: HttpRequestStack,
+                                             responseContext: HttpResponseContextBuilder,
+                                             responseStack: HttpResponseStack,
+                                             completion: @escaping (SdkResult<Output, OutputError>) -> Void) {
+        let request = requestStack.execute(context: requestContext,
+                                           subject: SdkHttpRequest(method: .get,
+                                                                   endpoint: Endpoint(host: ""),
+                                                                   headers: Headers())) //need to turn this into a builder
         switch request {
         case .success(let request):
             engine.execute(request: request) { (httpResult) in
@@ -81,15 +82,13 @@ public class SdkHttpClient {
                         switch response {
                         case .failure(let error):
                             if let mappedError = error as? SdkError<OutputError> {
-                            completion(.failure(mappedError))
+                                completion(.failure(mappedError))
                             } else {
                                 completion(.failure(SdkError.unknown(error)))
                             }
                         case .success(let response):
                             completion(.success(response as! Output))
                         }
-                    } else {
-
                     }
                 }
             }

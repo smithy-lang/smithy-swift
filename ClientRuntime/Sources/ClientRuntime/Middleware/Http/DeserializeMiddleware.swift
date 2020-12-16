@@ -1,43 +1,30 @@
-//
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
-//
+ // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ // SPDX-License-Identifier: Apache-2.0.
 
-struct DeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
-    var id: String = "Deserialize"
+public struct DeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
     
-    let outputType: Output.Type
+    public var id: String = "Deserialize"
     
-    func handle<H>(context: HttpResponseContext, subject: Any, next: H) -> Result<SdkHttpRequest, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
+    public init() {}
+    
+    public func handle<H>(context: HttpResponseContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
         let decoder = context.getDecoder()
         let httpResponse = context.response
         do {
-            let output = try outputType.init(httpResponse: httpResponse,
+            let output = try Output(httpResponse: httpResponse,
                                     decoder: decoder)
-            return next.handle(context: context, subject: output)
+            return next.handle(context: context, result: .success(output))
         }
-//        catch(let error) {
-//            return .failure(ClientError.deserializationFailed(error))
-//        }
-        //TODO: handle error propagation
-        
+        catch(let error) {
+            return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
+        }
     }
     
-    typealias TContext = HttpResponseContext
+    public typealias TContext = HttpResponseContext
     
-    typealias TSubject = Any
+    public typealias TSubject = Any
     
-    typealias TError = Error
+    public typealias TError = Error
 }
 
 

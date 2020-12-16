@@ -1,17 +1,5 @@
-//
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
-//
+ // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ // SPDX-License-Identifier: Apache-2.0.
 
 import XCTest
 @testable import ClientRuntime
@@ -32,9 +20,11 @@ class MiddlewareStackTests: XCTestCase {
         var stack = MiddlewareStack(phases: testPhase)
         stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
         let context = TestContext()
-        let result = stack.execute(context: context, subject: "is a cat") { (context, string) -> Result<String, Error> in
-            XCTAssert(string == "is now a dog")
-            return .success(string)
+        let result = stack.execute(context: context, subject: "is a cat") { (context, result) -> Result<String, Error> in
+            return result.map { (string) -> String in
+                XCTAssert(string == "is now a dog")
+                return string
+            }
         }
         switch result {
         case .success(let string):
@@ -49,8 +39,7 @@ class MiddlewareStackTests: XCTestCase {
         var stack = MiddlewareStack(phases: testPhase)
         stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
         let context = TestContext()
-        let result = stack.execute(context: context, subject: "is a cat") { (context, string) -> Result<String, Error> in
-            XCTAssert(string == "is now a dog")
+        let result = stack.execute(context: context, subject: "is a cat") { (context, result) -> Result<String, Error> in
             let error = MiddlewareError.unknown("an unknown error occurred")
             return .failure(error)
         }
@@ -67,10 +56,12 @@ class MiddlewareStackTests: XCTestCase {
     func testMiddlewareInterceptWithHandlerInterceptAfter() {
         let testPhase = Phase<TestContext, String, Error>(name: "Test")
         var stack = MiddlewareStack(phases: testPhase)
-        stack.intercept(testPhase, position: .after, id: "AfterTest") { (context, subject) -> Result<String, Error> in
-            var newSubject = subject //copy original subject to new string
-            newSubject = "is now a dog" // change original subject
-            return .success(newSubject)
+        stack.intercept(testPhase, position: .after, id: "AfterTest") { (context, result) -> Result<String, Error> in
+            result.map { (subject) -> String in
+                var newSubject = subject //copy original subject to new string
+                newSubject = "is now a dog" // change original subject
+                return newSubject
+            }
         }
         let context = TestContext()
         let result = stack.execute(context: context, subject: "is a cat")
@@ -85,10 +76,12 @@ class MiddlewareStackTests: XCTestCase {
     func testMiddlewareInterceptWithHandlerInterceptBefore() {
         let testPhase = Phase<TestContext, String, Error>(name: "Test")
         var stack = MiddlewareStack(phases: testPhase)
-        stack.intercept(testPhase, position: .before, id: "BeforeTest") { (context, subject) -> Result<String, Error> in
-            var newSubject = subject //copy original subject to new string
-            newSubject = "is a cat" // change original subject
-            return .success(newSubject)
+        stack.intercept(testPhase, position: .before, id: "BeforeTest") { (context, result) -> Result<String, Error> in
+            return result.map { (subject) -> String in
+                var newSubject = subject //copy original subject to new string
+                newSubject = "is a cat" // change original subject
+                return newSubject
+            }
         }
         let context = TestContext()
         let result = stack.execute(context: context, subject: "is now a dog")
@@ -102,13 +95,15 @@ class MiddlewareStackTests: XCTestCase {
 }
 
 struct TestMiddleware: Middleware {
-    var id: String = "TestMiddleware"
-    
-    func handle<H>(context: TestContext, subject: String, next: H) -> Result<String, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
-        var newSubject = subject //copy original subject to new string
-        newSubject = "is now a dog" // change original subject
-        return next.handle(context: context, subject: newSubject)
+    func handle<H>(context: TestContext, result: Result<String, Error>, next: H) -> Result<String, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
+        return result.flatMap { (subject) -> Result<String, Error> in
+            var newSubject = subject //copy original subject to new string
+            newSubject = "is now a dog" // change original subject
+            return next.handle(context: context, result: .success(newSubject))
+        }
     }
+    
+    var id: String = "TestMiddleware"
     
     typealias TContext = TestContext
     
