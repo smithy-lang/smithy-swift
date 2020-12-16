@@ -1,4 +1,4 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
 
 public struct HttpResponseStack {
@@ -26,7 +26,7 @@ public struct HttpResponseStack {
     
     public mutating func add(to phase: HttpResponsePhases,
                              position: Position,
-                             middleware: AnyMiddleware<HttpResponseContext, Any, Error>){
+                             middleware: AnyMiddleware<HttpResponseContext, Any, Error>) {
         middlewareStack.intercept(phase: phase.getPhase(),
                              position: position,
                              middleware: middleware)

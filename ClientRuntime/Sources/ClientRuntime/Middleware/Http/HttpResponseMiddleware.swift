@@ -1,6 +1,5 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
-
 
 public struct HttpResponseMiddleware<OutputError: HttpResponseBinding>: Middleware {
     
@@ -8,7 +7,7 @@ public struct HttpResponseMiddleware<OutputError: HttpResponseBinding>: Middlewa
     
     public init() {}
     
-    public func handle<H>(context: HttpResponseContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
+    public func handle<H>(context: HttpResponseContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H: Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
         let decoder = context.getDecoder()
         let httpResponse = context.response
         if (200..<300).contains(httpResponse.statusCode.rawValue) {
@@ -17,10 +16,9 @@ public struct HttpResponseMiddleware<OutputError: HttpResponseBinding>: Middlewa
             do {
                 let error = try OutputError(httpResponse: httpResponse,
                                             decoder: decoder)
-                return next.handle(context: context, result:.failure(SdkError.service(error)))
+                return next.handle(context: context, result: .failure(SdkError.service(error)))
                 
-            }
-            catch(let error) {
+            } catch let error {
                 return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
             }
         }

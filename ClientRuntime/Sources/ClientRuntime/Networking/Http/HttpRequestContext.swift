@@ -1,10 +1,10 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
 
 public struct HttpRequestContext {
     var executionContext: Attributes
     
-    public init(executionContext:Attributes) {
+    public init(executionContext: Attributes) {
         self.executionContext = executionContext
     }
     

@@ -36,8 +36,14 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self.id = id
     }
 
+<<<<<<< HEAD
     public func handle<H: Handler>(context: Context, input: MInput, next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         return _handle(context, input, next.eraseToAnyHandler())
+=======
+    public func handle<H>(context: TContext, result: Result<TSubject, TError>, next: H) -> Result<TSubject, TError>
+        where H: Handler, H.TContext == TContext, H.TSubject == TSubject, H.TError == TError {
+        return _handle(context, result, AnyHandler(next))
+>>>>>>> 8425baf... fix: linter errors
     }
 }
