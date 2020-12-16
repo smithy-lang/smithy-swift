@@ -1,5 +1,5 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- // SPDX-License-Identifier: Apache-2.0.
+// SPDX-License-Identifier: Apache-2.0.
 
 /// Compose (wrap) the handler with the given middleware
 func compose<TContext: Any, TSubject: Any, TError, H: Handler, M: Middleware> (
