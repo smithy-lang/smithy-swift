@@ -1,8 +1,8 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware protocol
-public struct AnyMiddleware<TContext, TSubject, TError: Error> : Middleware {
+public struct AnyMiddleware<TContext, TSubject, TError: Error>: Middleware {
     private let _handle: (TContext, Result<TSubject, TError>, AnyHandler<TContext, TSubject, TError>) -> Result<TSubject, TError>
 
     public var id: String
@@ -27,9 +27,8 @@ public struct AnyMiddleware<TContext, TSubject, TError: Error> : Middleware {
     }
 
     public func handle<H>(context: TContext, result: Result<TSubject, TError>, next: H) -> Result<TSubject, TError>
-        where H : Handler, H.TContext == TContext, H.TSubject == TSubject, H.TError == TError
-    {
-        return _handle(context, result, AnyHandler(next));
+        where H: Handler, H.TContext == TContext, H.TSubject == TSubject, H.TError == TError {
+        return _handle(context, result, AnyHandler(next))
     }
     
 }

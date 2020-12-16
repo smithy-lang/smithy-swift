@@ -1,4 +1,4 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
 
 public struct MiddlewareStack<TContext, TSubject, TError: Error> {
@@ -50,9 +50,8 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
         return result
     }
     
-    mutating func intercept<M:Middleware>(phase: Phase<TContext, TSubject, TError>, position: Position, middleware: M)
-    where M.TContext == TContext, M.TSubject == TSubject, M.TError == TError
-    {
+    mutating func intercept<M: Middleware>(phase: Phase<TContext, TSubject, TError>, position: Position, middleware: M)
+    where M.TContext == TContext, M.TSubject == TSubject, M.TError == TError {
         guard let index = phases.firstIndex(where: { $0.name == phase.name}) else { return }
         var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)

@@ -1,11 +1,10 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
  
 public struct HttpRequestStack {
     var middlewareStack: MiddlewareStack<HttpRequestContext, SdkHttpRequest, ClientError>
 
     public init() {
-
         
         let middlewareStack = MiddlewareStack<HttpRequestContext,
                                           SdkHttpRequest,
@@ -27,7 +26,7 @@ public struct HttpRequestStack {
         middlewareStack.intercept(phase.getPhase(), position: position, id: id, handler: handler)
     }
     
-    public mutating func add(to phase: HttpRequestPhases, position: Position, middleware: AnyMiddleware<HttpRequestContext, SdkHttpRequest, ClientError>){
+    public mutating func add(to phase: HttpRequestPhases, position: Position, middleware: AnyMiddleware<HttpRequestContext, SdkHttpRequest, ClientError>) {
         middlewareStack.intercept(phase: phase.getPhase(),
                              position: position,
                              middleware: middleware)
