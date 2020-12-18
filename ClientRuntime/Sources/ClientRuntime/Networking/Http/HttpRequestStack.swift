@@ -26,7 +26,7 @@ public struct HttpRequestStack {
         middlewareStack.intercept(phase.getPhase(), position: position, id: id, handler: handler)
     }
     
-    public mutating func add(to phase: HttpRequestPhases, position: Position, middleware: AnyMiddleware<HttpRequestContext, SdkHttpRequest, ClientError>) {
+    public mutating func add<M: Middleware>(to phase: HttpRequestPhases, position: Position, middleware: M) where M.TContext == HttpRequestContext, M.TSubject == SdkHttpRequest, M.TError == ClientError {
         middlewareStack.intercept(phase: phase.getPhase(),
                              position: position,
                              middleware: middleware)

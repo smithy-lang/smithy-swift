@@ -36,7 +36,7 @@ class HttpMiddlewareStackTests: NetworkingTestUtils {
         var requestStack = HttpRequestStack()
         requestStack.add(to: .initialize,
                          position: .before,
-                         middleware: AnyMiddleware(BuildRequestMiddleware(input: input)))
+                         middleware: BuildRequestMiddleware(input: input))
         
         var responseStack = HttpResponseStack()
         responseStack.add(to: .response,
