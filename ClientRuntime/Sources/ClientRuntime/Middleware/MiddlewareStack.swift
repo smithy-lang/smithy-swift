@@ -1,61 +1,55 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MiddlewareStack<TContext, TSubject, TError: Error> {
+public protocol MiddlewareStack: Middleware {
     
-    var phases: [Phase<TContext, TSubject, TError>]
-    var defaultHandler: HandlerFunction<TContext, TSubject, TError>
+    /// the middleware of the stack in an ordered group
+    var orderedMiddleware: OrderedGroup<TSubject, TError> { get set }
+    /// the unique id of the stack
+    var id: String {get set}
     
-    init(phases: Phase<TContext, TSubject, TError>...,
-         defaultHandler: @escaping HandlerFunction<TContext, TSubject, TError> = {context, result in
-            return result
-        }) {
-        
-        self.phases = phases
-        self.defaultHandler = defaultHandler
-    }
-    /// This execute will execute the stack and use either a next you set when you instantiated the stack or the default in the chain
-    func execute(context: TContext, subject: TSubject) -> Result<TSubject, TError> {
-        let handlerFn = HandlerFunctionWrapper(defaultHandler)
-        var handler = AnyHandler<TContext, TSubject, TError>(handlerFn)
-        for phase in phases {
-            let order = phase.orderedMiddleware.orderedItems
-            if order.count == 0 { continue } // if there is no middleware continue to the next phase
-            let reversedCollection = (0...(order.count-1)).reversed()
-            for index in reversedCollection {
-                let composedHandler = ComposedHandler(handler, order[index].value)
-                handler = AnyHandler(composedHandler)
-            }
-        }
-        let result = handler.handle(context: context, result: .success(subject)) //kick off the chain with a result type of success
-        return result
+    func get(id: String) -> AnyMiddleware<TSubject, TError>?
+    
+    func handle<H: Handler>(context: MiddlewareContext,
+                            result: Result<TSubject, TError>,
+                            next: H) -> Result<TSubject, TError>
+        where H.TSubject == TSubject, H.TError == TError
+    
+    mutating func intercept<M: Middleware>(position: Position, middleware: M)
+    where M.TSubject == TSubject, M.TError == TError
+    
+    mutating func intercept(position: Position,
+                            id: String,
+                            handler: @escaping HandlerFunction<TSubject, TError>)
+}
+
+public extension MiddlewareStack {
+    func get(id: String) -> AnyMiddleware<TSubject, TError>? {
+        return orderedMiddleware.get(id: id)
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
-    func execute(context: TContext,
-                 subject: TSubject,
-                 next: @escaping HandlerFunction<TContext, TSubject, TError>) -> Result<TSubject, TError> {
+    public func handle<H: Handler>(context: MiddlewareContext,
+                            result: Result<TSubject, TError>,
+                            next: H) -> Result<TSubject, TError>
+        where H.TSubject == TSubject, H.TError == TError {
         
-        let handlerFn = HandlerFunctionWrapper(next)
-        var handler = AnyHandler<TContext, TSubject, TError>(handlerFn)
-        for phase in phases {
-            let order = phase.orderedMiddleware.orderedItems
-            let reversedCollection = (0...(order.count-1)).reversed()
-            for index in reversedCollection {
-                let composedHandler = ComposedHandler(handler, order[index].value)
-                handler = AnyHandler(composedHandler)
-            }
+        var handler = AnyHandler<TSubject, TError>(next)
+        
+        let order = orderedMiddleware.orderedItems
+        let reversedCollection = (0...(order.count-1)).reversed()
+        for index in reversedCollection {
+            let composedHandler = ComposedHandler(handler, order[index].value)
+            handler = AnyHandler(composedHandler)
         }
-        let result = handler.handle(context: context, result: .success(subject))
+        
+        let result = handler.handle(context: context, result: result)
         return result
     }
     
-    mutating func intercept<M: Middleware>(phase: Phase<TContext, TSubject, TError>, position: Position, middleware: M)
-    where M.TContext == TContext, M.TSubject == TSubject, M.TError == TError {
-        guard let index = phases.firstIndex(where: { $0.name == phase.name}) else { return }
-        var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
+    mutating func intercept<M: Middleware>(position: Position, middleware: M)
+    where M.TSubject == TSubject, M.TError == TError {
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
-        phases[index].orderedMiddleware = orderedMiddleware
     }
     
     /// Convenience function for passing a closure directly:
@@ -64,17 +58,18 @@ public struct MiddlewareStack<TContext, TSubject, TError: Error> {
     /// stack.intercept(phase, position: .after, id: "Add Header") { ... }
     /// ```
     ///
-    mutating func intercept(_ phase: Phase<TContext, TSubject, TError>,
-                   position: Position,
-                   id: String,
-                   handler: @escaping HandlerFunction<TContext, TSubject, TError>) {
+    mutating func intercept(position: Position,
+                            id: String,
+                            handler: @escaping HandlerFunction<TSubject, TError>) {
         let handlerFn = HandlerFunctionWrapper(handler)
-        let anyHandler = AnyHandler<TContext, TSubject, TError>(handlerFn)
-        let middleware = ComposedMiddleware<TContext, TSubject, TError>(anyHandler, id: id)
-        //get next from exisiting phase in the right position
-        guard let index = phases.firstIndex(where: {$0.name == phase.name}) else { return }
-        var orderedMiddleware = OrderedGroup<TContext, TSubject, TError>()
+        let anyHandler = AnyHandler<TSubject, TError>(handlerFn)
+        let middleware = ComposedMiddleware<TSubject, TError>(anyHandler, id: id)
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
-        phases[index].orderedMiddleware = orderedMiddleware
+    }
+}
+
+extension MiddlewareStack {
+    func eraseToAnyMiddlewareStack<TSubject, TError>() -> AnyMiddlewareStack<TSubject, TError> where TSubject == Self.TSubject, TError == Self.TError {
+        return AnyMiddlewareStack(self)
     }
 }

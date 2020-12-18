@@ -8,8 +8,8 @@ enum Either<A, B> {
 }
 
 /// Implement Handler for Either<A,B> when A and B are handlers of the same type
-extension Either: Handler where A: Handler, B: Handler, A.TContext == B.TContext, A.TSubject == B.TSubject, A.TError == B.TError {
-    func handle(context: A.TContext, result: Result<A.TSubject, A.TError>) -> Result<A.TSubject, A.TError> {
+extension Either: Handler where A: Handler, B: Handler, A.TSubject == B.TSubject, A.TError == B.TError {
+    func handle(context: MiddlewareContext, result: Result<A.TSubject, A.TError>) -> Result<A.TSubject, A.TError> {
         switch self {
         case .left(let aHandler):
             return aHandler.handle(context: context, result: result)
