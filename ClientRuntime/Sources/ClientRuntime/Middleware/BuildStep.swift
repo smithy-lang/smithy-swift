@@ -10,7 +10,7 @@
 /// Receives result or error from Finalize step.
 public struct BuildStep<TSubject, TError: Error>: MiddlewareStack {
 
-    public var orderedMiddleware: OrderedGroup<TSubject, TError>
+    public var orderedMiddleware: OrderedGroup<TSubject, TError> = OrderedGroup<TSubject, TError>()
     
     public var id: String = "BuildStep"
     

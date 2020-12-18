@@ -12,7 +12,7 @@
 /// Receives raw response, or error from underlying handler.
 public struct DeserializeStep<TSubject, TError: Error>: MiddlewareStack {
  
-    public var orderedMiddleware: OrderedGroup<TSubject, TError>
+    public var orderedMiddleware: OrderedGroup<TSubject, TError> = OrderedGroup<TSubject, TError>()
     
     public var id: String = "DeserializeStep"
     
