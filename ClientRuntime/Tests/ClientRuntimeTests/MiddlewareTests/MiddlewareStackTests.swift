@@ -28,6 +28,7 @@ class MiddlewareStackTests: XCTestCase {
                                    buildStep: buildStep,
                                    finalizeStep: finalizeStep,
                                    deserializeStep: deserializeStep)
+
         let result = stack.handleMiddleware(context: context, subject: "is a cat", next: TestHandler())
         
         switch result {
