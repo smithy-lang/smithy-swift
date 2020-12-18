@@ -9,7 +9,7 @@
 /// Receives result or error from Serialize step.
 public struct InitializeStep<TSubject, TError:Error>: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<TSubject, TError>
+    public var orderedMiddleware: OrderedGroup<TSubject, TError> = OrderedGroup<TSubject, TError>()
     
     public var id: String = "InitializeStep"
     

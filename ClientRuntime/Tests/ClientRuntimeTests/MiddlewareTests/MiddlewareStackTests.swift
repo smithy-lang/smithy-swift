@@ -15,24 +15,28 @@ class MiddlewareStackTests: XCTestCase {
     }
     
     
-//    func testMiddlewareStackSuccessInterceptAfter() {
-//        let testPhase = Phase<TestContext, String, Error>(name: "Test")
-//        var stack = MiddlewareStack(phases: testPhase)
-//        stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
-//        let context = TestContext()
-//        let result = stack.execute(context: context, subject: "is a cat") { (context, result) -> Result<String, Error> in
-//            return result.map { (string) -> String in
-//                XCTAssert(string == "is now a dog")
-//                return string
-//            }
-//        }
-//        switch result {
-//        case .success(let string):
-//            XCTAssert(string == "is now a dog")
-//        case .failure(_):
-//            XCTFail()
-//        }
-//    }
+    func testMiddlewareStackSuccessInterceptAfter() {
+        let initializeStep = InitializeStep<String, Error>()
+        let serializeStep = SerializeStep<String, Error>()
+        let buildStep = BuildStep<String, Error>()
+        let finalizeStep = FinalizeStep<String, Error>()
+        let deserializeStep = DeserializeStep<String, Error>()
+        let context = TestContext()
+        let stack = OperationStack(id: "Test Operation",
+                                   initializeStep: initializeStep,
+                                   serializeStep: serializeStep,
+                                   buildStep: buildStep,
+                                   finalizeStep: finalizeStep,
+                                   deserializeStep: deserializeStep)
+        let result = stack.handleMiddleware(context: context, subject: "is a cat", next: TestHandler())
+        
+        switch result {
+        case .success(let string):
+            XCTAssert(string == "is now a dog")
+        case .failure(_):
+            XCTFail()
+        }
+    }
 //
 //    func testMiddlewareStackFailureInterceptAfter() {
 //        let testPhase = Phase<TestContext, String, Error>(name: "Test")
@@ -111,5 +115,21 @@ class MiddlewareStackTests: XCTestCase {
 //
 //    typealias TError = Error
 //}
+ 
+ struct TestHandler: Handler {
+    func handle(context: MiddlewareContext, result: Result<String, Error>) -> Result<String, Error> {
+        return result.map { (original) -> String in
+            return "is now a dog"
+        }
+    }
+    
+    typealias TSubject = String
+    
+    typealias TError = Error
+    
+    
+ }
 
-struct TestContext {}
+ struct TestContext: MiddlewareContext {
+    var attributes: Attributes = Attributes()
+ }

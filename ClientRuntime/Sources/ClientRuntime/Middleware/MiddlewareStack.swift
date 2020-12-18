@@ -35,8 +35,10 @@ public extension MiddlewareStack {
         where H.TSubject == TSubject, H.TError == TError {
         
         var handler = AnyHandler<TSubject, TError>(next)
-        
         let order = orderedMiddleware.orderedItems
+        if order.count == 0 {
+            return handler.handle(context: context, result: result)
+        }
         let reversedCollection = (0...(order.count-1)).reversed()
         for index in reversedCollection {
             let composedHandler = ComposedHandler(handler, order[index].value)
