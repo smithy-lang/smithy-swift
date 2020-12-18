@@ -133,14 +133,14 @@ struct RelativeOrder {
     }
 }
 
-public struct OrderedGroup<TSubject, TContext, TError: Error> {
+public struct OrderedGroup<TSubject, TError: Error> {
     //order of the keys
     var order = RelativeOrder()
     //key here is name of the middleware aka the id property of the middleware
-    private var _items: [String: AnyMiddleware<TSubject, TContext, TError>] = [:]
+    private var _items: [String: AnyMiddleware<TSubject, TError>] = [:]
     
-    var orderedItems: [String: AnyMiddleware<TSubject, TContext, TError>] {
-        var sorted = [String: AnyMiddleware<TSubject, TContext, TError>]()
+    var orderedItems: [String: AnyMiddleware<TSubject, TError>] {
+        var sorted = [String: AnyMiddleware<TSubject, TError>]()
         for key in order.order {
             sorted[key] = self._items[key]
         }
@@ -149,7 +149,7 @@ public struct OrderedGroup<TSubject, TContext, TError: Error> {
     
     public init() {}
     
-    mutating func add(middleware: AnyMiddleware<TSubject, TContext, TError>,
+    mutating func add(middleware: AnyMiddleware<TSubject, TError>,
                       position: Position) {
         if !middleware.id.isEmpty {
             _items[middleware.id] = middleware
@@ -157,14 +157,14 @@ public struct OrderedGroup<TSubject, TContext, TError: Error> {
         }
     }
     
-    mutating func insert(middleware: AnyMiddleware<TSubject, TContext, TError>,
+    mutating func insert(middleware: AnyMiddleware<TSubject, TError>,
                          relativeTo: String,
                          position: Position) {
         _items[middleware.id] = middleware
         order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
     
-    func get(id: String)-> AnyMiddleware<TSubject, TContext, TError>? {
+    func get(id: String)-> AnyMiddleware<TSubject, TError>? {
         return _items[id]
     }
     

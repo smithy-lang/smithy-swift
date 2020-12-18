@@ -18,50 +18,50 @@ class HttpMiddlewareStackTests: NetworkingTestUtils {
         super.tearDown()
     }
     
-    func testFullRequest() {
-        let encoder = JSONEncoder()
-        let decoder = JSONDecoder()
-        let input = TestBody(test: "testval")
-        let requestContext = HttpRequestContextBuilder()
-            .withEncoder(value: encoder)
-            .withMethod(value: .post)
-            .withPath(value: "/post")
-            .withServiceName(value: "testService")
-            .withOperation(value: "testRequest")
-            .build()
-        
-        let responseContext = HttpResponseContextBuilder()
-            .withDecoder(value: decoder)
-        
-        var requestStack = HttpRequestStack()
-        requestStack.add(to: .initialize,
-                         position: .before,
-                         middleware: BuildRequestMiddleware(input: input))
-        
-        var responseStack = HttpResponseStack()
-        responseStack.add(to: .response,
-                          position: .before,
-                          middleware: AnyMiddleware(HttpResponseMiddleware<TestResponseError>()))
-        responseStack.add(to: .deserialize,
-                          position: .before,
-                          middleware: AnyMiddleware(DeserializeMiddleware<TestResponse>()))
-                          
-        let expectation = XCTestExpectation(description: "call came back")
-        httpClient.execute(requestContext: requestContext,
-                       requestStack: requestStack,
-                       responseContext: responseContext,
-                       responseStack: responseStack){ (result: SdkResult<TestResponse, TestResponseError>) in
-            print(result)
-            switch result {
-            case .success(let response):
-                XCTAssert(response.json?.test == input.test)
-            case .failure(let error):
-                XCTFail(error.localizedDescription)
-            }
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
-    }
+//    func testFullRequest() {
+//        let encoder = JSONEncoder()
+//        let decoder = JSONDecoder()
+//        let input = TestBody(test: "testval")
+//        let requestContext = HttpRequestContextBuilder()
+//            .withEncoder(value: encoder)
+//            .withMethod(value: .post)
+//            .withPath(value: "/post")
+//            .withServiceName(value: "testService")
+//            .withOperation(value: "testRequest")
+//            .build()
+//        
+//        let responseContext = HttpResponseContextBuilder()
+//            .withDecoder(value: decoder)
+//        
+//        var requestStack = HttpRequestStack()
+//        requestStack.add(to: .initialize,
+//                         position: .before,
+//                         middleware: BuildRequestMiddleware(input: input))
+//        
+//        var responseStack = HttpResponseStack()
+//        responseStack.add(to: .response,
+//                          position: .before,
+//                          middleware: AnyMiddleware(HttpResponseMiddleware<TestResponseError>()))
+//        responseStack.add(to: .deserialize,
+//                          position: .before,
+//                          middleware: AnyMiddleware(DeserializeMiddleware<TestResponse>()))
+//                          
+//        let expectation = XCTestExpectation(description: "call came back")
+//        httpClient.execute(requestContext: requestContext,
+//                       requestStack: requestStack,
+//                       responseContext: responseContext,
+//                       responseStack: responseStack){ (result: SdkResult<TestResponse, TestResponseError>) in
+//            print(result)
+//            switch result {
+//            case .success(let response):
+//                XCTAssert(response.json?.test == input.test)
+//            case .failure(let error):
+//                XCTFail(error.localizedDescription)
+//            }
+//            expectation.fulfill()
+//        }
+//        wait(for: [expectation], timeout: 10)
+//    }
     
 }
 
