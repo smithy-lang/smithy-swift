@@ -375,7 +375,7 @@ extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
             queryItems.append(queryItem)
         }
         else {
-            let queryItem = URLQueryItem(name: "token", value: String("00000000-0000-4000-8000-000000000000"))
+            let queryItem = URLQueryItem(name: "token", value: String(Configuration.init().idempotencyToken))
             queryItems.append(queryItem)
         }
         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)

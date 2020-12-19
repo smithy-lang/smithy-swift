@@ -64,6 +64,7 @@ fun Shape.isInHttpBody(): Boolean {
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
+    private val idempotencyTokenValue = "Configuration.init().idempotencyToken"
 
     // can be overridden by implementations to more specific error protocol
     override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
@@ -993,7 +994,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
-                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String(\"00000000-0000-4000-8000-000000000000\"))")
+                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($idempotencyTokenValue))")
                     writer.write("queryItems.append(queryItem)")
                 }
             }
@@ -1073,7 +1074,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
-                    writer.write("headers.add(name: \"$paramName\", value: String(\"00000000-0000-4000-8000-000000000000\"))")
+                    writer.write("headers.add(name: \"$paramName\", value: String($idempotencyTokenValue))")
                 }
             }
         }
