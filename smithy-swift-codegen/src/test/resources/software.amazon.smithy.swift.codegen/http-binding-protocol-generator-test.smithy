@@ -31,8 +31,15 @@ service Example {
         JsonLists,
         HttpResponseCode,
         JsonMaps,
-        PrimitiveTypes
+        PrimitiveTypes,
+        QueryIdempotencyTokenAutoFill
     ]
+}
+
+@http(uri: "/QueryIdempotencyTokenAutoFill", method: "POST")
+@tags(["client-only"])
+operation QueryIdempotencyTokenAutoFill {
+    input: QueryIdempotencyTokenAutoFillInput
 }
 
 @idempotent
@@ -1144,4 +1151,10 @@ structure PrimitiveTypesStruct {
     primitiveDoubleVal: PrimitiveDouble,
     byteVal: Byte,
     primitiveByteVal: PrimitiveByte
+}
+
+structure QueryIdempotencyTokenAutoFillInput {
+    @httpQuery("token")
+    @idempotencyToken
+    token: String,
 }

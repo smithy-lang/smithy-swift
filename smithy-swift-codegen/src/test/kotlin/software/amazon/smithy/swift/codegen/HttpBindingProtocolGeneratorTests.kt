@@ -360,4 +360,30 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it builds request with idempotency token trait for input member`() {
+        val contents = getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
+    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        var queryItems: [URLQueryItem] = [URLQueryItem]()
+        if let token = token {
+            let queryItem = URLQueryItem(name: "token", value: String(token))
+            queryItems.append(queryItem)
+        }
+        else {
+            let queryItem = URLQueryItem(name: "token", value: String("00000000-0000-4000-8000-000000000000"))
+            queryItems.append(queryItem)
+        }
+        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+        var headers = Headers()
+        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
