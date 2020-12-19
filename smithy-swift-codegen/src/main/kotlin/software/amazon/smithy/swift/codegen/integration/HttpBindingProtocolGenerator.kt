@@ -29,7 +29,18 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
+import software.amazon.smithy.model.traits.HttpResponseCodeTrait
+import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -980,7 +991,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("queryItems.append(queryItem)")
                 }
             }
-            if(it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
+            if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
                     writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String(\"00000000-0000-4000-8000-000000000000\"))")
                     writer.write("queryItems.append(queryItem)")
@@ -1060,7 +1071,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("headers.add(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
             }
-            if(it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
+            if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
                     writer.write("headers.add(name: \"$paramName\", value: String(\"00000000-0000-4000-8000-000000000000\"))")
                 }
