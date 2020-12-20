@@ -362,7 +362,7 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
     }
 
     @Test
-    fun `it builds request with idempotency token trait for input member`() {
+    fun `it builds request with idempotency token trait for httpQuery`() {
         val contents = getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
@@ -380,6 +380,30 @@ extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
         }
         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
         var headers = Headers()
+        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it builds request with idempotency token trait for httpHeader`() {
+        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpHeaderInput+HttpRequestBinding.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
+    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        var queryItems: [URLQueryItem] = [URLQueryItem]()
+        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+        var headers = Headers()
+        if let token = token {
+            headers.add(name: "token", value: String(token))
+        }
+        else {
+            headers.add(name: "token", value: String(Configuration.init().idempotencyToken))
+        }
         return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
     }
 }

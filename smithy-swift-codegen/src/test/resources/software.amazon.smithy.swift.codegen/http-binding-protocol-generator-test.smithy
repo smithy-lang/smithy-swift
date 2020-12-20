@@ -32,7 +32,8 @@ service Example {
         HttpResponseCode,
         JsonMaps,
         PrimitiveTypes,
-        QueryIdempotencyTokenAutoFill
+        QueryIdempotencyTokenAutoFill,
+        IdempotencyTokenWithHttpHeader
     ]
 }
 
@@ -40,6 +41,12 @@ service Example {
 @tags(["client-only"])
 operation QueryIdempotencyTokenAutoFill {
     input: QueryIdempotencyTokenAutoFillInput
+}
+
+@http(uri: "/IdempotencyTokenWithHttpHeader", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithHttpHeader {
+    input: IdempotencyTokenWithHttpHeaderInput
 }
 
 @idempotent
@@ -1155,6 +1162,12 @@ structure PrimitiveTypesStruct {
 
 structure QueryIdempotencyTokenAutoFillInput {
     @httpQuery("token")
+    @idempotencyToken
+    token: String,
+}
+
+structure IdempotencyTokenWithHttpHeaderInput {
+    @httpHeader("token")
     @idempotencyToken
     token: String,
 }
