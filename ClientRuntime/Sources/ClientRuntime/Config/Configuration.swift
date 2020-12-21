@@ -11,17 +11,17 @@ open class Configuration {
     public var decoder: ResponseDecoder?
     public let httpClientEngine: HttpClientEngine?
     public let httpClientConfiguration: HttpClientConfiguration
-    public let idempotencyToken: IdempotencyTokenGeneratorProtocol
+    public let idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol?
     
     public init(encoder: RequestEncoder? = nil,
                 decoder: ResponseDecoder? = nil,
                 httpClientEngine: HttpClientEngine? = nil,
                 httpClientConfiguration: HttpClientConfiguration = HttpClientConfiguration(),
-                idempotencyToken: IdempotencyTokenGeneratorProtocol = DefaultIdempotencyTokenGenerator()) {
+                idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol? = nil) {
         self.encoder = encoder
         self.decoder = decoder
         self.httpClientEngine = httpClientEngine
         self.httpClientConfiguration = httpClientConfiguration
-        self.idempotencyToken = idempotencyToken
+        self.idempotencyTokenGenerator = idempotencyTokenGenerator
     }
 }
