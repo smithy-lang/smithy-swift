@@ -11,13 +11,13 @@ open class Configuration {
     public var decoder: ResponseDecoder?
     public let httpClientEngine: HttpClientEngine?
     public let httpClientConfiguration: HttpClientConfiguration
-    public let idempotencyToken: String
+    public let idempotencyToken: IdempotencyTokenGeneratorProtocol
     
     public init(encoder: RequestEncoder? = nil,
                 decoder: ResponseDecoder? = nil,
                 httpClientEngine: HttpClientEngine? = nil,
                 httpClientConfiguration: HttpClientConfiguration = HttpClientConfiguration(),
-                idempotencyToken: String = "00000000-0000-4000-8000-000000000000") {
+                idempotencyToken: IdempotencyTokenGeneratorProtocol = DefaultIdempotencyTokenGenerator()) {
         self.encoder = encoder
         self.decoder = decoder
         self.httpClientEngine = httpClientEngine
