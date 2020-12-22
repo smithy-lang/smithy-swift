@@ -7,5 +7,5 @@ public protocol HttpRequestBinding {
 
   // Build the HttpRequest using the input method and path
     func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder,
-                          idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest
+                          idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequest
 }

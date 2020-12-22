@@ -1,13 +1,11 @@
-//
-//  File.swift
-//  
-//
-//  Created by Adireddy, Santosh on 12/21/20.
-//
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 import Foundation
 
-public class DefaultIdempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol {
+public struct DefaultIdempotencyTokenGenerator: IdempotencyTokenGenerator {
     
     public init() {}
     
