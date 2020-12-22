@@ -72,10 +72,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
 
             // invoke the DSL builder for the input type
-            var idempotencyTokenTraitCaller = ""
-            if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
-                idempotencyTokenTraitCaller = "QueryIdempotencyTestTokenGenerator()"
-
             writer.writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)

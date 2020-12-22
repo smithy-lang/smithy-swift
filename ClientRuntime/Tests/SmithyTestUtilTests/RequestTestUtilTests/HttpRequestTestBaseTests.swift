@@ -67,7 +67,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
         do {
-            let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
+        let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
         
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist

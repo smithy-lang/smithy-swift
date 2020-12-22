@@ -885,9 +885,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             if (httpPayload != null) {
                 val shape = ctx.model.expectShape(httpPayload.member.target)
                 optionalTerminator = if (ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
-                /* new */
-
-                /* new */
                 renderSerializeExplicitPayload(ctx, httpPayload, writer)
             } else {
                 writer.openBlock("if try !self.allPropertiesAreNull() {", "} else {") {
