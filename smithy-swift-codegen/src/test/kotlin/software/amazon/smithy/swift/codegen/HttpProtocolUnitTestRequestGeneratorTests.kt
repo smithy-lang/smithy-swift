@@ -83,7 +83,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .post, path: "/smoketest/{label1}/foo", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -131,7 +131,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .post, path: "/explicit/string", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
             for requiredHeader in requiredHeaders {
@@ -174,7 +174,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .post, path: "/EmptyInputAndEmptyOutput", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
@@ -211,7 +211,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .put, path: "/SimpleScalarProperties", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
@@ -252,7 +252,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .post, path: "/StreamingTraits", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -291,7 +291,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .get, path: "/HttpPrefixHeaders", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
@@ -335,7 +335,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .put, path: "/JsonUnions", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .put, path: "/JsonUnions", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -403,7 +403,7 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
-            let actual = try input.buildHttpRequest(method: .put, path: "/RecursiveShapes", encoder: encoder)
+            let actual = try input.buildHttpRequest(method: .put, path: "/RecursiveShapes", encoder: encoder, idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")

@@ -64,7 +64,7 @@ fun Shape.isInHttpBody(): Boolean {
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
-    private val idempotencyTokenValue = "Configuration.init().idempotencyToken"
+    private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 
     // can be overridden by implementations to more specific error protocol
     override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
@@ -857,7 +857,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)

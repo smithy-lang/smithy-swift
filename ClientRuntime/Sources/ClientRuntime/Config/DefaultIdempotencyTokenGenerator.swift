@@ -8,8 +8,10 @@
 import Foundation
 
 public class DefaultIdempotencyTokenGenerator : IdempotencyTokenGeneratorProtocol {
+    
     public init() {}
-//    public func generateToken() -> String {
-//        return "1234"
-//    }
+    
+    public func generateToken() -> String {
+        return UUID().uuidString
+    }
 }

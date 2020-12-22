@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
@@ -71,6 +72,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
 
             // invoke the DSL builder for the input type
+            var idempotencyTokenTraitCaller = "DefaultIdempotencyTokenGenerator"
+            if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
+                idempotencyTokenTraitCaller = "QueryIdempotencyTestTokenGenerator"
+
             writer.writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
@@ -80,7 +85,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("let encoder = \$L", requestEncoder)
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
                 writer.write(
-                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: encoder)",
+                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: encoder, idempotencyTokenGenerator: $idempotencyTokenTraitCaller())",
                     test.uri
                 )
 

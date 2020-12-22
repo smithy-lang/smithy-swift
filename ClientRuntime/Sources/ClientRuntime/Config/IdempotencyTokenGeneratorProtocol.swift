@@ -10,9 +10,3 @@ import Foundation
 public protocol IdempotencyTokenGeneratorProtocol {
     func generateToken() -> String
 }
-
-extension IdempotencyTokenGeneratorProtocol {
-    public func generateToken() -> String {
-        return UUID().uuidString
-    }
-}
