@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 // used to create middleware from a handler
-struct ComposedMiddleware<TSubject: Any, TError: Error> {
-    private var _handle: (MiddlewareContext, Result<TSubject, TError>, AnyHandler<TSubject, TError>) -> Result<TSubject, TError>
+struct ComposedMiddleware<MInput: Any, MOutput> {
+    private var _handle: (MiddlewareContext, Result<MInput, Error>, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
     // the next handler to call
-    let handler: AnyHandler<TSubject, TError>
+    let handler: AnyHandler<MInput, MOutput>
     public var id: String
     
     public init<H: Handler> (_ handler: H, id: String)
-           where H.TSubject == TSubject, H.TError == TError {
+           where H.Input == MInput, H.Output == MOutput {
         
-        if let alreadyComposed = handler as? ComposedMiddleware<TSubject, TError> {
+        if let alreadyComposed = handler as? ComposedMiddleware<MInput, MOutput> {
             self = alreadyComposed
             return
         }
@@ -27,9 +27,8 @@ struct ComposedMiddleware<TSubject: Any, TError: Error> {
 
 extension ComposedMiddleware: Middleware {
  
-    func handle<H: Handler>(context: MiddlewareContext, result: Result<TSubject, TError>, next: H) -> Result<TSubject, TError> where
-                                                                                                             H.TError == TError,
-                                                                                                             H.TSubject == TSubject {
+    func handle<H: Handler>(context: MiddlewareContext, result: Result<MInput, Error>, next: H) -> Result<MOutput, Error> where
+        H.Input == MInput, H.Output == MOutput {
         _handle(context, result, handler)
     }
 }

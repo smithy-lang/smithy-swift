@@ -20,7 +20,7 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self._handle = realMiddleware.handle
     }
     
-    public init<H: Handler>(handler: H, id: String) where H.TSubject == TSubject, H.TError == TError {
+    public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput {
         
         self._handle = { context, result, handler in
             handler.handle(context: context, result: result)

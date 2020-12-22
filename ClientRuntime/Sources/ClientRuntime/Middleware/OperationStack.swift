@@ -116,7 +116,6 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         }
         
         let count = with.count
-        
         var handler = ComposedHandler(next, with[count-1])
         let reversedCollection = (0...(count-2)).reversed()
         for index in reversedCollection {

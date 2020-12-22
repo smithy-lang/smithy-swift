@@ -7,13 +7,13 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public struct InitializeStep<TSubject, TError:Error>: MiddlewareStack {
+public struct InitializeStep<StepInput, StepOutput>: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<TSubject, TError> = OrderedGroup<TSubject, TError>()
+    public var orderedMiddleware: OrderedGroup<StepInput, StepOutput> = OrderedGroup<StepInput, StepOutput>()
     
     public var id: String = "InitializeStep"
     
-    public typealias TSubject = TSubject
+    public typealias MInput = StepInput
     
-    public typealias TError = TError
+    public typealias MOutput = StepOutput
 }
