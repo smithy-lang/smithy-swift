@@ -116,7 +116,7 @@ enum MockError: Error {
 }
 
 extension CodableRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
         let body = HttpBody.data(try encoder.encode(self))
         return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
@@ -127,7 +127,7 @@ extension CodableRequest: HttpRequestBinding {
 }
 
 extension CodableXMLRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
         return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
@@ -136,7 +136,7 @@ extension CodableXMLRequest: HttpRequestBinding {
 }
 
 extension CodableRequestThatThrows: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
         return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
                                                path: path),
@@ -145,7 +145,7 @@ extension CodableRequestThatThrows: HttpRequestBinding {
 }
 
 extension CodableRequestWithPayload: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
         let body = HttpBody.data(self.payload)
         return SdkHttpRequest(method: method,
                             endpoint: Endpoint(host: "codegened-host-for-service",
