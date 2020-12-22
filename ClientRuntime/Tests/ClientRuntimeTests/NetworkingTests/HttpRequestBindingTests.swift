@@ -12,7 +12,7 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: JSONEncoder())
+            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: JSONEncoder(), idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .get)
@@ -34,7 +34,7 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestThatThrows()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-        let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.post, path: uri, encoder: JSONEncoder())
+        let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.post, path: uri, encoder: JSONEncoder(), idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
         
         XCTAssertEqual(httpRequest.endpoint.path, uri)
         XCTAssertEqual(httpRequest.method, .post)
@@ -49,7 +49,7 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestWithPayload()
         let uri = "/constant/prefix/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.connect, path: uri, encoder: JSONEncoder())
+            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.connect, path: uri, encoder: JSONEncoder(), idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .connect)
@@ -70,7 +70,7 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: XMLEncoder())
+            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: XMLEncoder(), idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .get)

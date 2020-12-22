@@ -11,7 +11,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = requiredQuery {
@@ -67,7 +67,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
         do {
-        let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
+            let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder(), idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
         
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
