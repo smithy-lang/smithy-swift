@@ -4,7 +4,7 @@
 /// type erase the Middleware protocol
 public struct AnyMiddleware<MInput, MOutput>: Middleware {
     
-    private let _handle: (MiddlewareContext, Result<MInput, Error>, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
+    private let _handle: (MiddlewareContext, MInput, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
 
     public var id: String
 
@@ -21,15 +21,15 @@ public struct AnyMiddleware<MInput, MOutput>: Middleware {
     
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput {
         
-        self._handle = { context, result, handler in
-            handler.handle(context: context, result: result)
+        self._handle = { context, input, handler in
+            handler.handle(context: context, input: input)
         }
         self.id = id
     }
 
-    public func handle<H: Handler>(context: MiddlewareContext, result: Result<MInput, Error>, next: H) -> Result<MOutput, Error>
+    public func handle<H: Handler>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error>
         where H.Input == MInput, H.Output == MOutput {
-        return _handle(context, result, AnyHandler(next))
+        return _handle(context, input, next.eraseToAnyHandler())
     }
     
 }

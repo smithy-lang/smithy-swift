@@ -8,7 +8,7 @@ struct HandlerFunctionWrapper<MInput: Any, MOutput>: Handler {
         self._handler = handler
     }
     
-    func handle(context: MiddlewareContext, result: Result<MInput, Error>) -> Result<MOutput, Error> {
-        return _handler(context, result)
+    func handle(context: MiddlewareContext, input: MInput) -> Result<MOutput, Error> {
+        return _handler(context, input)
     }
 }

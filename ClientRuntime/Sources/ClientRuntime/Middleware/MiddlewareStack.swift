@@ -11,7 +11,7 @@ public protocol MiddlewareStack: Middleware {
     func get(id: String) -> AnyMiddleware<MInput, MOutput>?
     
     func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<MInput, Error>,
+                            input: MInput,
                             next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput
     
@@ -30,14 +30,14 @@ public extension MiddlewareStack {
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<MInput, Error>,
+                            input: MInput,
                             next: H) -> Result<MOutput, Error>
         where H.Input == MInput, H.Output == MOutput {
         
         var handler = AnyHandler<MInput, MOutput>(next)
         let order = orderedMiddleware.orderedItems
         if order.count == 0 {
-            return handler.handle(context: context, result: result)
+            return handler.handle(context: context, input: input)
         }
         let reversedCollection = (0...(order.count-1)).reversed()
         for index in reversedCollection {
@@ -45,7 +45,7 @@ public extension MiddlewareStack {
             handler = composedHandler.eraseToAnyHandler()
         }
         
-        let result = handler.handle(context: context, result: result)
+        let result = handler.handle(context: context, input: input)
         return result
     }
     

@@ -3,7 +3,7 @@
 
 /// Type erased Handler
 public struct AnyHandler<MInput, MOutput>: Handler {
-    private let _handle: (MiddlewareContext, Result<MInput, Error>) -> Result<MOutput, Error>
+    private let _handle: (MiddlewareContext, MInput) -> Result<MOutput, Error>
     
     public init<H: Handler> (_ realHandler: H)
         where H.Input == MInput, H.Output == MOutput {
@@ -14,7 +14,7 @@ public struct AnyHandler<MInput, MOutput>: Handler {
         self._handle = realHandler.handle
     }
     
-    public func handle(context: MiddlewareContext, result: Result<MInput, Error>) -> Result<MOutput, Error> {
-        return _handle(context, result)
+    public func handle(context: MiddlewareContext, input: MInput) -> Result<MOutput, Error> {
+        return _handle(context, input)
     }
 }

@@ -5,7 +5,7 @@
 public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {    
     public var orderedMiddleware: OrderedGroup<MInput, MOutput>
     
-    private let _handle: (MiddlewareContext, Result<MInput, Error>, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
+    private let _handle: (MiddlewareContext, MInput, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
 
     public var id: String
 
@@ -21,9 +21,9 @@ public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {
         self.orderedMiddleware = realMiddleware.orderedMiddleware
     }
 
-    public func handle<H: Handler>(context: MiddlewareContext, result: Result<MInput, Error>, next: H) -> Result<MOutput, Error>
+    public func handle<H: Handler>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error>
         where H.Input == MInput, H.Output == MOutput {
-        return _handle(context, result, AnyHandler(next))
+        return _handle(context, input, next.eraseToAnyHandler())
     }
     
 }

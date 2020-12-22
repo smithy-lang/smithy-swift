@@ -9,7 +9,7 @@ public protocol Middleware {
     var id: String { get }
     
     func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<MInput, Error>,
+                            input: MInput,
                             next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput
 }

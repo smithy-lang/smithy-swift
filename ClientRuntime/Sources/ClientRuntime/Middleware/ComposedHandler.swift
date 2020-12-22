@@ -22,7 +22,7 @@ struct ComposedHandler<MInput: Any, MOutput> {
 }
 
 extension ComposedHandler: Handler {
-    func handle(context: MiddlewareContext, result: Result<MInput, Error>) -> Result<MOutput, Error> {
-        return with.handle(context: context, result: result, next: next)
+    func handle(context: MiddlewareContext, input: MInput) -> Result<MOutput, Error> {
+        return with.handle(context: context, input: input, next: next)
     }
 }

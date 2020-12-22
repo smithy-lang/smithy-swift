@@ -36,7 +36,7 @@ public struct OperationStack {
                                                        deserializeStep.eraseToAnyMiddlewareStack()]
         let handler = compose(next: next, with: steps)
 
-        let result = handler.handle(context: context, result: .success(subject))
+        let result = handler.handle(context: context, input: subject)
         return result
     }
     

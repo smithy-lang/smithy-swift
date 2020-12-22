@@ -53,10 +53,8 @@ class MiddlewareStackTests: XCTestCase {
                                    buildStep: buildStep,
                                    finalizeStep: finalizeStep,
                                    deserializeStep: deserializeStep)
-        stack.initializeStep.intercept(position: .before, id: "add word") { (context, result) -> Result<Any, Error> in
-            return result.map { (original) -> Any in
-                return (original as? String ?? "") + " want a dog"
-            }
+        stack.initializeStep.intercept(position: .before, id: "add word") { (context, input) -> Result<Any, Error> in
+            return .success((input as? String ?? "") + " want a dog")
         }
 
         let result = stack.handleMiddleware(context: context, subject: "I", next: TestHandler())
@@ -130,10 +128,9 @@ class MiddlewareStackTests: XCTestCase {
 }
  
  struct TestHandler: Handler {
-    func handle(context: MiddlewareContext, result: Result<Any, Error>) -> Result<Any, Error> {
-        return result.map { (original) -> String in
-            return (original as? String ?? "") + " and a cat"
-        }
+    func handle(context: MiddlewareContext, input: Any) -> Result<Any, Error> {
+        return .success((input as? String ?? "") + " and a cat")
+        
     }
     
     typealias Input = Any
@@ -146,11 +143,10 @@ class MiddlewareStackTests: XCTestCase {
  struct TestMiddleware: Middleware {
     var id: String
     
-    func handle<H>(context: MiddlewareContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H : Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
-        let result = result.map { (original) -> Any in
-            return (original as? String ?? "") + " want a dog"
-        }
-        return next.handle(context: context, result: result)
+    func handle<H>(context: MiddlewareContext, input: Any, next: H) -> Result<Any, Error> where H : Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
+        let input = (input as? String ?? "") + " want a dog"
+        
+        return next.handle(context: context, input: input)
     }
     
     typealias MInput = Any

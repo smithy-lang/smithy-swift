@@ -5,7 +5,7 @@ public protocol Handler {
     associatedtype Input
     associatedtype Output
        
-    func handle(context: MiddlewareContext, result: Result<Input, Error>) -> Result<Output, Error>
+    func handle(context: MiddlewareContext, input: Input) -> Result<Output, Error>
 }
 
 extension Handler {
