@@ -64,7 +64,7 @@ public extension MiddlewareStack {
                             id: String,
                             handler: @escaping HandlerFunction<MInput, MOutput>) {
         let handlerFn = HandlerFunctionWrapper(handler)
-        let anyHandler = AnyHandler<MInput, MOutput>(handlerFn)
+        let anyHandler = handlerFn.eraseToAnyHandler()
         let middleware = ComposedMiddleware<MInput, MOutput>(anyHandler, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }

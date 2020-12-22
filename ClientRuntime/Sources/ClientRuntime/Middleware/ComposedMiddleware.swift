@@ -20,9 +20,12 @@ extension ComposedMiddleware: Middleware {
     func handle<H: Handler>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error> where
         H.Input == MInput, H.Output == MOutput {
         let newResult = handler.handle(context: context, input: input)
-        let mappedResult = try! newResult.map { (output) -> MInput in
-            (output as! MInput)
-        }.get()
-        return next.handle(context: context, input: mappedResult)
+
+        switch newResult {
+        case .failure(let error):
+            return next.handle(context: context, input: error as! MInput) //this can't be right?
+        case .success(let output):
+            return next.handle(context: context, input: output as! MInput) //either can this?
+        }
     }
 }
