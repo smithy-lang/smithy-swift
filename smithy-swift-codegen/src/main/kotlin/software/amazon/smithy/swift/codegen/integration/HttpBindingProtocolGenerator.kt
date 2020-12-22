@@ -954,13 +954,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             Value of "idempotencyTokenGenerator.generateToken()" will be serialized
         */
-        if(target.type == ShapeType.STRING && binding.member.hasTrait(IdempotencyTokenTrait::class.java)) {
+        if (target.type == ShapeType.STRING && binding.member.hasTrait(IdempotencyTokenTrait::class.java)) {
             writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
             writer.write("let body = HttpBody.data(data)")
             writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
             writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
-        }
-        else
+        } else
             writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
         writer.closeBlock("}")
     }
