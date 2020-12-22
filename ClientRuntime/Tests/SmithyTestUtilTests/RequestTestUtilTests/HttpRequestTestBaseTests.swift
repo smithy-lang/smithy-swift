@@ -11,7 +11,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = requiredQuery {
