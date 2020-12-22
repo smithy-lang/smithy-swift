@@ -857,7 +857,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
@@ -1012,7 +1012,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
-                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($idempotencyTokenValue))")
+                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: $idempotencyTokenValue)")
                     writer.write("queryItems.append(queryItem)")
                 }
             }
@@ -1092,7 +1092,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
-                    writer.write("headers.add(name: \"$paramName\", value: String($idempotencyTokenValue))")
+                    writer.write("headers.add(name: \"$paramName\", value: $idempotencyTokenValue)")
                 }
             }
         }

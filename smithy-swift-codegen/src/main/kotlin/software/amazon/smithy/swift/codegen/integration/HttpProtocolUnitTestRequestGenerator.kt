@@ -72,9 +72,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
 
             // invoke the DSL builder for the input type
-            var idempotencyTokenTraitCaller = "DefaultIdempotencyTokenGenerator"
+            var idempotencyTokenTraitCaller = ""
             if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
-                idempotencyTokenTraitCaller = "QueryIdempotencyTestTokenGenerator"
+                idempotencyTokenTraitCaller = "QueryIdempotencyTestTokenGenerator()"
 
             writer.writeInline("\nlet input = ")
                 .call {
@@ -84,10 +84,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("do {", "} catch let err {") {
                 writer.write("let encoder = \$L", requestEncoder)
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
-                writer.write(
-                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: encoder, idempotencyTokenGenerator: $idempotencyTokenTraitCaller())",
-                    test.uri
-                )
+                if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
+                        writer.write(
+                                "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                                        "path: \$S, encoder: encoder, idempotencyTokenGenerator: QueryIdempotencyTestTokenGenerator())",
+                                test.uri)
+                else
+                    writer.write(
+                        "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                                "path: \$S, encoder: encoder)", test.uri
+                    )
 
                 // assert that forbidden Query Items do not exist
                 if (test.forbidQueryParams.isNotEmpty()) {

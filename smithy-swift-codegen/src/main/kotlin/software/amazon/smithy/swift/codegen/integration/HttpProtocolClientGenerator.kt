@@ -197,7 +197,7 @@ class HttpProtocolClientGenerator(
         } else {
             renderUriPath(httpTrait, pathBindings, writer)
             writer.write("let method = HttpMethodType.$httpMethod")
-            writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder, idempotencyTokenGenerator: self.config.idempotencyTokenGenerator)")
+            writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder, idempotencyTokenGenerator: config.idempotencyTokenGenerator)")
         }
     }
 
