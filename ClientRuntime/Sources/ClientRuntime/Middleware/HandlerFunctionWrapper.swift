@@ -1,14 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-struct HandlerFunctionWrapper<TSubject: Any, TError: Error>: Handler {
-    let _handler: HandlerFunction<TSubject, TError>
+struct HandlerFunctionWrapper<MInput: Any, MOutput>: Handler {
+    let _handler: HandlerFunction<MInput, MOutput>
     
-    init(_ handler: @escaping HandlerFunction<TSubject, TError>) {
+    init(_ handler: @escaping HandlerFunction<MInput, MOutput>) {
         self._handler = handler
     }
     
-    func handle(context: MiddlewareContext, result: Result<TSubject, TError>) -> Result<TSubject, TError> {
+    func handle(context: MiddlewareContext, result: Result<MInput, Error>) -> Result<MOutput, Error> {
         return _handler(context, result)
     }
 }

@@ -1,21 +1,21 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct OperationStack<TSubject, TError: Error> {
+public struct OperationStack {
     ///returns the unique id for the operation stack as middleware
     public var id: String
-    public var initializeStep: InitializeStep<TSubject, TError>
-    public var buildStep: BuildStep<TSubject, TError>
-    public var serializeStep: SerializeStep<TSubject, TError>
-    public var finalizeStep: FinalizeStep<TSubject, TError>
-    public var deserializeStep: DeserializeStep<TSubject, TError>
+    public var initializeStep: InitializeStep<Any, Any>
+    public var buildStep: BuildStep<Any, Any>
+    public var serializeStep: SerializeStep<Any, Any>
+    public var finalizeStep: FinalizeStep<Any, Any>
+    public var deserializeStep: DeserializeStep<Any, Any>
     
     public init(id: String,
-                initializeStep: InitializeStep<TSubject, TError>,
-                serializeStep: SerializeStep<TSubject, TError>,
-                buildStep: BuildStep<TSubject, TError>,
-                finalizeStep: FinalizeStep<TSubject, TError>,
-                deserializeStep: DeserializeStep<TSubject, TError>) {
+                initializeStep: InitializeStep<Any, Any>,
+                serializeStep: SerializeStep<Any, Any>,
+                buildStep: BuildStep<Any, Any>,
+                finalizeStep: FinalizeStep<Any, Any>,
+                deserializeStep: DeserializeStep<Any, Any>) {
         self.id = id
         self.initializeStep = initializeStep
         self.serializeStep = serializeStep
@@ -26,36 +26,36 @@ public struct OperationStack<TSubject, TError: Error> {
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     func handleMiddleware<H: Handler>(context: MiddlewareContext,
-                 subject: TSubject,
-                 next: H) -> Result<TSubject, TError> where H.TSubject == TSubject, H.TError == TError {
+                                      subject: Any,
+                                      next: H) -> Result<Any, Error> where H.Input == Any, H.Output == Any {
         
-        let steps: [AnyMiddlewareStack<TSubject, TError>] = [initializeStep.eraseToAnyMiddlewareStack(),
+        let steps: [AnyMiddlewareStack<Any, Any>] = [initializeStep.eraseToAnyMiddlewareStack(),
                                                        serializeStep.eraseToAnyMiddlewareStack(),
                                                        buildStep.eraseToAnyMiddlewareStack(),
                                                        finalizeStep.eraseToAnyMiddlewareStack(),
                                                        deserializeStep.eraseToAnyMiddlewareStack()]
-        let handler = compose(handler: next, with: steps)
+        let handler = compose(next: next, with: steps)
 
         let result = handler.handle(context: context, result: .success(subject))
         return result
     }
     
     /// Compose (wrap) the handler with the given middleware
-    func compose<H: Handler, M: MiddlewareStack>(handler: H, with: [M]) -> AnyHandler<TSubject, TError>
-        where M.TSubject == TSubject,
-              M.TError == TError,
-              H.TSubject == TSubject,
-              H.TError == TError {
+    func compose<H: Handler, M: MiddlewareStack>(next: H, with: [M]) -> AnyHandler<M.MInput, M.MOutput> where M.MInput == Any,
+                                                                                                                  M.MOutput == Any,
+    H.Input == Any, H.Output == Any{
         if with.isEmpty {
-            return AnyHandler(handler)
+            return next.eraseToAnyHandler()
         }
         
-        let cnt = with.count
-        var h = ComposedHandler<TSubject, TError>(handler, with[cnt - 1])
-        for i in stride(from: cnt - 2, through: 0, by: -1) {
-            h = ComposedHandler(h, with[i])
+        let count = with.count
+
+        var handler = ComposedHandler(next, with[count-1])
+        let reversedCollection = (0...(count-2)).reversed()
+        for index in reversedCollection {
+            handler = ComposedHandler(handler, with[index])
         }
         
-        return AnyHandler(h)
+        return handler.eraseToAnyHandler()
     }
 }

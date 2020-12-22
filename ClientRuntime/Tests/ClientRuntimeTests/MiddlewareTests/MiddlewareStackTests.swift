@@ -16,24 +16,29 @@ class MiddlewareStackTests: XCTestCase {
     
     
     func testMiddlewareStackSuccessInterceptAfter() {
-        let initializeStep = InitializeStep<String, Error>()
-        let serializeStep = SerializeStep<String, Error>()
-        let buildStep = BuildStep<String, Error>()
-        let finalizeStep = FinalizeStep<String, Error>()
-        let deserializeStep = DeserializeStep<String, Error>()
+        let initializeStep = InitializeStep<Any, Any>()
+        let serializeStep = SerializeStep<Any, Any>()
+        let buildStep = BuildStep<Any, Any>()
+        let finalizeStep = FinalizeStep<Any, Any>()
+        let deserializeStep = DeserializeStep<Any, Any>()
         let context = TestContext()
-        let stack = OperationStack(id: "Test Operation",
+        var stack = OperationStack(id: "Test Operation",
                                    initializeStep: initializeStep,
                                    serializeStep: serializeStep,
                                    buildStep: buildStep,
                                    finalizeStep: finalizeStep,
                                    deserializeStep: deserializeStep)
+        stack.initializeStep.intercept(position: .before, id: "add word") { (context, result) -> Result<Any, Error> in
+            return result.map { (original) -> String in
+                return (original as? String ?? "") + " want a dog"
+            }
+        }
 
-        let result = stack.handleMiddleware(context: context, subject: "is a cat", next: TestHandler())
+        let result = stack.handleMiddleware(context: context, subject: "I", next: TestHandler())
         
         switch result {
         case .success(let string):
-            XCTAssert(string == "is now a dog")
+            XCTAssert(string as! String == "i want a dog and a cat")
         case .failure(_):
             XCTFail()
         }
@@ -98,35 +103,17 @@ class MiddlewareStackTests: XCTestCase {
 //        }
 //    }
 }
-
-//struct TestMiddleware: Middleware {
-//    func handle<H>(context: TestContext, result: Result<String, Error>, next: H) -> Result<String, Error> where H : Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
-//        return result.flatMap { (subject) -> Result<String, Error> in
-//            var newSubject = subject //copy original subject to new string
-//            newSubject = "is now a dog" // change original subject
-//            return next.handle(context: context, result: .success(newSubject))
-//        }
-//    }
-//
-//    var id: String = "TestMiddleware"
-//
-//    typealias TContext = TestContext
-//
-//    typealias TSubject = String
-//
-//    typealias TError = Error
-//}
  
  struct TestHandler: Handler {
-    func handle(context: MiddlewareContext, result: Result<String, Error>) -> Result<String, Error> {
+    func handle(context: MiddlewareContext, result: Result<Any, Error>) -> Result<Any, Error> {
         return result.map { (original) -> String in
-            return "is now a dog"
+            return (original as? String ?? "") + " and a cat"
         }
     }
     
-    typealias TSubject = String
+    typealias Input = Any
     
-    typealias TError = Error
+    typealias Output = Any
     
     
  }

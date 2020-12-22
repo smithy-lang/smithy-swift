@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public protocol Middleware {
-    associatedtype TSubject
-    associatedtype TError: Error
+    associatedtype MInput
+    associatedtype MOutput
     
     /// The middleware ID
     var id: String { get }
     
     func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<TSubject, TError>,
-                            next: H) -> Result<TSubject, TError>
-        where H.TSubject == TSubject, H.TError == TError
+                            result: Result<MInput, Error>,
+                            next: H) -> Result<MOutput, Error>
+    where H.Input == MInput, H.Output == MOutput
 }
 
 extension Middleware {
-    func eraseToAnyMiddleware() -> AnyMiddleware<TSubject, TError> {
+    func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput> {
         return AnyMiddleware(self)
     }
 }

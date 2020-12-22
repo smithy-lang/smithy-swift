@@ -4,37 +4,37 @@
 public protocol MiddlewareStack: Middleware {
     
     /// the middleware of the stack in an ordered group
-    var orderedMiddleware: OrderedGroup<TSubject, TError> { get set }
+    var orderedMiddleware: OrderedGroup<MInput, MOutput> { get set }
     /// the unique id of the stack
     var id: String {get set}
     
-    func get(id: String) -> AnyMiddleware<TSubject, TError>?
+    func get(id: String) -> AnyMiddleware<MInput, MOutput>?
     
     func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<TSubject, TError>,
-                            next: H) -> Result<TSubject, TError>
-        where H.TSubject == TSubject, H.TError == TError
+                            result: Result<MInput, Error>,
+                            next: H) -> Result<MOutput, Error>
+    where H.Input == MInput, H.Output == MOutput
     
     mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.TSubject == TSubject, M.TError == TError
+    where M.MInput == MInput, M.MOutput == MOutput
     
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping HandlerFunction<TSubject, TError>)
+                            handler: @escaping HandlerFunction<MInput, MOutput>)
 }
 
 public extension MiddlewareStack {
-    func get(id: String) -> AnyMiddleware<TSubject, TError>? {
+    func get(id: String) -> AnyMiddleware<MInput, MOutput>? {
         return orderedMiddleware.get(id: id)
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
-    public func handle<H: Handler>(context: MiddlewareContext,
-                            result: Result<TSubject, TError>,
-                            next: H) -> Result<TSubject, TError>
-        where H.TSubject == TSubject, H.TError == TError {
+    func handle<H: Handler>(context: MiddlewareContext,
+                            result: Result<MInput, Error>,
+                            next: H) -> Result<MOutput, Error>
+        where H.Input == MInput, H.Output == MOutput {
         
-        var handler = AnyHandler<TSubject, TError>(next)
+        var handler = AnyHandler<MInput, MOutput>(next)
         let order = orderedMiddleware.orderedItems
         if order.count == 0 {
             return handler.handle(context: context, result: result)
@@ -50,7 +50,7 @@ public extension MiddlewareStack {
     }
     
     mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.TSubject == TSubject, M.TError == TError {
+    where M.MInput == MInput, M.MOutput == MOutput {
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
     }
     
@@ -62,16 +62,16 @@ public extension MiddlewareStack {
     ///
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping HandlerFunction<TSubject, TError>) {
+                            handler: @escaping HandlerFunction<MInput, MOutput>) {
         let handlerFn = HandlerFunctionWrapper(handler)
-        let anyHandler = AnyHandler<TSubject, TError>(handlerFn)
-        let middleware = ComposedMiddleware<TSubject, TError>(anyHandler, id: id)
+        let anyHandler = AnyHandler<MInput, MOutput>(handlerFn)
+        let middleware = ComposedMiddleware<MInput, MOutput>(anyHandler, id: id)
         orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
     }
 }
 
 extension MiddlewareStack {
-    func eraseToAnyMiddlewareStack<TSubject, TError>() -> AnyMiddlewareStack<TSubject, TError> where TSubject == Self.TSubject, TError == Self.TError {
+    func eraseToAnyMiddlewareStack<MInput, MOutput>() -> AnyMiddlewareStack<MInput, MOutput> where MInput == Self.MInput, MOutput == Self.MOutput {
         return AnyMiddlewareStack(self)
     }
 }

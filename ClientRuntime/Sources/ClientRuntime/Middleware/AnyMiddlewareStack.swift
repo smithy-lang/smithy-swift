@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware Stack protocol
-public struct AnyMiddlewareStack<TSubject, TError: Error>: MiddlewareStack {
-    public var orderedMiddleware: OrderedGroup<TSubject, TError>
+public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {
+    public var orderedMiddleware: OrderedGroup<MInput, MOutput>
     
-    private let _handle: (MiddlewareContext, Result<TSubject, TError>, AnyHandler<TSubject, TError>) -> Result<TSubject, TError>
+    private let _handle: (MiddlewareContext, Result<MInput, Error>, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>
 
     public var id: String
 
     public init<M: MiddlewareStack>(_ realMiddleware: M)
-        where M.TSubject == TSubject, M.TError == TError {
-        if let alreadyErased = realMiddleware as? AnyMiddlewareStack<TSubject, TError> {
+        where M.MInput == MInput, M.MOutput == MOutput {
+        if let alreadyErased = realMiddleware as? AnyMiddlewareStack<MInput, MOutput> {
             self = alreadyErased
             return
         }
@@ -21,8 +21,8 @@ public struct AnyMiddlewareStack<TSubject, TError: Error>: MiddlewareStack {
         self.orderedMiddleware = realMiddleware.orderedMiddleware
     }
 
-    public func handle<H: Handler>(context: MiddlewareContext, result: Result<TSubject, TError>, next: H) -> Result<TSubject, TError>
-        where H.TSubject == TSubject, H.TError == TError {
+    public func handle<H: Handler>(context: MiddlewareContext, result: Result<MInput, Error>, next: H) -> Result<MOutput, Error>
+        where H.Input == MInput, H.Output == MOutput {
         return _handle(context, result, AnyHandler(next))
     }
     

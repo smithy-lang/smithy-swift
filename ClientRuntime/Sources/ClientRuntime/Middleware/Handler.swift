@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public protocol Handler {
-    associatedtype TSubject
-    associatedtype TError: Error
+    associatedtype Input
+    associatedtype Output
        
-    func handle(context: MiddlewareContext, result: Result<TSubject, TError>) -> Result<TSubject, TError>
+    func handle(context: MiddlewareContext, result: Result<Input, Error>) -> Result<Output, Error>
 }
 
 extension Handler {
-    func eraseToAnyHandler() -> AnyHandler<TSubject, TError> {
+    func eraseToAnyHandler() -> AnyHandler<Input, Output> {
         return AnyHandler(self)
     }
 }
