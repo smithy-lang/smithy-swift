@@ -17,12 +17,12 @@ struct ComposedMiddleware<MInput, MOutput> {
 
 extension ComposedMiddleware: Middleware {
  
-    func handle<H: Handler>(context: MiddlewareContext, result: Result<MInput, Error>, next: H) -> Result<MOutput, Error> where
+    func handle<H: Handler>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error> where
         H.Input == MInput, H.Output == MOutput {
-        let newResult = handler.handle(context: context, result: result)
-        let mappedResult = newResult.map { (output) -> MInput in
+        let newResult = handler.handle(context: context, input: input)
+        let mappedResult = try! newResult.map { (output) -> MInput in
             (output as! MInput)
-        }
-        return next.handle(context: context, result: mappedResult)
+        }.get()
+        return next.handle(context: context, input: mappedResult)
     }
 }

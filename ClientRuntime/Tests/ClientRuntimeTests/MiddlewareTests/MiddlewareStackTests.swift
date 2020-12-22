@@ -132,7 +132,7 @@
     typealias MOutput = SdkHttpRequestBuilder
     
     var id: String
-    
+
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
         input.withHost("httpbin.org")
         input.headers.add(name: "Content-type", value: "application/json")
