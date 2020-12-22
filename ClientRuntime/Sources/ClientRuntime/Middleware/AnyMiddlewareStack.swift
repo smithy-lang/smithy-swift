@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware Stack protocol
-public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {
+public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {    
     public var orderedMiddleware: OrderedGroup<MInput, MOutput>
     
     private let _handle: (MiddlewareContext, Result<MInput, Error>, AnyHandler<MInput, MOutput>) -> Result<MOutput, Error>

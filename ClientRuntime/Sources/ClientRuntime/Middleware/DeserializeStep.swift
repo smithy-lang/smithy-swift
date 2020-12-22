@@ -10,7 +10,7 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public struct DeserializeStep<StepInput, StepOutput>: MiddlewareStack {
+public struct DeserializeStep<StepInput, StepOutput>: MiddlewareStack {    
  
     public var orderedMiddleware: OrderedGroup<StepInput, StepOutput> = OrderedGroup<StepInput, StepOutput>()
     

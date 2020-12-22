@@ -28,8 +28,33 @@ class MiddlewareStackTests: XCTestCase {
                                    buildStep: buildStep,
                                    finalizeStep: finalizeStep,
                                    deserializeStep: deserializeStep)
+        stack.initializeStep.intercept(position: .before, middleware: TestMiddleware(id: "TestMiddleware"))
+
+        let result = stack.handleMiddleware(context: context, subject: "I", next: TestHandler())
+        
+        switch result {
+        case .success(let string):
+            XCTAssert(string as! String == "I want a dog and a cat")
+        case .failure(_):
+            XCTFail()
+        }
+    }
+    
+    func testMiddlewareStackConvenienceFunction() {
+        let initializeStep = InitializeStep<Any, Any>()
+        let serializeStep = SerializeStep<Any, Any>()
+        let buildStep = BuildStep<Any, Any>()
+        let finalizeStep = FinalizeStep<Any, Any>()
+        let deserializeStep = DeserializeStep<Any, Any>()
+        let context = TestContext()
+        var stack = OperationStack(id: "Test Operation",
+                                   initializeStep: initializeStep,
+                                   serializeStep: serializeStep,
+                                   buildStep: buildStep,
+                                   finalizeStep: finalizeStep,
+                                   deserializeStep: deserializeStep)
         stack.initializeStep.intercept(position: .before, id: "add word") { (context, result) -> Result<Any, Error> in
-            return result.map { (original) -> String in
+            return result.map { (original) -> Any in
                 return (original as? String ?? "") + " want a dog"
             }
         }
@@ -38,7 +63,7 @@ class MiddlewareStackTests: XCTestCase {
         
         switch result {
         case .success(let string):
-            XCTAssert(string as! String == "i want a dog and a cat")
+            XCTAssert(string as! String == "I want a dog and a cat")
         case .failure(_):
             XCTFail()
         }
@@ -114,6 +139,23 @@ class MiddlewareStackTests: XCTestCase {
     typealias Input = Any
     
     typealias Output = Any
+    
+    
+ }
+ 
+ struct TestMiddleware: Middleware {
+    var id: String
+    
+    func handle<H>(context: MiddlewareContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H : Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
+        let result = result.map { (original) -> Any in
+            return (original as? String ?? "") + " want a dog"
+        }
+        return next.handle(context: context, result: result)
+    }
+    
+    typealias MInput = Any
+    
+    typealias MOutput = Any
     
     
  }

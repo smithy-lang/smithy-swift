@@ -42,7 +42,7 @@ public extension MiddlewareStack {
         let reversedCollection = (0...(order.count-1)).reversed()
         for index in reversedCollection {
             let composedHandler = ComposedHandler(handler, order[index].value)
-            handler = AnyHandler(composedHandler)
+            handler = composedHandler.eraseToAnyHandler()
         }
         
         let result = handler.handle(context: context, result: result)
@@ -51,7 +51,7 @@ public extension MiddlewareStack {
     
     mutating func intercept<M: Middleware>(position: Position, middleware: M)
     where M.MInput == MInput, M.MOutput == MOutput {
-        orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
+        orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
     
     /// Convenience function for passing a closure directly:
@@ -66,7 +66,7 @@ public extension MiddlewareStack {
         let handlerFn = HandlerFunctionWrapper(handler)
         let anyHandler = AnyHandler<MInput, MOutput>(handlerFn)
         let middleware = ComposedMiddleware<MInput, MOutput>(anyHandler, id: id)
-        orderedMiddleware.add(middleware: AnyMiddleware(middleware), position: position)
+        orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }
 

@@ -15,11 +15,6 @@ struct ComposedHandler<MInput: Any, MOutput> {
                  M.MInput == MInput,
                  M.MOutput == MOutput {
         
-        if let alreadyComposed = realNext as? ComposedHandler<MInput, MOutput> {
-            self = alreadyComposed
-            return
-        }
-        
         self.next = AnyHandler(realNext)
         self.with = AnyMiddleware(realWith)
     }
@@ -28,6 +23,6 @@ struct ComposedHandler<MInput: Any, MOutput> {
 
 extension ComposedHandler: Handler {
     func handle(context: MiddlewareContext, result: Result<MInput, Error>) -> Result<MOutput, Error> {
-        return self.with.handle(context: context, result: result, next: self.next)
+        return with.handle(context: context, result: result, next: next)
     }
 }
