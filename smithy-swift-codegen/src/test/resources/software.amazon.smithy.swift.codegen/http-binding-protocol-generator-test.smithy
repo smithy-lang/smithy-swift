@@ -33,7 +33,8 @@ service Example {
         JsonMaps,
         PrimitiveTypes,
         QueryIdempotencyTokenAutoFill,
-        IdempotencyTokenWithHttpHeader
+        IdempotencyTokenWithHttpHeader,
+        IdempotencyTokenWithHttpPayload
     ]
 }
 
@@ -47,6 +48,12 @@ operation QueryIdempotencyTokenAutoFill {
 @tags(["client-only"])
 operation IdempotencyTokenWithHttpHeader {
     input: IdempotencyTokenWithHttpHeaderInput
+}
+
+@http(uri: "/IdempotencyTokenWithHttpPayload", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithHttpPayload {
+    input: IdempotencyTokenWithHttpPayloadInput
 }
 
 @idempotent
@@ -1169,5 +1176,11 @@ structure QueryIdempotencyTokenAutoFillInput {
 structure IdempotencyTokenWithHttpHeaderInput {
     @httpHeader("token")
     @idempotencyToken
-    token: String,
+    header: String,
+}
+
+structure IdempotencyTokenWithHttpPayloadInput {
+    @httpPayload
+    @idempotencyToken
+    body: String,
 }

@@ -398,13 +398,42 @@ extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
         var queryItems: [URLQueryItem] = [URLQueryItem]()
         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
         var headers = Headers()
-        if let token = token {
-            headers.add(name: "token", value: String(token))
+        if let header = header {
+            headers.add(name: "token", value: String(header))
         }
         else {
             headers.add(name: "token", value: String(idempotencyTokenGenerator.generateToken()))
         }
         return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it builds request with idempotency token trait for httpPayload`() {
+        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadInput+HttpRequestBinding.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithHttpPayloadInput: HttpRequestBinding, Reflection {
+    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol) throws -> SdkHttpRequest {
+        var queryItems: [URLQueryItem] = [URLQueryItem]()
+        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+        var headers = Headers()
+        headers.add(name: "Content-Type", value: "text/plain")
+        if let body = self.body {
+            let data = body.data(using: .utf8)
+            let body = HttpBody.data(data)
+            headers.add(name: "Content-Length", value: String(data.count))
+            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+        } else {
+            let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)
+            let body = HttpBody.data(data)
+            headers.add(name: "Content-Length", value: String(data.count))
+            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+        }
     }
 }
             """.trimIndent()
