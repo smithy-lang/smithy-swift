@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class DefaultIdempotencyTokenGenerator : IdempotencyTokenGeneratorProtocol {
+public class DefaultIdempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol {
     
     public init() {}
     
