@@ -906,7 +906,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun loadItempotencyTokenInBodyIfSuchMemberExists(inputShape: Shape, writer: SwiftWriter) {
 
-        if ( inputShape.members().any { it.hasTrait(IdempotencyTokenTrait.ID.name)} ) {
+        if (inputShape.members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }) {
             writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
             writer.write("let body = HttpBody.data(data)")
             writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
@@ -915,8 +915,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
     }
 
-    private fun renderSerializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding,
-                                               writer: SwiftWriter, inputShape: Shape) {
+    private fun renderSerializeExplicitPayload(
+        ctx: ProtocolGenerator.GenerationContext,
+        binding: HttpBinding,
+        writer: SwiftWriter,
+        inputShape: Shape
+    ) {
         // explicit payload member as the sole payload
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
