@@ -857,7 +857,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGeneratorProtocol = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {",
                     "}"
                 ) {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
@@ -882,10 +882,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         if (hasHttpBody) {
             var optionalTerminator = ""
+
             if (httpPayload != null) {
                 val shape = ctx.model.expectShape(httpPayload.member.target)
                 optionalTerminator = if (ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
-                renderSerializeExplicitPayload(ctx, httpPayload, writer)
+                renderSerializeExplicitPayload(ctx, httpPayload, writer, inputShape)
             } else {
                 writer.openBlock("if try !self.allPropertiesAreNull() {", "} else {") {
                     writer.write("let data = try encoder.encode(self)")
@@ -894,7 +895,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
                 }
                 writer.indent()
-                writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
+                // Case where any(or all) property is null.
+                loadItempotencyTokenInBodyIfSuchMemberExists(inputShape, writer)
                 writer.closeBlock("}")
             }
         } else {
@@ -902,7 +904,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderSerializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
+    private fun loadItempotencyTokenInBodyIfSuchMemberExists(inputShape: Shape, writer: SwiftWriter) {
+
+        if ( inputShape.members().any { it.hasTrait(IdempotencyTokenTrait.ID.name)} ) {
+            writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
+            writer.write("let body = HttpBody.data(data)")
+            writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
+            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
+        } else
+            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
+    }
+
+    private fun renderSerializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding,
+                                               writer: SwiftWriter, inputShape: Shape) {
         // explicit payload member as the sole payload
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
@@ -942,22 +956,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
         }
         writer.indent()
-
-        /*
-            1. Struct member is a String and NULL
-            2. Member is in the body
-            3. Member has idempotency token trait
-            The following if block gets executed when the above conditions are satisfied.
-
-            Value of "idempotencyTokenGenerator.generateToken()" will be serialized
-        */
-        if (target.type == ShapeType.STRING && binding.member.hasTrait(IdempotencyTokenTrait::class.java)) {
-            writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
-            writer.write("let body = HttpBody.data(data)")
-            writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
-        } else
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
+        // Case where the idempotency token is null and has HttpPayload trait as well
+        loadItempotencyTokenInBodyIfSuchMemberExists(inputShape, writer)
         writer.closeBlock("}")
     }
 

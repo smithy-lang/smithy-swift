@@ -34,7 +34,8 @@ service Example {
         PrimitiveTypes,
         QueryIdempotencyTokenAutoFill,
         IdempotencyTokenWithHttpHeader,
-        IdempotencyTokenWithHttpPayload
+        IdempotencyTokenWithHttpPayloadTraitOnToken,
+        IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember
     ]
 }
 
@@ -50,10 +51,16 @@ operation IdempotencyTokenWithHttpHeader {
     input: IdempotencyTokenWithHttpHeaderInput
 }
 
-@http(uri: "/IdempotencyTokenWithHttpPayload", method: "POST")
+@http(uri: "/IdempotencyTokenWithHttpPayloadTraitOnToken", method: "POST")
 @tags(["client-only"])
-operation IdempotencyTokenWithHttpPayload {
-    input: IdempotencyTokenWithHttpPayloadInput
+operation IdempotencyTokenWithHttpPayloadTraitOnToken {
+    input: IdempotencyTokenWithHttpPayloadTraitOnTokenInput
+}
+
+@http(uri: "/IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember {
+    input: IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput
 }
 
 @idempotent
@@ -1179,8 +1186,16 @@ structure IdempotencyTokenWithHttpHeaderInput {
     header: String,
 }
 
-structure IdempotencyTokenWithHttpPayloadInput {
+structure IdempotencyTokenWithHttpPayloadTraitOnTokenInput {
     @httpPayload
     @idempotencyToken
-    body: String,
+    bodyAndToken: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
+    stringValue: String,
+    documentValue: Document,
+
+    @idempotencyToken
+    token: String,
 }
