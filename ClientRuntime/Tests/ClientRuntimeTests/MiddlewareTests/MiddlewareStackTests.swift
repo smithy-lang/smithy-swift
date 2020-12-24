@@ -16,13 +16,13 @@ class MiddlewareStackTests: XCTestCase {
     
     
     func testMiddlewareStackSuccessInterceptAfter() {
-        let initializeStep = InitializeStep<Any, Any>()
-        let serializeStep = SerializeStep<Any, Any>()
-        let buildStep = BuildStep<Any, Any>()
-        let finalizeStep = FinalizeStep<Any, Any>()
-        let deserializeStep = DeserializeStep<Any, Any>()
+        let initializeStep = InitializeStep()
+        let serializeStep = SerializeStep()
+        let buildStep = BuildStep()
+        let finalizeStep = FinalizeStep()
+        let deserializeStep = DeserializeStep()
         let context = TestContext()
-        var stack = OperationStack(id: "Test Operation",
+        var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation",
                                    initializeStep: initializeStep,
                                    serializeStep: serializeStep,
                                    buildStep: buildStep,
@@ -30,112 +30,59 @@ class MiddlewareStackTests: XCTestCase {
                                    deserializeStep: deserializeStep)
         stack.initializeStep.intercept(position: .before, middleware: TestMiddleware(id: "TestMiddleware"))
 
-        let result = stack.handleMiddleware(context: context, subject: "I", next: TestHandler())
+        let result = stack.handleMiddleware(context: context, subject: TestInput(), next: TestHandler<TestInput, TestOutput>())
         
         switch result {
-        case .success(let string):
-            XCTAssert(string as! String == "I want a dog and a cat")
-        case .failure(_):
-            XCTFail()
+        case .success(let output):
+            XCTAssert(output.value == 200)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
     }
     
     func testMiddlewareStackConvenienceFunction() {
-        let initializeStep = InitializeStep<Any, Any>()
-        let serializeStep = SerializeStep<Any, Any>()
-        let buildStep = BuildStep<Any, Any>()
-        let finalizeStep = FinalizeStep<Any, Any>()
-        let deserializeStep = DeserializeStep<Any, Any>()
+        let initializeStep = InitializeStep()
+        let serializeStep = SerializeStep()
+        let buildStep = BuildStep()
+        let finalizeStep = FinalizeStep()
+        let deserializeStep = DeserializeStep()
         let context = TestContext()
-        var stack = OperationStack(id: "Test Operation",
+        var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation",
                                    initializeStep: initializeStep,
                                    serializeStep: serializeStep,
                                    buildStep: buildStep,
                                    finalizeStep: finalizeStep,
                                    deserializeStep: deserializeStep)
-        stack.initializeStep.intercept(position: .before, id: "add word") { (context, input) -> Result<Any, Error> in
-            return .success((input as? String ?? "") + " want a dog")
+        stack.initializeStep.intercept(position: .before, id: "add a header") { (context, input) -> Result<Any, Error> in
+            let inputCasted = (input as? SdkHttpRequest ?? SdkHttpRequest(method: .get, endpoint: Endpoint(host: "/"), headers: Headers()))
+            inputCasted.headers.add(name: "Test", value: "Value")
+            
+            return .success(inputCasted)
         }
 
-        let result = stack.handleMiddleware(context: context, subject: "I", next: TestHandler())
+        let result = stack.handleMiddleware(context: context, subject: TestInput(), next: TestHandler())
         
         switch result {
-        case .success(let string):
-            XCTAssert(string as! String == "I want a dog and a cat")
-        case .failure(_):
-            XCTFail()
+        case .success(let output):
+            XCTAssert(output.value == 200)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
     }
-//
-//    func testMiddlewareStackFailureInterceptAfter() {
-//        let testPhase = Phase<TestContext, String, Error>(name: "Test")
-//        var stack = MiddlewareStack(phases: testPhase)
-//        stack.intercept(phase: testPhase, position: .after, middleware: TestMiddleware())
-//        let context = TestContext()
-//        let result = stack.execute(context: context, subject: "is a cat") { (context, result) -> Result<String, Error> in
-//            let error = MiddlewareError.unknown("an unknown error occurred")
-//            return .failure(error)
-//        }
-//        switch result {
-//        case .success(_):
-//            XCTFail()
-//        case .failure(let error):
-//            if case let MiddlewareError.unknown(unwrappedError) = error {
-//                XCTAssert(unwrappedError == "an unknown error occurred")
-//            }
-//        }
-//    }
-//
-//    func testMiddlewareInterceptWithHandlerInterceptAfter() {
-//        let testPhase = Phase<TestContext, String, Error>(name: "Test")
-//        var stack = MiddlewareStack(phases: testPhase)
-//        stack.intercept(testPhase, position: .after, id: "AfterTest") { (context, result) -> Result<String, Error> in
-//            result.map { (subject) -> String in
-//                var newSubject = subject //copy original subject to new string
-//                newSubject = "is now a dog" // change original subject
-//                return newSubject
-//            }
-//        }
-//        let context = TestContext()
-//        let result = stack.execute(context: context, subject: "is a cat")
-//        switch result {
-//        case .success(let string):
-//            XCTAssert(string == "is now a dog")
-//        case .failure(_):
-//            XCTFail()
-//        }
-//    }
-//
-//    func testMiddlewareInterceptWithHandlerInterceptBefore() {
-//        let testPhase = Phase<TestContext, String, Error>(name: "Test")
-//        var stack = MiddlewareStack(phases: testPhase)
-//        stack.intercept(testPhase, position: .before, id: "BeforeTest") { (context, result) -> Result<String, Error> in
-//            return result.map { (subject) -> String in
-//                var newSubject = subject //copy original subject to new string
-//                newSubject = "is a cat" // change original subject
-//                return newSubject
-//            }
-//        }
-//        let context = TestContext()
-//        let result = stack.execute(context: context, subject: "is now a dog")
-//        switch result {
-//        case .success(let string):
-//            XCTAssert(string == "is a cat")
-//        case .failure(_):
-//            XCTFail()
-//        }
-//    }
 }
  
- struct TestHandler: Handler {
-    func handle(context: MiddlewareContext, input: Any) -> Result<Any, Error> {
-        return .success((input as? String ?? "") + " and a cat")
-        
+ struct TestHandler<Input: HttpRequestBinding, Output: HttpResponseBinding>: Handler {
+    
+    func handle(context: MiddlewareContext, input: Input) -> Result<Output, Error> {
+        let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.accepted)
+        let decoder = JSONDecoder()
+        let output = try! Output(httpResponse: httpResponse, decoder: decoder)
+        return .success(output)
     }
     
-    typealias Input = Any
+    typealias Input = Input
     
-    typealias Output = Any
+    typealias Output = Output
     
     
  }
@@ -144,9 +91,10 @@ class MiddlewareStackTests: XCTestCase {
     var id: String
     
     func handle<H>(context: MiddlewareContext, input: Any, next: H) -> Result<Any, Error> where H : Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
-        let input = (input as? String ?? "") + " want a dog"
+        let inputCasted = (input as? SdkHttpRequest ?? SdkHttpRequest(method: .get, endpoint: Endpoint(host: "/"), headers: Headers()))
+        inputCasted.headers.add(name: "Test", value: "Value")
         
-        return next.handle(context: context, input: input)
+        return next.handle(context: context, input: inputCasted)
     }
     
     typealias MInput = Any
@@ -158,4 +106,19 @@ class MiddlewareStackTests: XCTestCase {
 
  struct TestContext: MiddlewareContext {
     var attributes: Attributes = Attributes()
+ }
+
+ struct TestInput: HttpRequestBinding {
+    mutating func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
+        return SdkHttpRequest(method: method, endpoint: Endpoint(host: path), headers: Headers())
+    }
+    
+    
+ }
+
+ struct TestOutput: HttpResponseBinding {
+    let value: Int
+    init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {
+        self.value = httpResponse.statusCode.rawValue
+    }
  }

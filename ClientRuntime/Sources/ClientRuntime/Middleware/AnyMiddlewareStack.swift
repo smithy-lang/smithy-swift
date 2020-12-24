@@ -25,5 +25,4 @@ public struct AnyMiddlewareStack<MInput, MOutput>: MiddlewareStack {
         where H.Input == MInput, H.Output == MOutput {
         return _handle(context, input, next.eraseToAnyHandler())
     }
-    
 }

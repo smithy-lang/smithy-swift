@@ -31,5 +31,4 @@ public struct AnyMiddleware<MInput, MOutput>: Middleware {
         where H.Input == MInput, H.Output == MOutput {
         return _handle(context, input, next.eraseToAnyHandler())
     }
-    
 }

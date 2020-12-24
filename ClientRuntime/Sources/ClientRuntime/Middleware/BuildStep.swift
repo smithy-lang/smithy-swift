@@ -8,13 +8,13 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public struct BuildStep<StepInput, StepOutput>: MiddlewareStack {
+public struct BuildStep: MiddlewareStack {
 
-    public var orderedMiddleware: OrderedGroup<StepInput, StepOutput> = OrderedGroup<StepInput, StepOutput>()
+    public var orderedMiddleware: OrderedGroup<Any, Any> = OrderedGroup<Any, Any>()
     
     public var id: String = "BuildStep"
     
-    public typealias MInput = StepInput
+    public typealias MInput = Any
     
-    public typealias MOutput = StepOutput
+    public typealias MOutput = Any
 }
