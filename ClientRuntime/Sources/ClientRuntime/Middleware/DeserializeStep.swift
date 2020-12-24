@@ -10,13 +10,13 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public struct DeserializeStep<StepInput, StepOutput>: MiddlewareStack {    
+public struct DeserializeStep: MiddlewareStack {
  
-    public var orderedMiddleware: OrderedGroup<StepInput, StepOutput> = OrderedGroup<StepInput, StepOutput>()
+    public var orderedMiddleware: OrderedGroup<Any, Any> = OrderedGroup<Any, Any>()
     
     public var id: String = "DeserializeStep"
     
-    public typealias MInput = StepInput
+    public typealias MInput = Any
     
-    public typealias MOutput = StepOutput
+    public typealias MOutput = Any
 }

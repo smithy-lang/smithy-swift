@@ -167,5 +167,4 @@ public struct OrderedGroup<Input, Output> {
     func get(id: String)-> AnyMiddleware<Input, Output>? {
         return _items[id]
     }
-    
 }

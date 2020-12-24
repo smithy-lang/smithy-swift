@@ -9,13 +9,13 @@
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public struct FinalizeStep<StepInput, StepOutput>: MiddlewareStack {
+public struct FinalizeStep: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<StepInput, StepOutput> = OrderedGroup<StepInput, StepOutput>()
+    public var orderedMiddleware: OrderedGroup<Any, Any> = OrderedGroup<Any, Any>()
     
     public var id: String = "FinalizeStep"
     
-    public typealias MInput = StepInput
+    public typealias MInput = Any
     
-    public typealias MOutput = StepOutput
+    public typealias MOutput = Any
 }
