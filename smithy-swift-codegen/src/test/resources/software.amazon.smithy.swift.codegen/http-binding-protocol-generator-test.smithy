@@ -35,7 +35,8 @@ service Example {
         QueryIdempotencyTokenAutoFill,
         IdempotencyTokenWithHttpHeader,
         IdempotencyTokenWithHttpPayloadTraitOnToken,
-        IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember
+        IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember,
+        IdempotencyTokenWithoutHttpPayloadTraitOnToken
     ]
 }
 
@@ -61,6 +62,12 @@ operation IdempotencyTokenWithHttpPayloadTraitOnToken {
 @tags(["client-only"])
 operation IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember {
     input: IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput
+}
+
+@http(uri: "/IdempotencyTokenWithoutHttpPayloadTraitOnToken", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithoutHttpPayloadTraitOnToken {
+    input: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
 }
 
 @idempotent
@@ -1196,6 +1203,15 @@ structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
     stringValue: String,
     documentValue: Document,
 
+    @idempotencyToken
+    token: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
+    @httpPayload
+    body: String,
+
+    @httpHeader("token")
     @idempotencyToken
     token: String,
 }

@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
@@ -65,7 +66,8 @@ class StructEncodeGenerator(
                         }
                     }
                     else -> {
-                        renderSimpleEncodeMember(target, member, containerName)
+                        renderSimpleEncodeMember(target, member, containerName,
+                                members.filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() == 0)
                     }
                 }
             }

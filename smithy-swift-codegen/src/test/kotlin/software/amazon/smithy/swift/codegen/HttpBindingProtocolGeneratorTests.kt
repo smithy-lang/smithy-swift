@@ -411,6 +411,7 @@ extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    // The following 3 HttpRequestBinding generation tests correspond to idempotency token targeting a member in the body/payload of request
     @Test
     fun `it builds request with idempotency token trait and httpPayload trait on same member`() {
         val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
@@ -458,10 +459,39 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBi
             headers.add(name: "Content-Length", value: String(data.count))
             return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
         } else {
-            let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)
+            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+        }
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it builds request with idempotency token and httpPayload traits on different members`() {
+        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
+    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
+        var queryItems: [URLQueryItem] = [URLQueryItem]()
+        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
+        var headers = Headers()
+        headers.add(name: "Content-Type", value: "text/plain")
+        if let token = token {
+            headers.add(name: "token", value: String(token))
+        }
+        else {
+            headers.add(name: "token", value: idempotencyTokenGenerator.generateToken())
+        }
+        if let body = self.body {
+            let data = body.data(using: .utf8)
             let body = HttpBody.data(data)
             headers.add(name: "Content-Length", value: String(data.count))
             return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+        } else {
+            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
         }
     }
 }
