@@ -118,6 +118,7 @@
         //we pretend made a request here to a mock client and are returning a 200 response
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
         let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+
         return .success(output)
     }
     
