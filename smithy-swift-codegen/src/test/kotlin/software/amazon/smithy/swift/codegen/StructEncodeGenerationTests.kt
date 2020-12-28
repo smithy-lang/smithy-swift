@@ -530,4 +530,98 @@ extension PrimitiveTypesInput: Encodable {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    // The following 3 struct encode generation tests correspond to idempotency token targeting a member in the body/payload of request
+    @Test
+    fun `it encodes structure with IdempotencyToken member and HttpPayloadTrait on the only member`() {
+        /*
+        case 1: Idempotency token trait and httpPayload trait on same string member "bodyAndToken"
+
+        - No change in sdk code
+        * */
+        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case bodyIsToken
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let bodyIsToken = bodyIsToken {
+            try container.encode(bodyIsToken, forKey: .bodyIsToken)
+        }
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes structure with IdempotencyToken member and without HttpPayloadTrait on any member`() {
+        /*
+        case 2: Idempotency token in http body and without httpPayload trait on any member
+
+        - In sdk code, "else" case is generated for the token with default token being set
+        * */
+        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case documentValue
+        case stringValue
+        case token
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let documentValue = documentValue {
+            try container.encode(documentValue, forKey: .documentValue)
+        }
+        if let stringValue = stringValue {
+            try container.encode(stringValue, forKey: .stringValue)
+        }
+        if let token = token {
+            try container.encode(token, forKey: .token)
+        }
+        else {
+            //Idempotency token part of the body/payload without the httpPayload
+            try container.encode(DefaultIdempotencyTokenGenerator().generateToken(), forKey: .token)
+        }
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes structure with IdempotencyToken in httpHeader and HttpPayload trait on another member`() {
+        /*
+        case 3: Idempotency token trait and httpPayload trait on different members
+
+        - In sdk, no encoding for idempotency token member because it is not bound to httpPayload/body
+        * */
+        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+Encodable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case body
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let body = body {
+            try container.encode(body, forKey: .body)
+        }
+    }
+}
+                """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }

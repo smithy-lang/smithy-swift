@@ -31,8 +31,43 @@ service Example {
         JsonLists,
         HttpResponseCode,
         JsonMaps,
-        PrimitiveTypes
+        PrimitiveTypes,
+        QueryIdempotencyTokenAutoFill,
+        IdempotencyTokenWithHttpHeader,
+        IdempotencyTokenWithHttpPayloadTraitOnToken,
+        IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember,
+        IdempotencyTokenWithoutHttpPayloadTraitOnToken
     ]
+}
+
+@http(uri: "/QueryIdempotencyTokenAutoFill", method: "POST")
+@tags(["client-only"])
+operation QueryIdempotencyTokenAutoFill {
+    input: QueryIdempotencyTokenAutoFillInput
+}
+
+@http(uri: "/IdempotencyTokenWithHttpHeader", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithHttpHeader {
+    input: IdempotencyTokenWithHttpHeaderInput
+}
+
+@http(uri: "/IdempotencyTokenWithHttpPayloadTraitOnToken", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithHttpPayloadTraitOnToken {
+    input: IdempotencyTokenWithHttpPayloadTraitOnTokenInput
+}
+
+@http(uri: "/IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember {
+    input: IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput
+}
+
+@http(uri: "/IdempotencyTokenWithoutHttpPayloadTraitOnToken", method: "POST")
+@tags(["client-only"])
+operation IdempotencyTokenWithoutHttpPayloadTraitOnToken {
+    input: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
 }
 
 @idempotent
@@ -1144,4 +1179,39 @@ structure PrimitiveTypesStruct {
     primitiveDoubleVal: PrimitiveDouble,
     byteVal: Byte,
     primitiveByteVal: PrimitiveByte
+}
+
+structure QueryIdempotencyTokenAutoFillInput {
+    @httpQuery("token")
+    @idempotencyToken
+    token: String,
+}
+
+structure IdempotencyTokenWithHttpHeaderInput {
+    @httpHeader("token")
+    @idempotencyToken
+    header: String,
+}
+
+structure IdempotencyTokenWithHttpPayloadTraitOnTokenInput {
+    @httpPayload
+    @idempotencyToken
+    bodyIsToken: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
+    stringValue: String,
+    documentValue: Document,
+
+    @idempotencyToken
+    token: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
+    @httpPayload
+    body: String,
+
+    @httpHeader("token")
+    @idempotencyToken
+    token: String,
 }

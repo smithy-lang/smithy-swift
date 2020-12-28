@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
@@ -79,10 +80,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("do {", "} catch let err {") {
                 writer.write("let encoder = \$L", requestEncoder)
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
-                writer.write(
-                    "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, path: \$S, encoder: encoder)",
-                    test.uri
-                )
+                if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
+                        writer.write(
+                                "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                                        "path: \$S, encoder: encoder, idempotencyTokenGenerator: QueryIdempotencyTestTokenGenerator())",
+                                test.uri)
+                else
+                    writer.write(
+                        "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                                "path: \$S, encoder: encoder)", test.uri
+                    )
 
                 // assert that forbidden Query Items do not exist
                 if (test.forbidQueryParams.isNotEmpty()) {

@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -213,7 +214,12 @@ open class MemberShapeEncodeGenerator(
     }
 
     // Render default encoding of a member
-    fun renderSimpleEncodeMember(target: Shape, member: MemberShape, containerName: String) {
+    fun renderSimpleEncodeMember(
+        target: Shape,
+        member: MemberShape,
+        containerName: String,
+        httpPayloadTraitNotOnAnyMember: Boolean = false
+    ) {
         val symbol = ctx.symbolProvider.toSymbol(target)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
@@ -221,6 +227,12 @@ open class MemberShapeEncodeGenerator(
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+            }
+            if (httpPayloadTraitNotOnAnyMember && member.hasTrait(IdempotencyTokenTrait::class.java)) {
+                writer.openBlock("else {", "}") {
+                    writer.write("//Idempotency token part of the body/payload without the httpPayload")
+                    writer.write("try container.encode(DefaultIdempotencyTokenGenerator().generateToken(), forKey: .\$L)", memberName)
+                }
             }
         } else {
             val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
