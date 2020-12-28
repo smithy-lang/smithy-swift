@@ -414,6 +414,14 @@ extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
     // The following 3 HttpRequestBinding generation tests correspond to idempotency token targeting a member in the body/payload of request
     @Test
     fun `it builds request with idempotency token trait and httpPayload trait on same member`() {
+        /*
+        * Case 1 : Idempotency token trait and httpPayload trait on same string member "bodyAndToken"
+            structure IdempotencyTokenWithHttpPayloadTraitOnTokenInput {
+                @httpPayload
+                @idempotencyToken
+                bodyIsToken: String,
+            }
+        * */
         val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
@@ -424,8 +432,8 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, 
         let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
         var headers = Headers()
         headers.add(name: "Content-Type", value: "text/plain")
-        if let bodyAndToken = self.bodyAndToken {
-            let data = bodyAndToken.data(using: .utf8)
+        if let bodyIsToken = self.bodyIsToken {
+            let data = bodyIsToken.data(using: .utf8)
             let body = HttpBody.data(data)
             headers.add(name: "Content-Length", value: String(data.count))
             return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
@@ -443,6 +451,18 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, 
 
     @Test
     fun `it builds request with idempotency token trait and without httpPayload trait on any member`() {
+        /*
+        Case 2: Idempotency token in the http body and without httpPayload trait on any member
+        structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
+            stringValue: String,
+            documentValue: Document,
+
+            @idempotencyToken
+            token: String,
+        }
+        - No change to existing code in HttpRequestBinding file. We changed in "encodable" file for the
+          struct containing these members.
+        * */
         val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
@@ -469,6 +489,18 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBi
 
     @Test
     fun `it builds request with idempotency token and httpPayload traits on different members`() {
+        /*
+        Case 3: Idempotency token trait and httpPayload trait on different members
+        structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
+            @httpPayload
+            body: String,
+
+            @httpHeader("token")
+            @idempotencyToken
+            token: String,
+        }
+        - Idempotency token is bound to httpHeader in this case.
+        * */
         val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =

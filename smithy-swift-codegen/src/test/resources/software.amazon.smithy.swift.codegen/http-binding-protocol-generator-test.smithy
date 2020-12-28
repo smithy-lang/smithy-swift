@@ -1196,7 +1196,7 @@ structure IdempotencyTokenWithHttpHeaderInput {
 structure IdempotencyTokenWithHttpPayloadTraitOnTokenInput {
     @httpPayload
     @idempotencyToken
-    bodyAndToken: String,
+    bodyIsToken: String,
 }
 
 structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
