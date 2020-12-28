@@ -20,7 +20,7 @@ public protocol MiddlewareStack: Middleware {
     
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping HandlerFunction<MInput, MOutput>)
+                            handler: @escaping MiddlewareFunction<MInput, MOutput>)
 }
 
 public extension MiddlewareStack {
@@ -62,10 +62,8 @@ public extension MiddlewareStack {
     ///
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping HandlerFunction<MInput, MOutput>) {
-        let handlerFn = HandlerFunctionWrapper(handler)
-        let anyHandler = handlerFn.eraseToAnyHandler()
-        let middleware = ComposedMiddleware<MInput, MOutput>(anyHandler, id: id)
+                            handler: @escaping MiddlewareFunction<MInput, MOutput>) {
+        let middleware = ComposeMiddleware(handler, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }

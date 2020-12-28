@@ -31,27 +31,26 @@ class MiddlewareStackTests: XCTestCase {
         }
     }
     
-//    func testMiddlewareStackConvenienceFunction() {
-//        let context = TestContext()
-//        var stack = OperationStack<TestOutput>(id: "Test Operation")
-//        stack.initializeStep.intercept(position: .before, id: "add a header") { (context, input) -> Result<SdkHttpRequest, Error> in
-//
-//            input.headers.add(name: "Test", value: "Value")
-//
-//            return .success(input)
-//        }
-//        var input = TestInput()
-//        let sdkRequest = try! input.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
-//
-//        let result = stack.handleMiddleware(context: context, subject: sdkRequest, next: TestHandler<TestOutput>())
-//
-//        switch result {
-//        case .success(let output):
-//            XCTAssert(output.value == 200)
-//        case .failure(let error):
-//            XCTFail(error.localizedDescription)
-//        }
-//    }
+    func testMiddlewareStackConvenienceFunction() {
+        let context = TestContext()
+        var stack = OperationStack<TestOutput>(id: "Test Operation")
+        stack.initializeStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<TestOutput, Error> in
+            input.headers.add(name: "Test", value: "Value")
+            return next.handle(context: context, input: input)
+        }
+
+        var input = TestInput()
+        let sdkRequest = try! input.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
+
+        let result = stack.handleMiddleware(context: context, subject: sdkRequest, next: TestHandler<TestOutput>())
+
+        switch result {
+        case .success(let output):
+            XCTAssert(output.value == 200)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
 }
  
  struct TestHandler<Output: HttpResponseBinding>: Handler {
