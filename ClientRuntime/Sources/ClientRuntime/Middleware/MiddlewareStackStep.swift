@@ -48,7 +48,6 @@ struct MiddlewareStackStep<MIn, MOut, SInput, SOutput>: Middleware {
             return .failure(MiddlewareStepError.castingError("There was an error casting the output of one step to the input of the next"))
         }
     }
-    
 }
 
 
