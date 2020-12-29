@@ -3,10 +3,11 @@
 
 //cast output of one middleware stack to input of the next
 //pass in Any for first two params to trick the chain into thinking each step input and output are the same
-struct MiddlewareStackStep<StepInput, StepOutput, Context: MiddlewareContext>: Middleware {
+struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     var id: String
     typealias MInput = Any
     typealias MOutput = Any
+    typealias Context = HttpContext
     let stack: AnyMiddlewareStack<StepInput, StepOutput, Context>
     let handler: AnyHandler<StepInput, StepOutput, Context>
     let position: Position
@@ -40,10 +41,17 @@ struct MiddlewareStackStep<StepInput, StepOutput, Context: MiddlewareContext>: M
                     return next.handle(context: context, input: nextStepInput)
                 }
             case .after:
-                let wrappedHandler = StepHandler<MInput, MOutput, StepInput, StepOutput, Context>(next: next.eraseToAnyHandler())
-                let result = stack.handle(context: context, input: sinput, next: wrappedHandler)
-                return result.map { (stepOutput) -> Any in
-                    stepOutput as Any
+                let result = next.handle(context: context, input: input)
+                switch result {
+                case .failure(let error):
+                    return .failure(error)
+                case .success(let response):
+                    var copiedContext = context
+                    copiedContext.response = response as? HttpResponse
+                    let stackResult = stack.handle(context: copiedContext, input: sinput, next: handler)
+                    return stackResult.map { (stepOutput) -> Any in
+                        stepOutput as Any
+                    }
                 }
             }
         }

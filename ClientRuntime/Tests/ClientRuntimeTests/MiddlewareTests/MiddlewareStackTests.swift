@@ -25,7 +25,7 @@ class MiddlewareStackTests: XCTestCase {
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
         var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
-        stack.initializeStep.intercept(position: .after, middleware: TestSerializeMiddleware<TestInput>(id: "TestMiddleware"))
+        stack.serializeStep.intercept(position: .after, middleware: TestSerializeMiddleware(id: "TestMiddleware"))
 
         //stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput>(id: "TestDeserializeMiddleware"))
         let input = TestInput()
@@ -89,7 +89,7 @@ class MiddlewareStackTests: XCTestCase {
     
  }
  
- struct TestSerializeMiddleware<Input: HttpRequestBinding>: Middleware {
+ struct TestSerializeMiddleware: Middleware {
     typealias Context = HttpContext
     
     typealias MOutput = SdkHttpRequestBuilder
@@ -97,13 +97,12 @@ class MiddlewareStackTests: XCTestCase {
     var id: String
     
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
-        var copiedInput = input
-        let requestBuilder = try! copiedInput.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
-        requestBuilder.headers.add(name: "Test", value: "Value")
+        
+        input.headers.add(name: "Test", value: "Value")
         return next.handle(context: context, input: input)
     }
     
-    typealias MInput = Input
+    typealias MInput = SdkHttpRequestBuilder
     
  }
  
