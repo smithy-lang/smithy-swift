@@ -67,7 +67,7 @@ public class SdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: HttpBody = .none
-    var queryItems: [URLQueryItem]? = nil
+    var queryItems: [URLQueryItem]?
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -84,7 +84,6 @@ public class SdkHttpRequestBuilder {
         self.methodType = value
         return self
     }
-
     
     @discardableResult
     public func withHost(value: String) -> SdkHttpRequestBuilder {
@@ -97,7 +96,6 @@ public class SdkHttpRequestBuilder {
         self.path = value
         return self
     }
-    
     
     @discardableResult
     public func withBody(value: HttpBody) -> SdkHttpRequestBuilder {

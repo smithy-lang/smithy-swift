@@ -56,47 +56,6 @@ public class SdkHttpClient {
         }
     }
     
-//    public func execute<Output, OutputError>(requestContext: HttpRequestContext,
-//                                             requestStack: HttpRequestStack,
-//                                             responseContext: HttpResponseContextBuilder,
-//                                             responseStack: HttpResponseStack,
-//                                             completion: @escaping (SdkResult<Output, OutputError>) -> Void) {
-//        let request = requestStack.execute(context: requestContext,
-//                                           subject: SdkHttpRequest(method: .get,
-//                                                                   endpoint: Endpoint(host: ""),
-//                                                                   headers: Headers())) //need to turn this into a builder
-//        switch request {
-//        case .success(let request):
-//            engine.execute(request: request) { (httpResult) in
-//                
-//                switch httpResult {
-//                case .failure(let httpClientErr):
-//                    completion(.failure(.client(ClientError.networkError(httpClientErr))))
-//                    return
-//                case .success(let httpResponse):
-//                    
-//                    let context = responseContext
-//                        .withResponse(value: httpResponse)
-//                        .build()
-//                    let response = responseStack.execute(context: context,
-//                                                         subject: httpResponse)
-//                    switch response {
-//                    case .failure(let error):
-//                        if let mappedError = error as? SdkError<OutputError> {
-//                            completion(.failure(mappedError))
-//                        } else {
-//                            completion(.failure(SdkError.unknown(error)))
-//                        }
-//                    case .success(let response):
-//                        completion(.success(response as! Output))
-//                    }
-//                }
-//            }
-//        case .failure(let error):
-//            completion(.failure(.client(error)))
-//        }
-//    }
-    
     public func close() {
         engine.close()
     }

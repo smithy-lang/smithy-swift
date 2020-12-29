@@ -5,7 +5,7 @@ struct RelativeOrder {
     var order: [String] = []
     
     mutating func add(position: Position, ids: String...) {
-        if ids.count == 0 { return}
+        if ids.isEmpty { return}
         var unDuplicatedList = ids
         for index in  0...(ids.count - 1) {
             let id = ids[index]
@@ -24,7 +24,7 @@ struct RelativeOrder {
     }
     
     mutating func insert(relativeTo: String, position: Position, ids: String...) {
-        if ids.count == 0 {return}
+        if ids.isEmpty {return}
         let indexOfRelativeItem = order.firstIndex(of: relativeTo)
         if let indexOfRelativeItem = indexOfRelativeItem {
             switch position {

@@ -6,7 +6,7 @@ public struct AnyMiddlewareStack<MInput, MOutput, Context: MiddlewareContext>: M
     
     public var orderedMiddleware: OrderedGroup<MInput, MOutput, Context>
     
-    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput,  Context>) -> Result<MOutput, Error>
+    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context>) -> Result<MOutput, Error>
 
     public var id: String
 

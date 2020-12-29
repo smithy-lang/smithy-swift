@@ -141,7 +141,7 @@
  }
  
  struct TestInput: HttpRequestBinding {
-    mutating func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
         return SdkHttpRequestBuilder()
     }
  }

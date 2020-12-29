@@ -11,10 +11,11 @@ public struct InitializeStep<Input: HttpRequestBinding>: MiddlewareStack {
     
     public typealias Context = HttpContext
     
-    
     public var orderedMiddleware: OrderedGroup<Input,
                                                SdkHttpRequestBuilder,
-                                               HttpContext> = OrderedGroup<Input, SdkHttpRequestBuilder, HttpContext>()
+                                               HttpContext> = OrderedGroup<Input,
+                                                                           SdkHttpRequestBuilder,
+                                                                           HttpContext>()
     
     public var id: String = "InitializeStep"
     
@@ -31,13 +32,17 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
     public typealias Output = SdkHttpRequestBuilder
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
-        //this step takes an input of whatever type with conformance to our http binding protocol and converts it to an sdk request builder
+        //this step takes an input of whatever type with conformance to our http binding protocol
+        //and converts it to an sdk request builder
         var copiedInput = input
         let method = context.getMethod()
         let path = context.getPath()
         let encoder = context.getEncoder()
         do {
-            let sdkRequestBuilder = try copiedInput.buildHttpRequest(method: method, path: path, encoder: encoder)
+            let sdkRequestBuilder = try copiedInput.buildHttpRequest(method: method,
+                                                                     path: path,
+                                                                     encoder: encoder,
+                                                                     idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
             return .success(sdkRequestBuilder)
         } catch let err {
             let error = ClientError.serializationFailed(err.localizedDescription)

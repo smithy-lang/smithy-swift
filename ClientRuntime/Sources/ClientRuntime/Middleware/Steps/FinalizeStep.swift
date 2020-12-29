@@ -14,7 +14,9 @@ public struct FinalizeStep: MiddlewareStack {
     
     public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder,
                                                SdkHttpRequest,
-                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest, HttpContext>()
+                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder,
+                                                                           SdkHttpRequest,
+                                                                           HttpContext>()
     
     public var id: String = "FinalizeStep"
     

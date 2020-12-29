@@ -11,7 +11,7 @@ public struct HttpContext: MiddlewareContext {
     }
     
     func getPath() -> String {
-         return attributes.get(key: AttributeKey<String>(name: "Path"))!
+        return attributes.get(key: AttributeKey<String>(name: "Path"))!
     }
     
     func getMethod() -> HttpMethodType {
@@ -23,14 +23,14 @@ public struct HttpContext: MiddlewareContext {
     }
     
     func getDecoder() -> ResponseDecoder {
-        return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))! // can we do this since we know there will be a decoder? if theres not a decoder we shouldn't even be at this point to call one
+        return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))!
     }
 }
 
 public class HttpContextBuilder {
     
     public init() {}
-
+    
     var attributes: Attributes = Attributes()
     let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
     let method = AttributeKey<HttpMethodType>(name: "Method")
@@ -39,17 +39,17 @@ public class HttpContextBuilder {
     let serviceName = AttributeKey<String>(name: "ServiceName")
     var response: HttpResponse = HttpResponse()
     let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
-
+    
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
     // @discardableResult attribute we won't get warnings if we
     // don't end up doing any chaining.
     @discardableResult
     public func with<T>(key: AttributeKey<T>,
-                 value: T,
-                attributes: Attributes) -> HttpContextBuilder {
+                        value: T,
+                        attributes: Attributes) -> HttpContextBuilder {
         self.attributes.set(key: key, value: value)
-
+        
         return self
     }
     
@@ -95,7 +95,6 @@ public class HttpContextBuilder {
         return self
     }
     
-
     public func build() -> HttpContext {
         return HttpContext(attributes: attributes)
     }

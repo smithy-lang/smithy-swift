@@ -35,7 +35,7 @@ public extension MiddlewareStack {
         
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
-        if order.count == 0 {
+        if order.isEmpty {
             return handler.handle(context: context, input: input)
         }
         let reversedCollection = (0...(order.count-1)).reversed()
@@ -68,7 +68,13 @@ public extension MiddlewareStack {
 }
 
 extension MiddlewareStack {
-    func eraseToAnyMiddlewareStack<MInput, MOutput, Context>() -> AnyMiddlewareStack<MInput, MOutput, Context> where MInput == Self.MInput, MOutput == Self.MOutput, Context == Self.Context {
+    func eraseToAnyMiddlewareStack<MInput,
+                                   MOutput,
+                                   Context>() -> AnyMiddlewareStack<MInput,
+                                                                    MOutput,
+                                                                    Context> where MInput == Self.MInput,
+                                                                                   MOutput == Self.MOutput,
+                                                                                   Context == Self.Context {
         return AnyMiddlewareStack(self)
     }
 }
