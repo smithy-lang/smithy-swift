@@ -21,3 +21,14 @@ public struct BuildStep: MiddlewareStack {
     
     public typealias MOutput = SdkHttpRequestBuilder
 }
+
+public struct BuildStepHandler: Handler {
+    
+    public typealias Input = SdkHttpRequestBuilder
+    
+    public typealias Output = SdkHttpRequestBuilder
+    
+    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        return .success(input)
+    }
+}

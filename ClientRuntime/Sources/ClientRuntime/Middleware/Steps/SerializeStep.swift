@@ -18,3 +18,14 @@ public struct SerializeStep: MiddlewareStack {
     
     public typealias MOutput = SdkHttpRequestBuilder
 }
+
+public struct SerializeStepHandler: Handler {
+    
+    public typealias Input = SdkHttpRequestBuilder
+    
+    public typealias Output = SdkHttpRequestBuilder
+    
+    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        return .success(input)
+    }
+}

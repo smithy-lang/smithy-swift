@@ -29,7 +29,13 @@ struct MiddlewareStackStep<StepInput, StepOutput, Context: MiddlewareContext>: M
             let mapped = stepOutput.map { (output) -> Any in
                 output as Any
             }
-            return next.handle(context: context, input: mapped)
+            switch mapped {
+            case .failure(let error):
+                return .failure(error) //if one step fails why even go to the next step, just send back failure right here
+            case .success(let nextStepInput):
+                return next.handle(context: context, input: nextStepInput)
+            }
+           
         }
         else {
             return .failure(MiddlewareStepError.castingError("There was a casting error from middleware input of Any to step input"))

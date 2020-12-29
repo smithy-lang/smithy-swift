@@ -3,6 +3,7 @@
 
 public struct HttpContext: MiddlewareContext {
     public var attributes: Attributes
+    var response: HttpResponse?
     
     public init(attributes: Attributes) {
         self.attributes = attributes
@@ -19,6 +20,10 @@ public struct HttpContext: MiddlewareContext {
     func getEncoder() -> RequestEncoder {
         return attributes.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
     }
+    
+    func getDecoder() -> ResponseDecoder {
+        return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))! // can we do this since we know there will be a decoder? if theres not a decoder we shouldn't even be at this point to call one
+    }
 }
 
 public class HttpContextBuilder {
@@ -31,6 +36,8 @@ public class HttpContextBuilder {
     let path = AttributeKey<String>(name: "Path")
     let operation = AttributeKey<String>(name: "Operation")
     let serviceName = AttributeKey<String>(name: "ServiceName")
+    var response: HttpResponse = HttpResponse()
+    let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -74,6 +81,19 @@ public class HttpContextBuilder {
         self.attributes.set(key: serviceName, value: value)
         return self
     }
+    
+    @discardableResult
+    public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
+        self.attributes.set(key: decoder, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withResponse(value: HttpResponse) -> HttpContextBuilder {
+        self.response = value
+        return self
+    }
+    
 
     public func build() -> HttpContext {
         return HttpContext(attributes: attributes)

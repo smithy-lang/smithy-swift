@@ -28,19 +28,19 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
                                                                                    H.Context == HttpContext {
         let initializeStackStep = MiddlewareStackStep<StackInput,
                                                       SdkHttpRequestBuilder,
-                                                      HttpContext>(stack: initializeStep.eraseToAnyMiddlewareStack())
+                                                      HttpContext>(stack: initializeStep.eraseToAnyMiddlewareStack(), handler: InitializeStepHandler().eraseToAnyHandler())
         let serializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                      SdkHttpRequestBuilder,
-                                                     HttpContext>(stack: serializeStep.eraseToAnyMiddlewareStack())
+                                                     HttpContext>(stack: serializeStep.eraseToAnyMiddlewareStack(), handler: SerializeStepHandler().eraseToAnyHandler())
         let buildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                  SdkHttpRequestBuilder,
-                                                 HttpContext>(stack: buildStep.eraseToAnyMiddlewareStack())
+                                                 HttpContext>(stack: buildStep.eraseToAnyMiddlewareStack(), handler: BuildStepHandler().eraseToAnyHandler())
         let finalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                     SdkHttpRequest,
-                                                    HttpContext>(stack: finalizeStep.eraseToAnyMiddlewareStack())
+                                                    HttpContext>(stack: finalizeStep.eraseToAnyMiddlewareStack(), handler: FinalizeStepHandler().eraseToAnyHandler())
         let deserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
                                                        StackOutput,
-                                                       HttpContext>(stack: deserializeStep.eraseToAnyMiddlewareStack())
+                                                       HttpContext>(stack: deserializeStep.eraseToAnyMiddlewareStack(), handler: DeserializeStepHandler().eraseToAnyHandler())
         let steps = [initializeStackStep.eraseToAnyMiddleware(),
                      serializeStackStep.eraseToAnyMiddleware(),
                      buildStackStep.eraseToAnyMiddleware(),

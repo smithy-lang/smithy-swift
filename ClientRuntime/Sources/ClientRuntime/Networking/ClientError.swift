@@ -10,6 +10,7 @@ public enum ClientError: Error, Equatable {
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
+    case unknownError(String)
     
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
         switch (lhs, rhs) {
@@ -26,6 +27,9 @@ public enum ClientError: Error, Equatable {
         case (let .dataNotFound(lhsDataNotFoundString),
               let .dataNotFound(rhsDataNotFoundString)):
             return lhsDataNotFoundString == rhsDataNotFoundString
+        case (let .unknownError(lhsUnknownString),
+              let .unknownError(rhsUnknownString)):
+            return lhsUnknownString == rhsUnknownString
         default:
             return false
         }
