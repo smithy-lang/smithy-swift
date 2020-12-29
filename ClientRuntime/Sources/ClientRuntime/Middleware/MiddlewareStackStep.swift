@@ -16,7 +16,6 @@ struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
         self.id = stack.id
         self.stack = stack
         self.handler = handler
-        self.position = position
     }
     
     func handle<H>(context: Context, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler,

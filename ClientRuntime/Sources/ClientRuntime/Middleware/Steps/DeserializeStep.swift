@@ -33,26 +33,31 @@ public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpRe
     var output: Output?
     var error: OutputError?
 }
+//to be deleted
+//public struct DeserializeStepHandler<Output: HttpResponseBinding>: Handler {
+//
+//    public typealias Input = SdkHttpRequest
+//
+//    public typealias Output = DeserializeOutput<Output>
+//
+//    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+//            let decoder = context.getDecoder()
+//
+//            do {
+//                if let httpResponse = context.response {
+//                let output = try Output(httpResponse: httpResponse,
+//                                        decoder: decoder)
+//                return .success(output)
+//                } else {
+//                    return .failure(ClientError.unknownError("http response was nil for some odd reason"))
+//                }
+//            } catch let error {
+//                return .failure(ClientError.deserializationFailed(error))
+//            }
+//    }
+//}
 
-public struct DeserializeStepHandler<Output: HttpResponseBinding>: Handler {
-    
-    public typealias Input = SdkHttpRequest
-    
-    public typealias Output = Output
-    
-    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
-            let decoder = context.getDecoder()
-          
-            do {
-                if let httpResponse = context.response {
-                let output = try Output(httpResponse: httpResponse,
-                                        decoder: decoder)
-                return .success(output)
-                } else {
-                    return .failure(ClientError.unknownError("http response was nil for some odd reason"))
-                }
-            } catch let error {
-                return .failure(ClientError.deserializationFailed(error))
-            }
-    }
+public struct DeserializeOutput<Output: HttpResponseBinding> {
+    var httpResponse: HttpResponse?
+    var output: Output?
 }
