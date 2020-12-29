@@ -41,7 +41,13 @@ class MiddlewareStackTests: XCTestCase {
     }
     
     func testMiddlewareStackConvenienceFunction() {
-        let builtContext = context.build()
+        let addContextValues = context
+            .withMethod(value: .get)
+            .withPath(value: "/")
+            .withEncoder(value: JSONEncoder())
+            .withDecoder(value: JSONDecoder())
+            .withOperation(value: "Test Operation")
+        let builtContext = addContextValues.build()
         var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
             

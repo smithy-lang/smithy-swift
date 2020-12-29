@@ -29,28 +29,16 @@ struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
             switch position {
             case .before:
                 let stepOutput = stack.handle(context: context, input: sinput, next: handler)
-                
-                let mapped = stepOutput.map { (output) -> Any in
-                    output as Any
-                }
-                
-                switch mapped {
-                case .failure(let error):
-                    return .failure(error) //if one step fails why even go to the next step, just send back failure right here
-                case .success(let nextStepInput):
+                return stepOutput.flatMap { (nextStepInput) -> Result<MInput, Error> in
                     return next.handle(context: context, input: nextStepInput)
                 }
             case .after:
                 let result = next.handle(context: context, input: input)
-                switch result {
-                case .failure(let error):
-                    return .failure(error)
-                case .success(let response):
+                return result.flatMap { (response) -> Result<MInput, Error> in
                     var copiedContext = context
                     copiedContext.response = response as? HttpResponse
-                    let stackResult = stack.handle(context: copiedContext, input: sinput, next: handler)
-                    return stackResult.map { (stepOutput) -> Any in
-                        stepOutput as Any
+                    return stack.handle(context: copiedContext, input: sinput, next: handler).map { (stepOutput) -> MInput in
+                        return stepOutput as MInput
                     }
                 }
             }
