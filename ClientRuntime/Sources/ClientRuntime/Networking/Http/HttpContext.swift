@@ -34,7 +34,7 @@ public struct HttpContext: MiddlewareContext {
 public class HttpContextBuilder {
     
     public init() {}
-
+    
     var attributes: Attributes = Attributes()
     let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
     let method = AttributeKey<HttpMethodType>(name: "Method")

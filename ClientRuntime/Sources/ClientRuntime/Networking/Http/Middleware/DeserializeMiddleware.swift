@@ -7,7 +7,12 @@
 //    
 //    public init() {}
 //    
-//    public func handle<H>(context: HttpResponseContext, result: Result<Any, Error>, next: H) -> Result<Any, Error> where H: Handler, Self.TContext == H.TContext, Self.TError == H.TError, Self.TSubject == H.TSubject {
+//    public func handle<H>(context: HttpResponseContext,
+//                          result: Result<Any, Error>,
+//                          next: H) -> Result<Any, Error> where H: Handler,
+//                                                               Self.TContext == H.TContext,
+//                                                               Self.TError == H.TError,
+//                                                               Self.TSubject == H.TSubject {
 //        return result.flatMap { (_) -> Result<Any, Error> in
 //            let decoder = context.getDecoder()
 //            let httpResponse = context.response
