@@ -1,10 +1,10 @@
  // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  // SPDX-License-Identifier: Apache-2.0.
-
-import XCTest
-@testable import ClientRuntime
-
-class MiddlewareStackTests: XCTestCase {
+ 
+ import XCTest
+ @testable import ClientRuntime
+ 
+ class MiddlewareStackTests: XCTestCase {
     let context: HttpContextBuilder = HttpContextBuilder()
     
     override func setUp() {
@@ -26,15 +26,15 @@ class MiddlewareStackTests: XCTestCase {
         let builtContext = addContextValues.build()
         var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after, middleware: TestSerializeMiddleware(id: "TestMiddleware"))
-
-        //stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput>(id: "TestDeserializeMiddleware"))
+        
+        stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput>(id: "TestDeserializeMiddleware"))
         let input = TestInput()
         
         let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
         
         switch result {
         case .success(let output):
-            XCTAssert(output.value == 200)
+            XCTAssert(output.output?.value == 200)
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
@@ -62,35 +62,36 @@ class MiddlewareStackTests: XCTestCase {
             return next.handle(context: context, input: requestBuilder)
         }
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<SdkHttpRequest, Error> in
-            return .success(requestBuilder.build())
+            return next.handle(context: context, input: requestBuilder)
         }
-
+        
         let input = TestInput()
-
+        
         let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
-
+        
         switch result {
         case .success(let output):
-            XCTAssert(output.value == 200)
+            XCTAssert(output.output?.value == 200)
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
     }
-}
+ }
  
- struct TestHandler: Handler {
+ struct TestHandler<Output: HttpResponseBinding>: Handler {
     typealias Context = HttpContext
     
-    func handle(context: Context, input: SdkHttpRequest) -> Result<HttpResponse, Error> {
+    func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output>, Error> {
         XCTAssert(input.headers.value(for: "Test") == "Value")
         //we pretend made a request here to a mock client and are returning a 200 response
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-        return .success(httpResponse)
+        let output = DeserializeOutput<Output>(httpResponse: httpResponse)
+        return .success(output)
     }
     
     typealias Input = SdkHttpRequest
     
-    typealias Output = HttpResponse
+    typealias Output = DeserializeOutput<Output>
     
     
  }
@@ -112,26 +113,41 @@ class MiddlewareStackTests: XCTestCase {
     
  }
  
-// struct TestDeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
-//    var id: String
-//
-//    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<Output, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
-//        //mock client to fake return of request
-//        let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-//        let decoder = JSONDecoder()
-//        let output = try! Output(httpResponse: httpResponse, decoder: decoder)
-//        return .success(output)
-//
-//    }
-//
-//    typealias MInput = SdkHttpRequest
-//
-//    typealias MOutput = Output
-//    typealias Context = HttpContext
-//
-//
-// }
-
+ struct TestDeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
+    var id: String
+    
+    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output>, Error> where H: Handler,
+                                                                                                                       Self.MInput == H.Input,
+                                                                                                                       Self.MOutput == H.Output,
+                                                                                                                       Self.Context == H.Context {
+        //mock client to fake return of request
+        let response = next.handle(context: context, input: input) //call handler to get fake response of http response
+        do {
+            let successResponse = try response.get()
+            var copiedResponse = successResponse
+            if let httpResponse = successResponse.httpResponse {
+                let decoder = JSONDecoder()
+                let output = try Output(httpResponse: httpResponse, decoder: decoder)
+                copiedResponse.output = output
+                
+                return .success(copiedResponse)
+            } else {
+                return .failure(ClientError.unknownError("Http response was nil which should never happen"))
+            }
+        } catch let err {
+            return .failure(ClientError.deserializationFailed(err))
+        }
+        
+    }
+    
+    typealias MInput = SdkHttpRequest
+    
+    typealias MOutput = DeserializeOutput<Output>
+    typealias Context = HttpContext
+    
+    
+ }
+ 
  struct TestInput: HttpRequestBinding {
     mutating func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequestBuilder {
         return SdkHttpRequestBuilder()
@@ -139,7 +155,7 @@ class MiddlewareStackTests: XCTestCase {
     
     
  }
-
+ 
  struct TestOutput: HttpResponseBinding {
     let value: Int
     init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {

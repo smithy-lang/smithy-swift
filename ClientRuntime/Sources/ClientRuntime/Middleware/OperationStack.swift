@@ -23,33 +23,38 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     /// This execute will execute the stack and use your next as the last closure in the chain
     func handleMiddleware<H: Handler>(context: HttpContext,
                                       subject: StackInput,
-                                      next: H) -> Result<StackOutput, Error> where H.Input == SdkHttpRequest,
-                                                                                   H.Output == HttpResponse,
-                                                                                   H.Context == HttpContext {
+                                      next: H) -> Result<DeserializeOutput<StackOutput>, Error> where H.Input == SdkHttpRequest,
+                                                                                                      H.Output == DeserializeOutput<StackOutput>,
+                                                                                                      H.Context == HttpContext {
         let initializeStackStep = MiddlewareStackStep<StackInput,
-                                                      SdkHttpRequestBuilder>(stack: initializeStep.eraseToAnyMiddlewareStack(), handler: InitializeStepHandler().eraseToAnyHandler(), position: .before)
+                                                      SdkHttpRequestBuilder>(stack: initializeStep.eraseToAnyMiddlewareStack(),
+                                                                             handler: InitializeStepHandler().eraseToAnyHandler())
         let serializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                     SdkHttpRequestBuilder>(stack: serializeStep.eraseToAnyMiddlewareStack(), handler: SerializeStepHandler().eraseToAnyHandler(), position: .before)
+                                                     SdkHttpRequestBuilder>(stack: serializeStep.eraseToAnyMiddlewareStack(),
+                                                                            handler: SerializeStepHandler().eraseToAnyHandler())
         let buildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                 SdkHttpRequestBuilder>(stack: buildStep.eraseToAnyMiddlewareStack(), handler: BuildStepHandler().eraseToAnyHandler(), position: .before)
+                                                 SdkHttpRequestBuilder>(stack: buildStep.eraseToAnyMiddlewareStack(),
+                                                                        handler: BuildStepHandler().eraseToAnyHandler())
         let finalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                    SdkHttpRequest>(stack: finalizeStep.eraseToAnyMiddlewareStack(), handler: FinalizeStepHandler().eraseToAnyHandler(), position: .before)
+                                                    SdkHttpRequest>(stack: finalizeStep.eraseToAnyMiddlewareStack(),
+                                                                    handler: FinalizeStepHandler().eraseToAnyHandler())
+        //deserialize does not take a handler because its handler is the last handler in the operation which is defined as next inside this function and is wrapped below and added as the last chain in the middleware stack of steps
         let deserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
-                                                       StackOutput>(stack: deserializeStep.eraseToAnyMiddlewareStack(), handler: DeserializeStepHandler().eraseToAnyHandler(), position: .after)
+                                                       DeserializeOutput<StackOutput>>(stack: deserializeStep.eraseToAnyMiddlewareStack())
         let steps = [initializeStackStep.eraseToAnyMiddleware(),
                      serializeStackStep.eraseToAnyMiddleware(),
                      buildStackStep.eraseToAnyMiddleware(),
                      finalizeStackStep.eraseToAnyMiddleware(),
                      deserializeStackStep.eraseToAnyMiddleware()]
         
-        let wrappedHandler = StepHandler<SdkHttpRequest, HttpResponse, Any, Any, HttpContext>(next: next.eraseToAnyHandler())
+        let wrappedHandler = StepHandler<SdkHttpRequest, DeserializeOutput<StackOutput>, Any, Any, HttpContext>(next: next.eraseToAnyHandler())
         
         let handler = compose(next: wrappedHandler, with: steps)
         
         let result = handler.handle(context: context, input: subject) //kicks off the entire operation of middleware stacks
-    
-        return result.flatMap { (anyResult) -> Result<StackOutput, Error> in
-            if let result = anyResult as? StackOutput {
+        
+        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput>, Error> in
+            if let result = anyResult as? DeserializeOutput<StackOutput> {
                 return .success(result)
             } else {
                 return .failure(MiddlewareStepError.castingError("casted from operation stack failed"))
@@ -59,10 +64,10 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     
     /// Compose (wrap) the handler with the given middleware
     func compose<H: Handler, M: Middleware>(next: H, with: [M]) -> AnyHandler<H.Input, H.Output, H.Context> where M.MOutput == Any,
-                                                                                                       M.MInput == Any,
-                                                                                                       H.Input == Any,
-                                                                                                       H.Output == Any,
-                                                                                                       H.Context == M.Context {
+                                                                                                                  M.MInput == Any,
+                                                                                                                  H.Input == Any,
+                                                                                                                  H.Output == Any,
+                                                                                                                  H.Context == M.Context {
         if with.isEmpty {
             return next.eraseToAnyHandler()
         }
