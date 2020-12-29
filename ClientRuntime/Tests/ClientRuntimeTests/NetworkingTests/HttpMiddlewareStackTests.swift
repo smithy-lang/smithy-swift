@@ -66,13 +66,19 @@ class HttpMiddlewareStackTests: NetworkingTestUtils {
 }
 
  extension TestBody: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequest {
-        let endpoint = Endpoint(host: "httpbin.org", path: path)
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequestBuilder {
+
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         let data = try encoder.encode(self)
         let body = HttpBody.data(data)
-        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+        let builder = SdkHttpRequestBuilder()
+            .withBody(value: body)
+            .withHost(value: "httpbin.org")
+            .withPath(value: path)
+            .withHeaders(value: headers)
+            .withMethod(value: method)
+        return builder
     }
  }
  
