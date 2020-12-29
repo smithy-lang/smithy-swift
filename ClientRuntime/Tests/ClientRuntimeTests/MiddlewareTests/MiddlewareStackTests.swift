@@ -77,10 +77,8 @@ class MiddlewareStackTests: XCTestCase {
     
     func handle(context: Context, input: SdkHttpRequest) -> Result<HttpResponse, Error> {
         XCTAssert(input.headers.value(for: "Test") == "Value")
+        //we pretend made a request here to a mock client and are returning a 200 response
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-        context.response = httpResponse
-//        let decoder = JSONDecoder()
-//        let output = try! Output(httpResponse: httpResponse, decoder: decoder)
         return .success(httpResponse)
     }
     
