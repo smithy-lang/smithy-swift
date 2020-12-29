@@ -8,8 +8,9 @@
 ///
 /// Receives result or error from Build step.
 public struct SerializeStep: MiddlewareStack {
+    public typealias Context = HttpContext
     
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder, HttpContext> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder, HttpContext>()
     
     public var id: String = "SerializeStep"
     

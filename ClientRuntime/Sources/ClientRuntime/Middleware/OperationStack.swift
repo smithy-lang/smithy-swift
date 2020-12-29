@@ -21,21 +21,33 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
-    func handleMiddleware<H: Handler>(context: MiddlewareContext,
+    func handleMiddleware<H: Handler>(context: HttpContext,
                                       subject: StackInput,
-                                      next: H) -> Result<StackOutput, Error> where H.Input == SdkHttpRequest, H.Output == HttpResponse {
-        let initializeStackStep = MiddlewareStackStep<StackInput, SdkHttpRequestBuilder>(stack: initializeStep.eraseToAnyMiddlewareStack())
-        let serializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequestBuilder>(stack: serializeStep.eraseToAnyMiddlewareStack())
-        let buildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequestBuilder>(stack: buildStep.eraseToAnyMiddlewareStack())
-        let finalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequest>(stack: finalizeStep.eraseToAnyMiddlewareStack())
-        let deserializeStackStep = MiddlewareStackStep<SdkHttpRequest, StackOutput>(stack: deserializeStep.eraseToAnyMiddlewareStack())
+                                      next: H) -> Result<StackOutput, Error> where H.Input == SdkHttpRequest,
+                                                                                   H.Output == HttpResponse,
+                                                                                   H.Context == HttpContext {
+        let initializeStackStep = MiddlewareStackStep<StackInput,
+                                                      SdkHttpRequestBuilder,
+                                                      HttpContext>(stack: initializeStep.eraseToAnyMiddlewareStack())
+        let serializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                     SdkHttpRequestBuilder,
+                                                     HttpContext>(stack: serializeStep.eraseToAnyMiddlewareStack())
+        let buildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                 SdkHttpRequestBuilder,
+                                                 HttpContext>(stack: buildStep.eraseToAnyMiddlewareStack())
+        let finalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                    SdkHttpRequest,
+                                                    HttpContext>(stack: finalizeStep.eraseToAnyMiddlewareStack())
+        let deserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
+                                                       StackOutput,
+                                                       HttpContext>(stack: deserializeStep.eraseToAnyMiddlewareStack())
         let steps = [initializeStackStep.eraseToAnyMiddleware(),
                      serializeStackStep.eraseToAnyMiddleware(),
                      buildStackStep.eraseToAnyMiddleware(),
                      finalizeStackStep.eraseToAnyMiddleware(),
                      deserializeStackStep.eraseToAnyMiddleware()]
         
-        let wrappedHandler = StepHandler<SdkHttpRequest, HttpResponse, Any, Any>(next: next.eraseToAnyHandler())
+        let wrappedHandler = StepHandler<SdkHttpRequest, HttpResponse, Any, Any, HttpContext>(next: next.eraseToAnyHandler())
         
         let handler = compose(next: wrappedHandler, with: steps)
         
@@ -51,10 +63,11 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     }
     
     /// Compose (wrap) the handler with the given middleware
-    func compose<H: Handler, M: Middleware>(next: H, with: [M]) -> AnyHandler<H.Input, H.Output> where M.MOutput == Any,
+    func compose<H: Handler, M: Middleware>(next: H, with: [M]) -> AnyHandler<H.Input, H.Output, H.Context> where M.MOutput == Any,
                                                                                                        M.MInput == Any,
                                                                                                        H.Input == Any,
-                                                                                                       H.Output == Any {
+                                                                                                       H.Output == Any,
+                                                                                                       H.Context == M.Context {
         if with.isEmpty {
             return next.eraseToAnyHandler()
         }

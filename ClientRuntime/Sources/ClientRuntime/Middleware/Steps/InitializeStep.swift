@@ -9,11 +9,38 @@
 /// Receives result or error from Serialize step.
 public struct InitializeStep<Input: HttpRequestBinding>: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<Input, SdkHttpRequestBuilder> = OrderedGroup<Input, SdkHttpRequestBuilder>()
+    public typealias Context = HttpContext
+    
+    
+    public var orderedMiddleware: OrderedGroup<Input,
+                                               SdkHttpRequestBuilder,
+                                               HttpContext> = OrderedGroup<Input, SdkHttpRequestBuilder, HttpContext>()
     
     public var id: String = "InitializeStep"
     
     public typealias MInput = Input
     
     public typealias MOutput = SdkHttpRequestBuilder
+
+}
+
+public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {    
+    
+    public typealias Input = Input
+    
+    public typealias Output = SdkHttpRequestBuilder
+    
+    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        var copiedInput = input
+        let method = context.getMethod()
+        let path = context.getPath()
+        let encoder = context.getEncoder()
+        do {
+            let sdkRequestBuilder = try copiedInput.buildHttpRequest(method: method, path: path, encoder: encoder)
+            return .success(sdkRequestBuilder)
+        } catch let err {
+            let error = ClientError.serializationFailed(err.localizedDescription)
+            return .failure(error)
+        }
+    }
 }

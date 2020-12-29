@@ -5,6 +5,7 @@ import XCTest
 @testable import ClientRuntime
 
 class MiddlewareStackTests: XCTestCase {
+    let context: HttpContextBuilder = HttpContextBuilder()
     
     override func setUp() {
         super.setUp()
@@ -16,12 +17,22 @@ class MiddlewareStackTests: XCTestCase {
     
     
     func testMiddlewareStackSuccessInterceptAfter() {
-        let context = TestContext()
+        let builtContext = context.build()
         var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
         stack.initializeStep.intercept(position: .after, middleware: TestSerializeMiddleware<TestInput>(id: "TestMiddleware"))
-        var input = TestInput()
-        let sdkRequest = try! input.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
-        let result = stack.handleMiddleware(context: context, subject: input, next: TestHandler())
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, sdkBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
+            return next.handle(context: context, input: sdkBuilder)
+        }
+        stack.buildStep.intercept(position: .after, id: "Build") { (context, sdkBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
+            return next.handle(context: context, input: sdkBuilder)
+        }
+        stack.finalizeStep.intercept(position: .after, id: "Finalize") { (context, sdkBuilder, next) -> Result<SdkHttpRequest, Error> in
+            return next.handle(context: context, input: sdkBuilder)
+        }
+        stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput>(id: "TestDeserializeMiddleware"))
+        let input = TestInput()
+        
+        let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
         
         switch result {
         case .success(let output):
@@ -32,11 +43,14 @@ class MiddlewareStackTests: XCTestCase {
     }
     
     func testMiddlewareStackConvenienceFunction() {
-        let context = TestContext()
+        let builtContext = context.build()
         var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
             
             return next.handle(context: context, input: input)
+        }
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, sdkBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
+            return next.handle(context: context, input: sdkBuilder)
         }
         
         stack.buildStep.intercept(position: .before, id: "add a header") { (context, requestBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
@@ -48,9 +62,8 @@ class MiddlewareStackTests: XCTestCase {
         }
 
         let input = TestInput()
-        //let request = try! input.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
 
-        let result = stack.handleMiddleware(context: context, subject: input, next: TestHandler())
+        let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
 
         switch result {
         case .success(let output):
@@ -62,8 +75,9 @@ class MiddlewareStackTests: XCTestCase {
 }
  
  struct TestHandler: Handler {
+    typealias Context = HttpContext
     
-    func handle(context: MiddlewareContext, input: SdkHttpRequest) -> Result<HttpResponse, Error> {
+    func handle(context: Context, input: SdkHttpRequest) -> Result<HttpResponse, Error> {
         XCTAssert(input.headers.value(for: "Test") == "Value")
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
 //        let decoder = JSONDecoder()
@@ -79,24 +93,41 @@ class MiddlewareStackTests: XCTestCase {
  }
  
  struct TestSerializeMiddleware<Input: HttpRequestBinding>: Middleware {
+    typealias Context = HttpContext
     
     typealias MOutput = SdkHttpRequestBuilder
     
     var id: String
     
-    func handle<H>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error> where H : Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
+    func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
         var copiedInput = input
         let requestBuilder = try! copiedInput.buildHttpRequest(method: .get, path: "/", encoder: JSONEncoder())
         requestBuilder.headers.add(name: "Test", value: "Value")
-        return .success(requestBuilder)
+        return next.handle(context: context, input: input)
     }
     
     typealias MInput = Input
     
  }
-
- struct TestContext: MiddlewareContext {
-    var attributes: Attributes = Attributes()
+ 
+ struct TestDeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
+    var id: String
+    
+    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<Output, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
+        //mock client to fake return of request
+        let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+        let decoder = JSONDecoder()
+        let output = try! Output(httpResponse: httpResponse, decoder: decoder)
+        return .success(output)
+        
+    }
+    
+    typealias MInput = SdkHttpRequest
+    
+    typealias MOutput = Output
+    typealias Context = HttpContext
+    
+    
  }
 
  struct TestInput: HttpRequestBinding {

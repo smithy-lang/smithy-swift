@@ -4,12 +4,13 @@
 public protocol Handler {
     associatedtype Input
     associatedtype Output
+    associatedtype Context: MiddlewareContext
        
-    func handle(context: MiddlewareContext, input: Input) -> Result<Output, Error>
+    func handle(context: Context, input: Input) -> Result<Output, Error>
 }
 
 extension Handler {
-    func eraseToAnyHandler() -> AnyHandler<Input, Output> {
+    func eraseToAnyHandler() -> AnyHandler<Input, Output, Context> {
         return AnyHandler(self)
     }
 }

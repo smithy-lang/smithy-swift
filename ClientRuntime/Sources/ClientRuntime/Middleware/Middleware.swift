@@ -4,18 +4,19 @@
 public protocol Middleware {
     associatedtype MInput
     associatedtype MOutput
+    associatedtype Context: MiddlewareContext
     
     /// The middleware ID
     var id: String { get }
     
-    func handle<H: Handler>(context: MiddlewareContext,
+    func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) -> Result<MOutput, Error>
-    where H.Input == MInput, H.Output == MOutput
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context
 }
 
 extension Middleware {
-    func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput> {
+    func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context> {
         return AnyMiddleware(self)
     }
 }

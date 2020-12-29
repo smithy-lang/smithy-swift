@@ -2,39 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public protocol MiddlewareStack: Middleware {
-    
     /// the middleware of the stack in an ordered group
-    var orderedMiddleware: OrderedGroup<MInput, MOutput> { get set }
+    var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> { get set }
     /// the unique id of the stack
     var id: String {get set}
     
-    func get(id: String) -> AnyMiddleware<MInput, MOutput>?
+    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>?
     
-    func handle<H: Handler>(context: MiddlewareContext,
+    func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) -> Result<MOutput, Error>
-    where H.Input == MInput, H.Output == MOutput
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context
     
     mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput
+    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context
     
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping MiddlewareFunction<MInput, MOutput>)
+                            handler: @escaping MiddlewareFunction<MInput, MOutput, Context>)
 }
 
 public extension MiddlewareStack {
-    func get(id: String) -> AnyMiddleware<MInput, MOutput>? {
+    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
         return orderedMiddleware.get(id: id)
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
-    func handle<H: Handler>(context: MiddlewareContext,
+    func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) -> Result<MOutput, Error>
-        where H.Input == MInput, H.Output == MOutput {
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         
-        var handler = AnyHandler<MInput, MOutput>(next)
+        var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
         if order.count == 0 {
             return handler.handle(context: context, input: input)
@@ -50,7 +49,7 @@ public extension MiddlewareStack {
     }
     
     mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput {
+    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
     
@@ -62,14 +61,14 @@ public extension MiddlewareStack {
     ///
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping MiddlewareFunction<MInput, MOutput>) {
+                            handler: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
         let middleware = WrappedMiddleware(handler, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }
 
 extension MiddlewareStack {
-    func eraseToAnyMiddlewareStack<MInput, MOutput>() -> AnyMiddlewareStack<MInput, MOutput> where MInput == Self.MInput, MOutput == Self.MOutput {
+    func eraseToAnyMiddlewareStack<MInput, MOutput, Context>() -> AnyMiddlewareStack<MInput, MOutput, Context> where MInput == Self.MInput, MOutput == Self.MOutput, Context == Self.Context {
         return AnyMiddlewareStack(self)
     }
 }

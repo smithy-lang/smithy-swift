@@ -11,8 +11,9 @@
 ///
 /// Receives raw response, or error from underlying handler.
 public struct DeserializeStep<Output: HttpResponseBinding>: MiddlewareStack {
+    public typealias Context = HttpContext
  
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequest, Output> = OrderedGroup<SdkHttpRequest, Output>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequest, Output, HttpContext> = OrderedGroup<SdkHttpRequest, Output, HttpContext>()
     
     public var id: String = "DeserializeStep"
     

@@ -3,27 +3,33 @@
 
 //cast output of one middleware stack to input of the next
 //pass in Any for first two params to trick the chain into thinking each step input and output are the same
-struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
+struct MiddlewareStackStep<StepInput, StepOutput, Context: MiddlewareContext>: Middleware {
     var id: String
     typealias MInput = Any
     typealias MOutput = Any
-    var stack: AnyMiddlewareStack<StepInput, StepOutput>
-    
-    init(stack: AnyMiddlewareStack<StepInput, StepOutput>) {
+    let stack: AnyMiddlewareStack<StepInput, StepOutput, Context>
+    let handler: AnyHandler<StepInput, StepOutput, Context>
+    init(stack: AnyMiddlewareStack<StepInput, StepOutput, Context>,
+         handler: AnyHandler<StepInput, StepOutput, Context>) {
         self.id = stack.id
         self.stack = stack
+        self.handler = handler
     }
     
-    func handle<H>(context: MiddlewareContext, input: MInput, next: H) -> Result<MInput, Error> where H: Handler,
+    func handle<H>(context: Context, input: MInput, next: H) -> Result<MInput, Error> where H: Handler,
                                                                                                        MInput == H.Input,
-                                                                                                       MOutput == H.Output {
+    MOutput == H.Output, Context == H.Context {
         // compose step handlers and call them with `input` cast to right type
         if let sinput = input as? StepInput{
-            let wrapHandler = StepHandler<Any, Any, StepInput, StepOutput>(next: next.eraseToAnyHandler())
-            let stepOutput = stack.handle(context: context, input: sinput, next: wrapHandler)
-            return stepOutput.map { (output) -> Any in
+            //need to wrap a handler in a handler here somehow
+            //last link in the stack needs to be called and then next inside this link needs to be called with its result.
+            let wrapHandler = StepHandler<Any, Any, StepInput, StepOutput, Context>(next: next.eraseToAnyHandler())
+            let stepOutput = stack.handle(context: context, input: sinput, next: handler)
+            
+            let mapped = stepOutput.map { (output) -> Any in
                 output as Any
             }
+            return next.handle(context: context, input: mapped)
         }
         else {
             return .failure(MiddlewareStepError.castingError("There was a casting error from middleware input of Any to step input"))
@@ -31,11 +37,12 @@ struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     }
 }
 
-struct StepHandler<HandlerInput, HandlerOutput, StepInput, StepOutput>: Handler {
+struct StepHandler<HandlerInput, HandlerOutput, StepInput, StepOutput, Context: MiddlewareContext>: Handler {
     typealias Input = StepInput
     typealias Output = StepOutput
-    let next: AnyHandler<HandlerInput, HandlerOutput>
-    func handle(context: MiddlewareContext, input: StepInput) -> Result<StepOutput, Error> {
+    let next: AnyHandler<HandlerInput, HandlerOutput, Context>
+    func handle(context: Context, input: StepInput) -> Result<StepOutput, Error> {
+       
         if let input = input as? HandlerInput {
         let result = next.handle(context: context, input: input)
         return result.flatMap { (any) -> Result<StepOutput, Error> in
@@ -46,6 +53,6 @@ struct StepHandler<HandlerInput, HandlerOutput, StepInput, StepOutput>: Handler 
             }
         }
         }
-        return .failure(MiddlewareStepError.castingError("failed to caset input to handler input which should be any"))
+        return .failure(MiddlewareStepError.castingError("failed to cast input to handler input which should be any"))
     }
 }

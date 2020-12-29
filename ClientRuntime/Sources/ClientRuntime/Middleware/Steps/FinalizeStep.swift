@@ -10,8 +10,11 @@
 //
 // Receives result or error from Deserialize step.
 public struct FinalizeStep: MiddlewareStack {
+    public typealias Context = HttpContext
     
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder,
+                                               SdkHttpRequest,
+                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest, HttpContext>()
     
     public var id: String = "FinalizeStep"
     

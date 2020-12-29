@@ -1,27 +1,27 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct HttpRequestContext {
-    var executionContext: Attributes
+public struct HttpContext: MiddlewareContext {
+    public var attributes: Attributes
     
-    public init(executionContext: Attributes) {
-        self.executionContext = executionContext
+    public init(attributes: Attributes) {
+        self.attributes = attributes
     }
     
     func getPath() -> String {
-         return executionContext.get(key: AttributeKey<String>(name: "Path"))!
+         return attributes.get(key: AttributeKey<String>(name: "Path"))!
     }
     
     func getMethod() -> HttpMethodType {
-        return executionContext.get(key: AttributeKey<HttpMethodType>(name: "Method"))!
+        return attributes.get(key: AttributeKey<HttpMethodType>(name: "Method"))!
     }
     
     func getEncoder() -> RequestEncoder {
-        return executionContext.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
+        return attributes.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
     }
 }
 
-public class HttpRequestContextBuilder {
+public class HttpContextBuilder {
     
     public init() {}
 
@@ -39,43 +39,43 @@ public class HttpRequestContextBuilder {
     @discardableResult
     public func with<T>(key: AttributeKey<T>,
                  value: T,
-                attributes: Attributes) -> HttpRequestContextBuilder {
+                attributes: Attributes) -> HttpContextBuilder {
         self.attributes.set(key: key, value: value)
 
         return self
     }
     
     @discardableResult
-    public func withEncoder(value: RequestEncoder) -> HttpRequestContextBuilder {
+    public func withEncoder(value: RequestEncoder) -> HttpContextBuilder {
         self.attributes.set(key: encoder, value: value)
         return self
     }
     
     @discardableResult
-    public func withMethod(value: HttpMethodType) -> HttpRequestContextBuilder {
+    public func withMethod(value: HttpMethodType) -> HttpContextBuilder {
         self.attributes.set(key: method, value: value)
         return self
     }
     
     @discardableResult
-    public func withPath(value: String) -> HttpRequestContextBuilder {
+    public func withPath(value: String) -> HttpContextBuilder {
         self.attributes.set(key: path, value: value)
         return self
     }
     
     @discardableResult
-    public func withOperation(value: String) -> HttpRequestContextBuilder {
+    public func withOperation(value: String) -> HttpContextBuilder {
         self.attributes.set(key: operation, value: value)
         return self
     }
     
     @discardableResult
-    public func withServiceName(value: String) -> HttpRequestContextBuilder {
+    public func withServiceName(value: String) -> HttpContextBuilder {
         self.attributes.set(key: serviceName, value: value)
         return self
     }
 
-    public func build() -> HttpRequestContext {
-        return HttpRequestContext(executionContext: attributes)
+    public func build() -> HttpContext {
+        return HttpContext(attributes: attributes)
     }
 }
