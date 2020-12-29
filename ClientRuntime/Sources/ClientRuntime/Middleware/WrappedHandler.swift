@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+/// used to wrap a handler function as a handler
 struct WrappedHandler<MInput, MOutput, Context: MiddlewareContext>: Handler {
     let _handler: HandlerFunction<MInput, MOutput, Context>
     

@@ -31,6 +31,7 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
     public typealias Output = SdkHttpRequestBuilder
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        //this step takes an input of whatever type with conformance to our http binding protocol and converts it to an sdk request builder
         var copiedInput = input
         let method = context.getMethod()
         let path = context.getPath()

@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
-
+///Type safe property bag key
 public struct AttributeKey<ValueType>: Hashable {
     let name: String
     
@@ -9,10 +9,10 @@ public struct AttributeKey<ValueType>: Hashable {
     }
     
     func toString() -> String {
-        return "ExecutionAttributeKey: \(name)"
+        return "AttributeKey: \(name)"
     }
 }
-
+/// Type safe property bag
 public struct Attributes {
     var attributes: [Int: Any] = [Int: Any]()
     

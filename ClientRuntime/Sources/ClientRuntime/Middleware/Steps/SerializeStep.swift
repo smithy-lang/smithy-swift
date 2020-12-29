@@ -26,6 +26,7 @@ public struct SerializeStepHandler: Handler {
     public typealias Output = SdkHttpRequestBuilder
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        //this step does not change types from input and output so just return the input as the result
         return .success(input)
     }
 }

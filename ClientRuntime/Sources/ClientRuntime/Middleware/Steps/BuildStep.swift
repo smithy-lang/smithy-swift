@@ -29,6 +29,7 @@ public struct BuildStepHandler: Handler {
     public typealias Output = SdkHttpRequestBuilder
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+        // since types don't change in input and output here just return the result to kick of the next step
         return .success(input)
     }
 }

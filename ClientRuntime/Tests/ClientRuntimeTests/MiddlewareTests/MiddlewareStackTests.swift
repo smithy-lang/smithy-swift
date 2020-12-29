@@ -15,7 +15,6 @@
         super.tearDown()
     }
     
-    
     func testMiddlewareStackSuccessInterceptAfter() {
         let addContextValues = context
             .withMethod(value: .get)
@@ -92,8 +91,6 @@
     typealias Input = SdkHttpRequest
     
     typealias Output = DeserializeOutput<Output>
-    
-    
  }
  
  struct TestSerializeMiddleware: Middleware {
@@ -110,7 +107,6 @@
     }
     
     typealias MInput = SdkHttpRequestBuilder
-    
  }
  
  struct TestDeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
@@ -137,23 +133,17 @@
         } catch let err {
             return .failure(ClientError.deserializationFailed(err))
         }
-        
     }
     
     typealias MInput = SdkHttpRequest
-    
     typealias MOutput = DeserializeOutput<Output>
     typealias Context = HttpContext
-    
-    
  }
  
  struct TestInput: HttpRequestBinding {
     mutating func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder) throws -> SdkHttpRequestBuilder {
         return SdkHttpRequestBuilder()
     }
-    
-    
  }
  
  struct TestOutput: HttpResponseBinding {

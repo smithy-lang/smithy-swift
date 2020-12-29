@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+///this class will implement Handler per new middleware implementation
 public class SdkHttpClient {
     
     let engine: HttpClientEngine

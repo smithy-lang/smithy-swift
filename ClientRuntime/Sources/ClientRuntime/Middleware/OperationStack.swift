@@ -26,6 +26,7 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
                                       next: H) -> Result<DeserializeOutput<StackOutput>, Error> where H.Input == SdkHttpRequest,
                                                                                                       H.Output == DeserializeOutput<StackOutput>,
                                                                                                       H.Context == HttpContext {
+        // create all the steps to link them as one middleware chain, each step has its own handler to convert the types except the last link in the chain
         let initializeStackStep = MiddlewareStackStep<StackInput,
                                                       SdkHttpRequestBuilder>(stack: initializeStep.eraseToAnyMiddlewareStack(),
                                                                              handler: InitializeStepHandler().eraseToAnyHandler())
@@ -49,11 +50,12 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
         
         let wrappedHandler = StepHandler<SdkHttpRequest, DeserializeOutput<StackOutput>, Any, Any, HttpContext>(next: next.eraseToAnyHandler())
         
+        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
         let handler = compose(next: wrappedHandler, with: steps)
         
         let result = handler.handle(context: context, input: subject) //kicks off the entire operation of middleware stacks
         
-        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput>, Error> in
+        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput>, Error> in //have to match the result because types
             if let result = anyResult as? DeserializeOutput<StackOutput> {
                 return .success(result)
             } else {
@@ -62,7 +64,7 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
         }
     }
     
-    /// Compose (wrap) the handler with the given middleware
+    /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
     func compose<H: Handler, M: Middleware>(next: H, with: [M]) -> AnyHandler<H.Input, H.Output, H.Context> where M.MOutput == Any,
                                                                                                                   M.MInput == Any,
                                                                                                                   H.Input == Any,

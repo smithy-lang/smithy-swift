@@ -30,6 +30,7 @@ public struct FinalizeStepHandler: Handler {
     public typealias Output = SdkHttpRequest
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequest, Error> {
+        // this steps takes the builder and builds an actual request
         return .success(input.build())
     }
 }

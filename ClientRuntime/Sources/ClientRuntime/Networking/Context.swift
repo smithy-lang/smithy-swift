@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-
+// THIS WILL BE REMOVED POST CODEGEN of MIDDLEWARE IMPLEMENTATION
 /// This class is used to pass context from the service clients to the middleware of the sdk
 /// in order to decorate and execute the request as well as handle serde.
 public class Context<Output, OutputError> where Output: HttpResponseBinding,

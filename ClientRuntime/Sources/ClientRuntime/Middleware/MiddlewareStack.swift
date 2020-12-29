@@ -56,7 +56,7 @@ public extension MiddlewareStack {
     /// Convenience function for passing a closure directly:
     ///
     /// ```
-    /// stack.intercept(phase, position: .after, id: "Add Header") { ... }
+    /// stack.intercept(position: .after, id: "Add Header") { ... }
     /// ```
     ///
     mutating func intercept(position: Position,

@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+/// this struct implements middleware context and will serve as the context for all http middleware operations
 public struct HttpContext: MiddlewareContext {
     public var attributes: Attributes
     var response: HttpResponse?
