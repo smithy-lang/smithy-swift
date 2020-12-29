@@ -63,7 +63,7 @@ public extension MiddlewareStack {
     mutating func intercept(position: Position,
                             id: String,
                             handler: @escaping MiddlewareFunction<MInput, MOutput>) {
-        let middleware = ComposeMiddleware(handler, id: id)
+        let middleware = WrappedMiddleware(handler, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }

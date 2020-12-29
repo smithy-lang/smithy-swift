@@ -7,13 +7,13 @@
 /// Converts Input Parameters into a Request, and returns the result or error.
 ///
 /// Receives result or error from Build step.
-public struct SerializeStep<Output: HttpResponseBinding>: MiddlewareStack {
+public struct SerializeStep: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequest, Output> = OrderedGroup<SdkHttpRequest, Output>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder>()
     
     public var id: String = "SerializeStep"
     
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = SdkHttpRequestBuilder
     
-    public typealias MOutput = Output
+    public typealias MOutput = SdkHttpRequestBuilder
 }

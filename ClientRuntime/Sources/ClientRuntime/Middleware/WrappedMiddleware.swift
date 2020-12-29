@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-// used to create middleware from a handler
-struct ComposeMiddleware<MInput, MOutput>: Middleware {
+// used to create middleware from a middleware handler
+struct WrappedMiddleware<MInput, MOutput>: Middleware {
     let _middleware: MiddlewareFunction<MInput, MOutput>
     var id: String
     

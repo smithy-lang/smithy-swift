@@ -9,13 +9,13 @@
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public struct FinalizeStep<Output: HttpResponseBinding>: MiddlewareStack {
+public struct FinalizeStep: MiddlewareStack {
     
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequest, Output> = OrderedGroup<SdkHttpRequest, Output>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequest>()
     
     public var id: String = "FinalizeStep"
     
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = SdkHttpRequestBuilder
     
-    public typealias MOutput = Output
+    public typealias MOutput = SdkHttpRequest
 }

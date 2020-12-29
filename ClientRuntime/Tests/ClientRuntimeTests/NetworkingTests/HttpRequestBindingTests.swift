@@ -12,8 +12,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: JSONEncoder())
-            
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: JSONEncoder())
+            let httpRequest = httpRequestBuilder.build()
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .get)
         
@@ -34,8 +34,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestThatThrows()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-        let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.post, path: uri, encoder: JSONEncoder())
-        
+        let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.post, path: uri, encoder: JSONEncoder())
+        let httpRequest = httpRequestBuilder.build()
         XCTAssertEqual(httpRequest.endpoint.path, uri)
         XCTAssertEqual(httpRequest.method, .post)
 
@@ -49,8 +49,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestWithPayload()
         let uri = "/constant/prefix/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.connect, path: uri, encoder: JSONEncoder())
-            
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.connect, path: uri, encoder: JSONEncoder())
+            let httpRequest = httpRequestBuilder.build()
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .connect)
             
@@ -70,8 +70,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequest = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: XMLEncoder())
-            
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: XMLEncoder())
+            let httpRequest = httpRequestBuilder.build()
             XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .get)
             
@@ -116,41 +116,48 @@ enum MockError: Error {
 }
 
 extension CodableRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+
         let body = HttpBody.data(try encoder.encode(self))
-        return SdkHttpRequest(method: method,
-                            endpoint: Endpoint(host: "codegened-host-for-service",
-                                               path: path),
-                            headers: Headers(),
-                            body: body)
+        let builder = SdkHttpRequestBuilder()
+            .withBody(value: body)
+            .withPath(value: path)
+            .withHost(value: "codegened-host-for-service")
+            .withMethod(value: method)
+        return builder
     }
 }
 
 extension CodableXMLRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        return SdkHttpRequest(method: method,
-                            endpoint: Endpoint(host: "codegened-host-for-service",
-                                               path: path),
-                            headers: Headers())
+
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+        let builder = SdkHttpRequestBuilder()
+            .withPath(value: path)
+            .withHost(value: "codegened-host-for-service")
+            .withMethod(value: method)
+        return builder
     }
 }
 
 extension CodableRequestThatThrows: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        return SdkHttpRequest(method: method,
-                            endpoint: Endpoint(host: "codegened-host-for-service",
-                                               path: path),
-                            headers: Headers())
+    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+        let builder = SdkHttpRequestBuilder()
+            .withPath(value: path)
+            .withHost(value: "codegened-host-for-service")
+            .withMethod(value: method)
+        return builder
     }
 }
 
 extension CodableRequestWithPayload: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+
         let body = HttpBody.data(self.payload)
-        return SdkHttpRequest(method: method,
-                            endpoint: Endpoint(host: "codegened-host-for-service",
-                                               path: path),
-                            headers: Headers(),
-                            body: body)
+        let builder = SdkHttpRequestBuilder()
+            .withBody(value: body)
+            .withPath(value: path)
+            .withHost(value: "codegened-host-for-service")
+            .withMethod(value: method)
+        return builder
     }
 }

@@ -2,54 +2,50 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 //cast output of one middleware stack to input of the next
-struct MiddlewareStackStep<MIn, MOut, SInput, SOutput>: Middleware {
-    
+//pass in Any for first two params to trick the chain into thinking each step input and output are the same
+struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     var id: String
-    typealias MInput = MIn
-    typealias MOutput = MOut
+    typealias MInput = Any
+    typealias MOutput = Any
+    var stack: AnyMiddlewareStack<StepInput, StepOutput>
     
-    var stack: AnyMiddlewareStack<SInput, SOutput>
-    init(stack: AnyMiddlewareStack<SInput, SOutput>) {
+    init(stack: AnyMiddlewareStack<StepInput, StepOutput>) {
         self.id = stack.id
         self.stack = stack
     }
-    func handle<H>(context: MiddlewareContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler,
+    
+    func handle<H>(context: MiddlewareContext, input: MInput, next: H) -> Result<MInput, Error> where H: Handler,
                                                                                                        MInput == H.Input,
                                                                                                        MOutput == H.Output {
-        if let sInput = input as? SInput {
-            let wrapHandler = StepHandler(next: next.eraseToAnyHandler())
-            let result = stack.handle(context: context, input: sInput, next: wrapHandler)
-            return result.flatMap { (sOutput) -> Result<MOutput, Error> in
-                if let mOutput = sOutput as? MOutput {
-                    return .success(mOutput)
-                } else {
-                    return .failure(MiddlewareStepError.castingError("There was an error casting the output of one step to the input of the next"))
-                }
+        // compose step handlers and call them with `input` cast to right type
+        if let sinput = input as? StepInput{
+            let wrapHandler = StepHandler<Any, Any, StepInput, StepOutput>(next: next.eraseToAnyHandler())
+            let stepOutput = stack.handle(context: context, input: sinput, next: wrapHandler)
+            return stepOutput.map { (output) -> Any in
+                output as Any
             }
         }
-        return .failure(MiddlewareStepError.castingError("There was an error casting the output of one step to the input of the next"))
-    }
-    
-    struct StepHandler: Handler {
-        typealias Input = SInput
-        typealias Output = SOutput
-        let next: AnyHandler<MInput, MOutput>
-        func handle(context: MiddlewareContext, input: SInput) -> Result<SOutput, Error> {
-            if let mInput = input as? MInput{
-                let result = next.handle(context: context, input: mInput)
-                return result.flatMap { (mOut) -> Result<SOutput, Error> in
-                    if let sOut = mOut as? SOutput {
-                        return .success(sOut)
-                    } else {
-                        return .failure(MiddlewareStepError.castingError("There was an error casting the output of one step to the input of the next"))
-                    }
-                }
-            }
-            return .failure(MiddlewareStepError.castingError("There was an error casting the output of one step to the input of the next"))
+        else {
+            return .failure(MiddlewareStepError.castingError("There was a casting error from middleware input of Any to step input"))
         }
     }
 }
 
-
-
-
+struct StepHandler<HandlerInput, HandlerOutput, StepInput, StepOutput>: Handler {
+    typealias Input = StepInput
+    typealias Output = StepOutput
+    let next: AnyHandler<HandlerInput, HandlerOutput>
+    func handle(context: MiddlewareContext, input: StepInput) -> Result<StepOutput, Error> {
+        if let input = input as? HandlerInput {
+        let result = next.handle(context: context, input: input)
+        return result.flatMap { (any) -> Result<StepOutput, Error> in
+            if let any = any as? StepOutput {
+                return .success(any)
+            } else {
+                return .failure(MiddlewareStepError.castingError("failed to cast any to step output in step handler"))
+            }
+        }
+        }
+        return .failure(MiddlewareStepError.castingError("failed to caset input to handler input which should be any"))
+    }
+}

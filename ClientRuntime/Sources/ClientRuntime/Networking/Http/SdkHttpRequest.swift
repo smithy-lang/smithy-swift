@@ -56,3 +56,67 @@ extension SdkHttpRequest {
         return httpRequest
     }
 }
+
+public class SdkHttpRequestBuilder {
+    
+    public init() {}
+
+    var headers: Headers = Headers()
+    var methodType: HttpMethodType = .get
+    //TODO: figure out what host should be if anything?
+    var host: String = ""
+    var path: String = "/"
+    var body: HttpBody = .none
+    var queryItems: [URLQueryItem]? = nil
+
+    // We follow the convention of returning the builder object
+    // itself from any configuration methods, and by adding the
+    // @discardableResult attribute we won't get warnings if we
+    // don't end up doing any chaining.
+    @discardableResult
+    public func withHeaders(value: Headers) -> SdkHttpRequestBuilder {
+        self.headers = value
+        return self
+    }
+    
+    @discardableResult
+    public func withMethod(value: HttpMethodType) -> SdkHttpRequestBuilder {
+        self.methodType = value
+        return self
+    }
+
+    
+    @discardableResult
+    public func withHost(value: String) -> SdkHttpRequestBuilder {
+        self.host = value
+        return self
+    }
+    
+    @discardableResult
+    public func withPath(value: String) -> SdkHttpRequestBuilder {
+        self.path = value
+        return self
+    }
+    
+    
+    @discardableResult
+    public func withBody(value: HttpBody) -> SdkHttpRequestBuilder {
+        self.body = value
+        return self
+    }
+    
+    @discardableResult
+    public func withQueryItems(value: [URLQueryItem]) -> SdkHttpRequestBuilder {
+        self.queryItems = value
+        return self
+    }
+
+    public func build() -> SdkHttpRequest {
+        let endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        return SdkHttpRequest(method: methodType,
+                              endpoint: endpoint,
+                              headers: headers,
+                              queryItems: queryItems,
+                              body: body)
+    }
+}

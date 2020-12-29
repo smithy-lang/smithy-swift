@@ -8,13 +8,13 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public struct BuildStep<Output: HttpResponseBinding>: MiddlewareStack {
+public struct BuildStep: MiddlewareStack {
 
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequest, Output> = OrderedGroup<SdkHttpRequest, Output>()
+    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder> = OrderedGroup<SdkHttpRequestBuilder, SdkHttpRequestBuilder>()
     
     public var id: String = "BuildStep"
     
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = SdkHttpRequestBuilder
     
-    public typealias MOutput = Output
+    public typealias MOutput = SdkHttpRequestBuilder
 }
