@@ -36,7 +36,9 @@ service Example {
         IdempotencyTokenWithHttpHeader,
         IdempotencyTokenWithHttpPayloadTraitOnToken,
         IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember,
-        IdempotencyTokenWithoutHttpPayloadTraitOnToken
+        IdempotencyTokenWithoutHttpPayloadTraitOnToken,
+        InlineDocument,
+        InlineDocumentAsPayload
     ]
 }
 
@@ -95,6 +97,32 @@ operation JsonMaps {
 operation NestedShapes {
     input: NestedShapesInputOutput,
     output: NestedShapesInputOutput
+}
+
+/// This example serializes an inline document as part of the payload.
+@idempotent
+@http(uri: "/InlineDocument", method: "PUT")
+operation InlineDocument {
+    input: InlineDocumentInputOutput,
+    output: InlineDocumentInputOutput
+}
+
+/// This example serializes an inline document as the entire HTTP payload.
+@idempotent
+@http(uri: "/InlineDocumentAsPayload", method: "PUT")
+operation InlineDocumentAsPayload {
+    input: InlineDocumentAsPayloadInputOutput,
+    output: InlineDocumentAsPayloadInputOutput
+}
+
+structure InlineDocumentAsPayloadInputOutput {
+    @httpPayload
+    documentValue: Document,
+}
+
+structure InlineDocumentInputOutput {
+    stringValue: String,
+    documentValue: Document,
 }
 
 structure NestedShapesInputOutput {
