@@ -22,23 +22,12 @@ public class SdkHttpClient {
                                                                              DeserializeOutput<Output,
                                                                                                OutputError>,
                                                                              HttpContext> {
-
+        let clientHandler = ClientHandler<Output, OutputError>(engine: engine)
+        return clientHandler.eraseToAnyHandler()
     }
     
-//    public func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
-//        execute(request: input) { (httpResult) -> Result<HttpResponse, Error> in
-//            switch httpResult {
-//            case .failure(let httpClientErr):
-//                return .failure(ClientError.networkError(httpClientErr))
-//            case .success(let httpResponse):
-//                let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
-//                return .success(output)
-//            }
-//        }
-//    }
-    
     func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
-        engine.execute(request: request, completion: completion)
+        engine.executeWithClosure(request: request, completion: completion)
     }
     
     public func close() {
@@ -51,19 +40,19 @@ public class SdkHttpClient {
 struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
     let engine: HttpClientEngine
     func handle(context: HttpContext, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
-    engine.execute(request: input) { (result) -> Result<HttpResponse, Error> in
-            return result.map { (httpResponse) -> Result<DeserializeOutput<Output, OutputError>, Error> in
-                let output = DeserializeOutput<Output, OutputError>(httpResponse: HttpResponse)
-                return output
-            }
+        let result = engine.execute(request: input)
+        do {
+            let httpResponse = try result.get()
+            let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+            return .success(output)
+        } catch let err {
+            return .failure(err)
         }
-        
     }
-    
-    
+
     typealias Input = SdkHttpRequest
-    
+
     typealias Output = DeserializeOutput<Output, OutputError>
-    
+
     typealias Context = HttpContext
 }

@@ -42,8 +42,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                       subject: StackInput,
-                                      next: H) -> Result<DeserializeOutput<StackOutput, StackError>,
-                                                         Error> where H.Input == SdkHttpRequest,
+                                      next: H) -> SdkResult<StackOutput, StackError> where H.Input == SdkHttpRequest,
                                                                       H.Output == DeserializeOutput<StackOutput,
                                                                                                     StackError>,
                                                                       H.Context == HttpContext {
@@ -80,13 +79,23 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         //kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: subject)
         
-        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
+        let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                       Error> in
             //have to match the result because types
             if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
                 return .success(result)
             } else {
                 return .failure(MiddlewareStepError.castingError("casted from operation stack failed"))
+            }
+        }
+        switch castedResult {
+        case .failure(let error):
+            return .failure(.unknown(error))
+        case .success(let output):
+            if let stackError = output.error {
+                return .failure(.service(stackError))
+            } else {
+                return .success(output.output!) //output should not be nil here ever if error is nil
             }
         }
     }

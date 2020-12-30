@@ -7,6 +7,12 @@ import Foundation
 @testable import ClientRuntime
 
 class MockHttpClientEngine: HttpClientEngine {
+    func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {
+        let future = SdkFuture<HttpResponse>()
+        future.fulfill(successHttpResponse(request: request))
+        return future
+    }
+    
     func close() {
         //do nothing cuz fake engine
     }
@@ -15,7 +21,7 @@ class MockHttpClientEngine: HttpClientEngine {
         return HttpResponse(body: HttpBody.empty, statusCode: HttpStatusCode.ok)
     }
     
-    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+    func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         completion(.success(successHttpResponse(request: request)))
     }
 }
