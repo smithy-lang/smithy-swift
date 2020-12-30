@@ -415,4 +415,90 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
  """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it creates a unit test for inline document`() {
+        val contents = getTestFileContents("example", "InlineDocumentRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+    func testInlineDocumentInput() {
+        let expected = buildExpectedHttpRequest(
+            method: .put,
+            path: "/InlineDocument",
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            queryParams: [String](),
+            body: ""${'"'}
+            {
+                "stringValue": "string",
+                "documentValue": {
+                    "foo": "bar"
+                }
+            }
+            ""${'"'},
+            host: host
+        )
+
+        let input = InlineDocumentInput(
+            documentValue: ,
+            stringValue: "string"
+        )
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/InlineDocument", encoder: encoder)
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+ """
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates a unit test for inline document as payload`() {
+        val contents = getTestFileContents("example", "InlineDocumentAsPayloadRequestTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+    func testInlineDocumentAsPayloadInput() {
+        let expected = buildExpectedHttpRequest(
+            method: .put,
+            path: "/InlineDocumentAsPayload",
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            queryParams: [String](),
+            body: ""${'"'}
+            {
+                "foo": "bar"
+            }
+            ""${'"'},
+            host: host
+        )
+
+        let input = InlineDocumentAsPayloadInput(
+            documentValue:
+        )
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            let actual = try input.buildHttpRequest(method: .put, path: "/InlineDocumentAsPayload", encoder: encoder)
+            assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+            })
+        } catch let err {
+            XCTFail("Failed to encode the input. Error description: \(err)")
+        }
+ """
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
