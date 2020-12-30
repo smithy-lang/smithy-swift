@@ -23,10 +23,10 @@
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
-        var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
+        var stack = OperationStack<TestInput, TestOutput, TestError>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after, middleware: TestSerializeMiddleware(id: "TestMiddleware"))
         
-        stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput>(id: "TestDeserializeMiddleware"))
+        stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput, TestError>(id: "TestDeserializeMiddleware"))
         let input = TestInput()
         
         let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
@@ -47,7 +47,8 @@
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
-        var stack = OperationStack<TestInput, TestOutput>(id: "Test Operation")
+        var stack = OperationStack<TestInput, TestOutput, TestError>(id: "Test Operation")
+        stack.addDefaultOperationMiddlewares()
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
             
             return next.handle(context: context, input: input)
@@ -77,20 +78,21 @@
     }
  }
  
- struct TestHandler<Output: HttpResponseBinding>: Handler {
+ struct TestHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
+    
     typealias Context = HttpContext
     
-    func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output>, Error> {
+    func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
         XCTAssert(input.headers.value(for: "Test") == "Value")
         //we pretend made a request here to a mock client and are returning a 200 response
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-        let output = DeserializeOutput<Output>(httpResponse: httpResponse)
+        let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
         return .success(output)
     }
     
     typealias Input = SdkHttpRequest
     
-    typealias Output = DeserializeOutput<Output>
+    typealias Output = DeserializeOutput<Output, OutputError>
  }
  
  struct TestSerializeMiddleware: Middleware {
@@ -109,10 +111,11 @@
     typealias MInput = SdkHttpRequestBuilder
  }
  
- struct TestDeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
+ struct TestDeserializeMiddleware<Output: HttpResponseBinding,
+                                  OutputError: HttpResponseBinding>: Middleware where OutputError: Error{
     var id: String
     
-    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output>, Error> where H: Handler,
+    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output, OutputError>, Error> where H: Handler,
                                                                                                                        Self.MInput == H.Input,
                                                                                                                        Self.MOutput == H.Output,
                                                                                                                        Self.Context == H.Context {
@@ -121,7 +124,7 @@
         do {
             let successResponse = try response.get()
             var copiedResponse = successResponse
-            if let httpResponse = successResponse.httpResponse {
+            if let httpResponse = copiedResponse.httpResponse {
                 let decoder = JSONDecoder()
                 let output = try Output(httpResponse: httpResponse, decoder: decoder)
                 copiedResponse.output = output
@@ -136,7 +139,7 @@
     }
     
     typealias MInput = SdkHttpRequest
-    typealias MOutput = DeserializeOutput<Output>
+    typealias MOutput = DeserializeOutput<Output, OutputError>
     typealias Context = HttpContext
  }
  
@@ -151,4 +154,13 @@
     init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {
         self.value = httpResponse.statusCode.rawValue
     }
+ }
+
+ public enum TestError: Error {
+     case unknown(Error)
+ }
+ extension TestError: HttpResponseBinding {
+     public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+        try self.init(httpResponse: httpResponse)
+     }
  }

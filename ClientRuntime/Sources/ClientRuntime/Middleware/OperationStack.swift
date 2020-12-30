@@ -1,7 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpResponseBinding> {
+public struct OperationStack<StackInput: HttpRequestBinding,
+                             StackOutput: HttpResponseBinding,
+                             StackError: HttpResponseBinding> where StackError: Error {
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
                                                         SdkHttpRequestBuilder>
     typealias SerializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
@@ -11,7 +13,7 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                       SdkHttpRequest>
     typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
-                                                         DeserializeOutput<StackOutput>>
+                                                         DeserializeOutput<StackOutput, StackError>>
     
     ///returns the unique id for the operation stack as middleware
     public var id: String
@@ -19,7 +21,7 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
     public var buildStep: BuildStep
     public var serializeStep: SerializeStep
     public var finalizeStep: FinalizeStep
-    public var deserializeStep: DeserializeStep<StackOutput>
+    public var deserializeStep: DeserializeStep<StackOutput, StackError>
     
     public init(id: String) {
         self.id = id
@@ -27,15 +29,21 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
         self.serializeStep = SerializeStep()
         self.buildStep = BuildStep()
         self.finalizeStep = FinalizeStep()
-        self.deserializeStep = DeserializeStep<StackOutput>()
+        self.deserializeStep = DeserializeStep<StackOutput, StackError>()
     }
     
+        /// This function if called adds all default middlewares to a typical sdk operation, can optionally call from the service client inside an operation
+    mutating func addDefaultOperationMiddlewares() {
+        deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<StackOutput, StackError>())
+
+    }
+
     /// This execute will execute the stack and use your next as the last closure in the chain
     func handleMiddleware<H: Handler>(context: HttpContext,
                                       subject: StackInput,
-                                      next: H) -> Result<DeserializeOutput<StackOutput>,
+                                      next: H) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                          Error> where H.Input == SdkHttpRequest,
-                                                                      H.Output == DeserializeOutput<StackOutput>,
+                                                                      H.Output == DeserializeOutput<StackOutput, StackError>,
                                                                       H.Context == HttpContext {
         // create all the steps to link them as one middleware chain, each step has its own handler to convert the
         // types except the last link in the chain
@@ -59,7 +67,7 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
                      deserializeStackStep.eraseToAnyMiddleware()]
         
         let wrappedHandler = StepHandler<SdkHttpRequest,
-                                         DeserializeOutput<StackOutput>,
+                                         DeserializeOutput<StackOutput, StackError>,
                                          Any,
                                          Any,
                                          HttpContext>(next: next.eraseToAnyHandler())
@@ -70,10 +78,10 @@ public struct OperationStack<StackInput: HttpRequestBinding, StackOutput: HttpRe
         //kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: subject)
         
-        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput>,
+        return result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                       Error> in
             //have to match the result because types
-            if let result = anyResult as? DeserializeOutput<StackOutput> {
+            if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
                 return .success(result)
             } else {
                 return .failure(MiddlewareStepError.castingError("casted from operation stack failed"))
