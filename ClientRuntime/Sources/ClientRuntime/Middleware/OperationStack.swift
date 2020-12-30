@@ -41,11 +41,11 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
-                                      subject: StackInput,
-                                      next: H) -> SdkResult<StackOutput, StackError> where H.Input == SdkHttpRequest,
-                                                                      H.Output == DeserializeOutput<StackOutput,
-                                                                                                    StackError>,
-                                                                      H.Context == HttpContext {
+                                             subject: StackInput,
+                                             next: H) -> SdkResult<StackOutput, StackError> where H.Input == SdkHttpRequest,
+                                                                                                  H.Output == DeserializeOutput<StackOutput,
+                                                                                                                                StackError>,
+                                                                                                  H.Context == HttpContext {
         // create all the steps to link them as one middleware chain, each step has its own handler to convert the
         // types except the last link in the chain
         let initializeStackStep = InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
@@ -80,7 +80,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         let result = handler.handle(context: context, input: subject)
         
         let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
-                                                      Error> in
+                                                                  Error> in
             //have to match the result because types
             if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
                 return .success(result)

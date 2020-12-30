@@ -36,7 +36,6 @@ public class SdkHttpClient {
     
 }
 
-
 struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
     let engine: HttpClientEngine
     func handle(context: HttpContext, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {

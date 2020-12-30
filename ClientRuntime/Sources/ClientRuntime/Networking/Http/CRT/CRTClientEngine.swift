@@ -105,28 +105,30 @@ class CRTClientEngine: HttpClientEngine {
             }
         }()
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
-        let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection().chained { (connectionResult) -> Future<HttpResponse> in
-            self.logger.debug("connection was acquired to: \(request.endpoint.urlString)")
-            let (requestOptions, future) = isStreaming ? self.makeHttpRequestStreamOptions(request) : self.makeHttpRequestOptions(request)
-            switch connectionResult {
+        let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection()
+            .chained { (connectionResult) -> Future<HttpResponse> in
+                self.logger.debug("connection was acquired to: \(request.endpoint.urlString)")
+                let (requestOptions, future) = isStreaming ?
+                    self.makeHttpRequestStreamOptions(request): self.makeHttpRequestOptions(request)
+                switch connectionResult {
                 case .failure(let error):
                     future.fail(error)
-            case .success(let connection):
-                let stream = connection.makeRequest(requestOptions: requestOptions)
-                stream.activate()
-                //map status code once call comes back
-                future.then { (responseResult) in
-                    _ = responseResult.map { (response) -> HttpResponse in
-                      self.logger.debug("Future of response came back with success: \(response)")
-                       let statusCode = Int(stream.getResponseStatusCode())
-                       response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
-                       return response
+                case .success(let connection):
+                    let stream = connection.makeRequest(requestOptions: requestOptions)
+                    stream.activate()
+                    //map status code once call comes back
+                    future.then { (responseResult) in
+                        _ = responseResult.map { (response) -> HttpResponse in
+                            self.logger.debug("Future of response came back with success: \(response)")
+                            let statusCode = Int(stream.getResponseStatusCode())
+                            response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
+                            return response
+                        }
                     }
                 }
+                
+                return future
             }
-            
-            return future
-        }
         return httpResponseFuture
     }
     
@@ -174,13 +176,13 @@ class CRTClientEngine: HttpClientEngine {
                     future.fail(error)
                 }
             }
-             
+            
             if let streamSink = streamSink {
                 response.body = HttpBody.streamSink(.provider(streamSink))
             } else {
                 response.body = HttpBody.none
             }
-    
+            
             future.fulfill(response)
         }
         
@@ -193,7 +195,7 @@ class CRTClientEngine: HttpClientEngine {
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
-
+        
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
