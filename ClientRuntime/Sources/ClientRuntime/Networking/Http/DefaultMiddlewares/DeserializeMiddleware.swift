@@ -8,12 +8,14 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<DeserializeOutput<Output,OutputError>,Error> where H: Handler,
-                                                                                                Self.MInput == H.Input,
-                                                                                                Self.MOutput == H.Output,
-                                                                                                Self.Context == H.Context {
+                          next: H) -> Result<DeserializeOutput<Output, OutputError>, Error>
+    where H: Handler,
+          Self.MInput == H.Input,
+          Self.MOutput == H.Output,
+          Self.Context == H.Context {
+        
         let decoder = context.getDecoder()
-        let response = next.handle(context: context, input: input) //call handler to get fake response of http response
+        let response = next.handle(context: context, input: input) //call handler to get http response
         return response.flatMap { (deserializeOutput) -> Result<DeserializeOutput<Output, OutputError>, Error> in
             var copiedResponse = deserializeOutput
             do {

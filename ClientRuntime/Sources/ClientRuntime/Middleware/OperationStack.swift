@@ -32,18 +32,20 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         self.deserializeStep = DeserializeStep<StackOutput, StackError>()
     }
     
-        /// This function if called adds all default middlewares to a typical sdk operation, can optionally call from the service client inside an operation
+    /// This function if called adds all default middlewares to a typical sdk operation,
+    ///  can optionally call from the service client inside an operation
     mutating func addDefaultOperationMiddlewares() {
         deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<StackOutput, StackError>())
-
+        
     }
-
+    
     /// This execute will execute the stack and use your next as the last closure in the chain
     func handleMiddleware<H: Handler>(context: HttpContext,
                                       subject: StackInput,
                                       next: H) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                          Error> where H.Input == SdkHttpRequest,
-                                                                      H.Output == DeserializeOutput<StackOutput, StackError>,
+                                                                      H.Output == DeserializeOutput<StackOutput,
+                                                                                                    StackError>,
                                                                       H.Context == HttpContext {
         // create all the steps to link them as one middleware chain, each step has its own handler to convert the
         // types except the last link in the chain
