@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public struct DeserializeMiddleware<Output: HttpResponseBinding,
-                                    OutputError: HttpResponseBinding>: Middleware where OutputError: Error {
+                                    OutputError: HttpResponseBinding>: Middleware {
     
     public var id: String = "Deserialize"
     

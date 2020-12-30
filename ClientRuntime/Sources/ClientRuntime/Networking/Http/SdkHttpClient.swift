@@ -17,46 +17,53 @@ public class SdkHttpClient {
         }
     }
     
-    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
-        engine.execute(request: request, completion: completion)
+    public func getHandler<Output: HttpResponseBinding,
+                           OutputError: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
+                                                                             DeserializeOutput<Output,
+                                                                                               OutputError>,
+                                                                             HttpContext> {
+
     }
     
-    //to be removed
-    public func execute<OutputType, OutputError>(context: Context<OutputType, OutputError>,
-                                                 completion: @escaping (SdkResult<OutputType, OutputError>) -> Void) {
-        
-        engine.execute(request: context.request) { (httpResult) in
-            
-            switch httpResult {
-            case .failure(let httpClientErr):
-                completion(.failure(.client(ClientError.networkError(httpClientErr))))
-                return
-                
-            case .success(let httpResponse):
-                if (200..<300).contains(httpResponse.statusCode.rawValue) {
-                    do {
-                        let output = try OutputType(httpResponse: httpResponse,
-                                                    decoder: context.decoder)
-                        completion(.success(output))
-                    } catch let err {
-                        completion(.failure(.client(.deserializationFailed(err))))
-                        return
-                    }
-                } else {
-                    do {
-                        let error = try OutputError(httpResponse: httpResponse,
-                                                    decoder: context.decoder)
-                        completion(.failure(SdkError.service(error)))
-                    } catch let err {
-                        completion(.failure(.client(.deserializationFailed(err))))
-                        return
-                    }
-                }
-            }
-        }
+//    public func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+//        execute(request: input) { (httpResult) -> Result<HttpResponse, Error> in
+//            switch httpResult {
+//            case .failure(let httpClientErr):
+//                return .failure(ClientError.networkError(httpClientErr))
+//            case .success(let httpResponse):
+//                let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+//                return .success(output)
+//            }
+//        }
+//    }
+    
+    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+        engine.execute(request: request, completion: completion)
     }
     
     public func close() {
         engine.close()
     }
+    
+}
+
+
+struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
+    let engine: HttpClientEngine
+    func handle(context: HttpContext, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+    engine.execute(request: input) { (result) -> Result<HttpResponse, Error> in
+            return result.map { (httpResponse) -> Result<DeserializeOutput<Output, OutputError>, Error> in
+                let output = DeserializeOutput<Output, OutputError>(httpResponse: HttpResponse)
+                return output
+            }
+        }
+        
+    }
+    
+    
+    typealias Input = SdkHttpRequest
+    
+    typealias Output = DeserializeOutput<Output, OutputError>
+    
+    typealias Context = HttpContext
 }

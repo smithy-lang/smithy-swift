@@ -10,7 +10,7 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: MiddlewareStack where OutputError: Error {
+public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: MiddlewareStack {
     
     public typealias Context = HttpContext
  
@@ -28,7 +28,7 @@ public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResp
 }
 
 // create a special output for this last step to link this step with the final handler and properly return the result
-public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> where OutputError: Error {
+public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
     var httpResponse: HttpResponse?
     var output: Output?
     var error: OutputError?
