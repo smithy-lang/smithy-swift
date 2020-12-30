@@ -6,9 +6,12 @@
  
  class MiddlewareStackTests: XCTestCase {
     let context: HttpContextBuilder = HttpContextBuilder()
+    var httpClient: SdkHttpClient!
     
     override func setUp() {
         super.setUp()
+        let httpClientConfiguration = HttpClientConfiguration()
+        httpClient = try! SdkHttpClient(config: httpClientConfiguration)
     }
     
     override func tearDown() {
@@ -76,6 +79,30 @@
             XCTFail(error.localizedDescription)
         }
     }
+    
+    func testWithClientHandler() {
+        let addContextValues = context
+            .withMethod(value: .get)
+            .withPath(value: "/get")
+            .withEncoder(value: JSONEncoder())
+            .withDecoder(value: JSONDecoder())
+            .withOperation(value: "Test Operation")
+        let builtContext = addContextValues.build()
+        var stack = OperationStack<TestInput, TestOutput, TestError>(id: "Test Operation")
+        stack.serializeStep.intercept(position: .after, middleware: TestSerializeMiddleware(id: "TestMiddleware"))
+        
+        stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput, TestError>(id: "TestDeserializeMiddleware"))
+        let input = TestInput()
+        
+        let result = stack.handleMiddleware(context: builtContext, subject: input, next: httpClient.getHandler())
+        
+        switch result {
+        case .success(let output):
+            XCTAssert(output.value == 200)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
  }
  
  struct TestHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
@@ -103,7 +130,8 @@
     var id: String
     
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
-        
+        input.withHost(value: "httpbin.org")
+        input.headers.add(name: "Content-type", value: "application/json")
         input.headers.add(name: "Test", value: "Value")
         return next.handle(context: context, input: input)
     }
