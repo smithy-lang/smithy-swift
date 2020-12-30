@@ -99,6 +99,16 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                 return .success(output.output!) //output should not be nil here ever if error is nil
             }
         }
+        switch castedResult {
+        case .failure(let error):
+            return .failure(.unknown(error))
+        case .success(let output):
+            if let stackError = output.error {
+                return .failure(.service(stackError))
+            } else {
+                return .success(output.output!) //output should not be nil here ever if error is nil
+            }
+        }
     }
     
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware

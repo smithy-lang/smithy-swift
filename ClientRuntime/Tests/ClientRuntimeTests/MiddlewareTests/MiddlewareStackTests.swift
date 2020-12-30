@@ -37,7 +37,7 @@
         
         switch result {
         case .success(let output):
-            XCTAssert(output.output?.value == 200)
+            XCTAssert(output.value == 200)
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
@@ -75,7 +75,7 @@
         
         switch result {
         case .success(let output):
-            XCTAssert(output.output?.value == 200)
+            XCTAssert(output.value == 200)
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
