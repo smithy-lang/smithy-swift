@@ -36,7 +36,6 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     ///  can optionally call from the service client inside an operation
     public mutating func addDefaultOperationMiddlewares() {
         deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<StackOutput, StackError>())
-        
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain

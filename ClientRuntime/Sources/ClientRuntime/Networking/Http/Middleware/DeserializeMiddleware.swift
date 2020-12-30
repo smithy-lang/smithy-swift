@@ -1,34 +1,42 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-//public struct DeserializeMiddleware<Output: HttpResponseBinding>: Middleware {
-//    
-//    public var id: String = "Deserialize"
-//    
-//    public init() {}
-//    
-//    public func handle<H>(context: HttpResponseContext,
-//                          result: Result<Any, Error>,
-//                          next: H) -> Result<Any, Error> where H: Handler,
-//                                                               Self.TContext == H.TContext,
-//                                                               Self.TError == H.TError,
-//                                                               Self.TSubject == H.TSubject {
-//        return result.flatMap { (_) -> Result<Any, Error> in
-//            let decoder = context.getDecoder()
-//            let httpResponse = context.response
-//            do {
-//                let output = try Output(httpResponse: httpResponse,
-//                                        decoder: decoder)
-//                return next.handle(context: context, result: .success(output))
-//            } catch let error {
-//                return next.handle(context: context, result: .failure(ClientError.deserializationFailed(error)))
-//            }
-//        }
-//    }
-//    
-//    public typealias TContext = HttpResponseContext
-//    
-//    public typealias TSubject = Any
-//    
-//    public typealias TError = Error
-//}
+public struct DeserializeMiddleware<Output: HttpResponseBinding,
+                                    OutputError: HttpResponseBinding>: Middleware where OutputError: Error {
+    
+    public var id: String = "Deserialize"
+    
+    public func handle<H>(context: Context,
+                          input: SdkHttpRequest,
+                          next: H) -> Result<DeserializeOutput<Output,OutputError>,Error> where H: Handler,
+                                                                                                Self.MInput == H.Input,
+                                                                                                Self.MOutput == H.Output,
+                                                                                                Self.Context == H.Context {
+        let decoder = context.getDecoder()
+        let response = next.handle(context: context, input: input) //call handler to get fake response of http response
+        return response.flatMap { (deserializeOutput) -> Result<DeserializeOutput<Output, OutputError>, Error> in
+            var copiedResponse = deserializeOutput
+            do {
+                if let httpResponse = copiedResponse.httpResponse {
+                    if (200..<300).contains(httpResponse.statusCode.rawValue) {
+                        let output = try Output(httpResponse: httpResponse, decoder: decoder)
+                        copiedResponse.output = output
+                        return .success(copiedResponse)
+                    } else {
+                        let error = try OutputError(httpResponse: httpResponse, decoder: decoder)
+                        copiedResponse.error = error
+                        return .success(copiedResponse)
+                    }
+                } else {
+                    return .failure(ClientError.unknownError("Http response was nil which should never happen"))
+                }
+            } catch let err {
+                return .failure(ClientError.deserializationFailed(err))
+            }
+        }
+    }
+    
+    public typealias MInput = SdkHttpRequest
+    public typealias MOutput = DeserializeOutput<Output, OutputError>
+    public typealias Context = HttpContext
+}
