@@ -25,13 +25,6 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
-        val ignoredTests = setOf(
-            // FIXME - document type not fully supported yet
-            "InlineDocumentInput",
-            "InlineDocumentAsPayloadInput",
-            "InlineDocumentOutput",
-            "InlineDocumentAsPayloadInputOutput"
-        )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
@@ -41,8 +34,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             ctx,
             requestTestBuilder,
             responseTestBuilder,
-            errorTestBuilder,
-            ignoredTests
+            errorTestBuilder
         ).generateProtocolTests()
     }
 }
@@ -355,6 +347,32 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
         self.status = httpResponse.statusCode.rawValue
+    }
+}
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `decode the document type in HttpResponseBinding`() {
+        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+ResponseInit.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
+    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+
+        if case .data(let data) = httpResponse.body,
+           let unwrappedData = data {
+            if let responseDecoder = decoder {
+                let output: Document = try responseDecoder.decode(responseBody: unwrappedData)
+                self.documentValue = output
+            } else {
+                self.documentValue = nil
+            }
+        } else {
+            self.documentValue = nil
+        }
     }
 }
             """.trimIndent()

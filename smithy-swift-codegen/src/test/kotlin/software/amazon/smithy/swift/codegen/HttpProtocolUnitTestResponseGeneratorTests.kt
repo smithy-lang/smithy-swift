@@ -292,4 +292,107 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `it creates a response unit test for inline document`() {
+        val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+    func testInlineDocumentOutput() {
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "Content-Type": "application/json"
+                ],
+                content: HttpBody.data(""${'"'}
+                {
+                    "stringValue": "string",
+                    "documentValue": {
+                        "foo": "bar"
+                    }
+                }
+                ""${'"'}.data(using: .utf8)),
+                host: host
+            ) else {
+                XCTFail("Something is wrong with the created http response")
+                return
+            }
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            let actual = try InlineDocumentOutput(httpResponse: httpResponse, decoder: decoder)
+
+            let expected = InlineDocumentOutput(
+                documentValue: Document(
+                    dictionaryLiteral:
+                    (
+                        "foo",
+                        Document(
+                            "bar")
+                    )
+                )
+                ,
+                stringValue: "string"
+            )
+
+            XCTAssertEqual(expected.stringValue, actual.stringValue)
+            XCTAssertEqual(expected.documentValue, actual.documentValue)
+
+        } catch let err {
+            XCTFail(err.localizedDescription)
+        }
+ """
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates a response unit test for inline document as payload`() {
+        val contents = getTestFileContents("example", "InlineDocumentAsPayloadResponseTest.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+                """
+    func testInlineDocumentAsPayloadInputOutput() {
+        do {
+            guard let httpResponse = buildHttpResponse(
+                code: 200,
+                headers: [
+                    "Content-Type": "application/json"
+                ],
+                content: HttpBody.data(""${'"'}
+                {
+                    "foo": "bar"
+                }
+                ""${'"'}.data(using: .utf8)),
+                host: host
+            ) else {
+                XCTFail("Something is wrong with the created http response")
+                return
+            }
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            let actual = try InlineDocumentAsPayloadOutput(httpResponse: httpResponse, decoder: decoder)
+
+            let expected = InlineDocumentAsPayloadOutput(
+                documentValue: Document(
+                    dictionaryLiteral:
+                    (
+                        "foo",
+                        Document(
+                            "bar")
+                    )
+                )
+
+            )
+
+            XCTAssertEqual(expected.documentValue, actual.documentValue)
+
+        } catch let err {
+            XCTFail(err.localizedDescription)
+        }
+ """
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }

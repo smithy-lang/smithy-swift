@@ -51,7 +51,7 @@ class SymbolProviderTest : TestsBase() {
         "PrimitiveDouble, Double, 0.0, false,",
         "Boolean, Bool, nil, true,",
         "PrimitiveBoolean, Bool, false, false,",
-        "Document, JSONValue, nil, true, ClientRuntime"
+        "Document, Document, nil, true, ClientRuntime"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$primitiveType").build()

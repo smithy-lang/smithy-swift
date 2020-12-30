@@ -663,7 +663,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     // TODO deal with document type
-                    writer.write("self.\$L = nil", memberName)
+                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
+                        writer.write(
+                                "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                                symbol.name
+                        )
+                        writer.write("self.\$L = output", memberName)
+                    }
+                    writer.indent()
+                    writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
