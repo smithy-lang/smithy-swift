@@ -80,7 +80,7 @@
         }
     }
     
-    func testWithClientHandler() {
+    func testFullBlownOperationRequestWithClientHandler() {
         let addContextValues = context
             .withMethod(value: .get)
             .withPath(value: "/get")
@@ -143,10 +143,11 @@
                                   OutputError: HttpResponseBinding>: Middleware where OutputError: Error{
     var id: String
     
-    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output, OutputError>, Error> where H: Handler,
-                                                                                                                       Self.MInput == H.Input,
-                                                                                                                       Self.MOutput == H.Output,
-                                                                                                                       Self.Context == H.Context {
+    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output, OutputError>, Error>
+    where H: Handler,
+          Self.MInput == H.Input,
+          Self.MOutput == H.Output,
+          Self.Context == H.Context {
         //mock client to fake return of request
         let response = next.handle(context: context, input: input) //call handler to get fake response of http response
         do {
@@ -183,12 +184,12 @@
         self.value = httpResponse.statusCode.rawValue
     }
  }
-
+ 
  public enum TestError: Error {
-     case unknown(Error)
+    case unknown(Error)
  }
  extension TestError: HttpResponseBinding {
-     public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+    public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         try self.init(httpResponse: httpResponse)
-     }
+    }
  }
