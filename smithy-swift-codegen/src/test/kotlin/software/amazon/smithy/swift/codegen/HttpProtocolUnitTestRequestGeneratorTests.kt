@@ -442,7 +442,15 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         )
 
         let input = InlineDocumentInput(
-            documentValue: ,
+            documentValue: Document(
+                dictionaryLiteral:
+                (
+                    "foo",
+                    Document(
+                        "bar")
+                )
+            )
+            ,
             stringValue: "string"
         )
         do {
@@ -484,7 +492,15 @@ class HttpProtocolUnitTestRequestGeneratorTests : TestsBase() {
         )
 
         let input = InlineDocumentAsPayloadInput(
-            documentValue:
+            documentValue: Document(
+                dictionaryLiteral:
+                (
+                    "foo",
+                    Document(
+                        "bar")
+                )
+            )
+
         )
         do {
             let encoder = JSONEncoder()

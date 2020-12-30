@@ -269,7 +269,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "JSONValue", "ClientRuntime", true)
+        return createSymbolBuilder(shape, "Document", "ClientRuntime", true)
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .build()
     }

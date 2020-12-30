@@ -325,7 +325,15 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
             let actual = try InlineDocumentOutput(httpResponse: httpResponse, decoder: decoder)
 
             let expected = InlineDocumentOutput(
-                documentValue: ,
+                documentValue: Document(
+                    dictionaryLiteral:
+                    (
+                        "foo",
+                        Document(
+                            "bar")
+                    )
+                )
+                ,
                 stringValue: "string"
             )
 
@@ -368,7 +376,15 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
             let actual = try InlineDocumentAsPayloadOutput(httpResponse: httpResponse, decoder: decoder)
 
             let expected = InlineDocumentAsPayloadOutput(
-                documentValue:
+                documentValue: Document(
+                    dictionaryLiteral:
+                    (
+                        "foo",
+                        Document(
+                            "bar")
+                    )
+                )
+
             )
 
             XCTAssertEqual(expected.documentValue, actual.documentValue)

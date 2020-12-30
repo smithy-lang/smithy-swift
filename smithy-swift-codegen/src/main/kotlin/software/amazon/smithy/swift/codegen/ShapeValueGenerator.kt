@@ -222,7 +222,17 @@ class ShapeValueGenerator(
                         }
                     }
                     is DocumentShape -> {
-                        // TODO - deal with document shapes
+                        val documentValue = generator.symbolProvider.toSymbol(currShape).name
+                        writer.openBlock("$documentValue( ", ")") {
+                            writer.write("dictionaryLiteral:")
+                            writer.openBlock("(", ")") {
+                                keyNode.accept(this)
+                                writer.write(",").insertTrailingNewline()
+                                writer.openBlock("$documentValue(", ")") {
+                                    valueNode.accept(this)
+                                }
+                            }
+                        }
                     }
                     is UnionShape -> {
                         val member = currShape.getMember(keyNode.value).orElseThrow {
