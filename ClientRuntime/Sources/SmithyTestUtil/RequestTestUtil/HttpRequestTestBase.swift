@@ -36,7 +36,6 @@ open class HttpRequestTestBase: XCTestCase {
             builder.withHeader(name: headerName, value: headerValue)
         }
         
-        
         guard let body = body else {
             return builder.build()
         }
@@ -89,7 +88,6 @@ open class HttpRequestTestBase: XCTestCase {
         
         // assert Endpoints match
         assertEqualQueryItems(expected.queryItems, actual.queryItems)
-        
         
         // assert the contents of HttpBody match
         assertEqualHttpBody(expected.body, actual.body)
