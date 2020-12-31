@@ -120,10 +120,10 @@ extension CodableRequest: HttpRequestBinding {
 
         let body = HttpBody.data(try encoder.encode(self))
         let builder = SdkHttpRequestBuilder()
-            .withBody(value: body)
-            .withPath(value: path)
-            .withHost(value: "codegened-host-for-service")
-            .withMethod(value: method)
+            .withBody(body)
+            .withPath(path)
+            .withHost("codegened-host-for-service")
+            .withMethod(method)
         return builder
     }
 }
@@ -132,9 +132,9 @@ extension CodableXMLRequest: HttpRequestBinding {
 
     func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
         let builder = SdkHttpRequestBuilder()
-            .withPath(value: path)
-            .withHost(value: "codegened-host-for-service")
-            .withMethod(value: method)
+            .withPath(path)
+            .withHost("codegened-host-for-service")
+            .withMethod(method)
         return builder
     }
 }
@@ -142,9 +142,9 @@ extension CodableXMLRequest: HttpRequestBinding {
 extension CodableRequestThatThrows: HttpRequestBinding {
     func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
         let builder = SdkHttpRequestBuilder()
-            .withPath(value: path)
-            .withHost(value: "codegened-host-for-service")
-            .withMethod(value: method)
+            .withPath(path)
+            .withHost("codegened-host-for-service")
+            .withMethod(method)
         return builder
     }
 }
@@ -154,10 +154,10 @@ extension CodableRequestWithPayload: HttpRequestBinding {
 
         let body = HttpBody.data(self.payload)
         let builder = SdkHttpRequestBuilder()
-            .withBody(value: body)
-            .withPath(value: path)
-            .withHost(value: "codegened-host-for-service")
-            .withMethod(value: method)
+            .withBody(body)
+            .withPath(path)
+            .withHost("codegened-host-for-service")
+            .withMethod(method)
         return builder
     }
 }

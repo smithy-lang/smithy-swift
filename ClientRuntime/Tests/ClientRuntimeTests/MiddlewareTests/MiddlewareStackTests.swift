@@ -32,7 +32,7 @@
         stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput, TestError>(id: "TestDeserializeMiddleware"))
         let input = TestInput()
         
-        let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
+        let result = stack.handleMiddleware(context: builtContext, input: input, next: TestHandler())
         
         switch result {
         case .success(let output):
@@ -70,7 +70,7 @@
         
         let input = TestInput()
         
-        let result = stack.handleMiddleware(context: builtContext, subject: input, next: TestHandler())
+        let result = stack.handleMiddleware(context: builtContext, input: input, next: TestHandler())
         
         switch result {
         case .success(let output):
@@ -94,7 +94,7 @@
         stack.deserializeStep.intercept(position: .after, middleware: TestDeserializeMiddleware<TestOutput, TestError>(id: "TestDeserializeMiddleware"))
         let input = TestInput()
         
-        let result = stack.handleMiddleware(context: builtContext, subject: input, next: httpClient.getHandler())
+        let result = stack.handleMiddleware(context: builtContext, input: input, next: httpClient.getHandler())
         
         switch result {
         case .success(let output):
@@ -130,7 +130,7 @@
     var id: String
     
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
-        input.withHost(value: "httpbin.org")
+        input.withHost("httpbin.org")
         input.headers.add(name: "Content-type", value: "application/json")
         input.headers.add(name: "Test", value: "Value")
         return next.handle(context: context, input: input)
