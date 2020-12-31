@@ -876,6 +876,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     writer.write("return builder")
                 }
+
             }
             writer.write("")
         }
