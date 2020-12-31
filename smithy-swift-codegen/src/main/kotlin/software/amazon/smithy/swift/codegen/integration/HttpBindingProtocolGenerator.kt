@@ -865,49 +865,43 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {",
+                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
                     "}"
                 ) {
+                    writer.write("let builder = SdkHttpRequestBuilder()")
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
-                    // TODO:: Replace host appropriately
-                    writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
                     renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
-                    renderEncodedBodyAndReturn(ctx, writer, inputShape, requestBindings)
+                    if (hasHttpBody) {
+                        renderEncodedBody(ctx, writer, inputShape, requestBindings)
+                    }
+                    writer.write("return builder")
                 }
+
             }
             writer.write("")
         }
     }
 
-    private fun renderEncodedBodyAndReturn(
+    private fun renderEncodedBody(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         inputShape: Shape,
         requestBindings: Map<String, HttpBinding>
     ) {
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+
         val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
-        if (hasHttpBody) {
-            var optionalTerminator = ""
-
-            if (httpPayload != null) {
-                val shape = ctx.model.expectShape(httpPayload.member.target)
-                optionalTerminator = if (ctx.symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
-                renderSerializeExplicitPayload(ctx, httpPayload, writer)
-            } else {
-                writer.openBlock("if try !self.allPropertiesAreNull() {", "} else {") {
-                    writer.write("let data = try encoder.encode(self)")
-                    writer.write("let body = HttpBody.data(data)")
-                    writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-                    writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
-                }
-                writer.indent()
-                writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
-                writer.closeBlock("}")
-            }
+        if (httpPayload != null) {
+            val shape = ctx.model.expectShape(httpPayload.member.target)
+            renderSerializeExplicitPayload(ctx, httpPayload, writer)
         } else {
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
+            writer.openBlock("if try !self.allPropertiesAreNull() {", "}") {
+                writer.write("let data = try encoder.encode(self)")
+                writer.write("let body = HttpBody.data(data)")
+                writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
+                writer.write("builder.withBody(body)")
+
+            }
         }
     }
 
@@ -919,7 +913,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // explicit payload member as the sole payload
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
-        writer.openBlock("if let $memberName = self.$memberName {", "} else {") {
+        writer.openBlock("if let $memberName = self.$memberName {", "}") {
             when (target.type) {
                 ShapeType.BLOB -> {
                     // FIXME handle streaming properly
@@ -951,19 +945,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
 
-            writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
+            writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
+            writer.write("builder.withBody(body)")
         }
-        writer.indent()
+
         // Case where the idempotency token is null and has HttpPayload trait, as well
         if (binding.member.hasTrait(IdempotencyTokenTrait::class.java)) {
             writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
             writer.write("let body = HttpBody.data(data)")
-            writer.write("headers.add(name: \"Content-Length\", value: String(data.count))")
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)")
-        } else
-            writer.write("return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)")
-        writer.closeBlock("}")
+            writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
+            writer.write("builder.withBody(body)")
+        }
     }
 
     private fun renderQueryItems(
@@ -972,10 +964,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         queryBindings: List<HttpBinding>,
         writer: SwiftWriter
     ) {
-        writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
+
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
             val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
-            writer.write("queryItems.append(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
+            writer.write("builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
         }
 
         queryBindings.forEach {
@@ -998,7 +990,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
                         writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-                        writer.write("queryItems.append(queryItem)")
+                        writer.write("builder.withQueryItem(queryItem)")
                     }
                 } else {
                     memberName = formatHeaderOrQueryValue(
@@ -1009,13 +1001,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         bindingIndex
                     )
                     writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
-                    writer.write("queryItems.append(queryItem)")
+                    writer.write("builder.withQueryItem(queryItem)")
                 }
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
                     writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: $idempotencyTokenValue)")
-                    writer.write("queryItems.append(queryItem)")
+                    writer.write("builder.withQueryItem(queryItem)")
                 }
             }
         }
@@ -1057,10 +1049,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         hasHttpBody: Boolean
     ) {
         val bindingIndex = HttpBindingIndex.of(ctx.model)
-        writer.write("var headers = Headers()")
         // we only need the content type header in the request if there is an http body that is being sent
         if (hasHttpBody) {
-            writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
+            writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
         }
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
@@ -1079,7 +1070,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        writer.write("headers.add(name: \"$paramName\", value: String($headerValue))")
+                        writer.write("builder.withHeader(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
                     val memberNameWithExtension = formatHeaderOrQueryValue(
@@ -1089,12 +1080,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         HttpBinding.Location.HEADER,
                         bindingIndex
                     )
-                    writer.write("headers.add(name: \"$paramName\", value: String($memberNameWithExtension))")
+                    writer.write("builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
             }
             if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
                 writer.openBlock("else {", "}") {
-                    writer.write("headers.add(name: \"$paramName\", value: $idempotencyTokenValue)")
+                    writer.write("builder.withHeader(name: \"$paramName\", value: $idempotencyTokenValue)")
                 }
             }
         }
@@ -1128,10 +1119,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                         HttpBinding.Location.HEADER,
                                         bindingIndex
                                     )
-                                    writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                                    writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                                 }
                             } else {
-                                writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                                writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                             }
                         }
                     } else {
@@ -1142,7 +1133,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             HttpBinding.Location.HEADER,
                             bindingIndex
                         )
-                        writer.write("headers.add(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                        writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                     }
                 }
             }

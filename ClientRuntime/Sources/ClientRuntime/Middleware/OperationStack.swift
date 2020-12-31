@@ -41,7 +41,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
-                                             subject: StackInput,
+                                             input: StackInput,
                                              next: H) -> SdkResult<StackOutput, StackError> where H.Input == SdkHttpRequest,
                                                                                                   H.Output == DeserializeOutput<StackOutput,
                                                                                                                                 StackError>,
@@ -77,7 +77,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         let handler = compose(next: wrappedHandler, with: steps)
         
         //kicks off the entire operation of middleware stacks
-        let result = handler.handle(context: context, input: subject)
+        let result = handler.handle(context: context, input: input)
         
         let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                                   Error> in

@@ -25,6 +25,10 @@ public struct HttpContext: MiddlewareContext {
     func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))!
     }
+    
+    func getHost() -> String {
+        return attributes.get(key: AttributeKey<String>(name: "Host"))!
+    }
 }
 
 public class HttpContextBuilder {
@@ -36,6 +40,7 @@ public class HttpContextBuilder {
     let method = AttributeKey<HttpMethodType>(name: "Method")
     let path = AttributeKey<String>(name: "Path")
     let operation = AttributeKey<String>(name: "Operation")
+    let host = AttributeKey<String>(name: "Host")
     let serviceName = AttributeKey<String>(name: "ServiceName")
     var response: HttpResponse = HttpResponse()
     let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
@@ -68,6 +73,12 @@ public class HttpContextBuilder {
     @discardableResult
     public func withPath(value: String) -> HttpContextBuilder {
         self.attributes.set(key: path, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withHost(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: host, value: value)
         return self
     }
     

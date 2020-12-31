@@ -74,29 +74,26 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
                 """
                 extension SmokeTestInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                        var queryItems: [URLQueryItem] = [URLQueryItem]()
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
                         if let query1 = query1 {
                             let queryItem = URLQueryItem(name: "Query1", value: String(query1))
-                            queryItems.append(queryItem)
+                            builder.withQueryItem(queryItem)
                         }
-                        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                        var headers = Headers()
-                        headers.add(name: "Content-Type", value: "application/json")
+                        builder.withHeader(name: "Content-Type", value: "application/json")
                         if let header1 = header1 {
-                            headers.add(name: "X-Header1", value: String(header1))
+                            builder.withHeader(name: "X-Header1", value: String(header1))
                         }
                         if let header2 = header2 {
-                            headers.add(name: "X-Header2", value: String(header2))
+                            builder.withHeader(name: "X-Header2", value: String(header2))
                         }
                         if try !self.allPropertiesAreNull() {
                             let data = try encoder.encode(self)
                             let body = HttpBody.data(data)
-                            headers.add(name: "Content-Length", value: String(data.count))
-                            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                        } else {
-                            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                            builder.withHeader(name: "Content-Length", value: String(data.count))
+                            builder.withBody(body)
                         }
+                        return builder
                     }
                 }
                 """.trimIndent()
@@ -110,19 +107,16 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitStringInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "text/plain")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "text/plain")
                     if let payload1 = self.payload1 {
                         let data = payload1.data(using: .utf8)
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -136,19 +130,16 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitBlobInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/octet-stream")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
                         let data = payload1
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -162,19 +153,16 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitBlobStreamInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/octet-stream")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
                         let data = payload1
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -188,19 +176,16 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ExplicitStructInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/json")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "application/json")
                     if let payload1 = self.payload1 {
                         let data = try encoder.encode(payload1)
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -214,19 +199,16 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension ListInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/json")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "application/json")
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -240,22 +222,19 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension EnumInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/json")
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
+                    builder.withHeader(name: "Content-Type", value: "application/json")
                     if let enumHeader = enumHeader {
-                        headers.add(name: "X-EnumHeader", value: String(enumHeader.rawValue))
+                        builder.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
                     }
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
             """.trimIndent()
@@ -269,35 +248,32 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
         val expectedContents =
             """
             extension TimestampInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-                    var queryItems: [URLQueryItem] = [URLQueryItem]()
+                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    let builder = SdkHttpRequestBuilder()
                     if let queryTimestamp = queryTimestamp {
                         let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
-                        queryItems.append(queryItem)
+                        builder.withQueryItem(queryItem)
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
                             let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
-                            queryItems.append(queryItem)
+                            builder.withQueryItem(queryItem)
                         }
                     }
-                    let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-                    var headers = Headers()
-                    headers.add(name: "Content-Type", value: "application/json")
+                    builder.withHeader(name: "Content-Type", value: "application/json")
                     if let headerEpoch = headerEpoch {
-                        headers.add(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
+                        builder.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
                     }
                     if let headerHttpDate = headerHttpDate {
-                        headers.add(name: "X-Date", value: String(headerHttpDate.rfc5322()))
+                        builder.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
                     }
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
-                        headers.add(name: "Content-Length", value: String(data.count))
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-                    } else {
-                        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
                     }
+                    return builder
                 }
             }
 """.trimIndent()
@@ -385,22 +361,20 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
-    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        var queryItems: [URLQueryItem] = [URLQueryItem]()
-        if let token = token {
-            let queryItem = URLQueryItem(name: "token", value: String(token))
-            queryItems.append(queryItem)
-        }
-        else {
-            let queryItem = URLQueryItem(name: "token", value: idempotencyTokenGenerator.generateToken())
-            queryItems.append(queryItem)
-        }
-        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-        var headers = Headers()
-        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
-    }
-}
+                extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
+                        if let token = token {
+                            let queryItem = URLQueryItem(name: "token", value: String(token))
+                            builder.withQueryItem(queryItem)
+                        }
+                        else {
+                            let queryItem = URLQueryItem(name: "token", value: idempotencyTokenGenerator.generateToken())
+                            builder.withQueryItem(queryItem)
+                        }
+                        return builder
+                    }
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -411,20 +385,18 @@ extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
-    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        var queryItems: [URLQueryItem] = [URLQueryItem]()
-        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-        var headers = Headers()
-        if let header = header {
-            headers.add(name: "token", value: String(header))
-        }
-        else {
-            headers.add(name: "token", value: idempotencyTokenGenerator.generateToken())
-        }
-        return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
-    }
-}
+                extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
+                        if let header = header {
+                            builder.withHeader(name: "token", value: String(header))
+                        }
+                        else {
+                            builder.withHeader(name: "token", value: idempotencyTokenGenerator.generateToken())
+                        }
+                        return builder
+                    }
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -444,25 +416,23 @@ extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
-    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        var queryItems: [URLQueryItem] = [URLQueryItem]()
-        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-        var headers = Headers()
-        headers.add(name: "Content-Type", value: "text/plain")
-        if let bodyIsToken = self.bodyIsToken {
-            let data = bodyIsToken.data(using: .utf8)
-            let body = HttpBody.data(data)
-            headers.add(name: "Content-Length", value: String(data.count))
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-        } else {
-            let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)
-            let body = HttpBody.data(data)
-            headers.add(name: "Content-Length", value: String(data.count))
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-        }
-    }
-}
+                extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
+                        builder.withHeader(name: "Content-Type", value: "text/plain")
+                        if let bodyIsToken = self.bodyIsToken {
+                            let data = bodyIsToken.data(using: .utf8)
+                            let body = HttpBody.data(data)
+                            builder.withHeader(name: "Content-Length", value: String(data.count))
+                            builder.withBody(body)
+                        }
+                        let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)
+                        let body = HttpBody.data(data)
+                        builder.withHeader(name: "Content-Length", value: String(data.count))
+                        builder.withBody(body)
+                        return builder
+                    }
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -485,22 +455,19 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, 
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBinding, Reflection {
-    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        var queryItems: [URLQueryItem] = [URLQueryItem]()
-        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-        var headers = Headers()
-        headers.add(name: "Content-Type", value: "application/json")
-        if try !self.allPropertiesAreNull() {
-            let data = try encoder.encode(self)
-            let body = HttpBody.data(data)
-            headers.add(name: "Content-Length", value: String(data.count))
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-        } else {
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
-        }
-    }
-}
+                extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBinding, Reflection {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
+                        builder.withHeader(name: "Content-Type", value: "application/json")
+                        if try !self.allPropertiesAreNull() {
+                            let data = try encoder.encode(self)
+                            let body = HttpBody.data(data)
+                            builder.withHeader(name: "Content-Length", value: String(data.count))
+                            builder.withBody(body)
+                        }
+                        return builder
+                    }
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -523,28 +490,25 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBi
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
-extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
-    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
-        var queryItems: [URLQueryItem] = [URLQueryItem]()
-        let endpoint = Endpoint(host: "my-api.us-east-2.amazonaws.com", path: path, queryItems: queryItems)
-        var headers = Headers()
-        headers.add(name: "Content-Type", value: "text/plain")
-        if let token = token {
-            headers.add(name: "token", value: String(token))
-        }
-        else {
-            headers.add(name: "token", value: idempotencyTokenGenerator.generateToken())
-        }
-        if let body = self.body {
-            let data = body.data(using: .utf8)
-            let body = HttpBody.data(data)
-            headers.add(name: "Content-Length", value: String(data.count))
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
-        } else {
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers)
-        }
-    }
-}
+                extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
+                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                        let builder = SdkHttpRequestBuilder()
+                        builder.withHeader(name: "Content-Type", value: "text/plain")
+                        if let token = token {
+                            builder.withHeader(name: "token", value: String(token))
+                        }
+                        else {
+                            builder.withHeader(name: "token", value: idempotencyTokenGenerator.generateToken())
+                        }
+                        if let body = self.body {
+                            let data = body.data(using: .utf8)
+                            let body = HttpBody.data(data)
+                            builder.withHeader(name: "Content-Length", value: String(data.count))
+                            builder.withBody(body)
+                        }
+                        return builder
+                    }
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
