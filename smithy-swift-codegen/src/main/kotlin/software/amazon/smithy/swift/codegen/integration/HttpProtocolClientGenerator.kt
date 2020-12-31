@@ -182,7 +182,7 @@ class HttpProtocolClientGenerator(
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
         writer.write("  .withPath(value: path)")
-        //FIXME: what should host be in the white label sdk?
+        // FIXME: what should host be in the white label sdk?
         writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")

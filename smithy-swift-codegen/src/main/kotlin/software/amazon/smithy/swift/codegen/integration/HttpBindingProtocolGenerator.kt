@@ -876,7 +876,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     writer.write("return builder")
                 }
-
             }
             writer.write("")
         }
@@ -900,7 +899,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("let body = HttpBody.data(data)")
                 writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                 writer.write("builder.withBody(body)")
-
             }
         }
     }
