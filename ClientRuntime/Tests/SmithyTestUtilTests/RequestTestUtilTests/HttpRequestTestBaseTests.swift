@@ -27,11 +27,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             }
             let body = HttpBody.data(try? encoder.encode(self))
             let builder = SdkHttpRequestBuilder()
-                .withMethod(value: method)
-                .withPath(value: path)
-                .withBody(value: body)
-                .withHeaders(value: headers)
-                .withQueryItems(value: queryItems)
+                .withMethod(method)
+                .withPath(path)
+                .withBody(body)
+                .withHeaders(headers)
+                .withQueryItems(queryItems)
             return builder
         }
         
