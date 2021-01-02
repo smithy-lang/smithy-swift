@@ -1138,12 +1138,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    /**
+     * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
+     */
+    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter): HttpProtocolClientGenerator {
+        val properties = getClientProperties(ctx)
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+        val config = getConfigClass(writer, serviceSymbol.name)
+        return HttpProtocolClientGenerator(ctx, writer, properties, config)
+    }
+
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
-            val features = getHttpFeatures(ctx)
-            val config = getConfigClass(writer)
-            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config).render()
+            val clientGenerator = getHttpProtocolClientGenerator(ctx, writer)
+            clientGenerator.render()
         }
     }
 
@@ -1158,17 +1167,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
     /**
-     * Get all of the features that are used as middleware
+     * Get all of the properties that are passed in via an operation context
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
+    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
         return mutableListOf(
             DefaultRequestEncoder(),
             DefaultResponseDecoder()
         )
     }
 
-    open fun getConfigClass(writer: SwiftWriter): ServiceConfig {
-        return DefaultConfig(writer)
+    open fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
+        return DefaultConfig(writer, serviceName)
     }
 
     /**
@@ -1195,4 +1204,4 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 }
 
-class DefaultConfig(writer: SwiftWriter) : ServiceConfig(writer)
+class DefaultConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)

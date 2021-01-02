@@ -45,7 +45,7 @@ class HttpBindingProtocolGeneratorTests : TestsBase() {
 
     data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
-    private fun newTestContext(): TestContext {
+    fun newTestContext(): TestContext {
         val manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val serviceShapeIdWithNamespace = "com.test#Example"

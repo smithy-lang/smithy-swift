@@ -27,14 +27,16 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 /**
  * Renders an implementation of a service interface for HTTP protocol
  */
-class HttpProtocolClientGenerator(
-    private val model: Model,
-    private val symbolProvider: SymbolProvider,
+open class HttpProtocolClientGenerator(
+    ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val serviceShape: ServiceShape,
     private val features: List<HttpFeature>,
     private val serviceConfig: ServiceConfig
 ) {
+    private val model: Model = ctx.model
+    private val symbolProvider = ctx.symbolProvider
+    private val serviceShape = ctx.service
+
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
@@ -47,7 +49,7 @@ class HttpProtocolClientGenerator(
     private fun renderClientInitialization(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: SdkHttpClient")
-            writer.write("let config: Configuration")
+            writer.write("let config: ${serviceConfig.typeName}")
             writer.write("let serviceName = \"${serviceSymbol.name}\"")
             writer.write("let encoder: RequestEncoder")
             writer.write("let decoder: ResponseDecoder")
@@ -167,32 +169,39 @@ class HttpProtocolClientGenerator(
         writer.write("let path = \"\$L\"", uri)
     }
 
-    private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
+    protected open fun renderContextAttributes(op: OperationShape) {
         val httpTrait = op.expectTrait(HttpTrait::class.java)
-        val bindingIndex = HttpBindingIndex.of(model)
-        val requestBindings = bindingIndex.getRequestBindings(op)
-        val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
+        writer.write("  .withEncoder(value: encoder)")
+        writer.write("  .withDecoder(value: decoder)")
+        writer.write("  .withMethod(value: .$httpMethod)")
+        writer.write("  .withPath(value: path)")
+        // FIXME: what should host be in the white label sdk?
+        writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
+        writer.write("  .withServiceName(value: serviceName)")
+        writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
+    }
+
+    protected open fun renderMiddlewares(op: OperationShape) {
+        writer.write("operation.addDefaultOperationMiddlewares()")
+    }
+
+    private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
+        val httpTrait = op.expectTrait(HttpTrait::class.java)
+        val requestBindings = HttpBindingIndex.of(model).getRequestBindings(op)
+        val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         renderUriPath(httpTrait, pathBindings, writer)
         val operationErrorName = "${op.defaultName()}Error"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
         writer.write("let context = HttpContextBuilder()")
         writer.swiftFunctionParameterIndent {
-            writer.write("  .withEncoder(value: encoder)")
-            writer.write("  .withDecoder(value: decoder)")
-            writer.write("  .withMethod(value: .$httpMethod)")
-            writer.write("  .withPath(value: path)")
-            // FIXME: what should host be in the white label sdk?
-            writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
-            writer.write("  .withServiceName(value: serviceName)")
-            writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
-            writer.write("  .build()")
+            renderContextAttributes(op)
         }
         writer.write("var operation = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
-        writer.write("operation.addDefaultOperationMiddlewares()")
-        writer.write("let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())")
+        renderMiddlewares(op)
+        writer.write("let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
         writer.write("completion(result)")
     }
 }

@@ -20,7 +20,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 
     init {
         var model = createModelFromSmithy("service-generator-test-operations.smithy")
-
+        
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val service = model.getShape(ShapeId.from("smithy.example#Example")).get().asServiceShape().get()
         val writer = SwiftWriter("test")
@@ -30,7 +30,7 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         val features = mutableListOf<HttpFeature>()
         features.add(DefaultRequestEncoder())
         features.add(DefaultResponseDecoder())
-        val config = DefaultConfig(writer)
+        val config = DefaultConfig(writer, "ExampleClient")
         val generator = HttpProtocolClientGenerator(model, provider, writer, service, features, config)
         generator.render()
         commonTestContents = writer.toString()
