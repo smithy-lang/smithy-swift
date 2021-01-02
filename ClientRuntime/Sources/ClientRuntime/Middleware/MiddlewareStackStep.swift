@@ -50,7 +50,7 @@ struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
         } else {
             return .failure(
                 MiddlewareStepError.castingError(
-                    "There was a casting error from middleware input of Any to step input"))
+                    "There was a casting error from middleware input of Any to step input of type \(StepInput.self)"))
         }
     }
 }
@@ -77,12 +77,12 @@ struct StepHandler<HandlerInput,
                 } else {
                     return .failure(
                         MiddlewareStepError.castingError(
-                            "failed to cast any to step output in step handler"))
+                            "failed to cast any to step output of type \(StepOutput.self) in step handler"))
                 }
             }
         }
         return .failure(
             MiddlewareStepError.castingError(
-                "failed to cast input to handler input which should be any"))
+                "failed to cast input of type \(StepInput.self) to handler input which should be any"))
     }
 }

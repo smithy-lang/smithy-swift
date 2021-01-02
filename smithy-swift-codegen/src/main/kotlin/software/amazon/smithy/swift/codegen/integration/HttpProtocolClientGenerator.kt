@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.camelCaseName
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -178,16 +179,17 @@ class HttpProtocolClientGenerator(
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
         writer.write("let context = HttpContextBuilder()")
-        writer.indent(4).write("  .withEncoder(value: encoder)")
-        writer.write("  .withDecoder(value: decoder)")
-        writer.write("  .withMethod(value: .$httpMethod)")
-        writer.write("  .withPath(value: path)")
-        // FIXME: what should host be in the white label sdk?
-        writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
-        writer.write("  .withServiceName(value: serviceName)")
-        writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
-        writer.write("  .build()")
-        writer.dedent(4)
+        writer.swiftFunctionParameterIndent {
+            writer.write("  .withEncoder(value: encoder)")
+            writer.write("  .withDecoder(value: decoder)")
+            writer.write("  .withMethod(value: .$httpMethod)")
+            writer.write("  .withPath(value: path)")
+            // FIXME: what should host be in the white label sdk?
+            writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
+            writer.write("  .withServiceName(value: serviceName)")
+            writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
+            writer.write("  .build()")
+        }
         writer.write("var operation = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
         writer.write("operation.addDefaultOperationMiddlewares()")
         writer.write("let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())")

@@ -23,7 +23,7 @@ public struct Attributes {
     }
     
     public func contains<T>(key: AttributeKey<T>) -> Bool {
-        return attributes[key.hashValue] != nil
+        return attributes[key.hashValue] != nil && (attributes[key.hashValue] as? T) != nil
     }
     
     public mutating func set<T: Any>(key: AttributeKey<T>, value: T) {

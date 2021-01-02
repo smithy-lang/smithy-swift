@@ -19,23 +19,18 @@ import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
 
 /**
- * Handles preserving existing text on section when writing new text.
+ * Handles indenting follow on params to a function that takes several params or a builder object
+ * i.e.
+ * func test(param1: String, param2: String, param3: Int)
+ *
+ * test(param1: "hi",
+ *      param2: "test",
+ *      param3: 4)
  */
-fun <T : CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
-    onSection(sectionName) { previousText ->
-        write(previousText)
-        block(this)
-    }
-    return this
-}
-
-/**
- * Similar to `CodeWriter.withBlock()` but using `pushState()`.
- */
-fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
-    pushState(state)
+fun <T : CodeWriter> T.swiftFunctionParameterIndent(block: T.() -> Unit): T {
+    this.indent(4)
     block(this)
-    popState()
+    this.dedent(4)
     return this
 }
 
