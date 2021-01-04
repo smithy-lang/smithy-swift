@@ -735,9 +735,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         // get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx).filter {
-                shapes -> shapes.members().any { it.isInHttpBody() }
-        }.toMutableSet()
+        val inputShapes = resolveOperationInputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
@@ -787,7 +785,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get())}.toSet()
+        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) }.toSet()
     }
 
     private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
