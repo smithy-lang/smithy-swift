@@ -1,6 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+///this protocol sets up a stack of middlewares and handles most of the functionality be default such as
+/// stringing the middlewares together into a linked list, getting a middleware and adding one to the stack.
+/// The stack can then go on to act as a step in a larger stack of stacks such as `OperationStack`
 public protocol MiddlewareStack: Middleware {
     /// the middleware of the stack in an ordered group
     var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> { get set }
@@ -19,7 +22,7 @@ public protocol MiddlewareStack: Middleware {
     
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping MiddlewareFunction<MInput, MOutput, Context>)
+                            middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>)
 }
 
 public extension MiddlewareStack {
@@ -61,8 +64,8 @@ public extension MiddlewareStack {
     ///
     mutating func intercept(position: Position,
                             id: String,
-                            handler: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
-        let middleware = WrappedMiddleware(handler, id: id)
+                            middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
+        let middleware = WrappedMiddleware(middleware, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }

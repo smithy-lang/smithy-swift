@@ -28,7 +28,6 @@ struct RelativeOrder {
         let indexOfRelativeItem = order.firstIndex(of: relativeTo)
         if let indexOfRelativeItem = indexOfRelativeItem {
             switch position {
-            
             case .before:
                 order.insert(contentsOf: ids, at: indexOfRelativeItem - 1)
             case .after:

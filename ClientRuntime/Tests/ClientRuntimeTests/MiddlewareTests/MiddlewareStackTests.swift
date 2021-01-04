@@ -2,6 +2,7 @@
  // SPDX-License-Identifier: Apache-2.0.
  
  import XCTest
+ import Foundation
  @testable import ClientRuntime
  
  class MiddlewareStackTests: XCTestCase {
@@ -83,7 +84,7 @@
     func testFullBlownOperationRequestWithClientHandler() {
         let addContextValues = context
             .withMethod(value: .get)
-            .withPath(value: "/get")
+            .withPath(value: "/headers")
             .withEncoder(value: JSONEncoder())
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
@@ -99,6 +100,9 @@
         switch result {
         case .success(let output):
             XCTAssert(output.value == 200)
+            XCTAssert(output.headers.headers.contains(where: { (header) -> Bool in
+                header.name == "Content-Length"
+            }))
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
@@ -154,7 +158,7 @@
             let successResponse = try response.get()
             var copiedResponse = successResponse
             if let httpResponse = copiedResponse.httpResponse {
-                let decoder = JSONDecoder()
+                let decoder = context.getDecoder()
                 let output = try Output(httpResponse: httpResponse, decoder: decoder)
                 copiedResponse.output = output
                 
@@ -180,8 +184,10 @@
  
  struct TestOutput: HttpResponseBinding {
     let value: Int
+    let headers: Headers
     init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {
         self.value = httpResponse.statusCode.rawValue
+        self.headers = httpResponse.headers
     }
  }
  
