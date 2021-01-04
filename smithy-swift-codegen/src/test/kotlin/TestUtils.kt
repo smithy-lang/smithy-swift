@@ -13,7 +13,11 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
@@ -23,7 +27,6 @@ import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-
 
 /**
  * Load and initialize a model from a String (from smithy-rs)
@@ -61,7 +64,6 @@ fun URL.asSmithy(): Model =
         .discoverModels()
         .assemble()
         .unwrap()
-
 
 fun createModelFromShapes(vararg shapes: Shape): Model {
     return Model.assembler()
@@ -229,7 +231,6 @@ fun createStructureWithOptionalErrorMessage(): StructureShape {
         .build()
 }
 
-
 /**
  * Container for type instances necessary for tests
  */
@@ -270,9 +271,11 @@ fun Model.newTestContext(
     return TestContext(ctx, manifest, generator)
 }
 
-fun getSettingsNode(serviceShapeId: String = "com.test#Example",
-                    moduleName: String = "example",
-                    moduleVersion: String = "1.0.0"): ObjectNode {
+fun getSettingsNode(
+    serviceShapeId: String = "com.test#Example",
+    moduleName: String = "example",
+    moduleVersion: String = "1.0.0"
+): ObjectNode {
     return Node.objectNodeBuilder()
         .withMember("service", Node.from(serviceShapeId))
         .withMember("module", Node.from(moduleName))
@@ -284,9 +287,11 @@ fun getSettingsNode(serviceShapeId: String = "com.test#Example",
         .build()
 }
 
-fun Model.defaultSettings(serviceShapeId: String = "com.test#Example",
-                                   moduleName: String = "example",
-                                   moduleVersion: String = "1.0.0"): SwiftSettings =
+fun Model.defaultSettings(
+    serviceShapeId: String = "com.test#Example",
+    moduleName: String = "example",
+    moduleVersion: String = "1.0.0"
+): SwiftSettings =
     SwiftSettings.from(
         this,
         getSettingsNode(serviceShapeId, moduleName, moduleVersion)
@@ -317,4 +322,3 @@ fun String.shouldSyntacticSanityCheck() {
     Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
     Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }
-

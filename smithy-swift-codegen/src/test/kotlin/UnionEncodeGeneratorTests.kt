@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.AddOperationShapes
 
-class UnionEncodeGeneratorTests{
+class UnionEncodeGeneratorTests {
     var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()

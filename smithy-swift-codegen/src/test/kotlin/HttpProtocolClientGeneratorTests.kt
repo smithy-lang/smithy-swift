@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 
 class HttpProtocolClientGeneratorTests {
@@ -68,13 +68,13 @@ class HttpProtocolClientGeneratorTests {
     fun `it renders operation implementations in extension`() {
         commonTestContents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
     }
-    //FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
+    // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
 //     @Test
 //     fun `it renders operation bodies`() {
 //         val expectedBodies = listOf(
 // """
-//public func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
-//{
+// public func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
+// {
 //    let path = "/foo"
 //    let context = HttpContextBuilder()
 //                  .withEncoder(value: encoder)
@@ -88,11 +88,11 @@ class HttpProtocolClientGeneratorTests {
 //    operation.addDefaultOperationMiddlewares()
 //    let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
 //    completion(result)
-//}
+// }
 // """,
 // """
-//public func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)
-//{
+// public func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)
+// {
 //    let path = "/foo-no-input"
 //    let context = HttpContextBuilder()
 //                  .withEncoder(value: encoder)
@@ -106,11 +106,11 @@ class HttpProtocolClientGeneratorTests {
 //    operation.addDefaultOperationMiddlewares()
 //    let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
 //    completion(result)
-//}
+// }
 // """,
 // """
-//public func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
-//{
+// public func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
+// {
 //    let path = "/foo-no-output"
 //    let context = HttpContextBuilder()
 //                  .withEncoder(value: encoder)
@@ -124,11 +124,11 @@ class HttpProtocolClientGeneratorTests {
 //    operation.addDefaultOperationMiddlewares()
 //    let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
 //    completion(result)
-//}
+// }
 // """,
 // """
-//public func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)
-//{
+// public func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)
+// {
 //    let path = "/foo-streaming-input"
 //    let context = HttpContextBuilder()
 //                  .withEncoder(value: encoder)
@@ -142,11 +142,11 @@ class HttpProtocolClientGeneratorTests {
 //    operation.addDefaultOperationMiddlewares()
 //    let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
 //    completion(result)
-//}
+// }
 // """,
 // """
-//public func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)
-//{
+// public func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)
+// {
 //    let path = "/foo-streaming-input-no-output"
 //    let context = HttpContextBuilder()
 //                  .withEncoder(value: encoder)
@@ -160,7 +160,7 @@ class HttpProtocolClientGeneratorTests {
 //    operation.addDefaultOperationMiddlewares()
 //    let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
 //    completion(result)
-//}
+// }
 // """
 //         )
 //         expectedBodies.forEach {

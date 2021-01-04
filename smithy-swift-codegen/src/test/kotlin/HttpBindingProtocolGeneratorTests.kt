@@ -38,7 +38,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
-class HttpBindingProtocolGeneratorTests{
+class HttpBindingProtocolGeneratorTests {
     private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
