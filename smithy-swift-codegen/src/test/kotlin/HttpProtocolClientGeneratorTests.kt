@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.HttpFeature
+import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 
 class HttpProtocolClientGeneratorTests {
@@ -26,7 +26,7 @@ class HttpProtocolClientGeneratorTests {
 
         val writer = SwiftWriter("test")
 
-        val features = mutableListOf<HttpFeature>()
+        val features = mutableListOf<ClientProperty>()
         features.add(DefaultRequestEncoder())
         features.add(DefaultResponseDecoder())
         val config = DefaultConfig(writer, "ExampleClient")

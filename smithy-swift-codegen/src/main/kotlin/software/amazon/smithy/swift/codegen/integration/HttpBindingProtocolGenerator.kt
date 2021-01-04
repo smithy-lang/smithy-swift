@@ -872,7 +872,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
                     if (hasHttpBody) {
-                        renderEncodedBody(ctx, writer, inputShape, requestBindings)
+                        renderEncodedBody(ctx, writer, requestBindings)
                     }
                     writer.write("return builder")
                 }
@@ -884,14 +884,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderEncodedBody(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        inputShape: Shape,
         requestBindings: Map<String, HttpBinding>
     ) {
 
         val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
         if (httpPayload != null) {
-            val shape = ctx.model.expectShape(httpPayload.member.target)
             renderSerializeExplicitPayload(ctx, httpPayload, writer)
         } else {
             writer.openBlock("if try !self.allPropertiesAreNull() {", "}") {
@@ -921,7 +919,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("let body = HttpBody.data(data)")
                 }
                 ShapeType.STRING -> {
-
                     val contents = if (target.hasTrait(EnumTrait::class.java)) {
                         "$memberName.rawValue"
                     } else {
@@ -1169,7 +1166,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Get all of the properties that are passed in via an operation context
      */
-    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
+    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
         return mutableListOf(
             DefaultRequestEncoder(),
             DefaultResponseDecoder()

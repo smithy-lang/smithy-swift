@@ -17,7 +17,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 /**
  * Ensures that each operation has a unique input and output shape.
  */
-public final class AddOperationShapes {
+class AddOperationShapes {
 
     companion object {
         private val LOGGER = Logger.getLogger(javaClass.name)
@@ -32,7 +32,6 @@ public final class AddOperationShapes {
          */
         fun execute(model: Model, serviceShape: ServiceShape, moduleName: String): Model {
             val topDownIndex: TopDownIndex = TopDownIndex.of(model)
-            val opIndex: OperationIndex = OperationIndex.of(model)
             val operations = topDownIndex.getContainedOperations(serviceShape)
             val modelBuilder: Model.Builder = model.toBuilder()
             for (operation in operations) {

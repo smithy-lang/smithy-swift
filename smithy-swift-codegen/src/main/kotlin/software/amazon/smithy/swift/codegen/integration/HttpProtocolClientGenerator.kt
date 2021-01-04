@@ -6,14 +6,12 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -30,7 +28,7 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 open class HttpProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val features: List<HttpFeature>,
+    private val properties: List<ClientProperty>,
     private val serviceConfig: ServiceConfig
 ) {
     private val model: Model = ctx.model
@@ -53,13 +51,13 @@ open class HttpProtocolClientGenerator(
             writer.write("let serviceName = \"${serviceSymbol.name}\"")
             writer.write("let encoder: RequestEncoder")
             writer.write("let decoder: ResponseDecoder")
-            features.forEach { feat ->
+            properties.forEach { feat ->
                 feat.addImportsAndDependencies(writer)
             }
             writer.write("")
             writer.openBlock("init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
                 writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
-                features.forEach { feat ->
+                properties.forEach { feat ->
                     feat.renderInstantiation(writer)
                     if (feat.needsConfigure) {
                         feat.renderConfiguration(writer)
