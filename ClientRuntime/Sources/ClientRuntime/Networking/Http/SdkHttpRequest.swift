@@ -64,7 +64,8 @@ extension HttpRequest {
         let sdkMethod = HttpMethodType(rawValue: method ?? "GET") ?? HttpMethodType.get
         let sdkPath = path ?? "/"
         //how do i get host information? do i need to store it to a crt request to then retrieve it?
-        let sdkBody = HttpBody.data(body?.byteBuffer.toData()) //how do i know which kind of request this was, streaming and or otherwise?
+        
+        let sdkBody = HttpBody.data(body) //how do i know which kind of request this was, streaming and or otherwise?
         return SdkHttpRequest(method: sdkMethod, endpoint: Endpoint(host: "huh", path: sdkPath), headers: sdkHeaders, body: sdkBody)
     }
 }
