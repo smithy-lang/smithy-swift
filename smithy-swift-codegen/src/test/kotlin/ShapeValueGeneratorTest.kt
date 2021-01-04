@@ -2,7 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
@@ -19,6 +18,10 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class ShapeValueGeneratorTest {
 

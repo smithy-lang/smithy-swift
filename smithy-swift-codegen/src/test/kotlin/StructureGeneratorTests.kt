@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import java.util.function.Consumer
@@ -15,8 +13,11 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.swift.codegen.StructureGenerator
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
-class StructureGeneratorTests : TestsBase() {
+class StructureGeneratorTests {
     @Test
     fun `it renders non-error structures`() {
 
@@ -56,9 +57,9 @@ class StructureGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders struct with primitive types`() {
-        val model = createModelFromSmithy("primitive-type-encode-test.smithy")
+        val model = javaClass.getResource("primitive-type-encode-test.smithy").asSmithy()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
         val primitiveTypesInput = manifest
@@ -121,7 +122,7 @@ class StructureGeneratorTests : TestsBase() {
     @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 
@@ -178,7 +179,7 @@ public struct RecursiveShapesInputOutput: Equatable {
     @Test
     fun `it renders recursive nested shapes in lists`() {
         val structs = createStructureContainingNestedRecursiveShapeList()
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
         val writer = SwiftWriter("MockPackage")
 
@@ -293,9 +294,9 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             separate structs for input and output with members given in smithy model, without creating
             additional structs in the model
          */
-        val model = createModelFromSmithy("sparse-trait-test.smithy")
+        val model = javaClass.getResource("sparse-trait-test.smithy").asSmithy()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
         val jsonListsInput = manifest
@@ -329,9 +330,9 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             separate structs for input and output with members given in smithy model, without creating
             additional structs in the model
          */
-        val model = createModelFromSmithy("sparse-trait-test.smithy")
+        val model = javaClass.getResource("sparse-trait-test.smithy").asSmithy()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
         val jsonMapsInput = manifest

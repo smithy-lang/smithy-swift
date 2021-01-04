@@ -3,22 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SwiftDelegator
+import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
-class SwiftDelegatorTests : TestsBase() {
+class SwiftDelegatorTests {
     @Test
     fun `it renders files into namespace`() {
 
-        val model = createModelFromSmithy("simple-service-with-operation.smithy")
+        val model = javaClass.getResource("simple-service-with-operation.smithy").asSmithy()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
 
         SwiftCodegenPlugin().execute(context)
 
@@ -29,7 +31,7 @@ class SwiftDelegatorTests : TestsBase() {
 
     @Test
     fun `it vends writers for shapes`() {
-        val model = createModelFromSmithy("simple-service-with-operation.smithy")
+        val model = javaClass.getResource("simple-service-with-operation.smithy").asSmithy()
         val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
@@ -40,13 +42,14 @@ class SwiftDelegatorTests : TestsBase() {
 
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
-        assertEquals(SwiftWriter.staticHeader + "\n\nHello!\n",
+        assertEquals(
+            SwiftWriter.staticHeader + "\n\nHello!\n",
             manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 
     @Test
     fun `it uses opened writer separating with newline`() {
-        val model = createModelFromSmithy("simple-service-with-operation.smithy")
+        val model = javaClass.getResource("simple-service-with-operation.smithy").asSmithy()
         val getFooInputShape = model.expectShape(ShapeId.from("smithy.example#GetFooInput"))
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
@@ -57,7 +60,8 @@ class SwiftDelegatorTests : TestsBase() {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
-        assertEquals(SwiftWriter.staticHeader + "\n\nHello!\n\nGoodbye!\n",
+        assertEquals(
+            SwiftWriter.staticHeader + "\n\nHello!\n\nGoodbye!\n",
             manifest.getFileString("example/models/GetFooInput.swift").get())
     }
 }

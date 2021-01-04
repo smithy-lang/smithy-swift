@@ -2,39 +2,23 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.AddOperationShapes
 
-class UnionEncodeGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
-
-    data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
+class UnionEncodeGeneratorTests{
+    var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
-        val manifest = MockManifest()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val serviceShapeIdWithNamespace = "com.test#Example"
-        val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
-        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val delegator = SwiftDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
+        return model.newTestContext()
     }
-
     val newTestContext = newTestContext()
-
     init {
-        newTestContext.generator.generateSerializers(newTestContext.ctx)
-        newTestContext.ctx.delegator.flushWriters()
+        newTestContext.generator.generateSerializers(newTestContext.generationCtx)
+        newTestContext.generationCtx.delegator.flushWriters()
     }
 
     @Test

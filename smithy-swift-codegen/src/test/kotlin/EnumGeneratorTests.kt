@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -12,8 +10,11 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.EnumGenerator
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
-class EnumGeneratorTests : TestsBase() {
+class EnumGeneratorTests {
 
     @Test
     fun `generates unnamed enums`() {

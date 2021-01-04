@@ -2,16 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.swift.codegen
 
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
@@ -40,31 +38,19 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
-class HttpBindingProtocolGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
-
-    data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    fun newTestContext(): TestContext {
-        val manifest = MockManifest()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val serviceShapeIdWithNamespace = "com.test#Example"
-        val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
-        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+class HttpBindingProtocolGeneratorTests{
+    private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+    private fun newTestContext(): TestContext {
+        val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val delegator = SwiftDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
+        return model.newTestContext()
     }
-
     val newTestContext = newTestContext()
-
     init {
-        newTestContext.generator.generateSerializers(newTestContext.ctx)
-        newTestContext.generator.generateProtocolClient(newTestContext.ctx)
-        newTestContext.generator.generateDeserializers(newTestContext.ctx)
-        newTestContext.ctx.delegator.flushWriters()
+        newTestContext.generator.generateSerializers(newTestContext.generationCtx)
+        newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
+        newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
+        newTestContext.generationCtx.delegator.flushWriters()
     }
 
     @Test
@@ -357,7 +343,8 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
 
     @Test
     fun `it builds request with idempotency token trait for httpQuery`() {
-        val contents = getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents =
+            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -381,7 +368,11 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
 
     @Test
     fun `it builds request with idempotency token trait for httpHeader`() {
-        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpHeaderInput+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithHttpHeaderInput+HttpRequestBinding.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -412,7 +403,11 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
                 bodyIsToken: String,
             }
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -451,7 +446,11 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         - No change to existing code in HttpRequestBinding file. We changed in "encodable" file for the
           struct containing these members.
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+HttpRequestBinding.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -486,7 +485,11 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         }
         - Idempotency token is bound to httpHeader in this case.
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """

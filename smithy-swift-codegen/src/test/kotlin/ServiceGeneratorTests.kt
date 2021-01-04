@@ -3,29 +3,26 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.swift.codegen.*
 
-class ServiceGeneratorTests : TestsBase() {
+class ServiceGeneratorTests {
 
     private val commonTestContents: String
 
     init {
-        var model = createModelFromSmithy("service-generator-test-operations.smithy")
+        var model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
         val writer = SwiftWriter("test")
 
+        val settings = model.defaultSettings()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
-
-        val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val writers = SwiftDelegator(settings, model, manifest, provider)
         val generator = ServiceGenerator(settings, model, provider, writer, writers)
@@ -36,7 +33,7 @@ class ServiceGeneratorTests : TestsBase() {
 
     @Test
     fun `it renders swift protocols in separate file`() {
-        val model = createModelFromSmithy("service-generator-test-operations.smithy")
+        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
 

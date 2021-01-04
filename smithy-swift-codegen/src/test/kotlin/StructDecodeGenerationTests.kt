@@ -3,41 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.AddOperationShapes
 
-class StructDecodeGenerationTests : TestsBase() {
-
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
-
-    data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
+class StructDecodeGenerationTests {
+    var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
-        val manifest = MockManifest()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val serviceShapeIdWithNamespace = "com.test#Example"
-        val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
-        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        model = RecursiveShapeBoxer.transform(model)
-        val delegator = SwiftDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
+        return model.newTestContext()
     }
-
     val newTestContext = newTestContext()
 
     init {
-        newTestContext.generator.generateDeserializers(newTestContext.ctx)
-        newTestContext.ctx.delegator.flushWriters()
+        newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
+        newTestContext.generationCtx.delegator.flushWriters()
     }
 
     @Test
@@ -131,7 +113,8 @@ class StructDecodeGenerationTests : TestsBase() {
 
     @Test
     fun `it provides decodable conformance to operation outputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampInputOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents =
+            getModelFileContents("example", "TimestampInputOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -314,7 +297,8 @@ extension MapInputOutputBody: Decodable {
 
     @Test
     fun `it decodes nested diverse shapes correctly`() {
-        val contents = getModelFileContents("example", "NestedShapesOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents =
+            getModelFileContents("example", "NestedShapesOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -371,7 +355,11 @@ extension NestedShapesOutputBody: Decodable {
 
     @Test
     fun `it decodes recursive boxed types correctly`() {
-        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested1+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "RecursiveShapesInputOutputNested1+Decodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -395,7 +383,11 @@ extension NestedShapesOutputBody: Decodable {
 
     @Test
     fun `it encodes one side of the recursive shape`() {
-        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested2+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "RecursiveShapesInputOutputNested2+Decodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """

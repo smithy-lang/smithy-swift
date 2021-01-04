@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import kotlin.streams.toList
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -13,22 +11,15 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.writePodspec
 
-class PodSpecGeneratorTests : TestsBase() {
+class PodSpecGeneratorTests {
 
     @Test
     fun `it renders podspec with dependencies`() {
-        val model = createModelFromSmithy("simple-service-with-operation-and-dependency.smithy")
-        val homepage = "https://docs.amplify.aws/"
-        val settings = SwiftSettings.from(model, Node.objectNodeBuilder()
-            .withMember("module", Node.from("example"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
-            .withMember("homepage", Node.from(homepage))
-            .withMember("author", Node.from("Amazon Web Services"))
-            .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
-            .withMember("swiftVersion", Node.from("5.1.0"))
-            .build())
+        val model = "simple-service-with-operation-and-dependency.smithy".asSmithyModel()
+        val settings = model.defaultSettings(moduleName = "example")
 
         val manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "example")
@@ -39,7 +30,7 @@ class PodSpecGeneratorTests : TestsBase() {
         assertNotNull(podspec)
         podspec.shouldContain("spec.dependency 'ComplexModule', '0.0.5'")
         podspec.shouldContain("spec.dependency 'ClientRuntime', '0.1.0'")
-        podspec.shouldContain("spec.homepage     = '$homepage'")
+        podspec.shouldContain("spec.homepage     = 'https://docs.amplify.aws/'")
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {
