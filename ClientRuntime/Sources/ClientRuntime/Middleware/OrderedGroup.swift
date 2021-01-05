@@ -52,10 +52,15 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
     //key here is name of the middleware aka the id property of the middleware
     private var _items: [String: AnyMiddleware<Input, Output, Context>] = [:]
     
-    var orderedItems: [String: AnyMiddleware<Input, Output, Context>] {
-        var sorted = [String: AnyMiddleware<Input, Output, Context>]()
+    var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context>)] {
+        
+        var sorted = [(key: String, value: AnyMiddleware<Input, Output, Context>)]()
         for key in order.order {
-            sorted[key] = self._items[key]
+            guard let value = _items[key] else {
+                continue
+            }
+            let tuple = (key: key, value: value)
+            sorted.append(tuple)
         }
         return sorted
     }
