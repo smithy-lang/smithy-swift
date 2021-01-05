@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.camelCaseName
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -84,7 +85,7 @@ class HttpProtocolClientGenerator(
             writer.write("")
             renderConfigInit(configFields)
             writer.write("")
-            serviceConfig.renderConvienceInits(serviceSymbol)
+            serviceConfig.renderConvenienceInits(serviceSymbol)
             writer.write("")
             serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
         }
@@ -119,22 +120,11 @@ class HttpProtocolClientGenerator(
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
-                    renderOperationBody(operationsIndex, it)
+                    renderMiddlewareExecutionBlock(operationsIndex, it)
                 }
                 writer.write("")
             }
         }
-    }
-
-    private fun renderOperationBody(opIndex: OperationIndex, op: OperationShape) {
-        writer.openBlock("do {", "} catch let err { ") {
-            renderOperationInputSerializationBlock(opIndex, op)
-            renderHttpRequestExecutionBlock(opIndex, op)
-        }
-        writer.indent()
-        writer.write("completion(.failure(.client(.serializationFailed(err.localizedDescription))))")
-        writer.dedent()
-        writer.write("}")
     }
 
     // replace labels with any path bindings
@@ -177,40 +167,32 @@ class HttpProtocolClientGenerator(
         writer.write("let path = \"\$L\"", uri)
     }
 
-    private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
-        val inputShape = opIndex.getInput(op)
+    private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val bindingIndex = HttpBindingIndex.of(model)
         val requestBindings = bindingIndex.getRequestBindings(op)
         val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
-        // TODO: remove this if block after synthetic input/outputs are completely done
-        if (inputShape.isEmpty) {
-            // no serializer implementation is generated for operations with no input, inline the HTTP
-            // protocol request from the operation itself
-            // TODO:: Replace host appropriately
-            renderUriPath(httpTrait, pathBindings, writer)
-            writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path)")
-            writer.write("let headers = Headers()")
-            writer.write("let request = SdkHttpRequest(method: .$httpMethod, endpoint: endpoint, headers: headers)")
-        } else {
-            renderUriPath(httpTrait, pathBindings, writer)
-            writer.write("let method = HttpMethodType.$httpMethod")
-            writer.write("let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder, idempotencyTokenGenerator: config.idempotencyTokenGenerator)")
-        }
-    }
-
-    private fun renderHttpRequestExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
+        renderUriPath(httpTrait, pathBindings, writer)
         val operationErrorName = "${op.defaultName()}Error"
+        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-        writer.write("let context = Context(encoder: encoder,")
-        writer.indent(5).write("  decoder: decoder,")
-        writer.write("  outputType: $outputShapeName.self,")
-        writer.write("  outputError: $operationErrorName.self,")
-        writer.write("  operation: \"${op.camelCaseName()}\",")
-        writer.write("  serviceName: serviceName)")
-        writer.dedent(5)
-        writer.write("client.execute(request: request, context: context, completion: completion)")
+        writer.write("let context = HttpContextBuilder()")
+        writer.swiftFunctionParameterIndent {
+            writer.write("  .withEncoder(value: encoder)")
+            writer.write("  .withDecoder(value: decoder)")
+            writer.write("  .withMethod(value: .$httpMethod)")
+            writer.write("  .withPath(value: path)")
+            // FIXME: what should host be in the white label sdk?
+            writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
+            writer.write("  .withServiceName(value: serviceName)")
+            writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
+            writer.write("  .build()")
+        }
+        writer.write("var operation = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
+        writer.write("operation.addDefaultOperationMiddlewares()")
+        writer.write("let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())")
+        writer.write("completion(result)")
     }
 }

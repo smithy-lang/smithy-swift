@@ -11,21 +11,28 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
     struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequest {
+        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = requiredQuery {
                 queryItem = URLQueryItem(name: "RequiredQuery", value: String(requiredQuery))
                 queryItems.append(queryItem)
             }
-            let endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
+            
             var headers = Headers()
             headers.add(name: "Content-Type", value: "application/json")
             if let requiredHeader = requiredHeader {
                 headers.add(name: "RequiredHeader", value: requiredHeader)
             }
             let body = HttpBody.data(try? encoder.encode(self))
-            return SdkHttpRequest(method: method, endpoint: endpoint, headers: headers, body: body)
+            let builder = SdkHttpRequestBuilder()
+                .withMethod(method)
+                .withPath(path)
+                .withBody(body)
+                .withHeaders(headers)
+                .withQueryItems(queryItems)
+            return builder
         }
         
         let greeting: String?
@@ -67,8 +74,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
         do {
-        let actual = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
-        
+        let actualBuilder = try input.buildHttpRequest(method: .post, path: "/", encoder: JSONEncoder())
+        let actual = actualBuilder.build()
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
         for forbiddenQueryParam in forbiddenQueryParams {

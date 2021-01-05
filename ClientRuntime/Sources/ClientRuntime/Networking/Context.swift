@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-
+// THIS WILL BE REMOVED POST CODEGEN of MIDDLEWARE IMPLEMENTATION
 /// This class is used to pass context from the service clients to the middleware of the sdk
 /// in order to decorate and execute the request as well as handle serde.
 public class Context<Output, OutputError> where Output: HttpResponseBinding,
@@ -13,17 +13,20 @@ public class Context<Output, OutputError> where Output: HttpResponseBinding,
     let operation: String
     let serviceName: String
     let outputError: OutputError.Type
+    let request: SdkHttpRequest
     
     public init(encoder: RequestEncoder,
                 decoder: ResponseDecoder,
                 outputType: Output.Type,
                 outputError: OutputError.Type,
+                request: SdkHttpRequest,
                 operation: String,
                 serviceName: String) {
         self.encoder = encoder
         self.decoder = decoder
         self.outputType = outputType
         self.outputError = outputError
+        self.request = request
         self.operation = operation
         self.serviceName = serviceName
     }

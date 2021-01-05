@@ -12,7 +12,6 @@ public struct Endpoint: Hashable {
     public let host: String
     public let port: Int16
     
-    //TODO: figure out if port is provided by any smithy trait
     public init(host: String,
                 path: String = "/",
                 port: Int16 = 443,

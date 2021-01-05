@@ -4,6 +4,7 @@
  */
 
 public protocol HttpClientEngine {
-    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult)
+    func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult)
+    func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse>
     func close()
 }

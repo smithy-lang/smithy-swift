@@ -20,43 +20,33 @@ open class HttpRequestTestBase: XCTestCase {
                                          queryParams: [String],
                                          body: String?,
                                          host: String) -> SdkHttpRequest {
-        var queryItems = [URLQueryItem]()
-        var httpHeaders = Headers()
+        let builder = SdkHttpRequestBuilder()
         
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-            queryItems.append(URLQueryItem(name: queryParamComponents[0],
+                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
                                            value: queryParamComponents[1].removingPercentEncoding))
             } else {
-                queryItems.append(URLQueryItem(name: queryParamComponents[0], value: nil))
+                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
         
         for (headerName, headerValue) in headers {
-            httpHeaders.add(name: headerName, value: headerValue)
+            builder.withHeader(name: headerName, value: headerValue)
         }
         
-        let endPoint = Endpoint(host: host, path: path, queryItems: queryItems)
-        
         guard let body = body else {
-            return SdkHttpRequest(method: method,
-                               endpoint: endPoint,
-                               headers: httpHeaders)
+            return builder.build()
         }
         //handle empty string body cases that should still create a request
         //without the body
-        if body == "" || body == "{}" {
-            return SdkHttpRequest(method: method,
-                               endpoint: endPoint,
-                               headers: httpHeaders)
+        if body != "" && body != "{}" {
+            let httpBody = HttpBody.data(body.data(using: .utf8))
+            builder.withBody(httpBody)
         }
     
-        let httpBody = HttpBody.data(body.data(using: .utf8))
-        return SdkHttpRequest(method: method,
-                           endpoint: endPoint,
-                           headers: httpHeaders,
-                           body: httpBody)
+        return builder.build()
         
     }
     
@@ -97,10 +87,7 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpHeaders(expected.headers, actual.headers)
         
         // assert Endpoints match
-        assertEqualEndpoint(expected.endpoint, actual.endpoint)
-        
-        // assert HttpMethod matches
-        XCTAssertEqual(expected.method, actual.method)
+        assertEqualQueryItems(expected.queryItems, actual.queryItems)
         
         // assert the contents of HttpBody match
         assertEqualHttpBody(expected.body, actual.body)
@@ -222,61 +209,35 @@ open class HttpRequestTestBase: XCTestCase {
     }
     
     /**
-    Asserts `Endpoint` objects  match
-    /// - Parameter expected: Expected `Endpoint`
-    /// - Parameter actual: Actual `Endpoint` to compare against
-    */
-    public func assertEqualEndpoint(_ expected: Endpoint, _ actual: Endpoint) {
-        // match all the components of Endpoint
-        XCTAssertEqual(expected.path,
-                       actual.path,
-                       "Expected Endpoint path: \(expected.path) does not match the" +
-                        "actual Endpoint path: \(actual.path)")
-        XCTAssertEqual(expected.protocolType, actual.protocolType,
-                       "Expected Endpoint protocolType: \(String(describing: expected.protocolType))" +
-                        " does not match the actual Endpoint protocolType: \(String(describing: actual.protocolType))")
-        XCTAssertEqual(expected.host,
-                       actual.host,
-                       "Expected Endpoint host: \(expected.host) does not match the" +
-                        "actual Endpoint host: \(actual.host)")
-        XCTAssertEqual(expected.port,
-                       actual.port,
-                       "Expected Endpoint port: \(expected.port) does not match the " +
-                        "actual Endpoint port: \(actual.port)")
-        
-        guard let expectedQueryItems = expected.queryItems else {
-            XCTAssertNil(actual.queryItems,
-                         "expected query items in Endpoint is nil but actual are not")
-            return
-        }
-        
-        guard let actualQueryItems = actual.queryItems else {
-            XCTFail("actual query items in Endpoint is nil but expected are not")
-            return
-        }
-        assertEqualHttpQueryItems(expectedQueryItems, actualQueryItems)
-        
-    }
-    
-    /**
     Asserts that Http Query Items  match
     /// - Parameter expected: Expected array of Query Items
     /// - Parameter actual: Actual array of Query Items to compare against
     */
-    public func assertEqualHttpQueryItems(_ expected: [URLQueryItem], _ actual: [URLQueryItem]) {
+    public func assertEqualQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+
+        guard let expectedQueryItems = expected else {
+            XCTAssertNil(actual,
+                         "expected query items is nil but actual are not")
+            return
+        }
+        
+        guard let actualQueryItems = actual else {
+            XCTFail("actual query items in Endpoint is nil but expected are not")
+            return
+        }
         //take arrays of query items and convert to dictionary
-        let expectedNamesAndValues = expected.map { ($0.name, Set(arrayLiteral: $0.value)) }
+        let expectedNamesAndValues = expectedQueryItems.map { ($0.name, Set(arrayLiteral: $0.value)) }
         let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
             return first.union(last)
         })
         
-        let actualNamesAndValues = actual.map {($0.name, Set(arrayLiteral: $0.value))}
+        let actualNamesAndValues = actualQueryItems.map {($0.name, Set(arrayLiteral: $0.value))}
         let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
             return first.union(last)
         })
         
-        for expectedQueryItem in expected {
-            XCTAssertTrue(actual.contains(expectedQueryItem),
+        for expectedQueryItem in expectedQueryItems {
+            XCTAssertTrue(actualQueryItems.contains(expectedQueryItem),
                           "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
             let actualQueryItemValue = actualMap[expectedQueryItem.name]
             XCTAssertEqual(actualQueryItemValue,

@@ -239,6 +239,6 @@ class MockSinkStream: StreamSink {
     
 }
 
-struct TestBody: Encodable {
+struct TestBody: Codable {
     let test: String
 }

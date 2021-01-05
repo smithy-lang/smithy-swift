@@ -75,98 +75,98 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
 //     fun `it renders operation bodies`() {
 //         val expectedBodies = listOf(
 // """
-//    public func getFoo(input: GetFooRequest, completion: @escaping (SdkResult<GetFooResponse, GetFooError>) -> Void)
+//    public func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
 //    {
-//        do {
-//            let path = "/foo"
-//            let method = HttpMethodType.get
-//            let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)
-//            let context = Context(encoder: encoder,
-//                                  decoder: decoder,
-//                                  outputType: GetFooResponse.self,
-//                                  outputError: GetFooError.self,
-//                                  operation: getFoo,
-//                                  serviceName: serviceName)
-//            client.execute(request: request, context: context, completion: completion)
-//        } catch let err {
-//            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
-//        }
+//        let path = "/foo"
+//        let context = HttpContextBuilder()
+//                              .withEncoder(value: encoder)
+//                              .withDecoder(value: decoder)
+//                              .withMethod(value: .get)
+//                              .withPath(value: path)
+//                              .withHost(value: "my-api.us-east-2.amazonaws.com")
+//                              .withServiceName(value: serviceName)
+//                              .withOperation(value: "getFoo")
+//                              .build()
+//        var operation = OperationStack<GetFooInput, GetFooOutput, GetFooError>(id: "getFoo")
+//        operation.addDefaultOperationMiddlewares()
+//        let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+//        completion(result)
 //    }
 // """,
 // """
-//    public func getFooNoOutput(input: GetFooRequest, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
+//    public func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)
 //    {
-//        do {
-//            let path = "/foo-no-output"
-//            let method = HttpMethodType.get
-//            let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)
-//            let context = Context(encoder: encoder,
-//                                  decoder: decoder,
-//                                  outputType: GetFooNoOutputOutput.self,
-//                                  outputError: GetFooNoOutputError.self,
-//                                  operation: getFooNoOutput,
-//                                  serviceName: serviceName)
-//            client.execute(request: request, context: context, completion: completion)
-//        } catch let err {
-//            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
-//        }
+//        let path = "/foo-no-input"
+//        let context = HttpContextBuilder()
+//                              .withEncoder(value: encoder)
+//                              .withDecoder(value: decoder)
+//                              .withMethod(value: .get)
+//                              .withPath(value: path)
+//                              .withHost(value: "my-api.us-east-2.amazonaws.com")
+//                              .withServiceName(value: serviceName)
+//                              .withOperation(value: "getFooNoInput")
+//                              .build()
+//        var operation = OperationStack<GetFooNoInputInput, GetFooNoInputOutput, GetFooNoInputError>(id: "getFooNoInput")
+//        operation.addDefaultOperationMiddlewares()
+//        let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+//        completion(result)
 //    }
 // """,
 // """
-//    public func getFooStreamingInput(input: GetFooStreamingRequest, completion: @escaping (SdkResult<GetFooResponse, GetFooStreamingInputError>) -> Void)
+//    public func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
 //    {
-//        do {
-//            let path = "/foo-streaming-input"
-//            let method = HttpMethodType.post
-//            let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)
-//            let context = Context(encoder: encoder,
-//                                  decoder: decoder,
-//                                  outputType: GetFooResponse.self,
-//                                  outputError: GetFooStreamingInputError.self,
-//                                  operation: getFooStreamingInput,
-//                                  serviceName: serviceName)
-//            client.execute(request: request, context: context, completion: completion)
-//        } catch let err {
-//            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
-//        }
+//        let path = "/foo-no-output"
+//        let context = HttpContextBuilder()
+//                              .withEncoder(value: encoder)
+//                              .withDecoder(value: decoder)
+//                              .withMethod(value: .get)
+//                              .withPath(value: path)
+//                              .withHost(value: "my-api.us-east-2.amazonaws.com")
+//                              .withServiceName(value: serviceName)
+//                              .withOperation(value: "getFooNoOutput")
+//                              .build()
+//        var operation = OperationStack<GetFooNoOutputInput, GetFooNoOutputOutput, GetFooNoOutputError>(id: "getFooNoOutput")
+//        operation.addDefaultOperationMiddlewares()
+//        let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+//        completion(result)
 //    }
 // """,
 // """
-//    public func getFooStreamingOutput(input: GetFooRequest, streamingHandler: StreamSource, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputError>) -> Void)
+//    public func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)
 //    {
-//        do {
-//            let path = "/foo-streaming-output"
-//            let method = HttpMethodType.post
-//            let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)
-//            let context = Context(encoder: encoder,
-//                                  decoder: decoder,
-//                                  outputType: GetFooStreamingResponse.self,
-//                                  outputError: GetFooStreamingOutputError.self,
-//                                  operation: getFooStreamingOutput,
-//                                  serviceName: serviceName)
-//            client.execute(request: request, context: context, completion: completion)
-//        } catch let err {
-//            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
-//        }
+//        let path = "/foo-streaming-input"
+//        let context = HttpContextBuilder()
+//                              .withEncoder(value: encoder)
+//                              .withDecoder(value: decoder)
+//                              .withMethod(value: .post)
+//                              .withPath(value: path)
+//                              .withHost(value: "my-api.us-east-2.amazonaws.com")
+//                              .withServiceName(value: serviceName)
+//                              .withOperation(value: "getFooStreamingInput")
+//                              .build()
+//        var operation = OperationStack<GetFooStreamingInputInput, GetFooStreamingInputOutput, GetFooStreamingInputError>(id: "getFooStreamingInput")
+//        operation.addDefaultOperationMiddlewares()
+//        let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+//        completion(result)
 //    }
 // """,
 // """
-//    public func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput, streamingHandler: StreamSource, completion: @escaping (SdkResult<GetFooStreamingResponse, GetFooStreamingOutputNoInputError>) -> Void)
+//    public func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)
 //    {
-//        do {
-//            let path = "/foo-streaming-output-no-input"
-//            let method = HttpMethodType.post
-//            let request = try input.buildHttpRequest(method: method, path: path, encoder: encoder)
-//            let context = Context(encoder: encoder,
-//                                  decoder: decoder,
-//                                  outputType: GetFooStreamingResponse.self,
-//                                  outputError: GetFooStreamingOutputNoInputError.self,
-//                                  operation: getFooStreamingOutputNoInput,
-//                                  serviceName: serviceName)
-//            client.execute(request: request, context: context, completion: completion)
-//        } catch let err {
-//            completion(.failure(.client(.serializationFailed(err.localizedDescription))))
-//        }
+//        let path = "/foo-streaming-input-no-output"
+//        let context = HttpContextBuilder()
+//                              .withEncoder(value: encoder)
+//                              .withDecoder(value: decoder)
+//                              .withMethod(value: .post)
+//                              .withPath(value: path)
+//                              .withHost(value: "my-api.us-east-2.amazonaws.com")
+//                              .withServiceName(value: serviceName)
+//                              .withOperation(value: "getFooStreamingInputNoOutput")
+//                              .build()
+//        var operation = OperationStack<GetFooStreamingInputNoOutputInput, GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>(id: "getFooStreamingInputNoOutput")
+//        operation.addDefaultOperationMiddlewares()
+//        let result = operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+//        completion(result)
 //    }
 // """
 //         )

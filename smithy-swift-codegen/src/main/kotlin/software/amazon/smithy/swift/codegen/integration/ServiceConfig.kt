@@ -27,7 +27,7 @@ abstract class ServiceConfig(val writer: SwiftWriter) {
         return typesToConformConfigTo.joinToString(", ")
     }
 
-    open fun renderConvienceInits(serviceSymbol: Symbol) {
+    open fun renderConvenienceInits(serviceSymbol: Symbol) {
         // pass none needed for default white label sdk config
     }
 }
