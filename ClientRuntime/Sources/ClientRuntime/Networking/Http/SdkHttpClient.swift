@@ -30,12 +30,10 @@ public class SdkHttpClient {
         engine.executeWithClosure(request: request, completion: completion)
     }
     
+    public func close() {
+        engine.close()
+    }
     
-    typealias Input = SdkHttpRequest
-    
-    typealias Output = DeserializeOutput<Output, OutputError>
-    
-    typealias Context = HttpContext
 }
 
 struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {

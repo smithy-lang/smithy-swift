@@ -40,12 +40,12 @@ extension SdkHttpRequest {
         case .data(let data):
             if let data = data {
                 let byteBuffer = ByteBuffer(data: data)
-                awsInputStream = AwsInputStream(byteBuffer, byteBuffer: byteBuffer)
+                awsInputStream = AwsInputStream(byteBuffer)
             }
         case .streamSource(let stream):
             let byteBuffer = ByteBuffer(size: bufferSize)
             stream.unwrap().sendData(writeTo: byteBuffer)
-            awsInputStream = AwsInputStream(byteBuffer, byteBuffer: byteBuffer)
+            awsInputStream = AwsInputStream(byteBuffer)
         case .none, .streamSink:
             awsInputStream = nil
         }
@@ -57,16 +57,12 @@ extension SdkHttpRequest {
     }
 }
 
-extension HttpRequest {
-    public func toSdkRequest() -> SdkHttpRequest {
-        
-        let sdkHeaders = Headers(httpHeaders: headers ?? HttpHeaders())
-        let sdkMethod = HttpMethodType(rawValue: method ?? "GET") ?? HttpMethodType.get
-        let sdkPath = path ?? "/"
-        //how do i get host information? do i need to store it to a crt request to then retrieve it?
-        
-        let sdkBody = HttpBody.data(body) //how do i know which kind of request this was, streaming and or otherwise?
-        return SdkHttpRequest(method: sdkMethod, endpoint: Endpoint(host: "huh", path: sdkPath), headers: sdkHeaders, body: sdkBody)
+extension SdkHttpRequestBuilder {
+    public convenience init(crtRequest: HttpRequest) {
+        self.init()
+        headers = Headers(httpHeaders: crtRequest.headers ?? HttpHeaders())
+        methodType = HttpMethodType(rawValue: crtRequest.method ?? "GET") ?? HttpMethodType.get
+        path = URL(string: path)?.path ?? "/"
     }
 }
 

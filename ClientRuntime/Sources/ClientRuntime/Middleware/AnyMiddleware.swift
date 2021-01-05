@@ -27,14 +27,6 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         }
         self.id = id
     }
-    
-    public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput, H.Context == Context {
-        
-        self._handle = { context, input, handler in
-            handler.handle(context: context, input: input)
-        }
-        self.id = id
-    }
 
     public func handle<H: Handler>(context: Context, input: MInput, next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput, H.Context == Context {
