@@ -15,7 +15,13 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.camelCaseName
+import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -50,7 +56,7 @@ open class HttpProtocolClientGenerator(
                 feat.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
+            writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
                 writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 properties.forEach { feat ->
                     feat.renderInstantiation(writer)
@@ -149,13 +155,13 @@ open class HttpProtocolClientGenerator(
                 val isBoxed = symbolProvider.toSymbol(targetShape).isBoxed()
 
                 // unwrap the label members if boxed
-                if(isBoxed) {
-                    writer.openBlock("guard let ${labelMemberName} = input.$labelMemberName else {", "}") {
+                if (isBoxed) {
+                    writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
                         writer.write("completion(.failure(.client(ClientError.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))")
                         writer.write("return")
                     }
                 } else {
-                    writer.write("let ${labelMemberName} = input.$labelMemberName")
+                    writer.write("let $labelMemberName = input.$labelMemberName")
                 }
                 resolvedURIComponents.add("\\($formattedLabel)")
             } else {

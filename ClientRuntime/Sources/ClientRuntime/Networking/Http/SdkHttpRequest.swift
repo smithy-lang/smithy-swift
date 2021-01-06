@@ -59,7 +59,9 @@ extension SdkHttpRequest {
 
 extension SdkHttpRequestBuilder {
     public func update(from crtRequest: HttpRequest) -> SdkHttpRequestBuilder {
-        headers = Headers(httpHeaders: crtRequest.headers ?? HttpHeaders())
+        let httpHeaders = HttpHeaders()
+        httpHeaders.addArray(headers: crtRequest.getHeaders())
+        headers = Headers(httpHeaders: httpHeaders)
         methodType = HttpMethodType(rawValue: crtRequest.method ?? "GET") ?? HttpMethodType.get
         if let crtPath = crtRequest.path,
            let url = URL(string: crtPath) {

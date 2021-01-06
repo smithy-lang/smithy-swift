@@ -33,4 +33,3 @@ public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpRe
     var output: Output?
     var error: OutputError?
 }
-

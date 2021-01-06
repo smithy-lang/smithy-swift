@@ -60,7 +60,7 @@ open class MemberShapeDecodeGenerator(
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
-        val decodeVerb = if(symbol.isBoxed()) "decodeIfPresent" else "decode"
+        val decodeVerb = if (symbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
         writer.write("let \$L = try \$L.$decodeVerb(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
@@ -137,7 +137,7 @@ open class MemberShapeDecodeGenerator(
         val nestedTarget = ctx.model.expectShape(shape.member.target)
         if (level == 0) {
             val listContainerName = "${memberName}Container"
-            val decodeVerb = if(originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
+            val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
                 "let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
                 listContainerName,
@@ -225,7 +225,7 @@ open class MemberShapeDecodeGenerator(
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
             val topLevelContainerName = "${memberName}Container"
-            val decodeVerb = if(originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
+            val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write("let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
                 topLevelContainerName,
                 symbolName,

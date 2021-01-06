@@ -636,7 +636,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val type = ctx.symbolProvider.toSymbol(it.member)
                     val memberName = ctx.symbolProvider.toMemberName(it.member)
                     val value = if (type.isBoxed()) "nil" else 0
-                    writer.write("self.${memberName} = $value")
+                    writer.write("self.$memberName = $value")
                 }
                 writer.dedent()
                 writer.write("}")

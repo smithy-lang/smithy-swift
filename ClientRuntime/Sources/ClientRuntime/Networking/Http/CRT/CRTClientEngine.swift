@@ -10,7 +10,6 @@ class CRTClientEngine: HttpClientEngine {
     
     private var logger: LogAgent
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
-    private let HOST_HEADER = "Host"
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let CONNECTION_HEADER = "Connection"
     private let KEEP_ALIVE = "keep-alive"
@@ -70,7 +69,6 @@ class CRTClientEngine: HttpClientEngine {
     private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
         
         var headers = request.headers
-        headers.update(name: HOST_HEADER, value: endpoint.host)
         headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
         let contentLength: Int64 = {
