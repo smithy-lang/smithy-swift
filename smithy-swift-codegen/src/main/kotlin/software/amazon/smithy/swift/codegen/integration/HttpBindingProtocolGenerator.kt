@@ -632,8 +632,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.dedent()
                 writer.write("} else {")
                 writer.indent()
-                bodyMemberNames.sorted().forEach {
-                    writer.write("self.$it = nil")
+                bodyMembers.sortedBy { it.memberName }.forEach {
+                    val type = ctx.symbolProvider.toSymbol(it.member)
+                    val memberName = ctx.symbolProvider.toMemberName(it.member)
+                    val value = if (type.isBoxed()) "nil" else 0
+                    writer.write("self.${memberName} = $value")
                 }
                 writer.dedent()
                 writer.write("}")
@@ -650,7 +653,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .toMutableSet()
         if (responseCodeTraitMembers.isNotEmpty()) {
             responseCodeTraitMembers.forEach {
-                writer.write("self.${it.locationName.toLowerCase()} = httpResponse.statusCode.rawValue")
+                writer.write("self.${it.locationName.decapitalize()} = httpResponse.statusCode.rawValue")
             }
         }
     }

@@ -38,12 +38,17 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
         let method = context.getMethod()
         let path = context.getPath()
         let encoder = context.getEncoder()
+        let host = context.getHost()
         do {
             let sdkRequestBuilder = try copiedInput.buildHttpRequest(method: method,
                                                                      path: path,
                                                                      encoder: encoder,
                                                                      idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
-            return .success(sdkRequestBuilder)
+            //TODO: remove this when we have endpoint resolver middleware, this a temp patch
+            let updatedRequestWithEndpoint = sdkRequestBuilder
+                .withHost(host)
+                .withPath(path)
+            return .success(updatedRequestWithEndpoint)
         } catch let err {
             let error = ClientError.serializationFailed(err.localizedDescription)
             return .failure(error)

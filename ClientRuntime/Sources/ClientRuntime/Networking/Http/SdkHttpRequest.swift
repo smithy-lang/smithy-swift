@@ -33,7 +33,7 @@ extension SdkHttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = endpoint.urlString
+        httpRequest.path = endpoint.url?.absoluteString ?? endpoint.urlString
         httpRequest.addHeaders(headers: httpHeaders)
         var awsInputStream: AwsInputStream?
         switch body {
@@ -61,7 +61,8 @@ extension SdkHttpRequestBuilder {
     public func update(from crtRequest: HttpRequest) -> SdkHttpRequestBuilder {
         headers = Headers(httpHeaders: crtRequest.headers ?? HttpHeaders())
         methodType = HttpMethodType(rawValue: crtRequest.method ?? "GET") ?? HttpMethodType.get
-        if let url = URL(string: path) {
+        if let crtPath = crtRequest.path,
+           let url = URL(string: crtPath) {
             path = url.path
             host = url.host ?? ""
             if let queryItems = url.toQueryItems() {

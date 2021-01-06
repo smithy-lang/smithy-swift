@@ -15,12 +15,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ServiceGenerator
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.camelCaseName
-import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.*
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -139,7 +134,7 @@ open class HttpProtocolClientGenerator(
 
                 // shape must be string, number, boolean, or timestamp
                 val targetShape = model.expectShape(binding.member.target)
-                val labelMemberName = binding.member.memberName
+                val labelMemberName = binding.member.memberName.decapitalize()
                 val formattedLabel: String
                 if (targetShape.isTimestampShape) {
                     val bindingIndex = HttpBindingIndex.of(model)
@@ -151,11 +146,16 @@ open class HttpProtocolClientGenerator(
                 } else {
                     formattedLabel = labelMemberName
                 }
+                val isBoxed = symbolProvider.toSymbol(targetShape).isBoxed()
 
-                // unwrap the label members
-                writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                    writer.write("completion(.failure(.client(ClientError.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))")
-                    writer.write("return")
+                // unwrap the label members if boxed
+                if(isBoxed) {
+                    writer.openBlock("guard let ${labelMemberName} = input.$labelMemberName else {", "}") {
+                        writer.write("completion(.failure(.client(ClientError.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))")
+                        writer.write("return")
+                    }
+                } else {
+                    writer.write("let ${labelMemberName} = input.$labelMemberName")
                 }
                 resolvedURIComponents.add("\\($formattedLabel)")
             } else {
@@ -175,8 +175,6 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
         writer.write("  .withPath(value: path)")
-        // FIXME: what should host be in the white label sdk?
-        writer.write("  .withHost(value: \"my-api.us-east-2.amazonaws.com\")")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
     }
