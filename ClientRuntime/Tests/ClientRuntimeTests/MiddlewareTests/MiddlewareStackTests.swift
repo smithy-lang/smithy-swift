@@ -136,9 +136,17 @@
     var id: String
 
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
-        input.withHost("httpbin.org")
-        input.headers.add(name: "Content-type", value: "application/json")
-        input.headers.add(name: "Test", value: "Value")
+
+        let path = context.getPath()
+        let method = context.getMethod()
+        let host = "httpbin.org"
+        input.withHost(host)
+            .withHeader(name: "Content-type", value: "application/json")
+            .withHeader(name: "Test", value: "Value")
+            .withHeader(name: "Host", value: host)
+            .withPath(path)
+            .withMethod(method)
+        
         return next.handle(context: context, input: input)
     }
     
@@ -179,7 +187,7 @@
  }
  
  struct TestInput: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
         return SdkHttpRequestBuilder()
     }
  }
