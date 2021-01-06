@@ -41,7 +41,7 @@ public extension Endpoint {
     }
     
     var urlString: String {
-        let queryItemString = queryItems != nil && queryItems!.count != 0 ? "?\(queryItems!.xmlString ?? "")" : ""
+        let queryItemString = queryItems != nil && queryItems!.isEmpty ? "?\(queryItems!.xmlString ?? "")" : ""
         return host + path + queryItemString
     }
 }

@@ -37,7 +37,8 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
         let encoder = context.getEncoder()
         do {
             let sdkRequestBuilder = try input.buildHttpRequest(encoder: encoder,
-                                                               idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
+                                                               idempotencyTokenGenerator:
+                                                                DefaultIdempotencyTokenGenerator())
             return .success(sdkRequestBuilder)
         } catch let err {
             let error = ClientError.serializationFailed(err.localizedDescription)

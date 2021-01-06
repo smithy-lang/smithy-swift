@@ -5,5 +5,6 @@
 
 import Foundation
 extension URL {
-    func toQueryItems() -> [URLQueryItem]? { return URLComponents(url: self, resolvingAgainstBaseURL: false)?.queryItems }
+    func toQueryItems() -> [URLQueryItem]? { return URLComponents(url: self,
+                                                                  resolvingAgainstBaseURL: false)?.queryItems }
 }
