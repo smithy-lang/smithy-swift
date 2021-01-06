@@ -8,6 +8,7 @@ public protocol Middleware {
     
     /// The middleware ID
     var id: String { get }
+    
     func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) -> Result<MOutput, Error>

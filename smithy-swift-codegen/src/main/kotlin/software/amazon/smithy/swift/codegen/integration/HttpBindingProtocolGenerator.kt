@@ -868,7 +868,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
+                    "public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
                     "}"
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")

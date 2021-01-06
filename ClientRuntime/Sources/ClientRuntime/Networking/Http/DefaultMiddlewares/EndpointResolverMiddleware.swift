@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-//this struct is unfinished. proper endpoint resolving will need to be added futuristically
-
+//TODO: this struct is unfinished. proper endpoint resolving will need to be added futuristically
 public struct EndpointResolverMiddleware: Middleware {
     
     public var id: String = "EndpointResolver"
@@ -19,8 +18,11 @@ public struct EndpointResolverMiddleware: Middleware {
         
         let host = context.getHost()
         let method = context.getMethod()
+        let path = context.getPath()
         input.headers.add(name: "Host", value: host)
-        input.methodType = method
+        input.withMethod(method)
+            .withHost(host)
+            .withPath(path)
         return next.handle(context: context, input: input)
     }
     

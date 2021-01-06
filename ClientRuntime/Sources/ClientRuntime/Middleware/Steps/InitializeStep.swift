@@ -34,21 +34,11 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
         //this step takes an input of whatever type with conformance to our http binding protocol
         //and converts it to an sdk request builder
-        let copiedInput = input
-        let method = context.getMethod()
-        let path = context.getPath()
         let encoder = context.getEncoder()
-        let host = context.getHost()
         do {
-            let sdkRequestBuilder = try copiedInput.buildHttpRequest(method: method,
-                                                                     path: path,
-                                                                     encoder: encoder,
-                                                                     idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
-            //TODO: remove this when we have endpoint resolver middleware, this a temp patch
-            let updatedRequestWithEndpoint = sdkRequestBuilder
-                .withHost(host)
-                .withPath(path)
-            return .success(updatedRequestWithEndpoint)
+            let sdkRequestBuilder = try input.buildHttpRequest(encoder: encoder,
+                                                               idempotencyTokenGenerator: DefaultIdempotencyTokenGenerator())
+            return .success(sdkRequestBuilder)
         } catch let err {
             let error = ClientError.serializationFailed(err.localizedDescription)
             return .failure(error)

@@ -60,7 +60,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
                 """
                 extension SmokeTestInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         if let query1 = query1 {
                             let queryItem = URLQueryItem(name: "Query1", value: String(query1))
@@ -93,7 +93,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension ExplicitStringInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "text/plain")
                     if let payload1 = self.payload1 {
@@ -116,7 +116,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension ExplicitBlobInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
@@ -139,7 +139,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension ExplicitBlobStreamInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/octet-stream")
                     if let payload1 = self.payload1 {
@@ -162,7 +162,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension ExplicitStructInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/json")
                     if let payload1 = self.payload1 {
@@ -185,7 +185,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension ListInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/json")
                     if try !self.allPropertiesAreNull() {
@@ -208,7 +208,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension EnumInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/json")
                     if let enumHeader = enumHeader {
@@ -234,7 +234,7 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
             extension TimestampInputInput: HttpRequestBinding, Reflection {
-                public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     if let queryTimestamp = queryTimestamp {
                         let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
@@ -349,7 +349,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         val expectedContents =
                 """
                 extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         if let token = token {
                             let queryItem = URLQueryItem(name: "token", value: String(token))
@@ -377,7 +377,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         val expectedContents =
                 """
                 extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         if let header = header {
                             builder.withHeader(name: "token", value: String(header))
@@ -412,7 +412,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         val expectedContents =
                 """
                 extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         builder.withHeader(name: "Content-Type", value: "text/plain")
                         if let bodyIsToken = self.bodyIsToken {
@@ -455,7 +455,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         val expectedContents =
                 """
                 extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         builder.withHeader(name: "Content-Type", value: "application/json")
                         if try !self.allPropertiesAreNull() {
@@ -494,7 +494,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         val expectedContents =
                 """
                 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
                         builder.withHeader(name: "Content-Type", value: "text/plain")
                         if let token = token {
