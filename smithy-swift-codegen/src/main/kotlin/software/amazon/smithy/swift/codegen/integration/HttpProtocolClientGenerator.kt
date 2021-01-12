@@ -32,7 +32,8 @@ class HttpProtocolClientGenerator(
     private val writer: SwiftWriter,
     private val serviceShape: ServiceShape,
     private val features: List<HttpFeature>,
-    private val serviceConfig: ServiceConfig
+    private val serviceConfig: ServiceConfig,
+    private val httpBindingResolver: HttpBindingResolver
 ) {
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
@@ -138,7 +139,7 @@ class HttpProtocolClientGenerator(
     }
 
     // replace labels with any path bindings
-    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBinding>, writer: SwiftWriter) {
+    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBindingDescriptor>, writer: SwiftWriter) {
         val resolvedURIComponents = mutableListOf<String>()
         httpTrait.uri.segments.forEach {
             if (it.isLabel) {
@@ -179,10 +180,9 @@ class HttpProtocolClientGenerator(
 
     private fun renderOperationInputSerializationBlock(opIndex: OperationIndex, op: OperationShape) {
         val inputShape = opIndex.getInput(op)
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
-        val bindingIndex = HttpBindingIndex.of(model)
-        val requestBindings = bindingIndex.getRequestBindings(op)
-        val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
+        val httpTrait = httpBindingResolver.httpTrait(op)
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         val httpMethod = httpTrait.method.toLowerCase()
 
         // TODO: remove this if block after synthetic input/outputs are completely done

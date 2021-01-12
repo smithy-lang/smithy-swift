@@ -36,7 +36,6 @@ import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpResponseCodeTrait
-import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -45,7 +44,6 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
-import software.amazon.smithy.utils.OptionalUtils
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -78,6 +76,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
+
+    open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
+            HttpTraitResolver(ctx, defaultContentType)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
@@ -266,10 +267,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         val opIndex = OperationIndex.of(ctx.model)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)
-        val bindingIndex = HttpBindingIndex.of(ctx.model)
-        val responseBindings = bindingIndex.getResponseBindings(op)
-        val headerBindings = responseBindings.values
-            .filter { it.location == HttpBinding.Location.HEADER }
+        var responseBindings = getProtocolHttpBindingResolver(ctx).responseBindings(op)
+        val headerBindings = responseBindings
+                .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
@@ -285,7 +285,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderInitMembersFromHeaders(ctx, headerBindings, writer)
                     // prefix headers
                     // spec: "Only a single structure member can be bound to httpPrefixHeaders"
-                    responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                    responseBindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
                         ?.let {
                             renderInitMembersFromPrefixHeaders(ctx, it, writer)
                         }
@@ -301,9 +301,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         shape: StructureShape
     ) {
-        val bindingIndex = HttpBindingIndex.of(ctx.model)
-        val responseBindings = bindingIndex.getResponseBindings(shape)
-        val headerBindings = responseBindings.values
+        val responseBindings = getProtocolHttpBindingResolver(ctx).responseBindings(shape)
+        val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
@@ -322,7 +321,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderInitMembersFromHeaders(ctx, headerBindings, writer)
                     // prefix headers
                     // spec: "Only a single structure member can be bound to httpPrefixHeaders"
-                    responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                    responseBindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
                         ?.let {
                             renderInitMembersFromPrefixHeaders(ctx, it, writer)
                         }
@@ -400,7 +399,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun renderInitMembersFromHeaders(
         ctx: ProtocolGenerator.GenerationContext,
-        bindings: List<HttpBinding>,
+        bindings: List<HttpBindingDescriptor>,
         writer: SwiftWriter
     ) {
         bindings.forEach { hdrBinding ->
@@ -544,7 +543,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderInitMembersFromPrefixHeaders(
         ctx: ProtocolGenerator.GenerationContext,
-        binding: HttpBinding,
+        binding: HttpBindingDescriptor,
         writer: SwiftWriter
     ) {
         // prefix headers MUST target string or collection-of-string
@@ -590,23 +589,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderInitMembersFromPayload(
         ctx: ProtocolGenerator.GenerationContext,
-        responseBindings: Map<String, HttpBinding>,
+        responseBindings: List<HttpBindingDescriptor>,
         outputShapeName: String,
         writer: SwiftWriter
     ) {
-        var queryMemberNames = responseBindings.values
+        var queryMemberNames = responseBindings
                 .filter { it.location == HttpBinding.Location.QUERY }
                 .sortedBy { it.memberName }
                 .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
 
-        val httpPayload = responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderDeserializeExplicitPayload(ctx, httpPayload, writer)
         } else {
             // Unbound document members that should be deserialized from the document format for the protocol.
             // The generated code is the same across protocols and the serialization provider instance
             // passed into the function is expected to handle the formatting required by the protocol
-            val bodyMembers = responseBindings.values
+            val bodyMembers = responseBindings
                 .filter { it.location == HttpBinding.Location.DOCUMENT }
 
             queryMemberNames = queryMemberNames.union(
@@ -645,7 +644,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("self.$it = nil")
         }
 
-        val responseCodeTraitMembers = responseBindings.values
+        val responseCodeTraitMembers = responseBindings
             .filter { it.member.hasTrait(HttpResponseCodeTrait::class.java) }
             .toMutableSet()
         if (responseCodeTraitMembers.isNotEmpty()) {
@@ -655,7 +654,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderDeserializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: SwiftWriter) {
+    private fun renderDeserializeExplicitPayload(ctx: ProtocolGenerator.GenerationContext, binding: HttpBindingDescriptor, writer: SwiftWriter) {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
@@ -838,20 +837,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             return
         }
         val opIndex = OperationIndex.of(ctx.model)
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
+
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val httpTrait = httpBindingResolver.httpTrait(op)
+
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
         val inputShape = ctx.model.expectShape(op.input.get())
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         val bindingIndex = HttpBindingIndex.of(ctx.model)
-        val requestBindings = bindingIndex.getRequestBindings(op)
-        val queryBindings = requestBindings.values.filter { it.location == HttpBinding.Location.QUERY }
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
         val queryLiterals = httpTrait.uri.queryLiterals
-        val headerBindings = requestBindings.values
+        val headerBindings = requestBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val contentType = bindingIndex.determineRequestContentType(op, defaultContentType).orElse(defaultContentType)
 
-        val prefixHeaderBindings = requestBindings.values
+        val prefixHeaderBindings = requestBindings
             .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
         val rootNamespace = ctx.settings.moduleName
@@ -871,7 +873,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     // TODO:: Replace host appropriately
                     writer.write("let endpoint = Endpoint(host: \"my-api.us-east-2.amazonaws.com\", path: path, queryItems: queryItems)")
-                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
+                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody, op.id.name)
                     renderEncodedBodyAndReturn(ctx, writer, inputShape, requestBindings)
                 }
             }
@@ -883,10 +885,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         inputShape: Shape,
-        requestBindings: Map<String, HttpBinding>
+        requestBindings: List<HttpBindingDescriptor>
     ) {
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
         if (hasHttpBody) {
             var optionalTerminator = ""
@@ -913,7 +915,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderSerializeExplicitPayload(
         ctx: ProtocolGenerator.GenerationContext,
-        binding: HttpBinding,
+        binding: HttpBindingDescriptor,
         writer: SwiftWriter
     ) {
         // explicit payload member as the sole payload
@@ -969,7 +971,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderQueryItems(
         ctx: ProtocolGenerator.GenerationContext,
         queryLiterals: Map<String, String>,
-        queryBindings: List<HttpBinding>,
+        queryBindings: List<HttpBindingDescriptor>,
         writer: SwiftWriter
     ) {
         writer.write("var queryItems: [URLQueryItem] = [URLQueryItem]()")
@@ -1048,20 +1050,25 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    open fun headersContent(contentType: String, writer: SwiftWriter, hasHttpBody: Boolean, operationShape: String) {
+        if (hasHttpBody) {
+            writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
+        }
+    }
+
     private fun renderHeaders(
         ctx: ProtocolGenerator.GenerationContext,
-        headerBindings: List<HttpBinding>,
-        prefixHeaderBindings: List<HttpBinding>,
+        headerBindings: List<HttpBindingDescriptor>,
+        prefixHeaderBindings: List<HttpBindingDescriptor>,
         writer: SwiftWriter,
         contentType: String,
-        hasHttpBody: Boolean
+        hasHttpBody: Boolean,
+        operationShape: String
     ) {
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         writer.write("var headers = Headers()")
         // we only need the content type header in the request if there is an http body that is being sent
-        if (hasHttpBody) {
-            writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
-        }
+        headersContent(contentType, writer, hasHttpBody, operationShape)
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -1154,7 +1161,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val features = getHttpFeatures(ctx)
             val config = getConfigClass(writer)
-            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config).render()
+            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config,
+                    getProtocolHttpBindingResolver(ctx)).render()
         }
     }
 
@@ -1192,15 +1200,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val containedOperations: MutableList<OperationShape> = mutableListOf()
         for (operation in topDownIndex.getContainedOperations(ctx.service)) {
-            OptionalUtils.ifPresentOrElse(
-                operation.getTrait(HttpTrait::class.java),
-                { containedOperations.add(operation) }
-            ) {
-                LOGGER.warning(
-                    "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
-                            "it does not have an http binding trait"
-                )
-            }
+            containedOperations.add(operation)
+//            OptionalUtils.ifPresentOrElse(
+//                operation.getTrait(HttpTrait::class.java),
+//                { containedOperations.add(operation) }
+//            ) {
+//                LOGGER.warning(
+//                    "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
+//                            "it does not have an http binding trait"
+//                )
+//            }
         }
         return containedOperations
     }

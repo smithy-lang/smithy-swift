@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
@@ -14,6 +15,8 @@ import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.HttpFeature
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpProtocolClientGeneratorTests : TestsBase() {
     private val commonTestContents: String
@@ -31,7 +34,13 @@ class HttpProtocolClientGeneratorTests : TestsBase() {
         features.add(DefaultRequestEncoder())
         features.add(DefaultResponseDecoder())
         val config = DefaultConfig(writer)
-        val generator = HttpProtocolClientGenerator(model, provider, writer, service, features, config)
+
+        val delegator = SwiftDelegator(settings, model, MockManifest(), provider)
+        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(),
+                MockHttpProtocolGenerator().protocol, delegator)
+
+        val generator = HttpProtocolClientGenerator(model, provider, writer, service, features, config,
+                HttpTraitResolver(ctx, "application/json"))
         generator.render()
         commonTestContents = writer.toString()
     }
