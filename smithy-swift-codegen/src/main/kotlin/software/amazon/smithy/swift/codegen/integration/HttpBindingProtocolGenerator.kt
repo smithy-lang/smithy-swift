@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import java.util.Optional
 import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -44,6 +45,7 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.utils.OptionalUtils
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -1200,16 +1202,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val containedOperations: MutableList<OperationShape> = mutableListOf()
         for (operation in topDownIndex.getContainedOperations(ctx.service)) {
-            containedOperations.add(operation)
-//            OptionalUtils.ifPresentOrElse(
-//                operation.getTrait(HttpTrait::class.java),
-//                { containedOperations.add(operation) }
-//            ) {
-//                LOGGER.warning(
-//                    "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
-//                            "it does not have an http binding trait"
-//                )
-//            }
+            OptionalUtils.ifPresentOrElse(
+                Optional.of(getProtocolHttpBindingResolver(ctx).httpTrait(operation)::class.java),
+                { containedOperations.add(operation) }
+            ) {
+                LOGGER.warning(
+                    "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
+                            "it does not have an http binding trait"
+                )
+            }
         }
         return containedOperations
     }
