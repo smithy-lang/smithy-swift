@@ -174,7 +174,6 @@ open class HttpProtocolClientGenerator(
         writer.write("let path = \"\$L\"", uri)
     }
 
-
     protected open fun renderContextAttributes(op: OperationShape) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val httpMethod = httpTrait.method.toLowerCase()
