@@ -82,15 +82,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
                 if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) })
                         writer.write(
-                                "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                                "let requestBuilder = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
                                         "path: \$S, encoder: encoder, idempotencyTokenGenerator: QueryIdempotencyTestTokenGenerator())",
                                 test.uri)
                 else
                     writer.write(
-                        "let actual = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
+                        "let requestBuilder = try input.buildHttpRequest(method: .${test.method.toLowerCase()}, " +
                                 "path: \$S, encoder: encoder)", test.uri
                     )
-
+                writer.write("let actual = requestBuilder.build()")
                 // assert that forbidden Query Items do not exist
                 if (test.forbidQueryParams.isNotEmpty()) {
                     writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")

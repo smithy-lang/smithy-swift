@@ -56,12 +56,13 @@ open class MemberShapeDecodeGenerator(
 
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
-        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
+        val decodeVerb = if (symbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let \$L = try \$L.decodeIfPresent(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
+        writer.write("let \$L = try \$L.$decodeVerb(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
@@ -127,7 +128,7 @@ open class MemberShapeDecodeGenerator(
     ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val decodedMemberName = "${memberName}Decoded$level"
+        val decodedMemberName = "${memberName.removeSurrounding("`", "`")}Decoded$level"
         val insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
             is SetShape -> "insert"
             is ListShape -> "append"
@@ -136,8 +137,9 @@ open class MemberShapeDecodeGenerator(
         val nestedTarget = ctx.model.expectShape(shape.member.target)
         if (level == 0) {
             val listContainerName = "${memberName}Container"
+            val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
-                "let \$L = try values.decodeIfPresent(\$L.self, forKey: .\$L)",
+                "let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
                 listContainerName,
                 symbolName,
                 memberName
@@ -165,7 +167,7 @@ open class MemberShapeDecodeGenerator(
     Can be overridden to allow post processing of the decoded value before assigning it to the member.
      */
     open fun renderAssigningDecodedMember(topLevelMember: MemberShape, decodedMemberName: String) {
-        val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember)
+        val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember).removeSurrounding("`", "`")
         writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
     }
 
@@ -223,7 +225,8 @@ open class MemberShapeDecodeGenerator(
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
             val topLevelContainerName = "${memberName}Container"
-            writer.write("let \$L = try values.decodeIfPresent(\$L.self, forKey: .\$L)",
+            val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
+            writer.write("let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
                 topLevelContainerName,
                 symbolName,
                 memberName)

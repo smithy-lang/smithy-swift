@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+///this class will implement Handler per new middleware implementation
 public class SdkHttpClient {
     
     let engine: HttpClientEngine
@@ -16,45 +17,41 @@ public class SdkHttpClient {
         }
     }
     
-    public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
-        engine.execute(request: request, completion: completion)
+    public func getHandler<Output: HttpResponseBinding,
+                           OutputError: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
+                                                                             DeserializeOutput<Output,
+                                                                                               OutputError>,
+                                                                             HttpContext> {
+        let clientHandler = ClientHandler<Output, OutputError>(engine: engine)
+        return clientHandler.eraseToAnyHandler()
     }
     
-    public func execute<OutputType, OutputError>(request: SdkHttpRequest,
-                                                 context: Context<OutputType, OutputError>,
-                                                 completion: @escaping (SdkResult<OutputType, OutputError>) -> Void) {
-        engine.execute(request: request) { (httpResult) in
-            
-            switch httpResult {
-            case .failure(let httpClientErr):
-                completion(.failure(.client(ClientError.networkError(httpClientErr))))
-                return
-                
-            case .success(let httpResponse):
-                if (200..<300).contains(httpResponse.statusCode.rawValue) {
-                    do {
-                        let output = try OutputType(httpResponse: httpResponse,
-                                                    decoder: context.decoder)
-                        completion(.success(output))
-                    } catch let err {
-                        completion(.failure(.client(.deserializationFailed(err))))
-                        return
-                    }
-                } else {
-                    do {
-                        let error = try OutputError(httpResponse: httpResponse,
-                                                    decoder: context.decoder)
-                        completion(.failure(SdkError.service(error)))
-                    } catch let err {
-                        //TODO: double check that this is the error we should be passing back to the service client.
-                        completion(.failure(.client(.deserializationFailed(err))))
-                        return
-                    }
-                }
-            }
-        }
+    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+        engine.executeWithClosure(request: request, completion: completion)
     }
+    
     public func close() {
         engine.close()
     }
+    
+}
+
+struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
+    let engine: HttpClientEngine
+    func handle(context: HttpContext, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+        let result = engine.execute(request: input)
+        do {
+            let httpResponse = try result.get()
+            let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+            return .success(output)
+        } catch let err {
+            return .failure(err)
+        }
+    }
+
+    typealias Input = SdkHttpRequest
+
+    typealias Output = DeserializeOutput<Output, OutputError>
+
+    typealias Context = HttpContext
 }

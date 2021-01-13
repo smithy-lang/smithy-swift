@@ -26,6 +26,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers)
         httpClient.execute(request: request) { result in
             switch result {
@@ -48,6 +49,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
@@ -77,6 +79,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let dataReceivedExpectation = XCTestExpectation(description: "Data was received")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         let stream = MockSinkStream(testExpectation: dataReceivedExpectation)
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
@@ -103,6 +106,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
@@ -132,6 +136,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1"),
@@ -161,6 +166,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
@@ -190,6 +196,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "httpbin.org")
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try! encoder.encode(body)
@@ -239,6 +246,6 @@ class MockSinkStream: StreamSink {
     
 }
 
-struct TestBody: Encodable {
+struct TestBody: Codable {
     let test: String
 }

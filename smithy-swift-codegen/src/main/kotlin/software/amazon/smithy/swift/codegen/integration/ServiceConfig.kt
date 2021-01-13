@@ -11,7 +11,9 @@ data class ConfigField(val name: String?, val type: String, private val document
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
  */
-abstract class ServiceConfig(val writer: SwiftWriter) {
+abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
+
+    open val typeName: String = "${serviceName}Configuration"
 
     open val typesToConformConfigTo: List<String> = mutableListOf("Configuration")
 
@@ -27,7 +29,7 @@ abstract class ServiceConfig(val writer: SwiftWriter) {
         return typesToConformConfigTo.joinToString(", ")
     }
 
-    open fun renderConvienceInits(serviceSymbol: Symbol) {
+    open fun renderConvenienceInits(serviceSymbol: Symbol) {
         // pass none needed for default white label sdk config
     }
 }

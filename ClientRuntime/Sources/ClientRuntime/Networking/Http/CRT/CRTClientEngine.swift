@@ -6,11 +6,10 @@
 import AwsCommonRuntimeKit
 import Logging
 
-class CRTClientEngine: HttpClientEngine {
+class CRTClientEngine: HttpClientEngine {    
     
     private var logger: LogAgent
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
-    private let HOST_HEADER = "Host"
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let CONNECTION_HEADER = "Connection"
     private let KEEP_ALIVE = "keep-alive"
@@ -50,7 +49,7 @@ class CRTClientEngine: HttpClientEngine {
                                                   tlsOptions: tlsConnectionOptions,
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
-                                                  enableManualWindowManagement: true)
+                                                  enableManualWindowManagement: false) //not using backpressure yet
         logger.debug("Creating connection pool for \(endpoint.urlString)" +
                         "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
@@ -70,7 +69,6 @@ class CRTClientEngine: HttpClientEngine {
     private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
         
         var headers = request.headers
-        headers.update(name: HOST_HEADER, value: endpoint.host)
         headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
         let contentLength: Int64 = {
@@ -91,7 +89,13 @@ class CRTClientEngine: HttpClientEngine {
         return request.toHttpRequest(bufferSize: windowSize)
     }
     
-    public func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+    public func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
+        execute(request: request).then { (result) in
+            completion(result)
+        }
+    }
+    
+    public func execute(request: SdkHttpRequest) -> Future<HttpResponse> {
         let isStreaming = { () -> Bool in
             switch request.body {
             case .streamSink, .streamSource: return true
@@ -99,31 +103,31 @@ class CRTClientEngine: HttpClientEngine {
             }
         }()
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
-        connectionMgr.acquireConnection().then { [self] (result) in
-            logger.debug("connection was acquired to: \(request.endpoint.urlString)")
-            switch result {
-            case .success(let connection):
+        let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection()
+            .chained { (connectionResult) -> Future<HttpResponse> in
+                self.logger.debug("connection was acquired to: \(request.endpoint.urlString)")
                 let (requestOptions, future) = isStreaming ?
-                    makeHttpRequestStreamOptions(request) : makeHttpRequestOptions(request)
-                let stream = connection.makeRequest(requestOptions: requestOptions)
-                stream.activate()
-                future.then { (result) in
-                    switch result {
-                    case .success(let response):
-                        logger.debug("Future of response came back with success: \(response)")
-                        let statusCode = Int(stream.getResponseStatusCode())
-                        response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
-                        completion(.success(response))
-                    case .failure(let error):
-                        logger.error("Future of response came back with an error: \(error)")
-                        completion(.failure(error))
+                    self.makeHttpRequestStreamOptions(request): self.makeHttpRequestOptions(request)
+                switch connectionResult {
+                case .failure(let error):
+                    future.fail(error)
+                case .success(let connection):
+                    let stream = connection.makeRequest(requestOptions: requestOptions)
+                    stream.activate()
+                    //map status code once call comes back
+                    future.then { (responseResult) in
+                        _ = responseResult.map { (response) -> HttpResponse in
+                            self.logger.debug("Future of response came back with success: \(response)")
+                            let statusCode = Int(stream.getResponseStatusCode())
+                            response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
+                            return response
+                        }
                     }
                 }
-            case .failure(let error):
-                completion(.failure(error))
+                
+                return future
             }
-        }
-        
+        return httpResponseFuture
     }
     
     public func close() {
@@ -170,13 +174,13 @@ class CRTClientEngine: HttpClientEngine {
                     future.fail(error)
                 }
             }
-             
+            
             if let streamSink = streamSink {
                 response.body = HttpBody.streamSink(.provider(streamSink))
             } else {
                 response.body = HttpBody.none
             }
-    
+            
             future.fulfill(response)
         }
         
@@ -189,7 +193,7 @@ class CRTClientEngine: HttpClientEngine {
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
-
+        
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
