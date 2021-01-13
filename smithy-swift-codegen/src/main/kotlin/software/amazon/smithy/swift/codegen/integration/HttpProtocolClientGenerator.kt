@@ -52,18 +52,18 @@ open class HttpProtocolClientGenerator(
             writer.write("let serviceName = \"${serviceSymbol.name}\"")
             writer.write("let encoder: RequestEncoder")
             writer.write("let decoder: ResponseDecoder")
-            properties.forEach { feat ->
-                feat.addImportsAndDependencies(writer)
+            properties.forEach { prop ->
+                prop.addImportsAndDependencies(writer)
             }
             writer.write("")
             writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
                 writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
-                properties.forEach { feat ->
-                    feat.renderInstantiation(writer)
-                    if (feat.needsConfigure) {
-                        feat.renderConfiguration(writer)
+                properties.forEach { prop ->
+                    prop.renderInstantiation(writer)
+                    if (prop.needsConfigure) {
+                        prop.renderConfiguration(writer)
                     }
-                    feat.renderInitialization(writer, "config")
+                    prop.renderInitialization(writer, "config")
                 }
 
                 writer.write("self.config = config")
@@ -176,7 +176,7 @@ open class HttpProtocolClientGenerator(
     protected open fun renderContextAttributes(op: OperationShape) {
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val httpMethod = httpTrait.method.toLowerCase()
-
+        //FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
         writer.write("  .withEncoder(value: encoder)")
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
