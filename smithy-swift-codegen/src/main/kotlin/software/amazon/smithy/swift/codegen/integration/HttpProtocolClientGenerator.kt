@@ -176,7 +176,7 @@ open class HttpProtocolClientGenerator(
     protected open fun renderContextAttributes(op: OperationShape) {
         val httpTrait = op.expectTrait(HttpTrait::class.java)
         val httpMethod = httpTrait.method.toLowerCase()
-        //FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
+        // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
         writer.write("  .withEncoder(value: encoder)")
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
