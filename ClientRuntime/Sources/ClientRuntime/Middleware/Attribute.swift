@@ -1,5 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
+
 ///Type safe property bag key
 public struct AttributeKey<ValueType>: Hashable {
     let name: String

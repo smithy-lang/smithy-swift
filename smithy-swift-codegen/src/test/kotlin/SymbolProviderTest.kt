@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,8 +17,12 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SymbolVisitor
+import software.amazon.smithy.swift.codegen.defaultValue
+import software.amazon.smithy.swift.codegen.isBoxed
 
-class SymbolProviderTest : TestsBase() {
+class SymbolProviderTest {
     @Test fun `escapes reserved member names`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
         val struct = StructureShape.builder()

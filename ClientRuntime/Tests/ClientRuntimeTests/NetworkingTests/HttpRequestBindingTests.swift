@@ -12,9 +12,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: JSONEncoder())
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(encoder: JSONEncoder())
             let httpRequest = httpRequestBuilder.build()
-            XCTAssertEqual(httpRequest.endpoint.path, uri)
             XCTAssertEqual(httpRequest.method, .get)
         
             switch httpRequest.body {
@@ -34,13 +33,11 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestThatThrows()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-        let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.post, path: uri, encoder: JSONEncoder())
+        let httpRequestBuilder = try codableRequest.buildHttpRequest(encoder: JSONEncoder())
         let httpRequest = httpRequestBuilder.build()
-        XCTAssertEqual(httpRequest.endpoint.path, uri)
-        XCTAssertEqual(httpRequest.method, .post)
 
         } catch {
-          
+          XCTFail()
         }
         
     }
@@ -49,10 +46,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequestWithPayload()
         let uri = "/constant/prefix/"
         do {
-            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.connect, path: uri, encoder: JSONEncoder())
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(encoder: JSONEncoder())
             let httpRequest = httpRequestBuilder.build()
-            XCTAssertEqual(httpRequest.endpoint.path, uri)
-            XCTAssertEqual(httpRequest.method, .connect)
             
             switch httpRequest.body {
             case .data(let bodyData):
@@ -70,10 +65,8 @@ class HttpRequestBindingTests: NetworkingTestUtils {
         let codableRequest = CodableRequest()
         let uri = "/constant/prefix/\(codableRequest.member)/"
         do {
-            let httpRequestBuilder = try codableRequest.buildHttpRequest(method: HttpMethodType.get, path: uri, encoder: XMLEncoder())
+            let httpRequestBuilder = try codableRequest.buildHttpRequest(encoder: XMLEncoder())
             let httpRequest = httpRequestBuilder.build()
-            XCTAssertEqual(httpRequest.endpoint.path, uri)
-            XCTAssertEqual(httpRequest.method, .get)
             
             switch httpRequest.body {
             case .data(let bodyData):
@@ -116,48 +109,40 @@ enum MockError: Error {
 }
 
 extension CodableRequest: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
 
         let body = HttpBody.data(try encoder.encode(self))
         let builder = SdkHttpRequestBuilder()
             .withBody(body)
-            .withPath(path)
             .withHost("codegened-host-for-service")
-            .withMethod(method)
         return builder
     }
 }
 
 extension CodableXMLRequest: HttpRequestBinding {
 
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
         let builder = SdkHttpRequestBuilder()
-            .withPath(path)
             .withHost("codegened-host-for-service")
-            .withMethod(method)
         return builder
     }
 }
 
 extension CodableRequestThatThrows: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
         let builder = SdkHttpRequestBuilder()
-            .withPath(path)
             .withHost("codegened-host-for-service")
-            .withMethod(method)
         return builder
     }
 }
 
 extension CodableRequestWithPayload: HttpRequestBinding {
-        func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
+        func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
 
         let body = HttpBody.data(self.payload)
         let builder = SdkHttpRequestBuilder()
             .withBody(body)
-            .withPath(path)
             .withHost("codegened-host-for-service")
-            .withMethod(method)
         return builder
     }
 }

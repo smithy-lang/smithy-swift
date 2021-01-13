@@ -10,24 +10,28 @@ public struct HttpContext: MiddlewareContext {
         self.attributes = attributes
     }
     
-    func getPath() -> String {
+    public func getPath() -> String {
         return attributes.get(key: AttributeKey<String>(name: "Path"))!
     }
     
-    func getMethod() -> HttpMethodType {
+    public func getMethod() -> HttpMethodType {
         return attributes.get(key: AttributeKey<HttpMethodType>(name: "Method"))!
     }
     
-    func getEncoder() -> RequestEncoder {
+    public func getEncoder() -> RequestEncoder {
         return attributes.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
     }
     
-    func getDecoder() -> ResponseDecoder {
+    public func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))!
     }
     
-    func getHost() -> String {
+    public func getHost() -> String {
         return attributes.get(key: AttributeKey<String>(name: "Host"))!
+    }
+    
+    public func getServiceName() -> String {
+        return attributes.get(key: AttributeKey<String>(name: "ServiceName"))!
     }
 }
 
@@ -35,7 +39,7 @@ public class HttpContextBuilder {
     
     public init() {}
     
-    var attributes: Attributes = Attributes()
+    public var attributes: Attributes = Attributes()
     let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
     let method = AttributeKey<HttpMethodType>(name: "Method")
     let path = AttributeKey<String>(name: "Path")
@@ -51,10 +55,8 @@ public class HttpContextBuilder {
     // don't end up doing any chaining.
     @discardableResult
     public func with<T>(key: AttributeKey<T>,
-                        value: T,
-                        attributes: Attributes) -> HttpContextBuilder {
+                        value: T) -> HttpContextBuilder {
         self.attributes.set(key: key, value: value)
-        
         return self
     }
     

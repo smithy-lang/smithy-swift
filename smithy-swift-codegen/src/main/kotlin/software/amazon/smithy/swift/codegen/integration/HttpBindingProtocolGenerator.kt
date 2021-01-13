@@ -632,8 +632,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.dedent()
                 writer.write("} else {")
                 writer.indent()
-                bodyMemberNames.sorted().forEach {
-                    writer.write("self.$it = nil")
+                bodyMembers.sortedBy { it.memberName }.forEach {
+                    val type = ctx.symbolProvider.toSymbol(it.member)
+                    val memberName = ctx.symbolProvider.toMemberName(it.member)
+                    val value = if (type.isBoxed()) "nil" else 0
+                    writer.write("self.$memberName = $value")
                 }
                 writer.dedent()
                 writer.write("}")
@@ -650,7 +653,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .toMutableSet()
         if (responseCodeTraitMembers.isNotEmpty()) {
             responseCodeTraitMembers.forEach {
-                writer.write("self.${it.locationName.toLowerCase()} = httpResponse.statusCode.rawValue")
+                writer.write("self.${it.locationName.decapitalize()} = httpResponse.statusCode.rawValue")
             }
         }
     }
@@ -865,14 +868,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addFoundationImport()
             writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
                 writer.openBlock(
-                    "public func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
+                    "public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
                     "}"
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
                     renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody)
                     if (hasHttpBody) {
-                        renderEncodedBody(ctx, writer, inputShape, requestBindings)
+                        renderEncodedBody(ctx, writer, requestBindings)
                     }
                     writer.write("return builder")
                 }
@@ -884,14 +887,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderEncodedBody(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        inputShape: Shape,
         requestBindings: Map<String, HttpBinding>
     ) {
 
         val httpPayload = requestBindings.values.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
 
         if (httpPayload != null) {
-            val shape = ctx.model.expectShape(httpPayload.member.target)
             renderSerializeExplicitPayload(ctx, httpPayload, writer)
         } else {
             writer.openBlock("if try !self.allPropertiesAreNull() {", "}") {
@@ -921,7 +922,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("let body = HttpBody.data(data)")
                 }
                 ShapeType.STRING -> {
-
                     val contents = if (target.hasTrait(EnumTrait::class.java)) {
                         "$memberName.rawValue"
                     } else {
@@ -1138,12 +1138,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    /**
+     * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
+     */
+    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter): HttpProtocolClientGenerator {
+        val properties = getClientProperties(ctx)
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+        val config = getConfigClass(writer, serviceSymbol.name)
+        return HttpProtocolClientGenerator(ctx, writer, properties, config)
+    }
+
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
-            val features = getHttpFeatures(ctx)
-            val config = getConfigClass(writer)
-            HttpProtocolClientGenerator(ctx.model, ctx.symbolProvider, writer, ctx.service, features, config).render()
+            val clientGenerator = getHttpProtocolClientGenerator(ctx, writer)
+            clientGenerator.render()
         }
     }
 
@@ -1158,17 +1167,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
     /**
-     * Get all of the features that are used as middleware
+     * Get all of the properties that are passed in via an operation context
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> {
+    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
         return mutableListOf(
             DefaultRequestEncoder(),
             DefaultResponseDecoder()
         )
     }
 
-    open fun getConfigClass(writer: SwiftWriter): ServiceConfig {
-        return DefaultConfig(writer)
+    open fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
+        return DefaultConfig(writer, serviceName)
     }
 
     /**
@@ -1195,4 +1204,4 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 }
 
-class DefaultConfig(writer: SwiftWriter) : ServiceConfig(writer)
+class DefaultConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)

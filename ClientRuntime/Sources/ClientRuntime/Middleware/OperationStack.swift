@@ -36,16 +36,13 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     ///  can optionally call from the service client inside an operation
     public mutating func addDefaultOperationMiddlewares() {
         deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<StackOutput, StackError>())
-        
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: StackInput,
-                                             next: H) -> SdkResult<StackOutput, StackError> where H.Input == SdkHttpRequest,
-                                                                                                  H.Output == DeserializeOutput<StackOutput,
-                                                                                                                                StackError>,
-                                                                                                  H.Context == HttpContext {
+                                             next: H) -> SdkResult<StackOutput, StackError>
+    where H.Input == SdkHttpRequest, H.Output == DeserializeOutput<StackOutput, StackError>, H.Context == HttpContext {
         // create all the steps to link them as one middleware chain, each step has its own handler to convert the
         // types except the last link in the chain
         let initializeStackStep = InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
@@ -85,9 +82,11 @@ public struct OperationStack<StackInput: HttpRequestBinding,
             if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
                 return .success(result)
             } else {
-                return .failure(MiddlewareStepError.castingError("casted from operation stack failed, failed to cast type"
-                                    + "of Any to type of \(DeserializeOutput<StackOutput, StackError>.self) with a Stack"
-                                    + "Output of \(StackOutput.self) and a Stack Error of \(StackError.self)"))
+                return .failure(MiddlewareStepError.castingError("casted from operation stack failed," +
+                                                                "failed to cast type of Any to type of " +
+                                                                "\(DeserializeOutput<StackOutput, StackError>.self)" +
+                                                                "with a Stack Output of \(StackOutput.self) and a Stack" +
+                                                                "Error of \(StackError.self)"))
             }
         }
         switch castedResult {
@@ -116,7 +115,6 @@ public struct OperationStack<StackInput: HttpRequestBinding,
         }
         
         let count = with.count
-        
         var handler = ComposedHandler(next, with[count-1])
         let reversedCollection = (0...(count-2)).reversed()
         for index in reversedCollection {

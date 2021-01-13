@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.swift.codegen.ImportDeclarations
 
 class ImportDeclarationsTest {
     @Test

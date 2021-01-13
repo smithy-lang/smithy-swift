@@ -1,16 +1,18 @@
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import kotlin.streams.toList
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 
-internal class RecursiveShapeBoxerTests : TestsBase() {
+internal class RecursiveShapeBoxerTests {
     @Test
     fun `leave non-recursive models unchanged`() {
-        val model = createModelFromSmithy("simple-service-with-operation-and-dependency.smithy")
+
+        val model = javaClass.getResource("simple-service-with-operation-and-dependency.smithy").asSmithy()
         val transformed = RecursiveShapeBoxer.transform(model)
         transformed.shapes().toList().forEach {
             Assertions.assertFalse(transformed.getShape(it.id).get().hasTrait(SwiftBoxTrait::class.java))
@@ -19,7 +21,7 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
 
     @Test
     fun `add the box trait to recursive shapes`() {
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
         val transformed = RecursiveShapeBoxer.transform(model)
 
         val traitedMember = "smithy.example#RecursiveShapesInputOutputNested1\$nested"
@@ -33,9 +35,9 @@ internal class RecursiveShapeBoxerTests : TestsBase() {
 
     @Test
     fun `add the box trait to recursive shapes during integration with SwiftCodegenPlugin`() {
-        val model = createModelFromSmithy("recursive-shape-test.smithy")
+        val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
         val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
         val recursiveShapesInput = manifest

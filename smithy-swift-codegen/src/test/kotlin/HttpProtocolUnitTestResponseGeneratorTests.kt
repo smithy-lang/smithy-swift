@@ -3,43 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.AddOperationShapes
 
-open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
-
-    data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
+open class HttpProtocolUnitTestResponseGeneratorTests {
+    var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
-        val manifest = MockManifest()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val serviceShapeIdWithNamespace = "com.test#Example"
-        val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
-        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val delegator = SwiftDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
+        return model.newTestContext()
     }
 
-    val newTestContext = newTestContext()
+    val ctx = newTestContext()
 
     init {
-        newTestContext.generator.generateProtocolUnitTests(newTestContext.ctx)
-        newTestContext.ctx.delegator.flushWriters()
+        ctx.generator.generateProtocolUnitTests(ctx.generationCtx)
+        ctx.generationCtx.delegator.flushWriters()
     }
 
     @Test
     fun `it creates smoke test response test`() {
-        val contents = getTestFileContents("example", "SmokeTestResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "SmokeTestResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents =
@@ -103,7 +88,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates unit test with prefixHeader and empty body`() {
-        val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -145,7 +130,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates unit test with non-existent prefixHeader`() {
-        val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -181,7 +166,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates a unit test for union shapes`() {
-        val contents = getTestFileContents("example", "JsonUnionsResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "JsonUnionsResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -226,7 +211,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates a unit test for recursive shapes`() {
-        val contents = getTestFileContents("example", "RecursiveShapesResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "RecursiveShapesResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents =
@@ -295,7 +280,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates a response unit test for inline document`() {
-        val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -349,7 +334,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests : TestsBase() {
 
     @Test
     fun `it creates a response unit test for inline document as payload`() {
-        val contents = getTestFileContents("example", "InlineDocumentAsPayloadResponseTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """

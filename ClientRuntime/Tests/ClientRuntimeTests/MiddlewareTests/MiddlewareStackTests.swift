@@ -1,5 +1,5 @@
- // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- // SPDX-License-Identifier: Apache-2.0.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0.
  
  import XCTest
  import Foundation
@@ -103,6 +103,7 @@
             XCTAssert(output.headers.headers.contains(where: { (header) -> Bool in
                 header.name == "Content-Length"
             }))
+
         case .failure(let error):
             XCTFail(error.localizedDescription)
         }
@@ -118,6 +119,7 @@
         //we pretend made a request here to a mock client and are returning a 200 response
         let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
         let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+
         return .success(output)
     }
     
@@ -132,11 +134,19 @@
     typealias MOutput = SdkHttpRequestBuilder
     
     var id: String
-    
+
     func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
-        input.withHost("httpbin.org")
-        input.headers.add(name: "Content-type", value: "application/json")
-        input.headers.add(name: "Test", value: "Value")
+
+        let path = context.getPath()
+        let method = context.getMethod()
+        let host = "httpbin.org"
+        input.withHost(host)
+            .withHeader(name: "Content-type", value: "application/json")
+            .withHeader(name: "Test", value: "Value")
+            .withHeader(name: "Host", value: host)
+            .withPath(path)
+            .withMethod(method)
+        
         return next.handle(context: context, input: input)
     }
     
@@ -177,7 +187,7 @@
  }
  
  struct TestInput: HttpRequestBinding {
-    func buildHttpRequest(method: HttpMethodType, path: String, encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
+    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
         return SdkHttpRequestBuilder()
     }
  }
@@ -199,3 +209,4 @@
         try self.init(httpResponse: httpResponse)
     }
  }
+

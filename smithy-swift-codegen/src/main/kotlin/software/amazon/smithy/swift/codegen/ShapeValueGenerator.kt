@@ -46,7 +46,7 @@ class ShapeValueGenerator(
             ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), recursiveMemberWithTrait) {
                 params.accept(nodeVisitor)
             }
-            ShapeType.MAP -> mapDecl(writer, shape.asMapShape().get()) {
+            ShapeType.MAP -> mapDecl(writer) {
                 params.accept(nodeVisitor)
             }
             ShapeType.LIST, ShapeType.SET -> collectionDecl(writer, shape as CollectionShape) {
@@ -115,7 +115,7 @@ class ShapeValueGenerator(
         writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
     }
 
-    private fun mapDecl(writer: SwiftWriter, shape: MapShape, block: () -> Unit) {
+    private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
         writer.writeInline("[")

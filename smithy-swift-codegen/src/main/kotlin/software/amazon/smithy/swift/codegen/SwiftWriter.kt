@@ -28,9 +28,9 @@ import software.amazon.smithy.utils.CodeWriter
  *      param3: 4)
  */
 fun <T : CodeWriter> T.swiftFunctionParameterIndent(block: T.() -> Unit): T {
-    this.indent(4)
+    this.indent(3)
     block(this)
-    this.dedent(4)
+    this.dedent(3)
     return this
 }
 

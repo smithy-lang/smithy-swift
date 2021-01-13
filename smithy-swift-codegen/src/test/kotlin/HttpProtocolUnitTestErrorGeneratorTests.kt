@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 
@@ -12,7 +10,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 
     @Test
     fun `it creates error test for simple error with no payload`() {
-        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents =
@@ -55,7 +53,7 @@ class GreetingWithErrorsFooErrorTest: HttpResponseTestBase {
 
     @Test
     fun `it creates error test for complex error with payload`() {
-        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", newTestContext.manifest)
+        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents =

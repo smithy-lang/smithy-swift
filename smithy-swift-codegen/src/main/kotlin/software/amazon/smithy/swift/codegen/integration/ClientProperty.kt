@@ -3,13 +3,10 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
- * HttpFeature interface that allows middleware customizations to be registered and configured
- * with the protocol generator
+ * ClientProperty interface to pass in properties to be instantiated in the service client
  */
-// FIXME: rename this interface to be something more appropriate for the Swift SDK architecture
-// as this is specific to the Kotlin SDK
-interface HttpFeature {
-    // the name of the feature to install
+interface ClientProperty {
+    // the name of the client property
     val name: String
 
     // flag that controls whether renderConfigure() needs called
@@ -17,7 +14,7 @@ interface HttpFeature {
         get() = true
 
     /**
-     * Instantiate the feature
+     * Instantiate the service client property
      *
      * Example
      * ```
@@ -27,7 +24,7 @@ interface HttpFeature {
     fun renderInstantiation(writer: SwiftWriter) {}
 
     /**
-     * Render the configuration needed post instantiation of a feature
+     * Render the configuration needed post instantiation of a service client property
      *
      * Example
      * ```
@@ -40,7 +37,7 @@ interface HttpFeature {
     fun renderConfiguration(writer: SwiftWriter) {}
 
     /**
-     * Render the initialization of a feature inside the class
+     * Render the initialization of a service client property inside the service class
      *
      * Example
      * ```
@@ -51,17 +48,17 @@ interface HttpFeature {
     fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {}
 
     /**
-     * Register any imports or dependencies that will be needed to use this feature at runtime
+     * Register any imports or dependencies that will be needed to use this property at runtime
      */
     fun addImportsAndDependencies(writer: SwiftWriter) {}
 }
 
 /**
- * `HttpRequestEncoder` feature to help instantiate RequestEncoder
+ * `HttpRequestEncoder` property to help instantiate RequestEncoder
  * @property requestEncoderName The name of the request encoder (e.g. JSONEncoder)
  * @property requestEncoderOptions Map of options to set on the request encoder instance
  */
-abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
+abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
     override val name: String = "encoder"
     override fun renderInstantiation(writer: SwiftWriter) {
         writer.write("let \$L = $requestEncoderName()", name)
@@ -80,11 +77,11 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
 }
 
 /**
- * `HttpRequestDecoder` feature to help instantiate RequestDecoder
+ * `HttpRequestDecoder` property to help instantiate RequestDecoder
  * @property requestDecoderName The name of the request decoder (e.g. JSONDecoder)
  * @property requestDecoderOptions Map of options to set on the request decoder instance
  */
-abstract class HttpResponseDecoder(private val requestDecoderName: String, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpFeature {
+abstract class HttpResponseDecoder(private val requestDecoderName: String, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
     override val name: String = "decoder"
     override fun renderInstantiation(writer: SwiftWriter) {
         writer.write("let \$L = $requestDecoderName()", name)

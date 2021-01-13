@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContain
 import kotlin.streams.toList
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -13,29 +11,17 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.writePackageManifest
 
-class PackageManifestGeneratorTests : TestsBase() {
-
-    private val model: Model
-    private val settings: SwiftSettings
-    private val manifest: MockManifest
+class PackageManifestGeneratorTests {
+    private val model: Model = javaClass.getResource("simple-service-with-operation-and-dependency.smithy").asSmithy()
+    private val settings: SwiftSettings = model.defaultSettings(moduleName = "MockSDK")
+    private val manifest: MockManifest = MockManifest()
     private val mockDependencies: MutableList<SymbolDependency>
 
     init {
-        model = createModelFromSmithy("simple-service-with-operation-and-dependency.smithy")
-        settings = SwiftSettings.from(
-            model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("MockSDK"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .withMember("homepage", Node.from("https://docs.amplify.aws/"))
-                .withMember("author", Node.from("Amazon Web Services"))
-                .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
-                .withMember("swiftVersion", Node.from("5.1.0"))
-                .build()
-        )
-        manifest = MockManifest()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "MockSDK")
         mockDependencies = getMockDependenciesFromModel(model, provider)
     }

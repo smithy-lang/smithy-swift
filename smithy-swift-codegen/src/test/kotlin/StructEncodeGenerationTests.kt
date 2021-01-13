@@ -3,40 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen
-
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.AddOperationShapes
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 
-class StructEncodeGenerationTests : TestsBase() {
-    var model = createModelFromSmithy("http-binding-protocol-generator-test.smithy")
-
-    data class TestContext(val ctx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
+class StructEncodeGenerationTests {
+    var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
-        val manifest = MockManifest()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
-        val serviceShapeIdWithNamespace = "com.test#Example"
-        val service = model.getShape(ShapeId.from(serviceShapeIdWithNamespace)).get().asServiceShape().get()
-        val settings = SwiftSettings.from(model, buildDefaultSwiftSettingsObjectNode(serviceShapeIdWithNamespace))
+        val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         model = RecursiveShapeBoxer.transform(model)
-        val delegator = SwiftDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
+        return model.newTestContext()
     }
-
     val newTestContext = newTestContext()
-
     init {
-        newTestContext.generator.generateSerializers(newTestContext.ctx)
-        newTestContext.ctx.delegator.flushWriters()
+        newTestContext.generator.generateSerializers(newTestContext.generationCtx)
+        newTestContext.generationCtx.delegator.flushWriters()
     }
 
     @Test
@@ -257,7 +241,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it encodes recursive boxed types correctly`() {
-        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested1+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "RecursiveShapesInputOutputNested1+Encodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -283,7 +271,11 @@ class StructEncodeGenerationTests : TestsBase() {
 
     @Test
     fun `it encodes one side of the recursive shape`() {
-        val contents = getModelFileContents("example", "RecursiveShapesInputOutputNested2+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "RecursiveShapesInputOutputNested2+Encodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -539,7 +531,11 @@ extension PrimitiveTypesInput: Encodable {
 
         - No change in sdk code
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithHttpPayloadTraitOnTokenInput+Encodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -566,7 +562,11 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
 
         - In sdk code, "else" case is generated for the token with default token being set
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput+Encodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """
@@ -605,7 +605,11 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
 
         - In sdk, no encoding for idempotency token member because it is not bound to httpPayload/body
         * */
-        val contents = getModelFileContents("example", "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents(
+            "example",
+            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+Encodable.swift",
+            newTestContext.manifest
+        )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
                 """

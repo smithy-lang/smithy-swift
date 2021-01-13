@@ -1,9 +1,9 @@
 $version: "1.0"
-namespace smithy.example
+namespace com.test
 
-use aws.protocols#restJson1
+use aws.protocols#awsJson1_1
 
-@restJson1
+@awsJson1_1
 service Example {
     version: "1.0.0",
     operations: [
@@ -13,7 +13,8 @@ service Example {
         GetFooStreamingInput,
         GetFooStreamingOutput,
         GetFooStreamingOutputNoInput,
-        GetFooStreamingInputNoOutput
+        GetFooStreamingInputNoOutput,
+        AllocateWidget
     ]
 }
 
@@ -45,7 +46,6 @@ operation GetFooNoOutput {
 blob BodyStream
 
 structure GetFooStreamingRequest {
-    @httpPayload
     body: BodyStream
 }
 
@@ -73,4 +73,15 @@ operation GetFooStreamingOutputNoInput {
 @http(method: "POST", uri: "/foo-streaming-input-no-output")
 operation GetFooStreamingInputNoOutput {
     input: GetFooStreamingRequest
+}
+
+// https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#idempotencytoken-trait
+@http(method: "POST", uri: "/input/AllocateWidget")
+operation AllocateWidget {
+    input: AllocateWidgetInput
+}
+
+structure AllocateWidgetInput {
+    @idempotencyToken
+    clientToken: String
 }
