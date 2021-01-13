@@ -1042,7 +1042,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     open fun headersContent(contentType: String, writer: SwiftWriter, hasHttpBody: Boolean, operationShape: String) {
         if (hasHttpBody) {
-            writer.write("headers.add(name: \"Content-Type\", value: \"$contentType\")")
+            writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
         }
     }
 
@@ -1056,11 +1056,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         operationShape: String
     ) {
         val bindingIndex = HttpBindingIndex.of(ctx.model)
-        headersContent(contentType, writer, hasHttpBody, operationShape)
         // we only need the content type header in the request if there is an http body that is being sent
-        if (hasHttpBody) {
-            writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
-        }
+        headersContent(contentType, writer, hasHttpBody, operationShape)
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
