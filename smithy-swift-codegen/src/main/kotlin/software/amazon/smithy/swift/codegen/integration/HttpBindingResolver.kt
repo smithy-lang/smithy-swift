@@ -32,7 +32,6 @@ interface HttpBindingResolver {
 
 class HttpTraitResolver(
     private val generationContext: ProtocolGenerator.GenerationContext,
-    private val defaultContentType: String,
     private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(generationContext.model),
     private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
 ) : HttpBindingResolver {

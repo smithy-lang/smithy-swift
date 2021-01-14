@@ -80,7 +80,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         .build()
 
     open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
-            HttpTraitResolver(ctx, defaultContentType)
+            HttpTraitResolver(ctx)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
