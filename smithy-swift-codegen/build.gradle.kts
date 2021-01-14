@@ -19,14 +19,16 @@ group = "software.amazon.smithy"
 version = "0.1.0"
 
 val smithyVersion: String by project
+val kotestVersion: String by project
+val junitVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 }
 
 tasks.test {
@@ -59,13 +61,8 @@ tasks.jar {
     }
 }
 
-tasks.dokka {
-    outputFormat = "html"
-    outputDirectory = "$buildDir/javadoc"
-}
-
 // Always build documentation
-tasks["build"].finalizedBy(tasks["dokka"])
+tasks["build"].finalizedBy(tasks["dokkaHtml"])
 
 // Configure jacoco (code coverage) to generate an HTML report
 tasks.jacocoTestReport {
