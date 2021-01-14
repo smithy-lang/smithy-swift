@@ -32,8 +32,10 @@ class HttpProtocolClientGeneratorTests {
         features.add(DefaultResponseDecoder())
         val config = DefaultConfig(writer, "ExampleClient")
 
-        val generator = HttpProtocolClientGenerator(ctx.generationCtx, writer, features, config,
-                HttpTraitResolver(ctx.generationCtx))
+        val generator = HttpProtocolClientGenerator(
+            ctx.generationCtx, writer, features, config,
+            HttpTraitResolver(ctx.generationCtx)
+        )
         generator.render()
         commonTestContents = writer.toString()
     }

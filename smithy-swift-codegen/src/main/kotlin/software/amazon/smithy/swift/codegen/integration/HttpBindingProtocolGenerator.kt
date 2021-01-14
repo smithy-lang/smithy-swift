@@ -4,8 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import java.util.Optional
-import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -46,6 +44,8 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.utils.OptionalUtils
+import java.util.Optional
+import java.util.logging.Logger
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -80,7 +80,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         .build()
 
     open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
-            HttpTraitResolver(ctx)
+        HttpTraitResolver(ctx)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
@@ -271,7 +271,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)
         var responseBindings = getProtocolHttpBindingResolver(ctx).responseBindings(op)
         val headerBindings = responseBindings
-                .filter { it.location == HttpBinding.Location.HEADER }
+            .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
