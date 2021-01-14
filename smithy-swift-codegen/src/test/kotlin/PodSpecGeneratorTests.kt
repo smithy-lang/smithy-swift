@@ -4,7 +4,6 @@
  */
 
 import io.kotest.matchers.string.shouldContain
-import kotlin.streams.toList
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -13,6 +12,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.writePodspec
+import kotlin.streams.toList
 
 class PodSpecGeneratorTests {
 

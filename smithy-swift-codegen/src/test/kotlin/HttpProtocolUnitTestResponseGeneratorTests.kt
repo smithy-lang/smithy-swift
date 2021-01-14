@@ -283,7 +283,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
     func testInlineDocumentOutput() {
         do {
             guard let httpResponse = buildHttpResponse(
@@ -337,7 +337,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
     func testInlineDocumentAsPayloadInputOutput() {
         do {
             guard let httpResponse = buildHttpResponse(

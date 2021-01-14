@@ -58,7 +58,7 @@ class HttpBindingProtocolGeneratorTests {
         val contents = getModelFileContents("example", "SmokeTestInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension SmokeTestInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
@@ -82,7 +82,7 @@ class HttpBindingProtocolGeneratorTests {
                         return builder
                     }
                 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -262,7 +262,7 @@ class HttpBindingProtocolGeneratorTests {
                     return builder
                 }
             }
-""".trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -320,7 +320,7 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
         val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+ResponseInit.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
 extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
 
@@ -347,7 +347,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
             getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
@@ -375,7 +375,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
@@ -410,7 +410,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
@@ -453,7 +453,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
@@ -492,7 +492,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
                 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()

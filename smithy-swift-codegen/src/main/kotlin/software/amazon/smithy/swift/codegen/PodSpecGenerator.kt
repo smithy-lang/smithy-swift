@@ -25,8 +25,10 @@ fun writePodspec(settings: SwiftSettings, fileManifest: FileManifest, dependenci
         writer.write("spec.summary      = '${settings.moduleDescription}'")
         writer.write("spec.platform     = :ios, '8.0'")
         writer.write("spec.swift_version = '${settings.swiftVersion}'")
-        writer.write("spec.source       = { :git => '${settings.gitRepo}',\n" +
-                "                     :tag => ${settings.moduleVersion}}")
+        writer.write(
+            "spec.source       = { :git => '${settings.gitRepo}',\n" +
+                "                     :tag => ${settings.moduleVersion}}"
+        )
         writer.write("spec.requires_arc = true")
         for (dependency in dependencies) {
             writer.write("spec.dependency '${dependency.packageName}', '${dependency.version}'")

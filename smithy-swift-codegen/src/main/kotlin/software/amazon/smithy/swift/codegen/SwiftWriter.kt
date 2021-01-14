@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.function.BiFunction
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
@@ -17,6 +16,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
+import java.util.function.BiFunction
 
 /**
  * Handles indenting follow on params to a function that takes several params or a builder object

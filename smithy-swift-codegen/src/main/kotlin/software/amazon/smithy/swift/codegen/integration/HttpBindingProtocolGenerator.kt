@@ -53,9 +53,9 @@ import software.amazon.smithy.utils.OptionalUtils
 // TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
 fun Shape.isInHttpBody(): Boolean {
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
-            !this.hasTrait(HttpHeaderTrait::class.java) &&
-            !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
-            !this.hasTrait(HttpQueryTrait::class.java)
+        !this.hasTrait(HttpHeaderTrait::class.java) &&
+        !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
+        !this.hasTrait(HttpQueryTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
 }
 
@@ -444,7 +444,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val tsFormat = bindingIndex.determineTimestampFormat(
                         hdrBinding.member,
                         HttpBinding.Location.HEADER,
-                        defaultTimestampFormat)
+                        defaultTimestampFormat
+                    )
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                         memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
@@ -481,7 +482,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             val tsFormat = bindingIndex.determineTimestampFormat(
                                 hdrBinding.member,
                                 HttpBinding.Location.HEADER,
-                                defaultTimestampFormat)
+                                defaultTimestampFormat
+                            )
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
                                 splitFnPrefix = "try "
@@ -596,9 +598,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: SwiftWriter
     ) {
         var queryMemberNames = responseBindings
-                .filter { it.location == HttpBinding.Location.QUERY }
-                .sortedBy { it.memberName }
-                .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
+            .filter { it.location == HttpBinding.Location.QUERY }
+            .sortedBy { it.memberName }
+            .map { ctx.symbolProvider.toMemberName(it.member) }.toMutableSet()
 
         val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
@@ -669,8 +671,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // TODO deal with document type
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                                "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
-                                symbol.name
+                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            symbol.name
                         )
                         writer.write("self.\$L = output", memberName)
                     }
@@ -744,7 +746,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
             inputShape.members()
-            }
+        }
             .map { ctx.model.expectShape(it.target) }
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
@@ -772,7 +774,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
             val outputShape = ctx.model.expectShape(it.output.get())
             outputShape.members()
-            }
+        }
             .map { ctx.model.expectShape(it.target) }
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
@@ -1203,7 +1205,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ) {
                 LOGGER.warning(
                     "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
-                            "it does not have an http binding trait"
+                        "it does not have an http binding trait"
                 )
             }
         }
