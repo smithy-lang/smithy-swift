@@ -89,7 +89,7 @@ class ShapeValueGeneratorTest {
     "v2",
     "v3"
 ]
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }
@@ -122,7 +122,7 @@ Set<String>(arrayLiteral:
     "v2",
     "v3"
 )
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }
@@ -184,9 +184,11 @@ Set<String>(arrayLiteral:
             .withMember("stringMember", "v1")
             .withMember("boolMember", true)
             .withMember("intMember", 1)
-            .withMember("structMember", Node.objectNodeBuilder()
-                .withMember("tsMember", 11223344)
-                .build()
+            .withMember(
+                "structMember",
+                Node.objectNodeBuilder()
+                    .withMember("tsMember", 11223344)
+                    .build()
             )
             .withMember("enumMember", "fooey")
             .withMember("floatMember", 2)
@@ -210,7 +212,7 @@ MyStruct(
         tsMember: Date(timeIntervalSince1970: 11223344)
     )
 )
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }
@@ -240,9 +242,12 @@ MyStruct(
 
         val params = Node.objectNodeBuilder()
             .withMember("k1", Node.nullNode())
-            .withMember("k2", Node.objectNodeBuilder()
-                .withMember("stringMember", "hi")
-                .build())
+            .withMember(
+                "k2",
+                Node.objectNodeBuilder()
+                    .withMember("stringMember", "hi")
+                    .build()
+            )
             .build()
 
         ShapeValueGenerator(model, provider).writeShapeValueInline(writer, mapShape, params)
@@ -264,7 +269,7 @@ MyStruct(
         val shapes = mutableListOf<StructureShape>()
         val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String").build()
         var memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested")
-                .target("smithy.example#RecursiveShapesInputOutputNested2").build()
+            .target("smithy.example#RecursiveShapesInputOutputNested2").build()
 
         val recursiveShapeNested1 = StructureShape.builder()
             .id("smithy.example#RecursiveShapesInputOutputNested1")
@@ -311,9 +316,11 @@ MyStruct(
         var writer = SwiftWriter("test")
         var params = Node.objectNodeBuilder()
             .withMember("foo", "Foo1")
-            .withMember("nested", Node.objectNodeBuilder()
-                .withMember("bar", "Bar1")
-                .build()
+            .withMember(
+                "nested",
+                Node.objectNodeBuilder()
+                    .withMember("bar", "Bar1")
+                    .build()
             )
             .build()
 
@@ -342,9 +349,11 @@ MyStruct(
         writer = SwiftWriter("test")
         params = Node.objectNodeBuilder()
             .withMember("bar", "Bar1")
-            .withMember("recursiveMember", Node.objectNodeBuilder()
-                .withMember("foo", "Foo1")
-                .build()
+            .withMember(
+                "recursiveMember",
+                Node.objectNodeBuilder()
+                    .withMember("foo", "Foo1")
+                    .build()
             )
             .build()
 
@@ -369,9 +378,11 @@ MyStruct(
         structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutput"))
         writer = SwiftWriter("test")
         params = Node.objectNodeBuilder()
-            .withMember("nested", Node.objectNodeBuilder()
-                .withMember("foo", "Foo1")
-                .build()
+            .withMember(
+                "nested",
+                Node.objectNodeBuilder()
+                    .withMember("foo", "Foo1")
+                    .build()
             )
             .build()
 
@@ -395,15 +406,15 @@ MyStruct(
         val member3 = MemberShape.builder().id("foo.bar#MyStruct\$bigIntMemberNegative").target("smithy.api#BigInteger").build()
 
         val struct = StructureShape.builder()
-                .id("foo.bar#MyStruct")
-                .addMember(member1)
-                .addMember(member2)
-                .addMember(member3)
-                .build()
+            .id("foo.bar#MyStruct")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .build()
         val model = Model.assembler()
-                .addShapes(struct, member1, member2, member3)
-                .assemble()
-                .unwrap()
+            .addShapes(struct, member1, member2, member3)
+            .assemble()
+            .unwrap()
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
 
@@ -411,10 +422,10 @@ MyStruct(
         val writer = SwiftWriter("test")
 
         val params = Node.objectNodeBuilder()
-                .withMember("bigDecimalMember", 25613525352378.523)
-                .withMember("bigIntMember", 31825352653626)
-                .withMember("bigIntMemberNegative", -31825352653626)
-                .build()
+            .withMember("bigDecimalMember", 25613525352378.523)
+            .withMember("bigIntMember", 31825352653626)
+            .withMember("bigIntMemberNegative", -31825352653626)
+            .build()
 
         ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
         val contents = writer.toString()
@@ -427,7 +438,7 @@ MyStruct(
     bigIntMember: Array(String(31825352653626).utf8),
     bigIntMemberNegative: Array(String(-31825352653626).utf8)
 )
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }

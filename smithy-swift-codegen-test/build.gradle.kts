@@ -9,7 +9,7 @@ extra["displayName"] = "Smithy :: Swift :: Codegen :: Test"
 extra["moduleName"] = "software.amazon.smithy.swift.codegen.test"
 
 plugins {
-    id("software.amazon.smithy").version("0.5.0")
+    id("software.amazon.smithy").version("0.5.2")
     kotlin("jvm")
 }
 

@@ -235,8 +235,10 @@ open class MemberShapeEncodeGenerator(
                 }
             }
         } else {
-            val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
-                    ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN)
+            val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
+                ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
+                ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
+            )
             if (primitiveSymbols.contains(target.type)) {
                 // All primitive type cases
                 val value = when (target.type) {

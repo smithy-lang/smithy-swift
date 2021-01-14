@@ -226,10 +226,12 @@ open class MemberShapeDecodeGenerator(
         if (level == 0) {
             val topLevelContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
-            writer.write("let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
+            writer.write(
+                "let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
                 topLevelContainerName,
                 symbolName,
-                memberName)
+                memberName
+            )
             writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", topLevelContainerName, topLevelContainerName) {
                 writer.write("\$L = \$L()", decodedMemberName, originalSymbol)

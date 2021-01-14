@@ -66,7 +66,7 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
 
     override fun renderConfiguration(writer: SwiftWriter) {
         requestEncoderOptions.forEach {
-                requestEncoderOptionName, requestEncoderOptionValue ->
+            requestEncoderOptionName, requestEncoderOptionValue ->
             writer.write("encoder.$requestEncoderOptionName = $requestEncoderOptionValue")
         }
     }
@@ -89,7 +89,7 @@ abstract class HttpResponseDecoder(private val requestDecoderName: String, priva
 
     override fun renderConfiguration(writer: SwiftWriter) {
         requestDecoderOptions.forEach {
-                requestDecoderOptionName, requestDecoderOptionValue ->
+            requestDecoderOptionName, requestDecoderOptionValue ->
             writer.write("decoder.$requestDecoderOptionName = $requestDecoderOptionValue")
         }
     }

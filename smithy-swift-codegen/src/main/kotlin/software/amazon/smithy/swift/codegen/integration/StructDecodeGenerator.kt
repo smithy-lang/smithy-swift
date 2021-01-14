@@ -17,26 +17,26 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
  *
  * e.g.
  * ```
-    public init (from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
-        let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
-        var intListDecoded0 = [Int]()
-        if let intListContainer = intListContainer {
-            for integer0 in intListContainer {
-                intListDecoded0.append(integer0)
-            }
-        }
-        intList = intListDecoded0
-        let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
-        var intMapDecoded0 = [String:Int]()
-        if let intMapContainer = intMapContainer {
-            for (key0, integer0) in intMapContainer {
-                intMapDecoded0[key0] = integer0
-            }
-        }
-        intMap = intMapDecoded0
-    }
+ public init (from decoder: Decoder) throws {
+ let values = try decoder.container(keyedBy: CodingKeys.self)
+ member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
+ let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
+ var intListDecoded0 = [Int]()
+ if let intListContainer = intListContainer {
+ for integer0 in intListContainer {
+ intListDecoded0.append(integer0)
+ }
+ }
+ intList = intListDecoded0
+ let intMapContainer = try values.decodeIfPresent([String:Int].self, forKey: .intMap)
+ var intMapDecoded0 = [String:Int]()
+ if let intMapContainer = intMapContainer {
+ for (key0, integer0) in intMapContainer {
+ intMapDecoded0[key0] = integer0
+ }
+ }
+ intMap = intMapDecoded0
+ }
  * ```
  */
 class StructDecodeGenerator(

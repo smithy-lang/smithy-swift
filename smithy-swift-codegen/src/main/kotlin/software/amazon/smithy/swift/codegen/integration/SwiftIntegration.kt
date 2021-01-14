@@ -82,7 +82,7 @@ interface SwiftIntegration {
      * writer.onSection("example", text -&gt; writer.write("Intercepted: " + text"));
      * }
      * }
-    `</pre> *
+     `</pre> *
      *
      *
      * Any mutations made on the writer (for example, adding

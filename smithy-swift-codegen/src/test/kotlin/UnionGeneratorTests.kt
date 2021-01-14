@@ -107,8 +107,12 @@ public enum MyUnion: Equatable {
 
     private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape): UnionShape.Builder {
         val unionShapeBuilder = UnionShape.builder()
-        unionShapeBuilder.id("smithy.example#MyUnion").addTrait(DocumentationTrait("Really long multi-line\n" +
-                "Documentation for MyUnion"))
+        unionShapeBuilder.id("smithy.example#MyUnion").addTrait(
+            DocumentationTrait(
+                "Really long multi-line\n" +
+                    "Documentation for MyUnion"
+            )
+        )
         for (memberShape in memberShapes) {
             unionShapeBuilder.addMember(memberShape)
         }

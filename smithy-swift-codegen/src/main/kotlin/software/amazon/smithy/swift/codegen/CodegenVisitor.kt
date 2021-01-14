@@ -5,8 +5,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.util.ServiceLoader
-import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -22,6 +20,8 @@ import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import java.util.ServiceLoader
+import java.util.logging.Logger
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
@@ -153,7 +153,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     override fun serviceShape(shape: ServiceShape): Void? {
 
         writers.useShapeWriter(shape) {
-            writer: SwiftWriter -> ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
+            writer: SwiftWriter ->
+            ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
         }
         return null
     }

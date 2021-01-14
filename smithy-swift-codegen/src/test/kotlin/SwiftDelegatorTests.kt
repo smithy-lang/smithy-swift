@@ -44,7 +44,8 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             SwiftWriter.staticHeader + "\n\nHello!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get())
+            manifest.getFileString("example/models/GetFooInput.swift").get()
+        )
     }
 
     @Test
@@ -62,6 +63,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             SwiftWriter.staticHeader + "\n\nHello!\n\nGoodbye!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get())
+            manifest.getFileString("example/models/GetFooInput.swift").get()
+        )
     }
 }

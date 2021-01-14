@@ -5,7 +5,6 @@
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -16,6 +15,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.StructureGenerator
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import java.util.function.Consumer
 
 class StructureGeneratorTests {
     @Test
@@ -63,9 +63,10 @@ class StructureGeneratorTests {
         SwiftCodegenPlugin().execute(context)
 
         val primitiveTypesInput = manifest
-                .getFileString("example/models/PrimitiveTypesInput.swift").get()
+            .getFileString("example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
-        primitiveTypesInput.shouldContain("public struct PrimitiveTypesInput: Equatable {\n" +
+        primitiveTypesInput.shouldContain(
+            "public struct PrimitiveTypesInput: Equatable {\n" +
                 "    public let booleanVal: Bool?\n" +
                 "    public let byteVal: Int8?\n" +
                 "    public let doubleVal: Double?\n" +
@@ -116,7 +117,8 @@ class StructureGeneratorTests {
                 "        self.shortVal = shortVal\n" +
                 "        self.str = str\n" +
                 "    }\n" +
-                "}\n")
+                "}\n"
+        )
     }
 
     @Test
@@ -172,7 +174,7 @@ public struct RecursiveShapesInputOutput: Equatable {
         self.nested = nested
     }
 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -229,7 +231,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         self.nested = nested
     }
 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -279,11 +281,13 @@ public struct RecursiveShapesInputOutputLists: Equatable {
     private fun createModelWithStructureShape(struct: StructureShape): Model {
 
         val assembler = Model.assembler().addShape(struct)
-        struct.allMembers.values.forEach(Consumer { shape: MemberShape? ->
-            assembler.addShape(
-                shape
-            )
-        })
+        struct.allMembers.values.forEach(
+            Consumer { shape: MemberShape? ->
+                assembler.addShape(
+                    shape
+                )
+            }
+        )
 
         return assembler.assemble().unwrap()
     }
@@ -302,26 +306,30 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         val jsonListsInput = manifest
             .getFileString("example/models/JsonListsInput.swift").get()
         Assertions.assertNotNull(jsonListsInput)
-        jsonListsInput.shouldContain("public struct JsonListsInput: Equatable {\n" +
+        jsonListsInput.shouldContain(
+            "public struct JsonListsInput: Equatable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
                 "    public let sparseStringList: [String?]?\n" +
                 "    public let stringList: [String]?\n" +
                 "    public let stringSet: Set<String>?\n" +
-                "    public let timestampList: [Date]?")
+                "    public let timestampList: [Date]?"
+        )
 
         val jsonListsOutput = manifest
-                .getFileString("example/models/JsonListsOutput.swift").get()
+            .getFileString("example/models/JsonListsOutput.swift").get()
         Assertions.assertNotNull(jsonListsOutput)
-        jsonListsOutput.shouldContain("public struct JsonListsOutput: Equatable {\n" +
+        jsonListsOutput.shouldContain(
+            "public struct JsonListsOutput: Equatable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
                 "    public let sparseStringList: [String?]?\n" +
                 "    public let stringList: [String]?\n" +
                 "    public let stringSet: Set<String>?\n" +
-                "    public let timestampList: [Date]?")
+                "    public let timestampList: [Date]?"
+        )
     }
 
     @Test
@@ -375,10 +383,10 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
-                .getFileString("example/models/JsonMapsOutput.swift").get()
+            .getFileString("example/models/JsonMapsOutput.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
-                """
+            """
                 public struct JsonMapsOutput: Equatable {
                     public let denseBooleanMap: [String:Bool]?
                     public let denseNumberMap: [String:Int]?
