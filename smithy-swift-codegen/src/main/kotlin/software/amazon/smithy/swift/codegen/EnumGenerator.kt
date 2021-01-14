@@ -205,9 +205,11 @@ class EnumGenerator(
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
     fun EnumDefinition.swiftEnumCaseName(): String {
-        var enumCaseName = CaseUtils.toCamelCase(name.orElseGet {
-            value
-        }.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
+        var enumCaseName = CaseUtils.toCamelCase(
+            name.orElseGet {
+                value
+            }.replace(Regex("[^a-zA-Z0-9_ ]"), "")
+        )
         if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
             enumCaseName = "_$enumCaseName"
         }

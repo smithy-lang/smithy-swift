@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import java.net.URL
 import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.MockManifest
@@ -27,6 +26,7 @@ import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import java.net.URL
 
 /**
  * Load and initialize a model from a String (from smithy-rs)

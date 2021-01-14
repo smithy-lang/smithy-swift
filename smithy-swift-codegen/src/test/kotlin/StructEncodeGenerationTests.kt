@@ -278,7 +278,7 @@ class StructEncodeGenerationTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
             extension RecursiveShapesInputOutputNested2: Encodable {
                 private enum CodingKeys: String, CodingKey {
                     case bar
@@ -450,7 +450,7 @@ extension JsonMapsInput: Encodable {
         val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
 extension PrimitiveTypesInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case booleanVal
@@ -538,7 +538,7 @@ extension PrimitiveTypesInput: Encodable {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
 extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case bodyIsToken
@@ -551,7 +551,7 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
         }
     }
 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -569,7 +569,7 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
 extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case documentValue
@@ -594,7 +594,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
         }
     }
 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -612,7 +612,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: Encodable {
     private enum CodingKeys: String, CodingKey {
         case body
@@ -625,7 +625,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: Encodable {
         }
     }
 }
-                """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

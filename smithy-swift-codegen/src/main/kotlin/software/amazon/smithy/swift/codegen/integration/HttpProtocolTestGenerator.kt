@@ -4,8 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import java.util.TreeSet
-import java.util.logging.Logger
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape
@@ -14,6 +12,8 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.defaultName
+import java.util.TreeSet
+import java.util.logging.Logger
 
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.

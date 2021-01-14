@@ -364,7 +364,7 @@ extension NestedShapesOutputBody: Decodable {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
             extension RecursiveShapesInputOutputNested1: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case foo
@@ -392,7 +392,7 @@ extension NestedShapesOutputBody: Decodable {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
             extension RecursiveShapesInputOutputNested2: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case bar

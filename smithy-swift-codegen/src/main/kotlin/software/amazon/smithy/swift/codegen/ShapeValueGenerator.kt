@@ -101,7 +101,7 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-                // TODO:: fix indentation when `writeInline` retains indent
+            // TODO:: fix indentation when `writeInline` retains indent
             .writeInline("\n)")
 
         if (recursiveMemberWithTrait) {
@@ -161,7 +161,7 @@ class ShapeValueGenerator(
             ShapeType.BLOB -> {
                 //  val symbol = symbolProvider.toSymbol(shape)
                 // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
-                    ".data(using: .utf8)!"
+                ".data(using: .utf8)!"
             }
             else -> { "" }
         }

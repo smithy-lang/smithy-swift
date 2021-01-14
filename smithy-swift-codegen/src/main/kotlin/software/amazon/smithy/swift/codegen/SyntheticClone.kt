@@ -22,7 +22,7 @@ class SyntheticClone private constructor(builder: Builder) : AbstractTrait(ID, b
 
     override fun toBuilder(): SmithyBuilder<SyntheticClone> {
         return builder()
-                .archetype(archetype)
+            .archetype(archetype)
     }
 
     /**

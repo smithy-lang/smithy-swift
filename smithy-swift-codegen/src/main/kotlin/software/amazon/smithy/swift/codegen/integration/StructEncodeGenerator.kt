@@ -66,8 +66,10 @@ class StructEncodeGenerator(
                         }
                     }
                     else -> {
-                        renderSimpleEncodeMember(target, member, containerName,
-                                members.filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() == 0)
+                        renderSimpleEncodeMember(
+                            target, member, containerName,
+                            members.filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() == 0
+                        )
                     }
                 }
             }

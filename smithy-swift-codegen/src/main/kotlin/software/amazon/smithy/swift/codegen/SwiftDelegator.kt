@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen
 
-import java.nio.file.Paths
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
@@ -14,6 +13,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import java.nio.file.Paths
 
 /**
  * Manages writers for Swift files.

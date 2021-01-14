@@ -4,7 +4,6 @@
  */
 
 import io.kotest.matchers.string.shouldContain
-import kotlin.streams.toList
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -14,6 +13,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.writePackageManifest
+import kotlin.streams.toList
 
 class PackageManifestGeneratorTests {
     private val model: Model = javaClass.getResource("simple-service-with-operation-and-dependency.smithy").asSmithy()
@@ -33,12 +33,13 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "dependencies: [\n" +
-                    "        .package(\n" +
-                    "            url: \"https://github.com/apple/swift-numerics\",\n" +
-                    "            from: 0.0.5\n" +
-                    "        ),\n" +
-                    "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
-                    "    ]")
+                "        .package(\n" +
+                "            url: \"https://github.com/apple/swift-numerics\",\n" +
+                "            from: 0.0.5\n" +
+                "        ),\n" +
+                "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
+                "    ]"
+        )
     }
 
     @Test
@@ -48,8 +49,9 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "platforms: [\n" +
-                    "        .macOS(.v10_15), .iOS(.v13)\n" +
-                    "    ]")
+                "        .macOS(.v10_15), .iOS(.v13)\n" +
+                "    ]"
+        )
     }
 
     @Test
@@ -59,8 +61,9 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "products: [\n" +
-                    "        .library(name: \"MockSDK\", targets: [\"MockSDK\"])\n" +
-                    "    ]")
+                "        .library(name: \"MockSDK\", targets: [\"MockSDK\"])\n" +
+                "    ]"
+        )
     }
 
     @Test
@@ -70,30 +73,30 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "targets: [\n" +
-                    "        .target(\n" +
-                    "            name: \"MockSDK\",\n" +
-                    "            dependencies: [\n" +
-                    "                .product(\n" +
-                    "                    name: \"ComplexModule\",\n" +
-                    "                    package: \"swift-numerics\"\n" +
-                    "                ),\n" +
-                    "                .product(\n" +
-                    "                    name: \"ClientRuntime\",\n" +
-                    "                    package: \"ClientRuntime\"\n" +
-                    "                ),\n" +
-                    "            ],\n" +
-                    "            path: \"./MockSDK\"\n" +
-                    "        ),\n" +
-                    "        .testTarget(\n" +
-                    "            name: \"MockSDKTests\",\n" +
-                    "            dependencies: [\n" +
-                    "                \"MockSDK\",\n" +
-                    "                .product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")\n" +
-                    "            ],\n" +
-                    "            path: \"./MockSDKTests\"\n" +
-                    "        )\n" +
-                    "    ]"
-            )
+                "        .target(\n" +
+                "            name: \"MockSDK\",\n" +
+                "            dependencies: [\n" +
+                "                .product(\n" +
+                "                    name: \"ComplexModule\",\n" +
+                "                    package: \"swift-numerics\"\n" +
+                "                ),\n" +
+                "                .product(\n" +
+                "                    name: \"ClientRuntime\",\n" +
+                "                    package: \"ClientRuntime\"\n" +
+                "                ),\n" +
+                "            ],\n" +
+                "            path: \"./MockSDK\"\n" +
+                "        ),\n" +
+                "        .testTarget(\n" +
+                "            name: \"MockSDKTests\",\n" +
+                "            dependencies: [\n" +
+                "                \"MockSDK\",\n" +
+                "                .product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")\n" +
+                "            ],\n" +
+                "            path: \"./MockSDKTests\"\n" +
+                "        )\n" +
+                "    ]"
+        )
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {

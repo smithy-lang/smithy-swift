@@ -75,17 +75,17 @@ class ServiceGenerator(
                 )
             } else if (hasInputStream) {
                 writer.write(
-                        "${accessSpecifier}func \$L(\$L${paramTerminator}streamSource: StreamSource, \$L)",
-                        operationName,
-                        inputParam,
-                        outputParam
+                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamSource: StreamSource, \$L)",
+                    operationName,
+                    inputParam,
+                    outputParam
                 )
             } else if (hasOutputStream) {
                 writer.write(
-                        "${accessSpecifier}func \$L(\$L${paramTerminator}streamSink: StreamSink, \$L)",
-                        operationName,
-                        inputParam,
-                        outputParam
+                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamSink: StreamSink, \$L)",
+                    operationName,
+                    inputParam,
+                    outputParam
                 )
             }
         }
@@ -160,11 +160,11 @@ class ServiceGenerator(
         writer.writeShapeDocs(service)
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
-                    operations.forEach { op ->
-                        renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
-                        renderOperationErrorEnum(op)
-                    }
+                operations.forEach { op ->
+                    renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
+                    renderOperationErrorEnum(op)
                 }
+            }
             .closeBlock("}")
             .write("")
     }
