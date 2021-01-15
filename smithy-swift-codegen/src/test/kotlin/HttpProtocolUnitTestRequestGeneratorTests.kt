@@ -346,7 +346,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
     func testRestJsonRecursiveShapes() {
         let expected = buildExpectedHttpRequest(
             method: .put,
@@ -414,7 +414,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
     func testInlineDocumentInput() {
         let expected = buildExpectedHttpRequest(
             method: .put,
@@ -468,7 +468,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentAsPayloadRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-                """
+            """
     func testInlineDocumentAsPayloadInput() {
         let expected = buildExpectedHttpRequest(
             method: .put,
