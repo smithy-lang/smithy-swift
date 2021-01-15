@@ -7,7 +7,8 @@ service Example {
     version: "1.0.0",
     operations: [
         JsonLists,
-        JsonMaps
+        JsonMaps,
+        GreetingWithErrors
     ]
 }
 
@@ -123,3 +124,23 @@ map SparseNumberMap {
     key: String,
     value: Integer
 }
+
+@idempotent
+@http(uri: "/GreetingWithErrors", method: "POST")
+operation GreetingWithErrors {
+    output: GreetingWithErrorsOutput,
+    errors: [InvalidGreeting, FooError]
+}
+
+structure GreetingWithErrorsOutput {
+    greeting: String,
+}
+
+@error("client")
+structure InvalidGreeting {
+    Message: String,
+}
+
+@error("server")
+@tags(["client-only"])
+structure FooError {}

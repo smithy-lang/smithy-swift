@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
     private val commonTestContents: String
@@ -30,7 +31,11 @@ class HttpProtocolClientGeneratorTests {
         features.add(DefaultRequestEncoder())
         features.add(DefaultResponseDecoder())
         val config = DefaultConfig(writer, "ExampleClient")
-        val generator = HttpProtocolClientGenerator(ctx.generationCtx, writer, features, config)
+
+        val generator = HttpProtocolClientGenerator(
+            ctx.generationCtx, writer, features, config,
+            HttpTraitResolver(ctx.generationCtx)
+        )
         generator.render()
         commonTestContents = writer.toString()
     }

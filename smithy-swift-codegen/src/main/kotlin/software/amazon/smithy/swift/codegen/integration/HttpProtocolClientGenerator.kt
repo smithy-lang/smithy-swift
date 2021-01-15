@@ -30,7 +30,8 @@ open class HttpProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val properties: List<ClientProperty>,
-    private val serviceConfig: ServiceConfig
+    private val serviceConfig: ServiceConfig,
+    private val httpBindingResolver: HttpBindingResolver
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
@@ -129,7 +130,7 @@ open class HttpProtocolClientGenerator(
     }
 
     // replace labels with any path bindings
-    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBinding>, writer: SwiftWriter) {
+    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBindingDescriptor>, writer: SwiftWriter) {
         val resolvedURIComponents = mutableListOf<String>()
         httpTrait.uri.segments.forEach {
             if (it.isLabel) {
@@ -174,7 +175,7 @@ open class HttpProtocolClientGenerator(
     }
 
     protected open fun renderContextAttributes(op: OperationShape) {
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
+        val httpTrait = httpBindingResolver.httpTrait(op)
         val httpMethod = httpTrait.method.toLowerCase()
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
         writer.write("  .withEncoder(value: encoder)")
@@ -190,9 +191,9 @@ open class HttpProtocolClientGenerator(
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
-        val requestBindings = HttpBindingIndex.of(model).getRequestBindings(op)
-        val pathBindings = requestBindings.values.filter { it.location == HttpBinding.Location.LABEL }
+        val httpTrait = httpBindingResolver.httpTrait(op)
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         renderUriPath(httpTrait, pathBindings, writer)
         val operationErrorName = "${op.defaultName()}Error"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
