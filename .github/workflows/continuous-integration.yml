@@ -15,7 +15,7 @@ jobs:
       - name: Checkout smithy-swift
         uses: actions/checkout@v2
       - name: Clone aws-crt-swift
-        run: actions/checkout@v2
+        uses: actions/checkout@v2
         with:
           repository: awslabs/aws-crt-swift
           path: Projects/Amplify/SwiftSDK
