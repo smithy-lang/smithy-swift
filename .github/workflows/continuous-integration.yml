@@ -45,7 +45,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build
-        run: ./gradlew build -x test -x jvmTest
+        run: ./gradlew build -x test
       - name: Unit Tests
         run: ./gradlew test rootAllTest
       - name: Lint
