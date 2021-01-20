@@ -124,9 +124,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
         println("Generating package manifest file")
         writePackageManifest(settings, fileManifest, dependencies, generateTestTarget)
-
-        println("Generating info plist")
-        writeInfoPlist(settings, fileManifest)
     }
 
     override fun getDefault(shape: Shape?): Void? {
