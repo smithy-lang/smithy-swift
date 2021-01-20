@@ -55,7 +55,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
         service = settings.getService(model)
 
-        var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName, settings.sdkId)
         for (integration in integrations) {
             resolvedSymbolProvider = integration.decorateSymbolProvider(settings, model, resolvedSymbolProvider)
         }

@@ -97,7 +97,7 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") :
+class SymbolVisitor(private val model: Model, private val rootNamespace: String = "", private val sdkId: String) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
 
@@ -262,7 +262,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
-        return createSymbolBuilder(shape, "func").build()
+        // The Swift SDK does not produce code explicitly based on Operations
+        error { "Unexpected codegen code path" }
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
@@ -276,7 +277,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val name = shape.defaultName()
+        val name = sdkId.clientName()
         return createSymbolBuilder(shape, "${name}Client", "ClientRuntime")
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .definitionFile(formatModuleName(shape.type, name))
@@ -357,3 +358,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         }
     }
 }
+
+// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
+fun String.clientName(): String =
+    split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }

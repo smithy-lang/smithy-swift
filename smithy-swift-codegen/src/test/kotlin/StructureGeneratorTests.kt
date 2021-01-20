@@ -23,7 +23,7 @@ class StructureGeneratorTests {
 
         val struct: StructureShape = createStructureWithoutErrorTrait()
         val model: Model = createModelWithStructureShape(struct)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = SwiftWriter("MockPackage")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -125,7 +125,7 @@ class StructureGeneratorTests {
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
         val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
-        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example", "Example")
         val writer = SwiftWriter("MockPackage")
 
         for (struct in structs) {
@@ -182,7 +182,7 @@ public struct RecursiveShapesInputOutput: Equatable {
     fun `it renders recursive nested shapes in lists`() {
         val structs = createStructureContainingNestedRecursiveShapeList()
         val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
-        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example")
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, "smithy.example", "Example")
         val writer = SwiftWriter("MockPackage")
 
         for (struct in structs) {
@@ -240,7 +240,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
         val struct: StructureShape = createStructureWithOptionalErrorMessage()
         val model: Model = createModelWithStructureShape(struct)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = SwiftWriter("MockPackage")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()

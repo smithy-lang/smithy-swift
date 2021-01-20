@@ -37,7 +37,7 @@ class SwiftDelegatorTests {
         val context = buildMockPluginContext(model, manifest)
 
         val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-        val symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        val symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName, settings.sdkId)
         val delegator: SwiftDelegator = SwiftDelegator(settings, model, manifest, symbolProvider)
 
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
@@ -55,7 +55,7 @@ class SwiftDelegatorTests {
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest)
         val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-        val symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        val symbolProvider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName, settings.sdkId)
         val delegator: SwiftDelegator = SwiftDelegator(settings, model, manifest, symbolProvider)
 
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })

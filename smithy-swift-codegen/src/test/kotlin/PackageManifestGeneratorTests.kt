@@ -22,7 +22,7 @@ class PackageManifestGeneratorTests {
     private val mockDependencies: MutableList<SymbolDependency>
 
     init {
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "MockSDK")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "MockSDK", "Test")
         mockDependencies = getMockDependenciesFromModel(model, provider)
     }
 

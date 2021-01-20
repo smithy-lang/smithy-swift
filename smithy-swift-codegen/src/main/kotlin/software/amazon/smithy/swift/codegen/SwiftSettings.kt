@@ -24,6 +24,8 @@ private const val GIT_REPO = "gitRepo"
 private const val HOMEPAGE = "homepage"
 private const val AUTHOR = "author"
 private const val SWIFT_VERSION = "swiftVersion"
+// Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
+private const val SDK_ID = "sdkId"
 
 class SwiftSettings(
     val service: ShapeId,
@@ -32,6 +34,7 @@ class SwiftSettings(
     val moduleDescription: String,
     val author: String,
     val homepage: String,
+    val sdkId: String,
     val gitRepo: String,
     val swiftVersion: String
 ) {
@@ -50,9 +53,9 @@ class SwiftSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): SwiftSettings {
-            config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, HOMEPAGE, GIT_REPO, SWIFT_VERSION))
+            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, SDK_ID, HOMEPAGE, GIT_REPO, SWIFT_VERSION))
 
-            val service = config.getStringMember(SERVICE)
+            val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
                 .orElseGet { inferService(model) }
 
@@ -63,7 +66,8 @@ class SwiftSettings(
             val author = config.expectStringMember(AUTHOR).value
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
-            return SwiftSettings(service, moduleName, version, desc, author, homepage, gitRepo, swiftVersion)
+            val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
+            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion)
         }
 
         // infer the service to generate from a model
