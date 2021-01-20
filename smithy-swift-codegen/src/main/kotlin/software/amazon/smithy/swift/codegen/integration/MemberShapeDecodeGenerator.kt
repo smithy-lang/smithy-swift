@@ -245,7 +245,6 @@ open class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            // AWSJson1.1
             writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                 renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
             }
