@@ -20,6 +20,10 @@ jobs:
           repository: awslabs/aws-crt-swift
           path: Projects/Amplify/SwiftSDK/aws-crt-swift
           submodules: true
+      - name: Create Symbolic Link to Path for crt
+        run: |
+          mkdir -p ~/Projects/Amplify/SwiftSDK/
+          ln -s $GITHUB_WORKSPACE/Projects/Amplify/SwiftSDK/aws-crt-swift ~/Projects/Amplify/SwiftSDK/.
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
