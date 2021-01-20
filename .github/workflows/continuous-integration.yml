@@ -14,14 +14,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout smithy-swift
         uses: actions/checkout@v2
-      - name: Go Back to root
-        run: cd ~
-      - name: Checkout aws-crt-swift
-        uses: actions/checkout@v2
-        with:
-          repository: awslabs/aws-crt-swift
-          path: Projects/Amplify/SwiftSDK
-          submodules: true
+      - name: Clone aws-crt-swift
+        run: |
+          mkdir -p ~/Projects/Amplify/SwiftSDK/
+          cd ~/Projects/Amplify/SwiftSDK/
+          git clone --recursive git@github.com:awslabs/aws-crt-swift.git
+          cd -
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
