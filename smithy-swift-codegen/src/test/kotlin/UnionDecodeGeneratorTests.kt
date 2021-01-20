@@ -103,6 +103,7 @@ class UnionDecodeGeneratorTests {
                     var timestampValueDecoded: Date? = nil
                     if let timestampValueDateString = timestampValueDateString {
                         let timestampValueFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                        timestampValueFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                         timestampValueDecoded = timestampValueFormatter.date(from: timestampValueDateString)
                     }
                     if let timestampValue = timestampValueDecoded {

@@ -49,27 +49,29 @@ class StructEncodeGenerator(
     fun render() {
         val containerName = "container"
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
-            writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
-            val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
-            membersSortedByName.forEach { member ->
-                val target = ctx.model.expectShape(member.target)
-                val memberName = ctx.symbolProvider.toMemberName(member)
-                when (target) {
-                    is CollectionShape -> {
-                        writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeListMember(target, memberName, containerName)
+            if (members.isNotEmpty()) {
+                writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
+                val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
+                membersSortedByName.forEach { member ->
+                    val target = ctx.model.expectShape(member.target)
+                    val memberName = ctx.symbolProvider.toMemberName(member)
+                    when (target) {
+                        is CollectionShape -> {
+                            writer.openBlock("if let $memberName = $memberName {", "}") {
+                                renderEncodeListMember(target, memberName, containerName)
+                            }
                         }
-                    }
-                    is MapShape -> {
-                        writer.openBlock("if let $memberName = $memberName {", "}") {
-                            renderEncodeMapMember(target, memberName, containerName)
+                        is MapShape -> {
+                            writer.openBlock("if let $memberName = $memberName {", "}") {
+                                renderEncodeMapMember(target, memberName, containerName)
+                            }
                         }
-                    }
-                    else -> {
-                        renderSimpleEncodeMember(
-                            target, member, containerName,
-                            members.filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() == 0
-                        )
+                        else -> {
+                            renderSimpleEncodeMember(
+                                target, member, containerName,
+                                members.filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() == 0
+                            )
+                        }
                     }
                 }
             }

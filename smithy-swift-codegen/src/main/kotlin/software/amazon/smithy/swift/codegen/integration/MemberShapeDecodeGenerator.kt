@@ -108,8 +108,14 @@ open class MemberShapeDecodeGenerator(
             TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = DateFormatter()", formatterName)
             // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
             // to custom date type
-            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds", formatterName)
-            TimestampFormatTrait.Format.HTTP_DATE -> writer.write("let \$L = DateFormatter.rfc5322DateFormatter", formatterName)
+            TimestampFormatTrait.Format.DATE_TIME -> {
+                writer.write("let \$L = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds", formatterName)
+                writer.write("\$L.dateFormat = \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\"", formatterName)
+            }
+            TimestampFormatTrait.Format.HTTP_DATE -> {
+                writer.write("let \$L = DateFormatter.rfc5322DateFormatter", formatterName)
+                writer.write("\$L.dateFormat = \"E, d MMM yyyy HH:mm:ss.SSS 'GMT'\"", formatterName)
+            }
             else -> throw CodegenException("unknown timestamp format: $tsFormat")
         }
     }
@@ -239,7 +245,10 @@ open class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
+            // AWSJson1.1
+            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
+            }
         }
     }
 
