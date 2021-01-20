@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(path: "~/work/smithy-swift/smithy-swift/Projects/Amplify/SwiftSDK/aws-crt-swift"),
+        .package(path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0")
     ],
     targets: [
