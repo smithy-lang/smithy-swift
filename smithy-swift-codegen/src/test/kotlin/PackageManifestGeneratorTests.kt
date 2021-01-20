@@ -37,7 +37,7 @@ class PackageManifestGeneratorTests {
                 "            url: \"https://github.com/apple/swift-numerics\",\n" +
                 "            from: 0.0.5\n" +
                 "        ),\n" +
-                "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
+                "        .package(path: \"~/Projects/Amplify/SwiftSDK/smithy-swift/ClientRuntime\"),\n" +
                 "    ]"
         )
     }
