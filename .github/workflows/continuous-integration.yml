@@ -15,11 +15,11 @@ jobs:
       - name: Checkout smithy-swift
         uses: actions/checkout@v2
       - name: Clone aws-crt-swift
-        run: |
-          mkdir -p ~/Projects/Amplify/SwiftSDK/
-          cd ~/Projects/Amplify/SwiftSDK/
-          git clone --recursive git@github.com:awslabs/aws-crt-swift.git
-          cd -
+        run: actions/checkout@v2
+        with:
+          repository: awslabs/aws-crt-swift
+          path: Projects/Amplify/SwiftSDK
+          submodules: true
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
