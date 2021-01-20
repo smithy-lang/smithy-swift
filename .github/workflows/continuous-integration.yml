@@ -37,14 +37,16 @@ jobs:
         run: cd ClientRuntime && swift build
       - name: Test Client Runtime
         run: |
+          cd ClientRuntime
           swift test --enable-code-coverage
           bash <(curl -s https://codecov.io/bash)
       - name: Run SwiftLint (Only files changed in the PR) in Client Runtime
         uses: norio-nomura/action-swiftlint@3.1.0
         env:
           DIFF_BASE: ${{ github.base_ref }}
+          WORKING_DIRECTORY: ClientRuntime
       - name: Grant execute permission for gradlew
-        run: cd .. && chmod +x gradlew
+        run: chmod +x gradlew
       - name: Build
         run: ./gradlew build -x test -x jvmTest
       - name: Unit Tests
