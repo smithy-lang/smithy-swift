@@ -145,7 +145,6 @@ extension TimestampInputOutputBody: Decodable {
         var normalDecoded: Date? = nil
         if let normalDateString = normalDateString {
             let normalFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-            normalFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
             normalDecoded = normalFormatter.date(from: normalDateString)
         }
         normal = normalDecoded
@@ -153,7 +152,6 @@ extension TimestampInputOutputBody: Decodable {
         var dateTimeDecoded: Date? = nil
         if let dateTimeDateString = dateTimeDateString {
             let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-            dateTimeFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
             dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
         }
         dateTime = dateTimeDecoded
@@ -163,7 +161,6 @@ extension TimestampInputOutputBody: Decodable {
         var httpDateDecoded: Date? = nil
         if let httpDateDateString = httpDateDateString {
             let httpDateFormatter = DateFormatter.rfc5322DateFormatter
-            httpDateFormatter.dateFormat = "E, d MMM yyyy HH:mm:ss.SSS 'GMT'"
             httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
         }
         httpDate = httpDateDecoded
@@ -176,7 +173,6 @@ extension TimestampInputOutputBody: Decodable {
                 if let list0 = list0 {
                     for timestamp1 in list0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                        timestamp1Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
                         }
@@ -193,7 +189,6 @@ extension TimestampInputOutputBody: Decodable {
             timestampListDecoded0 = [Date]()
             for timestamp0 in timestampListContainer {
                 let timestamp0Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                timestamp0Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                 guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -291,7 +286,6 @@ extension MapInputOutputBody: Decodable {
             dateMapDecoded0 = [String:Date]()
             for (key0, timestamp0) in dateMapContainer {
                 let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                dateMapContainerFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                 guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -334,7 +328,6 @@ extension NestedShapesOutputBody: Decodable {
                 if let timestamplist0 = timestamplist0 {
                     for timestamp1 in timestamplist0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                        timestamp1Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
                         }

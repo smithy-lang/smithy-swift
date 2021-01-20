@@ -54,7 +54,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     // TODO:: handle streaming case?
                     writer.write(
                         "content: HttpBody.data(\"\"\"\n\$L\n\"\"\".data(using: .utf8)),",
-                        body
+                        body.replace(".000","")
                     )
                 }
             }
