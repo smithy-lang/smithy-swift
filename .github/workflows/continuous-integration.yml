@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  CI:
+    runs-on: macos-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v2
+      - name: Clone aws-crt-swift
+        uses: actions/checkout@v2
+        with:
+          repository: awslabs/aws-crt-swift
+          path: Projects/Amplify/SwiftSDK/aws-crt-swift
+          submodules: true
+      - name: Create Symbolic Link to Path for crt
+        run: |
+          mkdir -p ~/Projects/Amplify/SwiftSDK/
+          ln -s $GITHUB_WORKSPACE/Projects/Amplify/SwiftSDK/aws-crt-swift ~/Projects/Amplify/SwiftSDK/.
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Set up Gradle Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Build Client Runtime
+        run: cd ClientRuntime && swift build
+      - name: Test Client Runtime
+        run: |
+          cd ClientRuntime
+          swift test --enable-code-coverage
+          bash <(curl -s https://codecov.io/bash)
+      - name: Run SwiftLint in Client Runtime
+        run: cd ClientRuntime && swiftlint autocorrect
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build
+        run: ./gradlew build -x test
+      - name: Unit Tests
+        run: ./gradlew test
+      - name: Lint
+        run: ./gradlew ktlint
