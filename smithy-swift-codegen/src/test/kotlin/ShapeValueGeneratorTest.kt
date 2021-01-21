@@ -39,7 +39,7 @@ class ShapeValueGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyMap")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
         val writer = SwiftWriter("test")
 
@@ -73,7 +73,7 @@ class ShapeValueGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyList")
         val listShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = SwiftWriter("test")
 
@@ -106,7 +106,7 @@ class ShapeValueGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MySet")
         val setShape = model.expectShape(ShapeId.from("foo.bar#MySet"))
         val writer = SwiftWriter("test")
 
@@ -175,7 +175,7 @@ Set<String>(arrayLiteral:
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
         val writer = SwiftWriter("test")
@@ -236,7 +236,7 @@ MyStruct(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyMap")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
         val writer = SwiftWriter("test")
 
@@ -304,7 +304,7 @@ MyStruct(
 
         model = RecursiveShapeBoxer.transform(model) // Transform the model for recursive boxing change
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "RecursiveShapesInputOutput")
 
         /* 1. Test the RecursiveShapesInputOutputNested1 Struct:
             structure RecursiveShapesInputOutputNested1 {
@@ -416,7 +416,7 @@ MyStruct(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
         val writer = SwiftWriter("test")

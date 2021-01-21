@@ -276,7 +276,8 @@ fun Model.newTestContext(
     generator: ProtocolGenerator = MockHttpProtocolGenerator()
 ): TestContext {
     val manifest = MockManifest()
-    val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, serviceShapeId.split("#")[1])
+    val serviceShapeName = serviceShapeId.split("#")[1]
+    val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, serviceShapeName, serviceShapeName)
     val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
     val delegator = SwiftDelegator(settings, this, manifest, provider)
 
@@ -295,13 +296,15 @@ fun Model.newTestContext(
 fun getSettingsNode(
     serviceShapeId: String = "com.test#Example",
     moduleName: String = "example",
-    moduleVersion: String = "1.0.0"
+    moduleVersion: String = "1.0.0",
+    sdkId: String = "Example"
 ): ObjectNode {
     return Node.objectNodeBuilder()
         .withMember("service", Node.from(serviceShapeId))
         .withMember("module", Node.from(moduleName))
         .withMember("moduleVersion", Node.from(moduleVersion))
         .withMember("homepage", Node.from("https://docs.amplify.aws/"))
+        .withMember("sdkId", Node.from(sdkId))
         .withMember("author", Node.from("Amazon Web Services"))
         .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
         .withMember("swiftVersion", Node.from("5.1.0"))
@@ -311,11 +314,12 @@ fun getSettingsNode(
 fun Model.defaultSettings(
     serviceShapeId: String = "com.test#Example",
     moduleName: String = "example",
-    moduleVersion: String = "1.0.0"
+    moduleVersion: String = "1.0.0",
+    sdkId: String = "Example"
 ): SwiftSettings =
     SwiftSettings.from(
         this,
-        getSettingsNode(serviceShapeId, moduleName, moduleVersion)
+        getSettingsNode(serviceShapeId, moduleName, moduleVersion, sdkId)
     )
 
 fun getModelFileContents(namespace: String, filename: String, manifest: MockManifest): String {
