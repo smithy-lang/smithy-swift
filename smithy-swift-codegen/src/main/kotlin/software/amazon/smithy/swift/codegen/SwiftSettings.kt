@@ -24,7 +24,7 @@ private const val GIT_REPO = "gitRepo"
 private const val HOMEPAGE = "homepage"
 private const val AUTHOR = "author"
 private const val SWIFT_VERSION = "swiftVersion"
-// Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
+// If not provided by the service model, the value of sdkId defaults to the Service's shape id name.
 private const val SDK_ID = "sdkId"
 
 class SwiftSettings(
