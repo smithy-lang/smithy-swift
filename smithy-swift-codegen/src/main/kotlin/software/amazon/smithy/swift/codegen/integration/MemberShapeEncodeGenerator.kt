@@ -199,7 +199,7 @@ open class MemberShapeEncodeGenerator(
                         nestedTarget,
                         valueIterator,
                         topLevelContainerName,
-                        level + 1,
+                        level + 1
                     )
                 }
                 is MapShape -> {
