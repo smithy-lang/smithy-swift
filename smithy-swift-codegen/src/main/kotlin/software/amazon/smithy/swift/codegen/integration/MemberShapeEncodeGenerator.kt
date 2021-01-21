@@ -106,8 +106,9 @@ open class MemberShapeEncodeGenerator(
                 if (listInsideMap) {
                     val keyEnumName = if (level == 0) memberName else "Key(stringValue: key${level - 1})"
                     writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
-                } else
+                } else {
                     writer.write("try $containerName.encode($extension)")
+                }
             }
         }
     }
@@ -170,8 +171,13 @@ open class MemberShapeEncodeGenerator(
             }
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
+                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                 val keyEnumName = if (level == 0) memberName else "Key(stringValue: key${level - 1})"
-                writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
+                if (isBoxed) {
+                    writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
+                } else {
+                    writer.write("try $containerName.encode($extension, forKey: .\$L)", keyEnumName)
+                }
             }
         }
     }
