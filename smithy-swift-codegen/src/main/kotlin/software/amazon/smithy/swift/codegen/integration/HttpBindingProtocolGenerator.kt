@@ -14,8 +14,13 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
+import software.amazon.smithy.model.shapes.ByteShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
+import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.LongShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.NumberShape
@@ -24,6 +29,7 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.ShortShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
@@ -636,9 +642,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("} else {")
                 writer.indent()
                 bodyMembers.sortedBy { it.memberName }.forEach {
-                    val type = ctx.symbolProvider.toSymbol(it.member)
                     val memberName = ctx.symbolProvider.toMemberName(it.member)
-                    val value = if (type.isBoxed()) "nil" else 0
+                    val type = ctx.model.expectShape(it.member.target)
+                    val value = if (ctx.symbolProvider.toSymbol(it.member).isBoxed()) "nil" else {
+                        when (type) {
+                            is IntegerShape, is ByteShape, is ShortShape, is LongShape -> 0
+                            is FloatShape, is DoubleShape -> 0.0
+                            is BooleanShape -> false
+                            else -> "nil"
+                        }
+                    }
                     writer.write("self.$memberName = $value")
                 }
                 writer.dedent()
