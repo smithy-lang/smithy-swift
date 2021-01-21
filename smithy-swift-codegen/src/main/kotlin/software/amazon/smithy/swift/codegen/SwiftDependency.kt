@@ -25,7 +25,8 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
         "SmithyTestUtil",
         "0.1.0",
         computeAbsolutePath("smithy-swift/ClientRuntime"),
-        "ClientRuntime");
+        "ClientRuntime"
+    );
 
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()
@@ -47,7 +48,7 @@ private fun computeAbsolutePath(relativePath: String): String {
         if (file.isDirectory) {
             return fileName
         }
-        userDirPath = userDirPath.substring(0, userDirPath.length-1)
+        userDirPath = userDirPath.substring(0, userDirPath.length - 1)
     }
     return ""
 }
