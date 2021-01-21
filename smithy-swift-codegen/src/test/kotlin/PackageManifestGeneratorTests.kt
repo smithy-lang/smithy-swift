@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import io.kotest.matchers.collections.shouldHaveAtMostSize
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldEndWith
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -36,10 +38,11 @@ class PackageManifestGeneratorTests {
                 "        .package(\n" +
                 "            url: \"https://github.com/apple/swift-numerics\",\n" +
                 "            from: 0.0.5\n" +
-                "        ),\n" +
-                "        .package(path: \"../../../../../../ClientRuntime\"),\n" +
-                "    ]"
+                "        ),\n"
         )
+        val packageLine = packageManifest.split("\n").filter { it.contains("package(path") }
+        packageLine.shouldHaveAtMostSize(1)
+        packageLine[0].shouldEndWith("smithy-swift/ClientRuntime\"),")
     }
 
     @Test
