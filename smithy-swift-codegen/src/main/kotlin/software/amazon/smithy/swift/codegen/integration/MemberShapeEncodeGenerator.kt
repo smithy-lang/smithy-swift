@@ -160,7 +160,7 @@ open class MemberShapeEncodeGenerator(
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                val keyEnumName = if (level == 0) ".${memberName}" else "Key(stringValue: key${level - 1})"
+                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: key${level - 1})"
                 if (isBoxed) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
