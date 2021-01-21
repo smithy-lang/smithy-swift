@@ -33,6 +33,7 @@ open class HttpProtocolClientGenerator(
     private val serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver
 ) {
+    private val serviceName: String = ctx.settings.sdkId
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
@@ -50,7 +51,7 @@ open class HttpProtocolClientGenerator(
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: SdkHttpClient")
             writer.write("let config: ${serviceConfig.typeName}")
-            writer.write("let serviceName = \"${serviceSymbol.name}\"")
+            writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: RequestEncoder")
             writer.write("let decoder: ResponseDecoder")
             properties.forEach { prop ->

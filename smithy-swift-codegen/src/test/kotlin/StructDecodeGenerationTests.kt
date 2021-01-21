@@ -83,8 +83,9 @@ class StructDecodeGenerationTests {
                     case intList
                     case intMap
                     case member1
+                    case stringMap
                 }
-
+            
                 public init (from decoder: Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try values.decodeIfPresent(Int.self, forKey: .member1)
@@ -107,6 +108,21 @@ class StructDecodeGenerationTests {
                         }
                     }
                     intMap = intMapDecoded0
+                    let stringMapContainer = try values.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
+                    var stringMapDecoded0: [String:[String]?]? = nil
+                    if let stringMapContainer = stringMapContainer {
+                        stringMapDecoded0 = [String:[String]?]()
+                        for (key0, stringlist0) in stringMapContainer {
+                            var stringlist0Decoded0 = [String]()
+                            if let stringlist0 = stringlist0 {
+                                for string1 in stringlist0 {
+                                    stringlist0Decoded0.append(string1)
+                                }
+                            }
+                            stringMapDecoded0?[key0] = stringlist0Decoded0
+                        }
+                    }
+                    stringMap = stringMapDecoded0
                 }
             }
             """.trimIndent()

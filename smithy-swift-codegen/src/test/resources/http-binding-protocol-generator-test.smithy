@@ -551,7 +551,13 @@ structure Nested4 {
     member1: Integer,
     // sanity check, member serialization for non top-level (bound to the operation input) aggregate shapes
     intList: IntList,
-    intMap: IntMap
+    intMap: IntMap,
+    stringMap: NestedStringMap
+}
+
+map NestedStringMap {
+   key: String,
+   value: StringList
 }
 
 structure Nested3 {

@@ -22,7 +22,7 @@ class ServiceGeneratorTests {
     init {
         var model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "Example", "Example")
         val writer = SwiftWriter("test")
 
         val settings = model.defaultSettings()

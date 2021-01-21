@@ -79,8 +79,9 @@ class StructEncodeGenerationTests {
                     case intList
                     case intMap
                     case member1
+                    case stringMap
                 }
-
+            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
@@ -97,6 +98,14 @@ class StructEncodeGenerationTests {
                     }
                     if let member1 = member1 {
                         try container.encode(member1, forKey: .member1)
+                    }
+                    if let stringMap = stringMap {
+                        var stringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
+                        for (key0, nestedstringmap0) in stringMap {
+                            if let nestedstringmap0 = nestedstringmap0 {
+                                try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: key0))
+                            }
+                        }
                     }
                 }
             }
