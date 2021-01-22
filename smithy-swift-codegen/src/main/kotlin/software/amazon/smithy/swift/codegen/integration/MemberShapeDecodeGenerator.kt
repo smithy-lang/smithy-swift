@@ -239,7 +239,14 @@ open class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
+            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+            if (isBoxed) {
+                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                    renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
+                }
+            } else {
+                renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
+            }
         }
     }
 

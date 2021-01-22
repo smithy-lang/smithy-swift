@@ -287,8 +287,10 @@ extension MapInputOutputBody: Decodable {
             nestedMapDecoded0 = [String:[String:Int]?]()
             for (key0, intmap0) in nestedMapContainer {
                 var intmap0Decoded0 = [String:Int]()
-                for (key1, integer1) in intmap0 {
-                    intmap0Decoded0[key1] = integer1
+                if let intmap0 = intmap0 {
+                    for (key1, integer1) in intmap0 {
+                        intmap0Decoded0[key1] = integer1
+                    }
                 }
                 nestedMapDecoded0?[key0] = intmap0Decoded0
             }
@@ -358,8 +360,10 @@ extension NestedShapesOutputBody: Decodable {
             nestedDictInListDecoded0 = [[String:String]?]()
             for map0 in nestedDictInListContainer {
                 var nestedDictInListContainerDecoded0 = [String:String]()
-                for (key1, string1) in map0 {
-                    nestedDictInListContainerDecoded0[key1] = string1
+                if let map0 = map0 {
+                    for (key1, string1) in map0 {
+                        nestedDictInListContainerDecoded0[key1] = string1
+                    }
                 }
                 nestedDictInListDecoded0?.append(nestedDictInListContainerDecoded0)
             }

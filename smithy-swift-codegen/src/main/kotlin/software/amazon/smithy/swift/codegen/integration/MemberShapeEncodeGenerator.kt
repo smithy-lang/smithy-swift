@@ -93,7 +93,13 @@ open class MemberShapeEncodeGenerator(
                 }
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
-            is MapShape -> renderEncodeList(ctx, memberName, containerName, targetShape, level)
+            is MapShape -> {
+                val topLevelContainerName = "${memberName}Container"
+                writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
+                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                    renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
+                }
+            }
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 writer.write("try $containerName.encode($extension)")
@@ -161,7 +167,7 @@ open class MemberShapeEncodeGenerator(
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
                 val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: key${level - 1})"
-                if (isBoxed) {
+                if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
                     }

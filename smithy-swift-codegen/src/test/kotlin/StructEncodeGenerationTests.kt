@@ -102,9 +102,7 @@ class StructEncodeGenerationTests {
                     if let stringMap = stringMap {
                         var stringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
                         for (key0, nestedstringmap0) in stringMap {
-                            if let nestedstringmap0 = nestedstringmap0 {
-                                try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: key0))
-                            }
+                            try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: key0))
                         }
                     }
                 }

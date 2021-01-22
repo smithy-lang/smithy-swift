@@ -14,8 +14,13 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
+import software.amazon.smithy.model.shapes.ByteShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
+import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.LongShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.NumberShape
@@ -24,6 +29,7 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.ShortShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
@@ -636,9 +642,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("} else {")
                 writer.indent()
                 bodyMembers.sortedBy { it.memberName }.forEach {
-                    val type = ctx.symbolProvider.toSymbol(it.member)
                     val memberName = ctx.symbolProvider.toMemberName(it.member)
-                    val value = if (type.isBoxed()) "nil" else 0
+                    val type = ctx.model.expectShape(it.member.target)
+                    val value = if (ctx.symbolProvider.toSymbol(it.member).isBoxed()) "nil" else {
+                        when (type) {
+                            is IntegerShape, is ByteShape, is ShortShape, is LongShape -> 0
+                            is FloatShape, is DoubleShape -> 0.0
+                            is BooleanShape -> false
+                            else -> "nil"
+                        }
+                    }
                     writer.write("self.$memberName = $value")
                 }
                 writer.dedent()
@@ -879,7 +892,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
-                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody, op.id.name)
+                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, hasHttpBody, contentType, op.id.name)
                     if (hasHttpBody) {
                         renderEncodedBody(ctx, writer, requestBindings)
                     }
@@ -1042,7 +1055,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    open fun headersContentType(contentType: String, writer: SwiftWriter, hasHttpBody: Boolean, operationShape: String) {
+    open fun headersContentType(
+        ctx: ProtocolGenerator.GenerationContext,
+        hasHttpBody: Boolean,
+        contentType: String,
+        writer: SwiftWriter,
+        operationShape: String
+    ) {
         if (hasHttpBody) {
             writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
         }
@@ -1053,13 +1072,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         headerBindings: List<HttpBindingDescriptor>,
         prefixHeaderBindings: List<HttpBindingDescriptor>,
         writer: SwiftWriter,
-        contentType: String,
         hasHttpBody: Boolean,
+        contentType: String,
         operationShape: String
     ) {
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         // we only need the content type header in the request if there is an http body that is being sent
-        headersContentType(contentType, writer, hasHttpBody, operationShape)
+        headersContentType(ctx, hasHttpBody, contentType, writer, operationShape)
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)

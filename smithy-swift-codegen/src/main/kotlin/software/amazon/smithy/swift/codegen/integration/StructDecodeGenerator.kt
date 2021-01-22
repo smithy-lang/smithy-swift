@@ -48,15 +48,17 @@ class StructDecodeGenerator(
     fun render() {
         val containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
-            writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
-            members.forEach { member ->
-                val target = ctx.model.expectShape(member.target)
-                val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-                when (target) {
-                    is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
-                    is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
-                    is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
-                    else -> writeDecodeForPrimitive(target, member, containerName)
+            if (members.isNotEmpty()) {
+                writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
+                members.forEach { member ->
+                    val target = ctx.model.expectShape(member.target)
+                    val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+                    when (target) {
+                        is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
+                        is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
+                        is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
+                        else -> writeDecodeForPrimitive(target, member, containerName)
+                    }
                 }
             }
         }
