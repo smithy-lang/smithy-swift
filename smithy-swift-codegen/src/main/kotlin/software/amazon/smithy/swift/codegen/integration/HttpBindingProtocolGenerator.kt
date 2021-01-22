@@ -892,7 +892,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
-                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, contentType, hasHttpBody, op.id.name)
+                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, hasHttpBody, contentType, op.id.name)
                     if (hasHttpBody) {
                         renderEncodedBody(ctx, writer, requestBindings)
                     }
@@ -1055,7 +1055,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    open fun headersContentType(contentType: String, writer: SwiftWriter, hasHttpBody: Boolean, operationShape: String) {
+    open fun headersContentType(
+        ctx: ProtocolGenerator.GenerationContext,
+        hasHttpBody: Boolean,
+        contentType: String,
+        writer: SwiftWriter,
+        operationShape: String
+    ) {
         if (hasHttpBody) {
             writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
         }
@@ -1066,13 +1072,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         headerBindings: List<HttpBindingDescriptor>,
         prefixHeaderBindings: List<HttpBindingDescriptor>,
         writer: SwiftWriter,
-        contentType: String,
         hasHttpBody: Boolean,
+        contentType: String,
         operationShape: String
     ) {
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         // we only need the content type header in the request if there is an http body that is being sent
-        headersContentType(contentType, writer, hasHttpBody, operationShape)
+        headersContentType(ctx, hasHttpBody, contentType, writer, operationShape)
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
