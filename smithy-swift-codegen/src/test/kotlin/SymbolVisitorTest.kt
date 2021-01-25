@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.swift.codegen.clientName
 
 class SymbolVisitorTest {
 
@@ -18,7 +19,6 @@ class SymbolVisitorTest {
         assertEquals("ExampleClient", "Example Client".clientName())
         assertEquals("ExampleClient", " Example Client ".clientName())
         assertEquals("ExampleClient", "Example Client ".clientName())
-        assertEquals("ExampleClient", "Exámple Client ".clientName())
-        
+        assertEquals("ExámpleClient", "Exámple Client ".clientName())
     }
 }
