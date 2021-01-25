@@ -16,6 +16,9 @@ class SymbolVisitorTest {
         assertEquals("Iotfleethub", "IoTFleetHub".clientName())
         assertEquals("Iot1clickProjects", "IoT 1Click Projects".clientName())
         assertEquals("ExampleClient", "Example Client".clientName())
+        assertEquals("ExampleClient", " Example Client ".clientName())
+        assertEquals("ExampleClient", "Example Client ".clientName())
+        assertEquals("ExampleClient", "Exámple Client ".clientName())
         
     }
 }

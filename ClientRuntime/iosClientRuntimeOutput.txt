@@ -1,0 +1,120 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme ClientRuntime -destination generic/platform=iOS -verbose
+
+Resolve Package Graph
+
+Resolved source packages:
+  AwsCrt: /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift @ local
+  swift-log: https://github.com/apple/swift-log.git @ 1.4.0
+  ClientRuntime: /Users/nickik/Projects/Amplify/SwiftSDK/smithy-swift/ClientRuntime
+
+found 33 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/posix/common.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.gcc_builtin.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.gcc_x64_asm.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.msvc.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/private/lookup3.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/array_list.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/atomics_fallback.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/sanitizer-blacklist.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/string.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/encoding.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/byte_order.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/error.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/atomics.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.gcc_overflow.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.fallback.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/zero.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.cbmc.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/ring_buffer.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/atomics_gnu_old.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/config.h.in
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/atomics_msvc.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/clock.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/atomics_gnu.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/math.gcc_arm64_asm.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/include/aws/common/linked_list.inl
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-common/format-check.sh
+found 8 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/CODE_OF_CONDUCT.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/format-check.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-compression/README.md
+found 9 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/build-deps.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/format-check.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-io/CODE_OF_CONDUCT.md
+found 11 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/CODE_OF_CONDUCT.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/include/aws/http/private/hpack_huffman_static_table.def
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/sanitizer-blacklist.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/include/aws/http/private/hpack_header_static_table.def
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-http/format-check.sh
+found 9 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/CODE_OF_CONDUCT.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/format-check.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/build-deps.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-mqtt/CONTRIBUTING.md
+found 9 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/CODE_OF_CONDUCT.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/NOTICE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/sanitizer-blacklist.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-cal/format-check.sh
+found 9 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/README.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/builder.json
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/CODE_OF_CONDUCT.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/format-check.sh
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/CONTRIBUTING.md
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/CMakeLists.txt
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/cmake/aws-c-auth-config.cmake
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/LICENSE
+    /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift/aws-common-runtime/aws-c-auth/NOTICE
+
+note: Using new build system
+note: Building targets in parallel
+note: Planning build
+note: Constructing build description
+CreateBuildDirectory /Users/nickik/Library/Developer/Xcode/DerivedData/ClientRuntime-gpnljycwjdjzlfbkagoxyjfuldlw/Build/Products (in target 'AwsCCompression' from project 'AwsCrt')
+    cd /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift
+    builtin-create-build-directory /Users/nickik/Library/Developer/Xcode/DerivedData/ClientRuntime-gpnljycwjdjzlfbkagoxyjfuldlw/Build/Products
+
+CreateBuildDirectory /Users/nickik/Library/Developer/Xcode/DerivedData/ClientRuntime-gpnljycwjdjzlfbkagoxyjfuldlw/Build/Intermediates.noindex (in target 'AwsCommonRuntimeKit' from project 'AwsCrt')
+    cd /Users/nickik/Projects/Amplify/SwiftSDK/aws-crt-swift
+    builtin-create-build-directory /Users/nickik/Library/Developer/Xcode/DerivedData/ClientRuntime-gpnljycwjdjzlfbkagoxyjfuldlw/Build/Intermediates.noindex
+
+** BUILD SUCCEEDED **
+
