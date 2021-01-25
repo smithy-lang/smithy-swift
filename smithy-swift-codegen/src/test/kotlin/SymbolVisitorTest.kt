@@ -2,7 +2,6 @@ package software.amazon.smithy.swift.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.clientName
 
 class SymbolVisitorTest {
 
