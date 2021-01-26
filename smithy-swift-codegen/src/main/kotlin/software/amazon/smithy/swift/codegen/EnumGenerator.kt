@@ -9,8 +9,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.utils.CaseUtils
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.utils.CaseUtils
 
 /**
  * Generates an appropriate Swift type for a Smithy enum string.
@@ -215,7 +215,7 @@ class EnumGenerator(
             enumCaseName = "_$enumCaseName"
         }
 
-        if(reservedKeywords.contains(enumCaseName))
+        if (reservedKeywords.contains(enumCaseName))
             enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
 
         return enumCaseName
