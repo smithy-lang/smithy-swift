@@ -116,7 +116,7 @@ open class MemberShapeDecodeGenerator(
 
     private fun renderDecodingDateError(member: MemberShape) {
         val memberName = member.memberName
-        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
+        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
     }
 
     fun renderDecodeListMember(

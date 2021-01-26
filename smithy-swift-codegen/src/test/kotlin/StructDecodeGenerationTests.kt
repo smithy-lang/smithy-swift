@@ -59,12 +59,12 @@ class StructDecodeGenerationTests {
                 }
 
                 public init (from decoder: Decoder) throws {
-                    let vals = try decoder.container(keyedBy: CodingKeys.self)
-                    let payload1Decoded = try vals.decodeIfPresent(String.self, forKey: .payload1)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let payload1Decoded = try containerValues.decodeIfPresent(String.self, forKey: .payload1)
                     payload1 = payload1Decoded
-                    let payload2Decoded = try vals.decodeIfPresent(Int.self, forKey: .payload2)
+                    let payload2Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .payload2)
                     payload2 = payload2Decoded
-                    let payload3Decoded = try vals.decodeIfPresent(Nested.self, forKey: .payload3)
+                    let payload3Decoded = try containerValues.decodeIfPresent(Nested.self, forKey: .payload3)
                     payload3 = payload3Decoded
                 }
             }
@@ -87,10 +87,10 @@ class StructDecodeGenerationTests {
                 }
             
                 public init (from decoder: Decoder) throws {
-                    let vals = try decoder.container(keyedBy: CodingKeys.self)
-                    let member1Decoded = try vals.decodeIfPresent(Int.self, forKey: .member1)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let member1Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .member1)
                     member1 = member1Decoded
-                    let intListContainer = try vals.decodeIfPresent([Int].self, forKey: .intList)
+                    let intListContainer = try containerValues.decodeIfPresent([Int].self, forKey: .intList)
                     var intListDecoded0:[Int]? = nil
                     if let intListContainer = intListContainer {
                         intListDecoded0 = [Int]()
@@ -99,7 +99,7 @@ class StructDecodeGenerationTests {
                         }
                     }
                     intList = intListDecoded0
-                    let intMapContainer = try vals.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
                     var intMapDecoded0: [String:Int]? = nil
                     if let intMapContainer = intMapContainer {
                         intMapDecoded0 = [String:Int]()
@@ -108,7 +108,7 @@ class StructDecodeGenerationTests {
                         }
                     }
                     intMap = intMapDecoded0
-                    let stringMapContainer = try vals.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
+                    let stringMapContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
                     var stringMapDecoded0: [String:[String]?]? = nil
                     if let stringMapContainer = stringMapContainer {
                         stringMapDecoded0 = [String:[String]?]()
@@ -156,31 +156,31 @@ extension TimestampInputOutputBody: Decodable {
     }
 
     public init (from decoder: Decoder) throws {
-        let vals = try decoder.container(keyedBy: CodingKeys.self)
-        let normalDateString = try vals.decodeIfPresent(String.self, forKey: .normal)
+        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        let normalDateString = try containerValues.decodeIfPresent(String.self, forKey: .normal)
         var normalDecoded: Date? = nil
         if let normalDateString = normalDateString {
             let normalFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             normalDecoded = normalFormatter.date(from: normalDateString)
         }
         normal = normalDecoded
-        let dateTimeDateString = try vals.decodeIfPresent(String.self, forKey: .dateTime)
+        let dateTimeDateString = try containerValues.decodeIfPresent(String.self, forKey: .dateTime)
         var dateTimeDecoded: Date? = nil
         if let dateTimeDateString = dateTimeDateString {
             let dateTimeFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
         }
         dateTime = dateTimeDecoded
-        let epochSecondsDecoded = try vals.decodeIfPresent(Date.self, forKey: .epochSeconds)
+        let epochSecondsDecoded = try containerValues.decodeIfPresent(Date.self, forKey: .epochSeconds)
         epochSeconds = epochSecondsDecoded
-        let httpDateDateString = try vals.decodeIfPresent(String.self, forKey: .httpDate)
+        let httpDateDateString = try containerValues.decodeIfPresent(String.self, forKey: .httpDate)
         var httpDateDecoded: Date? = nil
         if let httpDateDateString = httpDateDateString {
             let httpDateFormatter = DateFormatter.rfc5322DateFormatter
             httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
         }
         httpDate = httpDateDecoded
-        let nestedTimestampListContainer = try vals.decodeIfPresent([[String]?].self, forKey: .nestedTimestampList)
+        let nestedTimestampListContainer = try containerValues.decodeIfPresent([[String]?].self, forKey: .nestedTimestampList)
         var nestedTimestampListDecoded0:[[Date]?]? = nil
         if let nestedTimestampListContainer = nestedTimestampListContainer {
             nestedTimestampListDecoded0 = [[Date]?]()
@@ -190,7 +190,7 @@ extension TimestampInputOutputBody: Decodable {
                     for timestamp1 in list0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
-                            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
+                            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
                         }
                         list0Decoded0.append(date1)
                     }
@@ -199,14 +199,14 @@ extension TimestampInputOutputBody: Decodable {
             }
         }
         nestedTimestampList = nestedTimestampListDecoded0
-        let timestampListContainer = try vals.decodeIfPresent([String].self, forKey: .timestampList)
+        let timestampListContainer = try containerValues.decodeIfPresent([String].self, forKey: .timestampList)
         var timestampListDecoded0:[Date]? = nil
         if let timestampListContainer = timestampListContainer {
             timestampListDecoded0 = [Date]()
             for timestamp0 in timestampListContainer {
                 let timestamp0Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
-                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
                 }
                 timestampListDecoded0?.append(date0)
             }
@@ -244,8 +244,8 @@ extension MapInputOutputBody: Decodable {
     }
 
     public init (from decoder: Decoder) throws {
-        let vals = try decoder.container(keyedBy: CodingKeys.self)
-        let intMapContainer = try vals.decodeIfPresent([String:Int].self, forKey: .intMap)
+        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
         var intMapDecoded0: [String:Int]? = nil
         if let intMapContainer = intMapContainer {
             intMapDecoded0 = [String:Int]()
@@ -254,7 +254,7 @@ extension MapInputOutputBody: Decodable {
             }
         }
         intMap = intMapDecoded0
-        let structMapContainer = try vals.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
+        let structMapContainer = try containerValues.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
         var structMapDecoded0: [String:ReachableOnlyThroughMap]? = nil
         if let structMapContainer = structMapContainer {
             structMapDecoded0 = [String:ReachableOnlyThroughMap]()
@@ -263,7 +263,7 @@ extension MapInputOutputBody: Decodable {
             }
         }
         structMap = structMapDecoded0
-        let enumMapContainer = try vals.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
+        let enumMapContainer = try containerValues.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
         var enumMapDecoded0: [String:MyEnum]? = nil
         if let enumMapContainer = enumMapContainer {
             enumMapDecoded0 = [String:MyEnum]()
@@ -272,7 +272,7 @@ extension MapInputOutputBody: Decodable {
             }
         }
         enumMap = enumMapDecoded0
-        let blobMapContainer = try vals.decodeIfPresent([String:Data].self, forKey: .blobMap)
+        let blobMapContainer = try containerValues.decodeIfPresent([String:Data].self, forKey: .blobMap)
         var blobMapDecoded0: [String:Data]? = nil
         if let blobMapContainer = blobMapContainer {
             blobMapDecoded0 = [String:Data]()
@@ -281,7 +281,7 @@ extension MapInputOutputBody: Decodable {
             }
         }
         blobMap = blobMapDecoded0
-        let nestedMapContainer = try vals.decodeIfPresent([String:[String:Int]?].self, forKey: .nestedMap)
+        let nestedMapContainer = try containerValues.decodeIfPresent([String:[String:Int]?].self, forKey: .nestedMap)
         var nestedMapDecoded0: [String:[String:Int]?]? = nil
         if let nestedMapContainer = nestedMapContainer {
             nestedMapDecoded0 = [String:[String:Int]?]()
@@ -296,14 +296,14 @@ extension MapInputOutputBody: Decodable {
             }
         }
         nestedMap = nestedMapDecoded0
-        let dateMapContainer = try vals.decodeIfPresent([String:String].self, forKey: .dateMap)
+        let dateMapContainer = try containerValues.decodeIfPresent([String:String].self, forKey: .dateMap)
         var dateMapDecoded0: [String:Date]? = nil
         if let dateMapContainer = dateMapContainer {
             dateMapDecoded0 = [String:Date]()
             for (key0, timestamp0) in dateMapContainer {
                 let dateMapContainerFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
-                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
                 }
                 dateMapDecoded0?[key0] = date0
             }
@@ -334,8 +334,8 @@ extension NestedShapesOutputBody: Decodable {
     }
 
     public init (from decoder: Decoder) throws {
-        let vals = try decoder.container(keyedBy: CodingKeys.self)
-        let nestedListInDictContainer = try vals.decodeIfPresent([String:[String]?].self, forKey: .nestedListInDict)
+        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        let nestedListInDictContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .nestedListInDict)
         var nestedListInDictDecoded0: [String:[Date]?]? = nil
         if let nestedListInDictContainer = nestedListInDictContainer {
             nestedListInDictDecoded0 = [String:[Date]?]()
@@ -345,7 +345,7 @@ extension NestedShapesOutputBody: Decodable {
                     for timestamp1 in timestamplist0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
-                            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
+                            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
                         }
                         timestamplist0Decoded0.append(date1)
                     }
@@ -354,7 +354,7 @@ extension NestedShapesOutputBody: Decodable {
             }
         }
         nestedListInDict = nestedListInDictDecoded0
-        let nestedDictInListContainer = try vals.decodeIfPresent([[String:String]?].self, forKey: .nestedDictInList)
+        let nestedDictInListContainer = try containerValues.decodeIfPresent([[String:String]?].self, forKey: .nestedDictInList)
         var nestedDictInListDecoded0:[[String:String]?]? = nil
         if let nestedDictInListContainer = nestedDictInListContainer {
             nestedDictInListDecoded0 = [[String:String]?]()
@@ -392,10 +392,10 @@ extension NestedShapesOutputBody: Decodable {
                 }
 
                 public init (from decoder: Decoder) throws {
-                    let vals = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooDecoded = try vals.decodeIfPresent(String.self, forKey: .foo)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let fooDecoded = try containerValues.decodeIfPresent(String.self, forKey: .foo)
                     foo = fooDecoded
-                    let nestedDecoded = try vals.decodeIfPresent(Box<RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    let nestedDecoded = try containerValues.decodeIfPresent(Box<RecursiveShapesInputOutputNested2>.self, forKey: .nested)
                     nested = nestedDecoded
                 }
             }
@@ -420,10 +420,10 @@ extension NestedShapesOutputBody: Decodable {
                 }
 
                 public init (from decoder: Decoder) throws {
-                    let vals = try decoder.container(keyedBy: CodingKeys.self)
-                    let barDecoded = try vals.decodeIfPresent(String.self, forKey: .bar)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let barDecoded = try containerValues.decodeIfPresent(String.self, forKey: .bar)
                     bar = barDecoded
-                    let recursiveMemberDecoded = try vals.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
+                    let recursiveMemberDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
                     recursiveMember = recursiveMemberDecoded
                 }
             }

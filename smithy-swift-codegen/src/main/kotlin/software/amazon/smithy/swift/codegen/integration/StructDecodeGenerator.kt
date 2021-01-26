@@ -46,7 +46,7 @@ class StructDecodeGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     fun render() {
-        val containerName = "vals"
+        val containerName = "containerValues"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
             if (members.isNotEmpty()) {
                 writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
