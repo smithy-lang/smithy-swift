@@ -108,8 +108,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             generateProtocolUnitTests(ctx)
-            // FIXME figure out a better way to not generate test targets if no protocol is being generated AND no tests are actually generated
-            generateTestTarget = true
+
+            generateTestTarget = ctx.settings.shouldGenerateUnitTestTarget
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
             generateProtocolClient(ctx)

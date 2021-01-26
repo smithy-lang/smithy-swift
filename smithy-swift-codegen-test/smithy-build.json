@@ -9,7 +9,8 @@
       "author": "Amazon Web Services",
       "sdkId": "Weather",
       "homepage": "https://docs.amplify.aws/",
-      "swiftVersion": "5.1.0"
+      "swiftVersion": "5.1.0",
+      "shouldGenerateUnitTestTarge": false
     }
   }
 }
