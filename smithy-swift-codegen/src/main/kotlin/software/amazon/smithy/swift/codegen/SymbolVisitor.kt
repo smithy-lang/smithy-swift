@@ -354,7 +354,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
          */
         fun isValidSwiftIdentifier(value: String): Boolean {
             return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
-                !Character.isDigit(value.first())
+                !Character.isDigit(value.first()) && !value.equals("in") && !value.equals("static")
         }
     }
 }

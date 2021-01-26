@@ -116,7 +116,7 @@ open class MemberShapeDecodeGenerator(
 
     private fun renderDecodingDateError(member: MemberShape) {
         val memberName = member.memberName
-        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: values.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
+        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: vals.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
     }
 
     fun renderDecodeListMember(
@@ -139,7 +139,7 @@ open class MemberShapeDecodeGenerator(
             val listContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
-                "let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
+                "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
                 listContainerName,
                 symbolName,
                 memberName
@@ -227,7 +227,7 @@ open class MemberShapeDecodeGenerator(
             val topLevelContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
-                "let \$L = try values.$decodeVerb(\$L.self, forKey: .\$L)",
+                "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
                 topLevelContainerName,
                 symbolName,
                 memberName
