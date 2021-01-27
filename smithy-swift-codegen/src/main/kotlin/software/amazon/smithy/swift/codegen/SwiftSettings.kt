@@ -69,7 +69,7 @@ class SwiftSettings(
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
-            val shouldGenerateUnitTestTarget = config.getBooleanMemberOrDefault(SHOULD_GENERATE_UNIT_TEST_TARGET, true)
+            val shouldGenerateUnitTestTarget = config.getBooleanMemberOrDefault(SHOULD_GENERATE_UNIT_TEST_TARGET, false)
 
             return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion, shouldGenerateUnitTestTarget)
         }
