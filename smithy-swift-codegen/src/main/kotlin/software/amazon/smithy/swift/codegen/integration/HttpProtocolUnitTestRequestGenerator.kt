@@ -6,7 +6,10 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
@@ -86,7 +89,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val hasIdempotencyTokenTrait = inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait::class.java) }
                 writer.swiftFunctionParameterIndent {
                     writer.write("  .withEncoder(value: encoder)")
-                    if(hasIdempotencyTokenTrait) {
+                    if (hasIdempotencyTokenTrait) {
                         writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
                     }
                     writer.write("  .build()")
@@ -97,8 +100,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 if (hasIdempotencyTokenTrait) {
                     val idempotentMemberName = inputShape.members().first() { it.hasTrait(IdempotencyTokenTrait::class.java) }.memberName
-                   IdempotencyTokenMiddlewareGenerator(writer, idempotentMemberName, operationStack).renderIdempotencyMiddleware()
-
+                    IdempotencyTokenMiddlewareGenerator(writer, idempotentMemberName, operationStack).renderIdempotencyMiddleware()
                 }
                 writer.write("let actual = try operationStack.handleMiddleware(context: context, input: input).get()")
                 // assert that forbidden Query Items do not exist

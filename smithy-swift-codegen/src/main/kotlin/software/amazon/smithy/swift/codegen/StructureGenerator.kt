@@ -112,8 +112,8 @@ class StructureGenerator(
                 memberSymbol = memberSymbol.recursiveSymbol()
             }
 
-            //the token member has to be able to be modified if the operation requires it and the given value is nil
-            if(it.hasTrait(IdempotencyTokenTrait::class.java)) {
+            // the token member has to be able to be modified if the operation requires it and the given value is nil
+            if (it.hasTrait(IdempotencyTokenTrait::class.java)) {
                 declarationType = "var"
             }
 

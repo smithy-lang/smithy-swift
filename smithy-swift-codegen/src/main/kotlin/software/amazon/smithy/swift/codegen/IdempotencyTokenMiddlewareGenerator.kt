@@ -1,12 +1,10 @@
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-
-class IdempotencyTokenMiddlewareGenerator(private val writer: SwiftWriter,
-                                          private val idempotentMemberName: String,
-                                          private val operationMiddlewareStackName: String) {
+class IdempotencyTokenMiddlewareGenerator(
+    private val writer: SwiftWriter,
+    private val idempotentMemberName: String,
+    private val operationMiddlewareStackName: String
+) {
     /**
      * If given the following smithy in the input of an operation:
      * ```

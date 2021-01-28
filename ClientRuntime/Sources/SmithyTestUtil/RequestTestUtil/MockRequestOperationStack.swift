@@ -27,7 +27,6 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
         self.buildStep = BuildStep()
         self.finalizeStep = FinalizeStep()
     }
-
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware(context: HttpContext,
