@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
 
+//this mock middleware operation stack runs all the steps except deserialize so that it returns us the request right before it would essentially be made and then we can compare the request in the test with the given json to ensure accuracy
 public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
                                                         SdkHttpRequestBuilder>

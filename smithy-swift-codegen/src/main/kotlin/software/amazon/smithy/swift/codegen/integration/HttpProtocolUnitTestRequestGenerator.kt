@@ -8,6 +8,8 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SymbolVisitor
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
@@ -83,12 +85,19 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("do {", "} catch let err {") {
                 writer.write("let encoder = \$L", requestEncoder)
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
-                if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) }) {
-                    writer.write("let requestBuilder = try input.buildHttpRequest(encoder: encoder, idempotencyTokenGenerator: QueryIdempotencyTestTokenGenerator())")
-                } else {
-                    writer.write("let requestBuilder = try input.buildHttpRequest(encoder: encoder)")
+                writer.write("let context = HttpContextBuilder()")
+                writer.swiftFunctionParameterIndent {
+                    writer.write("  .withEncoder(value: encoder)")
+                    writer.write("  .build()")
                 }
-                writer.write("let actual = requestBuilder.build()")
+                val inputSymbol = symbolProvider.toSymbol(inputShape)
+                writer.write("let operationStack = MockRequestOperationStack<$inputSymbol>(id: \"${test.id}\")")
+
+                if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait.ID.name) }) {
+                    //TODO: add idempotency token middleware here to operation
+                   // writer.write("let requestBuilder = try input.buildHttpRequest(encoder: encoder, idempotencyTokenGenerator: QueryIdempotencyTestTokenGenerator())")
+                }
+                writer.write("let actual = try operationStack.handleMiddleware(context: context, input: input).get()")
                 // assert that forbidden Query Items do not exist
                 if (test.forbidQueryParams.isNotEmpty()) {
                     writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
