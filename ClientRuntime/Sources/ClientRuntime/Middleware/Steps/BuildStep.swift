@@ -23,6 +23,8 @@ public struct BuildStep: MiddlewareStack {
     public typealias MInput = SdkHttpRequestBuilder
     
     public typealias MOutput = SdkHttpRequestBuilder
+    
+    public init() {}
 }
 
 public struct BuildStepHandler: Handler {
@@ -30,6 +32,8 @@ public struct BuildStepHandler: Handler {
     public typealias Input = SdkHttpRequestBuilder
     
     public typealias Output = SdkHttpRequestBuilder
+    
+    public init() {}
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
         // since types don't change in input and output here just return the result to kick of the next step

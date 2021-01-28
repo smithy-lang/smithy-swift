@@ -71,7 +71,7 @@ public extension MiddlewareStack {
 }
 
 extension MiddlewareStack {
-    func eraseToAnyMiddlewareStack<MInput,
+    public func eraseToAnyMiddlewareStack<MInput,
                                    MOutput,
                                    Context>() -> AnyMiddlewareStack<MInput,
                                                                     MOutput,

@@ -23,6 +23,8 @@ public struct FinalizeStep: MiddlewareStack {
     public typealias MInput = SdkHttpRequestBuilder
     
     public typealias MOutput = SdkHttpRequest
+    
+    public init() {}
 }
 
 public struct FinalizeStepHandler: Handler {
@@ -30,6 +32,8 @@ public struct FinalizeStepHandler: Handler {
     public typealias Input = SdkHttpRequestBuilder
     
     public typealias Output = SdkHttpRequest
+    
+    public init() {}
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequest, Error> {
         // this steps takes the builder and builds an actual request

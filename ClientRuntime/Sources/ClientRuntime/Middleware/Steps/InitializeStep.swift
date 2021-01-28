@@ -22,6 +22,8 @@ public struct InitializeStep<Input: HttpRequestBinding>: MiddlewareStack {
     public typealias MInput = Input
     
     public typealias MOutput = SdkHttpRequestBuilder
+    
+    public init() {}
 
 }
 
@@ -30,6 +32,8 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
     public typealias Input = Input
     
     public typealias Output = SdkHttpRequestBuilder
+    
+    public init() {}
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
         //this step takes an input of whatever type with conformance to our http binding protocol

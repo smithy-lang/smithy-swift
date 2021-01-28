@@ -16,7 +16,7 @@ public protocol Middleware {
 }
 
 extension Middleware {
-    func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context> {
+    public func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context> {
         return AnyMiddleware(self)
     }
 }
