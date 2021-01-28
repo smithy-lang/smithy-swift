@@ -43,7 +43,6 @@ open class HttpRequestTestBase: XCTestCase {
         //without the body
         if body != "" && body != "{}" {
             let httpBody = HttpBody.data(body.data(using: .utf8))
-            print(String(data: body.data(using: .utf8)!, encoding: .utf8))
             builder.withBody(httpBody)
         }
     
@@ -163,8 +162,7 @@ open class HttpRequestTestBase: XCTestCase {
             XCTFail("The actual JSON Data is not Valid")
             return
         }
-        print(expectedJSON)
-        print(actualJSON)
+        
         XCTAssertTrue(NSDictionary(dictionary: expectedJSON).isEqual(to: actualJSON))
     }
     
