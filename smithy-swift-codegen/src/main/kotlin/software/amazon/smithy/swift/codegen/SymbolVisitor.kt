@@ -133,8 +133,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 //            }
     }
 
-    private fun escapeReservedWords(word: String): String = "`$word`"
-
     override fun toSymbol(shape: Shape): Symbol {
         depth++
         val symbol = shape.accept(this)
@@ -356,6 +354,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
                 !Character.isDigit(value.first())
         }
+
+        fun escapeReservedWords(word: String): String = "`$word`"
     }
 }
 

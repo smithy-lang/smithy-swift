@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.utils.CaseUtils
 
 /**
@@ -213,6 +214,11 @@ class EnumGenerator(
         if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
             enumCaseName = "_$enumCaseName"
         }
+
+        if (reservedKeywords.contains(enumCaseName)) {
+            enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
+        }
+
         return enumCaseName
     }
 }

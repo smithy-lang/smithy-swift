@@ -48,8 +48,8 @@ class UnionDecodeGeneratorTests {
                 }
 
                 public init (from decoder: Decoder) throws {
-                    let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let contentsDecoded = try values.decodeIfPresent(MyUnion.self, forKey: .contents)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let contentsDecoded = try containerValues.decodeIfPresent(MyUnion.self, forKey: .contents)
                     contents = contentsDecoded
                 }
             }
