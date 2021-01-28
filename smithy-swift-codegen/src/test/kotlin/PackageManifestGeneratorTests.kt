@@ -125,7 +125,8 @@ class PackageManifestGeneratorTests {
             path: "./MockSDK"
         ),
     ]
-""")
+"""
+        )
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {
