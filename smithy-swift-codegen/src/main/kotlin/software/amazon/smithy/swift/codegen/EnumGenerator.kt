@@ -215,8 +215,9 @@ class EnumGenerator(
             enumCaseName = "_$enumCaseName"
         }
 
-        if (reservedKeywords.contains(enumCaseName))
+        if (reservedKeywords.contains(enumCaseName)) {
             enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
+        }
 
         return enumCaseName
     }
