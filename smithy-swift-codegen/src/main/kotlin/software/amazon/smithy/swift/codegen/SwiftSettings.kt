@@ -18,14 +18,15 @@ import kotlin.streams.toList
 
 private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
-private const val MODULE_DESCRIPTION = "moduleDescription"
 private const val MODULE_VERSION = "moduleVersion"
-private const val GIT_REPO = "gitRepo"
-private const val HOMEPAGE = "homepage"
+private const val MODULE_DESCRIPTION = "moduleDescription"
 private const val AUTHOR = "author"
-private const val SWIFT_VERSION = "swiftVersion"
-// If not provided by the service model, the value of sdkId defaults to the Service's shape id name.
+private const val HOMEPAGE = "homepage"
+// If SDK_ID is not provided by the service model, the value of sdkId defaults to the Service's shape id name.
 private const val SDK_ID = "sdkId"
+private const val GIT_REPO = "gitRepo"
+private const val SWIFT_VERSION = "swiftVersion"
+private const val SHOULD_GENERATE_UNIT_TEST_TARGET = "shouldGenerateUnitTestTarget"
 
 class SwiftSettings(
     val service: ShapeId,
@@ -36,7 +37,8 @@ class SwiftSettings(
     val homepage: String,
     val sdkId: String,
     val gitRepo: String,
-    val swiftVersion: String
+    val swiftVersion: String,
+    val shouldGenerateUnitTestTarget: Boolean
 ) {
 
     companion object {
@@ -53,7 +55,7 @@ class SwiftSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): SwiftSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, SDK_ID, HOMEPAGE, GIT_REPO, SWIFT_VERSION))
+            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, SDK_ID, HOMEPAGE, GIT_REPO, SWIFT_VERSION, SHOULD_GENERATE_UNIT_TEST_TARGET))
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
@@ -67,7 +69,9 @@ class SwiftSettings(
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
-            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion)
+            val shouldGenerateUnitTestTarget = config.getBooleanMemberOrDefault(SHOULD_GENERATE_UNIT_TEST_TARGET, false)
+
+            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion, shouldGenerateUnitTestTarget)
         }
 
         // infer the service to generate from a model

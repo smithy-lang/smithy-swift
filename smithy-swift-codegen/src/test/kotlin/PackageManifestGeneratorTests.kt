@@ -29,7 +29,7 @@ class PackageManifestGeneratorTests {
     }
 
     @Test
-    fun `it renders package manifest file with correct dependencies block`() {
+    fun `it renders package manifest file with swift-numerics in dependencies block`() {
         writePackageManifest(settings, manifest, mockDependencies)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
@@ -46,7 +46,7 @@ class PackageManifestGeneratorTests {
     }
 
     @Test
-    fun `it renders package manifest file with correct platforms block`() {
+    fun `it renders package manifest file with macOS and iOS platforms block`() {
         writePackageManifest(settings, manifest, mockDependencies)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
@@ -58,7 +58,7 @@ class PackageManifestGeneratorTests {
     }
 
     @Test
-    fun `it renders package manifest file with correct products block`() {
+    fun `it renders package manifest file with single library in product block`() {
         writePackageManifest(settings, manifest, mockDependencies)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
@@ -70,7 +70,7 @@ class PackageManifestGeneratorTests {
     }
 
     @Test
-    fun `it renders package manifest file with correct targets block`() {
+    fun `it renders package manifest file with target and test target`() {
         writePackageManifest(settings, manifest, mockDependencies, true)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
@@ -99,6 +99,33 @@ class PackageManifestGeneratorTests {
                 "            path: \"./MockSDKTests\"\n" +
                 "        )\n" +
                 "    ]"
+        )
+    }
+
+    @Test
+    fun `it renders package manifest file without test target`() {
+        writePackageManifest(settings, manifest, mockDependencies, false)
+        val packageManifest = manifest.getFileString("Package.swift").get()
+        assertNotNull(packageManifest)
+        packageManifest.shouldContain(
+"""
+    targets: [
+        .target(
+            name: "MockSDK",
+            dependencies: [
+                .product(
+                    name: "ComplexModule",
+                    package: "swift-numerics"
+                ),
+                .product(
+                    name: "ClientRuntime",
+                    package: "ClientRuntime"
+                ),
+            ],
+            path: "./MockSDK"
+        ),
+    ]
+"""
         )
     }
 
