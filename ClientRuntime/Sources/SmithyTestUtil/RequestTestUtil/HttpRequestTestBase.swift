@@ -10,6 +10,8 @@ import XCTest
 /**
  Includes Utility functions for Http Protocol Request Serialization Tests
  */
+public typealias ValidateJsonCallback = (Data, Data) -> Void
+
 open class HttpRequestTestBase: XCTestCase {
     /**
      Create `HttpRequest` from its components
@@ -98,7 +100,7 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpBody`
     /// - Parameter actual: Actual `HttpBody` to compare against
     */
-    public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody) {
+    public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody, _ callback: ValidateJsonCallback) {
         if case .data(let actualData) = actual {
             if case .data(let expectedData) = expected {
                 guard let expectedData  = expectedData else {
@@ -110,9 +112,11 @@ open class HttpRequestTestBase: XCTestCase {
                     XCTFail("actual data in HttpBody is nil but expected is not")
                     return
                 }
-                XCTAssertEqual(expectedData,
-                               actualData,
-                               "The expected and Actual data inside the HttpBody do not match")
+                callback(expectedData, actualData)
+
+//                XCTAssertEqual(expectedData,
+//                               actualData,
+//                               "The expected and Actual data inside the HttpBody do not match")
             } else {
                 XCTFail("The expected HttpBody is not Data Type")
             }
@@ -126,7 +130,8 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpBody`
     /// - Parameter actual: Actual `HttpBody` to compare against
     */
-    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody) {
+/*
+    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateJsonCallback? = nil) {
         if case .data(let actualData) = actual {
             if case .data(let expectedData) = expected {
                 guard let expectedData  = expectedData else {
@@ -138,15 +143,19 @@ open class HttpRequestTestBase: XCTestCase {
                     XCTFail("actual data in HttpBody is nil but expected is not")
                     return
                 }
-                assertEqualJSON(expectedData, actualData)
-            } else {
-                XCTFail("The expected HttpBody is not Data Type")
+                if let callback = callback {
+                    callback(expectedData, actualData)
+                    return
+                } else {
+                    assertEqualJSON(expectedData, actualData)
+                    return
+                }
             }
         } else {
             XCTFail("The actual HttpBody is not Data Type")
         }
     }
-    
+    */
     /**
     Asserts JSON `Data` objects  match
     /// - Parameter expected: Expected JSON `Data`

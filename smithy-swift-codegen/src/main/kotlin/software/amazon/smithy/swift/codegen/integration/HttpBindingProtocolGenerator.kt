@@ -142,6 +142,38 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
         }
+
+        for (shape in shapesNeedingEncodableConformance) {
+            // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
+            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+            val rootNamespace = ctx.settings.moduleName
+            val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
+
+            val decodeSymbol = Symbol.builder()
+                .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
+                .name(structSymbol.name)
+                .build()
+            println("shapesNeedingDecodableConformance - shape: ${shape}")
+            println("  structSymbol: ${structSymbol}")
+            println("  decodeSymbol: ${decodeSymbol}")
+
+            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
+                writer.openBlock("public struct ${structSymbol.name}Body: Equatable {", "}") {
+                    httpBodyMembers.forEach {
+                        val memberSymbol = ctx.symbolProvider.toSymbol(it)
+                        writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
+                    }
+                }
+                writer.write("") // add space between struct declaration and decodable conformance
+                writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                    writer.addFoundationImport()
+                    generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                    writer.write("") // need enter space between coding keys and decode implementation
+                    StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                }
+            }
+        }
     }
 
     // can be overridden by protocol for things like json name traits, xml keys etc.
