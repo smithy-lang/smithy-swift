@@ -111,7 +111,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                                                                                                   H.Output == Any,
                                                                                                   H.Context == M.Context {
         guard !middlewares.isEmpty,
-              let lastMiddleware = middlewares.last else  {
+              let lastMiddleware = middlewares.last else {
             return handler.eraseToAnyHandler()
         }
         

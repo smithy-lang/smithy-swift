@@ -43,7 +43,7 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                      buildStackStep.eraseToAnyMiddleware(),
                      finalizeStackStep.eraseToAnyMiddleware()]
         
-        let mockHandler = MockHandler(resultType: { context, input in .success(input) })
+        let mockHandler = MockHandler(resultType: { _, input in .success(input) })
         
         let wrappedHandler = StepHandler<SdkHttpRequest,
                                          SdkHttpRequest,
@@ -66,4 +66,3 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
         }
     }
 }
-
