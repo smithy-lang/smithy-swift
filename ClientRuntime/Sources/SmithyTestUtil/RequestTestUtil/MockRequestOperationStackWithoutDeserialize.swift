@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
 
-//this mock middleware operation stack runs all the steps except deserialize so that it returns us the request right before it would essentially be made and then we can compare the request in the test with the given json to ensure accuracy
 public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
                                                         SdkHttpRequestBuilder>
@@ -13,7 +12,6 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
     typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                       SdkHttpRequest>
     
-    ///returns the unique id for the operation stack as middleware
     public var id: String
     public var initializeStep: InitializeStep<StackInput>
     public var buildStep: BuildStep
@@ -28,7 +26,6 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
         self.finalizeStep = FinalizeStep()
     }
     
-    /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware(context: HttpContext,
                                              input: StackInput) -> Result<SdkHttpRequest, Error> {
 
@@ -52,15 +49,12 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                                          Any,
                                          HttpContext>(next: MockHandler().eraseToAnyHandler())
         
-        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
         let handler = compose(next: wrappedHandler, with: steps)
         
-        //kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
         
         let castedResult = result.flatMap { (anyResult) -> Result<SdkHttpRequest,
                                                                   Error> in
-            //have to match the result because types
             if let result = anyResult as? SdkHttpRequest {
                 return .success(result)
             } else {
@@ -72,26 +66,27 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
         return castedResult
     }
     
-    /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
-    func compose<H: Handler, M: Middleware>(next: H,
-                                            with: [M]) -> AnyHandler<H.Input,
+    func compose<H: Handler, M: Middleware>(next handler: H,
+                                            with middlewares: [M]) -> AnyHandler<H.Input,
                                                                      H.Output,
                                                                      H.Context> where M.MOutput == Any,
                                                                                       M.MInput == Any,
                                                                                       H.Input == Any,
                                                                                       H.Output == Any,
                                                                                       H.Context == M.Context {
-        if with.isEmpty {
-            return next.eraseToAnyHandler()
+        guard !handler.isEmpty else {
+            return handler.eraseToAnyHandler()
         }
         
-        let count = with.count
-        var handler = ComposedHandler(next, with[count-1])
-        let reversedCollection = (0...(count-2)).reversed()
+        let count = middlewares.count
+        let lastMiddleware = middlewares[count - 1]
+        var composedHandler = ComposedHandler(handler, lastMiddleware)
+        let secondToLastIndex = count - 2
+        let reversedCollection = (0...secondToLastIndex).reversed()
         for index in reversedCollection {
-            handler = ComposedHandler(handler, with[index])
+            composedHandler = ComposedHandler(composedHandler, middlewares[index])
         }
         
-        return handler.eraseToAnyHandler()
+        return composedHandler.eraseToAnyHandler()
     }
 }

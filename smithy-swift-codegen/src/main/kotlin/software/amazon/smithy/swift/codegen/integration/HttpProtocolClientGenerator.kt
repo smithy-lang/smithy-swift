@@ -193,12 +193,12 @@ open class HttpProtocolClientGenerator(
     protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
-        if (inputShape.members().any() { it.hasTrait(IdempotencyTokenTrait::class.java) }) {
-            val idempotentMemberName =
-                inputShape.members().first() { it.hasTrait(IdempotencyTokenTrait::class.java) }.memberName
+        val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
+        val hasIdempotencyTokenTrait = idempotentMember != null
+        if (hasIdempotencyTokenTrait) {
             IdempotencyTokenMiddlewareGenerator(
                 writer,
-                idempotentMemberName,
+                idempotentMember!!.memberName,
                 operationStackName
             ).renderIdempotencyMiddleware()
         }

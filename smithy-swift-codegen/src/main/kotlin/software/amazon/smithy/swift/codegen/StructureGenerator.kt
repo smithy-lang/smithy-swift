@@ -106,7 +106,7 @@ class StructureGenerator(
         membersSortedByName.forEach {
             var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-            var declarationType = "let"
+            var letOrVar = "let"
             if (it.hasTrait(SwiftBoxTrait::class.java)) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                 memberSymbol = memberSymbol.recursiveSymbol()
@@ -114,10 +114,10 @@ class StructureGenerator(
 
             // the token member has to be able to be modified if the operation requires it and the given value is nil
             if (it.hasTrait(IdempotencyTokenTrait::class.java)) {
-                declarationType = "var"
+                letOrVar = "var"
             }
 
-            writer.write("public $declarationType \$L: \$T", memberName, memberSymbol)
+            writer.write("public $letOrVar \$L: \$T", memberName, memberSymbol)
         }
     }
 

@@ -67,7 +67,7 @@ public struct StepHandler<HandlerInput,
     let next: AnyHandler<HandlerInput, HandlerOutput, Context>
     
     public init(next: AnyHandler<HandlerInput, HandlerOutput, Context>) {
-        self.next =  next
+        self.next = next
     }
     
     public func handle(context: Context, input: StepInput) -> Result<StepOutput, Error> {
