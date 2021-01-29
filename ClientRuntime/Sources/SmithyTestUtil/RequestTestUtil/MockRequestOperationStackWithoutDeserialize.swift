@@ -74,7 +74,7 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                                                                                       H.Input == Any,
                                                                                       H.Output == Any,
                                                                                       H.Context == M.Context {
-        guard !handler.isEmpty else {
+        guard !middlewares.isEmpty else {
             return handler.eraseToAnyHandler()
         }
         
