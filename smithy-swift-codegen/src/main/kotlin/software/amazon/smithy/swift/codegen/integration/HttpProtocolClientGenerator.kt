@@ -14,7 +14,9 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -185,10 +187,21 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withPath(value: path)")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
+        writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
     }
 
-    protected open fun renderMiddlewares(op: OperationShape) {
-        writer.write("operation.addDefaultOperationMiddlewares()")
+    protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
+        writer.write("$operationStackName.addDefaultOperationMiddlewares()")
+        val inputShape = model.expectShape(op.input.get())
+        val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
+        val hasIdempotencyTokenTrait = idempotentMember != null
+        if (hasIdempotencyTokenTrait) {
+            IdempotencyTokenMiddlewareGenerator(
+                writer,
+                idempotentMember!!.memberName,
+                operationStackName
+            ).renderIdempotencyMiddleware()
+        }
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
@@ -203,9 +216,10 @@ open class HttpProtocolClientGenerator(
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }
-        writer.write("var operation = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
-        renderMiddlewares(op)
-        writer.write("let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
+        val operationStackName = "operation"
+        writer.write("var $operationStackName = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
+        renderMiddlewares(op, operationStackName)
+        writer.write("let result = $operationStackName.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
         writer.write("completion(result)")
     }
 }

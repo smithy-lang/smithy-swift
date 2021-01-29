@@ -13,6 +13,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
@@ -105,12 +106,18 @@ class StructureGenerator(
         membersSortedByName.forEach {
             var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-
+            var letOrVar = "let"
             if (it.hasTrait(SwiftBoxTrait::class.java)) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                 memberSymbol = memberSymbol.recursiveSymbol()
             }
-            writer.write("public let \$L: \$T", memberName, memberSymbol)
+
+            // the token member has to be able to be modified if the operation requires it and the given value is nil
+            if (it.hasTrait(IdempotencyTokenTrait::class.java)) {
+                letOrVar = "var"
+            }
+
+            writer.write("public $letOrVar \$L: \$T", memberName, memberSymbol)
         }
     }
 

@@ -10,7 +10,7 @@ public protocol Handler {
 }
 
 extension Handler {
-    func eraseToAnyHandler() -> AnyHandler<Input, Output, Context> {
+    public func eraseToAnyHandler() -> AnyHandler<Input, Output, Context> {
         return AnyHandler(self)
     }
 }

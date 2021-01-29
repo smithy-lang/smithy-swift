@@ -25,6 +25,8 @@ public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResp
     public typealias MInput = SdkHttpRequest
     
     public typealias MOutput = DeserializeOutput<Output, OutputError>
+    
+    public init() {}
 }
 
 // create a special output for this last step to link this step with the final handler and properly return the result

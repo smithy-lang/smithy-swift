@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 // handler chain, used to decorate a handler with middleware
-struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
+public struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
     // the next handler to call
     let next: AnyHandler<MInput, MOutput, Context>
     
@@ -23,7 +23,7 @@ struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
 }
 
 extension ComposedHandler: Handler {
-    func handle(context: Context, input: MInput) -> Result<MOutput, Error> {
+    public func handle(context: Context, input: MInput) -> Result<MOutput, Error> {
         return with.handle(context: context, input: input, next: next)
     }
 }

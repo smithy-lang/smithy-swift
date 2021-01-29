@@ -3,22 +3,22 @@
 
 //cast output of one middleware stack to input of the next
 //pass in Any for middleware input and output to trick the chain into thinking each step input and output are the same
-struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
+public struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     
-    var id: String
-    typealias MInput = Any
-    typealias MOutput = Any
-    typealias Context = HttpContext
+    public var id: String
+    public typealias MInput = Any
+    public typealias MOutput = Any
+    public typealias Context = HttpContext
     let stack: AnyMiddlewareStack<StepInput, StepOutput, Context>
     let handler: AnyHandler<StepInput, StepOutput, Context>?
-    init(stack: AnyMiddlewareStack<StepInput, StepOutput, Context>,
+    public init(stack: AnyMiddlewareStack<StepInput, StepOutput, Context>,
          handler: AnyHandler<StepInput, StepOutput, Context>? = nil) {
         self.id = stack.id
         self.stack = stack
         self.handler = handler
     }
     
-    func handle<H>(context: Context, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler,
+    public func handle<H>(context: Context, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler,
                                                                                              MInput == H.Input,
                                                                                              MOutput == H.Output,
                                                                                              Context == H.Context {
@@ -57,16 +57,20 @@ struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
 
 /// a struct for casting inner inputs and outputs to outer middleware inputs and outputs or vice versa
 ///  (from stack input to step input or rervese)
-struct StepHandler<HandlerInput,
+public struct StepHandler<HandlerInput,
                    HandlerOutput,
                    StepInput,
                    StepOutput,
                    Context: MiddlewareContext>: Handler {
-    typealias Input = StepInput
-    typealias Output = StepOutput
+    public typealias Input = StepInput
+    public typealias Output = StepOutput
     let next: AnyHandler<HandlerInput, HandlerOutput, Context>
     
-    func handle(context: Context, input: StepInput) -> Result<StepOutput, Error> {
+    public init(next: AnyHandler<HandlerInput, HandlerOutput, Context>) {
+        self.next = next
+    }
+    
+    public func handle(context: Context, input: StepInput) -> Result<StepOutput, Error> {
         
         if let input = input as? HandlerInput {
             let result = next.handle(context: context, input: input)

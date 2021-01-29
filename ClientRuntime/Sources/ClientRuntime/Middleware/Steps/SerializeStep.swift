@@ -21,6 +21,8 @@ public struct SerializeStep: MiddlewareStack {
     public typealias MInput = SdkHttpRequestBuilder
     
     public typealias MOutput = SdkHttpRequestBuilder
+    
+    public init() {}
 }
 
 public struct SerializeStepHandler: Handler {
@@ -28,6 +30,8 @@ public struct SerializeStepHandler: Handler {
     public typealias Input = SdkHttpRequestBuilder
     
     public typealias Output = SdkHttpRequestBuilder
+    
+    public init() {}
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
         //this step does not change types from input and output so just return the input as the result

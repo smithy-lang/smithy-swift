@@ -33,6 +33,10 @@ public struct HttpContext: MiddlewareContext {
     public func getServiceName() -> String {
         return attributes.get(key: AttributeKey<String>(name: "ServiceName"))!
     }
+    
+    public func getIdempotencyTokenGenerator() -> IdempotencyTokenGenerator {
+        return attributes.get(key: AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator"))!
+    }
 }
 
 public class HttpContextBuilder {
@@ -48,6 +52,7 @@ public class HttpContextBuilder {
     let serviceName = AttributeKey<String>(name: "ServiceName")
     var response: HttpResponse = HttpResponse()
     let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
+    let idempotencyTokenGenerator = AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator")
     
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -105,6 +110,12 @@ public class HttpContextBuilder {
     @discardableResult
     public func withResponse(value: HttpResponse) -> HttpContextBuilder {
         self.response = value
+        return self
+    }
+    
+    @discardableResult
+    public func withIdempotencyTokenGenerator(value: IdempotencyTokenGenerator) -> HttpContextBuilder {
+        self.attributes.set(key: idempotencyTokenGenerator, value: value)
         return self
     }
     
