@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
 
-public struct MockOperationStack<StackInput: HttpRequestBinding> {
+public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
     
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
                                                         SdkHttpRequestBuilder>

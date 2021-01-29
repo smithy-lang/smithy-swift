@@ -95,7 +95,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 val inputSymbol = symbolProvider.toSymbol(inputShape)
                 val operationStack = "operationStack"
-                writer.write("var $operationStack = MockOperationStack<$inputSymbol>(id: \"${test.id}\")")
+                writer.write("var $operationStack = MockRequestOperationStack<$inputSymbol>(id: \"${test.id}\")")
 
                 if (hasIdempotencyTokenTrait) {
                     IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack).renderIdempotencyMiddleware()
