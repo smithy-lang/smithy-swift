@@ -71,7 +71,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                                          HttpContext>(next: next.eraseToAnyHandler())
         
         //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
-        let handler = compose(next: wrappedHandler, with: steps)
+        let handler = OperationStack<StackInput, StackOutput, StackError>.compose(next: wrappedHandler, with: steps)
         
         //kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
@@ -102,25 +102,30 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     }
     
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
-    func compose<H: Handler, M: Middleware>(next: H,
-                                            with: [M]) -> AnyHandler<H.Input,
-                                                                     H.Output,
-                                                                     H.Context> where M.MOutput == Any,
-                                                                                      M.MInput == Any,
-                                                                                      H.Input == Any,
-                                                                                      H.Output == Any,
-                                                                                      H.Context == M.Context {
-        if with.isEmpty {
-            return next.eraseToAnyHandler()
+    public static func compose<H: Handler, M: Middleware>(next handler: H,
+                                            with middlewares: [M]) -> AnyHandler<H.Input,
+                                                                                 H.Output,
+                                                                                 H.Context> where M.MOutput == Any,
+                                                                                                  M.MInput == Any,
+                                                                                                  H.Input == Any,
+                                                                                                  H.Output == Any,
+                                                                                                  H.Context == M.Context {
+        guard !middlewares.isEmpty,
+              let lastMiddleware = middlewares.last else  {
+            return handler.eraseToAnyHandler()
         }
         
-        let count = with.count
-        var handler = ComposedHandler(next, with[count-1])
-        let reversedCollection = (0...(count-2)).reversed()
+        let numberOfMiddlewares = middlewares.count
+        var composedHandler = ComposedHandler(handler, lastMiddleware)
+        
+        guard numberOfMiddlewares > 1 else {
+            return composedHandler.eraseToAnyHandler()
+        }
+        let reversedCollection = (0...(numberOfMiddlewares - 2)).reversed()
         for index in reversedCollection {
-            handler = ComposedHandler(handler, with[index])
+            composedHandler = ComposedHandler(composedHandler, middlewares[index])
         }
         
-        return handler.eraseToAnyHandler()
+        return composedHandler.eraseToAnyHandler()
     }
 }

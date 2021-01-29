@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
 
-public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
+public struct MockOperationStack<StackInput: HttpRequestBinding> {
+    
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
                                                         SdkHttpRequestBuilder>
     typealias SerializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
@@ -26,8 +27,7 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
         self.finalizeStep = FinalizeStep()
     }
     
-    public func handleMiddleware(context: HttpContext,
-                                             input: StackInput) -> Result<SdkHttpRequest, Error> {
+    public mutating func handleMiddleware(context: HttpContext, input: StackInput) -> Result<SdkHttpRequest, Error> {
 
         let initializeStackStep = InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
                                                       handler: InitializeStepHandler().eraseToAnyHandler())
@@ -43,50 +43,27 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                      buildStackStep.eraseToAnyMiddleware(),
                      finalizeStackStep.eraseToAnyMiddleware()]
         
+        let mockHandler = MockHandler(resultType: { context, input in .success(input) })
+        
         let wrappedHandler = StepHandler<SdkHttpRequest,
                                          SdkHttpRequest,
                                          Any,
                                          Any,
-                                         HttpContext>(next: MockHandlerAlwaysSucceeds().eraseToAnyHandler())
+                                         HttpContext>(next: mockHandler.eraseToAnyHandler())
         
-        let handler = compose(next: wrappedHandler, with: steps)
+        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
+        let handler = OperationStack<StackInput, MockOutput, MockError>.compose(next: wrappedHandler, with: steps)
         
+        //kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
-        
-        let castedResult = result.flatMap { (anyResult) -> Result<SdkHttpRequest,
-                                                                  Error> in
-            if let result = anyResult as? SdkHttpRequest {
+        return result.flatMap { (result) -> Result<SdkHttpRequest, Error> in
+            if let result = result as? SdkHttpRequest {
                 return .success(result)
             } else {
                 return .failure(MiddlewareStepError.castingError("casted from operation stack failed," +
-                                                                "failed to cast type of Any to type of " +
-                                                                "\(SdkHttpRequest.self)"))
+                                                                "failed to cast type of Any to type of SdkHttpRequest"))
             }
         }
-        return castedResult
-    }
-    
-    func compose<H: Handler, M: Middleware>(next handler: H,
-                                            with middlewares: [M]) -> AnyHandler<H.Input,
-                                                                     H.Output,
-                                                                     H.Context> where M.MOutput == Any,
-                                                                                      M.MInput == Any,
-                                                                                      H.Input == Any,
-                                                                                      H.Output == Any,
-                                                                                      H.Context == M.Context {
-        guard !middlewares.isEmpty else {
-            return handler.eraseToAnyHandler()
-        }
-        
-        let count = middlewares.count
-        let lastMiddleware = middlewares[count - 1]
-        var composedHandler = ComposedHandler(handler, lastMiddleware)
-        let secondToLastIndex = count - 2
-        let reversedCollection = (0...secondToLastIndex).reversed()
-        for index in reversedCollection {
-            composedHandler = ComposedHandler(composedHandler, middlewares[index])
-        }
-        
-        return composedHandler.eraseToAnyHandler()
     }
 }
+
