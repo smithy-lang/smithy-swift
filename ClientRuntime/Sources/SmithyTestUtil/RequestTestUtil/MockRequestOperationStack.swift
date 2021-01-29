@@ -47,7 +47,7 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                                          SdkHttpRequest,
                                          Any,
                                          Any,
-                                         HttpContext>(next: MockHandler().eraseToAnyHandler())
+                                         HttpContext>(next: MockHandlerAlwaysSucceeds().eraseToAnyHandler())
         
         let handler = compose(next: wrappedHandler, with: steps)
         
