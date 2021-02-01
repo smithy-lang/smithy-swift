@@ -43,7 +43,8 @@ class StructDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val isBodyOnlyDecoder: Boolean = false
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     fun render() {
         val containerName = "containerValues"
@@ -57,7 +58,7 @@ class StructDecodeGenerator(
                         is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
                         is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
                         is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
-                        else -> writeDecodeForPrimitive(target, member, containerName)
+                        else -> writeDecodeForPrimitive(target, member, containerName, isBodyOnlyDecoder)
                     }
                 }
             }
