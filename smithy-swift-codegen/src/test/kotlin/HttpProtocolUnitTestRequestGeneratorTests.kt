@@ -352,7 +352,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(JsonUnionsInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
@@ -424,7 +433,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(RecursiveShapesInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
@@ -481,7 +499,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")
@@ -534,7 +561,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(InlineDocumentAsPayloadInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(InlineDocumentAsPayloadInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
         } catch let err {
             XCTFail("Failed to encode the input. Error description: \(err)")

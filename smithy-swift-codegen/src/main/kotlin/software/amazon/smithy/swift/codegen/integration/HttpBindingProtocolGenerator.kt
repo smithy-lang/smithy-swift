@@ -103,8 +103,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
-        for (shape in shapesNeedingEncodableConformance) {
+        val topLevelInputShapes = resolveTopLevelInputTypesWithMembersInHTTPBodyAndNestedTypes(ctx)
+        for (shape in topLevelInputShapes) {
             writeEncodableFile(ctx, shape)
             writeDecodableFile(ctx, shape)
         }
@@ -774,17 +774,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         else -> throw CodegenException("unknown timestamp format: $tsFmt")
     }
 
-    /**
-     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types with members in the http body
-     * and their nested types.
-     * Operation inputs and all nested types will conform to `Encodable`.
-     *
-     * @return The set of shapes that require a `Encodable` conformance and coding keys.
-     */
-    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation inputs with an http body must conform to Encodable
-        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
-        // get them all and return as one set to loop through
+    private fun resolveTopLevelInputTypesWithMembersInHTTPBodyAndNestedTypes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         val inputShapes = resolveOperationInputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
@@ -796,7 +786,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .toSet()
 
         val nested = walkNestedShapesRequiringSerde(ctx, topLevelMembers)
-
         return inputShapes.plus(nested)
     }
 
