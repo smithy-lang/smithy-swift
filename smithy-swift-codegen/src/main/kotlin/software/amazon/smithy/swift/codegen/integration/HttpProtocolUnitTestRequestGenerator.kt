@@ -55,22 +55,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-            // Default to bytes comparison
-            var requestEncoder = "JSONEncoder()"
-            var bodyAssertMethod = "assertEqualHttpBodyData"
-/*
-            if (test.bodyMediaType.isPresent) {
-                val bodyMediaType = test.bodyMediaType.get()
-                when (bodyMediaType.toLowerCase()) {
-                    "application/json" -> {
-                        requestEncoder = "JSONEncoder()"
-                        bodyAssertMethod = "assertEqualHttpBodyJSONData"
-                    }
-                    "application/xml" -> TODO("xml assertion not implemented yet")
-                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
-                }
-            }
-*/
+
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -79,7 +64,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 .write("")
             writer.openBlock("do {", "} catch let err {") {
-                writer.write("let encoder = \$L", requestEncoder)
+                writer.write("let encoder = JSONEncoder()")
                 writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
                 writer.write("let context = HttpContextBuilder()")
                 val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
@@ -102,7 +87,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 renderQueryAsserts(test)
                 renderHeaderAsserts(test)
-                renderBodyAssert(test, inputShape, bodyAssertMethod)
+                renderBodyAssert(test, inputShape)
             }
             writer.indent()
             writer.write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
@@ -162,35 +147,69 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyAssert(test: HttpRequestTestCase, inputShape: Shape, bodyAssertMethod: String) {
-        if (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}") {
-            writer.openBlock(
-                "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})"
-            ) {
-                writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
-                writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.openBlock("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in", "}") {
-                    writer.openBlock("do {", "} catch let err {") {
-                        writer.write("let decoder = JSONDecoder()")
-                        writer.write("let expectedObj = try decoder.decode("+inputShape.defaultName()+"Body.self, from: expectedData)")
-                        writer.write("let actualObj = try decoder.decode("+inputShape.defaultName()+"Body.self, from: actualData)")
-                        writer.write("XCTAssertEqual(expectedObj, actualObj)")
+    private fun renderBodyAssert(test: HttpRequestTestCase, inputShape: Shape) {
+        val shouldCompareBody = (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}")
+        if (shouldCompareBody) {
+            if (test.bodyMediaType.isPresent) {
+                val bodyMediaType = test.bodyMediaType.get()
+                when (bodyMediaType.toLowerCase()) {
+                    "application/json" -> {
+                        renderBodyAssertJsonData(test, inputShape)
                     }
-                    writer.indent()
-                    writer.write("XCTFail(\"Failed to verify body \\(err)\")")
-                    writer.dedent()
-                    writer.write("}")
+                    "application/xml" -> TODO("xml assertion not implemented yet")
+                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                 }
+            } else {
+                renderBodyAssertWithoutBodyMediaType(test, inputShape)
             }
         } else {
+            renderBodyComparingEmptyBody()
+        }
+    }
+
+    private fun renderBodyAssertJsonData(test: HttpRequestTestCase, inputShape: Shape) {
+        writer.openBlock(
+            "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+            "})"
+        ) {
+            writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
+            writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
             writer.openBlock(
-                "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})"
+                "extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in",
+                "}"
             ) {
-                writer.write("XCTAssert(actualHttpBody == HttpBody.none, \"The actual HttpBody is not none as expected\")")
-                writer.write("XCTAssert(expectedHttpBody == HttpBody.none, \"The expected HttpBody is not none as expected\")")
+                writer.openBlock("do {", "} catch let err {") {
+                    writer.write("let decoder = JSONDecoder()")
+                    writer.write("let expectedObj = try decoder.decode(" + inputShape.defaultName() + "Body.self, from: expectedData)")
+                    writer.write("let actualObj = try decoder.decode(" + inputShape.defaultName() + "Body.self, from: actualData)")
+                    writer.write("XCTAssertEqual(expectedObj, actualObj)")
+                }
+                writer.indent()
+                writer.write("XCTFail(\"Failed to verify body \\(err)\")")
+                writer.dedent()
+                writer.write("}")
             }
+        }
+    }
+
+    private fun renderBodyAssertWithoutBodyMediaType(test: HttpRequestTestCase, inputShape: Shape) {
+        writer.openBlock(
+            "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+            "})"
+        ) {
+            writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
+            writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
+            writer.write("assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)")
+        }
+    }
+
+    private fun renderBodyComparingEmptyBody() {
+        writer.openBlock(
+            "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+            "})"
+        ) {
+            writer.write("XCTAssert(actualHttpBody == HttpBody.none, \"The actual HttpBody is not none as expected\")")
+            writer.write("XCTAssert(expectedHttpBody == HttpBody.none, \"The expected HttpBody is not none as expected\")")
         }
     }
 

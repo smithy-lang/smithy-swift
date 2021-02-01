@@ -153,9 +153,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
                 .name(structSymbol.name)
                 .build()
-            println("shapesNeedingDecodableConformance - shape: ${shape}")
-            println("  structSymbol: ${structSymbol}")
-            println("  decodeSymbol: ${decodeSymbol}")
+            println("shapesNeedingDecodableConformance - shape: $shape")
+            println("  structSymbol: $structSymbol")
+            println("  decodeSymbol: $decodeSymbol")
 
             ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
                 writer.openBlock("public struct ${structSymbol.name}Body: Equatable {", "}") {
