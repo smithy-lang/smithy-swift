@@ -4,12 +4,10 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
-import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.ShapeValueGenerator
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
@@ -60,7 +58,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
             var bodyAssertMethod = "assertEqualHttpBodyData"
-
+/*
             if (test.bodyMediaType.isPresent) {
                 val bodyMediaType = test.bodyMediaType.get()
                 when (bodyMediaType.toLowerCase()) {
@@ -72,7 +70,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                 }
             }
-
+*/
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -104,7 +102,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 renderQueryAsserts(test)
                 renderHeaderAsserts(test)
-                renderBodyAssert(test, bodyAssertMethod)
+                renderBodyAssert(test, inputShape, bodyAssertMethod)
             }
             writer.indent()
             writer.write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
@@ -164,7 +162,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyAssert(test: HttpRequestTestCase, bodyAssertMethod: String) {
+    private fun renderBodyAssert(test: HttpRequestTestCase, inputShape: Shape, bodyAssertMethod: String) {
         if (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}") {
             writer.openBlock(
                 "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
@@ -172,7 +170,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
+                writer.openBlock("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in", "}") {
+                    writer.openBlock("do {", "} catch let err {") {
+                        writer.write("let decoder = JSONDecoder()")
+                        writer.write("let expectedObj = try decoder.decode("+inputShape.defaultName()+"Body.self, from: expectedData)")
+                        writer.write("let actualObj = try decoder.decode("+inputShape.defaultName()+"Body.self, from: actualData)")
+                        writer.write("XCTAssertEqual(expectedObj, actualObj)")
+                    }
+                    writer.indent()
+                    writer.write("XCTFail(\"Failed to verify body \\(err)\")")
+                    writer.dedent()
+                    writer.write("}")
+                }
             }
         } else {
             writer.openBlock(
