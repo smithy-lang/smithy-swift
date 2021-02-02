@@ -450,7 +450,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
     }
 
     @Test
-    fun `deprecated trait on structure member`() {
+    fun `deprecated trait on synthetically cloned structure and structure member`() {
         val model = javaClass.getResource("deprecated-trait-test.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
@@ -460,6 +460,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/OperationWithDeprecatedTraitInput.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
+            @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
             public struct OperationWithDeprecatedTraitInput: Equatable {
                 public let bool: Bool?
                 public let intVal: Int?

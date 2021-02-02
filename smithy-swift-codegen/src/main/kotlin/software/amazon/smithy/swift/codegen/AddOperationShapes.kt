@@ -11,6 +11,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DeprecatedTrait
 import java.util.logging.Logger
 
 /**
@@ -99,11 +100,9 @@ class AddOperationShapes {
                         .build()
                 )
 
-//            if(shape.hasTrait(DeprecatedTrait::class.java))
-//                builder = builder.addTrait(when(shape.hasTrait(DeprecatedTrait::class.java)) {
-//                    is Boolean.true -> shape.expectTrait(DeprecatedTrait::class.java)
-//                    else -> shape.expectTrait(DeprecatedTrait::class.java)
-//                })
+            if(shape.hasTrait(DeprecatedTrait::class.java)) {
+                builder = builder.addTrait(shape.expectTrait(DeprecatedTrait::class.java))
+            }
 
             shape.members().forEach { memberShape ->
                 builder.addMember(
