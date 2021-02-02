@@ -159,7 +159,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val equatableConformance = if (requiresEqutable) ": Equatable" else ""
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("public struct ${structSymbol.name}Body${equatableConformance} {", "}") {
+            writer.openBlock("public struct ${structSymbol.name}Body$equatableConformance {", "}") {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
