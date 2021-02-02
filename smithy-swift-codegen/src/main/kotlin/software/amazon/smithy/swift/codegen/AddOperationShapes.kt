@@ -100,7 +100,7 @@ class AddOperationShapes {
                         .build()
                 )
 
-            if(shape.hasTrait(DeprecatedTrait::class.java)) {
+            if (shape.hasTrait(DeprecatedTrait::class.java)) {
                 builder = builder.addTrait(shape.expectTrait(DeprecatedTrait::class.java))
             }
 
