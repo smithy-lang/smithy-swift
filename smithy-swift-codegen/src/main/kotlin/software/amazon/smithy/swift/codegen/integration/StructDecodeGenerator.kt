@@ -43,7 +43,7 @@ class StructDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     fun render() {
         val containerName = "containerValues"
