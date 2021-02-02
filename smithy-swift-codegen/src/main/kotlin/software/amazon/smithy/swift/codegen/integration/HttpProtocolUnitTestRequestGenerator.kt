@@ -10,6 +10,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.utils.StringUtils.isBlank
 

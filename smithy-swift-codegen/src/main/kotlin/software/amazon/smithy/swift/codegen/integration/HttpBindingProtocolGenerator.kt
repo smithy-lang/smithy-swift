@@ -106,7 +106,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val topLevelInputShapes = resolveTopLevelInputTypesWithMembersInHTTPBodyAndNestedTypes(ctx)
         for (shape in topLevelInputShapes) {
             writeEncodableFile(ctx, shape)
-            writeDecodableFile(ctx, shape)
+            writeDecodableFile(ctx, shape, true)
         }
     }
 
@@ -148,7 +148,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun writeDecodableFile(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+    private fun writeDecodableFile(ctx: ProtocolGenerator.GenerationContext, shape: Shape, requiresEqutable: Boolean) {
         val rootNamespace = ctx.settings.moduleName
         val structSymbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
@@ -157,8 +157,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(structSymbol.name)
             .build()
 
+        val equatableConformance = if (requiresEqutable) ": Equatable" else ""
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("public struct ${structSymbol.name}Body: Equatable {", "}") {
+            writer.openBlock("public struct ${structSymbol.name}Body${equatableConformance} {", "}") {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
@@ -266,34 +267,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        // handle top level output shapes which includes creating a new http body struct to handle deserialization
         for (shape in shapesNeedingDecodableConformance) {
-            // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
-            val structSymbol: Symbol = ctx.symbolProvider.toSymbol(shape)
-            val rootNamespace = ctx.settings.moduleName
-            val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
-
-            val decodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
-                .name(structSymbol.name)
-                .build()
-
-            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-                writer.openBlock("struct ${structSymbol.name}Body {", "}") {
-                    httpBodyMembers.forEach {
-                        val memberSymbol = ctx.symbolProvider.toSymbol(it)
-                        writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
-                    }
-                }
-                writer.write("") // add space between struct declaration and decodable conformance
-                writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                    writer.addFoundationImport()
-                    generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                    writer.write("") // need enter space between coding keys and decode implementation
-                    StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
-                }
-            }
+            writeDecodableFile(ctx, shape, false)
         }
     }
 
