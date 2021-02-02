@@ -167,9 +167,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     if (it.hasTrait(SwiftBoxTrait::class.java)) {
                         memberSymbol = memberSymbol.recursiveSymbol()
                     }
-                    //TODO: We may need to have the *Body types reference other *Body types
-                    // Currently we have RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2>
-                    // but may want to change this to RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2Body>
+                    // TODO: We may need to have the *Body types reference other *Body types
+                    //  Currently we have RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2>
+                    //  but may want to change this to RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2Body>
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
