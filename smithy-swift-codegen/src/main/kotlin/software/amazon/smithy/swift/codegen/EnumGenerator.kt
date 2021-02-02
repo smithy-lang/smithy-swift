@@ -119,6 +119,7 @@ class EnumGenerator(
     fun render() {
         writer.putContext("enum.name", symbol.name)
         writer.writeShapeDocs(shape)
+        writer.writeAvailableAttribute(shape)
         writer.openBlock("public enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last

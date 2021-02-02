@@ -91,13 +91,19 @@ class AddOperationShapes {
 
         private fun cloneShape(shape: Shape, cloneShapeName: String): Shape {
             val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, cloneShapeName)
-            val builder = StructureShape.Builder()
+            var builder = StructureShape.Builder()
                 .id(cloneShapeId)
                 .addTrait(
                     SyntheticClone.builder()
                         .archetype(shape.id)
                         .build()
                 )
+
+//            if(shape.hasTrait(DeprecatedTrait::class.java))
+//                builder = builder.addTrait(when(shape.hasTrait(DeprecatedTrait::class.java)) {
+//                    is Boolean.true -> shape.expectTrait(DeprecatedTrait::class.java)
+//                    else -> shape.expectTrait(DeprecatedTrait::class.java)
+//                })
 
             shape.members().forEach { memberShape ->
                 builder.addMember(

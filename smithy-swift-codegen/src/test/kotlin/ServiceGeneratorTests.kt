@@ -95,4 +95,19 @@ class ServiceGeneratorTests {
         Assertions.assertEquals(openBraces, closedBraces)
         Assertions.assertEquals(openParens, closedParens)
     }
+
+    @Test
+    fun `deprecated trait on an operation`() {
+        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest)
+        SwiftCodegenPlugin().execute(context)
+
+        val exampleClientProtocol = manifest
+            .getFileString("example/ExampleClientProtocol.swift").get()
+        val operationWithDeprecatedTrait = """
+        @available(*, deprecated)
+        """.trimIndent()
+        exampleClientProtocol.shouldContain(operationWithDeprecatedTrait)
+    }
 }

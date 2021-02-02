@@ -50,6 +50,7 @@ class UnionGenerator(
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
+        writer.writeAvailableAttribute(shape)
         writer.openBlock("public enum \$union.name:L: Equatable {", "}\n") {
             shape.allMembers.values.forEach {
                 writer.writeMemberDocs(model, it)

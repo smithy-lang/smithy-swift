@@ -94,6 +94,7 @@ class StructureGenerator(
      */
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
+        writer.writeAvailableAttribute(shape)
         writer.openBlock("public struct \$struct.name:L: Equatable {")
             .call { generateStructMembers() }
             .write("")
@@ -117,6 +118,7 @@ class StructureGenerator(
                 letOrVar = "var"
             }
 
+            writer.writeAvailableAttribute(it)
             writer.write("public $letOrVar \$L: \$T", memberName, memberSymbol)
         }
     }
@@ -190,6 +192,7 @@ class StructureGenerator(
         val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
         writer.putContext("error.protocol", serviceErrorProtocolSymbol.name)
 
+        writer.writeAvailableAttribute(shape)
         writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
             .call { generateErrorStructMembers() }
             .write("")
@@ -217,6 +220,7 @@ class StructureGenerator(
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
+            writer.writeAvailableAttribute(it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
     }
