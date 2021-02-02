@@ -46,9 +46,11 @@ import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.recursiveSymbol
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -161,7 +163,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
             writer.openBlock("public struct ${structSymbol.name}Body$equatableConformance {", "}") {
                 httpBodyMembers.forEach {
-                    val memberSymbol = ctx.symbolProvider.toSymbol(it)
+                    var memberSymbol = ctx.symbolProvider.toSymbol(it)
+                    if (it.hasTrait(SwiftBoxTrait::class.java)) {
+                        memberSymbol = memberSymbol.recursiveSymbol()
+                    }
+                    //TODO: We may need to have the *Body types reference other *Body types
+                    // Currently we have RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2>
+                    // but may want to change this to RecursiveShapesInputOutputNested1Body referencing Box<RecursiveShapesInputOutputNested2Body>
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
@@ -171,7 +179,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")
-                StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat, true).render()
+                StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
             }
         }
     }

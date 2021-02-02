@@ -37,7 +37,7 @@ open class MemberShapeDecodeGenerator(
             .map { it.format }
             .orElse(defaultTimestampFormat)
         if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-            writeDecodeForPrimitive(target, member, containerName, false)
+            writeDecodeForPrimitive(target, member, containerName)
         } else {
             val dateSymbol = "String"
             val originalSymbol = ctx.symbolProvider.toSymbol(target)
@@ -54,10 +54,10 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String, isBodyOnlyDecoder: Boolean) {
+    fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-        if (member.hasTrait(SwiftBoxTrait::class.java) && !isBodyOnlyDecoder) {
+        if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
         val decodeVerb = if (symbol.isBoxed()) "decodeIfPresent" else "decode"
