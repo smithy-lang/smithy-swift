@@ -10,6 +10,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
@@ -118,9 +119,14 @@ class StructureGenerator(
                 letOrVar = "var"
             }
 
-            writer.writeAvailableAttribute(it)
+            writer.writeAvailableAttribute(addTraitsToMemberFromItsTarget(it))
             writer.write("public $letOrVar \$L: \$T", memberName, memberSymbol)
         }
+    }
+
+    private fun addTraitsToMemberFromItsTarget(it: MemberShape): MemberShape {
+        val map = model.getShape(ShapeId.from(it.target.toString())).get().allTraits
+        return it.asMemberShape().get().toBuilder().addTraits(map.values.toList()).build()
     }
 
     private fun generateInitializerForStructure() {
@@ -220,7 +226,7 @@ class StructureGenerator(
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-            writer.writeAvailableAttribute(it)
+            writer.writeAvailableAttribute(addTraitsToMemberFromItsTarget(it))
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
     }

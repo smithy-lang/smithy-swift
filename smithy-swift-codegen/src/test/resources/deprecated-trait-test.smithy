@@ -24,7 +24,8 @@ structure OperationWithDeprecatedTraitInputOutput {
     @deprecated
     string: String,
     structWithDeprecatedTrait: StructWithDeprecatedTrait,
-    structSincePropertySet: StructSincePropertySet
+    structSincePropertySet: StructSincePropertySet,
+    foo: Foo
 }
 
 @deprecated(message: "This shape is no longer used.", since: "1.3")
@@ -32,3 +33,16 @@ structure StructWithDeprecatedTrait {}
 
 @deprecated(since: "2019-03-21")
 structure StructSincePropertySet {}
+
+
+structure Foo {
+    @documentation("Test documentation with deprecated")
+    baz: Baz,
+    @documentation("Test documentation with deprecated")
+    qux: Qux,
+}
+
+@deprecated
+string Baz
+
+string Qux
