@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-///this class will implement Handler per new middleware implementation
+/// this class will implement Handler per new middleware implementation
 public class SdkHttpClient {
     
     let engine: HttpClientEngine
@@ -12,7 +12,7 @@ public class SdkHttpClient {
         if let engine = engine {
             self.engine = engine
         } else {
-            //CRT is the default engine
+            // CRT is the default engine
             self.engine = try CRTClientEngine()
         }
     }

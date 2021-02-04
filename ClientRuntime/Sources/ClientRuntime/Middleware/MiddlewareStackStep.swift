@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-//cast output of one middleware stack to input of the next
-//pass in Any for middleware input and output to trick the chain into thinking each step input and output are the same
+// cast output of one middleware stack to input of the next
+// pass in Any for middleware input and output to trick the chain into thinking each step input and output are the same
 public struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     
     public var id: String
@@ -24,7 +24,7 @@ public struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
                                                                                              Context == H.Context {
         // compose step handlers and call them with `input` cast to right type
         if let sinput = input as? StepInput {
-            //last link in the stack needs to be called and then next inside this link needs to be called with
+            // last link in the stack needs to be called and then next inside this link needs to be called with
             // its result. call the stack which will run it to completion through the middleware to the handler
             // given for the step and back up
             if let handler = handler {
@@ -33,7 +33,7 @@ public struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
                 return stepOutput.flatMap { (nextStepInput) -> Result<MOutput, Error> in
                     return next.handle(context: context, input: nextStepInput)
                 }
-            } else { //if the handler given is nil then we use the handler of the middleware stack as the handler,
+            } else { // if the handler given is nil then we use the handler of the middleware stack as the handler,
                 // this should be the last step in the linked stack of stacks. first wrap it. then kick off the stack.
                 let wrappedHandler = StepHandler<MInput,
                                                  MOutput,

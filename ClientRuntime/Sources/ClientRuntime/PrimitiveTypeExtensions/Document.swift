@@ -87,7 +87,7 @@ extension Document: ExpressibleByStringLiteral {
         self = .string(value)
     }
 }
-//extension to use subscribts to get the values from objects/arrays as normal
+// extension to use subscribts to get the values from objects/arrays as normal
 public extension Document {
     subscript(_ key: String) -> Document? {
         guard case .object(let object) = self else {

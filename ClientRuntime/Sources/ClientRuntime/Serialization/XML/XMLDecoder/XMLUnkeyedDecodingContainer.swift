@@ -48,7 +48,7 @@ struct XMLUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decodeNil() throws -> Bool {
         guard !isAtEnd else {
             throw DecodingError.valueNotFound(Any?.self, DecodingError.Context(
-                codingPath: decoder.codingPath, //+ [XMLKey(index: currentIndex)],
+                codingPath: decoder.codingPath, // + [XMLKey(index: currentIndex)],
                 debugDescription: "Unkeyed container is at end."
             ))
         }
@@ -109,7 +109,7 @@ struct XMLUnkeyedDecodingContainer: UnkeyedDecodingContainer {
                     value = try decode(decoder, singleKeyed.element)
                 } catch {
                     // Specialize for choice elements
-                    //value = try decode(decoder, ChoiceBox(key: singleKeyed.key, element: singleKeyed.element))
+                    // value = try decode(decoder, ChoiceBox(key: singleKeyed.key, element: singleKeyed.element))
                 }
             }
         } else {

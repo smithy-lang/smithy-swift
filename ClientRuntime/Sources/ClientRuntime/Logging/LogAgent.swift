@@ -6,7 +6,7 @@
 import AwsCommonRuntimeKit
 
 protocol LogAgent {
-    ///name of the struct or class where the logger was instantiated from
+    /// name of the struct or class where the logger was instantiated from
     var name: String {get}
     
     /// Get or set the configured log level.

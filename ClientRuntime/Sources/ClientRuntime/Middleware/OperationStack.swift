@@ -15,7 +15,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
     typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
                                                          DeserializeOutput<StackOutput, StackError>>
     
-    ///returns the unique id for the operation stack as middleware
+    /// returns the unique id for the operation stack as middleware
     public var id: String
     public var initializeStep: InitializeStep<StackInput>
     public var buildStep: BuildStep
@@ -53,8 +53,8 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                                             handler: BuildStepHandler().eraseToAnyHandler())
         let finalizeStackStep = FinalizeStackStep(stack: finalizeStep.eraseToAnyMiddlewareStack(),
                                                   handler: FinalizeStepHandler().eraseToAnyHandler())
-        //deserialize does not take a handler because its handler is the last handler in the operation which
-        //is defined as next inside this function and is wrapped below and added as the last chain in the
+        // deserialize does not take a handler because its handler is the last handler in the operation which
+        // is defined as next inside this function and is wrapped below and added as the last chain in the
         // middleware stack of steps
         let deserializeStackStep = DeserializeStackStep(stack: deserializeStep.eraseToAnyMiddlewareStack())
         
@@ -70,15 +70,15 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                                          Any,
                                          HttpContext>(next: next.eraseToAnyHandler())
         
-        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
+        // compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
         let handler = OperationStack<StackInput, StackOutput, StackError>.compose(next: wrappedHandler, with: steps)
         
-        //kicks off the entire operation of middleware stacks
+        // kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
         
         let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
                                                                   Error> in
-            //have to match the result because types
+            // have to match the result because types
             if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
                 return .success(result)
             } else {
@@ -96,7 +96,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
             if let stackError = output.error {
                 return .failure(.service(stackError))
             } else {
-                return .success(output.output!) //output should not be nil here ever if error is nil
+                return .success(output.output!) // output should not be nil here ever if error is nil
             }
         }
     }

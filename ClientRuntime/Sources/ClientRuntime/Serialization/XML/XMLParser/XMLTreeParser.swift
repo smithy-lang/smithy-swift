@@ -41,7 +41,7 @@ class XMLTreeParser: NSObject {
             xmlTreeParser.delegate = self
 
             guard !xmlTreeParser.parse() || root == nil else {
-                return root! //TODO:: when is this case possible?
+                return root! // TODO:: when is this case possible?
             }
 
             guard let error = xmlTreeParser.parserError else {

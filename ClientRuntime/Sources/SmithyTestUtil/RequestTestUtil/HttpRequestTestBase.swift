@@ -39,8 +39,8 @@ open class HttpRequestTestBase: XCTestCase {
         guard let body = body else {
             return builder.build()
         }
-        //handle empty string body cases that should still create a request
-        //without the body
+        // handle empty string body cases that should still create a request
+        // without the body
         if body != "" && body != "{}" {
             let httpBody = HttpBody.data(body.data(using: .utf8))
             builder.withBody(httpBody)
@@ -172,7 +172,7 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
     public func assertEqualHttpHeaders(_ expected: Headers, _ actual: Headers) {
-        //in order to properly compare header values where actual is an array and expected comes in
+        // in order to properly compare header values where actual is an array and expected comes in
         // as a comma separated string take actual and join them with a comma and then separate them
         // by comma (to in effect get the same separated list as expected) take expected and separate them
         // by comma then throw both actual and expected comma separated arrays in a set and compare sets
@@ -225,7 +225,7 @@ open class HttpRequestTestBase: XCTestCase {
             XCTFail("actual query items in Endpoint is nil but expected are not")
             return
         }
-        //take arrays of query items and convert to dictionary
+        // take arrays of query items and convert to dictionary
         let expectedNamesAndValues = expectedQueryItems.map { ($0.name, Set(arrayLiteral: $0.value)) }
         let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
             return first.union(last)
