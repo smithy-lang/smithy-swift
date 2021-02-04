@@ -10,7 +10,7 @@ struct RelativeOrder {
         for index in  0...(ids.count - 1) {
             let id = ids[index]
             if order.contains(id) {
-                //if order already has the id, remove it from the list so it is not re-inserted
+                // if order already has the id, remove it from the list so it is not re-inserted
                 unDuplicatedList.remove(at: index)
             }
         }
@@ -47,9 +47,9 @@ struct RelativeOrder {
 }
 
 public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
-    //order of the keys
+    // order of the keys
     var order = RelativeOrder()
-    //key here is name of the middleware aka the id property of the middleware
+    // key here is name of the middleware aka the id property of the middleware
     private var _items: [String: AnyMiddleware<Input, Output, Context>] = [:]
     
     var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context>)] {

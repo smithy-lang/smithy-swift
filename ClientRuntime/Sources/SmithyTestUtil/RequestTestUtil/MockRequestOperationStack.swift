@@ -51,10 +51,10 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                                          Any,
                                          HttpContext>(next: mockHandler.eraseToAnyHandler())
         
-        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
+        // compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
         let handler = OperationStack<StackInput, MockOutput, MockError>.compose(next: wrappedHandler, with: steps)
         
-        //kicks off the entire operation of middleware stacks
+        // kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
         return result.flatMap { (result) -> Result<SdkHttpRequest, Error> in
             if let result = result as? SdkHttpRequest {

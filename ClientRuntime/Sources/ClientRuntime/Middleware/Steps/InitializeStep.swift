@@ -36,8 +36,8 @@ public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {
     public init() {}
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
-        //this step takes an input of whatever type with conformance to our http binding protocol
-        //and converts it to an sdk request builder
+        // this step takes an input of whatever type with conformance to our http binding protocol
+        // and converts it to an sdk request builder
         let encoder = context.getEncoder()
         do {
             let sdkRequestBuilder = try input.buildHttpRequest(encoder: encoder,

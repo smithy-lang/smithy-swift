@@ -8,7 +8,7 @@ import class Foundation.FileHandle
 import struct Foundation.Data
 import class Foundation.FileManager
 
-//TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
+// TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")
 public protocol StreamSink: class {
     func receiveData(readFrom buffer: ByteBuffer)
@@ -81,6 +81,6 @@ extension StreamSinkProvider {
         if case let StreamSinkProvider.provider(unwrapped) = self {
             return unwrapped
         }
-        fatalError() //this should never happen since only one case
+        fatalError() // this should never happen since only one case
     }
 }
