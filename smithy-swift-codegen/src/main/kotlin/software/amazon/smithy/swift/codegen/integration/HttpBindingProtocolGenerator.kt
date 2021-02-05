@@ -162,7 +162,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render operation error enum initializer from HttpResponse for all operations
         val httpOperations = getHttpBindingOperations(ctx)
         httpOperations.forEach {
-            renderInitOperationErrorFromErrorType(ctx, it)
             renderInitOperationErrorFromHttpResponse(ctx, it)
         }
 
@@ -241,7 +240,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun renderInitOperationErrorFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
-        errorFromHttpResponseGenerator.generateInitOperationFromHttpResponse(ctx, op)
+        errorFromHttpResponseGenerator.generateInitOperationFromHttpResponse(ctx, op, unknownServiceErrorSymbol)
     }
 
     private fun generateCodingKeysForMembers(
@@ -329,38 +328,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             writer.write("")
-        }
-    }
-
-    // Initialize operation error given the errorType which is like a rawValue of error case encountered
-    private fun renderInitOperationErrorFromErrorType(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape
-    ) {
-        val errorShapes = op.errors.map { ctx.model.expectShape(it) as StructureShape }.toSet().sorted()
-        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
-        val rootNamespace = ctx.settings.moduleName
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
-            .name(operationErrorName)
-            .build()
-
-        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.addImport(unknownServiceErrorSymbol)
-            val unknownServiceErrorType = unknownServiceErrorSymbol.name
-
-            writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
-                    writer.write("switch errorType {")
-                    for (errorShape in errorShapes) {
-                        val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
-                        writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeName.decapitalize(), errorShapeName)
-                    }
-                    writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
-                    writer.write("}")
-                }
-            }
         }
     }
 

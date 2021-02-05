@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AddOperationShapes
@@ -57,7 +58,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 }
 
 class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
-    override fun generateInitOperationFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+    override fun generateInitOperationFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
         val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
