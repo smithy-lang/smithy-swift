@@ -1128,20 +1128,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    /**
-     * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
-     */
-    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter): HttpProtocolClientGenerator {
-        val properties = getClientProperties(ctx)
-        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, properties, config, getProtocolHttpBindingResolver(ctx))
-    }
-
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
-            val clientGenerator = getHttpProtocolClientGenerator(ctx, writer)
+            val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+            val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
+                ctx,
+                getProtocolHttpBindingResolver(ctx),
+                writer,
+                serviceSymbol.name
+            )
             clientGenerator.render()
         }
     }
@@ -1155,22 +1151,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The default format for timestamps.
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
-
     protected abstract val codingKeysGenerator: CodingKeysGenerator
     protected abstract val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator
-    /**
-     * Get all of the properties that are passed in via an operation context
-     */
-    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
-        return mutableListOf(
-            DefaultRequestEncoder(),
-            DefaultResponseDecoder()
-        )
-    }
-
-    open fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
-        return DefaultConfig(writer, serviceName)
-    }
+    protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
 
     /**
      * Get the operations with HTTP Bindings.
