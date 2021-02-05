@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
