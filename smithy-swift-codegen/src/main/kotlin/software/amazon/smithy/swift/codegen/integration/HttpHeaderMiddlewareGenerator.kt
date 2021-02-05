@@ -9,7 +9,7 @@ import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
 
-class HeaderMiddlewareGenerator(
+class HttpHeaderMiddlewareGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeName: String,
     private val headerBindings: List<HttpBindingDescriptor>,
@@ -47,8 +47,6 @@ class HeaderMiddlewareGenerator(
                         bindingIndex,
                         defaultTimestampFormat
                     )
-//                    val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
-//                    val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                         writer.write("builder.withHeader(name: \"$paramName\", value: String($headerValue))")
                     }

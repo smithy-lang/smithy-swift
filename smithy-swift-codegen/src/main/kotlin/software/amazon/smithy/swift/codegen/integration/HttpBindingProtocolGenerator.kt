@@ -34,7 +34,17 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpResponseCodeTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -851,7 +861,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            val headerMiddlewareGenerator = HeaderMiddlewareGenerator(
+            val headerMiddlewareGenerator = HttpHeaderMiddlewareGenerator(
                 ctx,
                 inputShapeName,
                 headerBindings,
