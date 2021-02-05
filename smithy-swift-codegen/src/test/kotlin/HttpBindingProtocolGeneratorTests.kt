@@ -14,15 +14,24 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultConfig
+import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
+import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
@@ -30,6 +39,8 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = RestJson1Trait.ID
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
+    override val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
+
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
@@ -62,6 +73,31 @@ class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
                 }
             }
         }
+    }
+}
+
+class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
+    override fun createHttpProtocolClientGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        httpBindingResolver: HttpBindingResolver,
+        writer: SwiftWriter,
+        serviceName: String
+    ): HttpProtocolClientGenerator {
+        val properties = getClientProperties(ctx)
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+        val config = getConfigClass(writer, serviceSymbol.name)
+        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver)
+    }
+
+    private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
+        return mutableListOf(
+            DefaultRequestEncoder(),
+            DefaultResponseDecoder()
+        )
+    }
+
+    private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
+        return DefaultConfig(writer, serviceName)
     }
 }
 
