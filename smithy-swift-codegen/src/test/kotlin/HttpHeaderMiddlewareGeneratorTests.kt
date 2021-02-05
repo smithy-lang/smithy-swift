@@ -1,25 +1,6 @@
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.AddOperationShapes
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import io.kotest.matchers.string.shouldContainOnlyOnce
-import software.amazon.smithy.swift.codegen.integration.ClientProperty
-import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.DefaultConfig
-import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
-import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.ServiceConfig
-import kotlin.math.exp
 
 class HttpHeaderMiddlewareGeneratorTests {
     private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
@@ -75,7 +56,7 @@ class HttpHeaderMiddlewareGeneratorTests {
         val contents = getModelFileContents("example", "EnumInputInput+HeaderMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct EnumInputInputHeadersMiddleware: Middleware {
             public var id: String = "EnumInputInputHeaders"
         
@@ -97,7 +78,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -110,7 +91,7 @@ class HttpHeaderMiddlewareGeneratorTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: Middleware {
             public var id: String = "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeaders"
         
@@ -132,7 +113,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -142,7 +123,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             getModelFileContents("example", "TimestampInputInput+HeaderMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct TimestampInputInputHeadersMiddleware: Middleware {
             public var id: String = "TimestampInputInputHeaders"
         
@@ -167,7 +148,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
