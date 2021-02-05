@@ -7,11 +7,16 @@ import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AddOperationShapes
+import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
@@ -24,6 +29,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
+    override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
@@ -36,6 +42,26 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             responseTestBuilder,
             errorTestBuilder
         ).generateProtocolTests()
+    }
+}
+
+class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
+    override fun generateInitOperationFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+        val rootNamespace = ctx.settings.moduleName
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
+            .name(operationErrorName)
+            .build()
+
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.openBlock("extension \$L {", "}", operationErrorName) {
+                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
+                    writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
+                }
+            }
+        }
     }
 }
 
