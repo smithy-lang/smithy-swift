@@ -28,6 +28,7 @@ class HttpHeaderMiddlewareGenerator(
         ) {
             renderHeaders(it)
             renderPrefixHeaders(it)
+            it.write("return next.handle(context: context, input: input)")
         }.render()
     }
 
@@ -48,7 +49,7 @@ class HttpHeaderMiddlewareGenerator(
                         defaultTimestampFormat
                     )
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        writer.write("builder.withHeader(name: \"$paramName\", value: String($headerValue))")
+                        writer.write("input.withHeader(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
                     val memberNameWithExtension = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
@@ -59,12 +60,7 @@ class HttpHeaderMiddlewareGenerator(
                         bindingIndex,
                         defaultTimestampFormat
                     )
-                    writer.write("builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
-                }
-            }
-            if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                writer.openBlock("else {", "}") {
-                    writer.write("builder.withHeader(name: \"$paramName\", value: $memberName)")
+                    writer.write("input.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
             }
         }
@@ -102,10 +98,10 @@ class HttpHeaderMiddlewareGenerator(
                                         bindingIndex,
                                         defaultTimestampFormat
                                     )
-                                    writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                                    writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                                 }
                             } else {
-                                writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                                writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                             }
                         }
                     } else {
@@ -117,7 +113,7 @@ class HttpHeaderMiddlewareGenerator(
                             bindingIndex,
                             defaultTimestampFormat
                         )
-                        writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                        writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
                     }
                 }
             }

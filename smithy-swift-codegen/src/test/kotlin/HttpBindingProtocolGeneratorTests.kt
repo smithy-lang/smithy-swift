@@ -131,12 +131,6 @@ class HttpBindingProtocolGeneratorTests {
                             builder.withQueryItem(queryItem)
                         }
                         builder.withHeader(name: "Content-Type", value: "application/json")
-                        if let header1 = header1 {
-                            builder.withHeader(name: "X-Header1", value: String(header1))
-                        }
-                        if let header2 = header2 {
-                            builder.withHeader(name: "X-Header2", value: String(header2))
-                        }
                         if try !self.allPropertiesAreNull() {
                             let data = try encoder.encode(self)
                             let body = HttpBody.data(data)
@@ -275,9 +269,6 @@ class HttpBindingProtocolGeneratorTests {
                 public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
                     builder.withHeader(name: "Content-Type", value: "application/json")
-                    if let enumHeader = enumHeader {
-                        builder.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
-                    }
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
@@ -311,12 +302,6 @@ class HttpBindingProtocolGeneratorTests {
                         }
                     }
                     builder.withHeader(name: "Content-Type", value: "application/json")
-                    if let headerEpoch = headerEpoch {
-                        builder.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
-                    }
-                    if let headerHttpDate = headerHttpDate {
-                        builder.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
-                    }
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
                         let body = HttpBody.data(data)
@@ -430,32 +415,6 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    @Test
-    fun `it builds request with idempotency token trait for httpHeader`() {
-        val contents = getModelFileContents(
-            "example",
-            "IdempotencyTokenWithHttpHeaderInput+HttpRequestBinding.swift",
-            newTestContext.manifest
-        )
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-                extension IdempotencyTokenWithHttpHeaderInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
-                        let builder = SdkHttpRequestBuilder()
-                        if let header = header {
-                            builder.withHeader(name: "token", value: String(header))
-                        }
-                        else {
-                            builder.withHeader(name: "token", value: idempotencyTokenGenerator.generateToken())
-                        }
-                        return builder
-                    }
-                }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
     // The following 3 HttpRequestBinding generation tests correspond to idempotency token targeting a member in the body/payload of request
     @Test
     fun `it builds request with idempotency token trait and httpPayload trait on same member`() {
@@ -524,51 +483,6 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
                         builder.withHeader(name: "Content-Type", value: "application/json")
                         if try !self.allPropertiesAreNull() {
                             let data = try encoder.encode(self)
-                            let body = HttpBody.data(data)
-                            builder.withHeader(name: "Content-Length", value: String(data.count))
-                            builder.withBody(body)
-                        }
-                        return builder
-                    }
-                }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it builds request with idempotency token and httpPayload traits on different members`() {
-        /*
-        Case 3: Idempotency token trait and httpPayload trait on different members
-        structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
-            @httpPayload
-            body: String,
-
-            @httpHeader("token")
-            @idempotencyToken
-            token: String,
-        }
-        - Idempotency token is bound to httpHeader in this case.
-        * */
-        val contents = getModelFileContents(
-            "example",
-            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HttpRequestBinding.swift",
-            newTestContext.manifest
-        )
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-                extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
-                        let builder = SdkHttpRequestBuilder()
-                        builder.withHeader(name: "Content-Type", value: "text/plain")
-                        if let token = token {
-                            builder.withHeader(name: "token", value: String(token))
-                        }
-                        else {
-                            builder.withHeader(name: "token", value: idempotencyTokenGenerator.generateToken())
-                        }
-                        if let body = self.body {
-                            let data = body.data(using: .utf8)
                             let body = HttpBody.data(data)
                             builder.withHeader(name: "Content-Length", value: String(data.count))
                             builder.withBody(body)
