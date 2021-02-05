@@ -144,32 +144,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    // can be overridden by protocol for things like json name traits, xml keys etc.
-    open fun generateCodingKeysForMembers(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter,
-        members: List<MemberShape>
-    ) {
-        val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
-        writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
-            for (member in membersSortedByName) {
-                val originalMemberName = member.memberName
-                val modifiedMemberName = ctx.symbolProvider.toMemberName(member)
-
-                /* If we have modified the member name to make it idiomatic to the language
-                   like handling reserved keyword with appending an underscore or lowercasing the first letter,
-                   we need to change the coding key accordingly so that during encoding and decoding, the modified member
-                   name is transformed back to original name before it hits the service.
-                 */
-                if (originalMemberName == modifiedMemberName) {
-                    writer.write("case \$L", modifiedMemberName)
-                } else {
-                    writer.write("case \$L = \$S", modifiedMemberName, originalMemberName)
-                }
-            }
-        }
-    }
-
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         // render init from HttpResponse for all output shapes
         val visitedOutputShapes: MutableSet<ShapeId> = mutableSetOf()
@@ -264,6 +238,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
         }
+    }
+
+    private fun generateCodingKeysForMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        members: List<MemberShape>
+    ) {
+        codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
     private fun renderInitOutputFromHttpResponse(
@@ -1194,6 +1176,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
+    protected abstract val codingKeysGenerator: CodingKeysGenerator
     /**
      * Get all of the properties that are passed in via an operation context
      */

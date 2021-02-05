@@ -10,6 +10,8 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AddOperationShapes
+import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
@@ -21,7 +23,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
-
+    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
