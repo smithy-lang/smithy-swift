@@ -240,6 +240,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    private fun renderInitOperationErrorFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        errorFromHttpResponseGenerator.generateInitOperationFromHttpResponse(ctx, op)
+    }
+
     private fun generateCodingKeysForMembers(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
@@ -355,30 +359,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
                     writer.write("}")
-                }
-            }
-        }
-    }
-
-    /* This is a default implementation that is expected to be overridden by serialization
-    protocol specific implementations to resolve the errorType
-     */
-    open fun renderInitOperationErrorFromHttpResponse(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape
-    ) {
-        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
-        val rootNamespace = ctx.settings.moduleName
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
-            .name(operationErrorName)
-            .build()
-
-        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
-                    writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
                 }
             }
         }
@@ -1177,6 +1157,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
     protected abstract val codingKeysGenerator: CodingKeysGenerator
+    protected abstract val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator
     /**
      * Get all of the properties that are passed in via an operation context
      */
