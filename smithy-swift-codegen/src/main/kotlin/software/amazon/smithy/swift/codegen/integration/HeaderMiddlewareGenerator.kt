@@ -14,15 +14,18 @@ class HeaderMiddlewareGenerator(
     private val shapeName: String,
     private val headerBindings: List<HttpBindingDescriptor>,
     private val prefixHeaderBindings: List<HttpBindingDescriptor>,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format) {
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
+) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
 
     fun render(writer: SwiftWriter) {
-        MiddlewareGenerator(writer,
+        MiddlewareGenerator(
+            writer,
             "${shapeName}Headers",
             inputType = "SdkHttpRequestBuilder",
-            outputType = "SdkHttpRequestBuilder") {
+            outputType = "SdkHttpRequestBuilder"
+        ) {
             renderHeaders(it)
             renderPrefixHeaders(it)
         }.render()
@@ -122,5 +125,4 @@ class HeaderMiddlewareGenerator(
             }
         }
     }
-
 }

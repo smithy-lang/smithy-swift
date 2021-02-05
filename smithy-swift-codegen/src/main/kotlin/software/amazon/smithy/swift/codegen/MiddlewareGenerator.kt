@@ -1,8 +1,5 @@
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-
 /*
 Generates a swift middleware struct like the following:
 public struct {name}Middleware: Middleware {
@@ -24,12 +21,14 @@ public struct {name}Middleware: Middleware {
     public typealias Context = {contextType}
 }
  */
-class MiddlewareGenerator(private val writer: SwiftWriter,
-                          private val name: String,
-                          private val contextType: String = "HttpContext",
-                          private val inputType: String,
-                          private val outputType: String,
-                          private val middlewareClosure: (SwiftWriter) -> Unit) {
+class MiddlewareGenerator(
+    private val writer: SwiftWriter,
+    private val name: String,
+    private val contextType: String = "HttpContext",
+    private val inputType: String,
+    private val outputType: String,
+    private val middlewareClosure: (SwiftWriter) -> Unit
+) {
     fun render() {
         writer.openBlock("public struct ${name}Middleware: Middleware {", "}") {
             writer.write("public var id: String = \"$name\"")

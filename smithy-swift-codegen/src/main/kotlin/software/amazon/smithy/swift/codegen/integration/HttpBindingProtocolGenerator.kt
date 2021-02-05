@@ -120,7 +120,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     continue
                 }
                 renderHeaderMiddleware(ctx, operation)
-                //TODO: add other middlewares for query items and serialize and remove the below function
+                // TODO: add other middlewares for query items and serialize and remove the below function
                 renderInputRequestConformanceToHttpRequestBinding(ctx, operation)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
@@ -830,8 +830,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return resolved
     }
 
-    private fun renderHeaderMiddleware(ctx: ProtocolGenerator.GenerationContext,
-                                       op: OperationShape) {
+    private fun renderHeaderMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape
+    ) {
         val opIndex = OperationIndex.of(ctx.model)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         val requestBindings = httpBindingResolver.requestBindings(op)
