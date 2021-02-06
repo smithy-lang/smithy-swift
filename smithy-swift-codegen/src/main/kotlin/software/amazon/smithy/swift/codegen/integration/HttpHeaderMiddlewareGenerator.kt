@@ -39,7 +39,7 @@ class HttpHeaderMiddlewareGenerator(
 
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
-                    var headerValue = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
+                    var headerValue = formatHeaderOrQueryValue(
                         ctx,
                         "headerValue",
                         memberTarget.member,
@@ -51,7 +51,7 @@ class HttpHeaderMiddlewareGenerator(
                         writer.write("input.withHeader(name: \"$paramName\", value: String($headerValue))")
                     }
                 } else {
-                    val memberNameWithExtension = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
+                    val memberNameWithExtension = formatHeaderOrQueryValue(
                         ctx,
                         memberName,
                         it.member,
@@ -78,7 +78,7 @@ class HttpHeaderMiddlewareGenerator(
 
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
                     if (mapValueShapeTarget is CollectionShape) {
-                        var headerValue = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
+                        var headerValue = formatHeaderOrQueryValue(
                             ctx,
                             "headerValue",
                             mapValueShapeTarget.member,
@@ -89,7 +89,7 @@ class HttpHeaderMiddlewareGenerator(
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    headerValue = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
+                                    headerValue = formatHeaderOrQueryValue(
                                         ctx,
                                         "unwrappedHeaderValue",
                                         mapValueShapeTarget.member,
@@ -104,7 +104,7 @@ class HttpHeaderMiddlewareGenerator(
                             }
                         }
                     } else {
-                        var headerValue = HttpBindingProtocolGenerator.formatHeaderOrQueryValue(
+                        var headerValue = formatHeaderOrQueryValue(
                             ctx,
                             "prefixHeaderMapValue",
                             it.member,

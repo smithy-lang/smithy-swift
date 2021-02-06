@@ -4,13 +4,9 @@ import software.amazon.smithy.swift.codegen.AddOperationShapes
 
 class HttpHeaderMiddlewareGeneratorTests {
     private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
-    private fun newTestContext(): TestContext {
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        return model.newTestContext()
-    }
-    val newTestContext = newTestContext()
+    var newTestContext: TestContext
     init {
+        newTestContext = newTestContext()
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
         newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
@@ -150,5 +146,11 @@ class HttpHeaderMiddlewareGeneratorTests {
         }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    private fun newTestContext(): TestContext {
+        val settings = model.defaultSettings()
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        return model.newTestContext()
     }
 }

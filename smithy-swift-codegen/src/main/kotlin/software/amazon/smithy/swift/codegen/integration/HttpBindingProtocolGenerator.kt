@@ -66,6 +66,38 @@ fun Shape.isInHttpBody(): Boolean {
 }
 
 /**
+ * Adds the appropriate extension for serialization of special types i.e. timestamps, blobs, etc
+ */
+fun formatHeaderOrQueryValue(
+    ctx: ProtocolGenerator.GenerationContext,
+    memberName: String,
+    memberShape: MemberShape,
+    location: HttpBinding.Location,
+    bindingIndex: HttpBindingIndex,
+    defaultTimestampFormat: TimestampFormatTrait.Format
+): String {
+
+    return when (val shape = ctx.model.expectShape(memberShape.target)) {
+        is TimestampShape -> {
+            val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
+            ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true)
+        }
+        is BlobShape -> {
+            "try $memberName.base64EncodedString()"
+        }
+        is StringShape -> {
+            val enumRawValueSuffix = shape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+            var formattedItemValue = "$memberName$enumRawValueSuffix"
+            if (shape.hasTrait(MediaTypeTrait::class.java)) {
+                formattedItemValue = "try $formattedItemValue.base64EncodedString()"
+            }
+            formattedItemValue
+        }
+        else -> memberName
+    }
+}
+
+/**
  * Abstract implementation useful for all HTTP protocols
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
@@ -87,37 +119,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx)
-
-    companion object {
-        fun formatHeaderOrQueryValue(
-            ctx: ProtocolGenerator.GenerationContext,
-            memberName: String,
-            memberShape: MemberShape,
-            location: HttpBinding.Location,
-            bindingIndex: HttpBindingIndex,
-            defaultTimestampFormat: TimestampFormatTrait.Format
-        ): String {
-
-            return when (val shape = ctx.model.expectShape(memberShape.target)) {
-                is TimestampShape -> {
-                    val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-                    ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true)
-                }
-                is BlobShape -> {
-                    "try $memberName.base64EncodedString()"
-                }
-                is StringShape -> {
-                    val enumRawValueSuffix = shape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
-                    var formattedItemValue = "$memberName$enumRawValueSuffix"
-                    if (shape.hasTrait(MediaTypeTrait::class.java)) {
-                        formattedItemValue = "try $formattedItemValue.base64EncodedString()"
-                    }
-                    formattedItemValue
-                }
-                else -> memberName
-            }
-        }
-    }
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
@@ -918,6 +919,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")
                     renderQueryItems(ctx, queryLiterals, queryBindings, writer)
+                    // TODO: WILL REFACTOR ASAP, this header will receive its own middleware in a follow up PR
                     // we only need the content type header in the request if there is an http body that is being sent
                     headersContentType(ctx, hasHttpBody, contentType, writer, op.id.name)
                     if (hasHttpBody) {
