@@ -76,25 +76,27 @@ fun formatHeaderOrQueryValue(
     location: HttpBinding.Location,
     bindingIndex: HttpBindingIndex,
     defaultTimestampFormat: TimestampFormatTrait.Format
-): String {
+): Pair<String, Boolean> {
 
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-            ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true)
+            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true), false)
         }
         is BlobShape -> {
-            "try $memberName.base64EncodedString()"
+            Pair("try $memberName.base64EncodedString()", true)
         }
         is StringShape -> {
             val enumRawValueSuffix = shape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
             var formattedItemValue = "$memberName$enumRawValueSuffix"
+            var requiresDoCatch = false
             if (shape.hasTrait(MediaTypeTrait::class.java)) {
                 formattedItemValue = "try $formattedItemValue.base64EncodedString()"
+                requiresDoCatch = true
             }
-            formattedItemValue
+            Pair(formattedItemValue, requiresDoCatch)
         }
-        else -> memberName
+        else -> Pair(memberName, false)
     }
 }
 
@@ -864,6 +866,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
             MiddlewareGenerator(writer, headerMiddleware).generate()
         }
@@ -1019,7 +1022,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 if (memberTarget is CollectionShape) {
                     // Handle cases where member is a List or Set type
-                    var queryItemValue = formatHeaderOrQueryValue(
+                    var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
                         ctx,
                         "queryItemValue",
                         memberTarget.member,
@@ -1034,7 +1037,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("builder.withQueryItem(queryItem)")
                     }
                 } else {
-                    memberName = formatHeaderOrQueryValue(
+                    var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
                         ctx,
                         memberName,
                         it.member,
@@ -1042,7 +1045,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         bindingIndex,
                         defaultTimestampFormat
                     )
-                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
+                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
                     writer.write("builder.withQueryItem(queryItem)")
                 }
             }

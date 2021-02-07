@@ -20,7 +20,9 @@ class HttpHeaderMiddlewareGeneratorTests {
         val expectedContents =
             """
             public struct SmokeTestInputHeadersMiddleware: Middleware {
-                public var id: String = "SmokeTestInputHeaders"
+                public let id: String = "SmokeTestInputHeadersMiddleware"
+            
+                let smokeTestInput: SmokeTestInput
             
                 public func handle<H>(context: Context,
                               input: SdkHttpRequestBuilder,
@@ -30,10 +32,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
-                    if let header1 = header1 {
+                    if let header1 = smokeTestInput.header1 {
                         input.withHeader(name: "X-Header1", value: String(header1))
                     }
-                    if let header2 = header2 {
+                    if let header2 = smokeTestInput.header2 {
                         input.withHeader(name: "X-Header2", value: String(header2))
                     }
                     return next.handle(context: context, input: input)
@@ -53,27 +55,29 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct EnumInputInputHeadersMiddleware: Middleware {
-            public var id: String = "EnumInputInputHeaders"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let enumHeader = enumHeader {
-                    input.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
+            public struct EnumInputInputHeadersMiddleware: Middleware {
+                public let id: String = "EnumInputInputHeadersMiddleware"
+            
+                let enumInputInput: EnumInputInput
+            
+                public func handle<H>(context: Context,
+                              input: SdkHttpRequestBuilder,
+                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let enumHeader = enumInputInput.enumHeader {
+                        input.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SdkHttpRequestBuilder
+                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -88,27 +92,29 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: Middleware {
-            public var id: String = "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeaders"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let token = token {
-                    input.withHeader(name: "token", value: String(token))
+            public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: Middleware {
+                public let id: String = "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware"
+            
+                let idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
+            
+                public func handle<H>(context: Context,
+                              input: SdkHttpRequestBuilder,
+                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let token = idempotencyTokenWithoutHttpPayloadTraitOnTokenInput.token {
+                        input.withHeader(name: "token", value: String(token))
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SdkHttpRequestBuilder
+                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -120,30 +126,32 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct TimestampInputInputHeadersMiddleware: Middleware {
-            public var id: String = "TimestampInputInputHeaders"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let headerEpoch = headerEpoch {
-                    input.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
+            public struct TimestampInputInputHeadersMiddleware: Middleware {
+                public let id: String = "TimestampInputInputHeadersMiddleware"
+            
+                let timestampInputInput: TimestampInputInput
+            
+                public func handle<H>(context: Context,
+                              input: SdkHttpRequestBuilder,
+                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let headerEpoch = timestampInputInput.headerEpoch {
+                        input.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
+                    }
+                    if let headerHttpDate = timestampInputInput.headerHttpDate {
+                        input.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                if let headerHttpDate = headerHttpDate {
-                    input.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
-                }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SdkHttpRequestBuilder
+                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

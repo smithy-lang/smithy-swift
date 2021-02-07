@@ -32,7 +32,7 @@ class MiddlewareGenerator(
             middleware.properties.forEach {
                 val memberName = it.key
                 val memberType = it.value
-                writer.write("let $memberName: \$T", memberType)
+                writer.write("let $memberName: \$L", memberType)
             }
             middleware.generateInit()
             writer.write("")
