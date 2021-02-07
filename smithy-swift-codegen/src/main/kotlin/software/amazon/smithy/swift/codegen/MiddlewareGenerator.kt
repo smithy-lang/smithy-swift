@@ -23,31 +23,34 @@ public struct {name}Middleware: Middleware {
  */
 class MiddlewareGenerator(
     private val writer: SwiftWriter,
-    private val name: String,
-    private val contextType: String = "HttpContext",
-    private val inputType: String,
-    private val outputType: String,
-    private val middlewareClosure: (SwiftWriter) -> Unit
-) {
-    fun render() {
-        writer.openBlock("public struct ${name}Middleware: Middleware {", "}") {
-            writer.write("public var id: String = \"$name\"")
+    private val middleware: Middleware) {
+    fun generate() {
+
+        writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {
+            writer.write("public let id: String = \"${middleware.typeName}\"")
+            writer.write("")
+            middleware.properties.forEach {
+                val memberName = it.key
+                val memberType = it.value
+                writer.write("let $memberName: \$T", memberType)
+            }
+            middleware.generateInit()
             writer.write("")
             writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
-                writer.write("  input: $inputType,")
-                writer.write("  next: H) -> Result<$outputType, Error>")
+                writer.write("  input: ${middleware.inputType.name},")
+                writer.write("  next: H) -> Result<${middleware.outputType.name}, Error>")
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")
             writer.write("Self.MOutput == H.Output,")
             writer.write("Self.Context == H.Context").openBlock("{", "}") {
-                middlewareClosure(writer)
+                middleware.generateMiddlewareClosure()
             }
             writer.write("")
-            writer.write("public typealias MInput = $inputType")
-            writer.write("public typealias MOutput = $outputType")
-            writer.write("public typealias Context = $contextType")
+            writer.write("public typealias MInput = ${middleware.inputType.name}")
+            writer.write("public typealias MOutput = ${middleware.outputType.name}")
+            writer.write("public typealias Context = ${middleware.contextType.name}")
         }
     }
 }

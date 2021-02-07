@@ -1,37 +1,45 @@
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
 
-class HttpHeaderMiddlewareGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
-    private val shapeName: String,
-    private val headerBindings: List<HttpBindingDescriptor>,
-    private val prefixHeaderBindings: List<HttpBindingDescriptor>,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
-) {
+class HttpHeaderMiddleware(private val writer: SwiftWriter,
+                           private val ctx: ProtocolGenerator.GenerationContext,
+                           private val symbol: Symbol,
+                           private val headerBindings: List<HttpBindingDescriptor>,
+                           private val prefixHeaderBindings: List<HttpBindingDescriptor>,
+                           private val defaultTimestampFormat: TimestampFormatTrait.Format) : Middleware(writer, symbol) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
 
-    fun generate(writer: SwiftWriter) {
-        MiddlewareGenerator(
-            writer,
-            "${shapeName}Headers",
-            inputType = "SdkHttpRequestBuilder",
-            outputType = "SdkHttpRequestBuilder"
-        ) {
-            generateHeaders(it)
-            generatePrefixHeaders(it)
-            it.write("return next.handle(context: context, input: input)")
-        }.render()
+    override val inputType = Symbol
+        .builder()
+        .name("SdkHttpRequestBuilder")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .build()
+
+    override val outputType = Symbol
+        .builder()
+        .name("SdkHttpRequestBuilder")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .build()
+
+    override val properties = mutableMapOf(symbol.name.decapitalize() to symbol)
+
+    override fun generateMiddlewareClosure() {
+        generateHeaders()
+        generatePrefixHeaders()
+        super.generateMiddlewareClosure()
     }
 
-    private fun generateHeaders(writer: SwiftWriter) {
+    private fun generateHeaders() {
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -65,7 +73,7 @@ class HttpHeaderMiddlewareGenerator(
         }
     }
 
-    private fun generatePrefixHeaders(writer: SwiftWriter) {
+    private fun generatePrefixHeaders() {
         prefixHeaderBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)

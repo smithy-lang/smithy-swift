@@ -52,6 +52,7 @@ import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
+import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -848,7 +849,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val opIndex = OperationIndex.of(ctx.model)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         val requestBindings = httpBindingResolver.requestBindings(op)
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
+        val inputShape = opIndex.getInput(op).get()
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+
         val headerBindings = requestBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
@@ -857,19 +860,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val rootNamespace = ctx.settings.moduleName
         val headerMiddlewareSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$inputShapeName+HeaderMiddleware.swift")
-            .name(inputShapeName)
+            .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
+            .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            val headerMiddlewareGenerator = HttpHeaderMiddlewareGenerator(
-                ctx,
-                inputShapeName,
-                headerBindings,
-                prefixHeaderBindings,
-                defaultTimestampFormat
-            )
-            headerMiddlewareGenerator.generate(writer)
+            val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
+            MiddlewareGenerator(writer, headerMiddleware).generate()
         }
     }
     /**
