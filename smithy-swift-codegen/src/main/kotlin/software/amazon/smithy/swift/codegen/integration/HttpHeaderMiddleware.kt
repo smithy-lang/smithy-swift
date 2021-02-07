@@ -43,6 +43,12 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
         super.generateMiddlewareClosure()
     }
 
+    override fun generateInit() {
+        writer.openBlock("public init($inputTypeMemberName: $inputTypeMemberName) {", "}") {
+            writer.write("self.$inputTypeMemberName = $inputTypeMemberName")
+        }
+    }
+
     private fun generateHeaders() {
 
         headerBindings.forEach {

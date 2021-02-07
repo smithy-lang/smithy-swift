@@ -24,6 +24,10 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let smokeTestInput: SmokeTestInput
             
+                public init(smokeTestInput: smokeTestInput) {
+                    self.smokeTestInput = smokeTestInput
+                }
+            
                 public func handle<H>(context: Context,
                               input: SdkHttpRequestBuilder,
                               next: H) -> Result<SdkHttpRequestBuilder, Error>
@@ -59,6 +63,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public let id: String = "EnumInputInputHeadersMiddleware"
             
                 let enumInputInput: EnumInputInput
+            
+                public init(enumInputInput: enumInputInput) {
+                    self.enumInputInput = enumInputInput
+                }
             
                 public func handle<H>(context: Context,
                               input: SdkHttpRequestBuilder,
@@ -97,6 +105,10 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
             
+                public init(idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: idempotencyTokenWithoutHttpPayloadTraitOnTokenInput) {
+                    self.idempotencyTokenWithoutHttpPayloadTraitOnTokenInput = idempotencyTokenWithoutHttpPayloadTraitOnTokenInput
+                }
+            
                 public func handle<H>(context: Context,
                               input: SdkHttpRequestBuilder,
                               next: H) -> Result<SdkHttpRequestBuilder, Error>
@@ -130,6 +142,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public let id: String = "TimestampInputInputHeadersMiddleware"
             
                 let timestampInputInput: TimestampInputInput
+            
+                public init(timestampInputInput: timestampInputInput) {
+                    self.timestampInputInput = timestampInputInput
+                }
             
                 public func handle<H>(context: Context,
                               input: SdkHttpRequestBuilder,

@@ -33,6 +33,7 @@ class MiddlewareGenerator(
                 val memberName = it.key
                 val memberType = it.value
                 writer.write("let $memberName: \$L", memberType)
+                writer.write("")
             }
             middleware.generateInit()
             writer.write("")
