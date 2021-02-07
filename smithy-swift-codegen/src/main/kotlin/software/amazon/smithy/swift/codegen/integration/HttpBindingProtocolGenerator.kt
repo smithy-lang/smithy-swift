@@ -869,7 +869,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 prefixHeaderBindings,
                 defaultTimestampFormat
             )
-            headerMiddlewareGenerator.render(writer)
+            headerMiddlewareGenerator.generate(writer)
         }
     }
     /**

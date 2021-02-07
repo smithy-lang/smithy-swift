@@ -18,20 +18,20 @@ class HttpHeaderMiddlewareGenerator(
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
 
-    fun render(writer: SwiftWriter) {
+    fun generate(writer: SwiftWriter) {
         MiddlewareGenerator(
             writer,
             "${shapeName}Headers",
             inputType = "SdkHttpRequestBuilder",
             outputType = "SdkHttpRequestBuilder"
         ) {
-            renderHeaders(it)
-            renderPrefixHeaders(it)
+            generateHeaders(it)
+            generatePrefixHeaders(it)
             it.write("return next.handle(context: context, input: input)")
         }.render()
     }
 
-    private fun renderHeaders(writer: SwiftWriter) {
+    private fun generateHeaders(writer: SwiftWriter) {
         headerBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -65,7 +65,7 @@ class HttpHeaderMiddlewareGenerator(
         }
     }
 
-    private fun renderPrefixHeaders(writer: SwiftWriter) {
+    private fun generatePrefixHeaders(writer: SwiftWriter) {
         prefixHeaderBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
