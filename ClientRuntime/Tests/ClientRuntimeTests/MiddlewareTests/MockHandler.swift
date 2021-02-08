@@ -6,12 +6,9 @@
 struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
     
     typealias Context = HttpContext
-    typealias TestHandlerCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error>
-    let handleCallback: TestHandlerCallback
+    typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error>
+    let handleCallback: MockHandlerCallback
     
-    init(handleCallback: @escaping TestHandlerCallback) {
-        self.handleCallback = handleCallback
-    }
     func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
         return self.handleCallback(context, input)
 
