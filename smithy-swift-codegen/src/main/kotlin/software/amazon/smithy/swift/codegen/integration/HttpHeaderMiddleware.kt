@@ -44,7 +44,7 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
     }
 
     override fun generateInit() {
-        writer.openBlock("public init($inputTypeMemberName: $inputTypeMemberName) {", "}") {
+        writer.openBlock("public init($inputTypeMemberName: \$L) {", "}", symbol.name) {
             writer.write("self.$inputTypeMemberName = $inputTypeMemberName")
         }
     }
