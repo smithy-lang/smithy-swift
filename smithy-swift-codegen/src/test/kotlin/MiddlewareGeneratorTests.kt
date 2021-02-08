@@ -51,7 +51,6 @@ class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middlewa
     override val properties = mutableMapOf("test" to stringSymbol)
     override fun generateMiddlewareClosure() {
         writer.write("print(\"this is a \\(test)\")")
-        super.generateMiddlewareClosure()
     }
 
     override fun generateInit() {

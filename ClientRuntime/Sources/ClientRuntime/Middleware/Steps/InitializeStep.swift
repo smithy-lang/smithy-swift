@@ -7,46 +7,47 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public struct InitializeStep<Input: HttpRequestBinding>: MiddlewareStack {
+public struct InitializeStep<Input>: MiddlewareStack {
     
     public typealias Context = HttpContext
     
     public var orderedMiddleware: OrderedGroup<Input,
-                                               SdkHttpRequestBuilder,
+                                               Input,
                                                HttpContext> = OrderedGroup<Input,
-                                                                           SdkHttpRequestBuilder,
+                                                                           Input,
                                                                            HttpContext>()
     
     public var id: String = "InitializeStep"
     
     public typealias MInput = Input
     
-    public typealias MOutput = SdkHttpRequestBuilder
+    public typealias MOutput = Input
     
     public init() {}
 
 }
 
-public struct InitializeStepHandler<Input: HttpRequestBinding>: Handler {    
+public struct InitializeStepHandler<Input>: Handler {
     
     public typealias Input = Input
     
-    public typealias Output = SdkHttpRequestBuilder
+    public typealias Output = Input
     
     public init() {}
     
-    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<Input, Error> {
         // this step takes an input of whatever type with conformance to our http binding protocol
         // and converts it to an sdk request builder
-        let encoder = context.getEncoder()
-        do {
-            let sdkRequestBuilder = try input.buildHttpRequest(encoder: encoder,
-                                                               idempotencyTokenGenerator:
-                                                                DefaultIdempotencyTokenGenerator())
-            return .success(sdkRequestBuilder)
-        } catch let err {
-            let error = ClientError.serializationFailed(err.localizedDescription)
-            return .failure(error)
-        }
+        return .success(input)
+//        let encoder = context.getEncoder()
+//        do {
+//            let sdkRequestBuilder = try input.buildHttpRequest(encoder: encoder,
+//                                                               idempotencyTokenGenerator:
+//                                                                DefaultIdempotencyTokenGenerator())
+//            return .success(sdkRequestBuilder)
+//        } catch let err {
+//            let error = ClientError.serializationFailed(err.localizedDescription)
+//            return .failure(error)
+//        }
     }
 }

@@ -5,25 +5,25 @@ import ClientRuntime
 public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
     
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
-                                                        SdkHttpRequestBuilder>
-    typealias SerializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                       SdkHttpRequestBuilder>
-    typealias BuildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                        StackInput>
+    typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,
+                                                       SerializeStepInput<StackInput>>
+    typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,
                                                    SdkHttpRequestBuilder>
     typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                       SdkHttpRequest>
     
     public var id: String
     public var initializeStep: InitializeStep<StackInput>
-    public var buildStep: BuildStep
-    public var serializeStep: SerializeStep
+    public var buildStep: BuildStep<StackInput>
+    public var serializeStep: SerializeStep<StackInput>
     public var finalizeStep: FinalizeStep
     
     public init(id: String) {
         self.id = id
         self.initializeStep = InitializeStep<StackInput>()
-        self.serializeStep = SerializeStep()
-        self.buildStep = BuildStep()
+        self.serializeStep = SerializeStep<StackInput>()
+        self.buildStep = BuildStep<StackInput>()
         self.finalizeStep = FinalizeStep()
     }
     

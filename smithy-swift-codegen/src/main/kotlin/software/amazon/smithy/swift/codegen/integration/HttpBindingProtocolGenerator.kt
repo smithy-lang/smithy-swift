@@ -878,27 +878,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         val httpTrait = httpBindingResolver.httpTrait(op)
         val requestBindings = httpBindingResolver.requestBindings(op)
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
+        val inputShape = opIndex.getInput(op).get()
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
         val queryLiterals = httpTrait.uri.queryLiterals
 
         val rootNamespace = ctx.settings.moduleName
         val headerMiddlewareSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$inputShapeName+QueryItemMiddleware.swift")
-            .name(inputShapeName)
+            .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemMiddleware.swift")
+            .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
-            val queryItemMiddlewareGenerator = HttpQueryItemMiddlewareGenerator(
-                ctx,
-                inputShapeName,
-                queryLiterals,
-                queryBindings,
-                defaultTimestampFormat,
-                writer
-            )
-            queryItemMiddlewareGenerator.generate()
+            val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
+            MiddlewareGenerator(writer, queryItemMiddleware).generate()
         }
     }
     /**
@@ -917,6 +911,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
         val inputShape = ctx.model.expectShape(op.input.get())
+
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         val bindingIndex = HttpBindingIndex.of(ctx.model)
         val requestBindings = httpBindingResolver.requestBindings(op)
@@ -1019,7 +1014,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("builder.withBody(body)")
         }
     }
-    
+
     open fun headersContentType(
         ctx: ProtocolGenerator.GenerationContext,
         hasHttpBody: Boolean,

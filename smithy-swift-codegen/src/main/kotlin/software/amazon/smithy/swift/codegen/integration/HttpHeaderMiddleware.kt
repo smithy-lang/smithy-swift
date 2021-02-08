@@ -25,13 +25,13 @@ class HttpHeaderMiddleware(
 
     override val inputType = Symbol
         .builder()
-        .name("SdkHttpRequestBuilder")
+        .name("SerializeStepInput<${symbol.name}>")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     override val outputType = Symbol
         .builder()
-        .name("SdkHttpRequestBuilder")
+        .name("SerializeStepInput<${symbol.name}>")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
@@ -40,7 +40,6 @@ class HttpHeaderMiddleware(
     override fun generateMiddlewareClosure() {
         generateHeaders()
         generatePrefixHeaders()
-        super.generateMiddlewareClosure()
     }
 
     override fun generateInit() {

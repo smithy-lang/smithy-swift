@@ -26,7 +26,9 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
 
     abstract fun generateInit()
 
-    open fun generateMiddlewareClosure() {
+    open fun renderReturn() {
         writer.write("return next.handle(context: context, input: input)")
     }
+
+    abstract fun generateMiddlewareClosure()
 }

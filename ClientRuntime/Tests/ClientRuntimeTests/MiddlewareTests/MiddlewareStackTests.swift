@@ -46,16 +46,17 @@ class MiddlewareStackTests: XCTestCase {
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.addDefaultOperationMiddlewares()
-        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
+        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<MockInput, Error> in
             
             return next.handle(context: context, input: input)
         }
-        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, sdkBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
-            return next.handle(context: context, input: sdkBuilder)
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
+            return next.handle(context: context, input: input)
         }
-        stack.buildStep.intercept(position: .before, id: "add a header") { (context, requestBuilder, next) -> Result<SdkHttpRequestBuilder, Error> in
-            requestBuilder.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
-            return next.handle(context: context, input: requestBuilder)
+
+        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
+            input.builder.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+            return next.handle(context: context, input: input)
         }
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<SdkHttpRequest, Error> in
             return next.handle(context: context, input: requestBuilder)
