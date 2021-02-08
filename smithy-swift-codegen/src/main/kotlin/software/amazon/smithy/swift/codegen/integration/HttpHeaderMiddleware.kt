@@ -3,21 +3,21 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.isBoxed
 
-class HttpHeaderMiddleware(private val writer: SwiftWriter,
-                           private val ctx: ProtocolGenerator.GenerationContext,
-                           private val symbol: Symbol,
-                           private val headerBindings: List<HttpBindingDescriptor>,
-                           private val prefixHeaderBindings: List<HttpBindingDescriptor>,
-                           private val defaultTimestampFormat: TimestampFormatTrait.Format) : Middleware(writer, symbol) {
+class HttpHeaderMiddleware(
+    private val writer: SwiftWriter,
+    private val ctx: ProtocolGenerator.GenerationContext,
+    private val symbol: Symbol,
+    private val headerBindings: List<HttpBindingDescriptor>,
+    private val prefixHeaderBindings: List<HttpBindingDescriptor>,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
+) : Middleware(writer, symbol) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
     override val typeName = "${symbol.name}HeadersMiddleware"
@@ -68,7 +68,7 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
                     )
                     writer.openBlock("$memberName.forEach { headerValue in ", "}") {
 
-                        if(requiresDoCatch) {
+                        if (requiresDoCatch) {
                             renderDoCatch(headerValue, paramName)
                         } else {
                             writer.write("input.withHeader(name: \"$paramName\", value: String($headerValue))")
@@ -84,12 +84,11 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
                         defaultTimestampFormat
                     )
 
-                    if(requiresDoCatch) {
-                       renderDoCatch(memberNameWithExtension,paramName)
+                    if (requiresDoCatch) {
+                        renderDoCatch(memberNameWithExtension, paramName)
                     } else {
                         writer.write("input.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                     }
-
                 }
             }
         }
@@ -127,14 +126,14 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
                                         bindingIndex,
                                         defaultTimestampFormat
                                     )
-                                    if(requiresDoCatch) {
+                                    if (requiresDoCatch) {
                                         renderDoCatch(unwrappedHeaderValue, paramName)
                                     } else {
                                         writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($unwrappedHeaderValue))")
                                     }
                                 }
                             } else {
-                                if(requiresDoCatch) {
+                                if (requiresDoCatch) {
                                     renderDoCatch(headerValue, paramName)
                                 } else {
                                     writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
@@ -150,7 +149,7 @@ class HttpHeaderMiddleware(private val writer: SwiftWriter,
                             bindingIndex,
                             defaultTimestampFormat
                         )
-                        if(requiresDoCatch) {
+                        if (requiresDoCatch) {
                             renderDoCatch(headerValue, paramName)
                         } else {
                             writer.write("input.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")

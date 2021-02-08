@@ -23,7 +23,8 @@ public struct {name}Middleware: Middleware {
  */
 class MiddlewareGenerator(
     private val writer: SwiftWriter,
-    private val middleware: Middleware) {
+    private val middleware: Middleware
+) {
     fun generate() {
 
         writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {

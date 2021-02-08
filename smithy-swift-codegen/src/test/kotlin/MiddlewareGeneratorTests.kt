@@ -42,7 +42,7 @@ class MiddlewareGeneratorTests {
     }
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol): Middleware(writer, symbol) {
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol) {
     val stringSymbol = Symbol.builder().name("String").build()
     override val inputType = stringSymbol
     override val outputType = stringSymbol
