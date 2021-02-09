@@ -4,20 +4,24 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
+<<<<<<< HEAD
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+=======
+>>>>>>> edca568b... make linters happy
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
-import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-class HttpQueryItemMiddleware(private val ctx: ProtocolGenerator.GenerationContext,
-                              private val symbol: Symbol,
-                              private val queryLiterals: Map<String, String>,
-                              private val queryBindings: List<HttpBindingDescriptor>,
-                              private val defaultTimestampFormat: TimestampFormatTrait.Format,
-                              private val writer: SwiftWriter): Middleware(writer, symbol) {
+class HttpQueryItemMiddleware(
+    private val ctx: ProtocolGenerator.GenerationContext,
+    private val symbol: Symbol,
+    private val queryLiterals: Map<String, String>,
+    private val queryBindings: List<HttpBindingDescriptor>,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val writer: SwiftWriter
+) : Middleware(writer, symbol) {
 
     override val typeName = "${symbol.name}QueryItemMiddleware"
     private val inputTypeMemberName = symbol.name.decapitalize()
@@ -95,7 +99,7 @@ class HttpQueryItemMiddleware(private val ctx: ProtocolGenerator.GenerationConte
         )
 
         writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-            if(requiresDoCatch) {
+            if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
                 writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")

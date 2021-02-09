@@ -1,5 +1,4 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import kotlin.math.exp
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.AddOperationShapes
 
@@ -19,7 +18,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct QueryIdempotencyTokenAutoFillInputQueryItemMiddleware: Middleware {
             public var id: String = "QueryIdempotencyTokenAutoFillInputQueryItem"
         
@@ -42,7 +41,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -51,7 +50,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
         val contents = getModelFileContents("example", "TimestampInputInput+QueryItemMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct TimestampInputInputQueryItemMiddleware: Middleware {
             public var id: String = "TimestampInputInputQueryItem"
         
@@ -80,7 +79,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -89,7 +88,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
         val contents = getModelFileContents("example", "SmokeTestInput+QueryItemMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
-        """
+            """
         public struct SmokeTestInputQueryItemMiddleware: Middleware {
             public var id: String = "SmokeTestInputQueryItem"
         
@@ -112,7 +111,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             public typealias MOutput = SdkHttpRequestBuilder
             public typealias Context = HttpContext
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
