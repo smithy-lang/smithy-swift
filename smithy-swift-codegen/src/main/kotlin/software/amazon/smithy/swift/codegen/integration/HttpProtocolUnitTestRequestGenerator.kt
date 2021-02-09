@@ -102,9 +102,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 if (hasHttpBody) {
                     writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
                 }
-                if (test.bodyMediaType.isPresent) {
-                    val bodyMediaType = test.bodyMediaType.get()
-                    writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${bodyMediaType}\"))")
+
+                if (test.headers.keys.contains("Content-Type")) {
+                    val contentType = test.headers["Content-Type"]
+                    writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${contentType}\"))")
                 }
 
                 if (hasIdempotencyTokenTrait) {
