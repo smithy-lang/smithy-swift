@@ -32,8 +32,6 @@ class HttpBodyMiddleware(
 
     override fun generateMiddlewareClosure() {
         renderEncodedBody()
-        // to be handled in next pr
-        // super.generateMiddlewareClosure()
     }
 
     override fun generateInit() {
@@ -55,7 +53,6 @@ class HttpBodyMiddleware(
                 writer.write("let encoder = context.getEncoder()")
                 writer.write("let data = try encoder.encode(input.operationInput)")
                 writer.write("let body = HttpBody.data(data)")
-                writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                 writer.write("input.builder.withBody(body)")
             }
         }
@@ -76,7 +73,6 @@ class HttpBodyMiddleware(
                         ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
                     writer.write("let data = \$L", memberName)
                     writer.write("let body = HttpBody.data(data)")
-                    writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                     writer.write("input.builder.withBody(body)")
                 }
                 ShapeType.STRING -> {
@@ -87,7 +83,6 @@ class HttpBodyMiddleware(
                     }
                     writer.write("let data = \$L.data(using: .utf8)", contents)
                     writer.write("let body = HttpBody.data(data)")
-                    writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                     writer.write("input.builder.withBody(body)")
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -96,7 +91,6 @@ class HttpBodyMiddleware(
                         writer.write("let encoder = context.getEncoder()")
                         writer.write("let data = try encoder.encode(\$L)", memberName)
                         writer.write("let body = HttpBody.data(data)")
-                        writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                         writer.write("input.builder.withBody(body)")
                     }
                     writer.indent()
@@ -109,7 +103,6 @@ class HttpBodyMiddleware(
                         writer.write("let encoder = context.getEncoder()")
                         writer.write("let data = try encoder.encode(\$L)", memberName)
                         writer.write("let body = HttpBody.data(data)")
-                        writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
                         writer.write("input.builder.withBody(body)")
                     }
                     writer.indent()
