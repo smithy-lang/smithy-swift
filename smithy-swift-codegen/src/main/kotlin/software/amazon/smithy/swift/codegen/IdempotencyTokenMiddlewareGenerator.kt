@@ -18,7 +18,7 @@ class IdempotencyTokenMiddlewareGenerator(
      * The operation would generate the following inside its implementation to provide a default token from the given generator
      * before the request is made
      * ```
-     * operationStack.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Result<IdempotencyTokenInput, Error> in
+     * operationStack.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Result<SerializeInput<IdempotencyTokenInput>, Error> in
      *    let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
      *    var copiedInput = input
      *    if input.token == nil {
