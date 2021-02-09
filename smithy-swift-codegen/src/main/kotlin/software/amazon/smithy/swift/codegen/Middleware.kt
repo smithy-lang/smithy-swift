@@ -20,16 +20,11 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
     abstract val properties: MutableMap<String, Symbol>
 
     fun getTypeInheritance(): String {
-        if (typesToConformMiddlewareTo.count() == 1) {
-            return typesToConformMiddlewareTo.joinToString("")
-        } else {
-            return typesToConformMiddlewareTo.joinToString(", ")
-        }
+        val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
+        return typesToConformMiddlewareTo.joinToString(separator)
     }
 
-    open fun generateInit() {
-        // pass none needed unless init should be public as struct has built in init
-    }
+    abstract fun generateInit()
 
     open fun generateMiddlewareClosure() {
         writer.write("return next.handle(context: context, input: input)")

@@ -21,6 +21,8 @@ class MiddlewareGeneratorTests {
             
                 let test: String
             
+                public init() {}
+            
                 public func handle<H>(context: Context,
                               input: String,
                               next: H) -> Result<String, Error>
@@ -50,5 +52,9 @@ class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middlewa
     override fun generateMiddlewareClosure() {
         writer.write("print(\"this is a \\(test)\")")
         super.generateMiddlewareClosure()
+    }
+
+    override fun generateInit() {
+        writer.write("public init() {}")
     }
 }

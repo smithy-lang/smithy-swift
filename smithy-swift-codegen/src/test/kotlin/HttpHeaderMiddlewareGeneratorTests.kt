@@ -24,7 +24,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let smokeTestInput: SmokeTestInput
             
-                public init(smokeTestInput: smokeTestInput) {
+                public init(smokeTestInput: SmokeTestInput) {
                     self.smokeTestInput = smokeTestInput
                 }
             
@@ -64,7 +64,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let enumInputInput: EnumInputInput
             
-                public init(enumInputInput: enumInputInput) {
+                public init(enumInputInput: EnumInputInput) {
                     self.enumInputInput = enumInputInput
                 }
             
@@ -105,7 +105,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
             
-                public init(idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: idempotencyTokenWithoutHttpPayloadTraitOnTokenInput) {
+                public init(idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) {
                     self.idempotencyTokenWithoutHttpPayloadTraitOnTokenInput = idempotencyTokenWithoutHttpPayloadTraitOnTokenInput
                 }
             
@@ -143,7 +143,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 let timestampInputInput: TimestampInputInput
             
-                public init(timestampInputInput: timestampInputInput) {
+                public init(timestampInputInput: TimestampInputInput) {
                     self.timestampInputInput = timestampInputInput
                 }
             
