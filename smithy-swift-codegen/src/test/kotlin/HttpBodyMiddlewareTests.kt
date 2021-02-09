@@ -207,5 +207,4 @@ class HttpBodyMiddlewareTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-
 }
