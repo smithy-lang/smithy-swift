@@ -18,7 +18,7 @@ public struct ContentLengthMiddleware<StackInput>: Middleware where StackInput: 
             if let contentLength = data?.count {
                 input.builder.withHeader(name: "Content-Length", value: String(contentLength))
             }
-        case .none, .streamSink(_):
+        case .none, .streamSink:
             break
         case .streamSource(let sourceProvider):
             let contentLength = sourceProvider.unwrap().contentLength
