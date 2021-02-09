@@ -98,6 +98,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("var $operationStack = MockRequestOperationStack<$inputSymbol>(id: \"${test.id}\")")
                 writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
                 writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
+                if (test.bodyMediaType.isPresent) {
+                    val bodyMediaType = test.bodyMediaType.get()
+                    writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${bodyMediaType}\"))")
+                }
+
                 if (hasIdempotencyTokenTrait) {
                     IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, inputSymbol.name).renderIdempotencyMiddleware()
                 }

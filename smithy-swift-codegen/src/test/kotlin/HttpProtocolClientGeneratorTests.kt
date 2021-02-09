@@ -34,7 +34,8 @@ class HttpProtocolClientGeneratorTests {
 
         val generator = HttpProtocolClientGenerator(
             ctx.generationCtx, writer, features, config,
-            HttpTraitResolver(ctx.generationCtx)
+            HttpTraitResolver(ctx.generationCtx),
+            "application/json"
         )
         generator.render()
         commonTestContents = writer.toString()

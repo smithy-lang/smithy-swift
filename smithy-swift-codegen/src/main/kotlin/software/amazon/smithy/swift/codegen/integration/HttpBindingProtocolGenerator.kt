@@ -932,9 +932,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     "}"
                 ) {
                     writer.write("let builder = SdkHttpRequestBuilder()")
-                    // TODO: WILL REFACTOR ASAP, this header will receive its own middleware in a follow up PR
-                    // we only need the content type header in the request if there is an http body that is being sent
-                    headersContentType(ctx, hasHttpBody, contentType, writer, op.id.name)
                     if (hasHttpBody) {
                         renderEncodedBody(ctx, writer, requestBindings)
                     }
@@ -1015,18 +1012,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    open fun headersContentType(
-        ctx: ProtocolGenerator.GenerationContext,
-        hasHttpBody: Boolean,
-        contentType: String,
-        writer: SwiftWriter,
-        operationShapeName: String
-    ) {
-        if (hasHttpBody) {
-            writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
-        }
-    }
-
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
@@ -1035,7 +1020,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 ctx,
                 getProtocolHttpBindingResolver(ctx),
                 writer,
-                serviceSymbol.name
+                serviceSymbol.name,
+                defaultContentType
             )
             clientGenerator.render()
         }

@@ -12,7 +12,7 @@ public struct ContentTypeMiddleware<StackInput>: Middleware {
 
     public func handle<H>(context: Context,
                           input: SerializeInput<StackInput>,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
+                          next: H) -> Result<SerializeInput<StackInput>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
@@ -24,6 +24,6 @@ public struct ContentTypeMiddleware<StackInput>: Middleware {
     }
 
     public typealias MInput = SerializeInput<StackInput>
-    public typealias MOutput = SdkHttpRequestBuilder
+    public typealias MOutput = SerializeInput<StackInput>
     public typealias Context = HttpContext
 }

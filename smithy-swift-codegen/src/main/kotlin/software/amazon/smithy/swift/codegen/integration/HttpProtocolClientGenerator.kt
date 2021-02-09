@@ -33,7 +33,8 @@ open class HttpProtocolClientGenerator(
     private val writer: SwiftWriter,
     private val properties: List<ClientProperty>,
     private val serviceConfig: ServiceConfig,
-    private val httpBindingResolver: HttpBindingResolver
+    private val httpBindingResolver: HttpBindingResolver,
+    private val defaultContentType: String
 ) {
     private val serviceName: String = ctx.settings.sdkId
     private val model: Model = ctx.model
@@ -206,6 +207,7 @@ open class HttpProtocolClientGenerator(
         }
         writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
         writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<$inputShapeName>(contentType: \"${defaultContentType}\"))")
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
