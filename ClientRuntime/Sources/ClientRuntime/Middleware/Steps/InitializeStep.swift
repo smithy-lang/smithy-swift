@@ -7,7 +7,7 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public struct InitializeStep<OperationStackInput>: MiddlewareStack {
+public struct InitializeStep<OperationStackInput>: MiddlewareStack where OperationStackInput: Encodable, OperationStackInput: Reflection {
     
     public typealias Context = HttpContext
     
@@ -27,7 +27,7 @@ public struct InitializeStep<OperationStackInput>: MiddlewareStack {
 
 }
 
-public struct InitializeStepHandler<OperationStackInput>: Handler {
+public struct InitializeStepHandler<OperationStackInput>: Handler where OperationStackInput: Encodable, OperationStackInput: Reflection {
     
     public typealias Input = OperationStackInput
     

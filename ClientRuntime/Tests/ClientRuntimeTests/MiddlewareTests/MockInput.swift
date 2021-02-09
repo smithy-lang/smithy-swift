@@ -3,8 +3,4 @@
 
 @testable import ClientRuntime
 
-struct MockInput: HttpRequestBinding {
-    func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator) throws -> SdkHttpRequestBuilder {
-        return SdkHttpRequestBuilder()
-    }
-}
+struct MockInput: Encodable, Reflection {}
