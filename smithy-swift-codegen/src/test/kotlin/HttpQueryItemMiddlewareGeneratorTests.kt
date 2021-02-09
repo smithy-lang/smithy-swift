@@ -19,28 +19,30 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct QueryIdempotencyTokenAutoFillInputQueryItemMiddleware: Middleware {
-            public var id: String = "QueryIdempotencyTokenAutoFillInputQueryItem"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let token = token {
-                    let queryItem = URLQueryItem(name: "token", value: String(token))
-                    input.withQueryItem(queryItem)
+            public struct QueryIdempotencyTokenAutoFillInputQueryItemMiddleware: Middleware {
+                public let id: String = "QueryIdempotencyTokenAutoFillInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeInput<QueryIdempotencyTokenAutoFillInput>,
+                              next: H) -> Result<SerializeInput<QueryIdempotencyTokenAutoFillInput>, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let token = input.operationInput.token {
+                        let queryItem = URLQueryItem(name: "token", value: String(token))
+                        input.builder.withQueryItem(queryItem)
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SerializeInput<QueryIdempotencyTokenAutoFillInput>
+                public typealias MOutput = SerializeInput<QueryIdempotencyTokenAutoFillInput>
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -51,34 +53,36 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct TimestampInputInputQueryItemMiddleware: Middleware {
-            public var id: String = "TimestampInputInputQueryItem"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let queryTimestamp = queryTimestamp {
-                    let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
-                    input.withQueryItem(queryItem)
-                }
-                if let queryTimestampList = queryTimestampList {
-                    queryTimestampList.forEach { queryItemValue in
-                        let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
-                        input.withQueryItem(queryItem)
+            public struct TimestampInputInputQueryItemMiddleware: Middleware {
+                public let id: String = "TimestampInputInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeInput<TimestampInputInput>,
+                              next: H) -> Result<SerializeInput<TimestampInputInput>, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let queryTimestamp = input.operationInput.queryTimestamp {
+                        let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
+                        input.builder.withQueryItem(queryItem)
                     }
+                    if let queryTimestampList = input.operationInput.queryTimestampList {
+                        queryTimestampList.forEach { queryItemValue in
+                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
+                            input.builder.withQueryItem(queryItem)
+                        }
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SerializeInput<TimestampInputInput>
+                public typealias MOutput = SerializeInput<TimestampInputInput>
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -89,28 +93,30 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-        public struct SmokeTestInputQueryItemMiddleware: Middleware {
-            public var id: String = "SmokeTestInputQueryItem"
-        
-            public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) -> Result<SdkHttpRequestBuilder, Error>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context
-            {
-                if let query1 = query1 {
-                    let queryItem = URLQueryItem(name: "Query1", value: String(query1))
-                    input.withQueryItem(queryItem)
+            public struct SmokeTestInputQueryItemMiddleware: Middleware {
+                public let id: String = "SmokeTestInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeInput<SmokeTestInput>,
+                              next: H) -> Result<SerializeInput<SmokeTestInput>, Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let query1 = input.operationInput.query1 {
+                        let queryItem = URLQueryItem(name: "Query1", value: String(query1))
+                        input.builder.withQueryItem(queryItem)
+                    }
+                    return next.handle(context: context, input: input)
                 }
-                return next.handle(context: context, input: input)
+            
+                public typealias MInput = SerializeInput<SmokeTestInput>
+                public typealias MOutput = SerializeInput<SmokeTestInput>
+                public typealias Context = HttpContext
             }
-        
-            public typealias MInput = SdkHttpRequestBuilder
-            public typealias MOutput = SdkHttpRequestBuilder
-            public typealias Context = HttpContext
-        }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
