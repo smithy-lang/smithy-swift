@@ -30,8 +30,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         typealias MOutput = SerializeInput<SayHelloInput>
         
         typealias Context = HttpContext
-        
-        
     }
     
     struct SayHelloInputHeaderMiddleware: Middleware {
@@ -99,7 +97,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             case greeting
         }
     }
-    
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() {
