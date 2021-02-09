@@ -25,8 +25,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SerializeInput<SmokeTestInput>,
-                              next: H) -> Result<SerializeInput<SmokeTestInput>, Error>
+                              input: SerializeStepInput<SmokeTestInput>,
+                              next: H) -> Result<SerializeStepInput<SmokeTestInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -41,8 +41,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeInput<SmokeTestInput>
-                public typealias MOutput = SerializeInput<SmokeTestInput>
+                public typealias MInput = SerializeStepInput<SmokeTestInput>
+                public typealias MOutput = SerializeStepInput<SmokeTestInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -61,8 +61,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SerializeInput<EnumInputInput>,
-                              next: H) -> Result<SerializeInput<EnumInputInput>, Error>
+                              input: SerializeStepInput<EnumInputInput>,
+                              next: H) -> Result<SerializeStepInput<EnumInputInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -74,8 +74,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeInput<EnumInputInput>
-                public typealias MOutput = SerializeInput<EnumInputInput>
+                public typealias MInput = SerializeStepInput<EnumInputInput>
+                public typealias MOutput = SerializeStepInput<EnumInputInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -98,8 +98,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SerializeInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
-                              next: H) -> Result<SerializeInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>, Error>
+                              input: SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
+                              next: H) -> Result<SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -111,8 +111,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
-                public typealias MOutput = SerializeInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
+                public typealias MInput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
+                public typealias MOutput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -132,8 +132,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SerializeInput<TimestampInputInput>,
-                              next: H) -> Result<SerializeInput<TimestampInputInput>, Error>
+                              input: SerializeStepInput<TimestampInputInput>,
+                              next: H) -> Result<SerializeStepInput<TimestampInputInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -148,8 +148,8 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeInput<TimestampInputInput>
-                public typealias MOutput = SerializeInput<TimestampInputInput>
+                public typealias MInput = SerializeStepInput<TimestampInputInput>
+                public typealias MOutput = SerializeStepInput<TimestampInputInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
