@@ -5,7 +5,7 @@ public struct OperationStack<StackInput,
                              StackOutput: HttpResponseBinding,
                              StackError: HttpResponseBinding> {
     typealias InitializeStackStep = MiddlewareStackStep<StackInput,
-                                                        StackInput>
+                                                        SerializeStepInput<StackInput>>
     typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,
                                                        SerializeStepInput<StackInput>>
     typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,

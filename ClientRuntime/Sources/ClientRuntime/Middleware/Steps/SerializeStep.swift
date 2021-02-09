@@ -41,5 +41,5 @@ public struct SerializeStepHandler<OperationInput>: Handler {
 
 public struct SerializeStepInput<OperationInput> {
     public let operationInput: OperationInput
-    public let builder: SdkHttpRequestBuilder
+    public let builder: SdkHttpRequestBuilder = SdkHttpRequestBuilder()
 }

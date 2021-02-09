@@ -46,7 +46,7 @@ class MiddlewareStackTests: XCTestCase {
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.addDefaultOperationMiddlewares()
-        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<MockInput, Error> in
+        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
             
             return next.handle(context: context, input: input)
         }
@@ -108,4 +108,5 @@ class MiddlewareStackTests: XCTestCase {
             XCTFail(error.localizedDescription)
         }
     }
+
 }

@@ -17,7 +17,7 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
 
     open val typesToConformMiddlewareTo: List<String> = mutableListOf("Middleware")
 
-    abstract val properties: MutableMap<String, Symbol>
+    open val properties: MutableMap<String, Symbol> = mutableMapOf()
 
     fun getTypeInheritance(): String {
         val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
