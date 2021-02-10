@@ -1,13 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<StackInput>: Middleware where StackInput: Encodable, StackInput: Reflection {
+public struct ContentLengthMiddleware<OperationStackInput>: Middleware where OperationStackInput: Encodable, OperationStackInput: Reflection {
     public let id: String = "ContentLength"
     
     public init() {}
     
     public func handle<H>(context: Context,
-                          input: SerializeInput<StackInput>,
+                          input: SerializeStepInput<OperationStackInput>,
                           next: H) -> Result<SdkHttpRequestBuilder, Error>
     where H: Handler,
           Self.MInput == H.Input,
@@ -28,7 +28,7 @@ public struct ContentLengthMiddleware<StackInput>: Middleware where StackInput: 
         return next.handle(context: context, input: input)
     }
     
-    public typealias MInput = SerializeInput<StackInput>
+    public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = SdkHttpRequestBuilder
     public typealias Context = HttpContext
 }
