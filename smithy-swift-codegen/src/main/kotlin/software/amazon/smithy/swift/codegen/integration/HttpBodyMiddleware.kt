@@ -33,7 +33,8 @@ class HttpBodyMiddleware(
 
     override fun generateMiddlewareClosure() {
         renderEncodedBody()
-        super.generateMiddlewareClosure()
+        //to be handled in next pr
+        //super.generateMiddlewareClosure()
     }
 
     override fun generateInit() {
