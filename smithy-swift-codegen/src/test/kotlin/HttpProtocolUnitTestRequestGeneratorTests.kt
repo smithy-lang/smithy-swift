@@ -178,7 +178,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             var operationStack = MockRequestOperationStack<EmptyInputAndEmptyOutputInput>(id: "RestJsonEmptyInputAndEmptyOutput")
             operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<EmptyInputAndEmptyOutputInput>(contentType: "application/json"))
             let actual = try operationStack.handleMiddleware(context: context, input: input).get()
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
@@ -223,6 +222,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput>(contentType: "application/json"))
             let actual = try operationStack.handleMiddleware(context: context, input: input).get()
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
@@ -271,6 +271,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<StreamingTraitsInput>(contentType: "application/octet-stream"))
             let actual = try operationStack.handleMiddleware(context: context, input: input).get()
             assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
