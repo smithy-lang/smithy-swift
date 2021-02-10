@@ -101,6 +101,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
                 if (hasHttpBody) {
                     writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
+                    writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<${inputSymbol.name}>())")
                 }
 
                 if (test.headers.keys.contains("Content-Type")) {

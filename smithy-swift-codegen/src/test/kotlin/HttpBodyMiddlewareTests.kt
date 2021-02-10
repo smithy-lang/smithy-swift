@@ -42,7 +42,6 @@ class HttpBodyMiddlewareTests {
                             let encoder = context.getEncoder()
                             let data = try encoder.encode(input.operationInput)
                             let body = HttpBody.data(data)
-                            input.builder.withHeader(name: "Content-Length", value: String(data.count))
                             input.builder.withBody(body)
                         }
                     } catch let err {
@@ -81,7 +80,6 @@ class HttpBodyMiddlewareTests {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1.data(using: .utf8)
                         let body = HttpBody.data(data)
-                        input.builder.withHeader(name: "Content-Length", value: String(data.count))
                         input.builder.withBody(body)
                     }
                     return next.handle(context: context, input: input)
@@ -117,7 +115,6 @@ class HttpBodyMiddlewareTests {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1
                         let body = HttpBody.data(data)
-                        input.builder.withHeader(name: "Content-Length", value: String(data.count))
                         input.builder.withBody(body)
                     }
                     return next.handle(context: context, input: input)
@@ -153,7 +150,6 @@ class HttpBodyMiddlewareTests {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1
                         let body = HttpBody.data(data)
-                        input.builder.withHeader(name: "Content-Length", value: String(data.count))
                         input.builder.withBody(body)
                     }
                     return next.handle(context: context, input: input)
@@ -191,7 +187,6 @@ class HttpBodyMiddlewareTests {
                             let encoder = context.getEncoder()
                             let data = try encoder.encode(payload1)
                             let body = HttpBody.data(data)
-                            input.builder.withHeader(name: "Content-Length", value: String(data.count))
                             input.builder.withBody(body)
                         } catch let err {
                             return .failure(err)
