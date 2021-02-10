@@ -10,28 +10,70 @@ import XCTest
 class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
     
-    struct SayHelloInput: Encodable, HttpRequestBinding {
-        func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
-
+    struct SayHelloInputQueryItemMiddleware: Middleware {
+        var id: String = "SayHelloInputQueryItemMiddleware"
+        
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
-            if let requiredQuery = requiredQuery {
+            if let requiredQuery = input.operationInput.requiredQuery {
                 queryItem = URLQueryItem(name: "RequiredQuery", value: String(requiredQuery))
                 queryItems.append(queryItem)
             }
             
+            input.builder.withQueryItems(queryItems)
+            return next.handle(context: context, input: input)
+        }
+        
+        typealias MInput = SerializeStepInput<SayHelloInput>
+        
+        typealias MOutput = SerializeStepInput<SayHelloInput>
+        
+        typealias Context = HttpContext
+    }
+    
+    struct SayHelloInputHeaderMiddleware: Middleware {
+        var id: String = "SayHelloInputHeaderMiddleware"
+        
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
             var headers = Headers()
             headers.add(name: "Content-Type", value: "application/json")
-            if let requiredHeader = requiredHeader {
+            if let requiredHeader = input.operationInput.requiredHeader {
                 headers.add(name: "RequiredHeader", value: requiredHeader)
             }
-            let body = HttpBody.data(try? encoder.encode(self))
-            let builder = SdkHttpRequestBuilder()
-                .withBody(body)
-                .withHeaders(headers)
-                .withQueryItems(queryItems)
-            return builder
+            input.builder.withHeaders(headers)
+            return next.handle(context: context, input: input)
         }
+        
+        typealias MInput = SerializeStepInput<SayHelloInput>
+        
+        typealias MOutput = SerializeStepInput<SayHelloInput>
+        
+        typealias Context = HttpContext
+    }
+    
+    struct SayHelloInputBodyMiddleware: Middleware {
+        var id: String = "SayHelloInputBodyMiddleware"
+        
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
+            do {
+                let encoder = context.getEncoder()
+                let body = HttpBody.data(try encoder.encode(input.operationInput))
+                input.builder.withBody(body)
+                return next.handle(context: context, input: input)
+            } catch let err {
+                return .failure(err)
+            }
+        }
+        
+        typealias MInput = SerializeStepInput<SayHelloInput>
+        
+        typealias MOutput = SerializeStepInput<SayHelloInput>
+        
+        typealias Context = HttpContext
+    }
+    
+    struct SayHelloInput: Encodable, Reflection {
         
         let greeting: String?
         let forbiddenQuery: String?
@@ -72,8 +114,14 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
         do {
-        let actualBuilder = try input.buildHttpRequest(encoder: JSONEncoder())
-        let actual = actualBuilder.build()
+        var operationStack = MockRequestOperationStack<SayHelloInput>(id: "SayHelloInputRequest")
+        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
+        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
+  
+        let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
+        let actual = try! operationStack.handleMiddleware(context: context, input: input).get()
+        
         let forbiddenQueryParams = ["ForbiddenQuery"]
         // assert forbidden query params do not exist
         for forbiddenQueryParam in forbiddenQueryParams {
