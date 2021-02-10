@@ -18,10 +18,7 @@ class HttpBodyMiddleware(
     private val requestBindings: List<HttpBindingDescriptor>
 ) : Middleware(writer, symbol) {
 
-    private val bindingIndex = HttpBindingIndex.of(ctx.model)
     override val typeName = "${symbol.name}BodyMiddleware"
-    private val inputTypeMemberName = symbol.name.decapitalize()
-
     override val inputType = Symbol
         .builder()
         .name("SerializeInput<${symbol.name}>")
@@ -46,26 +43,29 @@ class HttpBodyMiddleware(
     private fun renderEncodedBody() {
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            renderSerializeExplicitPayload(httpPayload)
+            renderExplicitPayload(httpPayload)
         } else {
-            writer.openBlock("do {", "} catch let err {") {
-                writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
-                    writer.write("let encoder = context.getEncoder()")
-                    writer.write("let data = try encoder.encode(input.operationInput)")
-                    writer.write("let body = HttpBody.data(data)")
-                    writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
-                    writer.write("input.builder.withBody(body)")
-                }
-            }
-            writer.indent()
-            writer.write("return .failure(err)")
-            writer.dedent()
-            writer.write("}")
+            renderSerializablePayload()
         }
     }
 
-    private fun renderSerializeExplicitPayload(binding: HttpBindingDescriptor) {
-        // explicit payload member as the sole payload
+    private fun renderSerializablePayload() {
+        writer.openBlock("do {", "} catch let err {") {
+            writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
+                writer.write("let encoder = context.getEncoder()")
+                writer.write("let data = try encoder.encode(input.operationInput)")
+                writer.write("let body = HttpBody.data(data)")
+                writer.write("input.builder.withHeader(name: \"Content-Length\", value: String(data.count))")
+                writer.write("input.builder.withBody(body)")
+            }
+        }
+        writer.indent()
+        writer.write("return .failure(err)")
+        writer.dedent()
+        writer.write("}")
+    }
+
+    private fun renderExplicitPayload(binding: HttpBindingDescriptor) {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
