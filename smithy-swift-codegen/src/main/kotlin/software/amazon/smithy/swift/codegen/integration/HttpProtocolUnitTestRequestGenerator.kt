@@ -96,9 +96,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val inputSymbol = symbolProvider.toSymbol(inputShape)
                 val operationStack = "operationStack"
                 writer.write("var $operationStack = MockRequestOperationStack<$inputSymbol>(id: \"${test.id}\")")
-                writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware(${inputSymbol.name.decapitalize()}: input))")
+                writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
+                writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
                 if (hasIdempotencyTokenTrait) {
-                    IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack).renderIdempotencyMiddleware()
+                    IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, inputSymbol.name).renderIdempotencyMiddleware()
                 }
                 writer.write("let actual = try operationStack.handleMiddleware(context: context, input: input).get()")
 

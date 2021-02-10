@@ -193,18 +193,19 @@ open class HttpProtocolClientGenerator(
     protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
+        val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
         val hasIdempotencyTokenTrait = idempotentMember != null
         if (hasIdempotencyTokenTrait) {
             IdempotencyTokenMiddlewareGenerator(
                 writer,
                 idempotentMember!!.memberName,
-                operationStackName
+                operationStackName,
+                inputShapeName
             ).renderIdempotencyMiddleware()
         }
-        val opIndex = OperationIndex.of(model)
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
-        writer.write("$operationStackName.buildStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware(${inputShapeName.decapitalize()}: input))")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {

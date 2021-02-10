@@ -48,6 +48,7 @@ class MiddlewareGenerator(
             writer.write("Self.MOutput == H.Output,")
             writer.write("Self.Context == H.Context").openBlock("{", "}") {
                 middleware.generateMiddlewareClosure()
+                middleware.renderReturn()
             }
             writer.write("")
             writer.write("public typealias MInput = ${middleware.inputType.name}")

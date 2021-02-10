@@ -17,7 +17,7 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
 
     open val typesToConformMiddlewareTo: List<String> = mutableListOf("Middleware")
 
-    abstract val properties: MutableMap<String, Symbol>
+    open val properties: MutableMap<String, Symbol> = mutableMapOf()
 
     fun getTypeInheritance(): String {
         val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
@@ -26,7 +26,9 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
 
     abstract fun generateInit()
 
-    open fun generateMiddlewareClosure() {
+    open fun renderReturn() {
         writer.write("return next.handle(context: context, input: input)")
     }
+
+    abstract fun generateMiddlewareClosure()
 }

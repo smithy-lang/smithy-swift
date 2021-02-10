@@ -7,34 +7,39 @@
 /// Converts Input Parameters into a Request, and returns the result or error.
 ///
 /// Receives result or error from Build step.
-public struct SerializeStep: MiddlewareStack {
+public struct SerializeStep<OperationInput>: MiddlewareStack {
     public typealias Context = HttpContext
     
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder,
-                                               SdkHttpRequestBuilder,
-                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder,
-                                                                           SdkHttpRequestBuilder,
+    public var orderedMiddleware: OrderedGroup<SerializeStepInput<OperationInput>,
+                                               SerializeStepInput<OperationInput>,
+                                               HttpContext> = OrderedGroup<SerializeStepInput<OperationInput>,
+                                                                           SerializeStepInput<OperationInput>,
                                                                            HttpContext>()
     
     public var id: String = "SerializeStep"
     
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = SerializeStepInput<OperationInput>
     
-    public typealias MOutput = SdkHttpRequestBuilder
+    public typealias MOutput = SerializeStepInput<OperationInput>
     
     public init() {}
 }
 
-public struct SerializeStepHandler: Handler {
+public struct SerializeStepHandler<OperationInput>: Handler {
     
-    public typealias Input = SdkHttpRequestBuilder
+    public typealias Input = SerializeStepInput<OperationInput>
     
-    public typealias Output = SdkHttpRequestBuilder
+    public typealias Output = SerializeStepInput<OperationInput>
     
     public init() {}
     
-    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<SerializeStepInput<OperationInput>, Error> {
         // this step does not change types from input and output so just return the input as the result
         return .success(input)
     }
+}
+
+public struct SerializeStepInput<OperationInput> {
+    public let operationInput: OperationInput
+    public let builder: SdkHttpRequestBuilder = SdkHttpRequestBuilder()
 }

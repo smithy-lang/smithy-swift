@@ -5,7 +5,7 @@
 
 struct MockSerializeMiddleware: Middleware {
     typealias Context = HttpContext
-    typealias MOutput = SdkHttpRequestBuilder
+    typealias MOutput = SerializeStepInput<MockInput>
     
     let id: String
     let headerName: String
@@ -21,7 +21,7 @@ struct MockSerializeMiddleware: Middleware {
         let path = context.getPath()
         let method = context.getMethod()
         let host = "httpbin.org"
-        input.withHost(host)
+        input.builder.withHost(host)
             .withHeader(name: "Content-type", value: "application/json")
             .withHeader(name: headerName, value: headerValue)
             .withHeader(name: "Host", value: host)
@@ -31,5 +31,5 @@ struct MockSerializeMiddleware: Middleware {
         return next.handle(context: context, input: input)
     }
     
-    typealias MInput = SdkHttpRequestBuilder
+    typealias MInput = SerializeStepInput<MockInput>
 }

@@ -126,10 +126,6 @@ class HttpBindingProtocolGeneratorTests {
                 extension SmokeTestInput: HttpRequestBinding, Reflection {
                     public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                         let builder = SdkHttpRequestBuilder()
-                        if let query1 = query1 {
-                            let queryItem = URLQueryItem(name: "Query1", value: String(query1))
-                            builder.withQueryItem(queryItem)
-                        }
                         builder.withHeader(name: "Content-Type", value: "application/json")
                         if try !self.allPropertiesAreNull() {
                             let data = try encoder.encode(self)
@@ -291,16 +287,6 @@ class HttpBindingProtocolGeneratorTests {
             extension TimestampInputInput: HttpRequestBinding, Reflection {
                 public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
                     let builder = SdkHttpRequestBuilder()
-                    if let queryTimestamp = queryTimestamp {
-                        let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
-                        builder.withQueryItem(queryItem)
-                    }
-                    if let queryTimestampList = queryTimestampList {
-                        queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
-                            builder.withQueryItem(queryItem)
-                        }
-                    }
                     builder.withHeader(name: "Content-Type", value: "application/json")
                     if try !self.allPropertiesAreNull() {
                         let data = try encoder.encode(self)
@@ -386,31 +372,6 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
         }
     }
 }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it builds request with idempotency token trait for httpQuery`() {
-        val contents =
-            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+HttpRequestBinding.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-                extension QueryIdempotencyTokenAutoFillInput: HttpRequestBinding, Reflection {
-                    public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {
-                        let builder = SdkHttpRequestBuilder()
-                        if let token = token {
-                            let queryItem = URLQueryItem(name: "token", value: String(token))
-                            builder.withQueryItem(queryItem)
-                        }
-                        else {
-                            let queryItem = URLQueryItem(name: "token", value: idempotencyTokenGenerator.generateToken())
-                            builder.withQueryItem(queryItem)
-                        }
-                        return builder
-                    }
-                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

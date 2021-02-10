@@ -22,31 +22,27 @@ class HttpHeaderMiddlewareGeneratorTests {
             public struct SmokeTestInputHeadersMiddleware: Middleware {
                 public let id: String = "SmokeTestInputHeadersMiddleware"
             
-                let smokeTestInput: SmokeTestInput
-            
-                public init(smokeTestInput: SmokeTestInput) {
-                    self.smokeTestInput = smokeTestInput
-                }
+                public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SdkHttpRequestBuilder,
-                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                              input: SerializeStepInput<SmokeTestInput>,
+                              next: H) -> Result<SerializeStepInput<SmokeTestInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
-                    if let header1 = smokeTestInput.header1 {
-                        input.withHeader(name: "X-Header1", value: String(header1))
+                    if let header1 = input.operationInput.header1 {
+                        input.builder.withHeader(name: "X-Header1", value: String(header1))
                     }
-                    if let header2 = smokeTestInput.header2 {
-                        input.withHeader(name: "X-Header2", value: String(header2))
+                    if let header2 = input.operationInput.header2 {
+                        input.builder.withHeader(name: "X-Header2", value: String(header2))
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SdkHttpRequestBuilder
-                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias MInput = SerializeStepInput<SmokeTestInput>
+                public typealias MOutput = SerializeStepInput<SmokeTestInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -62,28 +58,24 @@ class HttpHeaderMiddlewareGeneratorTests {
             public struct EnumInputInputHeadersMiddleware: Middleware {
                 public let id: String = "EnumInputInputHeadersMiddleware"
             
-                let enumInputInput: EnumInputInput
-            
-                public init(enumInputInput: EnumInputInput) {
-                    self.enumInputInput = enumInputInput
-                }
+                public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SdkHttpRequestBuilder,
-                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                              input: SerializeStepInput<EnumInputInput>,
+                              next: H) -> Result<SerializeStepInput<EnumInputInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
-                    if let enumHeader = enumInputInput.enumHeader {
-                        input.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
+                    if let enumHeader = input.operationInput.enumHeader {
+                        input.builder.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SdkHttpRequestBuilder
-                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias MInput = SerializeStepInput<EnumInputInput>
+                public typealias MOutput = SerializeStepInput<EnumInputInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -103,28 +95,24 @@ class HttpHeaderMiddlewareGeneratorTests {
             public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: Middleware {
                 public let id: String = "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware"
             
-                let idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput
-            
-                public init(idempotencyTokenWithoutHttpPayloadTraitOnTokenInput: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) {
-                    self.idempotencyTokenWithoutHttpPayloadTraitOnTokenInput = idempotencyTokenWithoutHttpPayloadTraitOnTokenInput
-                }
+                public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SdkHttpRequestBuilder,
-                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                              input: SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
+                              next: H) -> Result<SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
-                    if let token = idempotencyTokenWithoutHttpPayloadTraitOnTokenInput.token {
-                        input.withHeader(name: "token", value: String(token))
+                    if let token = input.operationInput.token {
+                        input.builder.withHeader(name: "token", value: String(token))
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SdkHttpRequestBuilder
-                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias MInput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
+                public typealias MOutput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -141,31 +129,27 @@ class HttpHeaderMiddlewareGeneratorTests {
             public struct TimestampInputInputHeadersMiddleware: Middleware {
                 public let id: String = "TimestampInputInputHeadersMiddleware"
             
-                let timestampInputInput: TimestampInputInput
-            
-                public init(timestampInputInput: TimestampInputInput) {
-                    self.timestampInputInput = timestampInputInput
-                }
+                public init() {}
             
                 public func handle<H>(context: Context,
-                              input: SdkHttpRequestBuilder,
-                              next: H) -> Result<SdkHttpRequestBuilder, Error>
+                              input: SerializeStepInput<TimestampInputInput>,
+                              next: H) -> Result<SerializeStepInput<TimestampInputInput>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
-                    if let headerEpoch = timestampInputInput.headerEpoch {
-                        input.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
+                    if let headerEpoch = input.operationInput.headerEpoch {
+                        input.builder.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
                     }
-                    if let headerHttpDate = timestampInputInput.headerHttpDate {
-                        input.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
+                    if let headerHttpDate = input.operationInput.headerHttpDate {
+                        input.builder.withHeader(name: "X-Date", value: String(headerHttpDate.rfc5322()))
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SdkHttpRequestBuilder
-                public typealias MOutput = SdkHttpRequestBuilder
+                public typealias MInput = SerializeStepInput<TimestampInputInput>
+                public typealias MOutput = SerializeStepInput<TimestampInputInput>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
