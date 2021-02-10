@@ -13,7 +13,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     struct SayHelloInputQueryItemMiddleware: Middleware {
         var id: String = "SayHelloInputQueryItemMiddleware"
         
-        func handle<H>(context: HttpContext, input: SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
             var queryItems: [URLQueryItem] = [URLQueryItem]()
             var queryItem: URLQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
@@ -25,9 +25,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             return next.handle(context: context, input: input)
         }
         
-        typealias MInput = SerializeInput<SayHelloInput>
+        typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = SerializeInput<SayHelloInput>
+        typealias MOutput = SerializeStepInput<SayHelloInput>
         
         typealias Context = HttpContext
     }
@@ -35,7 +35,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     struct SayHelloInputHeaderMiddleware: Middleware {
         var id: String = "SayHelloInputHeaderMiddleware"
         
-        func handle<H>(context: HttpContext, input: SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
             var headers = Headers()
             headers.add(name: "Content-Type", value: "application/json")
             if let requiredHeader = input.operationInput.requiredHeader {
@@ -45,9 +45,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             return next.handle(context: context, input: input)
         }
         
-        typealias MInput = SerializeInput<SayHelloInput>
+        typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = SerializeInput<SayHelloInput>
+        typealias MOutput = SerializeStepInput<SayHelloInput>
         
         typealias Context = HttpContext
     }
@@ -55,7 +55,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     struct SayHelloInputBodyMiddleware: Middleware {
         var id: String = "SayHelloInputBodyMiddleware"
         
-        func handle<H>(context: HttpContext, input: SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
+        func handle<H>(context: HttpContext, input: SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, next: H) -> Result<SerializeStepInput<HttpRequestTestBaseTests.SayHelloInput>, Error> where H : Handler, Self.Context == H.Context, Self.MInput == H.Input, Self.MOutput == H.Output {
             do {
                 let encoder = context.getEncoder()
                 let body = HttpBody.data(try encoder.encode(input.operationInput))
@@ -66,9 +66,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             }
         }
         
-        typealias MInput = SerializeInput<SayHelloInput>
+        typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = SerializeInput<SayHelloInput>
+        typealias MOutput = SerializeStepInput<SayHelloInput>
         
         typealias Context = HttpContext
     }
