@@ -80,10 +80,12 @@ class HttpQueryItemMiddleware(
         writer.write("input.builder.withQueryItem(queryItem)")
     }
 
-    private fun renderListOrSet(memberTarget: CollectionShape,
-                                bindingIndex: HttpBindingIndex,
-                                memberName: String,
-                                paramName: String) {
+    private fun renderListOrSet(
+        memberTarget: CollectionShape,
+        bindingIndex: HttpBindingIndex,
+        memberName: String,
+        paramName: String
+    ) {
         var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
             "queryItemValue",
