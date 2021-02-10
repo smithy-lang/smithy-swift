@@ -2,32 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
 
-public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
+public struct MockRequestOperationStack<OperationStackInput: HttpRequestBinding> {
     
-    typealias InitializeStackStep = MiddlewareStackStep<StackInput,
-                                                        SerializeStepInput<StackInput>>
-    typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,
-                                                       SerializeStepInput<StackInput>>
-    typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<StackInput>,
+    typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
+                                                        SerializeStepInput<OperationStackInput>>
+    typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
+                                                       SerializeStepInput<OperationStackInput>>
+    typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
                                                    SdkHttpRequestBuilder>
     typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
                                                       SdkHttpRequest>
     
     public var id: String
-    public var initializeStep: InitializeStep<StackInput>
-    public var buildStep: BuildStep<StackInput>
-    public var serializeStep: SerializeStep<StackInput>
+    public var initializeStep: InitializeStep<OperationStackInput>
+    public var buildStep: BuildStep<OperationStackInput>
+    public var serializeStep: SerializeStep<OperationStackInput>
     public var finalizeStep: FinalizeStep
     
     public init(id: String) {
         self.id = id
-        self.initializeStep = InitializeStep<StackInput>()
-        self.serializeStep = SerializeStep<StackInput>()
-        self.buildStep = BuildStep<StackInput>()
+        self.initializeStep = InitializeStep<OperationStackInput>()
+        self.serializeStep = SerializeStep<OperationStackInput>()
+        self.buildStep = BuildStep<OperationStackInput>()
         self.finalizeStep = FinalizeStep()
     }
     
-    public mutating func handleMiddleware(context: HttpContext, input: StackInput) -> Result<SdkHttpRequest, Error> {
+    public mutating func handleMiddleware(context: HttpContext, input: OperationStackInput) -> Result<SdkHttpRequest, Error> {
 
         let initializeStackStep = InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
                                                       handler: InitializeStepHandler().eraseToAnyHandler())
@@ -52,7 +52,7 @@ public struct MockRequestOperationStack<StackInput: HttpRequestBinding> {
                                          HttpContext>(next: mockHandler.eraseToAnyHandler())
         
         // compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
-        let handler = OperationStack<StackInput, MockOutput, MockError>.compose(next: wrappedHandler, with: steps)
+        let handler = OperationStack<OperationStackInput, MockOutput, MockError>.compose(next: wrappedHandler, with: steps)
         
         // kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)

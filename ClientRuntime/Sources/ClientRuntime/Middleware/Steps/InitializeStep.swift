@@ -7,36 +7,36 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public struct InitializeStep<StackInput>: MiddlewareStack {
+public struct InitializeStep<OperationStackInput>: MiddlewareStack {
     
     public typealias Context = HttpContext
     
-    public var orderedMiddleware: OrderedGroup<StackInput,
-                                               SerializeStepInput<StackInput>,
-                                               HttpContext> = OrderedGroup<StackInput,
-                                                                           SerializeStepInput<StackInput>,
+    public var orderedMiddleware: OrderedGroup<OperationStackInput,
+                                               SerializeStepInput<OperationStackInput>,
+                                               HttpContext> = OrderedGroup<OperationStackInput,
+                                                                           SerializeStepInput<OperationStackInput>,
                                                                            HttpContext>()
     
     public var id: String = "InitializeStep"
     
-    public typealias MInput = StackInput
+    public typealias MInput = OperationStackInput
     
-    public typealias MOutput = SerializeStepInput<StackInput>
+    public typealias MOutput = SerializeStepInput<OperationStackInput>
     
     public init() {}
 
 }
 
-public struct InitializeStepHandler<StackInput>: Handler {
+public struct InitializeStepHandler<OperationStackInput>: Handler {
     
-    public typealias Input = StackInput
+    public typealias Input = OperationStackInput
     
-    public typealias Output = SerializeStepInput<StackInput>
+    public typealias Output = SerializeStepInput<OperationStackInput>
     
     public init() {}
     
-    public func handle(context: HttpContext, input: Input) -> Result<SerializeStepInput<StackInput>, Error> {
-        let serializeInput = SerializeStepInput<StackInput>(operationInput: input)
+    public func handle(context: HttpContext, input: Input) -> Result<SerializeStepInput<OperationStackInput>, Error> {
+        let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
         return .success(serializeInput)
     }
 }
