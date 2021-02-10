@@ -3,7 +3,7 @@
 
 public struct OperationStack<OperationStackInput,
                              OperationStackOutput: HttpResponseBinding,
-                             OperationStackError: HttpResponseBinding> {
+                             OperationStackError: HttpResponseBinding> where OperationStackInput: Encodable, OperationStackInput: Reflection {
     typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
                                                         SerializeStepInput<OperationStackInput>>
     typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,

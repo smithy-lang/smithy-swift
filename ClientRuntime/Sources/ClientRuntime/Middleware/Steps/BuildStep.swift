@@ -8,28 +8,28 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public struct BuildStep<OperationInput>: MiddlewareStack {
+public struct BuildStep<OperationStackInput>: MiddlewareStack where OperationStackInput: Encodable, OperationStackInput: Reflection {
     
     public typealias Context = HttpContext
 
-    public var orderedMiddleware: OrderedGroup<SerializeStepInput<OperationInput>,
+    public var orderedMiddleware: OrderedGroup<SerializeStepInput<OperationStackInput>,
                                                SdkHttpRequestBuilder,
-                                               HttpContext> = OrderedGroup<SerializeStepInput<OperationInput>,
+                                               HttpContext> = OrderedGroup<SerializeStepInput<OperationStackInput>,
                                                                            SdkHttpRequestBuilder,
                                                                            HttpContext>()
     
     public var id: String = "BuildStep"
     
-    public typealias MInput = SerializeStepInput<OperationInput>
+    public typealias MInput = SerializeStepInput<OperationStackInput>
     
     public typealias MOutput = SdkHttpRequestBuilder
     
     public init() {}
 }
 
-public struct BuildStepHandler<OperationInput>: Handler {
-    
-    public typealias Input = SerializeStepInput<OperationInput>
+public struct BuildStepHandler<OperationStackInput>: Handler where OperationStackInput: Encodable, OperationStackInput: Reflection {
+
+    public typealias Input = SerializeStepInput<OperationStackInput>
     
     public typealias Output = SdkHttpRequestBuilder
     

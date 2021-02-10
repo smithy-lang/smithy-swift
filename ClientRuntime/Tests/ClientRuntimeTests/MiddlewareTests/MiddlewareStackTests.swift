@@ -108,5 +108,4 @@ class MiddlewareStackTests: XCTestCase {
             XCTFail(error.localizedDescription)
         }
     }
-
 }

@@ -44,7 +44,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SmokeTestInput: Encodable {
+            extension SmokeTestInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
@@ -74,7 +74,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Nested4: Encodable {
+            extension Nested4: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case intList
                     case intMap
@@ -117,7 +117,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension TimestampInputInput: Encodable {
+            extension TimestampInputInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case dateTime
                     case epochSeconds
@@ -158,7 +158,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MapInputInput: Encodable {
+            extension MapInputInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case blobMap
                     case dateMap
@@ -211,7 +211,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension EnumInputInput: Encodable {
+            extension EnumInputInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case nestedWithEnum
                 }
@@ -230,7 +230,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents2 =
             """
-            extension NestedEnum: Encodable {
+            extension NestedEnum: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case myEnum
                 }
@@ -256,7 +256,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested1: Encodable {
+            extension RecursiveShapesInputOutputNested1: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case foo
                     case nested
@@ -286,7 +286,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested2: Encodable {
+            extension RecursiveShapesInputOutputNested2: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case bar
                     case recursiveMember
@@ -312,7 +312,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonListsInput: Encodable {
+extension JsonListsInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case booleanList
         case integerList
@@ -384,7 +384,7 @@ extension JsonListsInput: Encodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonMapsInput: Encodable {
+extension JsonMapsInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case denseBooleanMap
         case denseNumberMap
@@ -458,7 +458,7 @@ extension JsonMapsInput: Encodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension PrimitiveTypesInput: Encodable {
+extension PrimitiveTypesInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case booleanVal
         case byteVal
@@ -546,7 +546,7 @@ extension PrimitiveTypesInput: Encodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
+extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case bodyIsToken
     }
@@ -577,7 +577,7 @@ extension IdempotencyTokenWithHttpPayloadTraitOnTokenInput: Encodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
+extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case documentValue
         case stringValue
@@ -620,7 +620,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput: Encodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: Encodable {
+extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: Encodable, Reflection {
     private enum CodingKeys: String, CodingKey {
         case body
     }

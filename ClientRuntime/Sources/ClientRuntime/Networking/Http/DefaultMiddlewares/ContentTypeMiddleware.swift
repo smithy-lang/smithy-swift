@@ -1,7 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentTypeMiddleware<OperationStackInput>: Middleware {
+public struct ContentTypeMiddleware<OperationStackInput>: Middleware where OperationStackInput: Encodable, OperationStackInput: Reflection {
+
     public let id: String = "ContentType"
 
     let contentType: String
