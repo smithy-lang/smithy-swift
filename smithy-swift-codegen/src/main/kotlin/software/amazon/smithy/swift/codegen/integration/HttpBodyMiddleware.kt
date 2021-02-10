@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -33,8 +32,8 @@ class HttpBodyMiddleware(
 
     override fun generateMiddlewareClosure() {
         renderEncodedBody()
-        //to be handled in next pr
-        //super.generateMiddlewareClosure()
+        // to be handled in next pr
+        // super.generateMiddlewareClosure()
     }
 
     override fun generateInit() {

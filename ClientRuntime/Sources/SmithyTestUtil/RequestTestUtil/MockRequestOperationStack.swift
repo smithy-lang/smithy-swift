@@ -3,7 +3,6 @@
 import ClientRuntime
 
 public struct MockRequestOperationStack<OperationStackInput> where OperationStackInput: Encodable, OperationStackInput: Reflection {
-
     
     typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
                                                         SerializeStepInput<OperationStackInput>>

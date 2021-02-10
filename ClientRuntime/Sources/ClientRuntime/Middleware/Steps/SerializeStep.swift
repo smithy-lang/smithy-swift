@@ -25,7 +25,6 @@ public struct SerializeStep<OperationStackInput>: MiddlewareStack where Operatio
 }
 
 public struct SerializeStepHandler<OperationStackInput>: Handler where OperationStackInput: Encodable, OperationStackInput: Reflection {
-    
 
     public typealias Input = SerializeStepInput<OperationStackInput>
     
