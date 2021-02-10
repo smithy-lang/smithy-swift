@@ -202,6 +202,9 @@ open class HttpProtocolClientGenerator(
                 operationStackName
             ).renderIdempotencyMiddleware()
         }
+        val opIndex = OperationIndex.of(model)
+        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
+        writer.write("$operationStackName.buildStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware(${inputShapeName.decapitalize()}: input))")
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
