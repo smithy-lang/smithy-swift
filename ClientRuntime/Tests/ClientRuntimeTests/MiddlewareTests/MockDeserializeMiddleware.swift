@@ -5,13 +5,24 @@
 
 struct MockDeserializeMiddleware<Output: HttpResponseBinding,
                                  OutputError: HttpResponseBinding>: Middleware where OutputError: Error{
+    typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Void
     var id: String
+    let callback: MockDeserializeMiddlewareCallback?
+
+    init(id: String, callback: MockDeserializeMiddlewareCallback? = nil) {
+        self.id = id
+        self.callback = callback
+    }
     
     func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<Output, OutputError>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
+        
+        if let callback = self.callback {
+            callback(context, input)
+        }
 
         let response = next.handle(context: context, input: input)
         do {
