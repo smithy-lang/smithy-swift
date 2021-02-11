@@ -3,9 +3,8 @@
 
 import XCTest
 @testable import ClientRuntime
-
+@testable import SmithyTestUtil
 class MiddlewareStackTests: XCTestCase {
-
     func testMiddlewareStackSuccessInterceptAfter() {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)

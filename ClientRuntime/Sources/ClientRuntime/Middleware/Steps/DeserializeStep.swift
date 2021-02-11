@@ -31,7 +31,7 @@ public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResp
 
 // create a special output for this last step to link this step with the final handler and properly return the result
 public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
-    var httpResponse: HttpResponse?
-    var output: Output?
-    var error: OutputError?
+    public var httpResponse: HttpResponse?
+    public var output: Output?
+    public var error: OutputError?
 }
