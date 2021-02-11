@@ -28,14 +28,14 @@ class OperationStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
-        let mockInitializeStackStep = constructMockInitializeStackStep({ context, input in
+        let mockInitializeStackStep = constructMockInitializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 1, expectation: expectInitialize)
             return .success("not used")
-        })
-        let mockSerializeStackStep = constructMockSerializeStackStep({ context, input in
+        }
+        let mockSerializeStackStep = constructMockSerializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 2, expectation: expectSerialize)
             return .success("not used")
-        }, interceptCallback: {
+        } interceptCallback: {
             var step = SerializeStep<MockInput>()
             step.intercept(position: .before,
                            middleware: MockSerializeMiddleware(
@@ -46,19 +46,19 @@ class OperationStackTests: XCTestCase {
                                 currExpectCount = self.checkAndFulfill(currExpectCount, 3, expectation: expectSerializeMiddleware)
                             }))
             return step
-        })
-        let mockBuildStackStep = constructMockBuildStackStep({ context, input in
+        }
+        let mockBuildStackStep = constructMockBuildStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 4, expectation: expectBuild)
             return .success("not used")
-        })
-        let mockFinalizeStackStep = constructMockFinalizeStackStep({ context, input in
+        }
+        let mockFinalizeStackStep = constructMockFinalizeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 5, expectation: expectFinalize)
             return .success("not used")
-        })
-        let mockDeserializeStackStep = constructMockDeserializeStackStep({ context, input in
+        }
+        let mockDeserializeStackStep = constructMockDeserializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 6, expectation: expectDeserialize)
             return .success("not used")
-        }, interceptCallback: {
+        } interceptCallback: {
             var step = DeserializeStep<MockOutput, MockMiddlewareError>()
             step.intercept(position: .after,
                            middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
@@ -67,7 +67,7 @@ class OperationStackTests: XCTestCase {
                                 currExpectCount = self.checkAndFulfill(currExpectCount, 7, expectation: expectDeserializeMiddleware)
                             }))
             return step
-        })
+        }
         let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation",
                                                                                initializeStackStep: mockInitializeStackStep,
                                                                                serializeStackStep: mockSerializeStackStep,
@@ -77,13 +77,13 @@ class OperationStackTests: XCTestCase {
 
         let result = stack.handleMiddleware(context: builtContext,
                                             input: MockInput(),
-                                            next:MockHandler(handleCallback: { (context, request) in
+                                            next:MockHandler(){ (context, request) in
                                                 currExpectCount = self.checkAndFulfill(currExpectCount, 8, expectation: expectHandler)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
                                                 return .success(output)
-                                            }))
+                                            })
 
         wait(for: [expectInitialize,
                    expectSerialize,

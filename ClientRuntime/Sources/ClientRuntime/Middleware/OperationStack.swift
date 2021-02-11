@@ -4,16 +4,16 @@
 public struct OperationStack<OperationStackInput,
                              OperationStackOutput: HttpResponseBinding,
                              OperationStackError: HttpResponseBinding> where OperationStackInput: Encodable, OperationStackInput: Reflection {
-    typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
-                                                        SerializeStepInput<OperationStackInput>>
-    typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
-                                                       SerializeStepInput<OperationStackInput>>
-    typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
-                                                   SdkHttpRequestBuilder>
-    typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                      SdkHttpRequest>
-    typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
-                                                         DeserializeOutput<OperationStackOutput, OperationStackError>>
+    public typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
+                                                               SerializeStepInput<OperationStackInput>>
+    public typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
+                                                              SerializeStepInput<OperationStackInput>>
+    public typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
+                                                          SdkHttpRequestBuilder>
+    public typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                             SdkHttpRequest>
+    public typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
+                                                                DeserializeOutput<OperationStackOutput, OperationStackError>>
     
     /// returns the unique id for the operation stack as middleware
     public var id: String
@@ -23,19 +23,18 @@ public struct OperationStack<OperationStackInput,
     public var finalizeStep: FinalizeStep
     public var deserializeStep: DeserializeStep<OperationStackOutput, OperationStackError>
     
-    private let initializeStackStep: MiddlewareStackStep<OperationStackInput, SerializeStepInput<OperationStackInput>>?
-    private let serializeStackStep: MiddlewareStackStep<SerializeStepInput<OperationStackInput>, SerializeStepInput<OperationStackInput>>?
-    private let buildStackStep: MiddlewareStackStep<SerializeStepInput<OperationStackInput>, SdkHttpRequestBuilder>?
-    private let finalizeStackStep: MiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequest>?
-    private let deserializeStackStep: MiddlewareStackStep<SdkHttpRequest, DeserializeOutput<OperationStackOutput, OperationStackError>>?
+    private let initializeStackStep: InitializeStackStep?
+    private let serializeStackStep: SerializeStackStep?
+    private let buildStackStep: BuildStackStep?
+    private let finalizeStackStep: FinalizeStackStep?
+    private let deserializeStackStep: DeserializeStackStep?
 
     public init(id: String,
-                initializeStackStep: MiddlewareStackStep<OperationStackInput, SerializeStepInput<OperationStackInput>>? = nil,
-                serializeStackStep: MiddlewareStackStep<SerializeStepInput<OperationStackInput>, SerializeStepInput<OperationStackInput>>? = nil,
-                buildStackStep: MiddlewareStackStep<SerializeStepInput<OperationStackInput>, SdkHttpRequestBuilder>? = nil,
-                finalizeStackStep: MiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequest>? = nil,
-                deserializeStackStep: MiddlewareStackStep<SdkHttpRequest, DeserializeOutput<OperationStackOutput, OperationStackError>>? = nil
-                ) {
+                initializeStackStep: InitializeStackStep? = nil,
+                serializeStackStep: SerializeStackStep? = nil,
+                buildStackStep: BuildStackStep? = nil,
+                finalizeStackStep: FinalizeStackStep? = nil,
+                deserializeStackStep: DeserializeStackStep? = nil) {
         self.id = id
         self.initializeStep = InitializeStep<OperationStackInput>()
         self.serializeStep = SerializeStep<OperationStackInput>()
