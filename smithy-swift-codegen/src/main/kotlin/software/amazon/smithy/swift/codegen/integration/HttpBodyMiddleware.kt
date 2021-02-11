@@ -20,13 +20,13 @@ class HttpBodyMiddleware(
     override val typeName = "${symbol.name}BodyMiddleware"
     override val inputType = Symbol
         .builder()
-        .name("SerializeInput<${symbol.name}>")
+        .name("SerializeStepInput<${symbol.name}>")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     override val outputType = Symbol
         .builder()
-        .name("SerializeInput<${symbol.name}>")
+        .name("SerializeStepInput<${symbol.name}>")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 

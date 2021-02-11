@@ -29,7 +29,8 @@ class IdempotencyTokenMiddlewareGenerator(
      * ```
      * */
     fun renderIdempotencyMiddleware() {
-        writer.openBlock("$operationMiddlewareStackName.initializeStep.intercept(position: .before, id: \"IdempotencyTokenMiddleware\") { (context, input, next) -> Result<SerializeInput<$inputShapeName>, Error> in", "}") {
+        // TODO: Need to write a unit test for this
+        writer.openBlock("$operationMiddlewareStackName.initializeStep.intercept(position: .before, id: \"IdempotencyTokenMiddleware\") { (context, input, next) -> Result<SerializeStepInput<$inputShapeName>, Error> in", "}") {
             writer.write("let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()")
             writer.write("var copiedInput = input")
             writer.openBlock("if input.$idempotentMemberName == nil {", "}") {
