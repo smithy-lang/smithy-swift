@@ -3,7 +3,7 @@
 
 // cast output of one middleware stack to input of the next
 // pass in Any for middleware input and output to trick the chain into thinking each step input and output are the same
-public struct MiddlewareStackStep<StepInput, StepOutput>: Middleware {
+public class MiddlewareStackStep<StepInput, StepOutput>: Middleware {
     
     public var id: String
     public typealias MInput = Any
