@@ -7,14 +7,14 @@
 
 @testable import ClientRuntime
 
-public class MockMiddlewareStackStep<StepInput, StepOutput>: MiddlewareStackStep<StepInput, StepOutput>  {
+public class MockMiddlewareStackStep<OperationStackInput, OperationStackOutput>: MiddlewareStackStep<OperationStackInput, OperationStackOutput> {
 
     let callback: MockMiddlewareStackStepCallbackType?
 
     typealias MockMiddlewareStackStepCallbackType = (Context, MInput) -> Result<MOutput, Error>
 
-    init(stack: AnyMiddlewareStack<StepInput, StepOutput, Context>,
-                handler: AnyHandler<StepInput, StepOutput, Context>? = nil,
+    init(stack: AnyMiddlewareStack<OperationStackInput, OperationStackOutput, Context>,
+                handler: AnyHandler<OperationStackInput, OperationStackOutput, Context>? = nil,
                 callback: MockMiddlewareStackStepCallbackType? = nil) {
         self.callback = callback
 
