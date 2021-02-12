@@ -1,16 +1,24 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import ClientRuntime
 
-public struct MockHandler: Handler {
+struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
     
-    public typealias Input = SdkHttpRequest
+    typealias Context = HttpContext
+    typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error>
+    let handleCallback: MockHandlerCallback
     
-    public typealias Output = SdkHttpRequest
-    
-    let resultType: (_ context: HttpContext, _ input: Input) -> Result<SdkHttpRequest, Error>
-    
-    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequest, Error> {
-        return resultType(context, input)
+    func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+        return self.handleCallback(context, input)
+
     }
+    
+    typealias Input = SdkHttpRequest
+    
+    typealias Output = DeserializeOutput<Output, OutputError>
 }

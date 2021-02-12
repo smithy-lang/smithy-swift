@@ -7,8 +7,9 @@
 
 import XCTest
 @testable import ClientRuntime
-
-class OperationStackTests: XCTestCase {
+@testable import SmithyTestUtil
+class OperationStackTests : HttpRequestTestBase {
+    
     func testMiddlewareInjectableInit() {
         var currExpectCount = 1
         let defaultTimeout = 2.0
@@ -28,11 +29,12 @@ class OperationStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
-        let mockInitializeStackStep = constructMockInitializeStackStep(){ context, input in
+        let mockInitializeStackStep: MockInitializeStackStep<MockInput> = constructMockInitializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 1, expectation: expectInitialize)
             return .success("not used")
         }
-        let mockSerializeStackStep = constructMockSerializeStackStep(){ context, input in
+        let mockSerializeStackStep: MockSerializeStackStep<MockInput>
+            = constructMockSerializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 2, expectation: expectSerialize)
             return .success("not used")
         } interceptCallback: {
@@ -47,7 +49,7 @@ class OperationStackTests: XCTestCase {
                             }))
             return step
         }
-        let mockBuildStackStep = constructMockBuildStackStep(){ context, input in
+        let mockBuildStackStep: MockBuildStackStep<MockInput> = constructMockBuildStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 4, expectation: expectBuild)
             return .success("not used")
         }
@@ -55,7 +57,8 @@ class OperationStackTests: XCTestCase {
             currExpectCount = self.checkAndFulfill(currExpectCount, 5, expectation: expectFinalize)
             return .success("not used")
         }
-        let mockDeserializeStackStep = constructMockDeserializeStackStep(){ context, input in
+        let mockDeserializeStackStep: MockDeserializeStackStep<MockOutput, MockMiddlewareError>
+            = constructMockDeserializeStackStep(){ context, input in
             currExpectCount = self.checkAndFulfill(currExpectCount, 6, expectation: expectDeserialize)
             return .success("not used")
         } interceptCallback: {
@@ -65,6 +68,7 @@ class OperationStackTests: XCTestCase {
                             id: "TestDeserializeMiddleware",
                             callback: {_,_ in
                                 currExpectCount = self.checkAndFulfill(currExpectCount, 7, expectation: expectDeserializeMiddleware)
+                                return nil
                             }))
             return step
         }

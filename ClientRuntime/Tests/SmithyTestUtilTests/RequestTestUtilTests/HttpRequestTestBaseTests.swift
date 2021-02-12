@@ -4,7 +4,7 @@
  */
 
 @testable import SmithyTestUtil
-import ClientRuntime
+@testable import ClientRuntime
 import XCTest
 
 class HttpRequestTestBaseTests: HttpRequestTestBase {
@@ -100,6 +100,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() {
+        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
         let expected = buildExpectedHttpRequest(method: .post,
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
@@ -113,52 +114,71 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   requiredQuery: "required query",
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
-        do {
-        var operationStack = MockRequestOperationStack<SayHelloInput>(id: "SayHelloInputRequest")
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
-  
-        let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
-        let actual = try! operationStack.handleMiddleware(context: context, input: input).get()
-        
-        let forbiddenQueryParams = ["ForbiddenQuery"]
-        // assert forbidden query params do not exist
-        for forbiddenQueryParam in forbiddenQueryParams {
-            XCTAssertFalse(
-                queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
-                "Forbidden Query:\(forbiddenQueryParam) exists in query items"
-            )
-        }
-        
-        let forbiddenHeaders = ["ForbiddenHeader"]
-        // assert forbidden headers do not exist
-        for forbiddenHeader in forbiddenHeaders {
-            XCTAssertFalse(headerExists(forbiddenHeader, in: actual.headers.headers),
-                           "Forbidden Header:\(forbiddenHeader) exists in headers")
-        }
-        
-        let requiredQueryParams = ["RequiredQuery"]
-        // assert forbidden query params do not exist
-        for requiredQueryParam in requiredQueryParams {
-            XCTAssertTrue(queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
-                           "Required Query:\(requiredQueryParam) does not exist in query items")
-        }
-        
-        let requiredHeaders = ["RequiredHeader"]
-        // assert forbidden headers do not exist
-        for requiredHeader in requiredHeaders {
-            XCTAssertTrue(headerExists(requiredHeader, in: actual.headers.headers),
-                           "Required Header:\(requiredHeader) does not exist in headers")
-        }
-        
-        assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-            XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-            XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-            assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+        let mockSerializeStackStep: MockSerializeStackStep<SayHelloInput> = constructMockSerializeStackStep(interceptCallback: {
+            var step = SerializeStep<SayHelloInput>()
+            step.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
+            step.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
+            step.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
+            return step
         })
-        } catch {
-            XCTFail("Encoding of request failed")
+        
+        let mockDeserializeStackStep: MockDeserializeStackStep<MockOutput, MockMiddlewareError>
+            = constructMockDeserializeStackStep(interceptCallback: {
+                var step = DeserializeStep<MockOutput, MockMiddlewareError>()
+                step.intercept(position: .after,
+                               middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
+                                id: "TestDeserializeMiddleware"){ context, actual in
+                                
+                                let forbiddenQueryParams = ["ForbiddenQuery"]
+                                for forbiddenQueryParam in forbiddenQueryParams {
+                                    XCTAssertFalse(
+                                        self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
+                                        "Forbidden Query:\(forbiddenQueryParam) exists in query items"
+                                    )
+                                }
+                                let forbiddenHeaders = ["ForbiddenHeader"]
+                                for forbiddenHeader in forbiddenHeaders {
+                                    XCTAssertFalse(self.headerExists(forbiddenHeader, in: actual.headers.headers),
+                                                   "Forbidden Header:\(forbiddenHeader) exists in headers")
+                                }
+                                
+                                let requiredQueryParams = ["RequiredQuery"]
+                                for requiredQueryParam in requiredQueryParams {
+                                    XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
+                                                  "Required Query:\(requiredQueryParam) does not exist in query items")
+                                }
+                                
+                                let requiredHeaders = ["RequiredHeader"]
+                                for requiredHeader in requiredHeaders {
+                                    XCTAssertTrue(self.headerExists(requiredHeader, in: actual.headers.headers),
+                                                  "Required Header:\(requiredHeader) does not exist in headers")
+                                }
+                                
+                                self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                                    self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                                })
+                                
+                                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+                                let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
+                                let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)
+                                deserializeMiddleware.fulfill()
+                                return .success(output)
+                               })
+                return step
+            })
+        
+        do {
+            let operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest",
+                                                                                                serializeStackStep: mockSerializeStackStep,
+                                                                                                deserializeStackStep: mockDeserializeStackStep)
+            let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
+            _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
+                XCTFail("Deserialize was mocked out, this should fail")
+                return .failure(try! MockMiddlewareError(httpResponse: HttpResponse()))
+            })
+            wait(for: [deserializeMiddleware], timeout: 2.0)
         }
     }
     

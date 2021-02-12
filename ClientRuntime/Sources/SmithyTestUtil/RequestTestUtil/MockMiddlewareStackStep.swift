@@ -7,6 +7,17 @@
 
 @testable import ClientRuntime
 
+typealias MockInitializeStackStep<I> = MockMiddlewareStackStep<I,
+                                                               SerializeStepInput<I>> where I: Encodable, I: Reflection
+typealias MockSerializeStackStep<I> = MockMiddlewareStackStep<SerializeStepInput<I>,
+                                                              SerializeStepInput<I>> where I: Encodable, I: Reflection
+typealias MockBuildStackStep<I> = MockMiddlewareStackStep<SerializeStepInput<I>,
+                                                          SdkHttpRequestBuilder> where I: Encodable, I: Reflection
+typealias MockFinalizeStackStep = MockMiddlewareStackStep<SdkHttpRequestBuilder,
+                                                          SdkHttpRequest>
+typealias MockDeserializeStackStep<O, E> = MockMiddlewareStackStep<SdkHttpRequest,
+                                                                   DeserializeOutput<O, E>> where O: HttpResponseBinding, E: HttpResponseBinding
+
 public class MockMiddlewareStackStep<OperationStackInput, OperationStackOutput>: MiddlewareStackStep<OperationStackInput, OperationStackOutput> {
 
     let callback: MockMiddlewareStackStepCallbackType?
@@ -18,7 +29,7 @@ public class MockMiddlewareStackStep<OperationStackInput, OperationStackOutput>:
                 callback: MockMiddlewareStackStepCallbackType? = nil) {
         self.callback = callback
 
-        super.init(stack:stack, handler:handler)
+        super.init(stack: stack, handler: handler)
     }
 
     public override func handle<H>(context: Context, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler,
@@ -26,7 +37,7 @@ public class MockMiddlewareStackStep<OperationStackInput, OperationStackOutput>:
                                                                                              MOutput == H.Output,
                                                                                              Context == H.Context {
         if let callback = callback {
-            let _ = callback(context, input)
+            _ = callback(context, input)
         }
         return super.handle(context: context, input: input, next: next)
     }

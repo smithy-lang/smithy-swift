@@ -1,9 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 import ClientRuntime
-
+// TO BE DELETED, once we update the code generation
 public struct MockRequestOperationStack<OperationStackInput> where OperationStackInput: Encodable, OperationStackInput: Reflection {
-    
     typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
                                                         SerializeStepInput<OperationStackInput>>
     typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
@@ -43,7 +42,7 @@ public struct MockRequestOperationStack<OperationStackInput> where OperationStac
                      buildStackStep.eraseToAnyMiddleware(),
                      finalizeStackStep.eraseToAnyMiddleware()]
         
-        let mockHandler = MockHandler(resultType: { _, input in .success(input) })
+        let mockHandler = LegacyMockHandler(resultType: { _, input in .success(input) })
         
         let wrappedHandler = StepHandler<SdkHttpRequest,
                                          SdkHttpRequest,
@@ -52,7 +51,7 @@ public struct MockRequestOperationStack<OperationStackInput> where OperationStac
                                          HttpContext>(next: mockHandler.eraseToAnyHandler())
         
         // compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
-        let handler = OperationStack<OperationStackInput, MockOutput, MockError>.compose(next: wrappedHandler, with: steps)
+        let handler = OperationStack<OperationStackInput, MockOutput, MockMiddlewareError>.compose(next: wrappedHandler, with: steps)
         
         // kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
@@ -64,5 +63,15 @@ public struct MockRequestOperationStack<OperationStackInput> where OperationStac
                                                                 "failed to cast type of Any to type of SdkHttpRequest"))
             }
         }
+    }
+}
+
+// This will also be removed in the near future
+public struct LegacyMockHandler: Handler {
+    public typealias Input = SdkHttpRequest
+    public typealias Output = SdkHttpRequest
+    let resultType: (_ context: HttpContext, _ input: Input) -> Result<SdkHttpRequest, Error>
+    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequest, Error> {
+        return resultType(context, input)
     }
 }

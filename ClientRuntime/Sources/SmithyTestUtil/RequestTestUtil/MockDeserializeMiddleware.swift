@@ -1,11 +1,15 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-@testable import ClientRuntime
+import ClientRuntime
 
 struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                 OperationStackError: HttpResponseBinding>: Middleware where OperationStackError: Error{
-    typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Void
+                                 OperationStackError: HttpResponseBinding>: Middleware where OperationStackError: Error {
+    typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>, Error>?
     var id: String
     let callback: MockDeserializeMiddlewareCallback?
 
@@ -20,8 +24,9 @@ struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
         
-        if let callback = self.callback {
-            callback(context, input)
+        if let callback = self.callback,
+           let callbackReturnValue = callback(context, input) {
+            return callbackReturnValue
         }
 
         let response = next.handle(context: context, input: input)
