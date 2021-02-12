@@ -6,8 +6,9 @@
 //
 
 import XCTest
-@testable import ClientRuntime
-@testable import SmithyTestUtil
+import ClientRuntime
+import SmithyTestUtil
+
 class OperationStackTests : HttpRequestTestBase {
     
     func testMiddlewareInjectableInit() {

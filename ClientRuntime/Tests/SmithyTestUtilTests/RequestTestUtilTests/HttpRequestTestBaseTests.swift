@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-@testable import SmithyTestUtil
-@testable import ClientRuntime
+import SmithyTestUtil
+import ClientRuntime
 import XCTest
 
 class HttpRequestTestBaseTests: HttpRequestTestBase {
@@ -176,7 +176,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
             _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
                 XCTFail("Deserialize was mocked out, this should fail")
-                return .failure(try! MockMiddlewareError(httpResponse: HttpResponse()))
+                return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))
             })
             wait(for: [deserializeMiddleware], timeout: 2.0)
         }

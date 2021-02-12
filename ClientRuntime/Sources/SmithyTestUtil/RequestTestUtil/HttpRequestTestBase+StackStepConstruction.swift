@@ -9,32 +9,32 @@ import XCTest
 import ClientRuntime
 
 extension HttpRequestTestBase {
-    typealias ConstructMockInitializeStackStepExecutionCallback<I> =
+    public typealias ConstructMockInitializeStackStepExecutionCallback<I> =
         MockMiddlewareStackStep<I, SerializeStepInput<I>>.MockMiddlewareStackStepCallbackType
     where I: Reflection, I: Encodable
-    typealias ConstructMockSerializeStackStepExecutionCallback<I> =
+    public typealias ConstructMockSerializeStackStepExecutionCallback<I> =
         MockSerializeStackStep<I>.MockMiddlewareStackStepCallbackType
     where I: Reflection, I: Encodable
-    typealias ConstructMockBuildStackStepExecutionCallback<I> =
+    public typealias ConstructMockBuildStackStepExecutionCallback<I> =
         MockMiddlewareStackStep<SerializeStepInput<I>, SdkHttpRequestBuilder>.MockMiddlewareStackStepCallbackType
     where I: Reflection, I: Encodable
-    typealias ConstructMockFinalizeStackStepExecutionCallback =
+    public typealias ConstructMockFinalizeStackStepExecutionCallback =
         MockMiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequest>.MockMiddlewareStackStepCallbackType
-    typealias ConstructMockDeserializeStackStepExecutionCallback<O, E> =
+    public typealias ConstructMockDeserializeStackStepExecutionCallback<O, E> =
         MockMiddlewareStackStep<SdkHttpRequest, DeserializeOutput<O, E>>.MockMiddlewareStackStepCallbackType
     where O: HttpResponseBinding, E: HttpResponseBinding
-
-    typealias ConstructMockInitializeStackStepInterceptCallback<I> =
+    
+    public typealias ConstructMockInitializeStackStepInterceptCallback<I> =
         () -> InitializeStep<I> where I: Reflection, I: Encodable
-    typealias ConstructMockBuildStackStepInterceptCallback<I> =
+    public typealias ConstructMockBuildStackStepInterceptCallback<I> =
         () -> BuildStep<I> where I: Reflection, I: Encodable
-    typealias ConstructMockFinalizeStackStepInterceptCallback =
+    public typealias ConstructMockFinalizeStackStepInterceptCallback =
         () -> FinalizeStep
-    typealias ConstructMockDeserializeStackStepInterceptCallback<O, E> =
+    public typealias ConstructMockDeserializeStackStepInterceptCallback<O, E> =
         () -> DeserializeStep<O, E> where O: HttpResponseBinding, E: HttpResponseBinding
     
-    func constructMockInitializeStackStep<I>(_ executionCallback: ConstructMockInitializeStackStepExecutionCallback<I>? = nil,
-                                             interceptCallback: ConstructMockInitializeStackStepInterceptCallback<I>? = nil)
+    public func constructMockInitializeStackStep<I>(_ executionCallback: ConstructMockInitializeStackStepExecutionCallback<I>? = nil,
+                                                    interceptCallback: ConstructMockInitializeStackStepInterceptCallback<I>? = nil)
     -> MockMiddlewareStackStep<I, SerializeStepInput<I>> {
         var step: InitializeStep<I>!
         if let interceptCallback = interceptCallback {
@@ -49,8 +49,8 @@ extension HttpRequestTestBase {
             )
     }
     
-    func constructMockSerializeStackStep<I>(_ executionCallback: ConstructMockSerializeStackStepExecutionCallback<I>? = nil,
-                                            interceptCallback: (() -> SerializeStep<I>)? = nil) -> MockSerializeStackStep<I> {
+    public func constructMockSerializeStackStep<I>(_ executionCallback: ConstructMockSerializeStackStepExecutionCallback<I>? = nil,
+                                                   interceptCallback: (() -> SerializeStep<I>)? = nil) -> MockSerializeStackStep<I> {
         var step: SerializeStep<I>!
         if let interceptCallback = interceptCallback {
             step = interceptCallback()
@@ -65,8 +65,8 @@ extension HttpRequestTestBase {
         return mockStackStep
     }
     
-    func constructMockBuildStackStep<I>(_ executionCallback: ConstructMockBuildStackStepExecutionCallback<I>? = nil,
-                                     interceptCallback: ConstructMockBuildStackStepInterceptCallback<I>? = nil)
+    public func constructMockBuildStackStep<I>(_ executionCallback: ConstructMockBuildStackStepExecutionCallback<I>? = nil,
+                                               interceptCallback: ConstructMockBuildStackStepInterceptCallback<I>? = nil)
     -> MockMiddlewareStackStep<SerializeStepInput<I>, SdkHttpRequestBuilder> {
         var step: BuildStep<I>!
         if let interceptCallback = interceptCallback {
@@ -82,8 +82,8 @@ extension HttpRequestTestBase {
         return mockStackStep
     }
     
-    func constructMockFinalizeStackStep(_ executionCallback: ConstructMockFinalizeStackStepExecutionCallback? = nil,
-                                        interceptCallback: ConstructMockFinalizeStackStepInterceptCallback? = nil)
+    public func constructMockFinalizeStackStep(_ executionCallback: ConstructMockFinalizeStackStepExecutionCallback? = nil,
+                                               interceptCallback: ConstructMockFinalizeStackStepInterceptCallback? = nil)
     -> MockMiddlewareStackStep<SdkHttpRequestBuilder, SdkHttpRequest> {
         var step: FinalizeStep!
         if let interceptCallback = interceptCallback {
@@ -99,8 +99,8 @@ extension HttpRequestTestBase {
         return mockStackStep
     }
     
-    func constructMockDeserializeStackStep<O, E>(_ executionCallback: ConstructMockDeserializeStackStepExecutionCallback<O, E>? = nil,
-                                           interceptCallback: ConstructMockDeserializeStackStepInterceptCallback<O, E>? = nil)
+    public func constructMockDeserializeStackStep<O, E>(_ executionCallback: ConstructMockDeserializeStackStepExecutionCallback<O, E>? = nil,
+                                                        interceptCallback: ConstructMockDeserializeStackStepInterceptCallback<O, E>? = nil)
     -> MockMiddlewareStackStep<SdkHttpRequest, DeserializeOutput<O, E>> {
         var step: DeserializeStep<O, E>!
         if let interceptCallback = interceptCallback {

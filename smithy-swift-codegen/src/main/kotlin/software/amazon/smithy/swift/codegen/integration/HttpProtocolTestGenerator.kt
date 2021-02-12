@@ -52,7 +52,7 @@ class HttpProtocolTestGenerator(
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
                         // import dependencies
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                        writer.addImport(ctx.settings.moduleName)
+                        writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
                         writer.addImport(SwiftDependency.XCTest.namespace)
 
@@ -82,7 +82,7 @@ class HttpProtocolTestGenerator(
                         LOGGER.fine("Generating response protocol test cases for ${operation.id}")
                         // import dependencies
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                        writer.addImport(ctx.settings.moduleName)
+                        writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
                         writer.addImport(SwiftDependency.XCTest.namespace)
 
@@ -115,7 +115,7 @@ class HttpProtocolTestGenerator(
                             LOGGER.fine("Generating error protocol test cases for ${operation.id}")
                             // import dependencies
                             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                            writer.addImport(ctx.settings.moduleName)
+                            writer.addImport(ctx.settings.moduleName, true)
                             writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
                             writer.addImport(SwiftDependency.XCTest.namespace)
 

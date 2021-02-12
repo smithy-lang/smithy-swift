@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import XCTest
+import SmithyTestUtil
 @testable import ClientRuntime
-@testable import SmithyTestUtil
+
 class MiddlewareStackTests: XCTestCase {
     func testMiddlewareStackSuccessInterceptAfter() {
         let builtContext = HttpContextBuilder()
