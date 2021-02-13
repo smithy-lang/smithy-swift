@@ -1,62 +1,82 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct OperationStack<StackInput: HttpRequestBinding,
-                             StackOutput: HttpResponseBinding,
-                             StackError: HttpResponseBinding> {
-    typealias InitializeStackStep = MiddlewareStackStep<StackInput,
-                                                        SdkHttpRequestBuilder>
-    typealias SerializeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                       SdkHttpRequestBuilder>
-    typealias BuildStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                   SdkHttpRequestBuilder>
-    typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
-                                                      SdkHttpRequest>
-    typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
-                                                         DeserializeOutput<StackOutput, StackError>>
+public struct OperationStack<OperationStackInput,
+                             OperationStackOutput: HttpResponseBinding,
+                             OperationStackError: HttpResponseBinding> where OperationStackInput: Encodable, OperationStackInput: Reflection {
+    public typealias InitializeStackStep = MiddlewareStackStep<OperationStackInput,
+                                                               SerializeStepInput<OperationStackInput>>
+    public typealias SerializeStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
+                                                              SerializeStepInput<OperationStackInput>>
+    public typealias BuildStackStep = MiddlewareStackStep<SerializeStepInput<OperationStackInput>,
+                                                          SdkHttpRequestBuilder>
+    public typealias FinalizeStackStep = MiddlewareStackStep<SdkHttpRequestBuilder,
+                                                             SdkHttpRequest>
+    public typealias DeserializeStackStep = MiddlewareStackStep<SdkHttpRequest,
+                                                                DeserializeOutput<OperationStackOutput, OperationStackError>>
     
-    ///returns the unique id for the operation stack as middleware
+    /// returns the unique id for the operation stack as middleware
     public var id: String
-    public var initializeStep: InitializeStep<StackInput>
-    public var buildStep: BuildStep
-    public var serializeStep: SerializeStep
+    public var initializeStep: InitializeStep<OperationStackInput>
+    public var buildStep: BuildStep<OperationStackInput>
+    public var serializeStep: SerializeStep<OperationStackInput>
     public var finalizeStep: FinalizeStep
-    public var deserializeStep: DeserializeStep<StackOutput, StackError>
+    public var deserializeStep: DeserializeStep<OperationStackOutput, OperationStackError>
     
-    public init(id: String) {
+    private let initializeStackStep: InitializeStackStep?
+    private let serializeStackStep: SerializeStackStep?
+    private let buildStackStep: BuildStackStep?
+    private let finalizeStackStep: FinalizeStackStep?
+    private let deserializeStackStep: DeserializeStackStep?
+
+    public init(id: String,
+                initializeStackStep: InitializeStackStep? = nil,
+                serializeStackStep: SerializeStackStep? = nil,
+                buildStackStep: BuildStackStep? = nil,
+                finalizeStackStep: FinalizeStackStep? = nil,
+                deserializeStackStep: DeserializeStackStep? = nil) {
         self.id = id
-        self.initializeStep = InitializeStep<StackInput>()
-        self.serializeStep = SerializeStep()
-        self.buildStep = BuildStep()
+        self.initializeStep = InitializeStep<OperationStackInput>()
+        self.serializeStep = SerializeStep<OperationStackInput>()
+        self.buildStep = BuildStep<OperationStackInput>()
         self.finalizeStep = FinalizeStep()
-        self.deserializeStep = DeserializeStep<StackOutput, StackError>()
+        self.deserializeStep = DeserializeStep<OperationStackOutput, OperationStackError>()
+        
+        self.initializeStackStep = initializeStackStep ?? nil
+        self.serializeStackStep = serializeStackStep ?? nil
+        self.buildStackStep = buildStackStep ?? nil
+        self.finalizeStackStep = finalizeStackStep ?? nil
+        self.deserializeStackStep = deserializeStackStep ?? nil
     }
     
     /// This function if called adds all default middlewares to a typical sdk operation,
     ///  can optionally call from the service client inside an operation
     public mutating func addDefaultOperationMiddlewares() {
-        deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<StackOutput, StackError>())
+        buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackInput>())
+        deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<OperationStackOutput, OperationStackError>())
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
-                                             input: StackInput,
-                                             next: H) -> SdkResult<StackOutput, StackError>
-    where H.Input == SdkHttpRequest, H.Output == DeserializeOutput<StackOutput, StackError>, H.Context == HttpContext {
-        // create all the steps to link them as one middleware chain, each step has its own handler to convert the
-        // types except the last link in the chain
-        let initializeStackStep = InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
-                                                      handler: InitializeStepHandler().eraseToAnyHandler())
-        let serializeStackStep = SerializeStackStep(stack: serializeStep.eraseToAnyMiddlewareStack(),
-                                                    handler: SerializeStepHandler().eraseToAnyHandler())
-        let buildStackStep = BuildStackStep(stack: buildStep.eraseToAnyMiddlewareStack(),
-                                            handler: BuildStepHandler().eraseToAnyHandler())
-        let finalizeStackStep = FinalizeStackStep(stack: finalizeStep.eraseToAnyMiddlewareStack(),
-                                                  handler: FinalizeStepHandler().eraseToAnyHandler())
-        //deserialize does not take a handler because its handler is the last handler in the operation which
-        //is defined as next inside this function and is wrapped below and added as the last chain in the
+                                             input: OperationStackInput,
+                                             next: H) -> SdkResult<OperationStackOutput, OperationStackError>
+    where H.Input == SdkHttpRequest, H.Output == DeserializeOutput<OperationStackOutput, OperationStackError>, H.Context == HttpContext {
+        let initializeStackStep = self.initializeStackStep ??
+            InitializeStackStep(stack: initializeStep.eraseToAnyMiddlewareStack(),
+                                handler: InitializeStepHandler().eraseToAnyHandler())
+        let serializeStackStep = self.serializeStackStep ??
+            SerializeStackStep(stack: serializeStep.eraseToAnyMiddlewareStack(),
+                               handler: SerializeStepHandler().eraseToAnyHandler())
+        let buildStackStep = self.buildStackStep ??
+            BuildStackStep(stack: buildStep.eraseToAnyMiddlewareStack(),
+                           handler: BuildStepHandler().eraseToAnyHandler())
+        let finalizeStackStep = self.finalizeStackStep ??
+            FinalizeStackStep(stack: finalizeStep.eraseToAnyMiddlewareStack(),
+                              handler: FinalizeStepHandler().eraseToAnyHandler())
+        // deserialize does not take a handler because its handler is the last handler in the operation which
+        // is defined as next inside this function and is wrapped below and added as the last chain in the
         // middleware stack of steps
-        let deserializeStackStep = DeserializeStackStep(stack: deserializeStep.eraseToAnyMiddlewareStack())
+        let deserializeStackStep = self.deserializeStackStep ?? DeserializeStackStep(stack: deserializeStep.eraseToAnyMiddlewareStack())
         
         let steps = [initializeStackStep.eraseToAnyMiddleware(),
                      serializeStackStep.eraseToAnyMiddleware(),
@@ -65,28 +85,28 @@ public struct OperationStack<StackInput: HttpRequestBinding,
                      deserializeStackStep.eraseToAnyMiddleware()]
         
         let wrappedHandler = StepHandler<SdkHttpRequest,
-                                         DeserializeOutput<StackOutput, StackError>,
+                                         DeserializeOutput<OperationStackOutput, OperationStackError>,
                                          Any,
                                          Any,
                                          HttpContext>(next: next.eraseToAnyHandler())
         
-        //compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
-        let handler = OperationStack<StackInput, StackOutput, StackError>.compose(next: wrappedHandler, with: steps)
+        // compose the steps which are each middleware stacks as one big middleware stack chain with a final handler
+        let handler = OperationStack<OperationStackInput, OperationStackOutput, OperationStackError>.compose(next: wrappedHandler, with: steps)
         
-        //kicks off the entire operation of middleware stacks
+        // kicks off the entire operation of middleware stacks
         let result = handler.handle(context: context, input: input)
         
-        let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<StackOutput, StackError>,
+        let castedResult = result.flatMap { (anyResult) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>,
                                                                   Error> in
-            //have to match the result because types
-            if let result = anyResult as? DeserializeOutput<StackOutput, StackError> {
+            // have to match the result because types
+            if let result = anyResult as? DeserializeOutput<OperationStackOutput, OperationStackError> {
                 return .success(result)
             } else {
                 return .failure(MiddlewareStepError.castingError("casted from operation stack failed," +
                                                                 "failed to cast type of Any to type of " +
-                                                                "\(DeserializeOutput<StackOutput, StackError>.self)" +
-                                                                "with a Stack Output of \(StackOutput.self) and a Stack" +
-                                                                "Error of \(StackError.self)"))
+                                                                "\(DeserializeOutput<OperationStackOutput, OperationStackError>.self)" +
+                                                                "with a Stack Output of \(OperationStackOutput.self) and a Stack" +
+                                                                "Error of \(OperationStackError.self)"))
             }
         }
         switch castedResult {
@@ -96,7 +116,7 @@ public struct OperationStack<StackInput: HttpRequestBinding,
             if let stackError = output.error {
                 return .failure(.service(stackError))
             } else {
-                return .success(output.output!) //output should not be nil here ever if error is nil
+                return .success(output.output!) // output should not be nil here ever if error is nil
             }
         }
     }

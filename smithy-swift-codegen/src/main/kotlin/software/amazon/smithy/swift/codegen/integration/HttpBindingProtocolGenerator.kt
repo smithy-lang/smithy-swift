@@ -41,10 +41,9 @@ import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpResponseCodeTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -63,6 +62,40 @@ fun Shape.isInHttpBody(): Boolean {
         !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
         !this.hasTrait(HttpQueryTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
+}
+
+/**
+ * Adds the appropriate extension for serialization of special types i.e. timestamps, blobs, etc
+ */
+fun formatHeaderOrQueryValue(
+    ctx: ProtocolGenerator.GenerationContext,
+    memberName: String,
+    memberShape: MemberShape,
+    location: HttpBinding.Location,
+    bindingIndex: HttpBindingIndex,
+    defaultTimestampFormat: TimestampFormatTrait.Format
+): Pair<String, Boolean> {
+
+    return when (val shape = ctx.model.expectShape(memberShape.target)) {
+        is TimestampShape -> {
+            val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
+            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true), false)
+        }
+        is BlobShape -> {
+            Pair("try $memberName.base64EncodedString()", true)
+        }
+        is StringShape -> {
+            val enumRawValueSuffix = shape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+            var formattedItemValue = "$memberName$enumRawValueSuffix"
+            var requiresDoCatch = false
+            if (shape.hasTrait(MediaTypeTrait::class.java)) {
+                formattedItemValue = "try $formattedItemValue.base64EncodedString()"
+                requiresDoCatch = true
+            }
+            Pair(formattedItemValue, requiresDoCatch)
+        }
+        else -> Pair(memberName, false)
+    }
 }
 
 /**
@@ -98,11 +131,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // The input shape is referenced by more than one operation
                     continue
                 }
-                renderInputRequestConformanceToHttpRequestBinding(ctx, operation)
+                renderHeaderMiddleware(ctx, operation)
+                renderQueryMiddleware(ctx, operation)
+                renderBodyMiddleware(ctx, operation)
+
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
-        // render conformance to Encodable for all input shapes with an http body and their nested types
+        // render conformance to Encodable for all input shapes and their nested types
         val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
         for (shape in shapesNeedingEncodableConformance) {
             // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
@@ -115,7 +151,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: Encodable {", "}") {
+                writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
                     when (shape) {
@@ -139,32 +175,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             UnionEncodeGenerator(ctx, unionMembers, writer, defaultTimestampFormat).render()
                         }
                     }
-                }
-            }
-        }
-    }
-
-    // can be overridden by protocol for things like json name traits, xml keys etc.
-    open fun generateCodingKeysForMembers(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter,
-        members: List<MemberShape>
-    ) {
-        val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
-        writer.openBlock("private enum CodingKeys: String, CodingKey {", "}") {
-            for (member in membersSortedByName) {
-                val originalMemberName = member.memberName
-                val modifiedMemberName = ctx.symbolProvider.toMemberName(member)
-
-                /* If we have modified the member name to make it idiomatic to the language
-                   like handling reserved keyword with appending an underscore or lowercasing the first letter,
-                   we need to change the coding key accordingly so that during encoding and decoding, the modified member
-                   name is transformed back to original name before it hits the service.
-                 */
-                if (originalMemberName == modifiedMemberName) {
-                    writer.write("case \$L", modifiedMemberName)
-                } else {
-                    writer.write("case \$L = \$S", modifiedMemberName, originalMemberName)
                 }
             }
         }
@@ -264,6 +274,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
         }
+    }
+
+    private fun renderInitOperationErrorFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        errorFromHttpResponseGenerator.generateInitOperationFromHttpResponse(ctx, op)
+    }
+
+    private fun generateCodingKeysForMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        members: List<MemberShape>
+    ) {
+        codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
     private fun renderInitOutputFromHttpResponse(
@@ -373,30 +395,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                     writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
                     writer.write("}")
-                }
-            }
-        }
-    }
-
-    /* This is a default implementation that is expected to be overridden by serialization
-    protocol specific implementations to resolve the errorType
-     */
-    open fun renderInitOperationErrorFromHttpResponse(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape
-    ) {
-        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
-        val rootNamespace = ctx.settings.moduleName
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
-            .name(operationErrorName)
-            .build()
-
-        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-            writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
-                    writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
                 }
             }
         }
@@ -744,7 +742,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
-     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types with members in the http body
+     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types
      * and their nested types.
      * Operation inputs and all nested types will conform to `Encodable`.
      *
@@ -754,7 +752,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         // get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+        val inputShapes = resolveOperationInputShapes(ctx).toMutableSet()
 
         val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
@@ -845,341 +843,92 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return resolved
     }
 
-    /**
-     * Generate conformance to (HttpRequestBinding) for the input request (if not already present)
-     * and implement (buildRequest) method
-     */
-    private fun renderInputRequestConformanceToHttpRequestBinding(
+    private fun renderHeaderMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape
     ) {
-        if (op.input.isEmpty) {
-            return
-        }
         val opIndex = OperationIndex.of(ctx.model)
-
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
-        val httpTrait = httpBindingResolver.httpTrait(op)
-
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, opIndex, op)
-        val inputShape = ctx.model.expectShape(op.input.get())
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        val bindingIndex = HttpBindingIndex.of(ctx.model)
         val requestBindings = httpBindingResolver.requestBindings(op)
-        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
-        val queryLiterals = httpTrait.uri.queryLiterals
+        val inputShape = opIndex.getInput(op).get()
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+
         val headerBindings = requestBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
-        val contentType = bindingIndex.determineRequestContentType(op, defaultContentType).orElse(defaultContentType)
-
         val prefixHeaderBindings = requestBindings
             .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
         val rootNamespace = ctx.settings.moduleName
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$inputShapeName+HttpRequestBinding.swift")
-            .name(inputShapeName)
+        val headerMiddlewareSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
+            .name(inputSymbol.name)
             .build()
+        ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
+            MiddlewareGenerator(writer, headerMiddleware).generate()
+        }
+    }
 
-        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+    private fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        val opIndex = OperationIndex.of(ctx.model)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val httpTrait = httpBindingResolver.httpTrait(op)
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val inputShape = opIndex.getInput(op).get()
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
+        val queryLiterals = httpTrait.uri.queryLiterals
+
+        val rootNamespace = ctx.settings.moduleName
+        val headerMiddlewareSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemMiddleware.swift")
+            .name(inputSymbol.name)
+            .build()
+        ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
             writer.addFoundationImport()
-            writer.openBlock("extension $inputShapeName: HttpRequestBinding, Reflection {", "}") {
-                writer.openBlock(
-                    "public func buildHttpRequest(encoder: RequestEncoder, idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws -> SdkHttpRequestBuilder {",
-                    "}"
-                ) {
-                    writer.write("let builder = SdkHttpRequestBuilder()")
-                    renderQueryItems(ctx, queryLiterals, queryBindings, writer)
-                    renderHeaders(ctx, headerBindings, prefixHeaderBindings, writer, hasHttpBody, contentType, op.id.name)
-                    if (hasHttpBody) {
-                        renderEncodedBody(ctx, writer, requestBindings)
-                    }
-                    writer.write("return builder")
-                }
-            }
-            writer.write("")
+            val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
+            MiddlewareGenerator(writer, queryItemMiddleware).generate()
         }
     }
 
-    private fun renderEncodedBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter,
-        requestBindings: List<HttpBindingDescriptor>
-    ) {
-        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-        if (httpPayload != null) {
-            renderSerializeExplicitPayload(ctx, httpPayload, writer)
-        } else {
-            writer.openBlock("if try !self.allPropertiesAreNull() {", "}") {
-                writer.write("let data = try encoder.encode(self)")
-                writer.write("let body = HttpBody.data(data)")
-                writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
-                writer.write("builder.withBody(body)")
-            }
-        }
-    }
-
-    private fun renderSerializeExplicitPayload(
-        ctx: ProtocolGenerator.GenerationContext,
-        binding: HttpBindingDescriptor,
-        writer: SwiftWriter
-    ) {
-        // explicit payload member as the sole payload
-        val memberName = ctx.symbolProvider.toMemberName(binding.member)
-        val target = ctx.model.expectShape(binding.member.target)
-        writer.openBlock("if let $memberName = self.$memberName {", "}") {
-            when (target.type) {
-                ShapeType.BLOB -> {
-                    // FIXME handle streaming properly
-                    val isBinaryStream =
-                        ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
-                    writer.write("let data = \$L", memberName)
-                    writer.write("let body = HttpBody.data(data)")
-                }
-                ShapeType.STRING -> {
-                    val contents = if (target.hasTrait(EnumTrait::class.java)) {
-                        "$memberName.rawValue"
-                    } else {
-                        memberName
-                    }
-                    writer.write("let data = \$L.data(using: .utf8)", contents)
-                    writer.write("let body = HttpBody.data(data)")
-                }
-                ShapeType.STRUCTURE, ShapeType.UNION -> {
-                    // delegate to the member encode function
-                    writer.write("let data = try encoder.encode(\$L)", memberName)
-                    writer.write("let body = HttpBody.data(data)")
-                }
-                ShapeType.DOCUMENT -> {
-                    // TODO - deal with document members
-                    writer.write("let data = try encoder.encode(\$L)", memberName)
-                    writer.write("let body = HttpBody.data(data)")
-                }
-                else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
-            }
-
-            writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
-            writer.write("builder.withBody(body)")
-        }
-
-        // Case where the idempotency token is null and has HttpPayload trait, as well
-        if (binding.member.hasTrait(IdempotencyTokenTrait::class.java)) {
-            writer.write("let data = idempotencyTokenGenerator.generateToken().data(using: .utf8)")
-            writer.write("let body = HttpBody.data(data)")
-            writer.write("builder.withHeader(name: \"Content-Length\", value: String(data.count))")
-            writer.write("builder.withBody(body)")
-        }
-    }
-
-    private fun renderQueryItems(
-        ctx: ProtocolGenerator.GenerationContext,
-        queryLiterals: Map<String, String>,
-        queryBindings: List<HttpBindingDescriptor>,
-        writer: SwiftWriter
-    ) {
-
-        queryLiterals.forEach { (queryItemKey, queryItemValue) ->
-            val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
-            writer.write("builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
-        }
-
-        queryBindings.forEach {
-            var memberName = ctx.symbolProvider.toMemberName(it.member)
-            val memberTarget = ctx.model.expectShape(it.member.target)
-            val paramName = it.locationName
-            val bindingIndex = HttpBindingIndex.of(ctx.model)
-
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                if (memberTarget is CollectionShape) {
-                    // Handle cases where member is a List or Set type
-                    var queryItemValue = formatHeaderOrQueryValue(
-                        ctx,
-                        "queryItemValue",
-                        memberTarget.member,
-                        HttpBinding.Location.QUERY,
-                        bindingIndex
-                    )
-                    val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
-                    val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
-                    writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
-                        writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValue))")
-                        writer.write("builder.withQueryItem(queryItem)")
-                    }
-                } else {
-                    memberName = formatHeaderOrQueryValue(
-                        ctx,
-                        memberName,
-                        it.member,
-                        HttpBinding.Location.QUERY,
-                        bindingIndex
-                    )
-                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
-                    writer.write("builder.withQueryItem(queryItem)")
-                }
-            }
-            if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                writer.openBlock("else {", "}") {
-                    writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: $idempotencyTokenValue)")
-                    writer.write("builder.withQueryItem(queryItem)")
-                }
-            }
-        }
-    }
-
-    private fun formatHeaderOrQueryValue(
-        ctx: ProtocolGenerator.GenerationContext,
-        memberName: String,
-        memberShape: MemberShape,
-        location: HttpBinding.Location,
-        bindingIndex: HttpBindingIndex
-    ): String {
-        return when (val shape = ctx.model.expectShape(memberShape.target)) {
-            is TimestampShape -> {
-                val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-                ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true)
-            }
-            is BlobShape -> {
-                "try $memberName.base64EncodedString()"
-            }
-            is StringShape -> {
-                val enumRawValueSuffix = shape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
-                var formattedItemValue = "$memberName$enumRawValueSuffix"
-                if (shape.hasTrait(MediaTypeTrait::class.java)) {
-                    formattedItemValue = "try $formattedItemValue.base64EncodedString()"
-                }
-                formattedItemValue
-            }
-            else -> memberName
-        }
-    }
-
-    open fun headersContentType(
-        ctx: ProtocolGenerator.GenerationContext,
-        hasHttpBody: Boolean,
-        contentType: String,
-        writer: SwiftWriter,
-        operationShape: String
-    ) {
+    private fun renderBodyMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        val opIndex = OperationIndex.of(ctx.model)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val inputShape = opIndex.getInput(op).get()
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         if (hasHttpBody) {
-            writer.write("builder.withHeader(name: \"Content-Type\", value: \"$contentType\")")
-        }
-    }
+            val rootNamespace = ctx.settings.moduleName
+            val headerMiddlewareSymbol = Symbol.builder()
+                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")
+                .name(inputSymbol.name)
+                .build()
+            ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addFoundationImport()
 
-    private fun renderHeaders(
-        ctx: ProtocolGenerator.GenerationContext,
-        headerBindings: List<HttpBindingDescriptor>,
-        prefixHeaderBindings: List<HttpBindingDescriptor>,
-        writer: SwiftWriter,
-        hasHttpBody: Boolean,
-        contentType: String,
-        operationShape: String
-    ) {
-        val bindingIndex = HttpBindingIndex.of(ctx.model)
-        // we only need the content type header in the request if there is an http body that is being sent
-        headersContentType(ctx, hasHttpBody, contentType, writer, operationShape)
-        headerBindings.forEach {
-            val memberName = ctx.symbolProvider.toMemberName(it.member)
-            val memberTarget = ctx.model.expectShape(it.member.target)
-            val paramName = it.locationName
-
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                if (memberTarget is CollectionShape) {
-                    var headerValue = formatHeaderOrQueryValue(
-                        ctx,
-                        "headerValue",
-                        memberTarget.member,
-                        HttpBinding.Location.HEADER,
-                        bindingIndex
-                    )
-                    val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
-                    val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
-                    writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                        writer.write("builder.withHeader(name: \"$paramName\", value: String($headerValue))")
-                    }
-                } else {
-                    val memberNameWithExtension = formatHeaderOrQueryValue(
-                        ctx,
-                        memberName,
-                        it.member,
-                        HttpBinding.Location.HEADER,
-                        bindingIndex
-                    )
-                    writer.write("builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
-                }
-            }
-            if (it.member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                writer.openBlock("else {", "}") {
-                    writer.write("builder.withHeader(name: \"$paramName\", value: $idempotencyTokenValue)")
-                }
+                val bodyMiddleware =
+                    HttpBodyMiddleware(writer, ctx, inputSymbol, requestBindings)
+                MiddlewareGenerator(writer, bodyMiddleware).generate()
             }
         }
-
-        prefixHeaderBindings.forEach {
-            val memberName = ctx.symbolProvider.toMemberName(it.member)
-            val memberTarget = ctx.model.expectShape(it.member.target)
-            val paramName = it.locationName
-
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                val mapValueShape = memberTarget.asMapShape().get().value
-                val mapValueShapeTarget = ctx.model.expectShape(mapValueShape.target)
-                val mapValueShapeTargetSymbol = ctx.symbolProvider.toSymbol(mapValueShapeTarget)
-
-                writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
-                    if (mapValueShapeTarget is CollectionShape) {
-                        var headerValue = formatHeaderOrQueryValue(
-                            ctx,
-                            "headerValue",
-                            mapValueShapeTarget.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex
-                        )
-                        writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
-                            if (mapValueShapeTargetSymbol.isBoxed()) {
-                                writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    headerValue = formatHeaderOrQueryValue(
-                                        ctx,
-                                        "unwrappedHeaderValue",
-                                        mapValueShapeTarget.member,
-                                        HttpBinding.Location.HEADER,
-                                        bindingIndex
-                                    )
-                                    writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                                }
-                            } else {
-                                writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                            }
-                        }
-                    } else {
-                        var headerValue = formatHeaderOrQueryValue(
-                            ctx,
-                            "prefixHeaderMapValue",
-                            it.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex
-                        )
-                        writer.write("builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
-     */
-    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter): HttpProtocolClientGenerator {
-        val properties = getClientProperties(ctx)
-        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, properties, config, getProtocolHttpBindingResolver(ctx))
     }
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
-            val clientGenerator = getHttpProtocolClientGenerator(ctx, writer)
+            val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+            val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
+                ctx,
+                getProtocolHttpBindingResolver(ctx),
+                writer,
+                serviceSymbol.name,
+                defaultContentType
+            )
             clientGenerator.render()
         }
     }
@@ -1193,20 +942,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The default format for timestamps.
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
-
-    /**
-     * Get all of the properties that are passed in via an operation context
-     */
-    open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
-        return mutableListOf(
-            DefaultRequestEncoder(),
-            DefaultResponseDecoder()
-        )
-    }
-
-    open fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
-        return DefaultConfig(writer, serviceName)
-    }
+    protected abstract val codingKeysGenerator: CodingKeysGenerator
+    protected abstract val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator
+    protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
 
     /**
      * Get the operations with HTTP Bindings.

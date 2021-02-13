@@ -25,7 +25,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime"]
+            dependencies: [
+	        "ClientRuntime",
+	        "SmithyTestUtil"
+	    ]
         ),
         .target(
             name: "SmithyTestUtil",

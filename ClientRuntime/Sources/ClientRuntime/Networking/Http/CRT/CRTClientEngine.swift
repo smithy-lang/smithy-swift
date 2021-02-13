@@ -49,7 +49,7 @@ class CRTClientEngine: HttpClientEngine {
                                                   tlsOptions: tlsConnectionOptions,
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
-                                                  enableManualWindowManagement: false) //not using backpressure yet
+                                                  enableManualWindowManagement: false) // not using backpressure yet
         logger.debug("Creating connection pool for \(endpoint.urlString)" +
                         "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
@@ -59,7 +59,7 @@ class CRTClientEngine: HttpClientEngine {
         
         guard let connectionPool = connectionPools[endpoint] else {
             let newConnectionPool = createConnectionPool(endpoint: endpoint)
-            connectionPools[endpoint] = newConnectionPool //save in dictionary
+            connectionPools[endpoint] = newConnectionPool // save in dictionary
             return newConnectionPool
         }
         
@@ -76,7 +76,7 @@ class CRTClientEngine: HttpClientEngine {
             case .data(let data):
                 return Int64(data?.count ?? 0)
             case .streamSource(let stream):
-                //TODO: implement dynamic streaming with transfer-encoded-chunk header
+                // TODO: implement dynamic streaming with transfer-encoded-chunk header
                 return stream.unwrap().contentLength
             case .none, .streamSink:
                 return 0
@@ -114,7 +114,7 @@ class CRTClientEngine: HttpClientEngine {
                 case .success(let connection):
                     let stream = connection.makeRequest(requestOptions: requestOptions)
                     stream.activate()
-                    //map status code once call comes back
+                    // map status code once call comes back
                     future.then { (responseResult) in
                         _ = responseResult.map { (response) -> HttpResponse in
                             self.logger.debug("Future of response came back with success: \(response)")
@@ -144,7 +144,7 @@ class CRTClientEngine: HttpClientEngine {
         
         var streamSink: StreamSink?
         if case let HttpBody.streamSink(unwrappedStream) = request.body {
-            //we know they want to receive a stream via their request body type
+            // we know they want to receive a stream via their request body type
             streamSink = unwrappedStream.unwrap()
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in

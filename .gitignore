@@ -17,3 +17,6 @@ ClientRuntime/*.xcodeproj
 ClientRuntime/.swiftpm
 ClientRuntime/Package.resolved
 *.hprof
+**/xcuserdata
+**/*.xcuserdata
+xcuserdata

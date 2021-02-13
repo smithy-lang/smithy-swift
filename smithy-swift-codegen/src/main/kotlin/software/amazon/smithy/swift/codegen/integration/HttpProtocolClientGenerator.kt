@@ -33,7 +33,8 @@ open class HttpProtocolClientGenerator(
     private val writer: SwiftWriter,
     private val properties: List<ClientProperty>,
     private val serviceConfig: ServiceConfig,
-    private val httpBindingResolver: HttpBindingResolver
+    private val httpBindingResolver: HttpBindingResolver,
+    private val defaultContentType: String
 ) {
     private val serviceName: String = ctx.settings.sdkId
     private val model: Model = ctx.model
@@ -193,14 +194,23 @@ open class HttpProtocolClientGenerator(
     protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
+        val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
         val hasIdempotencyTokenTrait = idempotentMember != null
         if (hasIdempotencyTokenTrait) {
             IdempotencyTokenMiddlewareGenerator(
                 writer,
                 idempotentMember!!.memberName,
-                operationStackName
+                operationStackName,
+                inputShapeName
             ).renderIdempotencyMiddleware()
+        }
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<$inputShapeName>(contentType: \"${defaultContentType}\"))")
+        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+        if (hasHttpBody) {
+            writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
         }
     }
 

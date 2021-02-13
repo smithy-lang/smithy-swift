@@ -392,5 +392,5 @@ import protocol OpenCombine.TopLevelEncoder
 
 #if canImport(Combine) || canImport(OpenCombine)
 extension XMLDecoder: TopLevelDecoder {}
-//extension XMLEncoder: TopLevelEncoder {}
+// extension XMLEncoder: TopLevelEncoder {}
 #endif

@@ -81,6 +81,6 @@ extension StreamSourceProvider {
         if case let StreamSourceProvider.provider(unwrapped) = self {
             return unwrapped
         }
-        fatalError() //this should never happen since only one case
+        fatalError() // this should never happen since only one case
     }
 }

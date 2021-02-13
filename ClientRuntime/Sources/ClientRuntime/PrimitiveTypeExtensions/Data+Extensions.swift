@@ -23,7 +23,7 @@ extension Data {
             if read < 0 {
                 throw inputStream.streamError!
             } else if read == 0 {
-                //EOF
+                // EOF
                 break
             }
             self.append(buffer, count: read)

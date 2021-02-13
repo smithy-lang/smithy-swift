@@ -81,7 +81,7 @@ public class SdkHttpRequestBuilder {
 
     var headers: Headers = Headers()
     var methodType: HttpMethodType = .get
-    //TODO: figure out what host should be if anything?
+    // TODO: figure out what host should be if anything?
     var host: String = ""
     var path: String = "/"
     var body: HttpBody = .none

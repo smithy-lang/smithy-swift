@@ -37,7 +37,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension JsonUnionsInput: Encodable {
+            extension JsonUnionsInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case contents
                 }
@@ -59,7 +59,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MyUnion: Encodable {
+            extension MyUnion: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case blobValue
                     case booleanValue

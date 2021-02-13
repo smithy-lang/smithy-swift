@@ -8,28 +8,28 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public struct BuildStep: MiddlewareStack {
+public struct BuildStep<OperationStackInput>: MiddlewareStack where OperationStackInput: Encodable, OperationStackInput: Reflection {
     
     public typealias Context = HttpContext
 
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder,
+    public var orderedMiddleware: OrderedGroup<SerializeStepInput<OperationStackInput>,
                                                SdkHttpRequestBuilder,
-                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder,
+                                               HttpContext> = OrderedGroup<SerializeStepInput<OperationStackInput>,
                                                                            SdkHttpRequestBuilder,
                                                                            HttpContext>()
     
     public var id: String = "BuildStep"
     
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = SerializeStepInput<OperationStackInput>
     
     public typealias MOutput = SdkHttpRequestBuilder
     
     public init() {}
 }
 
-public struct BuildStepHandler: Handler {
-    
-    public typealias Input = SdkHttpRequestBuilder
+public struct BuildStepHandler<OperationStackInput>: Handler where OperationStackInput: Encodable, OperationStackInput: Reflection {
+
+    public typealias Input = SerializeStepInput<OperationStackInput>
     
     public typealias Output = SdkHttpRequestBuilder
     
@@ -37,6 +37,6 @@ public struct BuildStepHandler: Handler {
     
     public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequestBuilder, Error> {
         // since types don't change in input and output here just return the result to kick of the next step
-        return .success(input)
+        return .success(input.builder)
     }
 }

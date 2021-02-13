@@ -68,16 +68,16 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 
         // only add imports for symbols that exist in a certain namespace
         if (symbol.namespace.isNotEmpty()) {
-            imports.addImport(symbol.namespace)
+            imports.addImport(symbol.namespace, false)
         }
     }
 
-    fun addImport(packageName: String) {
-        imports.addImport(packageName)
+    fun addImport(packageName: String, isTestable: Boolean = false) {
+        imports.addImport(packageName, isTestable)
     }
 
     fun addFoundationImport() {
-        imports.addImport("Foundation")
+        imports.addImport("Foundation", false)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
