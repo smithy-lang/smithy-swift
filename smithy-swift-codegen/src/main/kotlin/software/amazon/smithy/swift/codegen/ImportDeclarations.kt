@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen
 class ImportDeclarations {
     private val imports = mutableSetOf<ImportStatement>()
 
-    fun addImport(packageName: String, isTestable: Boolean) {
+    fun addImport(packageName: String, isTestable: Boolean = false) {
         imports.add(ImportStatement(packageName, isTestable))
     }
 
