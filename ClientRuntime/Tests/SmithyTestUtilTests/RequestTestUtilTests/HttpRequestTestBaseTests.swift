@@ -162,7 +162,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                 
                                 let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
                                 let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
-                                let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)
+                                let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)
                                 deserializeMiddleware.fulfill()
                                 return .success(output)
                                })

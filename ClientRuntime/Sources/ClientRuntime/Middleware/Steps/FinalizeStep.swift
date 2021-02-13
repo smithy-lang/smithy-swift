@@ -9,34 +9,26 @@
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public struct FinalizeStep: MiddlewareStack {
-    public typealias Context = HttpContext
-    
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequestBuilder,
-                                               SdkHttpRequest,
-                                               HttpContext> = OrderedGroup<SdkHttpRequestBuilder,
-                                                                           SdkHttpRequest,
-                                                                           HttpContext>()
-    
-    public var id: String = "FinalizeStep"
-    
-    public typealias MInput = SdkHttpRequestBuilder
-    
-    public typealias MOutput = SdkHttpRequest
-    
-    public init() {}
-}
+public typealias FinalizeStep<O: HttpResponseBinding,
+                              E: HttpResponseBinding> = MiddlewareStep<SdkHttpRequestBuilder, OperationOutput<O, E>>
 
-public struct FinalizeStepHandler: Handler {
+public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
+                                  OperationStackError: HttpResponseBinding,
+                                  H: Handler>: Handler where H.Context == HttpContext,
+                                                             H.Input == SdkHttpRequest,
+                                                             H.Output == OperationOutput<OperationStackOutput, OperationStackError>{
     
     public typealias Input = SdkHttpRequestBuilder
     
-    public typealias Output = SdkHttpRequest
+    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
     
-    public init() {}
+    let inner: H
     
-    public func handle(context: HttpContext, input: Input) -> Result<SdkHttpRequest, Error> {
-        // this steps takes the builder and builds an actual request
-        return .success(input.build())
+    public init(inner: H) {
+        self.inner = inner
+    }
+    
+    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+        return inner.handle(context: context, input: input.build())
     }
 }

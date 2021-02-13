@@ -8,7 +8,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<DeserializeOutput<Output, OutputError>, Error>
+                          next: H) -> Result<OperationOutput<Output, OutputError>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
@@ -16,7 +16,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
         
         let decoder = context.getDecoder()
         let response = next.handle(context: context, input: input) // call handler to get http response
-        return response.flatMap { (deserializeOutput) -> Result<DeserializeOutput<Output, OutputError>, Error> in
+        return response.flatMap { (deserializeOutput) -> Result<OperationOutput<Output, OutputError>, Error> in
             var copiedResponse = deserializeOutput
             do {
                 if let httpResponse = copiedResponse.httpResponse {
@@ -39,6 +39,6 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
     }
     
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = DeserializeOutput<Output, OutputError>
+    public typealias MOutput = OperationOutput<Output, OutputError>
     public typealias Context = HttpContext
 }

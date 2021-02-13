@@ -10,27 +10,31 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public struct DeserializeStep<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: MiddlewareStack {
+public typealias DeserializeStep<O: HttpResponseBinding,
+                                 E: HttpResponseBinding> = MiddlewareStep<SdkHttpRequest, OperationOutput<O, E>>
+
+public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
+                                     OperationStackError: HttpResponseBinding,
+                                     H: Handler>: Handler where H.Context == HttpContext,
+                                                                H.Input == SdkHttpRequest,
+                                                                H.Output == OperationOutput<OperationStackOutput, OperationStackError> {
     
-    public typealias Context = HttpContext
- 
-    public var orderedMiddleware: OrderedGroup<SdkHttpRequest,
-                                               DeserializeOutput<Output, OutputError>,
-                                               HttpContext> = OrderedGroup<SdkHttpRequest,
-                                                                           DeserializeOutput<Output, OutputError>,
-                                                                           HttpContext>()
+    public typealias Input = SdkHttpRequest
     
-    public var id: String = "DeserializeStep"
+    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
     
-    public typealias MInput = SdkHttpRequest
+    let inner: H
     
-    public typealias MOutput = DeserializeOutput<Output, OutputError>
+    public init(inner: H) {
+        self.inner = inner
+    }
     
-    public init() {}
+    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+       return inner.handle(context: context, input: input)
+    }
 }
 
-// create a special output for this last step to link this step with the final handler and properly return the result
-public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
+public struct OperationOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
     public var httpResponse: HttpResponse?
     public var output: Output?
     public var error: OutputError?

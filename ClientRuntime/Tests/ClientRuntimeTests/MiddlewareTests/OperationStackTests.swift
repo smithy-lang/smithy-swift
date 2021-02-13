@@ -86,7 +86,7 @@ class OperationStackTests : HttpRequestTestBase {
                                                 currExpectCount = self.checkAndFulfill(currExpectCount, 8, expectation: expectHandler)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
+                                                let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
                                                 return .success(output)
                                             })
 

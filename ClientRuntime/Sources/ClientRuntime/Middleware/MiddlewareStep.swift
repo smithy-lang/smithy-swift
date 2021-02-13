@@ -4,44 +4,32 @@
 /// this protocol sets up a stack of middlewares and handles most of the functionality be default such as
 /// stringing the middlewares together into a linked list, getting a middleware and adding one to the stack.
 /// The stack can then go on to act as a step in a larger stack of stacks such as `OperationStack`
-public protocol MiddlewareStack: Middleware {
+public struct MiddlewareStep<Input, Output>: Middleware {
+    public typealias Context = HttpContext
+    public typealias MInput = Input
+    public typealias MOutput = Output
     /// the middleware of the stack in an ordered group
-    var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> { get set }
+    var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> = OrderedGroup<MInput, MOutput, Context>()
     /// the unique id of the stack
-    var id: String {get set}
+    public let id: String
     
-    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>?
-    
-    func handle<H: Handler>(context: Context,
-                            input: MInput,
-                            next: H) -> Result<MOutput, Error>
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context
-    
-    mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context
-    
-    mutating func intercept(position: Position,
-                            id: String,
-                            middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>)
-}
-
-public extension MiddlewareStack {
     func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
         return orderedMiddleware.get(id: id)
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
-    func handle<H: Handler>(context: Context,
+    public func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
-        if order.isEmpty {
+        let numberOfMiddlewares = order.count
+        guard order.isEmpty else {
             return handler.handle(context: context, input: input)
         }
-        let reversedCollection = (0...(order.count-1)).reversed()
+        let reversedCollection = (0...(numberOfMiddlewares-1)).reversed()
         for index in reversedCollection {
             let composedHandler = ComposedHandler(handler, order[index].value)
             handler = composedHandler.eraseToAnyHandler()
@@ -51,7 +39,7 @@ public extension MiddlewareStack {
         return result
     }
     
-    mutating func intercept<M: Middleware>(position: Position, middleware: M)
+    public mutating func intercept<M: Middleware>(position: Position, middleware: M)
     where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
@@ -62,7 +50,7 @@ public extension MiddlewareStack {
     /// stack.intercept(position: .after, id: "Add Header") { ... }
     /// ```
     ///
-    mutating func intercept(position: Position,
+    public mutating func intercept(position: Position,
                             id: String,
                             middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
         let middleware = WrappedMiddleware(middleware, id: id)
@@ -70,14 +58,3 @@ public extension MiddlewareStack {
     }
 }
 
-extension MiddlewareStack {
-    public func eraseToAnyMiddlewareStack<MInput,
-                                   MOutput,
-                                   Context>() -> AnyMiddlewareStack<MInput,
-                                                                    MOutput,
-                                                                    Context> where MInput == Self.MInput,
-                                                                                   MOutput == Self.MOutput,
-                                                                                   Context == Self.Context {
-        return AnyMiddlewareStack(self)
-    }
-}

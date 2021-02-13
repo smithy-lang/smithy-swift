@@ -16,7 +16,7 @@ public typealias MockBuildStackStep<I> = MockMiddlewareStackStep<SerializeStepIn
 public typealias MockFinalizeStackStep = MockMiddlewareStackStep<SdkHttpRequestBuilder,
                                                                  SdkHttpRequest>
 public typealias MockDeserializeStackStep<O, E> = MockMiddlewareStackStep<SdkHttpRequest,
-                                                                          DeserializeOutput<O, E>> where O: HttpResponseBinding, E: HttpResponseBinding
+                                                                          OperationOutput<O, E>> where O: HttpResponseBinding, E: HttpResponseBinding
 
 public class MockMiddlewareStackStep<OperationStackInput, OperationStackOutput>: MiddlewareStackStep<OperationStackInput, OperationStackOutput> {
     
