@@ -62,4 +62,3 @@ public class MiddlewareStep<Input, Output>: Middleware {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 }
-

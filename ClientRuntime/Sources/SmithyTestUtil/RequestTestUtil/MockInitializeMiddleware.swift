@@ -7,7 +7,7 @@
 
 import ClientRuntime
 
-public struct MockInitializeMiddleware : Middleware {
+public struct MockInitializeMiddleware: Middleware {
     public typealias Context = HttpContext
     public typealias MOutput = OperationOutput<MockOutput, MockMiddlewareError>
     public typealias MockInitializeMiddlewareCallback = (HttpContext, MInput) -> Void

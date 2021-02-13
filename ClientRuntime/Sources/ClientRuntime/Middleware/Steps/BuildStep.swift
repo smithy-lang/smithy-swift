@@ -15,7 +15,7 @@ public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
                                OperationStackError: HttpResponseBinding,
                                H: Handler>: Handler where H.Context == HttpContext,
                                                           H.Input == SdkHttpRequestBuilder,
-                                                          H.Output == OperationOutput<OperationStackOutput, OperationStackError>{
+                                                          H.Output == OperationOutput<OperationStackOutput, OperationStackError> {
 
     public typealias Input = SdkHttpRequestBuilder
     
