@@ -8,7 +8,7 @@
 import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                 OperationStackError: HttpResponseBinding>: Middleware where OperationStackError: Error {
+                                 OperationStackError: HttpResponseBinding>: Middleware {
     public typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>?
     public var id: String
     let callback: MockDeserializeMiddlewareCallback?

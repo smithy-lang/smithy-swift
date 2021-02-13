@@ -14,7 +14,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestHeaderName1", headerValue: "TestHeaderValue1"))
         stack.deserializeStep.intercept(position: .after,
@@ -46,19 +46,19 @@ class MiddlewareStackTests: XCTestCase {
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.addDefaultOperationMiddlewares()
-        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
+        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             
             return next.handle(context: context, input: input)
         }
-        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             return next.handle(context: context, input: input)
         }
 
-        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
-            input.builder.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
+            input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
             return next.handle(context: context, input: input)
         }
-        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<SdkHttpRequest, Error> in
+        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             return next.handle(context: context, input: requestBuilder)
         }
         
@@ -89,7 +89,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,

@@ -4,7 +4,7 @@
 /// this protocol sets up a stack of middlewares and handles most of the functionality be default such as
 /// stringing the middlewares together into a linked list, getting a middleware and adding one to the stack.
 /// The stack can then go on to act as a step in a larger stack of stacks such as `OperationStack`
-public struct MiddlewareStep<Input, Output>: Middleware {
+public class MiddlewareStep<Input, Output>: Middleware {
     public typealias Context = HttpContext
     public typealias MInput = Input
     public typealias MOutput = Output
@@ -12,6 +12,10 @@ public struct MiddlewareStep<Input, Output>: Middleware {
     var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> = OrderedGroup<MInput, MOutput, Context>()
     /// the unique id of the stack
     public let id: String
+    
+    public init(id: String) {
+        self.id = id
+    }
     
     func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
         return orderedMiddleware.get(id: id)
@@ -25,10 +29,11 @@ public struct MiddlewareStep<Input, Output>: Middleware {
         
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
-        let numberOfMiddlewares = order.count
-        guard order.isEmpty else {
+        
+        guard !order.isEmpty else {
             return handler.handle(context: context, input: input)
         }
+        let numberOfMiddlewares = order.count
         let reversedCollection = (0...(numberOfMiddlewares-1)).reversed()
         for index in reversedCollection {
             let composedHandler = ComposedHandler(handler, order[index].value)
@@ -39,7 +44,7 @@ public struct MiddlewareStep<Input, Output>: Middleware {
         return result
     }
     
-    public mutating func intercept<M: Middleware>(position: Position, middleware: M)
+    public func intercept<M: Middleware>(position: Position, middleware: M)
     where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
@@ -50,7 +55,7 @@ public struct MiddlewareStep<Input, Output>: Middleware {
     /// stack.intercept(position: .after, id: "Add Header") { ... }
     /// ```
     ///
-    public mutating func intercept(position: Position,
+    public func intercept(position: Position,
                             id: String,
                             middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
         let middleware = WrappedMiddleware(middleware, id: id)
