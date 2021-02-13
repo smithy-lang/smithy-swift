@@ -7,18 +7,18 @@
 
 import ClientRuntime
 
-struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
+public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
                                  OperationStackError: HttpResponseBinding>: Middleware where OperationStackError: Error {
-    typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>, Error>?
-    var id: String
+    public typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>, Error>?
+    public var id: String
     let callback: MockDeserializeMiddlewareCallback?
 
-    init(id: String, callback: MockDeserializeMiddlewareCallback? = nil) {
+    public init(id: String, callback: MockDeserializeMiddlewareCallback? = nil) {
         self.id = id
         self.callback = callback
     }
     
-    func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>, Error>
+    public func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<DeserializeOutput<OperationStackOutput, OperationStackError>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
@@ -47,7 +47,7 @@ struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
         }
     }
     
-    typealias MInput = SdkHttpRequest
-    typealias MOutput = DeserializeOutput<OperationStackOutput, OperationStackError>
-    typealias Context = HttpContext
+    public typealias MInput = SdkHttpRequest
+    public typealias MOutput = DeserializeOutput<OperationStackOutput, OperationStackError>
+    public typealias Context = HttpContext
 }

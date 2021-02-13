@@ -34,4 +34,9 @@ public struct DeserializeOutput<Output: HttpResponseBinding, OutputError: HttpRe
     public var httpResponse: HttpResponse?
     public var output: Output?
     public var error: OutputError?
+    public init(httpResponse: HttpResponse? = nil, output: Output? = nil, error: OutputError? = nil) {
+        self.httpResponse = httpResponse
+        self.output = output
+        self.error = error
+    }
 }

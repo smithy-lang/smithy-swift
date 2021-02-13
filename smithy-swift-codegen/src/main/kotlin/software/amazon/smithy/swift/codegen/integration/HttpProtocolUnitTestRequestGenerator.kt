@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
@@ -72,7 +73,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                 }
             }
-
+            writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -80,48 +81,86 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-            writer.openBlock("do {", "} catch let err {") {
-                writer.write("let encoder = \$L", requestEncoder)
-                writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
-                writer.write("let context = HttpContextBuilder()")
-                val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
-                val hasIdempotencyTokenTrait = idempotentMember != null
-                writer.swiftFunctionParameterIndent {
-                    writer.write("  .withEncoder(value: encoder)")
-                    if (hasIdempotencyTokenTrait) {
-                        writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
-                    }
-                    writer.write("  .build()")
-                }
-                val inputSymbol = symbolProvider.toSymbol(inputShape)
-                val operationStack = "operationStack"
-                writer.write("var $operationStack = MockRequestOperationStack<$inputSymbol>(id: \"${test.id}\")")
-                writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
-                writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
-                val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-                if (hasHttpBody) {
-                    writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
-                    writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<${inputSymbol.name}>())")
-                }
 
-                if (test.headers.keys.contains("Content-Type")) {
-                    val contentType = test.headers["Content-Type"]
-                    writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${contentType}\"))")
-                }
+            val inputSymbol = symbolProvider.toSymbol(inputShape)
+            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+            renderMockSerializeStackStep(test, inputSymbol, hasHttpBody)
+            renderMockBuildStackStep(test, inputSymbol, hasHttpBody)
+            renderMockDeserializeStackStep(test, bodyAssertMethod)
 
+            writer.write("let encoder = \$L", requestEncoder)
+            writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
+            writer.write("let context = HttpContextBuilder()")
+            val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
+            val hasIdempotencyTokenTrait = idempotentMember != null
+            writer.swiftFunctionParameterIndent {
+                writer.write("  .withEncoder(value: encoder)")
                 if (hasIdempotencyTokenTrait) {
-                    IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, inputSymbol.name).renderIdempotencyMiddleware()
+                    writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
                 }
-                writer.write("let actual = try operationStack.handleMiddleware(context: context, input: input).get()")
+                writer.write("  .build()")
+            }
+            val operationStack = "operationStack"
+            val letVarOperationStack = if (hasIdempotencyTokenTrait) "var" else "let"
+            writer.write("$letVarOperationStack $operationStack = OperationStack<$inputSymbol, MockOutput, MockMiddlewareError>(id: \"${test.id}\",")
+            writer.write("serializeStackStep: mockSerializeStackStep,")
+            if (hasHttpBody) {
+                writer.write("buildStackStep: mockBuildStackStep,")
+            }
+            writer.write("deserializeStackStep: mockDeserializeStackStep)")
 
+            if (hasIdempotencyTokenTrait) {
+                IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, inputSymbol.name).renderIdempotencyMiddleware()
+            }
+            writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
+                writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
+                writer.write("return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))")
+            }
+            writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
+        }
+    }
+
+    private fun renderMockSerializeStackStep(test: HttpRequestTestCase, inputSymbol: Symbol, hasHttpBody: Boolean) {
+        writer.openBlock("let mockSerializeStackStep: MockSerializeStackStep<$inputSymbol> = constructMockSerializeStackStep(interceptCallback: {", "})") {
+            writer.write("var step = SerializeStep<$inputSymbol>()")
+            writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
+            writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
+            if (hasHttpBody) {
+                writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
+            }
+            if (test.headers.keys.contains("Content-Type")) {
+                val contentType = test.headers["Content-Type"]
+                writer.write("step.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${contentType}\"))")
+            }
+            writer.write("return step")
+        }
+    }
+
+    private fun renderMockBuildStackStep(test: HttpRequestTestCase, inputSymbol: Symbol, hasHttpBody: Boolean) {
+        if (hasHttpBody) {
+            writer.openBlock("let mockBuildStackStep: MockBuildStackStep<$inputSymbol> = constructMockBuildStackStep(interceptCallback: {", "})") {
+                writer.write("var step = BuildStep<$inputSymbol>()")
+                writer.write("step.intercept(position: .before, middleware: ContentLengthMiddleware<${inputSymbol.name}>())")
+                writer.write("return step")
+            }
+        }
+    }
+    private fun renderMockDeserializeStackStep(test: HttpRequestTestCase, bodyAssertMethod: String) {
+        writer.openBlock("let mockDeserializeStackStep: MockDeserializeStackStep<MockOutput, MockMiddlewareError> = constructMockDeserializeStackStep(interceptCallback: {", "})") {
+            writer.write("var step = DeserializeStep<MockOutput, MockMiddlewareError>()")
+            writer.write("step.intercept(position: .after,")
+            writer.write("             middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(")
+            writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
                 renderQueryAsserts(test)
                 renderHeaderAsserts(test)
                 renderBodyAssert(test, bodyAssertMethod)
+                writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
+                writer.write("let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)")
+                writer.write("let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)")
+                writer.write("deserializeMiddleware.fulfill()")
+                writer.write("return .success(output)")
             }
-            writer.indent()
-            writer.write("XCTFail(\"Failed to encode the input. Error description: \\(err)\")")
-            writer.dedent()
-            writer.write("}")
+            writer.write("return step")
         }
     }
 
@@ -132,7 +171,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("// assert forbidden query params do not exist")
             writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
                 writer.openBlock("XCTAssertFalse(", ")") {
-                    writer.write("queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
+                    writer.write("self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
                     writer.write("\"Forbidden Query:\\(forbiddenQueryParam) exists in query items\"")
                 }
             }
@@ -144,7 +183,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("// assert required query params do exist")
             writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
                 writer.openBlock("XCTAssertTrue(", ")") {
-                    writer.write("queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
+                    writer.write("self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
                     writer.write("\"Required Query:\\(requiredQueryParam) does not exist in query items\"")
                 }
             }
@@ -158,7 +197,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("// assert forbidden headers do not exist")
             writer.openBlock("for forbiddenHeader in forbiddenHeaders {", "}") {
                 writer.openBlock("XCTAssertFalse(", ")") {
-                    writer.write("headerExists(forbiddenHeader, in: actual.headers.headers),")
+                    writer.write("self.headerExists(forbiddenHeader, in: actual.headers.headers),")
                     writer.write("\"Forbidden Header:\\(forbiddenHeader) exists in headers\"")
                 }
             }
@@ -169,7 +208,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("// assert required headers do exist")
             writer.openBlock("for requiredHeader in requiredHeaders {", "}") {
                 writer.openBlock("XCTAssertTrue(", ")") {
-                    writer.write("headerExists(requiredHeader, in: actual.headers.headers),")
+                    writer.write("self.headerExists(requiredHeader, in: actual.headers.headers),")
                     writer.write("\"Required Header:\\(requiredHeader) does not exist in headers\"")
                 }
             }
@@ -179,16 +218,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyAssert(test: HttpRequestTestCase, bodyAssertMethod: String) {
         if (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}") {
             writer.openBlock(
-                "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.write("$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
+                writer.write("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
             }
         } else {
             writer.openBlock(
-                "assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssert(actualHttpBody == HttpBody.none, \"The actual HttpBody is not none as expected\")")

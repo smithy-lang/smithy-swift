@@ -7,18 +7,20 @@
 
 import ClientRuntime
 
-struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
+public struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
     
-    typealias Context = HttpContext
-    typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error>
+    public typealias Context = HttpContext
+    public typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error>
     let handleCallback: MockHandlerCallback
-    
-    func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+    public init(handleCallback: @escaping MockHandlerCallback) {
+        self.handleCallback = handleCallback
+    }
+    public func handle(context: Context, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
         return self.handleCallback(context, input)
 
     }
     
-    typealias Input = SdkHttpRequest
+    public typealias Input = SdkHttpRequest
     
-    typealias Output = DeserializeOutput<Output, OutputError>
+    public typealias Output = DeserializeOutput<Output, OutputError>
 }
