@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import TestSupport.Mocks.MockHttpProtocolClientOperations
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
@@ -37,9 +38,9 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
+    override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory(protocol)
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
-    override val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
 
@@ -76,7 +77,7 @@ class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
     }
 }
 
-class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
+class TestHttpProtocolClientGeneratorFactory(val protocol: ShapeId) : HttpProtocolClientGeneratorFactory {
     override fun createHttpProtocolClientGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         httpBindingResolver: HttpBindingResolver,
@@ -87,7 +88,8 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         val properties = getClientProperties(ctx)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType)
+        val clientOperations = MockHttpProtocolClientOperations()
+        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType, clientOperations)
     }
 
     private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {

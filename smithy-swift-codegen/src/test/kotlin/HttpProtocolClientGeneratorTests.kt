@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import TestSupport.Mocks.MockHttpProtocolClientOperations
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -35,7 +36,8 @@ class HttpProtocolClientGeneratorTests {
         val generator = HttpProtocolClientGenerator(
             ctx.generationCtx, writer, features, config,
             HttpTraitResolver(ctx.generationCtx),
-            "application/json"
+            "application/json",
+            MockHttpProtocolClientOperations()
         )
         generator.render()
         commonTestContents = writer.toString()
