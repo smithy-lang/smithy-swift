@@ -224,9 +224,15 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     /*
     * Writes @available attribute if deprecated trait is present
     * */
-    fun writeAvailableAttribute(shape: Shape) {
-        shape.getTrait(DeprecatedTrait::class.java).ifPresent {
-            var deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()
+    fun writeAvailableAttribute(model: Model?, shape: Shape) {
+        var deprecatedTrait: DeprecatedTrait? = null
+        if (shape.getTrait(DeprecatedTrait::class.java).isPresent) {
+            deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()
+        } else if (shape.getMemberTrait(model, DeprecatedTrait::class.java).isPresent) {
+            deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
+        }
+
+        if (deprecatedTrait != null) {
             val messagePresent = deprecatedTrait.message.isPresent
             val sincePresent = deprecatedTrait.since.isPresent
             var message = StringBuilder()
