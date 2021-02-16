@@ -26,8 +26,7 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     /// This function if called adds all default middlewares to a typical sdk operation,
     ///  can optionally call from the service client inside an operation
     public mutating func addDefaultOperationMiddlewares() {
-        buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackInput,
-                                                                                   OperationOutput<OperationStackOutput, OperationStackError>>())
+        buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackOutput, OperationStackError>())
         deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<OperationStackOutput, OperationStackError>())
     }
     

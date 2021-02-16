@@ -2,12 +2,12 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 
-abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) {
+abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, step: MiddlewareStep) {
     open val typeName: String = "${shapeSymbol.name}Middleware"
 
-    abstract val inputType: Symbol
+    open val inputType: Symbol = step.inputType
 
-    abstract val outputType: Symbol
+    open val outputType: Symbol = step.outputType
 
     open val contextType: Symbol = Symbol
         .builder()
@@ -31,4 +31,13 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) 
     }
 
     abstract fun generateMiddlewareClosure()
+}
+
+abstract class MiddlewareStep(outputType: Symbol, outputErrorType: Symbol) {
+    abstract val inputType: Symbol
+    val outputType: Symbol = Symbol
+        .builder()
+        .name("OperationOutput<$outputType, $outputErrorType>")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .build()
 }

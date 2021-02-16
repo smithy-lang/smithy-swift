@@ -9,26 +9,19 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareBuildStep
+import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareSerializeStep
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val symbol: Symbol,
+    inputSymbol: Symbol,
+    outputSymbol: Symbol,
+    outputErrorSymbol: Symbol,
     private val requestBindings: List<HttpBindingDescriptor>
-) : Middleware(writer, symbol) {
+) : Middleware(writer, inputSymbol, MiddlewareSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
-    override val typeName = "${symbol.name}BodyMiddleware"
-    override val inputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
-
-    override val outputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
+    override val typeName = "${inputSymbol.name}BodyMiddleware"
 
     override fun generateMiddlewareClosure() {
         renderEncodedBody()

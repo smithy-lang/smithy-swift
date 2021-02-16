@@ -7,7 +7,7 @@
 
 import ClientRuntime
 
-public struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler where OutputError: Error {
+public struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
     
     public typealias Context = HttpContext
     public typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<OperationOutput<Output, OutputError>, Error>

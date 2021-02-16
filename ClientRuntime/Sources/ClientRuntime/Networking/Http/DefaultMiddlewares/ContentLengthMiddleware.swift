@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<OperationStackInput: Encodable & Reflection,
-                                      OperationStackOutput>: Middleware {
+public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
+                                      OperationStackError: HttpResponseBinding>: Middleware {
     public let id: String = "ContentLength"
     
     public init() {}
@@ -30,6 +30,6 @@ public struct ContentLengthMiddleware<OperationStackInput: Encodable & Reflectio
     }
     
     public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationStackOutput
+    public typealias MOutput = OperationOutput<OperationStackOutput, OperationStackError>
     public typealias Context = HttpContext
 }

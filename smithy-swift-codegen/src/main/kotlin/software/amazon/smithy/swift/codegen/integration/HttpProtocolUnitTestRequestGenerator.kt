@@ -10,6 +10,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.utils.StringUtils.isBlank
 
@@ -83,10 +84,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 .write("")
 
             val inputSymbol = symbolProvider.toSymbol(inputShape)
+            val outputShapeId = operation.output.get()
+            val outputShape = model.expectShape(outputShapeId)
+            val outputSymbol = symbolProvider.toSymbol(outputShape)
+            val outputErrorName = "${operation.defaultName()}Error"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-            renderMockSerializeStackStep(test, inputSymbol, hasHttpBody)
-            renderMockBuildStackStep(test, inputSymbol, hasHttpBody)
-            renderMockDeserializeStackStep(test, bodyAssertMethod)
 
             writer.write("let encoder = \$L", requestEncoder)
             writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
@@ -102,16 +104,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
             val operationStack = "operationStack"
             val letVarOperationStack = if (hasIdempotencyTokenTrait) "var" else "let"
-            writer.write("$letVarOperationStack $operationStack = OperationStack<$inputSymbol, MockOutput, MockMiddlewareError>(id: \"${test.id}\",")
-            writer.write("serializeStackStep: mockSerializeStackStep,")
-            if (hasHttpBody) {
-                writer.write("buildStackStep: mockBuildStackStep,")
-            }
-            writer.write("deserializeStackStep: mockDeserializeStackStep)")
-
+            writer.write("$letVarOperationStack $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
+            renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
+            renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
+            renderMockDeserializeMiddleware(test, operationStack, outputSymbol, outputErrorName, bodyAssertMethod)
             if (hasIdempotencyTokenTrait) {
-                IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, inputSymbol.name).renderIdempotencyMiddleware()
+
+                IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, outputSymbol.name, outputErrorName).renderIdempotencyMiddleware()
             }
+
             writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
                 writer.write("return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))")
@@ -120,48 +121,43 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderMockSerializeStackStep(test: HttpRequestTestCase, inputSymbol: Symbol, hasHttpBody: Boolean) {
-        writer.openBlock("let mockSerializeStackStep: MockSerializeStackStep<$inputSymbol> = constructMockSerializeStackStep(interceptCallback: {", "})") {
-            writer.write("var step = SerializeStep<$inputSymbol>()")
-            writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
-            writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
-            if (hasHttpBody) {
-                writer.write("step.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
-            }
-            if (test.headers.keys.contains("Content-Type")) {
-                val contentType = test.headers["Content-Type"]
-                writer.write("step.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}>(contentType: \"${contentType}\"))")
-            }
-            writer.write("return step")
+    private fun renderSerializeMiddleware(test: HttpRequestTestCase,
+                                          operationStack: String,
+                                          inputSymbol: Symbol,
+                                          outputSymbol: Symbol,
+                                          outputErrorName: String,
+                                          hasHttpBody: Boolean) {
+        writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
+        writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
+        if (hasHttpBody) {
+            writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
+        }
+
+        if (test.headers.keys.contains("Content-Type")) {
+            val contentType = test.headers["Content-Type"]
+            writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
         }
     }
 
-    private fun renderMockBuildStackStep(test: HttpRequestTestCase, inputSymbol: Symbol, hasHttpBody: Boolean) {
+    private fun renderBuildMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {
         if (hasHttpBody) {
-            writer.openBlock("let mockBuildStackStep: MockBuildStackStep<$inputSymbol> = constructMockBuildStackStep(interceptCallback: {", "})") {
-                writer.write("var step = BuildStep<$inputSymbol>()")
-                writer.write("step.intercept(position: .before, middleware: ContentLengthMiddleware<${inputSymbol.name}>())")
-                writer.write("return step")
-            }
+            writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<$outputSymbol, $outputErrorName>())")
         }
     }
-    private fun renderMockDeserializeStackStep(test: HttpRequestTestCase, bodyAssertMethod: String) {
-        writer.openBlock("let mockDeserializeStackStep: MockDeserializeStackStep<MockOutput, MockMiddlewareError> = constructMockDeserializeStackStep(interceptCallback: {", "})") {
-            writer.write("var step = DeserializeStep<MockOutput, MockMiddlewareError>()")
-            writer.write("step.intercept(position: .after,")
-            writer.write("             middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(")
+    private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, bodyAssertMethod: String) {
+
+            writer.write("$operationStack.deserializeStep.intercept(position: .after,")
+            writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
             writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
                 renderQueryAsserts(test)
                 renderHeaderAsserts(test)
                 renderBodyAssert(test, bodyAssertMethod)
                 writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
-                writer.write("let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)")
-                writer.write("let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)")
+                writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
+                writer.write("let output = OperationOutput<$outputSymbol, $outputErrorName>(httpResponse: response, output: mockOutput)")
                 writer.write("deserializeMiddleware.fulfill()")
                 writer.write("return .success(output)")
             }
-            writer.write("return step")
-        }
     }
 
     private fun renderQueryAsserts(test: HttpRequestTestCase) {
