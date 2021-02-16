@@ -29,18 +29,18 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
  * Renders an implementation of a service interface for HTTP protocol
  */
 open class HttpProtocolClientGenerator(
-    ctx: ProtocolGenerator.GenerationContext,
+    private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     properties: List<ClientProperty>,
     serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
-    private val defaultContentType: String
+    private val defaultContentType: String,
+    private val clientGeneratorCustomizable: HttpProtocolClientCustomizable
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
     private val clientGeneratorInitialization = HttpProtocolClientInitialization(ctx, writer, properties, serviceConfig)
-
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
@@ -111,7 +111,7 @@ open class HttpProtocolClientGenerator(
         writer.write("let path = \"\$L\"", uri)
     }
 
-    protected open fun renderContextAttributes(op: OperationShape) {
+    private fun renderContextAttributes(op: OperationShape) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val httpMethod = httpTrait.method.toLowerCase()
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
@@ -122,9 +122,10 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
+        clientGeneratorCustomizable.renderContextAttributes(ctx, writer, op)
     }
 
-    protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
+    private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
@@ -145,6 +146,7 @@ open class HttpProtocolClientGenerator(
         if (hasHttpBody) {
             writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
         }
+        clientGeneratorCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
