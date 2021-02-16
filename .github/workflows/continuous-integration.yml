@@ -40,7 +40,7 @@ jobs:
           GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   downstream:
-    needs: linux-compat
+    needs: macos-compat
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
