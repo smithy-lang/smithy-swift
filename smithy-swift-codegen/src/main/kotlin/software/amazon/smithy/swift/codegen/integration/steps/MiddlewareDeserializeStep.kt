@@ -4,9 +4,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.MiddlewareStep
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
-class MiddlewareDeserializeStep(outputType: Symbol,
-                                outputErrorType: Symbol
-): MiddlewareStep(outputType, outputErrorType) {
+class MiddlewareDeserializeStep(
+    outputType: Symbol,
+    outputErrorType: Symbol
+) : MiddlewareStep(outputType, outputErrorType) {
     override val inputType: Symbol = Symbol
         .builder()
         .name("SdkHttpRequest")

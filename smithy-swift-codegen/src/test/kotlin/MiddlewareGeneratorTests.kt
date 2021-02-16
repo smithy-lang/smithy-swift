@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.MiddlewareStep
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class MiddlewareGeneratorTests {
@@ -25,7 +26,7 @@ class MiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: String,
-                              next: H) -> Result<String, Error>
+                              next: H) -> Result<OperationOutput<String, Error>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -36,7 +37,7 @@ class MiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = String
-                public typealias MOutput = String
+                public typealias MOutput = OperationOutput<String, Error>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -44,10 +45,12 @@ class MiddlewareGeneratorTests {
     }
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol) {
+class MockMiddlewareStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : MiddlewareStep(outputSymbol, outputErrorSymbol) {
+    override val inputType: Symbol = Symbol.builder().name("String").build()
+}
+
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockMiddlewareStep(Symbol.builder().name("String").build(), Symbol.builder().name("Error").build())) {
     val stringSymbol = Symbol.builder().name("String").build()
-    override val inputType = stringSymbol
-    override val outputType = stringSymbol
     override val properties = mutableMapOf("test" to stringSymbol)
     override fun generateMiddlewareClosure() {
         writer.write("print(\"this is a \\(test)\")")

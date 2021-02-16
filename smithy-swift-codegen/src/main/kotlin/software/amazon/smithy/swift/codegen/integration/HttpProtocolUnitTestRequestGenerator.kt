@@ -121,12 +121,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderSerializeMiddleware(test: HttpRequestTestCase,
-                                          operationStack: String,
-                                          inputSymbol: Symbol,
-                                          outputSymbol: Symbol,
-                                          outputErrorName: String,
-                                          hasHttpBody: Boolean) {
+    private fun renderSerializeMiddleware(
+        test: HttpRequestTestCase,
+        operationStack: String,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        outputErrorName: String,
+        hasHttpBody: Boolean
+    ) {
         writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
         writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
         if (hasHttpBody) {
@@ -146,18 +148,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
     private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, bodyAssertMethod: String) {
 
-            writer.write("$operationStack.deserializeStep.intercept(position: .after,")
-            writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
-            writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-                renderQueryAsserts(test)
-                renderHeaderAsserts(test)
-                renderBodyAssert(test, bodyAssertMethod)
-                writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
-                writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
-                writer.write("let output = OperationOutput<$outputSymbol, $outputErrorName>(httpResponse: response, output: mockOutput)")
-                writer.write("deserializeMiddleware.fulfill()")
-                writer.write("return .success(output)")
-            }
+        writer.write("$operationStack.deserializeStep.intercept(position: .after,")
+        writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
+        writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
+            renderQueryAsserts(test)
+            renderHeaderAsserts(test)
+            renderBodyAssert(test, bodyAssertMethod)
+            writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
+            writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
+            writer.write("let output = OperationOutput<$outputSymbol, $outputErrorName>(httpResponse: response, output: mockOutput)")
+            writer.write("deserializeMiddleware.fulfill()")
+            writer.write("return .success(output)")
+        }
     }
 
     private fun renderQueryAsserts(test: HttpRequestTestCase) {

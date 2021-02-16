@@ -7,9 +7,7 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.Middleware
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareBuildStep
 import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareSerializeStep
 
 class HttpBodyMiddleware(
