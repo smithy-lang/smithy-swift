@@ -12,6 +12,8 @@
 public typealias FinalizeStep<O: HttpResponseBinding,
                               E: HttpResponseBinding> = MiddlewareStep<HttpContext, SdkHttpRequestBuilder, OperationOutput<O, E>>
 
+public let FinalizeStepId = "Finalize"
+
 public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
                                   OperationStackError: HttpResponseBinding,
                                   H: Handler>: Handler where H.Context == HttpContext,
@@ -22,13 +24,13 @@ public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
     
     public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
     
-    let inner: H
+    let handler: H
     
-    public init(inner: H) {
-        self.inner = inner
+    public init(handler: H) {
+        self.handler = handler
     }
     
     public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
-        return inner.handle(context: context, input: input.build())
+        return handler.handle(context: context, input: input.build())
     }
 }

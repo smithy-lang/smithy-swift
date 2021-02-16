@@ -15,11 +15,11 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     
     public init(id: String) {
         self.id = id
-        self.initializeStep = InitializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: "Initialize")
-        self.serializeStep = SerializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: "Serialize")
-        self.buildStep = BuildStep<OperationStackOutput, OperationStackError>(id: "Build")
-        self.finalizeStep = FinalizeStep<OperationStackOutput, OperationStackError>(id: "Finalize")
-        self.deserializeStep = DeserializeStep<OperationStackOutput, OperationStackError>(id: "Deserialize")
+        self.initializeStep = InitializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: InitializeStepId)
+        self.serializeStep = SerializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: SerializeStepId)
+        self.buildStep = BuildStep<OperationStackOutput, OperationStackError>(id: BuildStepId)
+        self.finalizeStep = FinalizeStep<OperationStackOutput, OperationStackError>(id: FinalizeStepId)
+        self.deserializeStep = DeserializeStep<OperationStackOutput, OperationStackError>(id: DeserializeStepId)
         
     }
     
@@ -36,11 +36,11 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
                                              next: H) -> SdkResult<OperationStackOutput, OperationStackError>
     where H.Input == SdkHttpRequest, H.Output == OperationOutput<OperationStackOutput, OperationStackError>, H.Context == HttpContext {
 
-        let deserialize = compose(next: DeserializeStepHandler(inner: next), with: deserializeStep)
-        let finalize = compose(next: FinalizeStepHandler(inner: deserialize), with: finalizeStep)
-        let build = compose(next: BuildStepHandler(inner: finalize), with: buildStep)
-        let serialize = compose(next: SerializeStepHandler(inner: build), with: serializeStep)
-        let initialize = compose(next: InitializeStepHandler(inner: serialize), with: initializeStep)
+        let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
+        let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
+        let build = compose(next: BuildStepHandler(handler: finalize), with: buildStep)
+        let serialize = compose(next: SerializeStepHandler(handler: build), with: serializeStep)
+        let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
         
         let result = initialize.handle(context: context, input: input)
 
@@ -57,7 +57,7 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     }
     
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
-    public func compose<H: Handler, M: Middleware>(next handler: H,
+    private func compose<H: Handler, M: Middleware>(next handler: H,
                                                    with middlewares: M...) -> AnyHandler<H.Input,
                                                                                  H.Output,
                                                                                  H.Context> where M.MOutput == H.Output,

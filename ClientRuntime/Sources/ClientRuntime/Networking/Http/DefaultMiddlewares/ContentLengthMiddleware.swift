@@ -5,6 +5,8 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
                                       OperationStackError: HttpResponseBinding>: Middleware {
     public let id: String = "ContentLength"
     
+    private let contentLengthHeaderName = "Content-Length"
+    
     public init() {}
     
     public func handle<H>(context: Context,
@@ -23,7 +25,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
             break
         case .streamSource(let sourceProvider):
             let contentLength = sourceProvider.unwrap().contentLength
-            input.withHeader(name: "Content-Length", value: String(contentLength))
+            input.withHeader(name: contentLengthHeaderName, value: String(contentLength))
         }
         
         return next.handle(context: context, input: input)

@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
-import software.amazon.smithy.swift.codegen.MiddlewareStep
+import software.amazon.smithy.swift.codegen.OperationStep
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class MiddlewareGeneratorTests {
@@ -45,11 +45,11 @@ class MiddlewareGeneratorTests {
     }
 }
 
-class MockMiddlewareStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : MiddlewareStep(outputSymbol, outputErrorSymbol) {
+class MockOperationStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : OperationStep(outputSymbol, outputErrorSymbol) {
     override val inputType: Symbol = Symbol.builder().name("String").build()
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockMiddlewareStep(Symbol.builder().name("String").build(), Symbol.builder().name("Error").build())) {
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockOperationStep(Symbol.builder().name("String").build(), Symbol.builder().name("Error").build())) {
     val stringSymbol = Symbol.builder().name("String").build()
     override val properties = mutableMapOf("test" to stringSymbol)
     override fun generateMiddlewareClosure() {

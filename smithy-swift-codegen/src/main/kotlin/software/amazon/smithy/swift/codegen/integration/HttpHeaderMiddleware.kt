@@ -7,7 +7,7 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareSerializeStep
+import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
 
 class HttpHeaderMiddleware(
@@ -19,7 +19,7 @@ class HttpHeaderMiddleware(
     private val headerBindings: List<HttpBindingDescriptor>,
     private val prefixHeaderBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : Middleware(writer, inputSymbol, MiddlewareSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
     override val typeName = "${inputSymbol.name}HeadersMiddleware"

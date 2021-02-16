@@ -7,7 +7,7 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareSerializeStep
+import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -18,7 +18,7 @@ class HttpQueryItemMiddleware(
     private val queryBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
     private val writer: SwiftWriter
-) : Middleware(writer, inputSymbol, MiddlewareSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}QueryItemMiddleware"
 

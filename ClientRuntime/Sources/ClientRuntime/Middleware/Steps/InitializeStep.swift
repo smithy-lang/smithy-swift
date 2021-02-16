@@ -11,6 +11,8 @@ public typealias InitializeStep<I: Encodable & Reflection,
                                 O: HttpResponseBinding,
                                 E: HttpResponseBinding> = MiddlewareStep<HttpContext, I, OperationOutput<O, E>>
 
+public let InitializeStepId = "Initialize"
+
 public struct InitializeStepHandler<OperationStackInput: Encodable & Reflection,
                                     OperationStackOutput: HttpResponseBinding,
                                     OperationStackError: HttpResponseBinding,
@@ -21,15 +23,15 @@ public struct InitializeStepHandler<OperationStackInput: Encodable & Reflection,
     public typealias Input = OperationStackInput
     
     public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
-    let inner: H
+    let handler: H
     
-    public init(inner: H) {
-        self.inner = inner
+    public init(handler: H) {
+        self.handler = handler
     }
     
     public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
         
-        return inner.handle(context: context, input: serializeInput)
+        return handler.handle(context: context, input: serializeInput)
     }
 }

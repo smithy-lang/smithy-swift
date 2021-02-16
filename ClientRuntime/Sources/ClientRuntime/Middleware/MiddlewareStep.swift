@@ -1,16 +1,16 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-/// this class sets up a step of middlewares and handles most of the functionality be default such as
-/// stringing the middlewares together into a linked list, getting a middleware and adding one to the stack.
-/// The step can then go on to act as a step in a larger stack of steps such as `OperationStack`
+/// An instance of MiddlewareStep will be contained in the operation stack, and recognized as a single
+/// step (initialize, build, etc..) that contains an ordered list of middlewares. This class is
+/// responsible for ordering these middlewares so that they are executed in the correct order.
 public class MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
     public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
-    /// the middleware of the stack in an ordered group
+
     var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> = OrderedGroup<MInput, MOutput, Context>()
-    /// the unique id of the stack
+   
     public let id: String
     
     public init(id: String) {

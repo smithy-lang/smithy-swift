@@ -8,7 +8,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.steps.MiddlewareSerializeStep
+import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
@@ -17,7 +17,7 @@ class HttpBodyMiddleware(
     outputSymbol: Symbol,
     outputErrorSymbol: Symbol,
     private val requestBindings: List<HttpBindingDescriptor>
-) : Middleware(writer, inputSymbol, MiddlewareSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}BodyMiddleware"
 

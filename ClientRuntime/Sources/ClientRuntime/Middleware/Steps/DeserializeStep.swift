@@ -13,6 +13,8 @@
 public typealias DeserializeStep<O: HttpResponseBinding,
                                  E: HttpResponseBinding> = MiddlewareStep<HttpContext, SdkHttpRequest, OperationOutput<O, E>>
 
+public let DeserializeStepId = "Deserialize"
+
 public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
                                      OperationStackError: HttpResponseBinding,
                                      H: Handler>: Handler where H.Context == HttpContext,
@@ -23,14 +25,14 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
     
     public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
     
-    let inner: H
+    let handler: H
     
-    public init(inner: H) {
-        self.inner = inner
+    public init(handler: H) {
+        self.handler = handler
     }
     
     public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
-       return inner.handle(context: context, input: input)
+       return handler.handle(context: context, input: input)
     }
 }
 
