@@ -14,7 +14,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestHeaderName1", headerValue: "TestHeaderValue1"))
         stack.deserializeStep.intercept(position: .after,
@@ -89,7 +89,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,

@@ -29,7 +29,7 @@ class OperationStackTests : HttpRequestTestBase {
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
 
-        let stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, middleware: MockInitializeMiddleware(id: "TestInitializeMiddleware", callback: { _,_ in
             currExpectCount = self.checkAndFulfill(currExpectCount, 1, expectation: expectInitializeMiddleware)
         }))

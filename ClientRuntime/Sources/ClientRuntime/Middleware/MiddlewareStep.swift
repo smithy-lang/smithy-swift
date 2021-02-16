@@ -4,7 +4,7 @@
 /// An instance of MiddlewareStep will be contained in the operation stack, and recognized as a single
 /// step (initialize, build, etc..) that contains an ordered list of middlewares. This class is
 /// responsible for ordering these middlewares so that they are executed in the correct order.
-public class MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
+public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
     public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
@@ -44,7 +44,7 @@ public class MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Midd
         return result
     }
     
-    public func intercept<M: Middleware>(position: Position, middleware: M)
+    public mutating func intercept<M: Middleware>(position: Position, middleware: M)
     where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
@@ -55,7 +55,7 @@ public class MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Midd
     /// stack.intercept(position: .after, id: "Add Header") { ... }
     /// ```
     ///
-    public func intercept(position: Position,
+    public mutating func intercept(position: Position,
                             id: String,
                             middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
         let middleware = WrappedMiddleware(middleware, id: id)

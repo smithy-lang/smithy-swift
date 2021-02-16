@@ -103,8 +103,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("  .build()")
             }
             val operationStack = "operationStack"
-            val letVarOperationStack = if (hasIdempotencyTokenTrait) "var" else "let"
-            writer.write("$letVarOperationStack $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
+            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
             renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
             renderMockDeserializeMiddleware(test, operationStack, outputSymbol, outputErrorName, bodyAssertMethod)

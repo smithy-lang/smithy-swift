@@ -135,7 +135,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   requiredHeader: "required header")
 
 
-        let operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
+        var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
