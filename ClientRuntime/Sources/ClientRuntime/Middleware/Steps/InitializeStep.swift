@@ -7,36 +7,31 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public struct InitializeStep<OperationStackInput>: MiddlewareStack where OperationStackInput: Encodable, OperationStackInput: Reflection {
-    
-    public typealias Context = HttpContext
-    
-    public var orderedMiddleware: OrderedGroup<OperationStackInput,
-                                               SerializeStepInput<OperationStackInput>,
-                                               HttpContext> = OrderedGroup<OperationStackInput,
-                                                                           SerializeStepInput<OperationStackInput>,
-                                                                           HttpContext>()
-    
-    public var id: String = "InitializeStep"
-    
-    public typealias MInput = OperationStackInput
-    
-    public typealias MOutput = SerializeStepInput<OperationStackInput>
-    
-    public init() {}
+public typealias InitializeStep<I: Encodable & Reflection,
+                                O: HttpResponseBinding,
+                                E: HttpResponseBinding> = MiddlewareStep<HttpContext, I, OperationOutput<O, E>>
 
-}
+public let InitializeStepId = "Initialize"
 
-public struct InitializeStepHandler<OperationStackInput>: Handler where OperationStackInput: Encodable, OperationStackInput: Reflection {
+public struct InitializeStepHandler<OperationStackInput: Encodable & Reflection,
+                                    OperationStackOutput: HttpResponseBinding,
+                                    OperationStackError: HttpResponseBinding,
+                                    H: Handler>: Handler where H.Context == HttpContext,
+                                                               H.Input == SerializeStepInput<OperationStackInput>,
+                                                               H.Output == OperationOutput<OperationStackOutput, OperationStackError> {
     
     public typealias Input = OperationStackInput
     
-    public typealias Output = SerializeStepInput<OperationStackInput>
+    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
+    let handler: H
     
-    public init() {}
+    public init(handler: H) {
+        self.handler = handler
+    }
     
-    public func handle(context: HttpContext, input: Input) -> Result<SerializeStepInput<OperationStackInput>, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
-        return .success(serializeInput)
+        
+        return handler.handle(context: context, input: serializeInput)
     }
 }

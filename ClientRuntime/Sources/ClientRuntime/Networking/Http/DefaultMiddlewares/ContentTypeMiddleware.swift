@@ -1,7 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentTypeMiddleware<OperationStackInput>: Middleware where OperationStackInput: Encodable, OperationStackInput: Reflection {
+public struct ContentTypeMiddleware<OperationStackInput: Encodable & Reflection,
+                                    OperationStackOutput: HttpResponseBinding,
+                                    OperationStackError: HttpResponseBinding>: Middleware {
 
     public let id: String = "ContentType"
 
@@ -13,7 +15,7 @@ public struct ContentTypeMiddleware<OperationStackInput>: Middleware where Opera
 
     public func handle<H>(context: Context,
                           input: SerializeStepInput<OperationStackInput>,
-                          next: H) -> Result<SerializeStepInput<OperationStackInput>, Error>
+                          next: H) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
@@ -25,6 +27,6 @@ public struct ContentTypeMiddleware<OperationStackInput>: Middleware where Opera
     }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = SerializeStepInput<OperationStackInput>
+    public typealias MOutput = OperationOutput<OperationStackOutput, OperationStackError>
     public typealias Context = HttpContext
 }

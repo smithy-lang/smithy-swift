@@ -26,7 +26,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
-                              next: H) -> Result<SerializeStepInput<QueryIdempotencyTokenAutoFillInput>, Error>
+                              next: H) -> Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -40,7 +40,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
-                public typealias MOutput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
+                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -60,7 +60,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Result<SerializeStepInput<TimestampInputInput>, Error>
+                              next: H) -> Result<OperationOutput<TimestampInputOutput, TimestampInputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -80,7 +80,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = SerializeStepInput<TimestampInputInput>
+                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -100,7 +100,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Result<SerializeStepInput<SmokeTestInput>, Error>
+                              next: H) -> Result<OperationOutput<SmokeTestOutput, SmokeTestError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -114,7 +114,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = SerializeStepInput<SmokeTestInput>
+                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()

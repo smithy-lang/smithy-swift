@@ -8,5 +8,6 @@
 import ClientRuntime
 
 public struct MockInput: Encodable, Reflection {
+    var value: Int?
     public init() {}
 }

@@ -24,7 +24,7 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback: { (context, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
+                                                let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
                                                 return .success(output)
                                             }))
         
@@ -46,19 +46,19 @@ class MiddlewareStackTests: XCTestCase {
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.addDefaultOperationMiddlewares()
-        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
+        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             
             return next.handle(context: context, input: input)
         }
-        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<SerializeStepInput<MockInput>, Error> in
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             return next.handle(context: context, input: input)
         }
 
-        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<SdkHttpRequestBuilder, Error> in
-            input.builder.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
+            input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
             return next.handle(context: context, input: input)
         }
-        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<SdkHttpRequest, Error> in
+        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<OperationOutput<MockOutput, MockMiddlewareError>, Error> in
             return next.handle(context: context, input: requestBuilder)
         }
         
@@ -66,7 +66,7 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback:{ (context, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                let output = DeserializeOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
+                                                let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
                                                 return .success(output)
                                             }))
         
