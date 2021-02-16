@@ -29,92 +29,25 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
  * Renders an implementation of a service interface for HTTP protocol
  */
 open class HttpProtocolClientGenerator(
-    ctx: ProtocolGenerator.GenerationContext,
+    private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val properties: List<ClientProperty>,
-    private val serviceConfig: ServiceConfig,
+    properties: List<ClientProperty>,
+    serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
-    private val defaultContentType: String
+    private val defaultContentType: String,
+    private val clientGeneratorCustomizable: HttpProtocolClientCustomizable
 ) {
-    private val serviceName: String = ctx.settings.sdkId
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
-
+    private val clientGeneratorInitialization = HttpProtocolClientInitialization(ctx, writer, properties, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
         writer.addFoundationImport()
-        renderClientInitialization(serviceSymbol)
+        clientGeneratorInitialization.renderClientInitialization(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
-    }
-
-    private fun renderClientInitialization(serviceSymbol: Symbol) {
-        writer.openBlock("public class ${serviceSymbol.name} {", "}") {
-            writer.write("let client: SdkHttpClient")
-            writer.write("let config: ${serviceConfig.typeName}")
-            writer.write("let serviceName = \"${serviceName}\"")
-            writer.write("let encoder: RequestEncoder")
-            writer.write("let decoder: ResponseDecoder")
-            properties.forEach { prop ->
-                prop.addImportsAndDependencies(writer)
-            }
-            writer.write("")
-            writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
-                writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
-                properties.forEach { prop ->
-                    prop.renderInstantiation(writer)
-                    if (prop.needsConfigure) {
-                        prop.renderConfiguration(writer)
-                    }
-                    prop.renderInitialization(writer, "config")
-                }
-
-                writer.write("self.config = config")
-            }
-            writer.write("")
-            // FIXME: possible move generation of the config to a separate file or above the service client
-            renderConfig(serviceSymbol)
-        }
-    }
-
-    private fun renderConfig(serviceSymbol: Symbol) {
-
-        val configFields = serviceConfig.getConfigFields()
-        val inheritance = serviceConfig.getTypeInheritance()
-        writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
-            writer.write("")
-            configFields.forEach {
-                writer.write("public var ${it.name}: ${it.type}")
-            }
-            writer.write("")
-            renderConfigInit(configFields)
-            writer.write("")
-            serviceConfig.renderConvenienceInits(serviceSymbol)
-            writer.write("")
-            serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
-        }
-    }
-
-    private fun renderConfigInit(configFields: List<ConfigField>) {
-        if (configFields.isNotEmpty()) {
-            val configFieldsSortedByName = configFields.sortedBy { it.name }
-            writer.openBlock("public init (", ")") {
-                for ((index, member) in configFieldsSortedByName.withIndex()) {
-                    val memberName = member.name
-                    val memberSymbol = member.type
-                    if (memberName == null) continue
-                    val terminator = if (index == configFieldsSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$L$terminator", memberName, memberSymbol)
-                }
-            }
-            writer.openBlock("{", "}") {
-                configFieldsSortedByName.forEach {
-                    writer.write("self.\$1L = \$1L", it.name)
-                }
-            }
-        }
     }
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
@@ -178,7 +111,7 @@ open class HttpProtocolClientGenerator(
         writer.write("let path = \"\$L\"", uri)
     }
 
-    protected open fun renderContextAttributes(op: OperationShape) {
+    private fun renderContextAttributes(op: OperationShape) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val httpMethod = httpTrait.method.toLowerCase()
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
@@ -189,9 +122,10 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
+        clientGeneratorCustomizable.renderContextAttributes(ctx, writer, op)
     }
 
-    protected open fun renderMiddlewares(op: OperationShape, operationStackName: String) {
+    private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
@@ -212,6 +146,7 @@ open class HttpProtocolClientGenerator(
         if (hasHttpBody) {
             writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
         }
+        clientGeneratorCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
