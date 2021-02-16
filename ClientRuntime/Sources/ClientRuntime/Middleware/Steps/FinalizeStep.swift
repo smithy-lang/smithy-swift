@@ -10,7 +10,7 @@
 //
 // Receives result or error from Deserialize step.
 public typealias FinalizeStep<O: HttpResponseBinding,
-                              E: HttpResponseBinding> = MiddlewareStep<SdkHttpRequestBuilder, OperationOutput<O, E>>
+                              E: HttpResponseBinding> = MiddlewareStep<HttpContext, SdkHttpRequestBuilder, OperationOutput<O, E>>
 
 public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
                                   OperationStackError: HttpResponseBinding,

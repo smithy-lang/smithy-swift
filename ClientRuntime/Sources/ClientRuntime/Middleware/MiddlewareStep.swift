@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-/// this protocol sets up a stack of middlewares and handles most of the functionality be default such as
+/// this class sets up a step of middlewares and handles most of the functionality be default such as
 /// stringing the middlewares together into a linked list, getting a middleware and adding one to the stack.
-/// The stack can then go on to act as a step in a larger stack of stacks such as `OperationStack`
-public class MiddlewareStep<Input, Output>: Middleware {
-    public typealias Context = HttpContext
+/// The step can then go on to act as a step in a larger stack of steps such as `OperationStack`
+public class MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
+    public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
     /// the middleware of the stack in an ordered group

@@ -11,7 +11,7 @@
 ///
 /// Receives raw response, or error from underlying handler.
 public typealias DeserializeStep<O: HttpResponseBinding,
-                                 E: HttpResponseBinding> = MiddlewareStep<SdkHttpRequest, OperationOutput<O, E>>
+                                 E: HttpResponseBinding> = MiddlewareStep<HttpContext, SdkHttpRequest, OperationOutput<O, E>>
 
 public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
                                      OperationStackError: HttpResponseBinding,

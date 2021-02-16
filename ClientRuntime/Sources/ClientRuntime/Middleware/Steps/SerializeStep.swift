@@ -9,7 +9,7 @@
 /// Receives result or error from Build step.
 public typealias SerializeStep<I: Encodable & Reflection,
                                O: HttpResponseBinding,
-                               E: HttpResponseBinding> = MiddlewareStep<SerializeStepInput<I>, OperationOutput<O, E>>
+                               E: HttpResponseBinding> = MiddlewareStep<HttpContext, SerializeStepInput<I>, OperationOutput<O, E>>
 
 public struct SerializeStepHandler<OperationStackInput: Encodable & Reflection,
                                    OperationStackOutput: HttpResponseBinding,

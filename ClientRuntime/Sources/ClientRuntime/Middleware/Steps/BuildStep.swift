@@ -9,7 +9,7 @@
 ///
 /// Receives result or error from Finalize step.
 public typealias BuildStep<O: HttpResponseBinding,
-                           E: HttpResponseBinding> = MiddlewareStep<SdkHttpRequestBuilder, OperationOutput<O, E>>
+                           E: HttpResponseBinding> = MiddlewareStep<HttpContext, SdkHttpRequestBuilder, OperationOutput<O, E>>
 
 public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
                                OperationStackError: HttpResponseBinding,
