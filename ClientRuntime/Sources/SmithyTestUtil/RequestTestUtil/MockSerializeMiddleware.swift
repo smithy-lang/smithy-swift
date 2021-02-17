@@ -9,7 +9,7 @@ import ClientRuntime
 
 public struct MockSerializeMiddleware: Middleware {
     public typealias Context = HttpContext
-    public typealias MOutput = SerializeStepInput<MockInput>
+    public typealias MOutput = OperationOutput<MockOutput, MockMiddlewareError>
     public typealias MockSerializeMiddlewareCallback = (HttpContext, MInput) -> Void
     public let id: String
     let headerName: String

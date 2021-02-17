@@ -129,6 +129,9 @@ open class HttpProtocolClientGenerator(
         writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
+        val outputShape = model.expectShape(op.output.get())
+        val outputShapeName = symbolProvider.toSymbol(outputShape).name
+        val outputErrorName = "${op.defaultName()}Error"
         val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
         val hasIdempotencyTokenTrait = idempotentMember != null
         if (hasIdempotencyTokenTrait) {
@@ -136,12 +139,13 @@ open class HttpProtocolClientGenerator(
                 writer,
                 idempotentMember!!.memberName,
                 operationStackName,
-                inputShapeName
+                outputShapeName,
+                outputErrorName
             ).renderIdempotencyMiddleware()
         }
         writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
         writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
-        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<$inputShapeName>(contentType: \"${defaultContentType}\"))")
+        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         if (hasHttpBody) {
             writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")

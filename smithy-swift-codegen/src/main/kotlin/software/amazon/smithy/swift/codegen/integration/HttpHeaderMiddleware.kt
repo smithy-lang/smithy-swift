@@ -6,34 +6,23 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
 
 class HttpHeaderMiddleware(
     private val writer: SwiftWriter,
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val symbol: Symbol,
+    inputSymbol: Symbol,
+    outputSymbol: Symbol,
+    outputErrorSymbol: Symbol,
     private val headerBindings: List<HttpBindingDescriptor>,
     private val prefixHeaderBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : Middleware(writer, symbol) {
+) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
-    override val typeName = "${symbol.name}HeadersMiddleware"
-    private val inputTypeMemberName = symbol.name.decapitalize()
-
-    override val inputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
-
-    override val outputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
+    override val typeName = "${inputSymbol.name}HeadersMiddleware"
 
     override fun generateMiddlewareClosure() {
         generateHeaders()

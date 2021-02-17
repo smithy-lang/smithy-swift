@@ -6,31 +6,21 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val symbol: Symbol,
+    inputSymbol: Symbol,
+    outputSymbol: Symbol,
+    outputErrorSymbol: Symbol,
     private val queryLiterals: Map<String, String>,
     private val queryBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
     private val writer: SwiftWriter
-) : Middleware(writer, symbol) {
+) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
-    override val typeName = "${symbol.name}QueryItemMiddleware"
-    private val inputTypeMemberName = symbol.name.decapitalize()
-    override val inputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
-
-    override val outputType = Symbol
-        .builder()
-        .name("SerializeStepInput<${symbol.name}>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
+    override val typeName = "${inputSymbol.name}QueryItemMiddleware"
 
     override fun generateMiddlewareClosure() {
         generateQueryItems()

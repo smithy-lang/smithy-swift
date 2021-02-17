@@ -19,7 +19,7 @@ public class SdkHttpClient {
     
     public func getHandler<Output: HttpResponseBinding,
                            OutputError: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
-                                                                             DeserializeOutput<Output,
+                                                                             OperationOutput<Output,
                                                                                                OutputError>,
                                                                              HttpContext> {
         let clientHandler = ClientHandler<Output, OutputError>(engine: engine)
@@ -38,11 +38,11 @@ public class SdkHttpClient {
 
 struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
     let engine: HttpClientEngine
-    func handle(context: HttpContext, input: SdkHttpRequest) -> Result<DeserializeOutput<Output, OutputError>, Error> {
+    func handle(context: HttpContext, input: SdkHttpRequest) -> Result<OperationOutput<Output, OutputError>, Error> {
         let result = engine.execute(request: input)
         do {
             let httpResponse = try result.get()
-            let output = DeserializeOutput<Output, OutputError>(httpResponse: httpResponse)
+            let output = OperationOutput<Output, OutputError>(httpResponse: httpResponse)
             return .success(output)
         } catch let err {
             return .failure(err)
@@ -51,7 +51,7 @@ struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBindi
 
     typealias Input = SdkHttpRequest
 
-    typealias Output = DeserializeOutput<Output, OutputError>
+    typealias Output = OperationOutput<Output, OutputError>
 
     typealias Context = HttpContext
 }
