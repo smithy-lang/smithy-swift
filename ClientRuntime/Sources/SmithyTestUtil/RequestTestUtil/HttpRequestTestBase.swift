@@ -94,65 +94,52 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpBody(expected.body, actual.body)
     }
     
-    /**
-    Asserts `HttpBody` objects with Data objects match
-    /// - Parameter expected: Expected `HttpBody`
-    /// - Parameter actual: Actual `HttpBody` to compare against
-    */
     public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody) {
-        if case .data(let actualData) = actual {
-            if case .data(let expectedData) = expected {
-                guard let expectedData  = expectedData else {
-                    XCTAssertNil(actualData, "expected data in HttpBody is nil but actual is not")
-                    return
-                }
-                
-                guard let actualData = actualData else {
-                    XCTFail("actual data in HttpBody is nil but expected is not")
-                    return
-                }
-                XCTAssertEqual(expectedData,
-                               actualData,
-                               "The expected and Actual data inside the HttpBody do not match")
-            } else {
-                XCTFail("The expected HttpBody is not Data Type")
-            }
-        } else {
-            XCTFail("The actual HttpBody is not Data Type")
+        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+            XCTAssertEqual(expectedData, actualData, "The expected and Actual data inside the HttpBody do not match")
         }
     }
     
-    /**
-    Asserts `HttpBody` objects with JSON Data match
-    /// - Parameter expected: Expected `HttpBody`
-    /// - Parameter actual: Actual `HttpBody` to compare against
-    */
     public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody) {
-        if case .data(let actualData) = actual {
-            if case .data(let expectedData) = expected {
-                guard let expectedData  = expectedData else {
-                    XCTAssertNil(actualData, "expected data in HttpBody is nil but actual is not")
-                    return
-                }
-                
-                guard let actualData = actualData else {
-                    XCTFail("actual data in HttpBody is nil but expected is not")
-                    return
-                }
-                assertEqualJSON(expectedData, actualData)
-            } else {
-                XCTFail("The expected HttpBody is not Data Type")
-            }
-        } else {
-            XCTFail("The actual HttpBody is not Data Type")
+        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+            assertEqualJSON(expectedData, actualData)
         }
     }
-    
-    /**
-    Asserts JSON `Data` objects  match
-    /// - Parameter expected: Expected JSON `Data`
-    /// - Parameter actual: Actual JSON `Data` to compare against
-    */
+
+    private func genericAssertEqualHttpBodyData(_ expected: HttpBody, actual: HttpBody, _ callback: (Data, Data) -> Void) {
+        guard case .success(let expectedData) = extractData(expected) else {
+            XCTFail("Failed to extract data from httpbody for expected")
+            return
+        }
+        guard case .success(let actualData) = extractData(actual) else {
+            XCTFail("Failed to extract data from httpbody for actual")
+            return
+        }
+        if shouldCompareData(expectedData, actualData) {
+            callback(expectedData!, actualData!)
+        }
+    }
+
+    private func extractData(_ httpBody: HttpBody) -> Result<Data?, Error> {
+        guard case .data(let actualData) = httpBody else {
+            return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
+        }
+        return .success(actualData)
+    }
+
+    private func shouldCompareData(_ expected: Data?, _ actual: Data?) -> Bool {
+        if expected == nil && actual == nil {
+            return false
+        } else if expected != nil && actual == nil {
+            XCTFail("actual data in HttpBody is nil but expected is not")
+            return false
+        } else if expected == nil && actual != nil {
+            XCTFail("expected data in HttpBody is nil but actual is not")
+            return false
+        }
+        return true
+    }
+
     public func assertEqualJSON(_ expected: Data, _ actual: Data) {
         guard let expectedJSON = try? JSONSerialization.jsonObject(with: expected) as? [String: Any] else {
             XCTFail("The expected JSON Data is not Valid")
@@ -248,6 +235,12 @@ open class HttpRequestTestBase: XCTestCase {
                            " does not match actual query item [\(expectedQueryItem.name)" +
                             "=\(String(describing: actualQueryItemValue))]")
 
+        }
+    }
+    struct InternalHttpRequestTestBaseError: Error {
+        let localizedDescription: String
+        public init(_ description: String) {
+            self.localizedDescription = description
         }
     }
 }
