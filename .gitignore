@@ -20,3 +20,4 @@ ClientRuntime/Package.resolved
 **/xcuserdata
 **/*.xcuserdata
 xcuserdata
+.build/
