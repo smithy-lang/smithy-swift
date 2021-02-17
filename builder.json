@@ -6,11 +6,11 @@
     "gradlew": "{source_dir}/gradlew -p {source_dir}"
   },
   "test_steps": [
-    "swift test --package-path {source_dir}/ClientRuntime"
+    "swift test"
   ],
   "build_steps": [
     "{gradlew} assemble",
-    "swift build --package-path {source_dir}/ClientRuntime"
+    "swift build"
   ],
   "post_build_steps": [
     "{gradlew} publishToMavenLocal"

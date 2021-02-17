@@ -1,0 +1,25 @@
+# pack-refs with: peeled fully-peeled sorted 
+dbcd4387ab5047033803c940db033fa60d54581f refs/heads/authRefactor
+c29c8bf669a24f12e375ca59aacf1c320963e4fa refs/heads/future-extension
+ea769881cd0a858010ccf1f25797658543503e20 refs/heads/initial_prototype
+bfb624f57e999b727ee15dd9194c309304bb1f49 refs/heads/master
+6db089b3fcc56e06194080f62382496ebc8d8334 refs/heads/signing
+ded23c33f76c5f594876e3ba50624218e26c1c8c refs/heads/streaming
+6f6b6c3624f1b93085bf2f3cfe0aac575b1a5d7b refs/heads/updatecrtbuilder
+57c8c95e85b9bd6d70e9a885ca2311455ec2630d refs/heads/updateswifttools
+aeb78b32fcb51f17155414c24925b15da399e0d6 refs/pull/1/head
+9496de20720cae005a159f58c9b70edfe85ad621 refs/pull/10/head
+dbcd4387ab5047033803c940db033fa60d54581f refs/pull/11/head
+ded23c33f76c5f594876e3ba50624218e26c1c8c refs/pull/12/head
+c29c8bf669a24f12e375ca59aacf1c320963e4fa refs/pull/13/head
+6db089b3fcc56e06194080f62382496ebc8d8334 refs/pull/14/head
+57c8c95e85b9bd6d70e9a885ca2311455ec2630d refs/pull/15/head
+6f6b6c3624f1b93085bf2f3cfe0aac575b1a5d7b refs/pull/16/head
+5f2d8475de64d1079565142e0b7ccdde34d94ade refs/pull/2/head
+9d1621a8b9b75cd07d396dbeb0259033b2562367 refs/pull/3/head
+19293e61545e9663834c7a210ec62474763df231 refs/pull/4/head
+6663a0f9ff217e4dfc28f43703f7950ba6a7e1e6 refs/pull/5/head
+4a19a5814f52b7a3d7b2cef4d477ee242e8b8467 refs/pull/6/head
+d4007c2cdb01d4b16b751003770cb559566293d8 refs/pull/7/head
+4cae1960aefd358f2c71cef5520ebf8d58ca9338 refs/pull/8/head
+59066e167037610b32a959fe8fb2c3c6f15707de refs/pull/9/head
