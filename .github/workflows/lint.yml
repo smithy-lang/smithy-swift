@@ -20,7 +20,7 @@ jobs:
         run: |
           ./gradlew ktlint
   swiftlint:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
