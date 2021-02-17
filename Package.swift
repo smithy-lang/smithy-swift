@@ -22,7 +22,7 @@ let package = Package(
                 .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
                 .product(name: "Logging", package: "swift-log")
             ],
-            path: "./ClientRuntime"
+            path: "./Packages/ClientRuntime/Sources"
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -30,17 +30,17 @@ let package = Package(
 	        "ClientRuntime",
 	        "SmithyTestUtil"
 	    ],
-	    path: "./ClientRuntime"
+	    path: "./Packages/ClientRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"],
-            path: "./ClientRuntime"
+            path: "./Packages/SmithyTestUtil/Sources"
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"],
-            path: "./ClientRuntime"
+            path: "./Packages/SmithyTestUtil/Tests"
         )
     ]
 )
