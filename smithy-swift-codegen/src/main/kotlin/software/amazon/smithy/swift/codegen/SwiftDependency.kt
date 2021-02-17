@@ -16,7 +16,7 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
         "",
         "ClientRuntime",
         "0.1.0",
-        computeAbsolutePath("smithy-swift/ClientRuntime"),
+        computeAbsolutePath("smithy-swift"),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", "", "", ""),
@@ -24,7 +24,7 @@ enum class SwiftDependency(val type: String, val namespace: String, val version:
         "",
         "SmithyTestUtil",
         "0.1.0",
-        computeAbsolutePath("smithy-swift/ClientRuntime"),
+        computeAbsolutePath("smithy-swift"),
         "ClientRuntime"
     );
 
