@@ -7,7 +7,7 @@ on:
       - '!master'
 
 env:
-  PACKAGE_NAME: aws-sdk-swift
+  PACKAGE_NAME: smithy-swift
 
 jobs:
   ktlint:
@@ -18,3 +18,14 @@ jobs:
       - name: Lint ${{ env.PACKAGE_NAME }}
         run: |
           ./gradlew ktlint
+  swiftlint:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      - name: Swift Lint ClientRuntime
+        uses: norio-nomura/action-swiftlint@3.1.0
+        with:
+          args: --path ./ClientRuntime
+        env:
+          DIFF_BASE: ${{ github.base_ref }}
