@@ -56,7 +56,6 @@ class HttpProtocolTestGenerator(
                         writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
                         writer.addImport(SwiftDependency.XCTest.namespace)
-                        httpProtocolClientCustomizable.addImport(writer)
 
                         requestTestBuilder
                             .writer(writer)
