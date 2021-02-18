@@ -42,7 +42,8 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                         writer.write("from: ${dependency.version}")
                     }
                 } else {
-                    writer.write(".package(path: \"$dependencyURL\"),")
+                    val target = dependency.expectProperty("target", String::class.java)
+                    writer.write(".package(name: \"${target}\", path: \"$dependencyURL\"),")
                 }
             }
         }
@@ -53,8 +54,9 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                 writer.openBlock("dependencies: [", "],") {
                     for (dependency in distinctDependencies) {
                         writer.openBlock(".product(", "),") {
-                            writer.write("name: \"${dependency.packageName}\",")
-                            writer.write("package: \"${dependency.expectProperty("swiftPackageName", String::class.java)}\"")
+                            val target = dependency.expectProperty("target", String::class.java)
+                            writer.write("name: \"${target}\",")
+                            writer.write("package: \"${dependency.packageName}\"")
                         }
                     }
                 }

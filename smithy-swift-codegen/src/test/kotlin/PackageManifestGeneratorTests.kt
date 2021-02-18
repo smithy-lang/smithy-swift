@@ -40,9 +40,9 @@ class PackageManifestGeneratorTests {
                 "            from: 0.0.5\n" +
                 "        ),\n"
         )
-        val packageLine = packageManifest.split("\n").filter { it.contains("package(path") }
+        val packageLine = packageManifest.split("\n").filter { it.contains("package(name:") }
         packageLine.shouldHaveAtMostSize(1)
-        packageLine[0].shouldEndWith("smithy-swift/ClientRuntime\"),")
+        packageLine[0].shouldEndWith("smithy-swift\"),")
     }
 
     @Test

@@ -109,13 +109,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     // can be overridden by implementations to more specific error protocol
     override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
         .name("UnknownHttpServiceError")
-        .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
+        .namespace(SwiftDependency.CLIENT_RUNTIME.target, "")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     override val serviceErrorProtocolSymbol: Symbol = Symbol.builder()
         .name("HttpServiceError")
-        .namespace(SwiftDependency.CLIENT_RUNTIME.namespace, "")
+        .namespace(SwiftDependency.CLIENT_RUNTIME.target, "")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
@@ -153,7 +153,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                     writer.addFoundationImport()
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
@@ -224,7 +224,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addFoundationImport()
                 val members = shape.members().toList()
                 when (shape) {
@@ -272,7 +272,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             writer.write("")
             writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("") // need enter space between coding keys and decode implementation
@@ -313,7 +313,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addFoundationImport()
             writer.openBlock("extension $outputShapeName: HttpResponseBinding {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
@@ -349,7 +349,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(serviceErrorProtocolSymbol)
             writer.openBlock("extension \$L: \$L {", "}", errorShapeName, serviceErrorProtocolSymbol.name) {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
@@ -387,7 +387,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(unknownServiceErrorSymbol)
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
@@ -879,7 +879,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
             MiddlewareGenerator(writer, headerMiddleware).generate()
         }
@@ -905,7 +905,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addFoundationImport()
             val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
             MiddlewareGenerator(writer, queryItemMiddleware).generate()
@@ -930,7 +930,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addFoundationImport()
 
                 val bodyMiddleware =

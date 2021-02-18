@@ -43,7 +43,7 @@ open class HttpProtocolClientGenerator(
     private val clientGeneratorInitialization = HttpProtocolClientInitialization(ctx, writer, properties, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         writer.addFoundationImport()
         clientGeneratorInitialization.renderClientInitialization(serviceSymbol)
         writer.write("")
