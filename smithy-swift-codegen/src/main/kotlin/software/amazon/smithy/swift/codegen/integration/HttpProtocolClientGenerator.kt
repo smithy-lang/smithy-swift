@@ -35,7 +35,7 @@ open class HttpProtocolClientGenerator(
     serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
-    private val clientGeneratorCustomizable: HttpProtocolClientCustomizable
+    private val httpProtocolCustomizable: HttpProtocolCustomizable
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
@@ -122,7 +122,7 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
-        clientGeneratorCustomizable.renderContextAttributes(ctx, writer, op)
+        httpProtocolCustomizable.renderContextAttributes(ctx, writer, op)
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
@@ -150,7 +150,7 @@ open class HttpProtocolClientGenerator(
         if (hasHttpBody) {
             writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
         }
-        clientGeneratorCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
+        httpProtocolCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
     }
 
     private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {

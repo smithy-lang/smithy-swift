@@ -941,7 +941,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer,
                 serviceSymbol.name,
                 defaultContentType,
-                httpProtocolClientCustomizable
+                httpProtocolCustomizable
             )
             clientGenerator.render()
         }
@@ -959,7 +959,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val codingKeysGenerator: CodingKeysGenerator
     protected abstract val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
-    protected abstract val httpProtocolClientCustomizable: HttpProtocolClientCustomizable
+    protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
 
     /**
      * Get the operations with HTTP Bindings.

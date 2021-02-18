@@ -138,7 +138,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val contentType = test.headers["Content-Type"]
             writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
         }
-        httpProtocolClientCustomizable.renderSerializeMiddleware(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
+        httpProtocolCustomizable.renderSerializeMiddleware(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
     }
 
     private fun renderBuildMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {

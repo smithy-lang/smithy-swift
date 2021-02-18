@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import TestSupport.Mocks.MockHttpProtocolClientOperations
+import TestSupport.Mocks.MockHttpProtocolCustomizations
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
@@ -88,7 +88,7 @@ class TestHttpProtocolClientGeneratorFactory(val protocol: ShapeId) : HttpProtoc
         val properties = getClientProperties(ctx)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        val clientOperations = MockHttpProtocolClientOperations()
+        val clientOperations = MockHttpProtocolCustomizations()
         return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType, clientOperations)
     }
 
