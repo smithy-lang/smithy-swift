@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
  * Generates HTTP protocol unit tests for `httpRequestTest` cases
@@ -106,6 +105,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
             renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
+            httpProtocolCustomizable.renderMiddlewareForGeneratedRequestTests(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderMockDeserializeMiddleware(test, operationStack, outputSymbol, outputErrorName, bodyAssertMethod)
             if (hasIdempotencyTokenTrait) {
 
@@ -138,7 +138,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val contentType = test.headers["Content-Type"]
             writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
         }
-        httpProtocolCustomizable.renderSerializeMiddleware(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
     }
 
     private fun renderBuildMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {
