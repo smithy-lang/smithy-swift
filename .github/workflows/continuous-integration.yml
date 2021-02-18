@@ -35,7 +35,7 @@ jobs:
           java-version: '11'
       - name: Set Branch env variable
         run: |
-          export BRANCH_NAME: ${GITHUB_REF_NAME}
+          echo "BRANCH_NAME=${GITHUB_REF_NAME}" >> $GITHUB_ENV
           echo BRANCH_NAME
       - name: Build and Test ${{ env.PACKAGE_NAME }}
         env:
@@ -62,7 +62,7 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Set Branch env variable
         run: |
-          export BRANCH_NAME: ${GITHUB_REF_NAME}
+          echo "BRANCH_NAME=${GITHUB_REF_NAME}" >> $GITHUB_ENV
           echo BRANCH_NAME
       - name: Build and Test ${{ env.PACKAGE_NAME }} Downstream Consumers
         env:
