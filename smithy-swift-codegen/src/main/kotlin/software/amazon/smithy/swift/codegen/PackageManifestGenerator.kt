@@ -43,7 +43,11 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                         writer.write("name: \"$target\",")
                         writer.write("url: \"$dependencyURL\",")
                         if (branch != null && !branch.isEmpty) {
-                            writer.write(".branch(\"${branch.get()}\")")
+                            val branchGet = branch.get()
+                            print("branch is $branchGet")
+                            val branchString = "\"$branchGet\""
+                            print("branchString is $branchString")
+                            writer.write(".branch($branchString)")
                         } else {
                             writer.write("from: ${dependency.version}")
                         }
