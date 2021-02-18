@@ -14,9 +14,14 @@ service Example {
         GetFooStreamingOutput,
         GetFooStreamingOutputNoInput,
         GetFooStreamingInputNoOutput,
-        AllocateWidget
+        AllocateWidget,
+        OperationWithDeprecatedTrait
     ]
 }
+
+@http(method: "GET", uri: "/operationWithDeprecatedTrait")
+@deprecated
+operation OperationWithDeprecatedTrait {}
 
 @http(method: "GET", uri: "/foo")
 operation GetFoo {

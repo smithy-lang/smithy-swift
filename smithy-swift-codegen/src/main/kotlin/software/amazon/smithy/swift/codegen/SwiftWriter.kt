@@ -13,6 +13,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
@@ -217,6 +218,36 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     fun writeShapeDocs(shape: Shape) {
         shape.getTrait(DocumentationTrait::class.java).ifPresent {
             writeDocs(it.value)
+        }
+    }
+
+    /*
+    * Writes @available attribute if deprecated trait is present
+    * */
+    fun writeAvailableAttribute(model: Model?, shape: Shape) {
+        var deprecatedTrait: DeprecatedTrait? = null
+        if (shape.getTrait(DeprecatedTrait::class.java).isPresent) {
+            deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()
+        } else if (shape.getMemberTrait(model, DeprecatedTrait::class.java).isPresent) {
+            deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
+        }
+
+        if (deprecatedTrait != null) {
+            val messagePresent = deprecatedTrait.message.isPresent
+            val sincePresent = deprecatedTrait.since.isPresent
+            var message = StringBuilder()
+            if (messagePresent) {
+                message.append(deprecatedTrait.message.get())
+            }
+            if (sincePresent) {
+                message.append(" API deprecated since ${deprecatedTrait.since.get()}")
+            }
+
+            if (messagePresent || sincePresent) {
+                write("@available(*, deprecated, message: \"${message}\")")
+            } else {
+                write("@available(*, deprecated)")
+            }
         }
     }
 

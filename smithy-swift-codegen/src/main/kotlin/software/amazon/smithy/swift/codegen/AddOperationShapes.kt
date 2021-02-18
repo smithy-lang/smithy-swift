@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.shapes.AbstractShapeBuilder
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -90,14 +91,14 @@ class AddOperationShapes {
         }
 
         private fun cloneShape(shape: Shape, cloneShapeName: String): Shape {
+
             val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, cloneShapeName)
-            val builder = StructureShape.Builder()
-                .id(cloneShapeId)
-                .addTrait(
-                    SyntheticClone.builder()
-                        .archetype(shape.id)
-                        .build()
-                )
+
+            var builder: AbstractShapeBuilder<*, *> = Shape.shapeToBuilder(shape)
+            builder = builder.id(cloneShapeId).addTrait(
+                SyntheticClone.builder()
+                    .archetype(shape.id).build()
+            )
 
             shape.members().forEach { memberShape ->
                 builder.addMember(

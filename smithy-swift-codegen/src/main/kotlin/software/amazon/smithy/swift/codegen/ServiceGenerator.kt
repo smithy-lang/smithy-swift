@@ -62,6 +62,7 @@ class ServiceGenerator(
             val paramTerminator = ", "
 
             writer.writeShapeDocs(op)
+            writer.writeAvailableAttribute(model, op)
 
             val hasOutputStream = operationHasOutputStream(model, opIndex, op)
             val hasInputStream = operationHasInputStream(model, opIndex, op)
@@ -158,6 +159,7 @@ class ServiceGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.writeShapeDocs(service)
+        writer.writeAvailableAttribute(model, service)
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                 operations.forEach { op ->

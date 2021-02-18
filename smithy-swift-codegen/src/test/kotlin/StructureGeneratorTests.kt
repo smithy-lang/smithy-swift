@@ -422,4 +422,77 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
         jsonMapsOutput.shouldContain(expectedJsonMapsOutput)
     }
+
+    @Test
+    fun `deprecated trait on structure`() {
+        val model = javaClass.getResource("deprecated-trait-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        var structWithDeprecatedTrait = manifest
+            .getFileString("example/models/StructWithDeprecatedTrait.swift").get()
+        Assertions.assertNotNull(structWithDeprecatedTrait)
+        var structContainsDeprecatedTrait = """
+            @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+            public struct StructWithDeprecatedTrait: Equatable {
+        """.trimIndent()
+        structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
+
+        structWithDeprecatedTrait = manifest
+            .getFileString("example/models/StructSincePropertySet.swift").get()
+        Assertions.assertNotNull(structWithDeprecatedTrait)
+        structContainsDeprecatedTrait = """
+            @available(*, deprecated, message: " API deprecated since 2019-03-21")
+            public struct StructSincePropertySet: Equatable {
+        """.trimIndent()
+        structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
+    }
+
+    @Test
+    fun `deprecated trait on synthetically cloned structure and structure member`() {
+        val model = javaClass.getResource("deprecated-trait-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val structWithDeprecatedTraitMember = manifest
+            .getFileString("example/models/OperationWithDeprecatedTraitInput.swift").get()
+        Assertions.assertNotNull(structWithDeprecatedTraitMember)
+        val structContainsDeprecatedMember = """
+            @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+            public struct OperationWithDeprecatedTraitInput: Equatable {
+                public let bool: Bool?
+                public let foo: Foo?
+                public let intVal: Int?
+                @available(*, deprecated)
+                public let string: String?
+                @available(*, deprecated, message: " API deprecated since 2019-03-21")
+                public let structSincePropertySet: StructSincePropertySet?
+                @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+                public let structWithDeprecatedTrait: StructWithDeprecatedTrait?
+        """.trimIndent()
+        structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
+    }
+
+    @Test
+    fun `deprecated trait fetched from the target of a struct member`() {
+        val model = javaClass.getResource("deprecated-trait-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val structWithDeprecatedTraitMember = manifest
+            .getFileString("example/models/Foo.swift").get()
+        Assertions.assertNotNull(structWithDeprecatedTraitMember)
+        val structContainsDeprecatedMember = """
+        public struct Foo: Equatable {
+            /// Test documentation with deprecated
+            @available(*, deprecated)
+            public let baz: String?
+            /// Test documentation with deprecated
+            public let qux: String?
+        """.trimIndent()
+        structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
+    }
 }
