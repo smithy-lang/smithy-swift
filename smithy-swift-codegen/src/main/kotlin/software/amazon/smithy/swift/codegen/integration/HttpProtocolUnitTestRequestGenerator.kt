@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import software.amazon.smithy.utils.StringUtils.isBlank
 
 /**
  * Generates HTTP protocol unit tests for `httpRequestTest` cases
@@ -106,6 +105,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
             renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
+            httpProtocolCustomizable.renderMiddlewareForGeneratedRequestTests(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderMockDeserializeMiddleware(test, operationStack, outputSymbol, outputErrorName, bodyAssertMethod)
             if (hasIdempotencyTokenTrait) {
 
@@ -145,6 +145,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<$outputSymbol, $outputErrorName>())")
         }
     }
+
     private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, bodyAssertMethod: String) {
 
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
