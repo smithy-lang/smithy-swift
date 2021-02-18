@@ -36,10 +36,17 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         writer.openBlock("dependencies: [", "],") {
             for (dependency in distinctDependencies) {
                 val dependencyURL = dependency.expectProperty("url", String::class.java)
+                val branch = dependency.getProperty("branch", String::class.java)
                 if (dependencyURL.take(4).toLowerCase().equals("http")) {
                     writer.openBlock(".package(", "),") {
+                        val target = dependency.expectProperty("target", String::class.java)
+                        writer.write("name: \"$target\",")
                         writer.write("url: \"$dependencyURL\",")
-                        writer.write("from: ${dependency.version}")
+                        if (branch != null && !branch.isEmpty) {
+                            writer.write(".branch(\"${branch.get()}\")")
+                        } else {
+                            writer.write("from: ${dependency.version}")
+                        }
                     }
                 } else {
                     val target = dependency.expectProperty("target", String::class.java)

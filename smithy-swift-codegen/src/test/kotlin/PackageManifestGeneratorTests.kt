@@ -33,16 +33,15 @@ class PackageManifestGeneratorTests {
         writePackageManifest(settings, manifest, mockDependencies)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "dependencies: [\n" +
-                "        .package(\n" +
-                "            url: \"https://github.com/apple/swift-numerics\",\n" +
-                "            from: 0.0.5\n" +
-                "        ),\n"
-        )
-        val packageLine = packageManifest.split("\n").filter { it.contains("package(name:") }
-        packageLine.shouldHaveAtMostSize(1)
-        packageLine[0].shouldEndWith("smithy-swift\"),")
+        val expectedContents = """
+    dependencies: [
+        .package(
+            name: "ComplexModule",
+            url: "https://github.com/apple/swift-numerics",
+            from: 0.0.5
+        ),
+        """
+        packageManifest.shouldContain(expectedContents)
     }
 
     @Test
