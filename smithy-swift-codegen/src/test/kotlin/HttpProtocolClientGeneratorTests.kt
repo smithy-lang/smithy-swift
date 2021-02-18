@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import TestSupport.Mocks.MockHttpProtocolCustomizations
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -14,6 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
@@ -37,7 +37,7 @@ class HttpProtocolClientGeneratorTests {
             ctx.generationCtx, writer, features, config,
             HttpTraitResolver(ctx.generationCtx),
             "application/json",
-            MockHttpProtocolCustomizations()
+            HttpProtocolCustomizable()
         )
         generator.render()
         commonTestContents = writer.toString()

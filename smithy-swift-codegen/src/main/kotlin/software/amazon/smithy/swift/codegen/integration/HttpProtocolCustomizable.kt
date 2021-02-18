@@ -5,7 +5,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-abstract class HttpProtocolCustomizable {
+open class HttpProtocolCustomizable {
     open fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         // Default implementation is no-op
     }
@@ -20,5 +20,7 @@ abstract class HttpProtocolCustomizable {
     ) {
         // Default implementation is no-op
     }
-    abstract fun renderContextAttributes(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape)
+    open fun renderContextAttributes(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {
+        // Default implementation is no-op
+    }
 }

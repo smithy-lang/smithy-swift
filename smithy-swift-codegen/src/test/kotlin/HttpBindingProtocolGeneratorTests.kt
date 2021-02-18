@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import TestSupport.Mocks.MockHttpProtocolCustomizations
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
@@ -27,6 +26,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGener
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
@@ -38,7 +38,8 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = RestJson1Trait.ID
-    override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory(protocol)
+    override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
+    override val httpProtocolCustomizable = HttpProtocolCustomizable()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
 
@@ -52,7 +53,8 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             ctx,
             requestTestBuilder,
             responseTestBuilder,
-            errorTestBuilder
+            errorTestBuilder,
+            httpProtocolCustomizable
         ).generateProtocolTests()
     }
 }
@@ -77,19 +79,19 @@ class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
     }
 }
 
-class TestHttpProtocolClientGeneratorFactory(val protocol: ShapeId) : HttpProtocolClientGeneratorFactory {
+class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
     override fun createHttpProtocolClientGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         httpBindingResolver: HttpBindingResolver,
         writer: SwiftWriter,
         serviceName: String,
-        defaultContentType: String
+        defaultContentType: String,
+        httpProtocolCustomizable: HttpProtocolCustomizable
     ): HttpProtocolClientGenerator {
         val properties = getClientProperties(ctx)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        val clientOperations = MockHttpProtocolCustomizations()
-        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType, clientOperations)
+        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable)
     }
 
     private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
