@@ -24,6 +24,7 @@ protected constructor(builder: Builder<T>) {
     private val testCases: List<T> = builder.testCases!!
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!
+    protected val httpProtocolClientCustomizable = builder.httpProtocolClientCustomizable!!
     protected val serviceName: String = builder.serviceName!!
     abstract val baseTestClassName: String
 
@@ -68,6 +69,7 @@ protected constructor(builder: Builder<T>) {
         var operation: OperationShape? = null
         var writer: SwiftWriter? = null
         var serviceName: String? = null
+        var httpProtocolClientCustomizable: HttpProtocolClientCustomizable? = null
 
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
@@ -75,6 +77,7 @@ protected constructor(builder: Builder<T>) {
         fun operation(operation: OperationShape): Builder<T> = apply { this.operation = operation }
         fun writer(writer: SwiftWriter): Builder<T> = apply { this.writer = writer }
         fun serviceName(serviceName: String): Builder<T> = apply { this.serviceName = serviceName }
+        fun httpProtocolClientCustomizable(httpProtocolClientCustomizable: HttpProtocolClientCustomizable): Builder<T> = apply { this.httpProtocolClientCustomizable = httpProtocolClientCustomizable }
         abstract fun build(): HttpProtocolUnitTestGenerator<T>
     }
 }

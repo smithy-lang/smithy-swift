@@ -23,6 +23,7 @@ class HttpProtocolTestGenerator(
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
+    private val httpProtocolClientCustomizable: HttpProtocolClientCustomizable,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -55,6 +56,7 @@ class HttpProtocolTestGenerator(
                         writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
                         writer.addImport(SwiftDependency.XCTest.namespace)
+                        httpProtocolClientCustomizable.addImport(writer)
 
                         requestTestBuilder
                             .writer(writer)
@@ -63,6 +65,7 @@ class HttpProtocolTestGenerator(
                             .operation(operation)
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
+                            .httpProtocolClientCustomizable(httpProtocolClientCustomizable)
                             .build()
                             .renderTestClass(testClassName)
                     }
@@ -93,6 +96,7 @@ class HttpProtocolTestGenerator(
                             .operation(operation)
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
+                            .httpProtocolClientCustomizable(httpProtocolClientCustomizable)
                             .build()
                             .renderTestClass(testClassName)
                     }
@@ -127,6 +131,7 @@ class HttpProtocolTestGenerator(
                                 .operation(operation)
                                 .serviceName(serviceSymbol.name)
                                 .testCases(testCases)
+                                .httpProtocolClientCustomizable(httpProtocolClientCustomizable)
                                 .build()
                                 .renderTestClass(testClassName)
                         }
