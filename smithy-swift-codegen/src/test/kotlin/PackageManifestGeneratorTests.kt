@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import io.kotest.matchers.collections.shouldHaveAtMostSize
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldEndWith
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest

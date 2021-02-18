@@ -20,7 +20,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "https://github.com/awslabs/smithy-swift",
         "ClientRuntime"
     ),
-    XCTest("", "XCTest", null,"", "", ""),
+    XCTest("", "XCTest", null, "", "", ""),
     SMITHY_TEST_UTIL(
         "",
         "SmithyTestUtil",
@@ -52,7 +52,7 @@ private fun getGitBranchName(): String {
         sb.append(char.toChar())
     }
     var branchName = sb.removeSuffix("\n").toString()
-    if(branchName == "HEAD") {
+    if (branchName == "HEAD") {
         branchName = System.getenv("BRANCH_NAME")
     }
 
