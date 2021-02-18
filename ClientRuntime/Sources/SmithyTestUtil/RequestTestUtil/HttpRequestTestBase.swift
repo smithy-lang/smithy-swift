@@ -95,18 +95,18 @@ open class HttpRequestTestBase: XCTestCase {
     }
     
     public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody) {
-        genericEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
             XCTAssertEqual(expectedData, actualData, "The expected and Actual data inside the HttpBody do not match")
         }
     }
     
     public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody) {
-        genericEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
             assertEqualJSON(expectedData, actualData)
         }
     }
 
-    private func genericEqualHttpBodyData(_ expected: HttpBody, actual: HttpBody, _ callback: (Data, Data) -> Void) {
+    private func genericAssertEqualHttpBodyData(_ expected: HttpBody, actual: HttpBody, _ callback: (Data, Data) -> Void) {
         guard case .success(let expectedData) = extractData(expected) else {
             XCTFail("Failed to extract data from httpbody for expected")
             return
