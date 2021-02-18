@@ -40,11 +40,11 @@ jobs:
         run: |
           python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
           chmod a+x builder.pyz
-          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" BRANCH_NAME="${GITHUB_REF_NAME}" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
+          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" BRANCH_NAME="${GITHUB_HEAD_REF}" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   downstream:
     needs: macos-compat
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -63,4 +63,4 @@ jobs:
         run: |
           python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
           chmod a+x builder
-          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" BRANCH_NAME="${GITHUB_REF_NAME}" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" BRANCH_NAME="${GITHUB_HEAD_REF}" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
