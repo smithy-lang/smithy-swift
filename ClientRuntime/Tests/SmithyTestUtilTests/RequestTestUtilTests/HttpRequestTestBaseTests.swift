@@ -116,6 +116,19 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             case greeting
         }
     }
+    
+    struct SayHelloInputBody: Decodable, Equatable {
+        public let greeting: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case greeting
+        }
+        public init (from decoder: Decoder) throws {
+            let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+            let greetingDecoded = try containerValues.decodeIfPresent(String.self, forKey: .greeting)
+            greeting = greetingDecoded
+        }
+    }
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() {
@@ -170,7 +183,16 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                    do {
+                         let decoder = JSONDecoder()
+                         let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
+                         let actualObj = try decoder.decode(SayHelloInputBody.self, from: actualData)
+                         XCTAssertEqual(expectedObj, actualObj)
+                     } catch let err {
+                         XCTFail("Failed to verify body \(err)")
+                     }
+                }
             })
             
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)

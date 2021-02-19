@@ -11,6 +11,8 @@ import XCTest
 /**
  Includes Utility functions for Http Protocol Request Serialization Tests
  */
+public typealias ValidateJsonCallback = (Data, Data) -> Void
+
 open class HttpRequestTestBase: XCTestCase {
     /**
      Create `HttpRequest` from its components
@@ -127,7 +129,7 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpBody`
     /// - Parameter actual: Actual `HttpBody` to compare against
     */
-    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody) {
+    public func extractHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateJsonCallback) {
         if case .data(let actualData) = actual {
             if case .data(let expectedData) = expected {
                 guard let expectedData  = expectedData else {
@@ -139,9 +141,7 @@ open class HttpRequestTestBase: XCTestCase {
                     XCTFail("actual data in HttpBody is nil but expected is not")
                     return
                 }
-                assertEqualJSON(expectedData, actualData)
-            } else {
-                XCTFail("The expected HttpBody is not Data Type")
+                callback(expectedData, actualData)
             }
         } else {
             XCTFail("The actual HttpBody is not Data Type")

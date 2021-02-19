@@ -4,8 +4,17 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.shapes.BlobShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
@@ -60,14 +69,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             model = RecursiveShapeBoxer.transform(model)
             // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
-            var bodyAssertMethod = "assertEqualHttpBodyData"
+            var bodyAssertMethod = "extractHttpBodyJSONData"
 
             if (test.bodyMediaType.isPresent) {
                 val bodyMediaType = test.bodyMediaType.get()
                 when (bodyMediaType.toLowerCase()) {
                     "application/json" -> {
                         requestEncoder = "JSONEncoder()"
-                        bodyAssertMethod = "assertEqualHttpBodyJSONData"
+                        bodyAssertMethod = "extractHttpBodyJSONData"
                     }
                     "application/xml" -> TODO("xml assertion not implemented yet")
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
@@ -89,6 +98,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputErrorName = "${operation.defaultName()}Error"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
 
+
             writer.write("let encoder = \$L", requestEncoder)
             writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
             writer.write("let context = HttpContextBuilder()")
@@ -106,7 +116,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
             httpProtocolCustomizable.renderMiddlewareForGeneratedRequestTests(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
-            renderMockDeserializeMiddleware(test, operationStack, outputSymbol, outputErrorName, bodyAssertMethod)
+            renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, bodyAssertMethod, inputShape)
             if (hasIdempotencyTokenTrait) {
 
                 IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName, operationStack, outputSymbol.name, outputErrorName).renderIdempotencyMiddleware()
@@ -146,14 +156,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, bodyAssertMethod: String) {
+    private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase,
+                                                operationStack: String,
+                                                inputSymbol: Symbol,
+                                                outputSymbol: Symbol,
+                                                outputErrorName: String,
+                                                bodyAssertMethod: String,
+                                                inputShape: Shape) {
 
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
             renderQueryAsserts(test)
             renderHeaderAsserts(test)
-            renderBodyAssert(test, bodyAssertMethod)
+            renderBodyAssert(test, bodyAssertMethod, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
             writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol, $outputErrorName>(httpResponse: response, output: mockOutput)")
@@ -213,15 +229,30 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyAssert(test: HttpRequestTestCase, bodyAssertMethod: String) {
-        if (test.body.isPresent && !test.body.get().isBlank() && test.body.get() != "{}") {
+    private fun renderBodyAssert(test: HttpRequestTestCase, bodyAssertMethod: String, inputSymbol: Symbol, inputShape: Shape) {
+        if (test.body.isPresent && test.body.get().isNotBlank() && test.body.get() != "{}") {
             writer.openBlock(
                 "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.write("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!)")
+                writer.openBlock("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
+                    val bodyTargetsHttpPayload = inputShape.members().filter{ it.hasTrait(HttpPayloadTrait::class.java) }.count() > 0
+                    if (bodyTargetsHttpPayload) {
+                        val httpPayloadShape = inputShape.members().first { it.hasTrait(HttpPayloadTrait::class.java) }
+                        val target = model.expectShape(httpPayloadShape.target)
+                        when (target.type) {
+                            ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
+                                val nestedSymbol = symbolProvider.toSymbol(target)
+                                renderBodyComparison(nestedSymbol)
+                            }
+                            else -> writer.write("XCTAssertEqual(expectedData, actualData)")
+                        }
+                    } else {
+                        renderBodyComparison(inputSymbol, true)
+                    }
+                }
             }
         } else {
             writer.openBlock(
@@ -232,6 +263,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssert(expectedHttpBody == HttpBody.none, \"The expected HttpBody is not none as expected\")")
             }
         }
+    }
+
+    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
+        val bodyString = if(appendBody) "Body" else ""
+        writer.openBlock("do {", "} catch let err {") {
+            writer.write("let decoder = JSONDecoder()")
+            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
+            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
+            writer.write("XCTAssertEqual(expectedObj, actualObj)")
+        }
+        writer.indent()
+        writer.write("XCTFail(\"Failed to verify body \\(err)\")")
+        writer.dedent()
+        writer.write("}")
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
