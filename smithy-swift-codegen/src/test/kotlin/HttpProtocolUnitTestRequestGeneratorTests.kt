@@ -90,7 +90,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(SmokeTestInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! SmokeTestOutput(httpResponse: response, decoder: nil)
@@ -157,7 +166,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    XCTAssertEqual(expectedData, actualData)
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! ExplicitStringOutput(httpResponse: response, decoder: nil)
@@ -327,7 +338,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    XCTAssertEqual(expectedData, actualData)
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! StreamingTraitsOutput(httpResponse: response, decoder: nil)
@@ -448,7 +461,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(JsonUnionsInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! JsonUnionsOutput(httpResponse: response, decoder: nil)
@@ -536,7 +558,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(RecursiveShapesInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! RecursiveShapesOutput(httpResponse: response, decoder: nil)
@@ -609,7 +640,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! InlineDocumentOutput(httpResponse: response, decoder: nil)
@@ -678,7 +718,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!)
+                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let decoder = JSONDecoder()
+                        let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
+                        let actualObj = try decoder.decode(ClientRuntime.Document.self, from: actualData)
+                        XCTAssertEqual(expectedObj, actualObj)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! InlineDocumentAsPayloadOutput(httpResponse: response, decoder: nil)
