@@ -113,6 +113,12 @@ interface ProtocolGenerator {
     fun generateDeserializers(ctx: GenerationContext)
 
     /**
+     * Generate serializers or deserializers for any nested types referenced by operation inputs/outputs
+     */
+    fun generateCodableConformanceForNestedTypes(ctx: GenerationContext)
+
+    /**
+     *
      * Generate unit tests for the protocol
      */
     fun generateProtocolUnitTests(ctx: GenerationContext)

@@ -10,6 +10,7 @@ class HttpBodyMiddlewareTests {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
         newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
+        newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
         newTestContext.generationCtx.delegator.flushWriters()
     }
     private fun newTestContext(): TestContext {
