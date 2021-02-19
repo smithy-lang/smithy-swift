@@ -13,7 +13,6 @@ build/
 local.properties
 */.build/
 ClientRuntime/*.xcodeproj
-.swiftpm
 Package.resolved
 *.hprof
 **/xcuserdata
