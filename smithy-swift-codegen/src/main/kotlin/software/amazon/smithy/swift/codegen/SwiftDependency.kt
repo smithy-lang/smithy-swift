@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
-import java.io.File
 
 enum class SwiftDependency(val type: String, val target: String, val branch: String? = null, val version: String, val url: String, var packageName: String) : SymbolDependencyContainer {
     // Note: "namespace" is sub module in the full library "packageName". We use the namespace to minimize the module import. But, the entire package is "packageName"
@@ -58,4 +57,3 @@ private fun getGitBranchName(): String {
 
     return branchName
 }
-
