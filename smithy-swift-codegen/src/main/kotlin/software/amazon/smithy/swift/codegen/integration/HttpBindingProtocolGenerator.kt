@@ -140,45 +140,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
         // render conformance to Encodable for all input shapes and their nested types
-        val (shapesNeedingEncodableConformance, nestedShapesNeedingEncodableConformance) = resolveShapesNeedingEncodableConformance(ctx)
-        for (shape in nestedShapesNeedingEncodableConformance) {
-            // conforming to Encodable and Coding Keys enum are rendered as separate extensions in separate files
-            val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
-            val symbolName = symbol.name
-            val rootNamespace = ctx.settings.moduleName
-            val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
-                .name(symbolName)
-                .build()
-
-            ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                    writer.addFoundationImport()
-                    when (shape) {
-                        is StructureShape -> {
-                            // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
-                            val httpBodyMembers = shape.members()
-                                .filter { it.isInHttpBody() }
-                                .toList()
-                            generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                            writer.write("") // need enter space between coding keys and encode implementation
-                            StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
-                        }
-                        is UnionShape -> {
-                            // get all members of the union shape
-                            val unionMembers = shape.members().toList()
-                            val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
-                            val unionMembersForCodingKeys = unionMembers.toMutableList()
-                            unionMembersForCodingKeys.add(0, sdkUnknownMember)
-                            generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
-                            writer.write("") // need enter space between coding keys and encode implementation
-                            UnionEncodeGenerator(ctx, unionMembers, writer, defaultTimestampFormat).render()
-                        }
-                    }
-                }
-            }
-        }
+        val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
 
         for (shape in shapesNeedingEncodableConformance) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
@@ -235,45 +197,59 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // separate decodable conformance to nested types from output shapes
         // first loop through nested types and perform decodable implementation normally
         // then loop through output shapes and perform creation of body struct with decodable implementation
-        val (shapesNeedingDecodableConformance, nestedShapesNeedingDecodableConformance) = resolveShapesNeedingDecodableConformance(ctx)
-        // handle nested shapes normally
-        for (shape in nestedShapesNeedingDecodableConformance) {
-            // conforming to Decodable and Coding Keys enum are rendered as separate extensions in separate files
-            val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
-            val symbolName = symbol.name
-            val rootNamespace = ctx.settings.moduleName
-            val decodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName+Decodable.swift")
-                .name(symbolName)
-                .build()
-
-            ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: Decodable {", "}") {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
-                    writer.addFoundationImport()
-                    val members = shape.members().toList()
-                    when (shape) {
-                        is StructureShape -> {
-                            generateCodingKeysForMembers(ctx, writer, members)
-                            writer.write("")
-                            StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
-                        }
-                        is UnionShape -> {
-                            val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
-                            val unionMembersForCodingKeys = members.toMutableList()
-                            unionMembersForCodingKeys.add(0, sdkUnknownMember)
-                            generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
-                            writer.write("")
-                            UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
-                        }
-                    }
-                }
-            }
-        }
+        val shapesNeedingDecodableConformance = resolveShapesNeedingDecodableConformance(ctx)
 
         // handle top level output shapes which includes creating a new http body struct to handle deserialization
         for (shape in shapesNeedingDecodableConformance) {
             renderBodyStructAndDecodableExtension(ctx, shape)
+        }
+    }
+
+    override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
+
+        val nestedShapes = resolveShapesNeedingCodableConformance(ctx)
+        for (shape in nestedShapes) {
+            renderCodableExtensionForNestedTypes(ctx, shape)
+        }
+    }
+
+    private fun renderCodableExtensionForNestedTypes(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+        val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+        val symbolName = symbol.name
+        val rootNamespace = ctx.settings.moduleName
+        val encodeSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/$symbolName+Codable.swift")
+            .name(symbolName)
+            .build()
+
+        ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
+            writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addFoundationImport()
+                val members = shape.members().toList()
+                when (shape) {
+                    is StructureShape -> {
+                        // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
+                        val httpBodyMembers = members.filter { it.isInHttpBody() }
+                        generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                        writer.write("") // need enter space between coding keys and encode implementation
+                        StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        writer.write("")
+                        StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                    }
+                    is UnionShape -> {
+                        // get all members of the union shape
+                        val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
+                        val unionMembersForCodingKeys = members.toMutableList()
+                        unionMembersForCodingKeys.add(0, sdkUnknownMember)
+                        generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
+                        writer.write("") // need enter space between coding keys and encode implementation
+                        UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                        writer.write("")
+                        UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                    }
+                }
+            }
         }
     }
 
@@ -777,23 +753,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      *
      * @return The set of shapes that require a `Encodable` conformance and coding keys.
      */
-    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Pair<Set<Shape>, Set<Shape>> {
+    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         // all top level operation inputs with an http body must conform to Encodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
         // get them all and return as one set to loop through
         val inputShapes = resolveOperationInputShapes(ctx).toMutableSet()
 
-        val topLevelMembers = getHttpBindingOperations(ctx).flatMap {
-            val inputShape = ctx.model.expectShape(it.input.get())
-            inputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
-
-        val nested = walkNestedShapesRequiringSerde(ctx, topLevelMembers)
-
-        return Pair(inputShapes, nested)
+        return inputShapes
     }
 
     /**
@@ -803,13 +769,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      *
      * @return The set of shapes that require a `Decodable` conformance and coding keys.
      */
-    private fun resolveShapesNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Pair<Set<Shape>, Set<Shape>> {
+    private fun resolveShapesNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         // all top level operation outputs, errors with an http body must conform to Decodable
         // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Decodable
         // get them all and return as one set to loop through
 
         val outputShapes = resolveOperationOutputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
         val errorShapes = resolveOperationErrorShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+
+        return outputShapes.union(errorShapes)
+    }
+
+    private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
 
         val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
             val outputShape = ctx.model.expectShape(it.output.get())
@@ -826,8 +797,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
 
-        val nested = walkNestedShapesRequiringSerde(ctx, topLevelOutputMembers.union(topLevelErrorMembers))
-        return Pair(outputShapes.union(errorShapes), nested)
+        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
+            val inputShape = ctx.model.expectShape(it.input.get())
+            inputShape.members()
+        }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
+
+        val allTopLevelMembers = topLevelOutputMembers.union(topLevelErrorMembers).union(topLevelInputMembers)
+
+        val nestedTypes = walkNestedShapesRequiringSerde(ctx, allTopLevelMembers)
+        return nestedTypes
     }
 
     private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {

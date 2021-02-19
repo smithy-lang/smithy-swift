@@ -20,6 +20,7 @@ class StructEncodeGenerationTests {
     val newTestContext = newTestContext()
     init {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
+        newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
         newTestContext.generationCtx.delegator.flushWriters()
     }
 
@@ -30,12 +31,10 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it creates encodable conformance for nested structures`() {
-        // test that a struct member of an input operation shape also gets encodable conformance
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested+Encodable.swift"))
-        // these are non-top level shapes reachable from an operation input and thus require encodable conformance
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested2+Encodable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested3+Encodable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested4+Encodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested+Codable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested2+Codable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested3+Codable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested4+Codable.swift"))
     }
 
     @Test
@@ -70,11 +69,11 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it encodes nested documents with aggregate shapes`() {
-        val contents = getModelFileContents("example", "Nested4+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "Nested4+Codable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Nested4: Encodable, Reflection {
+            extension Nested4: Codable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case intList
                     case intMap
@@ -105,6 +104,45 @@ class StructEncodeGenerationTests {
                             try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: key0))
                         }
                     }
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let member1Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .member1)
+                    member1 = member1Decoded
+                    let intListContainer = try containerValues.decodeIfPresent([Int].self, forKey: .intList)
+                    var intListDecoded0:[Int]? = nil
+                    if let intListContainer = intListContainer {
+                        intListDecoded0 = [Int]()
+                        for integer0 in intListContainer {
+                            intListDecoded0?.append(integer0)
+                        }
+                    }
+                    intList = intListDecoded0
+                    let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    var intMapDecoded0: [String:Int]? = nil
+                    if let intMapContainer = intMapContainer {
+                        intMapDecoded0 = [String:Int]()
+                        for (key0, integer0) in intMapContainer {
+                            intMapDecoded0?[key0] = integer0
+                        }
+                    }
+                    intMap = intMapDecoded0
+                    let stringMapContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
+                    var stringMapDecoded0: [String:[String]?]? = nil
+                    if let stringMapContainer = stringMapContainer {
+                        stringMapDecoded0 = [String:[String]?]()
+                        for (key0, stringlist0) in stringMapContainer {
+                            var stringlist0Decoded0 = [String]()
+                            if let stringlist0 = stringlist0 {
+                                for string1 in stringlist0 {
+                                    stringlist0Decoded0.append(string1)
+                                }
+                            }
+                            stringMapDecoded0?[key0] = stringlist0Decoded0
+                        }
+                    }
+                    stringMap = stringMapDecoded0
                 }
             }
             """.trimIndent()
@@ -226,20 +264,26 @@ class StructEncodeGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
 
-        val contents2 = getModelFileContents("example", "NestedEnum+Encodable.swift", newTestContext.manifest)
+        val contents2 = getModelFileContents("example", "NestedEnum+Codable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents2 =
             """
-            extension NestedEnum: Encodable, Reflection {
+            extension NestedEnum: Codable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case myEnum
                 }
-
+            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myEnum = myEnum {
                         try container.encode(myEnum.rawValue, forKey: .myEnum)
                     }
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let myEnumDecoded = try containerValues.decodeIfPresent(MyEnum.self, forKey: .myEnum)
+                    myEnum = myEnumDecoded
                 }
             }
             """.trimIndent()
@@ -250,18 +294,18 @@ class StructEncodeGenerationTests {
     fun `it encodes recursive boxed types correctly`() {
         val contents = getModelFileContents(
             "example",
-            "RecursiveShapesInputOutputNested1+Encodable.swift",
+            "RecursiveShapesInputOutputNested1+Codable.swift",
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested1: Encodable, Reflection {
+            extension RecursiveShapesInputOutputNested1: Codable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case foo
                     case nested
                 }
-
+            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let foo = foo {
@@ -270,6 +314,14 @@ class StructEncodeGenerationTests {
                     if let nested = nested {
                         try container.encode(nested.value, forKey: .nested)
                     }
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let fooDecoded = try containerValues.decodeIfPresent(String.self, forKey: .foo)
+                    foo = fooDecoded
+                    let nestedDecoded = try containerValues.decodeIfPresent(Box<RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    nested = nestedDecoded
                 }
             }
             """.trimIndent()
@@ -280,18 +332,18 @@ class StructEncodeGenerationTests {
     fun `it encodes one side of the recursive shape`() {
         val contents = getModelFileContents(
             "example",
-            "RecursiveShapesInputOutputNested2+Encodable.swift",
+            "RecursiveShapesInputOutputNested2+Codable.swift",
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested2: Encodable, Reflection {
+            extension RecursiveShapesInputOutputNested2: Codable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case bar
                     case recursiveMember
                 }
-
+            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let bar = bar {
@@ -300,6 +352,14 @@ class StructEncodeGenerationTests {
                     if let recursiveMember = recursiveMember {
                         try container.encode(recursiveMember, forKey: .recursiveMember)
                     }
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let barDecoded = try containerValues.decodeIfPresent(String.self, forKey: .bar)
+                    bar = barDecoded
+                    let recursiveMemberDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
+                    recursiveMember = recursiveMemberDecoded
                 }
             }
             """.trimIndent()

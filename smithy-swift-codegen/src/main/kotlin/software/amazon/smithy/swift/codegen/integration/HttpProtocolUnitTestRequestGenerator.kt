@@ -233,10 +233,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 writer.openBlock("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
-                    val bodyTargetsHttpPayload = inputShape.members().filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() > 0
-                    if (bodyTargetsHttpPayload) {
-                        val httpPayloadShape = inputShape.members().first { it.hasTrait(HttpPayloadTrait::class.java) }
-                        val target = model.expectShape(httpPayloadShape.target)
+                    val firstHttpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
+                    if (firstHttpPayloadShape != null) {
+                        val target = model.expectShape(firstHttpPayloadShape.target)
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
