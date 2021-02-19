@@ -209,11 +209,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val nestedShapes = resolveShapesNeedingCodableConformance(ctx)
         for (shape in nestedShapes) {
-            renderCodableExtensionForNestedTypes(ctx, shape)
+            renderCodableExtension(ctx, shape)
         }
     }
 
-    private fun renderCodableExtensionForNestedTypes(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+    private fun renderCodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val rootNamespace = ctx.settings.moduleName
