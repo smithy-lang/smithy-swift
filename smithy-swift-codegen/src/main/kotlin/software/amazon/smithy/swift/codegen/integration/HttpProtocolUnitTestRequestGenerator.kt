@@ -4,17 +4,11 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
@@ -98,7 +92,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputErrorName = "${operation.defaultName()}Error"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
 
-
             writer.write("let encoder = \$L", requestEncoder)
             writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
             writer.write("let context = HttpContextBuilder()")
@@ -156,13 +149,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderMockDeserializeMiddleware(test: HttpRequestTestCase,
-                                                operationStack: String,
-                                                inputSymbol: Symbol,
-                                                outputSymbol: Symbol,
-                                                outputErrorName: String,
-                                                bodyAssertMethod: String,
-                                                inputShape: Shape) {
+    private fun renderMockDeserializeMiddleware(
+        test: HttpRequestTestCase,
+        operationStack: String,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        outputErrorName: String,
+        bodyAssertMethod: String,
+        inputShape: Shape
+    ) {
 
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
@@ -238,7 +233,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 writer.openBlock("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
-                    val bodyTargetsHttpPayload = inputShape.members().filter{ it.hasTrait(HttpPayloadTrait::class.java) }.count() > 0
+                    val bodyTargetsHttpPayload = inputShape.members().filter { it.hasTrait(HttpPayloadTrait::class.java) }.count() > 0
                     if (bodyTargetsHttpPayload) {
                         val httpPayloadShape = inputShape.members().first { it.hasTrait(HttpPayloadTrait::class.java) }
                         val target = model.expectShape(httpPayloadShape.target)
@@ -266,7 +261,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
-        val bodyString = if(appendBody) "Body" else ""
+        val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let decoder = JSONDecoder()")
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")

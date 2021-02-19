@@ -193,15 +193,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
                     writer.addFoundationImport()
-                        val httpBodyMembers = shape.members()
-                            .filter { it.isInHttpBody() }
-                            .toList()
-                        generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                        writer.write("") // need enter space between coding keys and encode implementation
-                        StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
-
-                    }
+                    val httpBodyMembers = shape.members()
+                        .filter { it.isInHttpBody() }
+                        .toList()
+                    generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                    writer.write("") // need enter space between coding keys and encode implementation
+                    StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
+            }
             // this rendering of the body struct and conformance to decodable is purely for protocol tests
             renderBodyStructAndDecodableExtension(ctx, shape)
         }
