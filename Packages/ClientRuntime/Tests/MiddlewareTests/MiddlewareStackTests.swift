@@ -21,7 +21,7 @@ class MiddlewareStackTests: XCTestCase {
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         
         let result = stack.handleMiddleware(context: builtContext, input: MockInput(),
-                                            next: MockHandler(handleCallback: { (context, input) in
+                                            next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)
@@ -63,7 +63,7 @@ class MiddlewareStackTests: XCTestCase {
         }
         
         let result = stack.handleMiddleware(context: builtContext, input: MockInput(),
-                                            next: MockHandler(handleCallback:{ (context, input) in
+                                            next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: httpResponse)

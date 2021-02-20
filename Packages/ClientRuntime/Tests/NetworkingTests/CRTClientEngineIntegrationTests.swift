@@ -243,7 +243,6 @@ class MockSinkStream: StreamSink {
         self.error = error
     }
     
-    
 }
 
 struct TestBody: Codable {

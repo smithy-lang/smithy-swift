@@ -7,7 +7,7 @@ extension HttpRequestTestBaseTests {
     // to regenerate.
     static let __allTests__HttpRequestTestBaseTests = [
         ("testJSONEqual", testJSONEqual),
-        ("testSayHello", testSayHello),
+        ("testSayHello", testSayHello)
     ]
 }
 
@@ -16,14 +16,14 @@ extension HttpResponseTestBaseTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__HttpResponseTestBaseTests = [
-        ("testBuildHttpResponse", testBuildHttpResponse),
+        ("testBuildHttpResponse", testBuildHttpResponse)
     ]
 }
 
 public func __allTests() -> [XCTestCaseEntry] {
     return [
         testCase(HttpRequestTestBaseTests.__allTests__HttpRequestTestBaseTests),
-        testCase(HttpResponseTestBaseTests.__allTests__HttpResponseTestBaseTests),
+        testCase(HttpResponseTestBaseTests.__allTests__HttpResponseTestBaseTests)
     ]
 }
 #endif

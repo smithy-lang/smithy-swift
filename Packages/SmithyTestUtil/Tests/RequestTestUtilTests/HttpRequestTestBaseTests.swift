@@ -147,13 +147,12 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
 
-
         var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
-            id: "TestDeserializeMiddleware"){ context, actual in
+            id: "TestDeserializeMiddleware") { _, actual in
             
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
@@ -203,11 +202,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
            })
         
         let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
-        _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
+        _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
             return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))
         })
-        
         
         wait(for: [deserializeMiddleware], timeout: 2.0)
     }

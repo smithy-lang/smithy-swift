@@ -14,7 +14,7 @@ extension ArrayTests {
         ("testArrayOfStringPresentWithNoValue", testArrayOfStringPresentWithNoValue),
         ("testMissing", testMissing),
         ("testOptionalArrayOfIntAbsent", testOptionalArrayOfIntAbsent),
-        ("testOptionalArrayOfStringAbsent", testOptionalArrayOfStringAbsent),
+        ("testOptionalArrayOfStringAbsent", testOptionalArrayOfStringAbsent)
     ]
 }
 
@@ -24,7 +24,7 @@ extension BooksTest {
     // to regenerate.
     static let __allTests__BooksTest = [
         ("testBookXML", testBookXML),
-        ("testCatalogXML", testCatalogXML),
+        ("testCatalogXML", testCatalogXML)
     ]
 }
 
@@ -35,7 +35,7 @@ extension BoolTests {
     static let __allTests__BoolTests = [
         ("testBoolAsAttribute", testBoolAsAttribute),
         ("testBoolAsElement", testBoolAsElement),
-        ("testMissing", testMissing),
+        ("testMissing", testMissing)
     ]
 }
 
@@ -51,7 +51,7 @@ extension CRTClientEngineIntegrationTests {
         ("testMakeHttpStreamRequestFromData", testMakeHttpStreamRequestFromData),
         ("testMakeHttpStreamRequestReceive", testMakeHttpStreamRequestReceive),
         ("testMakeHttpStreamRequestReceive3ThousandBytes", testMakeHttpStreamRequestReceive3ThousandBytes),
-        ("testMakeHttpStreamRequestReceiveOneByte", testMakeHttpStreamRequestReceiveOneByte),
+        ("testMakeHttpStreamRequestReceiveOneByte", testMakeHttpStreamRequestReceiveOneByte)
     ]
 }
 
@@ -62,7 +62,7 @@ extension ClientErrorTests {
     static let __allTests__ClientErrorTests = [
         ("testNetworkErrorEqualityWithDescription", testNetworkErrorEqualityWithDescription),
         ("testNetworkErrorInEqualityWithDescription", testNetworkErrorInEqualityWithDescription),
-        ("testNetworkErrorInEqualityWithoutDescription", testNetworkErrorInEqualityWithoutDescription),
+        ("testNetworkErrorInEqualityWithoutDescription", testNetworkErrorInEqualityWithoutDescription)
     ]
 }
 
@@ -73,7 +73,7 @@ extension DataObjectSerializationTests {
     static let __allTests__DataObjectSerializationTests = [
         ("testDataObjectIsEncodedToBase64String", testDataObjectIsEncodedToBase64String),
         ("testDecodingDataObjectFromBase64EncodedString", testDecodingDataObjectFromBase64EncodedString),
-        ("testDecodingInvalidBase64EncodedDataObject", testDecodingInvalidBase64EncodedDataObject),
+        ("testDecodingInvalidBase64EncodedDataObject", testDecodingInvalidBase64EncodedDataObject)
     ]
 }
 
@@ -86,7 +86,7 @@ extension DateFormatterTests {
         ("testCreateDateFromInValidRFC5322StringReturnsNil", testCreateDateFromInValidRFC5322StringReturnsNil),
         ("testCreateDateFromValidISO8601StringWithFractionalSeconds", testCreateDateFromValidISO8601StringWithFractionalSeconds),
         ("testCreateDateFromValidISO8601StringWithoutFractionalSeconds", testCreateDateFromValidISO8601StringWithoutFractionalSeconds),
-        ("testCreateDateFromValidRFC5322String", testCreateDateFromValidRFC5322String),
+        ("testCreateDateFromValidRFC5322String", testCreateDateFromValidRFC5322String)
     ]
 }
 
@@ -98,7 +98,7 @@ extension DateTests {
         ("testCustomDateFormatter", testCustomDateFormatter),
         ("testDateAsAttribute", testDateAsAttribute),
         ("testDateAsElement", testDateAsElement),
-        ("testMissing", testMissing),
+        ("testMissing", testMissing)
     ]
 }
 
@@ -110,7 +110,7 @@ extension DictionaryTests {
         ("testCodingDictionary", testCodingDictionary),
         ("testMissing", testMissing),
         ("testMissingDictionary", testMissingDictionary),
-        ("testMissingDictionaryValue", testMissingDictionaryValue),
+        ("testMissingDictionaryValue", testMissingDictionaryValue)
     ]
 }
 
@@ -119,7 +119,7 @@ extension EncodingErrorExtensionsTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__EncodingErrorExtensionsTests = [
-        ("testInvalidFloatingPointValueGivesInvalidValueError", testInvalidFloatingPointValueGivesInvalidValueError),
+        ("testInvalidFloatingPointValueGivesInvalidValueError", testInvalidFloatingPointValueGivesInvalidValueError)
     ]
 }
 
@@ -132,7 +132,7 @@ extension FloatFamilyTests {
         ("testDecimalAsElement", testDecimalAsElement),
         ("testFloatAsAttribute", testFloatAsAttribute),
         ("testFloatAsElement", testFloatAsElement),
-        ("testMissing", testMissing),
+        ("testMissing", testMissing)
     ]
 }
 
@@ -142,7 +142,7 @@ extension HeaderUtilsTests {
     // to regenerate.
     static let __allTests__HeaderUtilsTests = [
         ("testSplitHeaderListValues", testSplitHeaderListValues),
-        ("testSplitHttpDateHeaderListValues", testSplitHttpDateHeaderListValues),
+        ("testSplitHttpDateHeaderListValues", testSplitHttpDateHeaderListValues)
     ]
 }
 
@@ -152,7 +152,7 @@ extension HttpClientTests {
     // to regenerate.
     static let __allTests__HttpClientTests = [
         ("testExecuteRequest", testExecuteRequest),
-        ("testHttpStatusCodeDescriptionWorks", testHttpStatusCodeDescriptionWorks),
+        ("testHttpStatusCodeDescriptionWorks", testHttpStatusCodeDescriptionWorks)
     ]
 }
 
@@ -166,7 +166,7 @@ extension HttpHeadersTests {
         ("testCaseInsensitiveHeaderValueFetchingFromName", testCaseInsensitiveHeaderValueFetchingFromName),
         ("testInitWithDictionary", testInitWithDictionary),
         ("testRemoveHeaderWithName", testRemoveHeaderWithName),
-        ("testUpdateHeaderItem", testUpdateHeaderItem),
+        ("testUpdateHeaderItem", testUpdateHeaderItem)
     ]
 }
 
@@ -177,7 +177,7 @@ extension HttpRequestTests {
     static let __allTests__HttpRequestTests = [
         ("testConversionToUrlRequestFailsWithInvalidEndpoint", testConversionToUrlRequestFailsWithInvalidEndpoint),
         ("testHttpStatusCodeDescriptionWorks", testHttpStatusCodeDescriptionWorks),
-        ("testSdkHttpRequestToHttpRequest", testSdkHttpRequestToHttpRequest),
+        ("testSdkHttpRequestToHttpRequest", testSdkHttpRequestToHttpRequest)
     ]
 }
 
@@ -190,7 +190,7 @@ extension IntFamilyTests {
         ("testIntAsElement", testIntAsElement),
         ("testMissing", testMissing),
         ("testUIntAsAttribute", testUIntAsAttribute),
-        ("testUIntAsElement", testUIntAsElement),
+        ("testUIntAsElement", testUIntAsElement)
     ]
 }
 
@@ -201,7 +201,7 @@ extension MiddlewareStackTests {
     static let __allTests__MiddlewareStackTests = [
         ("testFullBlownOperationRequestWithClientHandler", testFullBlownOperationRequestWithClientHandler),
         ("testMiddlewareStackConvenienceFunction", testMiddlewareStackConvenienceFunction),
-        ("testMiddlewareStackSuccessInterceptAfter", testMiddlewareStackSuccessInterceptAfter),
+        ("testMiddlewareStackSuccessInterceptAfter", testMiddlewareStackSuccessInterceptAfter)
     ]
 }
 
@@ -210,7 +210,7 @@ extension NetworkingTestUtils {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__NetworkingTestUtils = [
-        ("testHttpStatusCodeDescriptionWorks", testHttpStatusCodeDescriptionWorks),
+        ("testHttpStatusCodeDescriptionWorks", testHttpStatusCodeDescriptionWorks)
     ]
 }
 
@@ -219,7 +219,7 @@ extension OperationStackTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__OperationStackTests = [
-        ("testMiddlewareInjectableInit", testMiddlewareInjectableInit),
+        ("testMiddlewareInjectableInit", testMiddlewareInjectableInit)
     ]
 }
 
@@ -232,7 +232,7 @@ extension OptionalTests {
         ("testOptionalIntMemberAbsent", testOptionalIntMemberAbsent),
         ("testOptionalIntMemberPresentWithNoValue", testOptionalIntMemberPresentWithNoValue),
         ("testOptionalStringMemberAbsent", testOptionalStringMemberAbsent),
-        ("testOptionalStringMemberPresentWithNoValue", testOptionalStringMemberPresentWithNoValue),
+        ("testOptionalStringMemberPresentWithNoValue", testOptionalStringMemberPresentWithNoValue)
     ]
 }
 
@@ -249,7 +249,7 @@ extension StringExtensionsTests {
         ("testSubstringAfter", testSubstringAfter),
         ("testSubstringBefore", testSubstringBefore),
         ("testTrimmingString", testTrimmingString),
-        ("testValidBase64EncodedString", testValidBase64EncodedString),
+        ("testValidBase64EncodedString", testValidBase64EncodedString)
     ]
 }
 
@@ -260,7 +260,7 @@ extension StringTests {
     static let __allTests__StringTests = [
         ("testMissing", testMissing),
         ("testStringAsAttribute", testStringAsAttribute),
-        ("testStringAsElement", testStringAsElement),
+        ("testStringAsElement", testStringAsElement)
     ]
 }
 
@@ -271,7 +271,7 @@ extension URLTests {
     static let __allTests__URLTests = [
         ("testMissing", testMissing),
         ("testURLAsAttribute", testURLAsAttribute),
-        ("testURLAsElement", testURLAsElement),
+        ("testURLAsElement", testURLAsElement)
     ]
 }
 
@@ -286,7 +286,7 @@ extension XMLArrayBasedContainerTests {
         ("testSequence", testSequence),
         ("testSubscript", testSubscript),
         ("testUnbox", testUnbox),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -299,7 +299,7 @@ extension XMLBoolContainerTests {
         ("testIsNull", testIsNull),
         ("testUnbox", testUnbox),
         ("testValidValues", testValidValues),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -317,7 +317,7 @@ extension XMLDateContainerTests {
         ("testValidStrings_formatter", testValidStrings_formatter),
         ("testValidStrings_iso8601", testValidStrings_iso8601),
         ("testValidStrings_millisecondsSince1970", testValidStrings_millisecondsSince1970),
-        ("testValidStrings_secondsSince1970", testValidStrings_secondsSince1970),
+        ("testValidStrings_secondsSince1970", testValidStrings_secondsSince1970)
     ]
 }
 
@@ -330,7 +330,7 @@ extension XMLElementRepresentableTests {
         ("testInitWithKey", testInitWithKey),
         ("testInitWithKeyBasedContainer", testInitWithKeyBasedContainer),
         ("testInitWithStringContainer", testInitWithStringContainer),
-        ("testTransformToKeyBasedContainer", testTransformToKeyBasedContainer),
+        ("testTransformToKeyBasedContainer", testTransformToKeyBasedContainer)
     ]
 }
 
@@ -339,7 +339,7 @@ extension XMLEncoderTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__XMLEncoderTests = [
-        ("testEncodingHomogenousDictionary", testEncodingHomogenousDictionary),
+        ("testEncodingHomogenousDictionary", testEncodingHomogenousDictionary)
     ]
 }
 
@@ -357,7 +357,7 @@ extension XMLFloatFamilyContainers {
         ("testIsNull", testIsNull),
         ("testUnbox", testUnbox),
         ("testValidValues", testValidValues),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -371,7 +371,7 @@ extension XMLHeaderTests {
         ("testHeaderToXML", testHeaderToXML),
         ("testInitWithVersion", testInitWithVersion),
         ("testInitWithVersionEncoding", testInitWithVersionEncoding),
-        ("testInitWithVersionEncodingStandalone", testInitWithVersionEncodingStandalone),
+        ("testInitWithVersionEncodingStandalone", testInitWithVersionEncodingStandalone)
     ]
 }
 
@@ -389,7 +389,7 @@ extension XMLIntFamilyContainerTests {
         ("testUIntXMLString", testUIntXMLString),
         ("testUnbox", testUnbox),
         ("testValidValues", testValidValues),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -403,7 +403,7 @@ extension XMLKeyBasedContainerTests {
         ("testSequence", testSequence),
         ("testSubscript", testSubscript),
         ("testUnbox", testUnbox),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -414,7 +414,7 @@ extension XMLKeyTests {
     static let __allTests__XMLKeyTests = [
         ("testInitWithIntValue", testInitWithIntValue),
         ("testInitWithStringValue", testInitWithStringValue),
-        ("testInitWithStringValueIntValue", testInitWithStringValueIntValue),
+        ("testInitWithStringValueIntValue", testInitWithStringValueIntValue)
     ]
 }
 
@@ -426,7 +426,7 @@ extension XMLNullContainerTests {
         ("testDescription", testDescription),
         ("testEqual", testEqual),
         ("testIsNull", testIsNull),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -438,7 +438,7 @@ extension XMLSharedContainerTests {
         ("testInit", testInit),
         ("testIsNull", testIsNull),
         ("testWithShared", testWithShared),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -448,7 +448,7 @@ extension XMLSimpleKeyBasedContainerTests {
     // to regenerate.
     static let __allTests__XMLSimpleKeyBasedContainerTests = [
         ("testIsNull", testIsNull),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -457,7 +457,7 @@ extension XMLSimpleTypesTestsUtils {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__XMLSimpleTypesTestsUtils = [
-        ("testMissing", testMissing),
+        ("testMissing", testMissing)
     ]
 }
 
@@ -470,7 +470,7 @@ extension XMLStringContainerTests {
         ("testIsNull", testIsNull),
         ("testUnbox", testUnbox),
         ("testValidValues", testValidValues),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -480,7 +480,7 @@ extension XMLTreeParserTests {
     // to regenerate.
     static let __allTests__XMLTreeParserTests = [
         ("testInValidXMLTreeParseFails", testInValidXMLTreeParseFails),
-        ("testValidXMLTreeParse", testValidXMLTreeParse),
+        ("testValidXMLTreeParse", testValidXMLTreeParse)
     ]
 }
 
@@ -493,7 +493,7 @@ extension XMLURLContainerTests {
         ("testIsNull", testIsNull),
         ("testUnbox", testUnbox),
         ("testValidValues", testValidValues),
-        ("testXMLString", testXMLString),
+        ("testXMLString", testXMLString)
     ]
 }
 
@@ -538,7 +538,7 @@ public func __allTests() -> [XCTestCaseEntry] {
         testCase(XMLSimpleTypesTestsUtils.__allTests__XMLSimpleTypesTestsUtils),
         testCase(XMLStringContainerTests.__allTests__XMLStringContainerTests),
         testCase(XMLTreeParserTests.__allTests__XMLTreeParserTests),
-        testCase(XMLURLContainerTests.__allTests__XMLURLContainerTests),
+        testCase(XMLURLContainerTests.__allTests__XMLURLContainerTests)
     ]
 }
 #endif
