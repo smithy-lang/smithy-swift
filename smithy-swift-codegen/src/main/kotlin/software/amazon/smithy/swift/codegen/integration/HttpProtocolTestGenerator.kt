@@ -52,10 +52,10 @@ class HttpProtocolTestGenerator(
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
                         // import dependencies
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.addImport(ctx.settings.moduleName, true)
-                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
-                        writer.addImport(SwiftDependency.XCTest.namespace)
+                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                        writer.addImport(SwiftDependency.XCTest.target)
 
                         requestTestBuilder
                             .writer(writer)
@@ -83,10 +83,10 @@ class HttpProtocolTestGenerator(
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                         LOGGER.fine("Generating response protocol test cases for ${operation.id}")
                         // import dependencies
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.addImport(ctx.settings.moduleName, true)
-                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
-                        writer.addImport(SwiftDependency.XCTest.namespace)
+                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                        writer.addImport(SwiftDependency.XCTest.target)
 
                         responseTestBuilder
                             .writer(writer)
@@ -117,10 +117,10 @@ class HttpProtocolTestGenerator(
                         ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                             LOGGER.fine("Generating error protocol test cases for ${operation.id}")
                             // import dependencies
-                            writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                             writer.addImport(ctx.settings.moduleName, true)
-                            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.namespace)
-                            writer.addImport(SwiftDependency.XCTest.namespace)
+                            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                            writer.addImport(SwiftDependency.XCTest.target)
 
                             errorTestBuilder
                                 .error(error)

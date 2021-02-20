@@ -109,7 +109,7 @@ class StructureGenerator(
             writer.writeMemberDocs(model, it)
             var letOrVar = "let"
             if (it.hasTrait(SwiftBoxTrait::class.java)) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.namespace)
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 memberSymbol = memberSymbol.recursiveSymbol()
             }
 

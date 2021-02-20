@@ -11,12 +11,11 @@ build/
 *.iml
 .idea/
 local.properties
-ClientRuntime/.build/
 */.build/
 ClientRuntime/*.xcodeproj
-ClientRuntime/.swiftpm
-ClientRuntime/Package.resolved
+Package.resolved
 *.hprof
 **/xcuserdata
 **/*.xcuserdata
 xcuserdata
+.build/

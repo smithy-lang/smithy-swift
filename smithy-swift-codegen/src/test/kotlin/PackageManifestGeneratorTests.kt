@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import io.kotest.matchers.collections.shouldHaveAtMostSize
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldEndWith
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
@@ -33,16 +31,15 @@ class PackageManifestGeneratorTests {
         writePackageManifest(settings, manifest, mockDependencies)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "dependencies: [\n" +
-                "        .package(\n" +
-                "            url: \"https://github.com/apple/swift-numerics\",\n" +
-                "            from: 0.0.5\n" +
-                "        ),\n"
-        )
-        val packageLine = packageManifest.split("\n").filter { it.contains("package(path") }
-        packageLine.shouldHaveAtMostSize(1)
-        packageLine[0].shouldEndWith("smithy-swift/ClientRuntime\"),")
+        val expectedContents = """
+    dependencies: [
+        .package(
+            name: "ComplexModule",
+            url: "https://github.com/apple/swift-numerics",
+            from: 0.0.5
+        ),
+        """
+        packageManifest.shouldContain(expectedContents)
     }
 
     @Test
