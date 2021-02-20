@@ -9,7 +9,11 @@ import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
                                  OperationStackError: HttpResponseBinding>: Middleware {
-    public typealias MockDeserializeMiddlewareCallback = (Context, SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>?
+    //swiftlint:disable line_length
+    public typealias MockDeserializeMiddlewareCallback = (Context,
+                                                          SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput,
+                                                                                                    OperationStackError>,
+                                                                                    Error>?
     public var id: String
     let callback: MockDeserializeMiddlewareCallback?
 
@@ -18,7 +22,9 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
         self.callback = callback
     }
     
-    public func handle<H>(context: Context, input: SdkHttpRequest, next: H) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>
+    public func handle<H>(context: Context,
+                          input: SdkHttpRequest,
+                          next: H) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,

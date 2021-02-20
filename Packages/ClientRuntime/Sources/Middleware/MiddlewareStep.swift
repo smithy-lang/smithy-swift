@@ -8,9 +8,11 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
-
-    var orderedMiddleware: OrderedGroup<MInput, MOutput, Context> = OrderedGroup<MInput, MOutput, Context>()
-   
+    
+    var orderedMiddleware: OrderedGroup<MInput,
+                                        MOutput,
+                                        Context> = OrderedGroup<MInput, MOutput, Context>()
+    
     public let id: String
     
     public init(id: String) {
@@ -23,8 +25,8 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handle<H: Handler>(context: Context,
-                            input: MInput,
-                            next: H) -> Result<MOutput, Error>
+                                   input: MInput,
+                                   next: H) -> Result<MOutput, Error>
     where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         
         var handler = next.eraseToAnyHandler()
@@ -56,8 +58,8 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     /// ```
     ///
     public mutating func intercept(position: Position,
-                            id: String,
-                            middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
+                                   id: String,
+                                   middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
         let middleware = WrappedMiddleware(middleware, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }

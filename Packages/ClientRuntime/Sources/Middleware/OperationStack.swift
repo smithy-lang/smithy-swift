@@ -4,7 +4,7 @@
 public struct OperationStack<OperationStackInput: Encodable & Reflection,
                              OperationStackOutput: HttpResponseBinding,
                              OperationStackError: HttpResponseBinding> {
-
+    
     /// returns the unique id for the operation stack as middleware
     public var id: String
     public var initializeStep: InitializeStep<OperationStackInput, OperationStackOutput, OperationStackError>
@@ -15,27 +15,39 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     
     public init(id: String) {
         self.id = id
-        self.initializeStep = InitializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: InitializeStepId)
-        self.serializeStep = SerializeStep<OperationStackInput, OperationStackOutput, OperationStackError>(id: SerializeStepId)
-        self.buildStep = BuildStep<OperationStackOutput, OperationStackError>(id: BuildStepId)
-        self.finalizeStep = FinalizeStep<OperationStackOutput, OperationStackError>(id: FinalizeStepId)
-        self.deserializeStep = DeserializeStep<OperationStackOutput, OperationStackError>(id: DeserializeStepId)
+        self.initializeStep = InitializeStep<OperationStackInput,
+                                             OperationStackOutput,
+                                             OperationStackError>(id: InitializeStepId)
+        self.serializeStep = SerializeStep<OperationStackInput,
+                                           OperationStackOutput,
+                                           OperationStackError>(id: SerializeStepId)
+        self.buildStep = BuildStep<OperationStackOutput,
+                                   OperationStackError>(id: BuildStepId)
+        self.finalizeStep = FinalizeStep<OperationStackOutput,
+                                         OperationStackError>(id: FinalizeStepId)
+        self.deserializeStep = DeserializeStep<OperationStackOutput,
+                                               OperationStackError>(id: DeserializeStepId)
         
     }
     
     /// This function if called adds all default middlewares to a typical sdk operation,
     ///  can optionally call from the service client inside an operation
     public mutating func addDefaultOperationMiddlewares() {
-        buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackOutput, OperationStackError>())
-        deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<OperationStackOutput, OperationStackError>())
+        buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackOutput,
+                                                                                   OperationStackError>())
+        deserializeStep.intercept(position: .before, middleware: DeserializeMiddleware<OperationStackOutput,
+                                                                                       OperationStackError>())
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: OperationStackInput,
                                              next: H) -> SdkResult<OperationStackOutput, OperationStackError>
-    where H.Input == SdkHttpRequest, H.Output == OperationOutput<OperationStackOutput, OperationStackError>, H.Context == HttpContext {
-
+    where H.Input == SdkHttpRequest,
+          H.Output == OperationOutput<OperationStackOutput,
+                                      OperationStackError>,
+          H.Context == HttpContext {
+        
         let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
         let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
         let build = compose(next: BuildStepHandler(handler: finalize), with: buildStep)
@@ -43,7 +55,7 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
         let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
         
         let result = initialize.handle(context: context, input: input)
-
+        
         switch result {
         case .failure(let error):
             return .failure(.unknown(error))
@@ -58,11 +70,12 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
     private func compose<H: Handler, M: Middleware>(next handler: H,
-                                                   with middlewares: M...) -> AnyHandler<H.Input,
-                                                                                 H.Output,
-                                                                                 H.Context> where M.MOutput == H.Output,
-                                                                                                  M.MInput == H.Input,
-                                                                                                  H.Context == M.Context {
+                                                    with middlewares: M...) -> AnyHandler<H.Input,
+                                                                                          H.Output,
+                                                                                          H.Context>
+    where M.MOutput == H.Output,
+          M.MInput == H.Input,
+          H.Context == M.Context {
         guard !middlewares.isEmpty,
               let lastMiddleware = middlewares.last else {
             return handler.eraseToAnyHandler()

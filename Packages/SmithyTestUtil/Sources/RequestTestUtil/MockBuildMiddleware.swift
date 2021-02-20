@@ -19,7 +19,11 @@ public struct MockBuildMiddleware: Middleware {
         self.callback = callback
     }
     
-    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error> where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
+    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error>
+    where H: Handler,
+          Self.MInput == H.Input,
+          Self.MOutput == H.Output,
+          Self.Context == H.Context {
         if let callback = self.callback {
             callback(context, input)
         }
