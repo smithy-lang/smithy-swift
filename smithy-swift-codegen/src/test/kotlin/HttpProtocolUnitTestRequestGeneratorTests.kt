@@ -90,7 +90,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
                         let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
@@ -166,7 +166,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
@@ -338,7 +338,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
@@ -461,7 +461,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
                         let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
@@ -558,7 +558,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
                         let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
@@ -640,7 +640,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
                         let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
@@ -718,7 +718,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
                         let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
