@@ -96,12 +96,6 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpBody(expected.body, actual.body)
     }
     
-    public func assertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody) {
-        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
-            XCTAssertEqual(expectedData, actualData, "The expected and Actual data inside the HttpBody do not match")
-        }
-    }
-    
     public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateJsonCallback) {
         genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
             callback(expectedData, actualData)
