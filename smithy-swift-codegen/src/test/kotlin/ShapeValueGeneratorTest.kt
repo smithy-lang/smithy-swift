@@ -128,6 +128,32 @@ Set<String>(arrayLiteral:
     }
 
     @Test
+    fun `it renders empty sets`() {
+        val valueMember = MemberShape.builder().id("foo.bar#MySet\$member").target("smithy.api#String").build()
+        val set = SetShape.builder()
+            .id("foo.bar#MySet")
+            .member(valueMember)
+            .build()
+        val model = Model.assembler()
+            .addShapes(set, valueMember)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MySet")
+        val setShape = model.expectShape(ShapeId.from("foo.bar#MySet"))
+        val writer = SwiftWriter("test")
+
+        val values: Array<Node> = emptyArray()
+        val params = Node.arrayNode(*values)
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, setShape, params)
+        val contents = writer.toString()
+
+        val expected = "Set<String>()".trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
     fun `it renders structs`() {
         val member1 = MemberShape.builder().id("foo.bar#MyStruct\$stringMember").target("smithy.api#String").build()
         val member2 = MemberShape.builder().id("foo.bar#MyStruct\$boolMember").target("smithy.api#Boolean").build()

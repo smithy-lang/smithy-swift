@@ -49,7 +49,10 @@ class ShapeValueGenerator(
             ShapeType.MAP -> mapDecl(writer) {
                 params.accept(nodeVisitor)
             }
-            ShapeType.LIST, ShapeType.SET -> collectionDecl(writer, shape as CollectionShape) {
+            ShapeType.LIST -> listDecl(writer, shape as CollectionShape) {
+                params.accept(nodeVisitor)
+            }
+            ShapeType.SET -> unorderedSetDecl(writer, shape as CollectionShape, params) {
                 params.accept(nodeVisitor)
             }
             ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
@@ -127,24 +130,36 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun collectionDecl(writer: SwiftWriter, shape: CollectionShape, block: () -> Unit) {
+    private fun listDecl(writer: SwiftWriter, shape: CollectionShape, block: () -> Unit) {
+        writer.pushState()
+        writer.trimTrailingSpaces(false)
+
+        val targetMemberShape = model.expectShape(shape.member.target)
+        writer.writeInline("[")
+            .indent()
+            .call { block() }
+            .dedent()
+            .writeInline("\n]")
+        writer.popState()
+    }
+
+    private fun unorderedSetDecl(writer: SwiftWriter, shape: CollectionShape, params: Node, block: () -> Unit) {
+        val currNode = params as ArrayNode
+        val isEmpty = currNode.elements.count() == 0
+
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
         val targetMemberShape = model.expectShape(shape.member.target)
         val memberSymbol = symbolProvider.toSymbol(targetMemberShape)
-        if (shape.isSetShape) {
+        if (!isEmpty) {
             writer.writeInline("Set<\$L>(arrayLiteral: ", memberSymbol.name)
                 .indent()
                 .call { block() }
                 .dedent()
                 .writeInline("\n)")
-        } else if (shape.isListShape) {
-            writer.writeInline("[")
-                .indent()
-                .call { block() }
-                .dedent()
-                .writeInline("\n]")
+        } else {
+            writer.writeInline("Set<\$L>()", memberSymbol.name)
         }
         writer.popState()
     }
