@@ -182,7 +182,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.extractHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
+                self.assertEqualHttpBodyJSONData(expectedHttpBody!, actualHttpBody!) { (expectedData, actualData) in
                     do {
                          let decoder = JSONDecoder()
                          let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
@@ -208,85 +208,5 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         })
         
         wait(for: [deserializeMiddleware], timeout: 2.0)
-    }
-    
-    func testJSONEqual () throws {
-        let jsonString =
-        """
-        {
-          "Actors": [
-            {
-              "name": "Tom Cruise",
-              "age": 56,
-              "Born At": "Syracuse, NY",
-              "Birthdate": "July 3, 1962",
-              "wife": null,
-              "weight": 67.5,
-              "hasChildren": true,
-              "hasGreyHair": false,
-              "children": [
-                "Suri",
-                "Isabella Jane",
-                "Connor"
-              ]
-            },
-            {
-              "name": "Robert Downey Jr.",
-              "age": 53,
-              "Born At": "New York City, NY",
-              "Birthdate": "April 4, 1965",
-              "wife": "Susan Downey",
-              "weight": 77.1,
-              "hasChildren": true,
-              "hasGreyHair": false,
-              "children": [
-                "Indio Falconer",
-                "Avri Roel",
-                "Exton Elias"
-              ]
-            }
-          ]
-        }
-        """
-        
-        let jsonStringWithDifferentOrder =
-        """
-        {
-          "Actors": [
-            {
-              "name": "Tom Cruise",
-              "age": 56,
-              "Birthdate": "July 3, 1962",
-              "Born At": "Syracuse, NY",
-              "wife": null,
-              "weight": 67.5,
-              "hasGreyHair": false,
-              "hasChildren": true,
-              "children": [
-                "Suri",
-                "Isabella Jane",
-                "Connor"
-              ]
-            },
-            {
-              "children": [
-                "Indio Falconer",
-                "Avri Roel",
-                "Exton Elias"
-              ],
-                  "name": "Robert Downey Jr.",
-                "age": 53,
-               "Born At": "New York City, NY",
-              "Birthdate": "April 4, 1965",
-              "wife": "Susan Downey",
-              "weight": 77.1,
-              "hasChildren": true,
-              "hasGreyHair": false
-            }
-          ]
-        }
-        """
-        assertEqualJSON(jsonString.data(using: .utf8)!, jsonStringWithDifferentOrder.data(using: .utf8)!)
-    }
-
+    }        
 }
