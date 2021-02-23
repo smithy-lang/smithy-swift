@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
+import java.io.File
 
 enum class SwiftDependency(val type: String, val target: String, val branch: String? = null, val version: String, val url: String, var packageName: String) : SymbolDependencyContainer {
     // Note: "namespace" is sub module in the full library "packageName". We use the namespace to minimize the module import. But, the entire package is "packageName"
@@ -14,18 +15,18 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
     CLIENT_RUNTIME(
         "",
         "ClientRuntime",
-        getGitBranchName(),
+        null,
         "0.1.0",
-        "https://github.com/awslabs/smithy-swift",
+        computeAbsolutePath("smithy-swift/Packages"),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", null, "", "", ""),
     SMITHY_TEST_UTIL(
         "",
         "SmithyTestUtil",
-        getGitBranchName(),
+        null,
         "0.1.0",
-        "https://github.com/awslabs/smithy-swift",
+        computeAbsolutePath("smithy-swift/Packages"),
         "ClientRuntime"
     );
 
@@ -41,7 +42,19 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         return listOf(dependency)
     }
 }
-
+private fun computeAbsolutePath(relativePath: String): String {
+    var userDirPath = System.getProperty("user.dir")
+    while (userDirPath.isNotEmpty()) {
+        val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
+        val file = File(fileName)
+        if (file.isDirectory) {
+            return fileName
+        }
+        userDirPath = userDirPath.substring(0, userDirPath.length - 1)
+    }
+    return ""
+}
+/*  To be used for CI at a later time
 private fun getGitBranchName(): String {
     val process = Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD")
     val sb: StringBuilder = StringBuilder()
@@ -57,3 +70,4 @@ private fun getGitBranchName(): String {
 
     return branchName
 }
+*/
