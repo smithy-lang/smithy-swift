@@ -63,16 +63,19 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             model = RecursiveShapeBoxer.transform(model)
             // Default to bytes comparison
             var requestEncoder = "JSONEncoder()"
-            var bodyAssertMethod = "extractHttpBodyJSONData"
+            var bodyAssertMethod = "assertEqualHttpBodyJSONData"
 
             if (test.bodyMediaType.isPresent) {
                 val bodyMediaType = test.bodyMediaType.get()
                 when (bodyMediaType.toLowerCase()) {
                     "application/json" -> {
                         requestEncoder = "JSONEncoder()"
-                        bodyAssertMethod = "extractHttpBodyJSONData"
+                        bodyAssertMethod = "assertEqualHttpBodyJSONData"
                     }
-                    "application/xml" -> TODO("xml assertion not implemented yet")
+                    "application/xml" -> {
+                        requestEncoder = "XMLEncoder()"
+                        bodyAssertMethod = "assertEqualHttpBodyXMLData"
+                    }
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                 }
             }
