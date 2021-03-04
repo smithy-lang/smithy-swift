@@ -17,7 +17,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "ClientRuntime",
         computeBranch(),
         "0.1.0",
-        computeAbsolutePath("smithy-swift/Packages"),
+        computePackageLocation("smithy-swift/Packages", "https://github.com/awslabs/smithy-swift"),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", null, "", "", ""),
@@ -26,7 +26,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "SmithyTestUtil",
         computeBranch(),
         "0.1.0",
-        computePackageLocation("smithy-swift/Packages"),
+        computePackageLocation("smithy-swift/Packages", "https://github.com/awslabs/aws-sdk-swift"),
         "ClientRuntime"
     );
 
@@ -59,8 +59,8 @@ private fun computeAbsolutePath(relativePath: String): String {
     return ""
 }
 
-private fun computePackageLocation(relativePath: String): String {
-    return System.getenv("BRANCH_NAME") ?: computeAbsolutePath(relativePath)
+private fun computePackageLocation(relativePath: String, url: String): String {
+    return if(System.getenv("BRANCH_NAME") != null) url else computeAbsolutePath(relativePath)
 }
 /*  To be used for CI at a later time
 private fun getGitBranchName(): String {
