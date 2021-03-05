@@ -15,7 +15,7 @@ class UnionEncodeGeneratorStrategy(
 ) {
     fun render() {
         val generator = when (ctx.protocol) {
-            // This will eventually be a xml specific struct encode generator
+            // TODO: update this for xml
             RestXmlTrait.ID -> UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
             else -> UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
         }

@@ -15,7 +15,7 @@ class StructDecodeGeneratorStrategy(
 ) {
     fun render() {
         val generator = when (ctx.protocol) {
-            // This will eventually be a xml specific struct decode generator
+            // TODO: update this for xml
             RestXmlTrait.ID -> StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
             else -> StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
         }

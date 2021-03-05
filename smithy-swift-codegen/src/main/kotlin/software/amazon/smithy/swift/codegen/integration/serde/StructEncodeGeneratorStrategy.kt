@@ -15,7 +15,7 @@ class StructEncodeGeneratorStrategy(
 ) {
     fun render() {
         val generator = when (ctx.protocol) {
-            // This will eventually be a xml specific struct encode generator
+            // TODO: update this for xml
             RestXmlTrait.ID -> StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
             else -> StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
         }
