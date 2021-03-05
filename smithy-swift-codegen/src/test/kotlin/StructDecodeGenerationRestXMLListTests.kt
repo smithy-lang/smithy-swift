@@ -10,7 +10,7 @@ class StructDecodeGenerationRestXMLListTests {
         val settings = model.defaultSettings("aws.protocoltests.restxml#RestXml", "RestXml", "2019-12-16", "Rest Xml Protocol")
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         model = RecursiveShapeBoxer.transform(model)
-        return model.newTestContext("aws.protocoltests.restxml#RestXml")
+        return model.newTestContext("aws.protocoltests.restxml#RestXml", model.defaultSettings(), MockHttpRestXMLProtocolGenerator())
     }
     val newTestContext = newTestContext()
 

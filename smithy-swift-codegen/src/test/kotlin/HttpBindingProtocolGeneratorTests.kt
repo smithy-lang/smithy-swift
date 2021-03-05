@@ -6,58 +6,23 @@
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
-import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
-
-class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
-    override val defaultContentType: String = "application/json"
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
-    override val protocol: ShapeId = RestJson1Trait.ID
-    override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val httpProtocolCustomizable = HttpProtocolCustomizable()
-    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
-    override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
-
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
-
-        val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
-        val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
-        val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
-
-        HttpProtocolTestGenerator(
-            ctx,
-            requestTestBuilder,
-            responseTestBuilder,
-            errorTestBuilder,
-            httpProtocolCustomizable
-        ).generateProtocolTests()
-    }
-}
 
 class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
     override fun generateInitOperationFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
