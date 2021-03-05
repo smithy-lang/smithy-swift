@@ -43,6 +43,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
     }
 }
 private fun computeAbsolutePath(relativePath: String): String {
+    /*
     var userDirPath = System.getProperty("user.dir")
     while (userDirPath.isNotEmpty()) {
         val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
@@ -53,6 +54,8 @@ private fun computeAbsolutePath(relativePath: String): String {
         userDirPath = userDirPath.substring(0, userDirPath.length - 1)
     }
     return ""
+    */
+     return "/Users/runner/work/aws-sdk-swift/aws-sdk-swift/target/build/deps/smithy-swift"
 }
 /*  To be used for CI at a later time
 private fun getGitBranchName(): String {
