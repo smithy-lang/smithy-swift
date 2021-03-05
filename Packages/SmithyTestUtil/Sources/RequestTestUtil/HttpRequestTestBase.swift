@@ -11,7 +11,7 @@ import XCTest
 /**
  Includes Utility functions for Http Protocol Request Serialization Tests
  */
-public typealias ValidateJsonCallback = (Data, Data) -> Void
+public typealias ValidateCallback = (Data, Data) -> Void
 
 open class HttpRequestTestBase: XCTestCase {
     /**
@@ -96,15 +96,15 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpBody(expected.body, actual.body)
     }
     
-    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateJsonCallback) {
+    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
         genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
             callback(expectedData, actualData)
         }
     }
 
-    public func assertEqualHttpBodyXMLData(_ expected: HttpBody, _ actual: HttpBody) {
+    public func assertEqualHttpBodyXMLData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
         genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
-            assertEqualXML(expectedData, actualData)
+            callback(expectedData, actualData)
         }
     }
     
@@ -140,18 +140,6 @@ open class HttpRequestTestBase: XCTestCase {
             return false
         }
         return true
-    }
-
-    public func assertEqualXML(_ expected: Data, _ actual: Data) {
-        let expectedXml = String(decoding: expected, as: UTF8.self)
-        let actualXml = String(decoding: actual, as: UTF8.self)
-        do {
-            let actualDocument = try XMLDocument(data: actual)
-            let expectedDocument = try XMLDocument(data: expected)
-            XCTAssert(expectedDocument.isEqual(to: actualDocument), "XML Documents are not equal expectedXML:\n\(expectedXml)\nActualXML:\(actualXml)")
-        } catch {
-            XCTFail("Failed to convert data into an XMLDocument:\(error)")
-        }
     }
 
     /**
