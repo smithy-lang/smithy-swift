@@ -78,6 +78,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 responseDecoder = when (bodyMediaType.toLowerCase()) {
                     "application/json" -> "JSONDecoder()"
                     "application/xml" -> "XMLDecoder()"
+                    //Bug in the spec: https://github.com/awslabs/smithy/commit/8f548cbe3e37894dd29c85760874fd61002f20ee
+                    "xml" -> "XMLDecoder()"
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                     else -> "JSONDecoder"
                 }
