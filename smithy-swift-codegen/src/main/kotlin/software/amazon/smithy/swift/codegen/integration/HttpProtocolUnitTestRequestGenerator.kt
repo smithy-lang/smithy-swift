@@ -266,7 +266,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("let decoder = ${protocolDecoder}")
+            writer.write("let decoder = $protocolDecoder")
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")
