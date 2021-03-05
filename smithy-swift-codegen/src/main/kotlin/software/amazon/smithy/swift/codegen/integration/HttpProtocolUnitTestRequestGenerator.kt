@@ -22,9 +22,9 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
-    private var protocolEncoder = ""
-    private var protocolDecoder = ""
-    private var bodyAssertMethod = ""
+    private var protocolEncoder = "JSONEncoder()"
+    private var protocolDecoder = "JSONDecoder()"
+    private var bodyAssertMethod = "assertEqualHttpBodyJSONData"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
@@ -64,10 +64,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-            // Default to bytes comparison
-            protocolEncoder = "JSONEncoder()"
-            protocolDecoder = "JSONDecoder()"
-            bodyAssertMethod = "assertEqualHttpBodyJSONData"
 
             if (test.bodyMediaType.isPresent) {
                 val bodyMediaType = test.bodyMediaType.get()
