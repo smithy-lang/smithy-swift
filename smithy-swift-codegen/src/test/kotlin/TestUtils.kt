@@ -273,7 +273,7 @@ fun TestContext.expectShape(shapeId: String): Shape =
 fun Model.newTestContext(
     serviceShapeId: String = "com.test#Example",
     settings: SwiftSettings = this.defaultSettings(),
-    generator: ProtocolGenerator = MockHttpProtocolGenerator()
+    generator: ProtocolGenerator = MockHttpRestJsonProtocolGenerator()
 ): TestContext {
     val manifest = MockManifest()
     val serviceShapeName = serviceShapeId.split("#")[1]

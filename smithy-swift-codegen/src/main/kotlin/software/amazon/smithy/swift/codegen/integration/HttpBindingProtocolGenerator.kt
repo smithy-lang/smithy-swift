@@ -48,6 +48,10 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.integration.serde.StructDecodeGeneratorStrategy
+import software.amazon.smithy.swift.codegen.integration.serde.StructEncodeGeneratorStrategy
+import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
+import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
@@ -160,7 +164,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .toList()
                     generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                     writer.write("") // need enter space between coding keys and encode implementation
-                    StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                    StructEncodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
             }
             // this rendering of the body struct and conformance to decodable is purely for protocol tests
@@ -233,9 +237,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("") // need enter space between coding keys and encode implementation
-                        StructEncodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        StructEncodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                         writer.write("")
-                        StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                     }
                     is UnionShape -> {
                         // get all members of the union shape
@@ -244,9 +248,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         unionMembersForCodingKeys.add(0, sdkUnknownMember)
                         generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
                         writer.write("") // need enter space between coding keys and encode implementation
-                        UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                        UnionEncodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
                         writer.write("")
-                        UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+                        UnionDecodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
                     }
                 }
             }
@@ -276,7 +280,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("") // need enter space between coding keys and decode implementation
-                StructDecodeGenerator(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
             }
         }
     }
