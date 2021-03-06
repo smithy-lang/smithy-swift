@@ -17,7 +17,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "ClientRuntime",
         null,
         "0.1.0",
-        computeAbsolutePath("smithy-swift/Packages"),
+        computeAbsolutePath(arrayOf("target/build/deps/smithy-swift", "smithy-swift/Packages")),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", null, "", "", ""),
@@ -26,7 +26,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "SmithyTestUtil",
         null,
         "0.1.0",
-        computeAbsolutePath("smithy-swift/Packages"),
+        computeAbsolutePath(arrayOf("target/build/deps/smithy-swift", "smithy-swift/Packages")),
         "ClientRuntime"
     );
 
@@ -42,18 +42,22 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         return listOf(dependency)
     }
 }
-private fun computeAbsolutePath(relativePath: String): String {
-    var userDirPath = System.getProperty("user.dir")
-    while (userDirPath.isNotEmpty()) {
-        val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
-        val file = File(fileName)
-        if (file.isDirectory) {
-            return fileName
+
+private fun computeAbsolutePath(relativePaths: Array<String>): String {
+    for (relativePath in relativePaths) {
+        var userDirPath = System.getProperty("user.dir")
+        while (userDirPath.isNotEmpty()) {
+            val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
+            val file = File(fileName)
+            if (file.isDirectory) {
+                return fileName
+            }
+            userDirPath = userDirPath.substring(0, userDirPath.length - 1)
         }
-        userDirPath = userDirPath.substring(0, userDirPath.length - 1)
     }
     return ""
 }
+
 /*  To be used for CI at a later time
 private fun getGitBranchName(): String {
     val process = Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD")
