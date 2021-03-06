@@ -19,12 +19,12 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "0.1.0",
         computeAbsolutePath(
             mapOf(
-                //For aws-sdk-swift CI
+                // For aws-sdk-swift CI
                 "target/build/deps/smithy-swift" to "target/build/deps/smithy-swift",
-                //For smithy-swift CI
+                // For smithy-swift CI
                 "target/build/deps/aws-sdk-swift" to "",
-                //For development
-                "aws-sdk-swift/AWSClientRuntime" to "aws-sdk-swift/AWSClientRuntime"
+                // For development
+                "smithy-swift/Packages" to "smithy-swift/Packages"
             )
         ),
         "ClientRuntime"
@@ -37,12 +37,12 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "0.1.0",
         computeAbsolutePath(
             mapOf(
-                //For aws-sdk-swift CI
+                // For aws-sdk-swift CI
                 "target/build/deps/smithy-swift" to "target/build/deps/smithy-swift",
-                //For smithy-swift CI
+                // For smithy-swift CI
                 "target/build/deps/aws-sdk-swift" to "",
-                //For development
-                "aws-sdk-swift/AWSClientRuntime" to "aws-sdk-swift/AWSClientRuntime"
+                // For development
+                "smithy-swift/Packages" to "smithy-swift/Packages"
             )
         ),
         "ClientRuntime"
