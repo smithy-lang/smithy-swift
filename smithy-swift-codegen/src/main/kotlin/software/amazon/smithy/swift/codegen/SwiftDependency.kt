@@ -17,7 +17,16 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "ClientRuntime",
         null,
         "0.1.0",
-        computeAbsolutePath(arrayOf("target/build/deps/smithy-swift", "smithy-swift/Packages")),
+        computeAbsolutePath(
+            mapOf(
+                //aws-sdk-swift checks out smithy-swift in this directory
+                "target/build/deps/smithy-swift" to "target/build/deps/smithy-swift",
+                //smithy-swift/Package.swift if we downloaded target/build/deps/aws-sdk-swift as a dependency
+                "target/build/deps/aws-sdk-swift" to "",
+                //Used for development
+                "aws-sdk-swift/AWSClientRuntime" to "aws-sdk-swift/AWSClientRuntime"
+            )
+        ),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", null, "", "", ""),
@@ -26,7 +35,16 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "SmithyTestUtil",
         null,
         "0.1.0",
-        computeAbsolutePath(arrayOf("target/build/deps/smithy-swift", "smithy-swift/Packages")),
+        computeAbsolutePath(
+            mapOf(
+                //For aws-sdk-swift CI
+                "target/build/deps/smithy-swift" to "target/build/deps/smithy-swift",
+                //For smithy-swift CI
+                "target/build/deps/aws-sdk-swift" to "",
+                //For development
+                "aws-sdk-swift/AWSClientRuntime" to "aws-sdk-swift/AWSClientRuntime"
+            )
+        ),
         "ClientRuntime"
     );
 
@@ -43,14 +61,14 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
     }
 }
 
-private fun computeAbsolutePath(relativePaths: Array<String>): String {
-    for (relativePath in relativePaths) {
+private fun computeAbsolutePath(relativePaths: Map<String, String>): String {
+    for (relativePath in relativePaths.keys) {
         var userDirPath = System.getProperty("user.dir")
         while (userDirPath.isNotEmpty()) {
-            val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
-            val file = File(fileName)
-            if (file.isDirectory) {
-                return fileName
+            val fileNameForCheckDir = userDirPath.removeSuffix("/") + "/" + relativePath
+            val fileNameForAbsolutePath = userDirPath.removeSuffix("/") + "/" + relativePaths[relativePath]
+            if (File(fileNameForCheckDir).isDirectory) {
+                return fileNameForAbsolutePath
             }
             userDirPath = userDirPath.substring(0, userDirPath.length - 1)
         }
