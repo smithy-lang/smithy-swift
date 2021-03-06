@@ -20,9 +20,9 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         computeAbsolutePath(
             mapOf(
                 // For aws-sdk-swift CI
-                "target/build/deps/smithy-swift" to "target/build/deps/smithy-swift",
+                "aws-sdk-swift/target/build/deps/smithy-swift" to "aws-sdk-swift/target/build/deps/smithy-swift",
                 // For smithy-swift CI
-                "target/build/deps/aws-sdk-swift" to "",
+                "smithy-swift/target/build/deps/aws-sdk-swift" to "smithy-swift",
                 // For development
                 "smithy-swift/Packages" to "smithy-swift/Packages"
             )
