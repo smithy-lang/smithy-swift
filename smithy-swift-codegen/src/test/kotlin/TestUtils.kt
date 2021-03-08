@@ -260,14 +260,14 @@ class TestContext(
     val generator: ProtocolGenerator
 ) {
     companion object {
-        fun initContextFrom(smithyFile: String, serviceShapeId: String): TestContext {
+        fun initContextFrom(smithyFile: String, serviceShapeId: String, swiftSettingCallback:((model: Model) -> SwiftSettings)? = null): TestContext {
             var model = javaClass.getResource(smithyFile).asSmithy()
             val manifest = MockManifest()
             val pluginContext = buildMockPluginContext(model, manifest, serviceShapeId)
             SwiftCodegenPlugin().execute(pluginContext)
 
-            val settings = model.defaultSettings()
-            model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+            val swiftSettings = if (swiftSettingCallback == null) model.defaultSettings() else swiftSettingCallback(model)
+            model = AddOperationShapes.execute(model, swiftSettings.getService(model), swiftSettings.moduleName)
             model = RecursiveShapeBoxer.transform(model)
             return model.newTestContext(manifest, serviceShapeId, model.defaultSettings(), MockHttpRestJsonProtocolGenerator())
         }
@@ -343,7 +343,7 @@ fun getModelFileContents(namespace: String, filename: String, manifest: MockMani
 }
 
 fun getTestFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return getFileContents(manifest, "$namespace/Tests/$filename")
+    return getFileContents(manifest, "${namespace}Tests/$filename")
 }
 
 fun getFileContents(manifest: MockManifest, fileName: String): String {

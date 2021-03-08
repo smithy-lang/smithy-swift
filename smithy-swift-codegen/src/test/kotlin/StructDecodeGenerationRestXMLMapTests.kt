@@ -1,34 +1,22 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.AddOperationShapes
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 
 class StructDecodeGenerationRestXMLMapTests {
-    var model = javaClass.getResource("rest-xml-map.smithy").asSmithy()
-    private fun newTestContext(): TestContext {
-        val settings = model.defaultSettings("aws.protocoltests.restxml#RestXml", "RestXml", "2019-12-16", "Rest Xml Protocol")
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        model = RecursiveShapeBoxer.transform(model)
-        return model.newTestContext("aws.protocoltests.restxml#RestXml", model.defaultSettings(), MockHttpRestXMLProtocolGenerator())
-    }
-    val newTestContext = newTestContext()
 
-    init {
-        newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
-        newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
-        newTestContext.generationCtx.delegator.flushWriters()
-    }
 
     @Test
     fun `it creates decodable conformance in Decodable extension`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/FlattenedXmlMapOutputBody+Decodable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/NestedXmlMapOutputBody+Decodable.swift"))
+        val context = setupTests("rest-xml-map.smithy", "aws.protocoltests.restxml#RestXml")
+
+        Assertions.assertTrue(context.manifest.hasFile("/example/models/FlattenedXmlMapOutputBody+Decodable.swift"))
+        Assertions.assertTrue(context.manifest.hasFile("/example/models/NestedXmlMapOutputBody+Decodable.swift"))
     }
 
     @Test
     fun `it creates a structure that has a map of strings for Nested`() {
-        val contents = getModelFileContents("example", "NestedXmlMapOutputBody+Decodable.swift", newTestContext.manifest)
+        val context = setupTests("rest-xml-map.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getModelFileContents("example", "NestedXmlMapOutputBody+Decodable.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -41,7 +29,8 @@ class StructDecodeGenerationRestXMLMapTests {
 
     @Test
     fun `it creates a structure that has a map of strings for Flattened`() {
-        val contents = getModelFileContents("example", "FlattenedXmlMapOutputBody+Decodable.swift", newTestContext.manifest)
+        val context = setupTests("rest-xml-map.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getModelFileContents("example", "FlattenedXmlMapOutputBody+Decodable.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -50,5 +39,16 @@ class StructDecodeGenerationRestXMLMapTests {
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId) { model ->
+            model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
+        }
+
+        context.generator.generateDeserializers(context.generationCtx)
+        context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        return context
     }
 }
