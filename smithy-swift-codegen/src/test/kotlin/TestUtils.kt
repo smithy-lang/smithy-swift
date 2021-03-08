@@ -21,6 +21,8 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.AddOperationShapes
+import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
@@ -252,30 +254,44 @@ fun createStructureWithOptionalErrorMessage(): StructureShape {
         .build()
 }
 
-/**
- * Container for type instances necessary for tests
- */
-data class TestContext(
+class TestContext(
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
     val generator: ProtocolGenerator
-)
+) {
+    companion object {
+        fun initContextFrom(smithyFile: String, serviceShapeId: String): TestContext {
+            var model = javaClass.getResource(smithyFile).asSmithy()
+            val manifest = MockManifest()
+            val pluginContext = buildMockPluginContext(model, manifest, serviceShapeId)
+            SwiftCodegenPlugin().execute(pluginContext)
+
+            val settings = model.defaultSettings()
+            model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+            model = RecursiveShapeBoxer.transform(model)
+            return model.newTestContext(manifest, serviceShapeId, model.defaultSettings(), MockHttpRestJsonProtocolGenerator())
+        }
+    }
+}
 
 // Convenience function to retrieve a shape from a [TestContext]
 fun TestContext.expectShape(shapeId: String): Shape =
     this.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
-/**
- * Initiate codegen for the model and produce a [TestContext].
- *
- * @param serviceShapeId the smithy Id for the service to codegen, defaults to "com.test#Example"
- */
 fun Model.newTestContext(
     serviceShapeId: String = "com.test#Example",
     settings: SwiftSettings = this.defaultSettings(),
     generator: ProtocolGenerator = MockHttpRestJsonProtocolGenerator()
 ): TestContext {
-    val manifest = MockManifest()
+    return newTestContext(MockManifest(), serviceShapeId, settings, generator)
+}
+
+fun Model.newTestContext(
+    manifest: MockManifest,
+    serviceShapeId: String,
+    settings: SwiftSettings,
+    generator: ProtocolGenerator
+): TestContext {
     val serviceShapeName = serviceShapeId.split("#")[1]
     val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, serviceShapeName, serviceShapeName)
     val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
@@ -323,11 +339,23 @@ fun Model.defaultSettings(
     )
 
 fun getModelFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return manifest.expectFileString("$namespace/models/$filename")
+    return getFileContents(manifest, "$namespace/models/$filename")
 }
 
 fun getTestFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return manifest.expectFileString("${namespace}Tests/$filename")
+    return getFileContents(manifest, "$namespace/Tests/$filename")
+}
+
+fun getFileContents(manifest: MockManifest, fileName: String): String {
+    return manifest.expectFileString(fileName)
+}
+
+fun listFilesFromManifest(manifest: MockManifest): String {
+    var listFiles = StringBuilder()
+    for (file in manifest.files) {
+        listFiles.append("${file}\n")
+    }
+    return listFiles.toString()
 }
 
 fun String.shouldSyntacticSanityCheck() {
