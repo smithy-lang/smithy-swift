@@ -1,10 +1,6 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.swift.codegen.AddOperationShapes
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.SwiftSettings
 
 class StructDecodeGenerationRestXMLListTests {
     @Test

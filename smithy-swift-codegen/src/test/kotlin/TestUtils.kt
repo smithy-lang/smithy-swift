@@ -260,7 +260,7 @@ class TestContext(
     val generator: ProtocolGenerator
 ) {
     companion object {
-        fun initContextFrom(smithyFile: String, serviceShapeId: String, swiftSettingCallback:((model: Model) -> SwiftSettings)? = null): TestContext {
+        fun initContextFrom(smithyFile: String, serviceShapeId: String, swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null): TestContext {
             var model = javaClass.getResource(smithyFile).asSmithy()
             val manifest = MockManifest()
             val pluginContext = buildMockPluginContext(model, manifest, serviceShapeId)

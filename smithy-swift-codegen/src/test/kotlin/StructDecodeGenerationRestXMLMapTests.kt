@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 
 class StructDecodeGenerationRestXMLMapTests {
 
-
     @Test
     fun `it creates decodable conformance in Decodable extension`() {
         val context = setupTests("rest-xml-map.smithy", "aws.protocoltests.restxml#RestXml")
