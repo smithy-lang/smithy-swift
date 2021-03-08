@@ -25,7 +25,6 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `EnumInput Contents`() {
         val context = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/EnumInputInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
