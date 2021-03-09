@@ -1,0 +1,12 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+public class WrappedListMember {
+    public enum CodingKeys: String, CodingKey {
+        case member
+    }
+}

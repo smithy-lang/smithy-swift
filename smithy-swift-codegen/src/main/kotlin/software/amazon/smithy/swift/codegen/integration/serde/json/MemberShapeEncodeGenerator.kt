@@ -20,16 +20,17 @@ import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.isBoxed
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
  */
-open class MemberShapeEncodeGenerator(
+abstract class MemberShapeEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-) {
+) : MemberShapeEncodeGeneratable {
 
     /*
      Add custom extensions to be rendered to handle optional shapes and
