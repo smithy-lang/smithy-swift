@@ -127,12 +127,12 @@ open class HttpProtocolClientGenerator(
                     // hostLabel can only target string shapes
                     // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
                     val member = inputShape.members().first { it.memberName == segment.content }
-                    "\${input.${member.memberName}}"
+                    "\\(input.${member.memberName})"
                 } else {
                     segment.content
                 }
             }
-            writer.write("  .withHostPrefix(value: \$L)", hostPrefix)
+            writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
         }
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, op)
     }

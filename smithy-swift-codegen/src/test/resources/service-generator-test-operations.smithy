@@ -8,6 +8,7 @@ service Example {
     version: "1.0.0",
     operations: [
         GetFoo,
+        GetStatus,
         GetFooNoInput,
         GetFooNoOutput,
         GetFooStreamingInput,
@@ -23,7 +24,6 @@ service Example {
 @deprecated
 operation OperationWithDeprecatedTrait {}
 
-@endpoint(hostPrefix: "{foo}.data.")
 @http(method: "GET", uri: "/foo")
 operation GetFoo {
     input: GetFooRequest,
@@ -36,6 +36,21 @@ structure GetFooResponse {}
 
 @error("client")
 structure GetFooError {}
+
+@readonly
+@endpoint(hostPrefix: "{foo}.data.")
+@http(method: "POST", uri: "/status")
+operation GetStatus {
+    input: GetStatusInput,
+    output: GetStatusOutput
+}
+structure GetStatusInput {
+    @required
+    @hostLabel
+    foo: String
+}
+
+structure GetStatusOutput {}
 
 
 @http(method: "GET", uri: "/foo-no-input")
