@@ -9,7 +9,7 @@
     "swift test"
   ],
   "build_steps": [
-    "{gradlew} assemble",
+    "{gradlew} build",
     "swift build"
   ],
   "post_build_steps": [
