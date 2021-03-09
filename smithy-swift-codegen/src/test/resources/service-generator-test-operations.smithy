@@ -23,6 +23,7 @@ service Example {
 @deprecated
 operation OperationWithDeprecatedTrait {}
 
+@endpoint(hostPrefix: "{foo}.data.")
 @http(method: "GET", uri: "/foo")
 operation GetFoo {
     input: GetFooRequest,
