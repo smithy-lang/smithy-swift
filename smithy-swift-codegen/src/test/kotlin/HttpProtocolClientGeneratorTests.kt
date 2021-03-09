@@ -17,15 +17,9 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
-    private val commonTestContents: String
 
-    init {
-        var model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val ctx = model.newTestContext()
-
+    private fun setUpTest(smithyFile: String, serviceShapeId: String): String {
+        val ctx = TestContext.initContextFrom(smithyFile, serviceShapeId)
         val writer = SwiftWriter("test")
 
         val features = mutableListOf<ClientProperty>()
@@ -34,18 +28,19 @@ class HttpProtocolClientGeneratorTests {
         val config = DefaultConfig(writer, "ExampleClient")
 
         val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, writer, features, config,
-            HttpTraitResolver(ctx.generationCtx),
-            "application/json",
-            HttpProtocolCustomizable()
+                ctx.generationCtx, writer, features, config,
+                HttpTraitResolver(ctx.generationCtx),
+                "application/json",
+                HttpProtocolCustomizable()
         )
         generator.render()
-        commonTestContents = writer.toString()
+        return writer.toString()
     }
 
     @Test
     fun `it renders client initialization block`() {
-        commonTestContents.shouldContainOnlyOnce(
+        val contents = setUpTest("service-generator-test-operations.smithy", "com.test#Example")
+        contents.shouldContainOnlyOnce(
             """
                 public class ExampleClient {
                     let client: SdkHttpClient
@@ -74,7 +69,7 @@ class HttpProtocolClientGeneratorTests {
 
     @Test
     fun `it renders host prefix with label in context correctly`() {
-        
+        val contents = setUpTest("host-prefix-operation.smithy", "com.test#Example")
         val expectedFragment = """
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
@@ -86,13 +81,15 @@ class HttpProtocolClientGeneratorTests {
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withHostPrefix(value: "\(input.foo).data.")
         """
-        commonTestContents.shouldContainOnlyOnce(expectedFragment)
+        contents.shouldContainOnlyOnce(expectedFragment)
     }
 
     @Test
     fun `it renders operation implementations in extension`() {
-        commonTestContents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
+        val contents = setUpTest("service-generator-test-operations.smithy", "com.test#Example")
+        contents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
     }
+
     // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
 //     @Test
 //     fun `it renders operation bodies`() {
@@ -191,11 +188,12 @@ class HttpProtocolClientGeneratorTests {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
+        val contents = setUpTest("service-generator-test-operations.smithy", "com.test#Example")
         var openBraces = 0
         var closedBraces = 0
         var openParens = 0
         var closedParens = 0
-        commonTestContents.forEach {
+        contents.forEach {
             when (it) {
                 '{' -> openBraces++
                 '}' -> closedBraces++
