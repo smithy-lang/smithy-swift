@@ -343,7 +343,7 @@ fun getModelFileContents(namespace: String, filename: String, manifest: MockMani
 }
 
 fun getTestFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return getFileContents(manifest, "${namespace}FAILFAILTests/$filename")
+    return getFileContents(manifest, "${namespace}Tests/$filename")
 }
 
 fun getFileContents(manifest: MockManifest, fileName: String): String {
