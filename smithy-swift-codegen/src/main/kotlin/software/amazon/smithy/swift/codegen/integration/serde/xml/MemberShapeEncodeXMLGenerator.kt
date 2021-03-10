@@ -48,7 +48,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     throw Exception("Maps Not supported yet")
                 }
                 else -> {
-                    throw Exception("renderEncodeList: items not supported yet")
+                    throw Exception("Other shapes not supported yet")
                 }
             }
         }
