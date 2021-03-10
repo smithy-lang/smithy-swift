@@ -6,7 +6,6 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
@@ -28,10 +27,10 @@ class HttpProtocolClientGeneratorTests {
         val config = DefaultConfig(writer, "ExampleClient")
 
         val generator = HttpProtocolClientGenerator(
-                ctx.generationCtx, writer, features, config,
-                HttpTraitResolver(ctx.generationCtx),
-                "application/json",
-                HttpProtocolCustomizable()
+            ctx.generationCtx, writer, features, config,
+            HttpTraitResolver(ctx.generationCtx),
+            "application/json",
+            HttpProtocolCustomizable()
         )
         generator.render()
         return writer.toString()
