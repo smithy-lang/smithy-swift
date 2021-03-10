@@ -28,7 +28,7 @@ class StructEncodeXMLGenerator(
 
     private fun renderEncodeBody() {
         val containerName = "container"
-        writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
+        writer.write("var $containerName = encoder.container(keyedBy: CodingKeys.self)")
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
         membersSortedByName.forEach { member ->
             renderSingleMember(member, containerName)
