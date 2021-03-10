@@ -36,7 +36,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             val nestedTarget = ctx.model.expectShape(memberTarget.member.target)
             renderListMemberItems(nestedTarget, decodedTempVariableName, itemContainerName)
         }
-        writer.write("\$L = \$L", memberName, decodedTempVariableName)
+        writer.write("$memberName = $decodedTempVariableName")
     }
 
     private fun renderListMemberItems(shape: Shape, decodedMemberName: String, collectionName: String) {
