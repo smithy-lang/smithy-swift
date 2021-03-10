@@ -6,6 +6,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
@@ -22,13 +23,20 @@ abstract class MemberShapeDecodeXMLGenerator(
         containerName: String
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-        val listContainerName = "${memberName}Container"
-        writer.write("let $listContainerName = try $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .$memberName)")
+        val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
+        var currContainerName = containerName
+        var currContainerKey = ".$memberName"
+        if (!memberIsFlattened) {
+            val nextContainerName = "${memberName}Container"
+            writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: $currContainerKey)")
+            currContainerKey = ".member"
+            currContainerName = nextContainerName
+        }
 
         val decodedTempVariableName = "${memberName}Decoded0"
         val itemContainerName = "${memberName}ItemContainer"
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        writer.write("let $itemContainerName = try $listContainerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: .member)")
+        writer.write("let $itemContainerName = try $currContainerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: $currContainerKey)")
         writer.write("var $decodedTempVariableName:\$T = nil", memberTargetSymbol)
         writer.openBlock("if let $itemContainerName = $itemContainerName {", "}") {
             writer.write("$decodedTempVariableName = $memberTargetSymbol()")

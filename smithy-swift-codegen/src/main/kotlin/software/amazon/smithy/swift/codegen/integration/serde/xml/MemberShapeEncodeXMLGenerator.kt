@@ -9,6 +9,7 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -28,21 +29,28 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val listContainerName = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            writer.write("var $listContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .$memberName)")
-            renderListMemberItems(memberName, listContainerName, memberTarget)
+            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+                writer.write("var $listContainerName = $containerName.nestedUnkeyedContainer(forKey: .$memberName)")
+                renderListMemberItems(memberName, listContainerName, memberTarget, false)
+            } else {
+                writer.write("var $listContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .$memberName)")
+                renderListMemberItems(memberName, listContainerName, memberTarget, true)
+            }
         }
     }
 
     private fun renderListMemberItems(
         collectionName: String,
         listContainerName: String,
-        targetShape: Shape
+        targetShape: Shape,
+        isKeyed: Boolean
     ) {
         val iteratorName = "${targetShape.defaultName().toLowerCase()}0"
+        val forKey = if (isKeyed) ", forKey: .member" else ""
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is CollectionShape -> {
-                    writer.write("try $listContainerName.encode($iteratorName, forKey: .member)")
+                    writer.write("try $listContainerName.encode($iteratorName${forKey})")
                 }
                 is MapShape -> {
                     throw Exception("Maps Not supported yet")
