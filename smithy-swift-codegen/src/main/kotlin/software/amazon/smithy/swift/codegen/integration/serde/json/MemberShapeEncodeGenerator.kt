@@ -21,6 +21,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
+import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.isBoxed
 
 /*
@@ -248,13 +249,8 @@ abstract class MemberShapeEncodeGenerator(
                 ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
             )
             if (primitiveSymbols.contains(target.type)) {
-                // All primitive type cases
-                val value = when (target.type) {
-                    ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT, ShapeType.LONG -> 0
-                    ShapeType.FLOAT, ShapeType.DOUBLE -> 0.0
-                    else -> false // PrimitiveBoolean case
-                }
-                writer.openBlock("if $memberName != $value {", "}") {
+                val defaultValue = getDefaultValueOfShapeType(target.type)
+                writer.openBlock("if $memberName != $defaultValue {", "}") {
                     writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
                 }
             } else

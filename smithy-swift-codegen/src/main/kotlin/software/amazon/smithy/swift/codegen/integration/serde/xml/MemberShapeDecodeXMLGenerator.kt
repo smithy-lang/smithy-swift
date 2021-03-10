@@ -10,6 +10,7 @@ import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
+import software.amazon.smithy.swift.codegen.isBoxed
 
 abstract class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -65,5 +66,14 @@ abstract class MemberShapeDecodeXMLGenerator(
                 }
             }
         }
+    }
+
+    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
+        val decodedMemberName = "${memberName}Decoded"
+        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(${memberTargetSymbol.name}.self, forKey: .$memberName)")
+        writer.write("$memberName = $decodedMemberName")
     }
 }

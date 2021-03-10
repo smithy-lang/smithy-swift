@@ -45,7 +45,7 @@ class StructEncodeXMLGenerator(
                 throw Exception("MapShape is not supported yet")
             }
             else -> {
-                throw Exception("Primitive member not supported yet")
+                renderScalarMember(member, memberTarget, containerName)
             }
         }
     }

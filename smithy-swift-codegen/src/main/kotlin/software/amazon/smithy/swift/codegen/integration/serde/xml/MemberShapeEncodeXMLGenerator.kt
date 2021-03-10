@@ -8,18 +8,26 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
+import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
+import software.amazon.smithy.swift.codegen.isBoxed
 
 abstract class MemberShapeEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
+
+    private val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
+        ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
+        ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
+    )
 
     fun renderListMember(
         member: MemberShape,
@@ -58,6 +66,26 @@ abstract class MemberShapeEncodeXMLGenerator(
                 else -> {
                     throw Exception("Other shapes not supported yet")
                 }
+            }
+        }
+    }
+
+    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
+        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val isBoxed = symbol.isBoxed()
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.write("try $containerName.encode($memberName, forKey: .$memberName)")
+            }
+        } else {
+            if (primitiveSymbols.contains(memberTarget.type)) {
+                val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
+                writer.openBlock("if $memberName != $defaultValue {", "}") {
+                    writer.write("try $containerName.encode($memberName, forKey: .$memberName)")
+                }
+            } else {
+                writer.write("try $containerName.encode($memberName, forKey: .$memberName)")
             }
         }
     }
