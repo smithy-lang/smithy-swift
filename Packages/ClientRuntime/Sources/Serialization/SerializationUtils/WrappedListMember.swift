@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public class WrappedListMember {
+public struct WrappedListMember {
     public enum CodingKeys: String, CodingKey {
         case member
     }
