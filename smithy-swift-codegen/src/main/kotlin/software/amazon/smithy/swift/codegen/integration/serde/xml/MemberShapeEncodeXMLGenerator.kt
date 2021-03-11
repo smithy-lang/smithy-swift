@@ -50,7 +50,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is CollectionShape -> {
-                    writer.write("try $listContainerName.encode($iteratorName${forKey})")
+                    writer.write("try $listContainerName.encode($iteratorName$forKey)")
                 }
                 is MapShape -> {
                     throw Exception("Maps Not supported yet")
