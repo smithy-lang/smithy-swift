@@ -1,8 +1,6 @@
-import io.kotest.matchers.string.shouldContain
+
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.traits.EndpointTrait
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.EndpointTraitConstructor
 
 class EndpointTraitConstructorTests {
