@@ -37,7 +37,7 @@ import java.net.URL
 private const val SmithyVersion = "1.0"
 fun String.asSmithyModel(sourceLocation: String? = null): Model {
     val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
-    return Model.assembler().discoverModels().addUnparsedModel("$sourceLocation", processed).assemble().unwrap()
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
 }
 
 fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""

@@ -127,16 +127,7 @@ open class HttpProtocolClientGenerator(
 
         op.getTrait(EndpointTrait::class.java).ifPresent {
             val inputShape = model.expectShape(op.input.get())
-            val hostPrefix = it.hostPrefix.segments.joinToString(separator = "") { segment ->
-                if (segment.isLabel) {
-                    // hostLabel can only target string shapes
-                    // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
-                    val member = inputShape.members().first { it.memberName == segment.content }
-                    "\\(input.${member.memberName})"
-                } else {
-                    segment.content
-                }
-            }
+            val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
             writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
         }
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, op)
