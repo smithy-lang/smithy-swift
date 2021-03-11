@@ -1,4 +1,3 @@
-//kickoffci
 package software.amazon.smithy.swift.codegen.integration.serde
 
 import software.amazon.smithy.model.shapes.ShapeType
