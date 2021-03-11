@@ -17,7 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
 
-    private fun setUpTest(smithyFile: String, serviceShapeId: String, writer: SwiftWriter): HttpProtocolClientGenerator  {
+    private fun setUpTest(smithyFile: String, serviceShapeId: String, writer: SwiftWriter): HttpProtocolClientGenerator {
         val ctx = TestContext.initContextFrom(smithyFile, serviceShapeId)
 
         val features = mutableListOf<ClientProperty>()
