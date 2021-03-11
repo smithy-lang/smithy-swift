@@ -44,7 +44,7 @@ class StructDecodeXMLGenerator(
                 throw Exception("timestamps not supported yet")
             }
             else -> {
-                throw Exception("Primitive not handled yet")
+                renderScalarMember(member, memberTarget, containerName)
             }
         }
     }
