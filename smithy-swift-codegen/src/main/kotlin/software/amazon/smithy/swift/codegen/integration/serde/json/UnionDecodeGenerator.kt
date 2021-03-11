@@ -18,7 +18,7 @@ class UnionDecodeGenerator(
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
-    fun render() {
+    override fun render() {
         val containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)

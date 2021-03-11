@@ -47,7 +47,7 @@ class StructEncodeGenerator(
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
-    fun render() {
+    override fun render() {
         val containerName = "container"
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
             if (members.isNotEmpty()) {

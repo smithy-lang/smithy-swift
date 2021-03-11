@@ -27,6 +27,7 @@ import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import java.net.URL
 
@@ -260,7 +261,12 @@ class TestContext(
     val generator: ProtocolGenerator
 ) {
     companion object {
-        fun initContextFrom(smithyFile: String, serviceShapeId: String, swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null): TestContext {
+        fun initContextFrom(
+            smithyFile: String,
+            serviceShapeId: String,
+            httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
+            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
+        ): TestContext {
             var model = javaClass.getResource(smithyFile).asSmithy()
             val manifest = MockManifest()
             val pluginContext = buildMockPluginContext(model, manifest, serviceShapeId)
@@ -269,7 +275,8 @@ class TestContext(
             val swiftSettings = if (swiftSettingCallback == null) model.defaultSettings() else swiftSettingCallback(model)
             model = AddOperationShapes.execute(model, swiftSettings.getService(model), swiftSettings.moduleName)
             model = RecursiveShapeBoxer.transform(model)
-            return model.newTestContext(manifest, serviceShapeId, model.defaultSettings(), MockHttpRestJsonProtocolGenerator())
+            val protocolGenerator = httpBindingProtocolGenerator ?: MockHttpRestJsonProtocolGenerator()
+            return model.newTestContext(manifest, serviceShapeId, model.defaultSettings(), protocolGenerator)
         }
     }
 }

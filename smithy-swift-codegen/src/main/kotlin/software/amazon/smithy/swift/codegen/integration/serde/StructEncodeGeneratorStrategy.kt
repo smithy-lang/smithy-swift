@@ -6,6 +6,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 
 class StructEncodeGeneratorStrategy(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -15,8 +16,7 @@ class StructEncodeGeneratorStrategy(
 ) {
     fun render() {
         val generator = when (ctx.protocol) {
-            // TODO: update this for xml
-            RestXmlTrait.ID -> StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
+            RestXmlTrait.ID -> StructEncodeXMLGenerator(ctx, members, writer, defaultTimestampFormat)
             else -> StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
         }
         generator.render()

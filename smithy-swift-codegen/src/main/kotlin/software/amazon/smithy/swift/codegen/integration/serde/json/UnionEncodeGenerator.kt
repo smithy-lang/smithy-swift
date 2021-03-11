@@ -17,7 +17,7 @@ class UnionEncodeGenerator(
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
-    fun render() {
+    override fun render() {
         val containerName = "container"
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
             writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
