@@ -14,7 +14,6 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -33,6 +32,7 @@ abstract class MemberShapeEncodeGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
 
+    private val dictKey = "dictKey"
     /*
      Add custom extensions to be rendered to handle optional shapes and
      special types like enum, timestamp, blob
@@ -129,7 +129,7 @@ abstract class MemberShapeEncodeGenerator(
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        "Key(stringValue: key)",
+                        "Key(stringValue: $dictKey)",
                         topLevelContainerName,
                         level + 1
                     )
@@ -169,7 +169,7 @@ abstract class MemberShapeEncodeGenerator(
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: key${level - 1})"
+                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: $dictKey${level - 1})"
                 if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
@@ -194,7 +194,7 @@ abstract class MemberShapeEncodeGenerator(
             is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
             else -> valueTargetShape
         }
-        writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
+        writer.openBlock("for ($dictKey$level, $valueIterator) in $mapName {", "}") {
             when (target) {
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(target.member.target)
@@ -216,7 +216,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: key$level))")
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: $dictKey$level))")
                 }
             }
         }
@@ -236,12 +236,6 @@ abstract class MemberShapeEncodeGenerator(
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
-            }
-            if (httpPayloadTraitNotOnAnyMember && member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                writer.openBlock("else {", "}") {
-                    writer.write("//Idempotency token part of the body/payload without the httpPayload")
-                    writer.write("try container.encode(DefaultIdempotencyTokenGenerator().generateToken(), forKey: .\$L)", memberName)
-                }
             }
         } else {
             val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
