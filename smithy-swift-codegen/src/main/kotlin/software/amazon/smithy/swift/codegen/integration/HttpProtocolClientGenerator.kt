@@ -146,7 +146,7 @@ open class HttpProtocolClientGenerator(
         if (hasIdempotencyTokenTrait) {
             IdempotencyTokenMiddlewareGenerator(
                 writer,
-                idempotentMember!!.memberName,
+                idempotentMember!!.memberName.decapitalize(),
                 operationStackName,
                 outputShapeName,
                 outputErrorName
