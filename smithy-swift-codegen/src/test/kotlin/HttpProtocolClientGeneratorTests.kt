@@ -6,7 +6,6 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
@@ -17,16 +16,9 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
-    private val commonTestContents: String
 
-    init {
-        var model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        val ctx = model.newTestContext()
-
-        val writer = SwiftWriter("test")
+    private fun setUpTest(smithyFile: String, serviceShapeId: String, writer: SwiftWriter): HttpProtocolClientGenerator {
+        val ctx = TestContext.initContextFrom(smithyFile, serviceShapeId)
 
         val features = mutableListOf<ClientProperty>()
         features.add(DefaultRequestEncoder())
@@ -39,13 +31,15 @@ class HttpProtocolClientGeneratorTests {
             "application/json",
             HttpProtocolCustomizable()
         )
-        generator.render()
-        commonTestContents = writer.toString()
+        return generator
     }
 
     @Test
     fun `it renders client initialization block`() {
-        commonTestContents.shouldContainOnlyOnce(
+        val writer = SwiftWriter("test")
+        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
+
+        writer.toString().shouldContainOnlyOnce(
             """
                 public class ExampleClient {
                     let client: SdkHttpClient
@@ -73,9 +67,30 @@ class HttpProtocolClientGeneratorTests {
     }
 
     @Test
-    fun `it renders operation implementations in extension`() {
-        commonTestContents.shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
+    fun `it renders host prefix with label in context correctly`() {
+        val writer = SwiftWriter("test")
+        setUpTest("host-prefix-operation.smithy", "com.test#Example", writer).render()
+        val expectedFragment = """
+        let context = HttpContextBuilder()
+                      .withEncoder(value: encoder)
+                      .withDecoder(value: decoder)
+                      .withMethod(value: .post)
+                      .withPath(value: path)
+                      .withServiceName(value: serviceName)
+                      .withOperation(value: "getStatus")
+                      .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                      .withHostPrefix(value: "\(input.foo).data.")
+        """
+        writer.toString().shouldContainOnlyOnce(expectedFragment)
     }
+
+    @Test
+    fun `it renders operation implementations in extension`() {
+        val writer = SwiftWriter("test")
+        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
+        writer.toString().shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
+    }
+
     // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
 //     @Test
 //     fun `it renders operation bodies`() {
@@ -174,11 +189,13 @@ class HttpProtocolClientGeneratorTests {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
+        val writer = SwiftWriter("test")
+        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
         var openBraces = 0
         var closedBraces = 0
         var openParens = 0
         var closedParens = 0
-        commonTestContents.forEach {
+        writer.toString().forEach {
             when (it) {
                 '{' -> openBraces++
                 '}' -> closedBraces++

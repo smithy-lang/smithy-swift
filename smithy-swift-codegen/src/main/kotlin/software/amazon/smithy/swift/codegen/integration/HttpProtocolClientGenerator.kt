@@ -12,6 +12,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
@@ -45,6 +46,7 @@ open class HttpProtocolClientGenerator(
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         writer.addFoundationImport()
+        httpProtocolCustomizable.renderInternals(ctx)
         clientGeneratorInitialization.renderClientInitialization(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
@@ -122,7 +124,14 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
-        httpProtocolCustomizable.renderContextAttributes(ctx, writer, op)
+
+        op.getTrait(EndpointTrait::class.java).ifPresent {
+            val inputShape = model.expectShape(op.input.get())
+            val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
+            writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
+        }
+        val serviceShape = ctx.service
+        httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {

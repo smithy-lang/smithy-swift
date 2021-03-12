@@ -81,11 +81,12 @@ public class SdkHttpRequestBuilder {
 
     var headers: Headers = Headers()
     var methodType: HttpMethodType = .get
-    // TODO: figure out what host should be if anything?
     var host: String = ""
     var path: String = "/"
     var body: HttpBody = .none
     var queryItems = [URLQueryItem]()
+    var port: Int16 = 443
+    var protocolType: ProtocolType = .https
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -138,9 +139,25 @@ public class SdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
+    
+    @discardableResult
+    public func withPort(_ value: Int16) -> SdkHttpRequestBuilder {
+        self.port = value
+        return self
+    }
+    
+    @discardableResult
+    public func withProtocol(_ value: ProtocolType) -> SdkHttpRequestBuilder {
+        self.protocolType = value
+        return self
+    }
 
     public func build() -> SdkHttpRequest {
-        let endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        let endpoint = Endpoint(host: host,
+                                path: path,
+                                port: port,
+                                queryItems: queryItems,
+                                protocolType: protocolType)
         return SdkHttpRequest(method: methodType,
                               endpoint: endpoint,
                               headers: headers,

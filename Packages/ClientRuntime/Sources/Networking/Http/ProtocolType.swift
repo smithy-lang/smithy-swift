@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum ProtocolType: String {
+public enum ProtocolType: String, CaseIterable {
     case http
     case https
 }

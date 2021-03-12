@@ -36,7 +36,6 @@ structure GetFooResponse {}
 @error("client")
 structure GetFooError {}
 
-
 @http(method: "GET", uri: "/foo-no-input")
 operation GetFooNoInput {
     output: GetFooResponse
