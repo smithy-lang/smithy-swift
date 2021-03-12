@@ -99,8 +99,8 @@ class UnionEncodeGeneratorTests {
                         case let .mapValue(mapValue):
                             if let mapValue = mapValue {
                                 var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapValue)
-                                for (key0, stringmap0) in mapValue {
-                                    try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: key0))
+                                for (dictKey0, stringmap0) in mapValue {
+                                    try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: dictKey0))
                                 }
                             }
                         case let .numberValue(numberValue):

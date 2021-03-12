@@ -95,8 +95,8 @@ class StructDecodeGenerationTests {
                     }
                     if let intMap = intMap {
                         var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
-                        for (key0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: key0))
+                        for (dictKey0, intmap0) in intMap {
+                            try intMapContainer.encode(intmap0, forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = member1 {
@@ -104,8 +104,8 @@ class StructDecodeGenerationTests {
                     }
                     if let stringMap = stringMap {
                         var stringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
-                        for (key0, nestedstringmap0) in stringMap {
-                            try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: key0))
+                        for (dictKey0, nestedstringmap0) in stringMap {
+                            try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: dictKey0))
                         }
                     }
                 }
