@@ -35,6 +35,46 @@ class StructEncodeGenerationIsolatedTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `NestedNested Contents`() {
+        val context = setupTests("Isolated/NestedNested-List.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/example/models/NestedNestedJsonListInputBody+Decodable.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            extension NestedNestedJsonListInputBody: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case nestedNestedStringList
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
+                    var nestedNestedStringListDecoded0:[[[String]?]?]? = nil
+                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
+                        nestedNestedStringListDecoded0 = [[[String]?]?]()
+                        for list0 in nestedNestedStringListContainer {
+                            var list0Decoded0 = [[String]?]()
+                            if let list0 = list0 {
+                                for list1 in list0 {
+                                    var list1Decoded1 = [String]()
+                                    if let list1 = list1 {
+                                        for string2 in list1 {
+                                            list1Decoded1.append(string2)
+                                        }
+                                    }
+                                    list0Decoded0.append(list1Decoded1)
+                                }
+                            }
+                            nestedNestedStringListDecoded0?.append(list0Decoded0)
+                        }
+                    }
+                    nestedNestedStringList = nestedNestedStringListDecoded0
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
