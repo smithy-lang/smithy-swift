@@ -201,13 +201,13 @@ abstract class MemberShapeDecodeGenerator(
                     val nestedDecodedMemberName = "${iteratorName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
-                    writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${collectionName}Decoded$level"
                     writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
                     renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
-                    writer.write("$decodedMemberName?.$insertMethod($nestedDecodedMemberName)")
+                    writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
                 }
                 else -> writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
             }
