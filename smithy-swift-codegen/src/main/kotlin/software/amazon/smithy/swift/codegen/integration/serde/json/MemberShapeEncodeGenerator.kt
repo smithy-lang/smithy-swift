@@ -32,7 +32,7 @@ abstract class MemberShapeEncodeGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
 
-    private val mapKey = "dictKey"
+    private val dictKey = "dictKey"
     /*
      Add custom extensions to be rendered to handle optional shapes and
      special types like enum, timestamp, blob
@@ -129,7 +129,7 @@ abstract class MemberShapeEncodeGenerator(
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        "Key(stringValue: $mapKey)",
+                        "Key(stringValue: $dictKey)",
                         topLevelContainerName,
                         level + 1
                     )
@@ -169,7 +169,7 @@ abstract class MemberShapeEncodeGenerator(
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
-                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: $mapKey${level - 1})"
+                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: $dictKey${level - 1})"
                 if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
@@ -194,7 +194,7 @@ abstract class MemberShapeEncodeGenerator(
             is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
             else -> valueTargetShape
         }
-        writer.openBlock("for ($mapKey$level, $valueIterator) in $mapName {", "}") {
+        writer.openBlock("for ($dictKey$level, $valueIterator) in $mapName {", "}") {
             when (target) {
                 is CollectionShape -> {
                     val nestedTarget = ctx.model.expectShape(target.member.target)
@@ -216,7 +216,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: $mapKey$level))")
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: $dictKey$level))")
                 }
             }
         }
