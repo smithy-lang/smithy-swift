@@ -1311,3 +1311,31 @@ structure QueryIdempotencyTokenAutoFillInput {
     token: String,
 }
 
+structure IdempotencyTokenWithHttpHeaderInput {
+    @httpHeader("token")
+    @idempotencyToken
+    header: String,
+}
+
+structure IdempotencyTokenWithHttpPayloadTraitOnTokenInput {
+    @httpPayload
+    @idempotencyToken
+    bodyIsToken: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnAnyMemberInput {
+    stringValue: String,
+    documentValue: Document,
+
+    @idempotencyToken
+    token: String,
+}
+
+structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
+    @httpPayload
+    body: String,
+
+    @httpHeader("token")
+    @idempotencyToken
+    token: String,
+}
