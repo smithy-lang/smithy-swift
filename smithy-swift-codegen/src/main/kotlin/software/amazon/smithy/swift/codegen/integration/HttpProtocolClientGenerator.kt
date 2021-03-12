@@ -130,7 +130,8 @@ open class HttpProtocolClientGenerator(
             val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
             writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
         }
-        httpProtocolCustomizable.renderContextAttributes(ctx, writer, op)
+        val serviceShape = ctx.service
+        httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
