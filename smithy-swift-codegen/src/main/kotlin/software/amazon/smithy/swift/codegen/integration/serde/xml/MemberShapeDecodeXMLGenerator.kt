@@ -28,43 +28,62 @@ abstract class MemberShapeDecodeXMLGenerator(
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
         if (!memberIsFlattened) {
-            val nextContainerName = "${memberName}Container"
+            val nextContainerName = "${memberName}WrappedContainer"
             writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".member"
             currContainerName = nextContainerName
         }
 
-        val decodedTempVariableName = "${memberName}Decoded0"
-        val itemContainerName = "${memberName}ItemContainer"
+        val memberBuffer = "${memberName}Buffer"
+        val memberContainerName = "${memberName}Container"
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        writer.write("let $itemContainerName = try $currContainerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: $currContainerKey)")
-        writer.write("var $decodedTempVariableName:\$T = nil", memberTargetSymbol)
-        writer.openBlock("if let $itemContainerName = $itemContainerName {", "}") {
-            writer.write("$decodedTempVariableName = $memberTargetSymbol()")
+        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: $currContainerKey)")
+        writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
+        writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+            writer.write("$memberBuffer = $memberTargetSymbol()")
 
-            val nestedTarget = ctx.model.expectShape(memberTarget.member.target)
-            renderListMemberItems(nestedTarget, decodedTempVariableName, itemContainerName)
+            val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+            renderListMemberItems(nestedMemberTarget, memberContainerName, memberBuffer)
         }
-        writer.write("$memberName = $decodedTempVariableName")
+        writer.write("$memberName = $memberBuffer")
     }
 
-    private fun renderListMemberItems(shape: Shape, decodedMemberName: String, collectionName: String) {
-        val iteratorName = "${shape.type.name.toLowerCase()}0"
-        writer.openBlock("for $iteratorName in $collectionName {", "}") {
-            when (shape) {
+    private fun renderListMemberItems(nestedMemberTarget: Shape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
+        val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
+        val delimiter = if (level == 0) "?" else ""
+
+        val nestedMemberTargetType = "${nestedMemberTarget.type.name.toLowerCase()}"
+        val nestedContainerName = "${nestedMemberTargetType}Container$level"
+        val nestedMemberBuffer = "${nestedMemberTargetType}Buffer$level"
+        writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
+            when (nestedMemberTarget) {
                 is TimestampShape -> {
                     throw Exception("renderListMemberItems: timestamp not supported")
                 }
                 is CollectionShape -> {
-                    throw Exception("renderListMemberItems: recursive collections not supported")
+                    writer.write("var $nestedMemberBuffer = $nestedMemberTargetSymbol()")
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
+                    writer.write("$memberBuffer$delimiter.append($nestedMemberBuffer)")
                 }
                 is MapShape -> {
                     throw Exception("renderListMemberItems: maps not supported")
                 }
                 else -> {
-                    writer.write("$decodedMemberName?.append($iteratorName)")
+                    writer.write("$memberBuffer$delimiter.append($nestedContainerName)")
                 }
             }
+        }
+    }
+
+    private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, level: Int) {
+        val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+        if (nestedMemberTargetIsBoxed) {
+            writer.openBlock("if let $containerName = $containerName {", "}") {
+                renderListMemberItems(nestedMemberTarget, containerName, memberBuffer, level)
+            }
+        } else {
+            renderListMemberItems(nestedMemberTarget, containerName, memberBuffer, level)
         }
     }
 

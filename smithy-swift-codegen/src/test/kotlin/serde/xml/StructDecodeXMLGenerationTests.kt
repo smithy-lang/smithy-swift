@@ -21,16 +21,16 @@ class StructDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let myGroceryListContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
-                    let myGroceryListItemContainer = try myGroceryListContainer.decodeIfPresent([String].self, forKey: .member)
-                    var myGroceryListDecoded0:[String]? = nil
-                    if let myGroceryListItemContainer = myGroceryListItemContainer {
-                        myGroceryListDecoded0 = [String]()
-                        for string0 in myGroceryListItemContainer {
-                            myGroceryListDecoded0?.append(string0)
+                    let myGroceryListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
+                    let myGroceryListContainer = try myGroceryListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
+                    var myGroceryListBuffer:[String]? = nil
+                    if let myGroceryListContainer = myGroceryListContainer {
+                        myGroceryListBuffer = [String]()
+                        for stringContainer0 in myGroceryListContainer {
+                            myGroceryListBuffer?.append(stringContainer0)
                         }
                     }
-                    myGroceryList = myGroceryListDecoded0
+                    myGroceryList = myGroceryListBuffer
                 }
             }
         """.trimIndent()
@@ -51,15 +51,15 @@ class StructDecodeXMLGenerationTests {
 
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let myGroceryListItemContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
-                    var myGroceryListDecoded0:[String]? = nil
-                    if let myGroceryListItemContainer = myGroceryListItemContainer {
-                        myGroceryListDecoded0 = [String]()
-                        for string0 in myGroceryListItemContainer {
-                            myGroceryListDecoded0?.append(string0)
+                    let myGroceryListContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
+                    var myGroceryListBuffer:[String]? = nil
+                    if let myGroceryListContainer = myGroceryListContainer {
+                        myGroceryListBuffer = [String]()
+                        for stringContainer0 in myGroceryListContainer {
+                            myGroceryListBuffer?.append(stringContainer0)
                         }
                     }
-                    myGroceryList = myGroceryListDecoded0
+                    myGroceryList = myGroceryListBuffer
                 }
             }
         """.trimIndent()
@@ -113,6 +113,85 @@ class StructDecodeXMLGenerationTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `nestednested wrapped list deserialization`() {
+        val context = setupTests("Isolated/Restxml/xml-nestednested-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
+        val expectedContents = """
+            extension XmlNestedNestedWrappedListOutputBody: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case nestedNestedStringList
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let nestedNestedStringListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedNestedStringList)
+                    let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]?]?].self, forKey: .member)
+                    var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
+                        nestedNestedStringListBuffer = [[[String]?]?]()
+                        for listContainer0 in nestedNestedStringListContainer {
+                            var listBuffer0 = [[String]?]()
+                            if let listContainer0 = listContainer0 {
+                                for listContainer1 in listContainer0 {
+                                    var listBuffer1 = [String]()
+                                    if let listContainer1 = listContainer1 {
+                                        for stringContainer2 in listContainer1 {
+                                            listBuffer1.append(stringContainer2)
+                                        }
+                                    }
+                                    listBuffer0.append(listBuffer1)
+                                }
+                            }
+                            nestedNestedStringListBuffer?.append(listBuffer0)
+                        }
+                    }
+                    nestedNestedStringList = nestedNestedStringListBuffer
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `nestednested flattened list serialization`() {
+        val context = setupTests("Isolated/Restxml/xml-nestednested-Flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlNestedNestedFlattenedListOutputBody: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case nestedNestedStringList
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
+                    var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
+                        nestedNestedStringListBuffer = [[[String]?]?]()
+                        for listContainer0 in nestedNestedStringListContainer {
+                            var listBuffer0 = [[String]?]()
+                            if let listContainer0 = listContainer0 {
+                                for listContainer1 in listContainer0 {
+                                    var listBuffer1 = [String]()
+                                    if let listContainer1 = listContainer1 {
+                                        for stringContainer2 in listContainer1 {
+                                            listBuffer1.append(stringContainer2)
+                                        }
+                                    }
+                                    listBuffer0.append(listBuffer1)
+                                }
+                            }
+                            nestedNestedStringListBuffer?.append(listBuffer0)
+                        }
+                    }
+                    nestedNestedStringList = nestedNestedStringListBuffer
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
