@@ -9,7 +9,7 @@ public struct HttpContext: MiddlewareContext {
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
-    
+    //FIXME: Move all defined keys to separate file as constants to be used elsewhere
     public func getPath() -> String {
         return attributes.get(key: AttributeKey<String>(name: "Path"))!
     }
