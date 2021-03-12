@@ -27,10 +27,12 @@ open class HttpProtocolCustomizable {
         // Default implementation is no-op
     }
 
-    open fun renderContextAttributes(ctx: ProtocolGenerator.GenerationContext,
-                                     writer: SwiftWriter,
-                                     serviceShape: ServiceShape,
-                                     op: OperationShape) {
+    open fun renderContextAttributes(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        serviceShape: ServiceShape,
+        op: OperationShape
+    ) {
         // Default implementation is no-op
     }
 
