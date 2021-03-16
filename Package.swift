@@ -52,7 +52,8 @@ if ProcessInfo.processInfo.environment["SWIFTCI_USE_LOCAL_DEPS"] == nil {
         .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch(relatedDependenciesBranch)),
     ]
 } else {
+    let crtDir = ProcessInfo.processInfo.environment["AWS_CRT_SWIFT_CI_DIR"]!
     package.dependencies += [
-        .package(name: "AwsCrt", path: "./target/build/deps/aws-crt-swift"),
+        .package(name: "AwsCrt", path: crtDir),
     ]
 }
