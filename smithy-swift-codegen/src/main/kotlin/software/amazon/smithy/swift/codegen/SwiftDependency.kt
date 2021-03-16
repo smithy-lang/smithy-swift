@@ -9,23 +9,30 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.swift.codegen.resources.Resources
 
-enum class SwiftDependency(val type: String, val target: String, val branch: String? = null, val version: String, val url: String, var packageName: String) : SymbolDependencyContainer {
-    // Note: "namespace" is sub module in the full library "packageName". We use the namespace to minimize the module import. But, the entire package is "packageName"
-    BIG("", "ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "swift-numerics"),
+enum class SwiftDependency(val type: String,
+                           val target: String,
+                           private val branch: String? = null,
+                           val version: String,
+                           private val url: String,
+                           val localPath: String,
+                           var packageName: String) : SymbolDependencyContainer {
+    BIG("", "ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
     CLIENT_RUNTIME(
         "",
         "ClientRuntime",
-        null,
+        "master",
         "0.1.0",
+            "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift/Packages", "SMITHY_SWIFT_CI_DIR"),
         "ClientRuntime"
     ),
-    XCTest("", "XCTest", null, "", "", ""),
+    XCTest("", "XCTest", null, "", "", "", ""),
     SMITHY_TEST_UTIL(
         "",
         "SmithyTestUtil",
-        null,
+        "master",
         "0.1.0",
+            "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift/Packages", "SMITHY_SWIFT_CI_DIR"),
         "ClientRuntime"
     );
@@ -35,6 +42,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
             .dependencyType(type)
             .putProperty("target", target)
             .putProperty("branch", branch)
+            .putProperty("localPath", localPath)
             .packageName(packageName)
             .version(version)
             .putProperty("url", url)

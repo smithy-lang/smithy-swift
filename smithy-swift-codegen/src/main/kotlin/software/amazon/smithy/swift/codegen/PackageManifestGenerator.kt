@@ -21,6 +21,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.write("// swift-tools-version:${settings.swiftVersion}")
     writer.write("")
     writer.write("import PackageDescription")
+    writer.write("import class Foundation.ProcessInfo")
 
     writer.openBlock("let package = Package(", ")") {
         writer.write("name: \"${settings.moduleName}\",")
@@ -62,20 +63,6 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         }
     }
 
-    writer.write("let relatedDependenciesBranch = \"master\"")
-
-//    if ProcessInfo.processInfo.environment["SWIFTCI_USE_LOCAL_DEPS"] == nil {
-//        package.dependencies += [
-//        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch(relatedDependenciesBranch)),
-//        .package(name: "ClientRuntime", url: "https://github.com/awslabs/smithy-swift", .branch(relatedDependenciesBranch))
-//        ]
-//    } else {
-//        package.dependencies += [
-//        .package(name: "AwsCrt", path: "./target/build/deps/aws-crt-swift"),
-//        .package(name: "ClientRuntime", path: "./target/build/deps/smithy-swift")
-//        ]
-//    }
-
     writer.openBlock("if ProcessInfo.processInfo.environment[\"SWIFTCI_USE_LOCAL_DEPS\"] == nil {", "} else {") {
         writer.openBlock("package.dependencies += [", "]") {
             for (dependency in distinctDependencies) {
@@ -100,9 +87,9 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.indent()
     writer.openBlock("package.dependencies += [", "]") {
         for(dependency in distinctDependencies) {
-            val dependencyURL = dependency.expectProperty("url", String::class.java)
+            val localPath = dependency.expectProperty("localPath", String::class.java)
             val target = dependency.expectProperty("target", String::class.java)
-            writer.write(".package(name: \"${target}\", path: \"$dependencyURL\"),")
+            writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
         }
     }
     writer.dedent()
