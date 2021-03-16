@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
+        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch("master")),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0")
     ],
         targets: [
@@ -45,15 +46,3 @@ let package = Package(
     ]
 )
 
-let relatedDependenciesBranch = "master"
-
-if ProcessInfo.processInfo.environment["SWIFTCI_USE_LOCAL_DEPS"] == nil {
-    package.dependencies += [
-        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch(relatedDependenciesBranch)),
-    ]
-} else {
-    let crtDir = ProcessInfo.processInfo.environment["AWS_CRT_SWIFT_CI_DIR"]!
-    package.dependencies += [
-        .package(name: "AwsCrt", path: crtDir),
-    ]
-}
