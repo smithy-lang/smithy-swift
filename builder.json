@@ -9,7 +9,9 @@
     "swift test"
   ],
   "env": {
-    "SWIFTCI_USE_LOCAL_DEPS": "1"
+    "SWIFTCI_USE_LOCAL_DEPS": "1",
+    "AWS_SDK_SWIFT_CI_DIR": "/Users/runner/work/smithy-swift/smithy-swift/target/build/deps/aws-sdk-swift",
+    "SMITHY_SWIFT_CI_DIR": "/Users/runner/work/smithy-swift/smithy-swift"
   },
   "build_steps": [
     "{gradlew} build",
