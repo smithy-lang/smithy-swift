@@ -15,6 +15,9 @@ env:
   PACKAGE_NAME: smithy-swift
   LINUX_BASE_IMAGE: ubuntu-16-x64
   RUN: ${{ github.run_id }}-${{ github.run_number }}
+  AWS_SDK_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift/target/build/deps/aws-sdk-swift
+  SMITHY_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift
+  AWS_CRT_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift/target/build/deps/aws-crt-swift
 
 jobs:
   macos-compat:
@@ -40,7 +43,7 @@ jobs:
         run: |
           python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
           chmod a+x builder.pyz
-          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
+          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" AWS_CRT_SWIFT_CI_DIR="${{ env.AWS_CRT_SWIFT_CI_DIR }}" AWS_SDK_SWIFT_CI_DIR="${{ env.AWS_SDK_SWIFT_CI_DIR }}" SMITHY_SWIFT_CI_DIR="${{ env.SMITHY_SWIFT_CI_DIR }}" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   downstream:
     needs: macos-compat
@@ -66,4 +69,4 @@ jobs:
         run: |
           python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
           chmod a+x builder
-          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" AWS_CRT_SWIFT_CI_DIR="${{ env.AWS_CRT_SWIFT_CI_DIR }}" AWS_SDK_SWIFT_CI_DIR="${{ env.AWS_SDK_SWIFT_CI_DIR }}" SMITHY_SWIFT_CI_DIR="${{ env.SMITHY_SWIFT_CI_DIR }}" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
