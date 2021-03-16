@@ -16,32 +16,31 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0")
     ],
     targets: [
-    .target(
-        name: "ClientRuntime",
-        dependencies: [
-            .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
-            .product(name: "Logging", package: "swift-log")
-        ],
-        path: "./Packages/ClientRuntime/Sources"
-    ),
-    .testTarget(
-        name: "ClientRuntimeTests",
-        dependencies: [
-        "ClientRuntime",
-        "SmithyTestUtil"
-    ],
-    path: "./Packages/ClientRuntime/Tests"
-    ),
-    .target(
-        name: "SmithyTestUtil",
-        dependencies: ["ClientRuntime"],
-        path: "./Packages/SmithyTestUtil/Sources"
-    ),
-    .testTarget(
-        name: "SmithyTestUtilTests",
-        dependencies: ["SmithyTestUtil"],
-        path: "./Packages/SmithyTestUtil/Tests"
-    )
-]
+        .target(
+            name: "ClientRuntime",
+            dependencies: [
+                .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
+                .product(name: "Logging", package: "swift-log")
+            ],
+            path: "./Packages/ClientRuntime/Sources"
+        ),
+        .testTarget(
+            name: "ClientRuntimeTests",
+            dependencies: [
+	        "ClientRuntime",
+	        "SmithyTestUtil"
+	    ],
+	    path: "./Packages/ClientRuntime/Tests"
+        ),
+        .target(
+            name: "SmithyTestUtil",
+            dependencies: ["ClientRuntime"],
+            path: "./Packages/SmithyTestUtil/Sources"
+        ),
+        .testTarget(
+            name: "SmithyTestUtilTests",
+            dependencies: ["SmithyTestUtil"],
+            path: "./Packages/SmithyTestUtil/Tests"
+        )
+    ]
 )
-
