@@ -103,7 +103,7 @@ fun writePackageWithURL(writer: CodeWriter, dependency: SymbolDependency) {
             print("branchString is $branchString")
             writer.write(".branch($branchString)")
         } else {
-            writer.write("from: ${dependency.version}")
+            writer.write("from: \"${dependency.version}\"")
         }
     }
 }
