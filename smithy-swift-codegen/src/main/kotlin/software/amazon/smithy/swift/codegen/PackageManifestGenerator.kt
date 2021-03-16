@@ -66,22 +66,8 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.openBlock("if ProcessInfo.processInfo.environment[\"SWIFTCI_USE_LOCAL_DEPS\"] == nil {", "} else {") {
         writer.openBlock("package.dependencies += [", "]") {
             for (dependency in distinctDependencies) {
-                val dependencyURL = dependency.expectProperty("url", String::class.java)
-                val branch = dependency.getProperty("branch", String::class.java)
-                writer.openBlock(".package(", "),") {
-                    val target = dependency.expectProperty("target", String::class.java)
-                    writer.write("name: \"$target\",")
-                    writer.write("url: \"$dependencyURL\",")
-                    if (branch != null && !branch.isEmpty) {
-                        val branchGet = branch.get()
-                        print("branch is $branchGet")
-                        val branchString = "\"$branchGet\""
-                        print("branchString is $branchString")
-                        writer.write(".branch($branchString)")
-                    } else {
-                        writer.write("from: ${dependency.version}")
-                    }
-                } }
+                writePackageWithURL(writer, dependency)
+            }
         }
     }
     writer.indent()
@@ -89,7 +75,13 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         for(dependency in distinctDependencies) {
             val localPath = dependency.expectProperty("localPath", String::class.java)
             val target = dependency.expectProperty("target", String::class.java)
-            writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
+
+            if (localPath.isNotEmpty()) {
+                writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
+            } else {
+                val target = dependency.expectProperty("target", String::class.java)
+                writePackageWithURL(writer, dependency)
+            }
         }
     }
     writer.dedent()
@@ -97,4 +89,23 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
 
     val contents = writer.toString()
     fileManifest.writeFile("Package.swift", contents)
+}
+
+fun writePackageWithURL(writer: CodeWriter, dependency: SymbolDependency) {
+    writer.openBlock(".package(", "),") {
+        val dependencyURL = dependency.expectProperty("url", String::class.java)
+        val branch = dependency.getProperty("branch", String::class.java)
+        val target = dependency.expectProperty("target", String::class.java)
+        writer.write("name: \"$target\",")
+        writer.write("url: \"$dependencyURL\",")
+        if (branch != null && !branch.isEmpty) {
+            val branchGet = branch.get()
+            print("branch is $branchGet")
+            val branchString = "\"$branchGet\""
+            print("branchString is $branchString")
+            writer.write(".branch($branchString)")
+        } else {
+            writer.write("from: ${dependency.version}")
+        }
+    }
 }

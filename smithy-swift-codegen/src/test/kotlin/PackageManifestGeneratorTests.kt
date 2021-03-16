@@ -32,7 +32,6 @@ class PackageManifestGeneratorTests {
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
         val expectedContents = """
-    dependencies: [
         .package(
             name: "ComplexModule",
             url: "https://github.com/apple/swift-numerics",
