@@ -62,10 +62,10 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     }
 
     writer.openBlock("if ProcessInfo.processInfo.environment[\"SWIFTSDK_DEPS_USE_LOCAL_PATHS\"] == nil {", "}") {
-        renderPackageDependenciesUsingSPMBranchDependency(writer, dependencies)
+        renderPackageDependenciesUsingSPMBranchDependency(writer, distinctDependencies)
     }
     writer.openBlock("else {", "}") {
-        renderPackageDependenciesWithLocalPaths(writer, dependencies)
+        renderPackageDependenciesWithLocalPaths(writer, distinctDependencies)
     }
 
     val contents = writer.toString()
@@ -75,7 +75,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
 fun renderPackageDependenciesUsingSPMBranchDependency(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
     writer.openBlock("package.dependencies += [", "]") {
         for (dependency in distinctDependencies) {
-            writePackageWithURL(writer, dependency)
+            renderPackageWithUrl(writer, dependency)
         }
     }
 }
@@ -89,13 +89,13 @@ fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependen
             if (localPath.isNotEmpty()) {
                 writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
             } else {
-                writePackageWithURL(writer, dependency)
+                renderPackageWithUrl(writer, dependency)
             }
         }
     }
 }
 
-fun writePackageWithURL(writer: CodeWriter, dependency: SymbolDependency) {
+fun renderPackageWithUrl(writer: CodeWriter, dependency: SymbolDependency) {
     writer.openBlock(".package(", "),") {
         val target = dependency.expectProperty("target", String::class.java)
         val dependencyURL = dependency.expectProperty("url", String::class.java)
