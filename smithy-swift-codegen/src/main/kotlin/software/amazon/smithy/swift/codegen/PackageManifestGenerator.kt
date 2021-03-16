@@ -34,8 +34,6 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             writer.write(".library(name: \"${settings.moduleName}\", targets: [\"${settings.moduleName}\"])")
         }
 
-
-
         writer.openBlock("targets: [", "]") {
             writer.openBlock(".target(", "),") {
                 writer.write("name: \"${settings.moduleName}\",")
@@ -72,7 +70,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     }
     writer.indent()
     writer.openBlock("package.dependencies += [", "]") {
-        for(dependency in distinctDependencies) {
+        for (dependency in distinctDependencies) {
             val localPath = dependency.expectProperty("localPath", String::class.java)
             val target = dependency.expectProperty("target", String::class.java)
 
