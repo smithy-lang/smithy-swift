@@ -52,6 +52,6 @@ if ProcessInfo.processInfo.environment["SWIFTCI_USE_LOCAL_DEPS"] == nil {
     ]
 } else {
     package.dependencies += [
-        .package(name: "AwsCrt", path: "./target/build/deps/"),
+        .package(name: "AwsCrt", path: "./target/build/deps/aws-crt-swift"),
     ]
 }
