@@ -35,7 +35,7 @@ class PackageManifestGeneratorTests {
         .package(
             name: "ComplexModule",
             url: "https://github.com/apple/swift-numerics",
-            from: 0.0.5
+            from: "0.0.5"
         ),
         """
         packageManifest.shouldContain(expectedContents)
