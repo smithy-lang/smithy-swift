@@ -14,7 +14,7 @@ enum class SwiftDependency(
     private val branch: String? = null,
     val version: String,
     private val url: String,
-    val localPath: String,
+    private val localPath: String,
     var packageName: String
 ) : SymbolDependencyContainer {
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
