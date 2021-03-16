@@ -102,7 +102,7 @@ fun writePackageWithURL(writer: CodeWriter, dependency: SymbolDependency) {
         writer.write("name: \"$target\",")
         writer.write("url: \"$dependencyURL\",")
         val branch = dependency.getProperty("branch", String::class.java)
-        if (branch.getOrNull().isNullOrEmpty()) {
+        if (!branch.getOrNull().isNullOrEmpty()) {
             val branchString = "${branch.get()}"
             writer.write(".branch(\"$branchString\")")
         } else {
