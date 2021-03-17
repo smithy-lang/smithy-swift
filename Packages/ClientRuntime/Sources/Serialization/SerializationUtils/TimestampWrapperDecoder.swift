@@ -10,7 +10,7 @@ import Foundation
 struct TimestampWrapperDecoder {
     static func parseDateStringValue(_ dateStringValue: String, format: TimestampFormat) -> Date {
         let formatter: DateFormatter?
-        switch(format) {
+        switch format {
         case .epochSeconds:
             return Date(timeIntervalSince1970: TimeInterval(dateStringValue)!)
         case .dateTime:

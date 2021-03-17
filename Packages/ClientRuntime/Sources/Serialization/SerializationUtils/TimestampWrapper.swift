@@ -17,7 +17,7 @@ struct TimestampWrapper: Encodable {
     }
     
     func dateFormatted() -> String {
-        switch(format) {
+        switch format {
         case .epochSeconds:
             return "\(date.timeIntervalSince1970)"
         case .dateTime:
