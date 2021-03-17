@@ -26,25 +26,25 @@ class TimeStampDecodeGenerationTests {
                 let normalDecoded = try containerValues.decodeIfPresent(String.self, forKey: .normal)
                 var normalBuffer:Date? = nil
                 if let normalDecoded = normalDecoded {
-                    normalBuffer = TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
+                    normalBuffer = try TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
                 }
                 normal = normalBuffer
                 let dateTimeDecoded = try containerValues.decodeIfPresent(String.self, forKey: .dateTime)
                 var dateTimeBuffer:Date? = nil
                 if let dateTimeDecoded = dateTimeDecoded {
-                    dateTimeBuffer = TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
+                    dateTimeBuffer = try TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
                 }
                 dateTime = dateTimeBuffer
                 let epochSecondsDecoded = try containerValues.decodeIfPresent(String.self, forKey: .epochSeconds)
                 var epochSecondsBuffer:Date? = nil
                 if let epochSecondsDecoded = epochSecondsDecoded {
-                    epochSecondsBuffer = TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
+                    epochSecondsBuffer = try TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
                 }
                 epochSeconds = epochSecondsBuffer
                 let httpDateDecoded = try containerValues.decodeIfPresent(String.self, forKey: .httpDate)
                 var httpDateBuffer:Date? = nil
                 if let httpDateDecoded = httpDateDecoded {
-                    httpDateBuffer = TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
+                    httpDateBuffer = try TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
                 }
                 httpDate = httpDateBuffer
             }
@@ -75,7 +75,7 @@ class TimeStampDecodeGenerationTests {
                         var listBuffer0 = [Date]()
                         if let listContainer0 = listContainer0 {
                             for timestampContainer1 in listContainer0 {
-                                listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                             }
                         }
                         nestedTimestampListBuffer?.append(listBuffer0)
@@ -110,7 +110,7 @@ class TimeStampDecodeGenerationTests {
                         var listBuffer0 = [Date]()
                         if let listContainer0 = listContainer0 {
                             for timestampContainer1 in listContainer0 {
-                                listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
+                                try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
                             }
                         }
                         nestedTimestampListBuffer?.append(listBuffer0)

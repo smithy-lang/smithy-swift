@@ -111,7 +111,6 @@ class TimeStampEncodeGenerationTests {
         }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
-        // context.generator.generateDeserializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()
         return context
     }

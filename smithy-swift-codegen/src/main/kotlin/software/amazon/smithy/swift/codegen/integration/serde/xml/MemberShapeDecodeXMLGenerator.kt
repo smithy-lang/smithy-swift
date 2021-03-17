@@ -71,7 +71,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 is TimestampShape -> {
                     val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
                     val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
-                    writer.write("$memberBuffer$delimiter.append($wrappedNestedMemberBuffer)")
+                    writer.write("try $memberBuffer$delimiter.append($wrappedNestedMemberBuffer)")
                 }
                 else -> {
                     writer.write("$memberBuffer$delimiter.append($nestedContainerName)")
@@ -104,7 +104,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val format = determineTimestampFormat(member, defaultTimestampFormat)
         writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
         writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
-            writer.write("$memberBuffer = TimestampWrapperDecoder.parseDateStringValue($decodedMemberName, format: .$format)")
+            writer.write("$memberBuffer = try TimestampWrapperDecoder.parseDateStringValue($decodedMemberName, format: .$format)")
         }
         writer.write("$memberName = $memberBuffer")
     }
@@ -119,6 +119,9 @@ abstract class MemberShapeDecodeXMLGenerator(
     }
 
     private fun nestedMemberTargetSymbolMapper(collectionShape: CollectionShape): Pair<Symbol, String> {
+        // TODO: double check this when we get around to supporting the following:
+        //  * Sets
+        //  * Unions
         val symbol = ctx.symbolProvider.toSymbol(collectionShape)
         if (symbol.name.contains("[Date]")) {
             val updatedName = symbol.name.replace("[Date]", "[String]")
