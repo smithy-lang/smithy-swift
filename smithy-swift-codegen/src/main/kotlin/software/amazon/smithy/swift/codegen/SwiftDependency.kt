@@ -7,7 +7,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
-import java.io.File
+import software.amazon.smithy.swift.codegen.resources.Resources
 
 enum class SwiftDependency(val type: String, val target: String, val branch: String? = null, val version: String, val url: String, var packageName: String) : SymbolDependencyContainer {
     // Note: "namespace" is sub module in the full library "packageName". We use the namespace to minimize the module import. But, the entire package is "packageName"
@@ -17,7 +17,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "ClientRuntime",
         null,
         "0.1.0",
-        computeAbsolutePath("smithy-swift/Packages"),
+        Resources.computeAbsolutePath("smithy-swift/Packages", "SMITHY_SWIFT_CI_DIR"),
         "ClientRuntime"
     ),
     XCTest("", "XCTest", null, "", "", ""),
@@ -26,7 +26,7 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
         "SmithyTestUtil",
         null,
         "0.1.0",
-        computeAbsolutePath("smithy-swift/Packages"),
+        Resources.computeAbsolutePath("smithy-swift/Packages", "SMITHY_SWIFT_CI_DIR"),
         "ClientRuntime"
     );
 
@@ -41,21 +41,4 @@ enum class SwiftDependency(val type: String, val target: String, val branch: Str
             .build()
         return listOf(dependency)
     }
-}
-
-private fun computeAbsolutePath(relativePath: String): String {
-    val userDirPathOverride = System.getenv("SMITHY_SWIFT_CI_DIR")
-    if (!userDirPathOverride.isNullOrEmpty()) {
-        return userDirPathOverride
-    }
-
-    var userDirPath = System.getProperty("user.dir")
-    while (userDirPath.isNotEmpty()) {
-        val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
-        if (File(fileName).isDirectory) {
-            return fileName
-        }
-        userDirPath = userDirPath.substring(0, userDirPath.length - 1)
-    }
-    return ""
 }
