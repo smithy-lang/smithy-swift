@@ -60,11 +60,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         val nestedMemberBuffer = "${nestedMemberTargetType}Buffer$level"
         writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
             when (nestedMemberTarget) {
-                is TimestampShape -> {
-                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
-                    val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
-                    writer.write("$memberBuffer$delimiter.append($wrappedNestedMemberBuffer)")
-                }
                 is CollectionShape -> {
                     writer.write("var $nestedMemberBuffer = $nestedMemberTargetSymbol()")
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
@@ -74,7 +69,9 @@ abstract class MemberShapeDecodeXMLGenerator(
                     throw Exception("renderListMemberItems: maps not supported")
                 }
                 is TimestampShape -> {
-                    throw Exception("renderListMemberItems: timestamp not supported")
+                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                    val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
+                    writer.write("$memberBuffer$delimiter.append($wrappedNestedMemberBuffer)")
                 }
                 else -> {
                     writer.write("$memberBuffer$delimiter.append($nestedContainerName)")
