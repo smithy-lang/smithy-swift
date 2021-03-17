@@ -2,7 +2,7 @@ package software.amazon.smithy.swift.codegen.resources
 
 import java.io.File
 
-public class Resources {
+class Resources {
     companion object {
         fun computeAbsolutePath(relativePath: String, environmentVariableOverride: String? = null): String {
             if (environmentVariableOverride != null) {
