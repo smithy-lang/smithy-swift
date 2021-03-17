@@ -6,6 +6,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
+import software.amazon.smithy.swift.codegen.resources.Resources
 import software.amazon.smithy.utils.CodeWriter
 
 fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>, generateTestTarget: Boolean = false) {
@@ -22,6 +23,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.write("")
     writer.write("import PackageDescription")
     writer.write("import class Foundation.ProcessInfo")
+    writer.write("import class Foundation.FileManager")
 
     writer.openBlock("let package = Package(", ")") {
         writer.write("name: \"${settings.moduleName}\",")
@@ -61,12 +63,12 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         }
     }
 
-    writer.write("let isUsingSPMLocal = FileManager.default.fileExists(atPath: \"\")")
-    writer.openBlock("if ProcessInfo.processInfo.environment[\"SWIFTSDK_DEPS_USE_LOCAL_PATHS\"] == nil {", "}") {
-        renderPackageDependenciesUsingSPMBranchDependency(writer, distinctDependencies)
+    writer.write("let isUsingSPMLocal = FileManager.default.fileExists(atPath: ${Resources.computeAbsolutePath("smithy-swift/Package.swift")})")
+    writer.openBlock("if isUsingSPMLocal {", "}") {
+        renderPackageDependenciesWithLocalPaths(writer, distinctDependencies)
     }
     writer.openBlock("else {", "}") {
-        renderPackageDependenciesWithLocalPaths(writer, distinctDependencies)
+        renderPackageDependenciesUsingSPMBranchDependency(writer, distinctDependencies)
     }
 
     val contents = writer.toString()
