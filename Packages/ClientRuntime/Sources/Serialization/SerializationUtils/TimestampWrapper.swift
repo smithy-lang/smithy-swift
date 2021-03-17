@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Foundation
+
 struct TimestampWrapper: Encodable {
     public let date: Date
     public let format: TimestampFormat
