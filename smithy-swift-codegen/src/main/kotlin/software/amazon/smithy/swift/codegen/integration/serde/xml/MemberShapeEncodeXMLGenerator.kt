@@ -9,11 +9,13 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
+import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.isBoxed
 
@@ -54,13 +56,15 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int = 0
     ) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+        val nestedMember = memberTarget.member
         val nestedMemberName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         writer.openBlock("for $nestedMemberName in $memberName {", "}") {
-            renderNestedMember(nestedMemberName, nestedMemberTarget, containerName, isKeyed, level)
+            renderNestedMember(nestedMember, nestedMemberName, nestedMemberTarget, containerName, isKeyed, level)
         }
     }
 
     fun renderNestedMember(
+        nestedMember: MemberShape,
         nestedMemberName: String,
         nestedMemberTarget: Shape,
         containerName: String,
@@ -87,10 +91,31 @@ abstract class MemberShapeEncodeXMLGenerator(
             is MapShape -> {
                 throw Exception("Maps not supported yet")
             }
+            is TimestampShape -> {
+                val forKey = if (isKeyed) ", forKey: .member" else ""
+                val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                val encodeValue = "TimestampWrapper($nestedMemberName, format: .$format)$forKey"
+                writer.write("try $containerName.encode($encodeValue)")
+            }
             else -> {
                 val forKey = if (isKeyed) ", forKey: .member" else ""
                 writer.write("try $containerName.encode($nestedMemberName$forKey)")
             }
+        }
+    }
+
+    fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String, nestedMemberName: String? = null) {
+        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val memberName = nestedMemberName ?: ctx.symbolProvider.toMemberName(member)
+        val format = determineTimestampFormat(member, defaultTimestampFormat)
+        val isBoxed = symbol.isBoxed()
+        val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: .$memberName)"
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.write(encodeLine)
+            }
+        } else {
+            writer.write(encodeLine)
         }
     }
 

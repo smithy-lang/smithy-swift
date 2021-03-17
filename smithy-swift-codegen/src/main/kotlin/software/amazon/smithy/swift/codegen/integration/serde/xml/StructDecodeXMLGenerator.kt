@@ -41,7 +41,7 @@ class StructDecodeXMLGenerator(
                 throw Exception("Map shapes not supported yet")
             }
             is TimestampShape -> {
-                throw Exception("timestamps not supported yet")
+                renderTimestampMember(member, memberTarget, containerName)
             }
             else -> {
                 renderScalarMember(member, memberTarget, containerName)
