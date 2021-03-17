@@ -61,6 +61,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         }
     }
 
+    writer.write("let isUsingSPMLocal = FileManager.default.fileExists(atPath: \"\")")
     writer.openBlock("if ProcessInfo.processInfo.environment[\"SWIFTSDK_DEPS_USE_LOCAL_PATHS\"] == nil {", "}") {
         renderPackageDependenciesUsingSPMBranchDependency(writer, distinctDependencies)
     }
