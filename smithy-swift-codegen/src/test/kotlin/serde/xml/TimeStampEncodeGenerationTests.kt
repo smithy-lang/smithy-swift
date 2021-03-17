@@ -77,7 +77,7 @@ class TimeStampEncodeGenerationTests {
     @Test
     fun `encode nested list with timestamps httpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedHTTPDateInput.swift")
+        val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedHTTPDateInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlTimestampsNestedHTTPDateInput: Encodable, Reflection {
@@ -89,11 +89,11 @@ class TimeStampEncodeGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedTimestampList = nestedTimestampList {
                         var nestedTimestampListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedTimestampList)
-                        for nestedtimestamplist0 in nestedTimestampList {
-                            if let nestedtimestamplist0 = nestedtimestamplist0 {
-                                var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
-                                for timestamp1 in nestedtimestamplist0 {
-                                    try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .httpDate), forKey: .member)
+                        for nestedhttpdatetimestamplist0 in nestedTimestampList {
+                            if let nestedhttpdatetimestamplist0 = nestedhttpdatetimestamplist0 {
+                                var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                for timestamp1 in nestedhttpdatetimestamplist0 {
+                                    try nestedhttpdatetimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .httpDate), forKey: .member)
                                 }
                             }
                         }
