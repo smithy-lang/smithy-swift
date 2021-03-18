@@ -7,7 +7,7 @@ use aws.protocols#restXml
 use smithy.test#httpRequestTests
 use smithy.test#httpResponseTests
 
-@service(sdkId: "Rest Xml blobs")
+@service(sdkId: "Rest Xml enums")
 @restXml
 service RestXml {
     version: "2019-12-16",
