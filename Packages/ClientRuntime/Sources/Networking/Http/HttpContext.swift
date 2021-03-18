@@ -38,8 +38,8 @@ public struct HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator"))!
     }
     
-    public func getHostPrefix() -> String {
-        return attributes.get(key: AttributeKey<String>(name: "HostPrefix"))!
+    public func getHostPrefix() -> String? {
+        return attributes.get(key: AttributeKey<String>(name: "HostPrefix"))
     }
 }
 
