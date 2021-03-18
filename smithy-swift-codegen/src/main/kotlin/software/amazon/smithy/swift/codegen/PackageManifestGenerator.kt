@@ -75,14 +75,6 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     fileManifest.writeFile("Package.swift", contents)
 }
 
-fun renderPackageDependenciesUsingSPMBranchDependency(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
-    writer.openBlock("package.dependencies += [", "]") {
-        for (dependency in distinctDependencies) {
-            renderPackageWithUrl(writer, dependency)
-        }
-    }
-}
-
 fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
     writer.openBlock("package.dependencies += [", "]") {
         for (dependency in distinctDependencies) {
@@ -94,6 +86,14 @@ fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependen
             } else {
                 renderPackageWithUrl(writer, dependency)
             }
+        }
+    }
+}
+
+fun renderPackageDependenciesUsingSPMBranchDependency(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
+    writer.openBlock("package.dependencies += [", "]") {
+        for (dependency in distinctDependencies) {
+            renderPackageWithUrl(writer, dependency)
         }
     }
 }
