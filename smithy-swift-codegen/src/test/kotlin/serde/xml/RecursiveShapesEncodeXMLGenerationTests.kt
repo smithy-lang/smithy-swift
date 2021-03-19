@@ -71,7 +71,8 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     let recursiveMemberDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
                     recursiveMember = recursiveMemberDecoded
                 }
-            }""".trimIndent()
+            }
+            """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)
     }

@@ -59,7 +59,8 @@ class RecursiveShapesDecodeXMLGenerationTests {
                     }
                     nestedRecursiveList = nestedRecursiveListBuffer
                 }
-            }""".trimIndent()
+            }
+            """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
