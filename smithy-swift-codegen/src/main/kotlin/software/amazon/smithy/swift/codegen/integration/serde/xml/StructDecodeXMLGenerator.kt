@@ -38,7 +38,7 @@ class StructDecodeXMLGenerator(
                 renderListMember(member, memberTarget, containerName)
             }
             is MapShape -> {
-                throw Exception("Map shapes not supported yet")
+                renderMapMember(member, memberTarget, containerName)
             }
             is TimestampShape -> {
                 renderTimestampMember(member, memberTarget, containerName)
