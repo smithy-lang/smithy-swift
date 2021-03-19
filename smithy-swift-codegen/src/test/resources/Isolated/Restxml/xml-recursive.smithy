@@ -12,7 +12,7 @@ use smithy.test#httpResponseTests
 service RestXml {
     version: "2019-12-16",
     operations: [
-        XmlRecursiveShapes
+        XmlRecursiveShapes,
     ]
 }
 
@@ -37,3 +37,5 @@ structure RecursiveShapesInputOutputNested2 {
     bar: String,
     recursiveMember: RecursiveShapesInputOutputNested1,
 }
+
+

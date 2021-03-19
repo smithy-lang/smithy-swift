@@ -77,15 +77,32 @@ class RecursiveShapesEncodeXMLGenerationTests {
     }
     @Test
     fun `encode recursive nested shape`() {
-        /*
-        val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
-        val contents = getFileContents(context.manifest, "/example/models/XmlEnumsInput+Encodable.swift")
+        val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNestedRecursiveShapesInput+Encodable.swift")
         val expectedContents =
             """
-
+            extension XmlNestedRecursiveShapesInput: Encodable, Reflection {
+                private enum CodingKeys: String, CodingKey {
+                    case nestedRecursiveList
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let nestedRecursiveList = nestedRecursiveList {
+                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedRecursiveList)
+                        for nestedrecursiveshapeslist0 in nestedRecursiveList {
+                            if let nestedrecursiveshapeslist0 = nestedrecursiveshapeslist0 {
+                                var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
+                                    try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: .member)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)*/
+        contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
