@@ -76,7 +76,7 @@ class StructDecodeXMLGenerationTests {
         extension SimpleScalarPropertiesOutputBody: Decodable {
             private enum CodingKeys: String, CodingKey {
                 case byteValue
-                case doubleValue
+                case doubleValue = "DoubleDribble"
                 case falseBooleanValue
                 case floatValue
                 case integerValue
