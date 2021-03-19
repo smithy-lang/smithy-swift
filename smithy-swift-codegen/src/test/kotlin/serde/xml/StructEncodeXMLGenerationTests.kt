@@ -69,7 +69,7 @@ class StructEncodeXMLGenerationTests {
             extension SimpleScalarPropertiesInput: Encodable, Reflection {
                 private enum CodingKeys: String, CodingKey {
                     case byteValue
-                    case doubleValue
+                    case doubleValue = "DoubleDribble"
                     case falseBooleanValue
                     case floatValue
                     case integerValue
