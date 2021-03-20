@@ -55,8 +55,8 @@ class HttpQueryItemMiddleware(
                     }
                 }
             } else {
+                memberName = "input.operationInput.$memberName"
                 if (memberTarget is CollectionShape) {
-                    memberName = "input.operationInput.$memberName"
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
                     renderQueryItem(it.member, bindingIndex, memberName, paramName)
@@ -65,10 +65,10 @@ class HttpQueryItemMiddleware(
         }
     }
 
-    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, memberName: String, paramName: String) {
+    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String) {
         var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
                 ctx,
-                memberName,
+                originalMemberName,
                 member,
                 HttpBinding.Location.QUERY,
                 bindingIndex,
