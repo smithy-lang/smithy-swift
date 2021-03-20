@@ -77,8 +77,9 @@ class HttpQueryItemMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
-            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
-            writer.write("input.builder.withQueryItem(queryItem)")
+            val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
+            writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\", value: String($memberName))")
+            writer.write("input.builder.withQueryItem($queryItemName)")
         }
     }
 
