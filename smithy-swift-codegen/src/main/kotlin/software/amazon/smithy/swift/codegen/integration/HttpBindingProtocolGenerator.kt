@@ -552,7 +552,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.dedent()
             writer.write("} else {")
             writer.indent()
-            writer.write("self.\$L = nil", memberName)
+            when(memberTarget) {
+                is NumberShape -> writer.write("self.\$L = 0", memberName)
+                is BooleanShape -> writer.write("self.\$L = false", memberName)
+                else -> writer.write("self.\$L = nil", memberName)
+            }
             writer.dedent()
             writer.write("}")
         }
@@ -733,12 +737,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     // render conversion of string to appropriate number type
     internal fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "Int8($stringValue)"
-        ShapeType.SHORT -> "Int16($stringValue)"
-        ShapeType.INTEGER -> "Int($stringValue)"
-        ShapeType.LONG -> "Int($stringValue)"
-        ShapeType.FLOAT -> "Float($stringValue)"
-        ShapeType.DOUBLE -> "Double($stringValue)"
+        ShapeType.BYTE -> "Int8($stringValue) ?? 0"
+        ShapeType.SHORT -> "Int16($stringValue) ?? 0"
+        ShapeType.INTEGER -> "Int($stringValue) ?? 0"
+        ShapeType.LONG -> "Int($stringValue) ?? 0"
+        ShapeType.FLOAT -> "Float($stringValue) ?? 0"
+        ShapeType.DOUBLE -> "Double($stringValue) ?? 0"
         else -> throw CodegenException("unknown number shape: $shape")
     }
 
