@@ -193,7 +193,7 @@ class StructureGenerator(
         writer.putContext("error.protocol", serviceErrorProtocolSymbol.name)
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L {")
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, Equatable {")
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
