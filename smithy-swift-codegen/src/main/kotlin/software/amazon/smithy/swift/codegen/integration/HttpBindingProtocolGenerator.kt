@@ -870,7 +870,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
@@ -900,7 +900,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
@@ -926,7 +926,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()

@@ -140,7 +140,7 @@ open class HttpProtocolClientGenerator(
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val outputShape = model.expectShape(op.output.get())
         val outputShapeName = symbolProvider.toSymbol(outputShape).name
-        val outputErrorName = "${op.defaultName()}Error"
+        val outputErrorName = "${op.defaultName()}OutputError"
         val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
         val hasIdempotencyTokenTrait = idempotentMember != null
         if (hasIdempotencyTokenTrait) {
@@ -167,7 +167,7 @@ open class HttpProtocolClientGenerator(
         val requestBindings = httpBindingResolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         renderUriPath(httpTrait, pathBindings, writer)
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
         writer.write("let context = HttpContextBuilder()")
