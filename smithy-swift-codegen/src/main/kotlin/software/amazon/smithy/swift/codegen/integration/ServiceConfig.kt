@@ -15,7 +15,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typeName: String = "${serviceName}Configuration"
 
-    open val typesToConformConfigTo: List<String> = mutableListOf("Configuration")
+    open val typesToConformConfigTo: List<String> = mutableListOf("ClientRuntime.Configuration")
 
     open fun getConfigFields(): List<ConfigField> = listOf()
 
