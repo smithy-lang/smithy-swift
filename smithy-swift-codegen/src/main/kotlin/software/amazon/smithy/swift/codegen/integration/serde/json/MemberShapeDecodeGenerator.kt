@@ -169,7 +169,7 @@ abstract class MemberShapeDecodeGenerator(
     Can be overridden to allow post processing of the decoded value before assigning it to the member.
      */
     open fun renderAssigningDecodedMember(topLevelMember: MemberShape, decodedMemberName: String) {
-        val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember).removeSurrounding("`", "`")
+        val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember)
         writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
     }
 
