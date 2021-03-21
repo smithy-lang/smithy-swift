@@ -110,7 +110,7 @@ open class HttpProtocolClientGenerator(
         }
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("let path = \"\$L\"", uri)
+        writer.write("let urlPath = \"\$L\"", uri)
     }
 
     private fun renderContextAttributes(op: OperationShape) {
@@ -120,7 +120,7 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withEncoder(value: encoder)")
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
-        writer.write("  .withPath(value: path)")
+        writer.write("  .withPath(value: urlPath)")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
