@@ -67,12 +67,12 @@ class HttpQueryItemMiddleware(
 
     private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String) {
         var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
-                ctx,
-                originalMemberName,
-                member,
-                HttpBinding.Location.QUERY,
-                bindingIndex,
-                defaultTimestampFormat
+            ctx,
+            originalMemberName,
+            member,
+            HttpBinding.Location.QUERY,
+            bindingIndex,
+            defaultTimestampFormat
         )
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)

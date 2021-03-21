@@ -552,7 +552,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.dedent()
             writer.write("} else {")
             writer.indent()
-            when(memberTarget) {
+            when (memberTarget) {
                 is NumberShape -> writer.write("self.\$L = 0", memberName)
                 is BooleanShape -> writer.write("self.\$L = false", memberName)
                 else -> writer.write("self.\$L = nil", memberName)

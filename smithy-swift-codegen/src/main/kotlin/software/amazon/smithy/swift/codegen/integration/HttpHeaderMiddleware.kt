@@ -60,12 +60,12 @@ class HttpHeaderMiddleware(
 
     private fun renderHeader(member: MemberShape, memberName: String, paramName: String) {
         val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
-                ctx,
-                memberName,
-                member,
-                HttpBinding.Location.HEADER,
-                bindingIndex,
-                defaultTimestampFormat
+            ctx,
+            memberName,
+            member,
+            HttpBinding.Location.HEADER,
+            bindingIndex,
+            defaultTimestampFormat
         )
 
         if (requiresDoCatch) {
