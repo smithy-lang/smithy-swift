@@ -434,7 +434,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val memberValue = "Bool($headerDeclaration)"
+                    val memberValue = "Bool($headerDeclaration) ?? false"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
