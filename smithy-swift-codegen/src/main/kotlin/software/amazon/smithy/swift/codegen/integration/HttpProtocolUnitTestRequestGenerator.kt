@@ -94,7 +94,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShapeId = operation.output.get()
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
-            val outputErrorName = "${operation.defaultName()}Error"
+            val outputErrorName = "${operation.defaultName()}OutputError"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
 
             writer.write("let encoder = \$L", protocolEncoder)

@@ -16,7 +16,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
-            val operationErrorType = "${operation.defaultName()}Error"
+            val operationErrorType = "${operation.defaultName()}OutputError"
             writer.openBlock("do {", "} catch let err {") {
                 renderBuildHttpResponse(test)
                 writer.write("")
