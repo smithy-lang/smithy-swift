@@ -32,7 +32,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Result<OperationOutput<SmokeTestOutput, SmokeTestError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -52,7 +52,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -72,7 +72,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStringInput>,
-                              next: H) -> Result<OperationOutput<ExplicitStringOutput, ExplicitStringError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -87,7 +87,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitStringInput>
-                public typealias MOutput = OperationOutput<ExplicitStringOutput, ExplicitStringError>
+                public typealias MOutput = OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -107,7 +107,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobInput>,
-                              next: H) -> Result<OperationOutput<ExplicitBlobOutput, ExplicitBlobError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -122,7 +122,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitBlobInput>
-                public typealias MOutput = OperationOutput<ExplicitBlobOutput, ExplicitBlobError>
+                public typealias MOutput = OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -142,7 +142,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobStreamInput>,
-                              next: H) -> Result<OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -157,7 +157,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitBlobStreamInput>
-                public typealias MOutput = OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamError>
+                public typealias MOutput = OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -177,7 +177,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStructInput>,
-                              next: H) -> Result<OperationOutput<ExplicitStructOutput, ExplicitStructError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -197,7 +197,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitStructInput>
-                public typealias MOutput = OperationOutput<ExplicitStructOutput, ExplicitStructError>
+                public typealias MOutput = OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()

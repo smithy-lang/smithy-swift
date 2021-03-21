@@ -44,9 +44,9 @@ class UnionEncodeGeneratorTests {
                 }
 
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let contents = contents {
-                        try container.encode(contents, forKey: .contents)
+                        try encodeContainer.encode(contents, forKey: .contents)
                     }
                 }
             }

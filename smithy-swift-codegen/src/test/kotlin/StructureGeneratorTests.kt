@@ -253,7 +253,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                 import ClientRuntime
 
                 /// This *is* documentation about the shape.
-                public struct MyError: ServiceError, Equatable {
+                public struct MyError: ClientRuntime.ServiceError, Equatable {
                     public var _headers: Headers?
                     public var _statusCode: HttpStatusCode?
                     public var _message: String?

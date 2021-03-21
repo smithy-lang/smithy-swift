@@ -55,7 +55,7 @@ class HttpProtocolClientGeneratorTests {
                         self.config = config
                     }
                 
-                    public class ExampleClientConfiguration: Configuration {
+                    public class ExampleClientConfiguration: ClientRuntime.Configuration {
                 
                         public static func `default`() throws -> ExampleClientConfiguration {
                             return ExampleClientConfiguration()
@@ -75,7 +75,7 @@ class HttpProtocolClientGeneratorTests {
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
                       .withMethod(value: .post)
-                      .withPath(value: path)
+                      .withPath(value: urlPath)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
