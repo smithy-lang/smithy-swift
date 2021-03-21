@@ -31,9 +31,9 @@ class GreetingWithErrorsFooErrorTest: HttpResponseTestBase {
                 return
             }
 
-            let greetingWithErrorsError = try GreetingWithErrorsError(httpResponse: httpResponse)
+            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse)
 
-            if case .fooError(let actual) = greetingWithErrorsError {
+            if case .fooError(let actual) = greetingWithErrorsOutputError {
 
                 let expected = FooError(
                 )
@@ -86,9 +86,9 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
 
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            let greetingWithErrorsError = try GreetingWithErrorsError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
 
-            if case .complexError(let actual) = greetingWithErrorsError {
+            if case .complexError(let actual) = greetingWithErrorsOutputError {
 
                 let expected = ComplexError(
                     header: "Header",
