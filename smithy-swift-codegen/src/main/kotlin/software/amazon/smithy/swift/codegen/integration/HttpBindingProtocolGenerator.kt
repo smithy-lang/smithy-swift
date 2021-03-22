@@ -422,6 +422,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val memberName = ctx.symbolProvider.toMemberName(hdrBinding.member)
             val headerName = hdrBinding.locationName
             val headerDeclaration = "${memberName}HeaderValue"
+            val isBoxed = ctx.symbolProvider.toSymbol(memberTarget).isBoxed()
             writer.write("if let $headerDeclaration = httpResponse.headers.value(for: \$S) {", headerName)
             writer.indent()
             when (memberTarget) {
@@ -553,8 +554,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("} else {")
             writer.indent()
             when (memberTarget) {
-                is NumberShape -> writer.write("self.\$L = 0", memberName)
-                is BooleanShape -> writer.write("self.\$L = false", memberName)
+                is NumberShape -> {
+                    val numberValue = if(isBoxed) "nil" else "0"
+                    writer.write("self.\$L = $numberValue", memberName)
+                }
+                is BooleanShape -> {
+                    val numberValue = if(isBoxed) "nil" else "false"
+                    writer.write("self.\$L = $numberValue", memberName)
+                }
                 else -> writer.write("self.\$L = nil", memberName)
             }
             writer.dedent()
