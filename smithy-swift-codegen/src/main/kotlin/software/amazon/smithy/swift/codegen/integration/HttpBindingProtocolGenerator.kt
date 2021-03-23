@@ -555,11 +555,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {
-                    val numberValue = if(isBoxed) "nil" else "0"
+                    val numberValue = if (isBoxed) "nil" else "0"
                     writer.write("self.\$L = $numberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val numberValue = if(isBoxed) "nil" else "false"
+                    val numberValue = if (isBoxed) "nil" else "false"
                     writer.write("self.\$L = $numberValue", memberName)
                 }
                 else -> writer.write("self.\$L = nil", memberName)
