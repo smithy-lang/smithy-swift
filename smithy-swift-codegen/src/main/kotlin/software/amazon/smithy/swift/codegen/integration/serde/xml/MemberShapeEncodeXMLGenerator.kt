@@ -74,12 +74,17 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedValueSymbol = ctx.symbolProvider.toSymbol(nestedValueTarget)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapEntry<$nestedKeySymbol, $nestedValueSymbol>.CodingKeys.self, forKey: .$memberNameUnquoted)")
-            renderMapMemberItem(memberName, memberTarget, nestedContainer)
+            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: .$memberNameUnquoted)")
+                renderMapMemberItem(memberName, memberTarget, nestedContainer, false)
+            } else {
+                writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapEntry<$nestedKeySymbol, $nestedValueSymbol>.CodingKeys.self, forKey: .$memberNameUnquoted)")
+                renderMapMemberItem(memberName, memberTarget, nestedContainer, true)
+            }
         }
     }
 
-    private fun renderMapMemberItem(memberName: String, mapShape: MapShape, containerName: String, level: Int = 0) {
+    private fun renderMapMemberItem(memberName: String, mapShape: MapShape, containerName: String, isKeyed: Boolean, level: Int = 0) {
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
@@ -91,20 +96,21 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("for ($nestedKeyName, $nestedValueName) in $memberName {", "}") {
             when (valueTargetShape) {
                 is MapShape -> {
-                    renderNestedMapEntryKeyValue(nestedKeyName, nestedValueName, valueTargetShape, containerName, level)
+                    renderNestedMapEntryKeyValue(nestedKeyName, nestedValueName, valueTargetShape, containerName, isKeyed, level)
                 }
                 is CollectionShape -> {
                     throw Exception("nested collections not supported (yet)")
                 }
                 else -> {
-                    writer.write("var entry = $containerName.nestedContainer(keyedBy: MapKeyValue<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self, forKey: .entry)")
+                    val forKey = if (isKeyed) ", forKey: .entry" else ""
+                    writer.write("var entry = $containerName.nestedContainer(keyedBy: MapKeyValue<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self$forKey)")
                     writer.write("try entry.encode($nestedKeyName, forKey: .key)")
                     writer.write("try entry.encode($nestedValueName, forKey: .value)")
                 }
             }
         }
     }
-    private fun renderNestedMapEntryKeyValue(keyName: String, valueName: String, mapShape: MapShape, containerName: String, level: Int) {
+    private fun renderNestedMapEntryKeyValue(keyName: String, valueName: String, mapShape: MapShape, containerName: String, isKeyed: Boolean, level: Int) {
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
@@ -112,12 +118,13 @@ abstract class MemberShapeEncodeXMLGenerator(
         val valueTargetShapeSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
 
         val nestedContainer = "nestedMapEntryContainer$level"
-        writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapKeyValue<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self, forKey: .entry)")
+        val forKey = if (isKeyed) ", forKey: .entry" else ""
+        writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapKeyValue<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self$forKey)")
         writer.openBlock("if let $valueName = $valueName {", "}") {
             writer.write("try $nestedContainer.encode($keyName, forKey: .key)")
             val nextContainer = "nestedMapEntryContainer${level + 1}"
             writer.write("var $nextContainer = $nestedContainer.nestedContainer(keyedBy: MapEntry<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self, forKey: .value)")
-            renderMapMemberItem(valueName, mapShape, nextContainer, level + 1)
+            renderMapMemberItem(valueName, mapShape, nextContainer, true, level + 1)
         }
     }
 
