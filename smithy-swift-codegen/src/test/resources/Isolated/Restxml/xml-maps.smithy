@@ -12,7 +12,9 @@ use smithy.test#httpResponseTests
 service RestXml {
     version: "2019-12-16",
     operations: [
-        XmlMaps
+        XmlMaps,
+        XmlMapsWithNameProtocol
+
     ]
 }
 
@@ -33,4 +35,14 @@ map XmlMapsInputOutputMap {
 
 structure GreetingStruct {
     hi: String,
+}
+
+@http(uri: "/XmlMapsWithNameProtocol", method: "POST")
+operation XmlMapsWithNameProtocol {
+    input: XmlMapsWithNameProtocolInputOutput,
+    output: XmlMapsWithNameProtocolInputOutput
+}
+
+structure XmlMapsWithNameProtocolInputOutput {
+    protocol: XmlMapsInputOutputMap,
 }

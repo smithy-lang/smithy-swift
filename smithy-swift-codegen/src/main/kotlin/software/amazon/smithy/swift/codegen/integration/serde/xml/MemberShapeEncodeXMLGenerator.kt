@@ -65,7 +65,8 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val nestedContainer = "${memberName}Container"
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
+        val nestedContainer = "${memberNameUnquoted}Container"
 
         val nestedKeyTarget = ctx.model.expectShape(memberTarget.key.target)
         val nestedValueTarget = ctx.model.expectShape(memberTarget.value.target)
@@ -73,7 +74,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedValueSymbol = ctx.symbolProvider.toSymbol(nestedValueTarget)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapEntry<$nestedKeySymbol, $nestedValueSymbol>.CodingKeys.self, forKey: .$memberName)")
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: MapEntry<$nestedKeySymbol, $nestedValueSymbol>.CodingKeys.self, forKey: .$memberNameUnquoted)")
             renderMapMemberItem(memberName, memberTarget, nestedContainer)
         }
     }

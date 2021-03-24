@@ -36,6 +36,35 @@ class MapDecodeXMLGenerationTests {
         """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `decode wrapped map with name protocol`() {
+        val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsWithNameProtocolOutputBody+Decodable.swift")
+        val expectedContents = """
+            extension XmlMapsWithNameProtocolOutputBody: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case `protocol` = "protocol"
+                }
+
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let protocolWrappedContainer = try containerValues.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .protocol)
+                    let protocolContainer = try protocolWrappedContainer.decodeIfPresent([MapKeyValue<String, GreetingStruct>].self, forKey: .entry)
+                    var protocolBuffer: [String:GreetingStruct]? = nil
+                    if let protocolContainer = protocolContainer {
+                        protocolBuffer = [String:GreetingStruct]()
+                        for structureContainer0 in protocolContainer {
+                            protocolBuffer?[structureContainer0.key] = structureContainer0.value
+                        }
+                    }
+                    `protocol` = protocolBuffer
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     @Test
     fun `decode nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested.smithy", "aws.protocoltests.restxml#RestXml")

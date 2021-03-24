@@ -101,13 +101,14 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
         val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
 
-        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         val translatedMemberTargetValueType = mapShapeIdToSymbolForMaps(memberTarget.value.target)
         var currContainerName = containerName
-        var currContainerKey = ".$memberName"
+        var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         if (!memberIsFlattened) {
-            val nextContainerName = "${memberName}WrappedContainer"
+            val nextContainerName = "${memberNameUnquoted}WrappedContainer"
             writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".entry"
             currContainerName = nextContainerName
@@ -115,8 +116,8 @@ abstract class MemberShapeDecodeXMLGenerator(
             throw Exception("flattened maps not officially supported yet")
         }
 
-        val memberBuffer = "${memberName}Buffer"
-        val memberContainerName = "${memberName}Container"
+        val memberBuffer = "${memberNameUnquoted}Buffer"
+        val memberContainerName = "${memberNameUnquoted}Container"
         val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
         writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([MapKeyValue<$memberTargetKey, $translatedMemberTargetValueType>].self, forKey: $currContainerKey)")
 

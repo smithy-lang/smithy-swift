@@ -36,6 +36,33 @@ class MapEncodeXMLGenerationTests {
     }
 
     @Test
+    fun `encode map with name protocol`() {
+        val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsWithNameProtocolInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsWithNameProtocolInput: Encodable, Reflection {
+                private enum CodingKeys: String, CodingKey {
+                    case `protocol` = "protocol"
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let `protocol` = `protocol` {
+                        var protocolContainer = container.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .protocol)
+                        for (string0, greetingstruct0) in `protocol` {
+                            var entry = protocolContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
+                            try entry.encode(string0, forKey: .key)
+                            try entry.encode(greetingstruct0, forKey: .value)
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
     fun `encode nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedInput+Encodable.swift")
