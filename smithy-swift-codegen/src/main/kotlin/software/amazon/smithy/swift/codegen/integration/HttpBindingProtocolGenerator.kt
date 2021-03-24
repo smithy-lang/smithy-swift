@@ -422,6 +422,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val memberName = ctx.symbolProvider.toMemberName(hdrBinding.member)
             val headerName = hdrBinding.locationName
             val headerDeclaration = "${memberName}HeaderValue"
+            val isBoxed = ctx.symbolProvider.toSymbol(memberTarget).isBoxed()
             writer.write("if let $headerDeclaration = httpResponse.headers.value(for: \$S) {", headerName)
             writer.indent()
             when (memberTarget) {
@@ -434,7 +435,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val memberValue = "Bool($headerDeclaration)"
+                    val memberValue = "Bool($headerDeclaration) ?? false"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
@@ -552,7 +553,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.dedent()
             writer.write("} else {")
             writer.indent()
-            writer.write("self.\$L = nil", memberName)
+            var assignmentValue = "nil"
+            when (memberTarget) {
+                is NumberShape -> {
+                    assignmentValue = if (isBoxed) "nil" else "0"
+                }
+                is BooleanShape -> {
+                    assignmentValue = if (isBoxed) "nil" else "false"
+                }
+            }
+            writer.write("self.$memberName = $assignmentValue")
             writer.dedent()
             writer.write("}")
         }
@@ -733,12 +743,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     // render conversion of string to appropriate number type
     internal fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "Int8($stringValue)"
-        ShapeType.SHORT -> "Int16($stringValue)"
-        ShapeType.INTEGER -> "Int($stringValue)"
-        ShapeType.LONG -> "Int($stringValue)"
-        ShapeType.FLOAT -> "Float($stringValue)"
-        ShapeType.DOUBLE -> "Double($stringValue)"
+        ShapeType.BYTE -> "Int8($stringValue) ?? 0"
+        ShapeType.SHORT -> "Int16($stringValue) ?? 0"
+        ShapeType.INTEGER -> "Int($stringValue) ?? 0"
+        ShapeType.LONG -> "Int($stringValue) ?? 0"
+        ShapeType.FLOAT -> "Float($stringValue) ?? 0"
+        ShapeType.DOUBLE -> "Double($stringValue) ?? 0"
         else -> throw CodegenException("unknown number shape: $shape")
     }
 
@@ -866,7 +876,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
@@ -896,7 +906,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
@@ -922,7 +932,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}Error"
+        val operationErrorName = "${op.defaultName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()

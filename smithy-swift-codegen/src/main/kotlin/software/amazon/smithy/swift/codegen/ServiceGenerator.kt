@@ -102,7 +102,7 @@ class ServiceGenerator(
         }
 
         fun getOperationErrorShapeName(op: OperationShape): String {
-            return "${op.defaultName()}Error"
+            return "${op.defaultName()}OutputError"
         }
 
         private fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
@@ -187,7 +187,7 @@ class ServiceGenerator(
 
         delegator.useShapeWriter(operationErrorSymbol) { writer ->
             writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName {", "}") {
+            writer.openBlock("public enum $operationErrorName: Equatable {", "}") {
                 for (errorShape in errorShapes) {
                     val errorShapeName = symbolProvider.toSymbol(errorShape).name
                     writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)

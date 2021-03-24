@@ -51,15 +51,15 @@ class StructEncodeGenerationTests {
                 }
 
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let payload1 = payload1 {
-                        try container.encode(payload1, forKey: .payload1)
+                        try encodeContainer.encode(payload1, forKey: .payload1)
                     }
                     if let payload2 = payload2 {
-                        try container.encode(payload2, forKey: .payload2)
+                        try encodeContainer.encode(payload2, forKey: .payload2)
                     }
                     if let payload3 = payload3 {
-                        try container.encode(payload3, forKey: .payload3)
+                        try encodeContainer.encode(payload3, forKey: .payload3)
                     }
                 }
             }
@@ -82,24 +82,24 @@ class StructEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
-                        var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
+                        var intListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .intList)
                         for intlist0 in intList {
                             try intListContainer.encode(intlist0)
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
                             try intMapContainer.encode(intmap0, forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = member1 {
-                        try container.encode(member1, forKey: .member1)
+                        try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
-                        var stringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
+                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
                         for (dictKey0, nestedstringmap0) in stringMap {
                             try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: dictKey0))
                         }
@@ -165,21 +165,21 @@ class StructEncodeGenerationTests {
                 }
 
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let dateTime = dateTime {
-                        try container.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
+                        try encodeContainer.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
                     }
                     if let epochSeconds = epochSeconds {
-                        try container.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
+                        try encodeContainer.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
                     }
                     if let httpDate = httpDate {
-                        try container.encode(httpDate.rfc5322(), forKey: .httpDate)
+                        try encodeContainer.encode(httpDate.rfc5322(), forKey: .httpDate)
                     }
                     if let normal = normal {
-                        try container.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
+                        try encodeContainer.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
                     }
                     if let timestampList = timestampList {
-                        var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
+                        var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
                             try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
                         }
@@ -206,33 +206,33 @@ class StructEncodeGenerationTests {
                 }
 
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let blobMap = blobMap {
-                        var blobMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
+                        var blobMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .blobMap)
                         for (dictKey0, blobmap0) in blobMap {
                             try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let dateMap = dateMap {
-                        var dateMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
+                        var dateMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .dateMap)
                         for (dictKey0, datemap0) in dateMap {
                             try dateMapContainer.encode(datemap0.rfc5322(), forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let enumMap = enumMap {
-                        var enumMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
+                        var enumMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .enumMap)
                         for (dictKey0, enummap0) in enumMap {
                             try enumMapContainer.encode(enummap0.rawValue, forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
                             try intMapContainer.encode(intmap0, forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let structMap = structMap {
-                        var structMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .structMap)
+                        var structMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .structMap)
                         for (dictKey0, structmap0) in structMap {
                             try structMapContainer.encode(structmap0, forKey: Key(stringValue: dictKey0))
                         }
@@ -255,9 +255,9 @@ class StructEncodeGenerationTests {
                 }
 
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedWithEnum = nestedWithEnum {
-                        try container.encode(nestedWithEnum, forKey: .nestedWithEnum)
+                        try encodeContainer.encode(nestedWithEnum, forKey: .nestedWithEnum)
                     }
                 }
             }
@@ -274,9 +274,9 @@ class StructEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let myEnum = myEnum {
-                        try container.encode(myEnum.rawValue, forKey: .myEnum)
+                        try encodeContainer.encode(myEnum.rawValue, forKey: .myEnum)
                     }
                 }
             
@@ -307,12 +307,12 @@ class StructEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let foo = foo {
-                        try container.encode(foo, forKey: .foo)
+                        try encodeContainer.encode(foo, forKey: .foo)
                     }
                     if let nested = nested {
-                        try container.encode(nested.value, forKey: .nested)
+                        try encodeContainer.encode(nested.value, forKey: .nested)
                     }
                 }
             
@@ -345,12 +345,12 @@ class StructEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let bar = bar {
-                        try container.encode(bar, forKey: .bar)
+                        try encodeContainer.encode(bar, forKey: .bar)
                     }
                     if let recursiveMember = recursiveMember {
-                        try container.encode(recursiveMember, forKey: .recursiveMember)
+                        try encodeContainer.encode(recursiveMember, forKey: .recursiveMember)
                     }
                 }
             
@@ -384,21 +384,21 @@ extension JsonListsInput: Encodable, Reflection {
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
         if let booleanList = booleanList {
-            var booleanListContainer = container.nestedUnkeyedContainer(forKey: .booleanList)
+            var booleanListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .booleanList)
             for booleanlist0 in booleanList {
                 try booleanListContainer.encode(booleanlist0)
             }
         }
         if let integerList = integerList {
-            var integerListContainer = container.nestedUnkeyedContainer(forKey: .integerList)
+            var integerListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .integerList)
             for integerlist0 in integerList {
                 try integerListContainer.encode(integerlist0)
             }
         }
         if let nestedStringList = nestedStringList {
-            var nestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedStringList)
+            var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
             for nestedstringlist0 in nestedStringList {
                 var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
                 if let nestedstringlist0 = nestedstringlist0 {
@@ -409,25 +409,25 @@ extension JsonListsInput: Encodable, Reflection {
             }
         }
         if let sparseStringList = sparseStringList {
-            var sparseStringListContainer = container.nestedUnkeyedContainer(forKey: .sparseStringList)
+            var sparseStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .sparseStringList)
             for sparsestringlist0 in sparseStringList {
                 try sparseStringListContainer.encode(sparsestringlist0)
             }
         }
         if let stringList = stringList {
-            var stringListContainer = container.nestedUnkeyedContainer(forKey: .stringList)
+            var stringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringList)
             for stringlist0 in stringList {
                 try stringListContainer.encode(stringlist0)
             }
         }
         if let stringSet = stringSet {
-            var stringSetContainer = container.nestedUnkeyedContainer(forKey: .stringSet)
+            var stringSetContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringSet)
             for stringset0 in stringSet {
                 try stringSetContainer.encode(stringset0)
             }
         }
         if let timestampList = timestampList {
-            var timestampListContainer = container.nestedUnkeyedContainer(forKey: .timestampList)
+            var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
             for timestamplist0 in timestampList {
                 try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
             }
@@ -457,51 +457,51 @@ extension JsonMapsInput: Encodable, Reflection {
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
         if let denseBooleanMap = denseBooleanMap {
-            var denseBooleanMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseBooleanMap)
+            var denseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .denseBooleanMap)
             for (dictKey0, densebooleanmap0) in denseBooleanMap {
                 try denseBooleanMapContainer.encode(densebooleanmap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let denseNumberMap = denseNumberMap {
-            var denseNumberMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseNumberMap)
+            var denseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .denseNumberMap)
             for (dictKey0, densenumbermap0) in denseNumberMap {
                 try denseNumberMapContainer.encode(densenumbermap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let denseStringMap = denseStringMap {
-            var denseStringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseStringMap)
+            var denseStringMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .denseStringMap)
             for (dictKey0, densestringmap0) in denseStringMap {
                 try denseStringMapContainer.encode(densestringmap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let denseStructMap = denseStructMap {
-            var denseStructMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .denseStructMap)
+            var denseStructMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .denseStructMap)
             for (dictKey0, densestructmap0) in denseStructMap {
                 try denseStructMapContainer.encode(densestructmap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let sparseBooleanMap = sparseBooleanMap {
-            var sparseBooleanMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseBooleanMap)
+            var sparseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .sparseBooleanMap)
             for (dictKey0, sparsebooleanmap0) in sparseBooleanMap {
                 try sparseBooleanMapContainer.encode(sparsebooleanmap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let sparseNumberMap = sparseNumberMap {
-            var sparseNumberMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseNumberMap)
+            var sparseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .sparseNumberMap)
             for (dictKey0, sparsenumbermap0) in sparseNumberMap {
                 try sparseNumberMapContainer.encode(sparsenumbermap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let sparseStringMap = sparseStringMap {
-            var sparseStringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseStringMap)
+            var sparseStringMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .sparseStringMap)
             for (dictKey0, sparsestringmap0) in sparseStringMap {
                 try sparseStringMapContainer.encode(sparsestringmap0, forKey: Key(stringValue: dictKey0))
             }
         }
         if let sparseStructMap = sparseStructMap {
-            var sparseStructMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .sparseStructMap)
+            var sparseStructMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .sparseStructMap)
             for (dictKey0, sparsestructmap0) in sparseStructMap {
                 try sparseStructMapContainer.encode(sparsestructmap0, forKey: Key(stringValue: dictKey0))
             }
@@ -538,51 +538,51 @@ extension PrimitiveTypesInput: Encodable, Reflection {
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
         if let booleanVal = booleanVal {
-            try container.encode(booleanVal, forKey: .booleanVal)
+            try encodeContainer.encode(booleanVal, forKey: .booleanVal)
         }
         if let byteVal = byteVal {
-            try container.encode(byteVal, forKey: .byteVal)
+            try encodeContainer.encode(byteVal, forKey: .byteVal)
         }
         if let doubleVal = doubleVal {
-            try container.encode(doubleVal, forKey: .doubleVal)
+            try encodeContainer.encode(doubleVal, forKey: .doubleVal)
         }
         if let floatVal = floatVal {
-            try container.encode(floatVal, forKey: .floatVal)
+            try encodeContainer.encode(floatVal, forKey: .floatVal)
         }
         if let intVal = intVal {
-            try container.encode(intVal, forKey: .intVal)
+            try encodeContainer.encode(intVal, forKey: .intVal)
         }
         if let longVal = longVal {
-            try container.encode(longVal, forKey: .longVal)
+            try encodeContainer.encode(longVal, forKey: .longVal)
         }
         if primitiveBooleanVal != false {
-            try container.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
+            try encodeContainer.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
         }
         if primitiveByteVal != 0 {
-            try container.encode(primitiveByteVal, forKey: .primitiveByteVal)
+            try encodeContainer.encode(primitiveByteVal, forKey: .primitiveByteVal)
         }
         if primitiveDoubleVal != 0.0 {
-            try container.encode(primitiveDoubleVal, forKey: .primitiveDoubleVal)
+            try encodeContainer.encode(primitiveDoubleVal, forKey: .primitiveDoubleVal)
         }
         if primitiveFloatVal != 0.0 {
-            try container.encode(primitiveFloatVal, forKey: .primitiveFloatVal)
+            try encodeContainer.encode(primitiveFloatVal, forKey: .primitiveFloatVal)
         }
         if primitiveIntVal != 0 {
-            try container.encode(primitiveIntVal, forKey: .primitiveIntVal)
+            try encodeContainer.encode(primitiveIntVal, forKey: .primitiveIntVal)
         }
         if primitiveLongVal != 0 {
-            try container.encode(primitiveLongVal, forKey: .primitiveLongVal)
+            try encodeContainer.encode(primitiveLongVal, forKey: .primitiveLongVal)
         }
         if primitiveShortVal != 0 {
-            try container.encode(primitiveShortVal, forKey: .primitiveShortVal)
+            try encodeContainer.encode(primitiveShortVal, forKey: .primitiveShortVal)
         }
         if let shortVal = shortVal {
-            try container.encode(shortVal, forKey: .shortVal)
+            try encodeContainer.encode(shortVal, forKey: .shortVal)
         }
         if let str = str {
-            try container.encode(str, forKey: .str)
+            try encodeContainer.encode(str, forKey: .str)
         }
     }
 }

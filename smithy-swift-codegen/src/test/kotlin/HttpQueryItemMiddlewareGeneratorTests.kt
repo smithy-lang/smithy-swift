@@ -27,21 +27,21 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
-                              next: H) -> Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
                     if let token = input.operationInput.token {
-                        let queryItem = URLQueryItem(name: "token", value: String(token))
-                        input.builder.withQueryItem(queryItem)
+                        let tokenQueryItem = URLQueryItem(name: "token", value: String(token))
+                        input.builder.withQueryItem(tokenQueryItem)
                     }
                     return next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
-                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillError>
+                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -61,15 +61,15 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Result<OperationOutput<TimestampInputOutput, TimestampInputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
                     if let queryTimestamp = input.operationInput.queryTimestamp {
-                        let queryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
-                        input.builder.withQueryItem(queryItem)
+                        let queryTimestampQueryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
+                        input.builder.withQueryItem(queryTimestampQueryItem)
                     }
                     if let queryTimestampList = input.operationInput.queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
@@ -81,7 +81,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputError>
+                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -101,21 +101,21 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Result<OperationOutput<SmokeTestOutput, SmokeTestError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
                 Self.Context == H.Context
                 {
                     if let query1 = input.operationInput.query1 {
-                        let queryItem = URLQueryItem(name: "Query1", value: String(query1))
-                        input.builder.withQueryItem(queryItem)
+                        let query1QueryItem = URLQueryItem(name: "Query1", value: String(query1))
+                        input.builder.withQueryItem(query1QueryItem)
                     }
                     return next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()

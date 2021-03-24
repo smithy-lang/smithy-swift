@@ -37,7 +37,8 @@ class AddOperationShapes {
             for (operation in operations) {
                 val operationId = operation.id
                 LOGGER.info("building unique input/output shapes for $operationId")
-
+                // TODO: MUST FIX BEFORE SHIPPING. check to see if new synthetic input or output shapes conflict with any other shapes
+                // in the model by walking the model and fail code generation
                 val inputShape = operation.input
                     .map { shapeId ->
                         cloneOperationShape(

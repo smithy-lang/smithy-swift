@@ -86,24 +86,24 @@ class StructDecodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
-                        var intListContainer = container.nestedUnkeyedContainer(forKey: .intList)
+                        var intListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .intList)
                         for intlist0 in intList {
                             try intListContainer.encode(intlist0)
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
                             try intMapContainer.encode(intmap0, forKey: Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = member1 {
-                        try container.encode(member1, forKey: .member1)
+                        try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
-                        var stringMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
+                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: Key.self, forKey: .stringMap)
                         for (dictKey0, nestedstringmap0) in stringMap {
                             try stringMapContainer.encode(nestedstringmap0, forKey: Key(stringValue: dictKey0))
                         }
@@ -416,12 +416,12 @@ extension NestedShapesOutputBody: Decodable {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let foo = foo {
-                        try container.encode(foo, forKey: .foo)
+                        try encodeContainer.encode(foo, forKey: .foo)
                     }
                     if let nested = nested {
-                        try container.encode(nested.value, forKey: .nested)
+                        try encodeContainer.encode(nested.value, forKey: .nested)
                     }
                 }
             
@@ -454,12 +454,12 @@ extension NestedShapesOutputBody: Decodable {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let bar = bar {
-                        try container.encode(bar, forKey: .bar)
+                        try encodeContainer.encode(bar, forKey: .bar)
                     }
                     if let recursiveMember = recursiveMember {
-                        try container.encode(recursiveMember, forKey: .recursiveMember)
+                        try encodeContainer.encode(recursiveMember, forKey: .recursiveMember)
                     }
                 }
             

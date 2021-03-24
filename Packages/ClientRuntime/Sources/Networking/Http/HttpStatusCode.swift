@@ -70,7 +70,7 @@ import Foundation
 /// - notExtended: Not Extended
 /// - networkAuthenticationRequired: Network Authentication Required
 /// - networkConnectTimeoutError: Network Connect Timeout Error
-public enum HttpStatusCode: Int {
+public enum HttpStatusCode: Int, Equatable {
     case `continue` = 100
     case switchingProtocols = 101
     case processing = 102

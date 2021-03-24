@@ -11,7 +11,7 @@ public protocol ServiceError {
     var _message: String? { get set }
 }
 
-public enum ErrorType {
+public enum ErrorType: Equatable {
     case server
     case client
     case unknown

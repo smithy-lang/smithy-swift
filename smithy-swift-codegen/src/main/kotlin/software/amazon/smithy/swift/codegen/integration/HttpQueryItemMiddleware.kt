@@ -4,10 +4,12 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
+import software.amazon.smithy.swift.codegen.isBoxed
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -42,32 +44,43 @@ class HttpQueryItemMiddleware(
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val bindingIndex = HttpBindingIndex.of(ctx.model)
+            val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
 
-            writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+            if (isBoxed) {
+                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                    if (memberTarget is CollectionShape) {
+                        renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                    } else {
+                        renderQueryItem(it.member, bindingIndex, memberName, paramName)
+                    }
+                }
+            } else {
+                memberName = "input.operationInput.$memberName"
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
-                    var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
-                        ctx,
-                        memberName,
-                        it.member,
-                        HttpBinding.Location.QUERY,
-                        bindingIndex,
-                        defaultTimestampFormat
-                    )
-                    if (requiresDoCatch) {
-                        renderDoCatch(memberName, paramName)
-                    } else {
-                        renderSingleQueryItem(memberName, paramName)
-                    }
+                    renderQueryItem(it.member, bindingIndex, memberName, paramName)
                 }
             }
         }
     }
 
-    private fun renderSingleQueryItem(memberName: String, paramName: String) {
-        writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($memberName))")
-        writer.write("input.builder.withQueryItem(queryItem)")
+    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String) {
+        var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
+            ctx,
+            originalMemberName,
+            member,
+            HttpBinding.Location.QUERY,
+            bindingIndex,
+            defaultTimestampFormat
+        )
+        if (requiresDoCatch) {
+            renderDoCatch(memberName, paramName)
+        } else {
+            val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
+            writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\", value: String($memberName))")
+            writer.write("input.builder.withQueryItem($queryItemName)")
+        }
     }
 
     private fun renderListOrSet(

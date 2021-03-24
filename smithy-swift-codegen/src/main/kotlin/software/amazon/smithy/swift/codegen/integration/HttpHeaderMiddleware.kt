@@ -4,6 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -36,45 +37,41 @@ class HttpHeaderMiddleware(
     private fun generateHeaders() {
 
         headerBindings.forEach {
-            val memberName = ctx.symbolProvider.toMemberName(it.member)
+            var memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
-
-            writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                if (memberTarget is CollectionShape) {
-                    var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                        ctx,
-                        "headerValue",
-                        memberTarget.member,
-                        HttpBinding.Location.HEADER,
-                        bindingIndex,
-                        defaultTimestampFormat
-                    )
-                    writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-
-                        if (requiresDoCatch) {
-                            renderDoCatch(headerValue, paramName)
-                        } else {
-                            writer.write("input.builder.withHeader(name: \"$paramName\", value: String($headerValue))")
+            val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
+            if (isBoxed) {
+                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                    if (memberTarget is CollectionShape) {
+                        writer.openBlock("$memberName.forEach { headerValue in ", "}") {
+                            renderHeader(memberTarget.member, "headerValue", paramName)
                         }
-                    }
-                } else {
-                    val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
-                        ctx,
-                        memberName,
-                        it.member,
-                        HttpBinding.Location.HEADER,
-                        bindingIndex,
-                        defaultTimestampFormat
-                    )
-
-                    if (requiresDoCatch) {
-                        renderDoCatch(memberNameWithExtension, paramName)
                     } else {
-                        writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+                        renderHeader(it.member, memberName, paramName)
                     }
                 }
+            } else {
+                memberName = "input.operationInput.$memberName"
+                renderHeader(it.member, memberName, paramName)
             }
+        }
+    }
+
+    private fun renderHeader(member: MemberShape, memberName: String, paramName: String) {
+        val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
+            ctx,
+            memberName,
+            member,
+            HttpBinding.Location.HEADER,
+            bindingIndex,
+            defaultTimestampFormat
+        )
+
+        if (requiresDoCatch) {
+            renderDoCatch(memberNameWithExtension, paramName)
+        } else {
+            writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
         }
     }
 

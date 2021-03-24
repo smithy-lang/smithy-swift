@@ -27,7 +27,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Result<OperationOutput<SmokeTestOutput, SmokeTestError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -43,7 +43,7 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -63,7 +63,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<EnumInputInput>,
-                              next: H) -> Result<OperationOutput<EnumInputOutput, EnumInputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<EnumInputOutput, EnumInputOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -76,7 +76,7 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<EnumInputInput>
-                public typealias MOutput = OperationOutput<EnumInputOutput, EnumInputError>
+                public typealias MOutput = OperationOutput<EnumInputOutput, EnumInputOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -100,7 +100,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
-                              next: H) -> Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -113,7 +113,7 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
-                public typealias MOutput = OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenError>
+                public typealias MOutput = OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()
@@ -134,7 +134,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Result<OperationOutput<TimestampInputOutput, TimestampInputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -150,7 +150,7 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputError>
+                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputOutputError>
                 public typealias Context = HttpContext
             }
             """.trimIndent()

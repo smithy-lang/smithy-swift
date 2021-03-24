@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct Headers {
+public struct Headers: Equatable {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -99,7 +99,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header {
+public struct Header: Equatable {
     public let name: String
     public let value: String
 
