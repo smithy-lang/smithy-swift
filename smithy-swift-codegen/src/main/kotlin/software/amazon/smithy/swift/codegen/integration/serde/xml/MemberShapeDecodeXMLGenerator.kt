@@ -133,16 +133,18 @@ abstract class MemberShapeDecodeXMLGenerator(
     private fun renderMapMemberItems(memberTarget: Shape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
         val itemInContainerName = "${memberTarget.type.name.toLowerCase()}Container$level"
 
+        val nestedBuffer = "nestedBuffer$level"
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        if (memberTarget is CollectionShape || memberTarget is MapShape) {
+            writer.write("var $nestedBuffer: $memberTargetSymbol? = nil")
+        }
+
         writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
             when (memberTarget) {
                 is CollectionShape -> {
                     throw Exception("renderMapMemberItems: nested collections in maps not supported")
                 }
                 is MapShape -> {
-                    val nestedBuffer = "nestedBuffer$level"
-                    val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-
-                    writer.write("var $nestedBuffer: $memberTargetSymbol? = nil")
                     renderMapEntry(memberTarget, itemInContainerName, nestedBuffer, level)
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
@@ -158,10 +160,10 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, memberBuffer: String, level: Int) {
         val entryContainerName = "${itemInContainerName}NestedEntry$level"
-        writer.openBlock("if let $entryContainerName = $itemInContainerName.value.entry  {", "}") {
-            val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-            writer.write("$memberBuffer = $memberTargetSymbol()")
 
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        writer.write("$memberBuffer = $memberTargetSymbol()")
+        writer.openBlock("if let $entryContainerName = $itemInContainerName.value.entry  {", "}") {
             val nestedMemberTarget = ctx.model.expectShape(memberTarget.value.target)
             renderMapMemberItems(nestedMemberTarget, entryContainerName, memberBuffer, level + 1)
         }

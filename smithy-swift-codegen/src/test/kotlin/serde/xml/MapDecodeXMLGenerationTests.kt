@@ -83,10 +83,10 @@ class MapDecodeXMLGenerationTests {
                     var myMapBuffer: [String:[String:GreetingStruct]]? = nil
                     if let myMapContainer = myMapContainer {
                         myMapBuffer = [String:[String:GreetingStruct]]()
+                        var nestedBuffer0: [String:GreetingStruct]? = nil
                         for mapContainer0 in myMapContainer {
-                            var nestedBuffer0: [String:GreetingStruct]? = nil
+                            nestedBuffer0 = [String:GreetingStruct]()
                             if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
-                                nestedBuffer0 = [String:GreetingStruct]()
                                 for structureContainer1 in mapContainer0NestedEntry0 {
                                     nestedBuffer0?[structureContainer1.key] = structureContainer1.value
                                 }
@@ -119,14 +119,14 @@ class MapDecodeXMLGenerationTests {
                     var myMapBuffer: [String:[String:[String:GreetingStruct]?]]? = nil
                     if let myMapContainer = myMapContainer {
                         myMapBuffer = [String:[String:[String:GreetingStruct]?]]()
+                        var nestedBuffer0: [String:[String:GreetingStruct]?]? = nil
                         for mapContainer0 in myMapContainer {
-                            var nestedBuffer0: [String:[String:GreetingStruct]?]? = nil
+                            nestedBuffer0 = [String:[String:GreetingStruct]?]()
                             if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
-                                nestedBuffer0 = [String:[String:GreetingStruct]?]()
+                                var nestedBuffer1: [String:GreetingStruct]? = nil
                                 for mapContainer1 in mapContainer0NestedEntry0 {
-                                    var nestedBuffer1: [String:GreetingStruct]? = nil
+                                    nestedBuffer1 = [String:GreetingStruct]()
                                     if let mapContainer1NestedEntry1 = mapContainer1.value.entry  {
-                                        nestedBuffer1 = [String:GreetingStruct]()
                                         for structureContainer2 in mapContainer1NestedEntry1 {
                                             nestedBuffer1?[structureContainer2.key] = structureContainer2.value
                                         }
