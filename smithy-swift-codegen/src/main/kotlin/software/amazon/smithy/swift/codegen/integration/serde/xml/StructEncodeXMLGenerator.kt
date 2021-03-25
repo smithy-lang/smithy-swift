@@ -43,7 +43,7 @@ class StructEncodeXMLGenerator(
                 renderListMember(member, memberTarget, containerName)
             }
             is MapShape -> {
-                throw Exception("MapShape is not supported yet")
+                renderMapMember(member, memberTarget, containerName)
             }
             is TimestampShape -> {
                 renderTimestampMember(member, memberTarget, containerName)

@@ -5,6 +5,7 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
@@ -95,6 +96,79 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
+    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
+        val memberTargetKey = ctx.symbolProvider.toSymbol(memberTarget.key)
+        val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
+        val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
+
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
+        val translatedMemberTargetValueType = mapShapeIdToSymbolForMaps(memberTarget.value.target)
+        var currContainerName = containerName
+        var currContainerKey = ".$memberNameUnquoted"
+        val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
+        if (!memberIsFlattened) {
+            val nextContainerName = "${memberNameUnquoted}WrappedContainer"
+            writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
+            currContainerKey = ".entry"
+            currContainerName = nextContainerName
+        } else {
+            throw Exception("flattened maps not officially supported yet")
+        }
+
+        val memberBuffer = "${memberNameUnquoted}Buffer"
+        val memberContainerName = "${memberNameUnquoted}Container"
+        val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
+        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([MapKeyValue<$memberTargetKey, $translatedMemberTargetValueType>].self, forKey: $currContainerKey)")
+
+        writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil",)
+        writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+            writer.write("$memberBuffer = $memberTargetSymbol()")
+            val memberTargetValueTarget = ctx.model.expectShape(memberTarget.value.target)
+            renderMapMemberItems(memberTargetValueTarget, memberContainerName, memberBuffer)
+        }
+        writer.write("$memberName = $memberBuffer")
+    }
+
+    private fun renderMapMemberItems(memberTarget: Shape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
+        val itemInContainerName = "${memberTarget.type.name.toLowerCase()}Container$level"
+
+        val nestedBuffer = "nestedBuffer$level"
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        if (memberTarget is CollectionShape || memberTarget is MapShape) {
+            writer.write("var $nestedBuffer: $memberTargetSymbol? = nil")
+        }
+
+        writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
+            when (memberTarget) {
+                is CollectionShape -> {
+                    throw Exception("renderMapMemberItems: nested collections in maps not supported")
+                }
+                is MapShape -> {
+                    renderMapEntry(memberTarget, itemInContainerName, nestedBuffer, level)
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
+                }
+                is TimestampShape -> {
+                    throw Exception("renderMapMemberItems: nested timestamps not supported")
+                }
+                else -> {
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
+                }
+            }
+        }
+    }
+
+    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, memberBuffer: String, level: Int) {
+        val entryContainerName = "${itemInContainerName}NestedEntry$level"
+
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        writer.write("$memberBuffer = $memberTargetSymbol()")
+        writer.openBlock("if let $entryContainerName = $itemInContainerName.value.entry  {", "}") {
+            val nestedMemberTarget = ctx.model.expectShape(memberTarget.value.target)
+            renderMapMemberItems(nestedMemberTarget, entryContainerName, memberBuffer, level + 1)
+        }
+    }
+
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
@@ -133,5 +207,23 @@ abstract class MemberShapeDecodeXMLGenerator(
             return Pair(symbol, updatedName)
         }
         return Pair(symbol, symbol.name)
+    }
+
+    private fun mapShapeIdToSymbolForMaps(targetShapeId: ShapeId): String {
+        val targetShape = ctx.model.expectShape(targetShapeId)
+        var mappedSymbol = when (targetShape) {
+            is MapShape -> {
+                val targetShapeKey = ctx.symbolProvider.toSymbol(targetShape.key)
+                val valueEvaluated = mapShapeIdToSymbolForMaps(targetShape.value.target)
+                "MapEntry<$targetShapeKey, $valueEvaluated>"
+            }
+            is CollectionShape -> {
+                throw Exception("nested CollectionShape not yet supported")
+            }
+            else -> {
+                "${ctx.symbolProvider.toSymbol(targetShape)}"
+            }
+        }
+        return mappedSymbol
     }
 }
