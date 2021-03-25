@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape
@@ -56,6 +57,9 @@ class HttpProtocolTestGenerator(
                         writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                         writer.addImport(SwiftDependency.XCTest.target)
+                        if (ctx.protocol == RestXmlTrait.ID) {
+                            writer.addImport(SwiftDependency.XMLCoder.target)
+                        }
 
                         requestTestBuilder
                             .writer(writer)
@@ -87,6 +91,9 @@ class HttpProtocolTestGenerator(
                         writer.addImport(ctx.settings.moduleName, true)
                         writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                         writer.addImport(SwiftDependency.XCTest.target)
+                        if (ctx.protocol == RestXmlTrait.ID) {
+                            writer.addImport(SwiftDependency.XMLCoder.target)
+                        }
 
                         responseTestBuilder
                             .writer(writer)
@@ -120,6 +127,9 @@ class HttpProtocolTestGenerator(
                             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                             writer.addImport(ctx.settings.moduleName, true)
                             writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                            if (ctx.protocol == RestXmlTrait.ID) {
+                                writer.addImport(SwiftDependency.XMLCoder.target)
+                            }
                             writer.addImport(SwiftDependency.XCTest.target)
 
                             errorTestBuilder

@@ -35,6 +35,9 @@ open class HttpProtocolCustomizable {
     ) {
         // Default implementation is no-op
     }
+    open fun renderCustomImports(writer: SwiftWriter) {
+        // Default implementation is no-op
+    }
 
     open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
         return emptyList()

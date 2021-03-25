@@ -17,6 +17,7 @@ enum class SwiftDependency(
     private val localPath: String,
     var packageName: String
 ) : SymbolDependencyContainer {
+    XMLCoder("XMLCoder", null, "0.12.0", "https://github.com/MaxDesiatov/XMLCoder", "", "XMLCoder"),
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
     CLIENT_RUNTIME(
         "ClientRuntime",
