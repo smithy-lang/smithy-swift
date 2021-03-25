@@ -189,10 +189,10 @@ class MapDecodeXMLGenerationTests {
                     var myMapBuffer: [String:[String:GreetingStruct]]? = nil
                     if let myMapContainer = myMapContainer {
                         myMapBuffer = [String:[String:GreetingStruct]]()
+                        var nestedBuffer0: [String:GreetingStruct]? = nil
                         for mapContainer0 in myMapContainer {
-                            var nestedBuffer0: [String:GreetingStruct]? = nil
+                            nestedBuffer0 = [String:GreetingStruct]()
                             if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
-                                nestedBuffer0 = [String:GreetingStruct]()
                                 for structureContainer1 in mapContainer0NestedEntry0 {
                                     nestedBuffer0?[structureContainer1.key] = structureContainer1.value
                                 }
