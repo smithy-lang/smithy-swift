@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-enum TimestampFormat {
+public enum TimestampFormat {
     case epochSeconds
     case dateTime
     case httpDate

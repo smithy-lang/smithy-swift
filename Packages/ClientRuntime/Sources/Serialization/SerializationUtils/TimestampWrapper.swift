@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TimestampWrapper: Encodable {
+public struct TimestampWrapper: Encodable {
     public let date: Date
     public let format: TimestampFormat
     
