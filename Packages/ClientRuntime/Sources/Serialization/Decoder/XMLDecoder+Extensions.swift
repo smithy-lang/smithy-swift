@@ -4,6 +4,7 @@
  */
 
 import Foundation
+import XMLCoder
 
 extension XMLDecoder: ResponseDecoder {
     public func decode<T>(responseBody: Data) throws -> T where T: Decodable {
