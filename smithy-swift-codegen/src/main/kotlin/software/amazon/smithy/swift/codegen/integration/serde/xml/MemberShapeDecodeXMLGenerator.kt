@@ -112,8 +112,6 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".entry"
             currContainerName = nextContainerName
-        } else {
-            throw Exception("flattened maps not officially supported yet")
         }
 
         val memberBuffer = "${memberNameUnquoted}Buffer"
