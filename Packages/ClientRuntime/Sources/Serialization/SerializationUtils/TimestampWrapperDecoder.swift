@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct TimestampWrapperDecoder {
-    static func parseDateStringValue(_ dateStringValue: String,
-                                     format: TimestampFormat,
-                                     codingPath: [CodingKey]? = nil) throws -> Date {
+public struct TimestampWrapperDecoder {
+    static public func parseDateStringValue(_ dateStringValue: String,
+                                            format: TimestampFormat,
+                                            codingPath: [CodingKey]? = nil) throws -> Date {
         let formatter: DateFormatter?
         switch format {
         case .epochSeconds:
@@ -20,7 +20,7 @@ struct TimestampWrapperDecoder {
         case .httpDate:
             formatter = DateFormatter.rfc5322DateFormatter
         }
-
+        
         guard let formattedDate = formatter!.date(from: dateStringValue) else {
             let context = DecodingError.Context(codingPath: codingPath ?? [],
                                                 debugDescription: "Unable to parse: \(dateStringValue) to format \(format)")
