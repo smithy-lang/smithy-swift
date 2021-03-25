@@ -4,5 +4,6 @@
  */
 
 import Foundation
+import XMLCoder
 
 extension XMLEncoder: RequestEncoder {}
