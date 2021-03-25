@@ -13,14 +13,16 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "AwsCrt", path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0")
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.12.0")
     ],
     targets: [
         .target(
             name: "ClientRuntime",
             dependencies: [
                 .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
-                .product(name: "Logging", package: "swift-log")
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "XMLCoder", package: "XMLCoder")
             ],
             path: "./ClientRuntime/Sources"
         ),
