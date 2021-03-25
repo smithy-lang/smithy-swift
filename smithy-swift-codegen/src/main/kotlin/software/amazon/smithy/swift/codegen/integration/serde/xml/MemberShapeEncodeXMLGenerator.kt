@@ -59,7 +59,41 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedMember = memberTarget.member
         val nestedMemberName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         writer.openBlock("for $nestedMemberName in $memberName {", "}") {
-            renderNestedMember(nestedMember, nestedMemberName, nestedMemberTarget, containerName, isKeyed, level)
+            when (nestedMemberTarget) {
+                is CollectionShape -> {
+                    renderNestedListEntryMember(nestedMemberName, nestedMemberTarget, containerName, isKeyed, level)
+                }
+                is MapShape -> {
+                    throw Exception("Maps not supported yet")
+                }
+                is TimestampShape -> {
+                    val forKey = if (isKeyed) ", forKey: .member" else ""
+                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                    val encodeValue = "TimestampWrapper($nestedMemberName, format: .$format)$forKey"
+                    writer.write("try $containerName.encode($encodeValue)")
+                }
+                else -> {
+                    val forKey = if (isKeyed) ", forKey: .member" else ""
+                    writer.write("try $containerName.encode($nestedMemberName$forKey)")
+                }
+            }
+        }
+    }
+
+    private fun renderNestedListEntryMember(memberName: String, memberTarget: CollectionShape, containerName: String, isKeyed: Boolean, level: Int) {
+        var nestedContainerName = "${memberName}Container$level"
+        val isBoxed = ctx.symbolProvider.toSymbol(memberTarget).isBoxed()
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                if (isKeyed) {
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)")
+                } else {
+                    val containerForUnkeyed = "${memberName}ContainerForUnkeyed$level"
+                    writer.write("var $containerForUnkeyed = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)")
+                    writer.write("var $nestedContainerName = $containerForUnkeyed.nestedUnkeyedContainer(forKey: .member)")
+                }
+                renderListMemberItems(memberName, memberTarget, nestedContainerName, isKeyed, level + 1)
+            }
         }
     }
 
@@ -125,47 +159,6 @@ abstract class MemberShapeEncodeXMLGenerator(
             val nextContainer = "nestedMapEntryContainer${level + 1}"
             writer.write("var $nextContainer = $nestedContainer.nestedContainer(keyedBy: MapEntry<$keyTargetShapeSymbol, $valueTargetShapeSymbol>.CodingKeys.self, forKey: .value)")
             renderMapMemberItem(valueName, mapShape, nextContainer, true, level + 1)
-        }
-    }
-
-    fun renderNestedMember(
-        nestedMember: MemberShape,
-        nestedMemberName: String,
-        nestedMemberTarget: Shape,
-        containerName: String,
-        isKeyed: Boolean,
-        level: Int = 0
-    ) {
-        when (nestedMemberTarget) {
-            is CollectionShape -> {
-                var nestedContainerName = "${nestedMemberName}Container$level"
-                val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
-                if (isBoxed) {
-                    writer.openBlock("if let $nestedMemberName = $nestedMemberName {", "}") {
-                        if (isKeyed) {
-                            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)")
-                        } else {
-                            val containerForUnkeyed = "${nestedMemberName}ContainerForUnkeyed$level"
-                            writer.write("var $containerForUnkeyed = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)")
-                            writer.write("var $nestedContainerName = $containerForUnkeyed.nestedUnkeyedContainer(forKey: .member)")
-                        }
-                        renderListMemberItems(nestedMemberName, nestedMemberTarget, nestedContainerName, isKeyed, level + 1)
-                    }
-                }
-            }
-            is MapShape -> {
-                throw Exception("Maps not supported yet")
-            }
-            is TimestampShape -> {
-                val forKey = if (isKeyed) ", forKey: .member" else ""
-                val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
-                val encodeValue = "TimestampWrapper($nestedMemberName, format: .$format)$forKey"
-                writer.write("try $containerName.encode($encodeValue)")
-            }
-            else -> {
-                val forKey = if (isKeyed) ", forKey: .member" else ""
-                writer.write("try $containerName.encode($nestedMemberName$forKey)")
-            }
         }
     }
 
