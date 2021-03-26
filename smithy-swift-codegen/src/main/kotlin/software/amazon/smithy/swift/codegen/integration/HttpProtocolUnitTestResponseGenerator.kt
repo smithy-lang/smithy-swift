@@ -78,8 +78,11 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 responseDecoder = when (bodyMediaType.toLowerCase()) {
                     "application/json" -> "JSONDecoder()"
                     "application/xml" -> "XMLDecoder()"
+                    // TODO: Remove this once we upgrade our version of smithy
+                    // https://github.com/awslabs/smithy/blob/3488bf6e742d6a56443267f5697bcecffff6064b/smithy-aws-protocol-tests/model/restXml/http-query.smithy#L268
+                    "xml" -> "XMLDecoder()"
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
-                    else -> "JSONDecoder"
+                    else -> "bodyMediaType: \"${bodyMediaType}\" is not supported"
                 }
             }
         }
