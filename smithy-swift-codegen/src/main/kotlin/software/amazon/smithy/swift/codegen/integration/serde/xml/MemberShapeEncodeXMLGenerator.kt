@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
@@ -83,17 +84,25 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderNestedListEntryMember(memberName: String, memberTarget: CollectionShape, containerName: String, isKeyed: Boolean, level: Int) {
         var nestedContainerName = "${memberName}Container$level"
         val isBoxed = ctx.symbolProvider.toSymbol(memberTarget).isBoxed()
-        if (isBoxed) {
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                if (isKeyed) {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)")
-                } else {
-                    val containerForUnkeyed = "${memberName}ContainerForUnkeyed$level"
-                    writer.write("var $containerForUnkeyed = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)")
-                    writer.write("var $nestedContainerName = $containerForUnkeyed.nestedUnkeyedContainer(forKey: .member)")
-                }
-                renderListMemberItems(memberName, memberTarget, nestedContainerName, isKeyed, level + 1)
+
+        fun nestedRenderNestedListEntryMember() {
+            if (isKeyed) {
+                writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)")
+            } else {
+                val containerForUnkeyed = "${memberName}ContainerForUnkeyed$level"
+                writer.write("var $containerForUnkeyed = $containerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)")
+                writer.write("var $nestedContainerName = $containerForUnkeyed.nestedUnkeyedContainer(forKey: .member)")
             }
+            renderListMemberItems(memberName, memberTarget, nestedContainerName, isKeyed, level + 1)
+        }
+
+        val isSetShape = memberTarget is SetShape
+        if (isBoxed && !isSetShape) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                nestedRenderNestedListEntryMember()
+            }
+        } else {
+            nestedRenderNestedListEntryMember()
         }
     }
 
