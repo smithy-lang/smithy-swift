@@ -93,6 +93,9 @@ abstract class MemberShapeDecodeXMLGenerator(
     private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, level: Int) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+
+        // TODO: We believe this is a workaround for nested sets:
+        // https://github.com/awslabs/smithy/issues/752
         val isSetShape = memberTarget is SetShape
 
         if (nestedMemberTargetIsBoxed && !isSetShape) {
