@@ -23,10 +23,10 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myMap = myMap {
                         var myMapContainer = container.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .myMap)
-                        for (string0, greetingstruct0) in myMap {
+                        for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                            try entry.encode(string0, forKey: .key)
-                            try entry.encode(greetingstruct0, forKey: .value)
+                            try entry.encode(stringKey0, forKey: .key)
+                            try entry.encode(greetingstructValue0, forKey: .value)
                         }
                     }
                 }
@@ -50,10 +50,10 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let `protocol` = `protocol` {
                         var protocolContainer = container.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .protocol)
-                        for (string0, greetingstruct0) in `protocol` {
+                        for (stringKey0, greetingstructValue0) in `protocol` {
                             var entry = protocolContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                            try entry.encode(string0, forKey: .key)
-                            try entry.encode(greetingstruct0, forKey: .value)
+                            try entry.encode(stringKey0, forKey: .key)
+                            try entry.encode(greetingstructValue0, forKey: .value)
                         }
                     }
                 }
@@ -77,15 +77,15 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myMap = myMap {
                         var myMapContainer = container.nestedContainer(keyedBy: MapEntry<String, [String:GreetingStruct]>.CodingKeys.self, forKey: .myMap)
-                        for (string0, xmlmapsnestednestedinputoutputmap0) in myMap {
+                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                            if let xmlmapsnestednestedinputoutputmap0 = xmlmapsnestednestedinputoutputmap0 {
-                                try nestedMapEntryContainer0.encode(string0, forKey: .key)
+                            if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
+                                try nestedMapEntryContainer0.encode(stringKey0, forKey: .key)
                                 var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .value)
-                                for (string1, greetingstruct1) in xmlmapsnestednestedinputoutputmap0 {
+                                for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
                                     var entry = nestedMapEntryContainer1.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                                    try entry.encode(string1, forKey: .key)
-                                    try entry.encode(greetingstruct1, forKey: .value)
+                                    try entry.encode(stringKey1, forKey: .key)
+                                    try entry.encode(greetingstructValue1, forKey: .value)
                                 }
                             }
                         }
@@ -111,20 +111,20 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myMap = myMap {
                         var myMapContainer = container.nestedContainer(keyedBy: MapEntry<String, [String:[String:GreetingStruct]?]>.CodingKeys.self, forKey: .myMap)
-                        for (string0, xmlmapsnestednestedinputoutputmap0) in myMap {
+                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, [String:GreetingStruct]>.CodingKeys.self, forKey: .entry)
-                            if let xmlmapsnestednestedinputoutputmap0 = xmlmapsnestednestedinputoutputmap0 {
-                                try nestedMapEntryContainer0.encode(string0, forKey: .key)
+                            if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
+                                try nestedMapEntryContainer0.encode(stringKey0, forKey: .key)
                                 var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: MapEntry<String, [String:GreetingStruct]>.CodingKeys.self, forKey: .value)
-                                for (string1, xmlmapsnestednestednestedinputoutputmap1) in xmlmapsnestednestedinputoutputmap0 {
+                                for (stringKey1, xmlmapsnestednestednestedinputoutputmapValue1) in xmlmapsnestednestedinputoutputmapValue0 {
                                     var nestedMapEntryContainer1 = nestedMapEntryContainer1.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                                    if let xmlmapsnestednestednestedinputoutputmap1 = xmlmapsnestednestednestedinputoutputmap1 {
-                                        try nestedMapEntryContainer1.encode(string1, forKey: .key)
+                                    if let xmlmapsnestednestednestedinputoutputmapValue1 = xmlmapsnestednestednestedinputoutputmapValue1 {
+                                        try nestedMapEntryContainer1.encode(stringKey1, forKey: .key)
                                         var nestedMapEntryContainer2 = nestedMapEntryContainer1.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .value)
-                                        for (string2, greetingstruct2) in xmlmapsnestednestednestedinputoutputmap1 {
+                                        for (stringKey2, greetingstructValue2) in xmlmapsnestednestednestedinputoutputmapValue1 {
                                             var entry = nestedMapEntryContainer2.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                                            try entry.encode(string2, forKey: .key)
-                                            try entry.encode(greetingstruct2, forKey: .value)
+                                            try entry.encode(stringKey2, forKey: .key)
+                                            try entry.encode(greetingstructValue2, forKey: .value)
                                         }
                                     }
                                 }
@@ -152,10 +152,10 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myMap = myMap {
                         var myMapContainer = container.nestedUnkeyedContainer(forKey: .myMap)
-                        for (string0, greetingstruct0) in myMap {
+                        for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self)
-                            try entry.encode(string0, forKey: .key)
-                            try entry.encode(greetingstruct0, forKey: .value)
+                            try entry.encode(stringKey0, forKey: .key)
+                            try entry.encode(greetingstructValue0, forKey: .value)
                         }
                     }
                 }
@@ -179,15 +179,15 @@ class MapEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myMap = myMap {
                         var myMapContainer = container.nestedUnkeyedContainer(forKey: .myMap)
-                        for (string0, xmlmapsnestednestedinputoutputmap0) in myMap {
+                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self)
-                            if let xmlmapsnestednestedinputoutputmap0 = xmlmapsnestednestedinputoutputmap0 {
-                                try nestedMapEntryContainer0.encode(string0, forKey: .key)
+                            if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
+                                try nestedMapEntryContainer0.encode(stringKey0, forKey: .key)
                                 var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: MapEntry<String, GreetingStruct>.CodingKeys.self, forKey: .value)
-                                for (string1, greetingstruct1) in xmlmapsnestednestedinputoutputmap0 {
+                                for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
                                     var entry = nestedMapEntryContainer1.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct>.CodingKeys.self, forKey: .entry)
-                                    try entry.encode(string1, forKey: .key)
-                                    try entry.encode(greetingstruct1, forKey: .value)
+                                    try entry.encode(stringKey1, forKey: .key)
+                                    try entry.encode(greetingstructValue1, forKey: .value)
                                 }
                             }
                         }

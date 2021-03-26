@@ -125,8 +125,8 @@ abstract class MemberShapeEncodeXMLGenerator(
         val keyTargetShapeSymbol = ctx.symbolProvider.toSymbol(keyTargetShape)
         val valueTargetShapeSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
 
-        val nestedKeyName = "${keyTargetShape.id.name.toLowerCase()}$level"
-        val nestedValueName = "${valueTargetShape.id.name.toLowerCase()}$level"
+        val nestedKeyName = "${keyTargetShape.id.name.toLowerCase()}Key$level"
+        val nestedValueName = "${valueTargetShape.id.name.toLowerCase()}Value$level"
         writer.openBlock("for ($nestedKeyName, $nestedValueName) in $memberName {", "}") {
             when (valueTargetShape) {
                 is MapShape -> {
