@@ -42,22 +42,30 @@ class BlobDecodeXMLGenerationTests {
         
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let nestedBlobListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedBlobList)
-                let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]?].self, forKey: .member)
-                var nestedBlobListBuffer:[[Data]?]? = nil
-                if let nestedBlobListContainer = nestedBlobListContainer {
-                    nestedBlobListBuffer = [[Data]?]()
-                    for listContainer0 in nestedBlobListContainer {
-                        var listBuffer0 = [Data]()
-                        if let listContainer0 = listContainer0 {
-                            for blobContainer1 in listContainer0 {
-                                listBuffer0.append(blobContainer1)
+                if containerValues.contains(.nestedBlobList) {
+                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedBlobList)
+                    if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
+                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]?].self, forKey: .member)
+                        var nestedBlobListBuffer:[[Data]?]? = nil
+                        if let nestedBlobListContainer = nestedBlobListContainer {
+                            nestedBlobListBuffer = [[Data]?]()
+                            for listContainer0 in nestedBlobListContainer {
+                                var listBuffer0 = [Data]()
+                                if let listContainer0 = listContainer0 {
+                                    for blobContainer1 in listContainer0 {
+                                        listBuffer0.append(blobContainer1)
+                                    }
+                                }
+                                nestedBlobListBuffer?.append(listBuffer0)
                             }
                         }
-                        nestedBlobListBuffer?.append(listBuffer0)
+                        nestedBlobList = nestedBlobListBuffer
+                    } else {
+                        nestedBlobList = []
                     }
+                } else {
+                    nestedBlobList = nil
                 }
-                nestedBlobList = nestedBlobListBuffer
             }
         }
         """.trimIndent()

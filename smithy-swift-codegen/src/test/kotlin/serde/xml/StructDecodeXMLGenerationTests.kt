@@ -14,25 +14,33 @@ class StructDecodeXMLGenerationTests {
 
         val contents = getFileContents(context.manifest, "/example/models/XmlWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
-            extension XmlWrappedListOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
-                    case myGroceryList
-                }
-            
-                public init (from decoder: Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let myGroceryListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
-                    let myGroceryListContainer = try myGroceryListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
-                    var myGroceryListBuffer:[String]? = nil
-                    if let myGroceryListContainer = myGroceryListContainer {
-                        myGroceryListBuffer = [String]()
-                        for stringContainer0 in myGroceryListContainer {
-                            myGroceryListBuffer?.append(stringContainer0)
+        extension XmlWrappedListOutputBody: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case myGroceryList
+            }
+        
+            public init (from decoder: Decoder) throws {
+                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                if containerValues.contains(.myGroceryList) {
+                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
+                    if let myGroceryListWrappedContainer = myGroceryListWrappedContainer {
+                        let myGroceryListContainer = try myGroceryListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
+                        var myGroceryListBuffer:[String]? = nil
+                        if let myGroceryListContainer = myGroceryListContainer {
+                            myGroceryListBuffer = [String]()
+                            for stringContainer0 in myGroceryListContainer {
+                                myGroceryListBuffer?.append(stringContainer0)
+                            }
                         }
+                        myGroceryList = myGroceryListBuffer
+                    } else {
+                        myGroceryList = []
                     }
-                    myGroceryList = myGroceryListBuffer
+                } else {
+                    myGroceryList = nil
                 }
             }
+        }
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)
@@ -44,13 +52,14 @@ class StructDecodeXMLGenerationTests {
 
         val contents = getFileContents(context.manifest, "/example/models/XmlFlattenedListOutputBody+Decodable.swift")
         val expectedContents = """
-            extension XmlFlattenedListOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
-                    case myGroceryList
-                }
-
-                public init (from decoder: Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        extension XmlFlattenedListOutputBody: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case myGroceryList
+            }
+        
+            public init (from decoder: Decoder) throws {
+                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                if containerValues.contains(.myGroceryList) {
                     let myGroceryListContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
                     var myGroceryListBuffer:[String]? = nil
                     if let myGroceryListContainer = myGroceryListContainer {
@@ -60,8 +69,11 @@ class StructDecodeXMLGenerationTests {
                         }
                     }
                     myGroceryList = myGroceryListBuffer
+                } else {
+                    myGroceryList = nil
                 }
             }
+        }
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)
@@ -118,37 +130,45 @@ class StructDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-nestednested-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
-            extension XmlNestedNestedWrappedListOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
-                    case nestedNestedStringList
-                }
-            
-                public init (from decoder: Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedNestedStringList)
-                    let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]?]?].self, forKey: .member)
-                    var nestedNestedStringListBuffer:[[[String]?]?]? = nil
-                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListBuffer = [[[String]?]?]()
-                        for listContainer0 in nestedNestedStringListContainer {
-                            var listBuffer0 = [[String]?]()
-                            if let listContainer0 = listContainer0 {
-                                for listContainer1 in listContainer0 {
-                                    var listBuffer1 = [String]()
-                                    if let listContainer1 = listContainer1 {
-                                        for stringContainer2 in listContainer1 {
-                                            listBuffer1.append(stringContainer2)
+        extension XmlNestedNestedWrappedListOutputBody: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case nestedNestedStringList
+            }
+        
+            public init (from decoder: Decoder) throws {
+                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                if containerValues.contains(.nestedNestedStringList) {
+                    let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedNestedStringList)
+                    if let nestedNestedStringListWrappedContainer = nestedNestedStringListWrappedContainer {
+                        let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]?]?].self, forKey: .member)
+                        var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                        if let nestedNestedStringListContainer = nestedNestedStringListContainer {
+                            nestedNestedStringListBuffer = [[[String]?]?]()
+                            for listContainer0 in nestedNestedStringListContainer {
+                                var listBuffer0 = [[String]?]()
+                                if let listContainer0 = listContainer0 {
+                                    for listContainer1 in listContainer0 {
+                                        var listBuffer1 = [String]()
+                                        if let listContainer1 = listContainer1 {
+                                            for stringContainer2 in listContainer1 {
+                                                listBuffer1.append(stringContainer2)
+                                            }
                                         }
+                                        listBuffer0.append(listBuffer1)
                                     }
-                                    listBuffer0.append(listBuffer1)
                                 }
+                                nestedNestedStringListBuffer?.append(listBuffer0)
                             }
-                            nestedNestedStringListBuffer?.append(listBuffer0)
                         }
+                        nestedNestedStringList = nestedNestedStringListBuffer
+                    } else {
+                        nestedNestedStringList = []
                     }
-                    nestedNestedStringList = nestedNestedStringListBuffer
+                } else {
+                    nestedNestedStringList = nil
                 }
             }
+        }
         """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -166,27 +186,31 @@ class StructDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
-                    var nestedNestedStringListBuffer:[[[String]?]?]? = nil
-                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListBuffer = [[[String]?]?]()
-                        for listContainer0 in nestedNestedStringListContainer {
-                            var listBuffer0 = [[String]?]()
-                            if let listContainer0 = listContainer0 {
-                                for listContainer1 in listContainer0 {
-                                    var listBuffer1 = [String]()
-                                    if let listContainer1 = listContainer1 {
-                                        for stringContainer2 in listContainer1 {
-                                            listBuffer1.append(stringContainer2)
+                    if containerValues.contains(.nestedNestedStringList) {
+                        let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
+                        var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                        if let nestedNestedStringListContainer = nestedNestedStringListContainer {
+                            nestedNestedStringListBuffer = [[[String]?]?]()
+                            for listContainer0 in nestedNestedStringListContainer {
+                                var listBuffer0 = [[String]?]()
+                                if let listContainer0 = listContainer0 {
+                                    for listContainer1 in listContainer0 {
+                                        var listBuffer1 = [String]()
+                                        if let listContainer1 = listContainer1 {
+                                            for stringContainer2 in listContainer1 {
+                                                listBuffer1.append(stringContainer2)
+                                            }
                                         }
+                                        listBuffer0.append(listBuffer1)
                                     }
-                                    listBuffer0.append(listBuffer1)
                                 }
+                                nestedNestedStringListBuffer?.append(listBuffer0)
                             }
-                            nestedNestedStringListBuffer?.append(listBuffer0)
                         }
+                        nestedNestedStringList = nestedNestedStringListBuffer
+                    } else {
+                        nestedNestedStringList = nil
                     }
-                    nestedNestedStringList = nestedNestedStringListBuffer
                 }
             }
             """.trimIndent()

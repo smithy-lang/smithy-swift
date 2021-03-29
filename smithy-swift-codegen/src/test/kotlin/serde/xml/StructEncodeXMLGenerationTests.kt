@@ -233,46 +233,26 @@ class StructEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let booleanList = booleanList {
                         var booleanListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .booleanList)
-                        if booleanList.isEmpty {
-                            var emptyContainer = booleanListContainer.nestedUnkeyedContainer(forKey: .empty)
-                            try emptyContainer.encode("")
-                        } else {
-                            for primitiveboolean0 in booleanList {
-                                try booleanListContainer.encode(primitiveboolean0, forKey: .member)
-                            }
+                        for primitiveboolean0 in booleanList {
+                            try booleanListContainer.encode(primitiveboolean0, forKey: .member)
                         }
                     }
                     if let integerList = integerList {
                         var integerListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .integerList)
-                        if integerList.isEmpty {
-                            var emptyContainer = integerListContainer.nestedUnkeyedContainer(forKey: .empty)
-                            try emptyContainer.encode("")
-                        } else {
-                            for integer0 in integerList {
-                                try integerListContainer.encode(integer0, forKey: .member)
-                            }
+                        for integer0 in integerList {
+                            try integerListContainer.encode(integer0, forKey: .member)
                         }
                     }
                     if let stringList = stringList {
                         var stringListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringList)
-                        if stringList.isEmpty {
-                            var emptyContainer = stringListContainer.nestedUnkeyedContainer(forKey: .empty)
-                            try emptyContainer.encode("")
-                        } else {
-                            for string0 in stringList {
-                                try stringListContainer.encode(string0, forKey: .member)
-                            }
+                        for string0 in stringList {
+                            try stringListContainer.encode(string0, forKey: .member)
                         }
                     }
                     if let stringSet = stringSet {
                         var stringSetContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringSet)
-                        if stringSet.isEmpty {
-                            var emptyContainer = stringSetContainer.nestedUnkeyedContainer(forKey: .empty)
-                            try emptyContainer.encode("")
-                        } else {
-                            for string0 in stringSet {
-                                try stringSetContainer.encode(string0, forKey: .member)
-                            }
+                        for string0 in stringSet {
+                            try stringSetContainer.encode(string0, forKey: .member)
                         }
                     }
                 }

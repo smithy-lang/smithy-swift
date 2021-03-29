@@ -42,22 +42,30 @@ class RecursiveShapesDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedRecursiveListWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedRecursiveList)
-                    let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RecursiveShapesInputOutputNested1]?].self, forKey: .member)
-                    var nestedRecursiveListBuffer:[[RecursiveShapesInputOutputNested1]?]? = nil
-                    if let nestedRecursiveListContainer = nestedRecursiveListContainer {
-                        nestedRecursiveListBuffer = [[RecursiveShapesInputOutputNested1]?]()
-                        for listContainer0 in nestedRecursiveListContainer {
-                            var listBuffer0 = [RecursiveShapesInputOutputNested1]()
-                            if let listContainer0 = listContainer0 {
-                                for structureContainer1 in listContainer0 {
-                                    listBuffer0.append(structureContainer1)
+                    if containerValues.contains(.nestedRecursiveList) {
+                        let nestedRecursiveListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedRecursiveList)
+                        if let nestedRecursiveListWrappedContainer = nestedRecursiveListWrappedContainer {
+                            let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RecursiveShapesInputOutputNested1]?].self, forKey: .member)
+                            var nestedRecursiveListBuffer:[[RecursiveShapesInputOutputNested1]?]? = nil
+                            if let nestedRecursiveListContainer = nestedRecursiveListContainer {
+                                nestedRecursiveListBuffer = [[RecursiveShapesInputOutputNested1]?]()
+                                for listContainer0 in nestedRecursiveListContainer {
+                                    var listBuffer0 = [RecursiveShapesInputOutputNested1]()
+                                    if let listContainer0 = listContainer0 {
+                                        for structureContainer1 in listContainer0 {
+                                            listBuffer0.append(structureContainer1)
+                                        }
+                                    }
+                                    nestedRecursiveListBuffer?.append(listBuffer0)
                                 }
                             }
-                            nestedRecursiveListBuffer?.append(listBuffer0)
+                            nestedRecursiveList = nestedRecursiveListBuffer
+                        } else {
+                            nestedRecursiveList = []
                         }
+                    } else {
+                        nestedRecursiveList = nil
                     }
-                    nestedRecursiveList = nestedRecursiveListBuffer
                 }
             }
             """.trimIndent()
