@@ -134,11 +134,15 @@ abstract class MemberShapeDecodeXMLGenerator(
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
+        writer.write("if $containerName.contains(.$memberName) {")
+        writer.indent()
         if (!memberIsFlattened) {
             val nextContainerName = "${memberNameUnquoted}WrappedContainer"
-            writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".entry"
             currContainerName = nextContainerName
+            writer.write("if let $currContainerName = $currContainerName {")
+            writer.indent()
         }
 
         val memberBuffer = "${memberNameUnquoted}Buffer"
@@ -153,6 +157,15 @@ abstract class MemberShapeDecodeXMLGenerator(
             renderMapMemberItems(memberTargetValueTarget, memberContainerName, memberBuffer)
         }
         writer.write("$memberName = $memberBuffer")
+        if (!memberIsFlattened) {
+            writer.dedent()
+            writer.write("} else {")
+            writer.indent().write("$memberName = [:]")
+            writer.dedent().write("}")
+        }
+        writer.dedent().write("} else {")
+        writer.indent().write("$memberName = nil")
+        writer.dedent().write("}")
     }
 
     private fun renderMapMemberItems(memberTarget: Shape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
