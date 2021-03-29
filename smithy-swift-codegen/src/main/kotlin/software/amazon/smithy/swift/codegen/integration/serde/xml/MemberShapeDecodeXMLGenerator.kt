@@ -34,7 +34,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
-        writer.write("if ${containerName}.contains(.${memberName}) {")
+        writer.write("if $containerName.contains(.$memberName) {")
         writer.indent()
         if (!memberIsFlattened) {
             val nextContainerName = "${memberName}WrappedContainer"
@@ -44,7 +44,6 @@ abstract class MemberShapeDecodeXMLGenerator(
 
             writer.write("if let $currContainerName = $currContainerName {")
             writer.indent()
-
         }
 
         val memberBuffer = "${memberName}Buffer"
@@ -61,12 +60,12 @@ abstract class MemberShapeDecodeXMLGenerator(
         if (!memberIsFlattened) {
             writer.dedent()
             writer.write("} else {")
-            writer.indent().write("${memberName} = []")
+            writer.indent().write("$memberName = []")
             writer.dedent().write("}")
         }
 
         writer.dedent().write("} else {")
-        writer.indent().write("${memberName} = nil")
+        writer.indent().write("$memberName = nil")
         writer.dedent().write("}")
     }
 

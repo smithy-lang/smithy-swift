@@ -282,7 +282,8 @@ class StructDecodeXMLGenerationTests {
                         booleanList = nil
                     }
                 }
-            }""".trimIndent()
+            }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

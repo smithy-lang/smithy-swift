@@ -276,7 +276,8 @@ class StructEncodeXMLGenerationTests {
                         }
                     }
                 }
-            }""".trimIndent()
+            }
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
