@@ -34,11 +34,16 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
+        writer.write("if $containerName.contains(.$memberName) {")
+        writer.indent()
         if (!memberIsFlattened) {
             val nextContainerName = "${memberName}WrappedContainer"
-            writer.write("let $nextContainerName = try $currContainerName.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: $currContainerKey)")
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".member"
             currContainerName = nextContainerName
+
+            writer.write("if let $currContainerName = $currContainerName {")
+            writer.indent()
         }
 
         val memberBuffer = "${memberName}Buffer"
@@ -52,6 +57,16 @@ abstract class MemberShapeDecodeXMLGenerator(
             renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
         }
         writer.write("$memberName = $memberBuffer")
+        if (!memberIsFlattened) {
+            writer.dedent()
+            writer.write("} else {")
+            writer.indent().write("$memberName = []")
+            writer.dedent().write("}")
+        }
+
+        writer.dedent().write("} else {")
+        writer.indent().write("$memberName = nil")
+        writer.dedent().write("}")
     }
 
     private fun renderListMemberItems(memberTarget: CollectionShape, memberContainerName: String, memberBuffer: String, level: Int = 0) {

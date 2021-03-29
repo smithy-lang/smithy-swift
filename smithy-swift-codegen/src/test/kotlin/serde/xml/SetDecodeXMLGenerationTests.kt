@@ -14,10 +14,6 @@ class SetDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumSetOutputBody+Decodable.swift")
         val expectedContents =
             """
-            struct XmlEnumSetOutputBody: Equatable {
-                public let fooEnumSet: Set<FooEnum>?
-            }
-            
             extension XmlEnumSetOutputBody: Decodable {
                 private enum CodingKeys: String, CodingKey {
                     case fooEnumSet
@@ -25,16 +21,24 @@ class SetDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooEnumSetWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
-                    let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
-                    var fooEnumSetBuffer:Set<FooEnum>? = nil
-                    if let fooEnumSetContainer = fooEnumSetContainer {
-                        fooEnumSetBuffer = Set<FooEnum>()
-                        for stringContainer0 in fooEnumSetContainer {
-                            fooEnumSetBuffer?.insert(stringContainer0)
+                    if containerValues.contains(.fooEnumSet) {
+                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
+                        if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
+                            var fooEnumSetBuffer:Set<FooEnum>? = nil
+                            if let fooEnumSetContainer = fooEnumSetContainer {
+                                fooEnumSetBuffer = Set<FooEnum>()
+                                for stringContainer0 in fooEnumSetContainer {
+                                    fooEnumSetBuffer?.insert(stringContainer0)
+                                }
+                            }
+                            fooEnumSet = fooEnumSetBuffer
+                        } else {
+                            fooEnumSet = []
                         }
+                    } else {
+                        fooEnumSet = nil
                     }
-                    fooEnumSet = fooEnumSetBuffer
                 }
             }
             """.trimIndent()
@@ -55,20 +59,28 @@ class SetDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooEnumSetWrappedContainer = try containerValues.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
-                    let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
-                    var fooEnumSetBuffer:Set<Set<FooEnum>>? = nil
-                    if let fooEnumSetContainer = fooEnumSetContainer {
-                        fooEnumSetBuffer = Set<Set<FooEnum>>()
-                        for setContainer0 in fooEnumSetContainer {
-                            var setBuffer0 = Set<FooEnum>()
-                            for stringContainer1 in setContainer0 {
-                                setBuffer0.insert(stringContainer1)
+                    if containerValues.contains(.fooEnumSet) {
+                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
+                        if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
+                            var fooEnumSetBuffer:Set<Set<FooEnum>>? = nil
+                            if let fooEnumSetContainer = fooEnumSetContainer {
+                                fooEnumSetBuffer = Set<Set<FooEnum>>()
+                                for setContainer0 in fooEnumSetContainer {
+                                    var setBuffer0 = Set<FooEnum>()
+                                    for stringContainer1 in setContainer0 {
+                                        setBuffer0.insert(stringContainer1)
+                                    }
+                                    fooEnumSetBuffer?.insert(setBuffer0)
+                                }
                             }
-                            fooEnumSetBuffer?.insert(setBuffer0)
+                            fooEnumSet = fooEnumSetBuffer
+                        } else {
+                            fooEnumSet = []
                         }
+                    } else {
+                        fooEnumSet = nil
                     }
-                    fooEnumSet = fooEnumSetBuffer
                 }
             }
             """.trimIndent()
