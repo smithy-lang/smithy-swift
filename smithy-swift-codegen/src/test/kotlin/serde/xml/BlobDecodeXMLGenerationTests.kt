@@ -21,8 +21,16 @@ class BlobDecodeXMLGenerationTests {
         
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let dataDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .data)
-                data = dataDecoded
+                if containerValues.contains(.data) {
+                    do {
+                        let dataDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .data)
+                        data = dataDecoded
+                    } catch {
+                        data = "".data(using: .utf8)
+                    }
+                } else {
+                    data = nil
+                }
             }
         }
         """.trimIndent()

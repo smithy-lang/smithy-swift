@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
@@ -209,15 +210,36 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.write("$memberName = $memberBuffer")
     }
 
+    fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
+        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        if (member.hasTrait(SwiftBoxTrait::class.java)) {
+            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
+        }
+        val decodedMemberName = "${memberName}Decoded"
+        writer.openBlock("if containerValues.contains(.$memberNameUnquoted) {", "} else {") {
+            writer.openBlock("do {", "} catch {") {
+                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: .$memberNameUnquoted)")
+                writer.write("$memberName = $decodedMemberName")
+            }
+            writer.indent().write("$memberName = \"\".data(using: .utf8)")
+            writer.dedent().write("}")
+        }
+        writer.indent().write("$memberName = nil")
+        writer.dedent().write("}")
+    }
+
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
-        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(${memberTargetSymbol.name}.self, forKey: .$memberName)")
+        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(${memberTargetSymbol.name}.self, forKey: .$memberNameUnquoted)")
         writer.write("$memberName = $decodedMemberName")
     }
 
