@@ -192,6 +192,100 @@ class StructDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `empty lists decode`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlEmptyListsOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlEmptyListsOutputBody: Decodable {
+                private enum CodingKeys: String, CodingKey {
+                    case booleanList
+                    case integerList
+                    case stringList
+                    case stringSet
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    if containerValues.contains(.stringList) {
+                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringList)
+                        if let stringListWrappedContainer = stringListWrappedContainer {
+                            let stringListContainer = try stringListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
+                            var stringListBuffer:[String]? = nil
+                            if let stringListContainer = stringListContainer {
+                                stringListBuffer = [String]()
+                                for stringContainer0 in stringListContainer {
+                                    stringListBuffer?.append(stringContainer0)
+                                }
+                            }
+                            stringList = stringListBuffer
+                        } else {
+                            stringList = []
+                        }
+                    } else {
+                        stringList = nil
+                    }
+                    if containerValues.contains(.stringSet) {
+                        let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringSet)
+                        if let stringSetWrappedContainer = stringSetWrappedContainer {
+                            let stringSetContainer = try stringSetWrappedContainer.decodeIfPresent([String].self, forKey: .member)
+                            var stringSetBuffer:Set<String>? = nil
+                            if let stringSetContainer = stringSetContainer {
+                                stringSetBuffer = Set<String>()
+                                for stringContainer0 in stringSetContainer {
+                                    stringSetBuffer?.insert(stringContainer0)
+                                }
+                            }
+                            stringSet = stringSetBuffer
+                        } else {
+                            stringSet = []
+                        }
+                    } else {
+                        stringSet = nil
+                    }
+                    if containerValues.contains(.integerList) {
+                        let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .integerList)
+                        if let integerListWrappedContainer = integerListWrappedContainer {
+                            let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Int].self, forKey: .member)
+                            var integerListBuffer:[Int]? = nil
+                            if let integerListContainer = integerListContainer {
+                                integerListBuffer = [Int]()
+                                for integerContainer0 in integerListContainer {
+                                    integerListBuffer?.append(integerContainer0)
+                                }
+                            }
+                            integerList = integerListBuffer
+                        } else {
+                            integerList = []
+                        }
+                    } else {
+                        integerList = nil
+                    }
+                    if containerValues.contains(.booleanList) {
+                        let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .booleanList)
+                        if let booleanListWrappedContainer = booleanListWrappedContainer {
+                            let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Bool].self, forKey: .member)
+                            var booleanListBuffer:[Bool]? = nil
+                            if let booleanListContainer = booleanListContainer {
+                                booleanListBuffer = [Bool]()
+                                for booleanContainer0 in booleanListContainer {
+                                    booleanListBuffer?.append(booleanContainer0)
+                                }
+                            }
+                            booleanList = booleanListBuffer
+                        } else {
+                            booleanList = []
+                        }
+                    } else {
+                        booleanList = nil
+                    }
+                }
+            }""".trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

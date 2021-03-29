@@ -181,9 +181,7 @@ class StructEncodeXMLGenerationTests {
     @Test
     fun `nestednested flattened list serialization`() {
         val context = setupTests("Isolated/Restxml/xml-nestednested-Flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
-        print(getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListInput.swift"))
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListInput+Encodable.swift")
-        print(contents)
         val expectedContents =
             """
             extension XmlNestedNestedFlattenedListInput: Encodable, Reflection {
@@ -217,6 +215,70 @@ class StructEncodeXMLGenerationTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `empty lists`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlEmptyListsInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlEmptyListsInput: Encodable, Reflection {
+                private enum CodingKeys: String, CodingKey {
+                    case booleanList
+                    case integerList
+                    case stringList
+                    case stringSet
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let booleanList = booleanList {
+                        var booleanListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .booleanList)
+                        if booleanList.isEmpty {
+                            var emptyContainer = booleanListContainer.nestedUnkeyedContainer(forKey: .empty)
+                            try emptyContainer.encode("")
+                        } else {
+                            for primitiveboolean0 in booleanList {
+                                try booleanListContainer.encode(primitiveboolean0, forKey: .member)
+                            }
+                        }
+                    }
+                    if let integerList = integerList {
+                        var integerListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .integerList)
+                        if integerList.isEmpty {
+                            var emptyContainer = integerListContainer.nestedUnkeyedContainer(forKey: .empty)
+                            try emptyContainer.encode("")
+                        } else {
+                            for integer0 in integerList {
+                                try integerListContainer.encode(integer0, forKey: .member)
+                            }
+                        }
+                    }
+                    if let stringList = stringList {
+                        var stringListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringList)
+                        if stringList.isEmpty {
+                            var emptyContainer = stringListContainer.nestedUnkeyedContainer(forKey: .empty)
+                            try emptyContainer.encode("")
+                        } else {
+                            for string0 in stringList {
+                                try stringListContainer.encode(string0, forKey: .member)
+                            }
+                        }
+                    }
+                    if let stringSet = stringSet {
+                        var stringSetContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringSet)
+                        if stringSet.isEmpty {
+                            var emptyContainer = stringSetContainer.nestedUnkeyedContainer(forKey: .empty)
+                            try emptyContainer.encode("")
+                        } else {
+                            for string0 in stringSet {
+                                try stringSetContainer.encode(string0, forKey: .member)
+                            }
+                        }
+                    }
+                }
+            }""".trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
