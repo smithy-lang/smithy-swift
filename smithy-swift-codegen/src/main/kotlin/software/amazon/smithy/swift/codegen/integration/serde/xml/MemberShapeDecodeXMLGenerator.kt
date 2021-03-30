@@ -8,7 +8,6 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
@@ -130,7 +129,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        val translatedMemberTargetValueType = mapShapeIdToSymbolForMaps(memberTarget.value.target)
+        val keyedBySymbolForContainer = determineSymbolForShape(memberTarget, "MapEntry", true)
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
@@ -138,7 +137,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.indent()
         if (!memberIsFlattened) {
             val nextContainerName = "${memberNameUnquoted}WrappedContainer"
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: MapEntry<$memberTargetKey, $translatedMemberTargetValueType>.CodingKeys.self, forKey: $currContainerKey)")
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".entry"
             currContainerName = nextContainerName
             writer.write("if let $currContainerName = $currContainerName {")
@@ -148,8 +147,9 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberBuffer = "${memberNameUnquoted}Buffer"
         val memberContainerName = "${memberNameUnquoted}Container"
         val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
-        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([MapKeyValue<$memberTargetKey, $translatedMemberTargetValueType>].self, forKey: $currContainerKey)")
 
+        val symbolToDecodeTo = determineSymbolForShape(memberTarget, "MapKeyValue", false)
+        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
         writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil",)
         writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
             writer.write("$memberBuffer = $memberTargetSymbol()")
@@ -271,6 +271,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
         return Pair(symbol, symbol.name)
     }
+
     private fun convertSetNameToListSymbol(shape: Shape): String {
         val mappedSymbol = when (shape) {
             is CollectionShape -> {
@@ -287,19 +288,24 @@ abstract class MemberShapeDecodeXMLGenerator(
         return mappedSymbol
     }
 
-    private fun mapShapeIdToSymbolForMaps(targetShapeId: ShapeId): String {
-        val targetShape = ctx.model.expectShape(targetShapeId)
-        var mappedSymbol = when (targetShape) {
+    private fun determineSymbolForShape(currShape: Shape, containingSymbol: String, shouldRenderStructs: Boolean, level: Int = 0): String {
+        var mappedSymbol = when (currShape) {
             is MapShape -> {
-                val targetShapeKey = ctx.symbolProvider.toSymbol(targetShape.key)
-                val valueEvaluated = mapShapeIdToSymbolForMaps(targetShape.value.target)
-                "MapEntry<$targetShapeKey, $valueEvaluated>"
+                val keyValueName = MapKeyValue.constructMapKeyValue(currShape.key, currShape.value, level)
+                if (shouldRenderStructs) {
+                    keyValueName.renderStructs(writer)
+                }
+                val currShapeKey = ctx.symbolProvider.toSymbol(currShape.key)
+
+                val targetShape = ctx.model.expectShape(currShape.value.target)
+                val valueEvaluated = determineSymbolForShape(targetShape, "MapEntry", shouldRenderStructs, level + 1)
+                "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
                 throw Exception("nested CollectionShape not yet supported")
             }
             else -> {
-                "${ctx.symbolProvider.toSymbol(targetShape)}"
+                "${ctx.symbolProvider.toSymbol(currShape)}"
             }
         }
         return mappedSymbol
