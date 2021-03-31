@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class StructEncodeXMLGenerationTests {
     @Test
     fun `wrapped list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlWrappedListInput+Encodable.swift")
         val expectedContents =
             """
@@ -36,7 +36,7 @@ class StructEncodeXMLGenerationTests {
 
     @Test
     fun `flattened list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
@@ -115,7 +115,7 @@ class StructEncodeXMLGenerationTests {
     }
     @Test
     fun `nested wrapped list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-nested-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-nested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
@@ -145,7 +145,7 @@ class StructEncodeXMLGenerationTests {
 
     @Test
     fun `nestednested wrapped list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-nestednested-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
