@@ -22,7 +22,8 @@ class StructDecodeXMLGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myGroceryList) {
-                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
+                    struct KeyVal0{struct member{}}
+                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .myGroceryList)
                     if let myGroceryListWrappedContainer = myGroceryListWrappedContainer {
                         let myGroceryListContainer = try myGroceryListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                         var myGroceryListBuffer:[String]? = nil
@@ -138,7 +139,8 @@ class StructDecodeXMLGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedNestedStringList) {
-                    let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedNestedStringList)
+                    struct KeyVal0{struct member{}}
+                    let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedNestedStringList)
                     if let nestedNestedStringListWrappedContainer = nestedNestedStringListWrappedContainer {
                         let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]?]?].self, forKey: .member)
                         var nestedNestedStringListBuffer:[[[String]?]?]? = nil
@@ -234,7 +236,8 @@ class StructDecodeXMLGenerationTests {
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.stringList) {
-                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringList)
+                        struct KeyVal0{struct member{}}
+                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .stringList)
                         if let stringListWrappedContainer = stringListWrappedContainer {
                             let stringListContainer = try stringListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                             var stringListBuffer:[String]? = nil
@@ -252,7 +255,8 @@ class StructDecodeXMLGenerationTests {
                         stringList = nil
                     }
                     if containerValues.contains(.stringSet) {
-                        let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringSet)
+                        struct KeyVal0{struct member{}}
+                        let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .stringSet)
                         if let stringSetWrappedContainer = stringSetWrappedContainer {
                             let stringSetContainer = try stringSetWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                             var stringSetBuffer:Set<String>? = nil
@@ -270,7 +274,8 @@ class StructDecodeXMLGenerationTests {
                         stringSet = nil
                     }
                     if containerValues.contains(.integerList) {
-                        let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .integerList)
+                        struct KeyVal0{struct member{}}
+                        let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
                         if let integerListWrappedContainer = integerListWrappedContainer {
                             let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Int].self, forKey: .member)
                             var integerListBuffer:[Int]? = nil
@@ -288,7 +293,8 @@ class StructDecodeXMLGenerationTests {
                         integerList = nil
                     }
                     if containerValues.contains(.booleanList) {
-                        let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .booleanList)
+                        struct KeyVal0{struct member{}}
+                        let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
                         if let booleanListWrappedContainer = booleanListWrappedContainer {
                             let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Bool].self, forKey: .member)
                             var booleanListBuffer:[Bool]? = nil

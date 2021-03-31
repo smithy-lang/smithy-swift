@@ -1,7 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class MapKeyValue(
@@ -11,17 +10,10 @@ class MapKeyValue(
 ) {
     companion object {
         fun constructMapKeyValue(keyMemberShape: MemberShape, valueMemberShape: MemberShape, level: Int): MapKeyValue {
-            val keyTagName = getCustomNameIfAvailable(keyMemberShape, "key")
-            val valueTagName = getCustomNameIfAvailable(valueMemberShape, "value")
+            val keyTagName = XMLNameValue.getCustomNameIfAvailable(keyMemberShape, "key")
+            val valueTagName = XMLNameValue.getCustomNameIfAvailable(valueMemberShape, "value")
             val namespace = "KeyVal$level"
             return MapKeyValue(namespace, keyTagName, valueTagName)
-        }
-
-        private fun getCustomNameIfAvailable(memberShape: MemberShape, defaultValue: String): String {
-            if (memberShape.hasTrait(XmlNameTrait::class.java)) {
-                return memberShape.getTrait(XmlNameTrait::class.java)?.get()?.value ?: defaultValue
-            }
-            return defaultValue
         }
     }
     fun renderStructs(writer: SwiftWriter) {

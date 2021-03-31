@@ -23,9 +23,9 @@ class SetEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumSet)
                         for fooenum0 in fooEnumSet {
-                            try fooEnumSetContainer.encode(fooenum0, forKey: .member)
+                            try fooEnumSetContainer.encode(fooenum0, forKey: Key("member"))
                         }
                     }
                 }
@@ -50,11 +50,11 @@ class SetEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumSet)
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumSet)
                         for fooenumset0 in fooEnumSet {
-                            var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                            var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                             for fooenum1 in fooenumset0 {
-                                try fooenumset0Container0.encode(fooenum1, forKey: .member)
+                                try fooenumset0Container0.encode(fooenum1, forKey: Key("member"))
                             }
                         }
                     }

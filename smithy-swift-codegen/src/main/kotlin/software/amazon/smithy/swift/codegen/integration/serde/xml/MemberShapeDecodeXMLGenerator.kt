@@ -37,8 +37,9 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.write("if $containerName.contains(.$memberName) {")
         writer.indent()
         if (!memberIsFlattened) {
+            val memberValue = determineSymbolForShapeInList(memberTarget)
             val nextContainerName = "${memberName}WrappedContainer"
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: $currContainerKey)")
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
             currContainerKey = ".member"
             currContainerName = nextContainerName
 
@@ -129,7 +130,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        val keyedBySymbolForContainer = determineSymbolForShape(memberTarget, "MapEntry", true)
+        val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, "MapEntry", true)
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
@@ -148,7 +149,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberContainerName = "${memberNameUnquoted}Container"
         val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
 
-        val symbolToDecodeTo = determineSymbolForShape(memberTarget, "MapKeyValue", false)
+        val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, "MapKeyValue", false)
         writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
         writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil",)
         writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
@@ -288,7 +289,29 @@ abstract class MemberShapeDecodeXMLGenerator(
         return mappedSymbol
     }
 
-    private fun determineSymbolForShape(currShape: Shape, containingSymbol: String, shouldRenderStructs: Boolean, level: Int = 0): String {
+    /*
+     * There is some expectation that this function will need to be recursive based on
+     * what we know about decoding Maps.  That being said, this seems to "just work"
+     * when decoding lists of lists.  We'll need to revisit this when we handle maps in lists
+     * and maps in lists.
+     */
+    private fun determineSymbolForShapeInList(currShape: Shape, level: Int = 0): String {
+        var mappedSymbol = when (currShape) {
+            is MapShape -> {
+                throw Exception("nested map in list not supported yet")
+            }
+            is CollectionShape -> {
+                val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
+                collectionMember.renderStructs(writer)
+                "CollectionMember<${collectionMember.keyTag()}>"
+            } else -> {
+                "${ctx.symbolProvider.toSymbol(currShape)}"
+            }
+        }
+        return mappedSymbol
+    }
+
+    private fun determineSymbolForShapeInMap(currShape: Shape, containingSymbol: String, shouldRenderStructs: Boolean, level: Int = 0): String {
         var mappedSymbol = when (currShape) {
             is MapShape -> {
                 val keyValueName = MapKeyValue.constructMapKeyValue(currShape.key, currShape.value, level)
@@ -298,7 +321,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 val currShapeKey = ctx.symbolProvider.toSymbol(currShape.key)
 
                 val targetShape = ctx.model.expectShape(currShape.value.target)
-                val valueEvaluated = determineSymbolForShape(targetShape, "MapEntry", shouldRenderStructs, level + 1)
+                val valueEvaluated = determineSymbolForShapeInMap(targetShape, "MapEntry", shouldRenderStructs, level + 1)
                 "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {

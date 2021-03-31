@@ -45,12 +45,12 @@ class BlobEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedBlobList = nestedBlobList {
-                        var nestedBlobListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedBlobList)
+                        var nestedBlobListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedBlobList)
                         for nestedbloblist0 in nestedBlobList {
                             if let nestedbloblist0 = nestedbloblist0 {
-                                var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                 for blob1 in nestedbloblist0 {
-                                    try nestedbloblist0Container0.encode(blob1, forKey: .member)
+                                    try nestedbloblist0Container0.encode(blob1, forKey: Key("member"))
                                 }
                             }
                         }
