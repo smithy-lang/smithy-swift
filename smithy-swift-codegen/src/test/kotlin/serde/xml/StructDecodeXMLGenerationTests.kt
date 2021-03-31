@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class StructDecodeXMLGenerationTests {
     @Test
     fun `XmlWrappedListOutputBody decodable`() {
-        val context = setupTests("Isolated/Restxml/xml-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
 
         val contents = getFileContents(context.manifest, "/example/models/XmlWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
@@ -48,7 +48,7 @@ class StructDecodeXMLGenerationTests {
 
     @Test
     fun `XmlFlattenedListOutputBody decodable`() {
-        val context = setupTests("Isolated/Restxml/xml-flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened.smithy", "aws.protocoltests.restxml#RestXml")
 
         val contents = getFileContents(context.manifest, "/example/models/XmlFlattenedListOutputBody+Decodable.swift")
         val expectedContents = """
@@ -127,7 +127,7 @@ class StructDecodeXMLGenerationTests {
 
     @Test
     fun `nestednested wrapped list deserialization`() {
-        val context = setupTests("Isolated/Restxml/xml-nestednested-wrapped-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlNestedNestedWrappedListOutputBody: Decodable {
@@ -175,7 +175,7 @@ class StructDecodeXMLGenerationTests {
 
     @Test
     fun `nestednested flattened list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-nestednested-Flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListOutputBody+Decodable.swift")
         val expectedContents =
             """
