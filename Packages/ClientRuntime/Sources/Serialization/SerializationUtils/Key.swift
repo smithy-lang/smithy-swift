@@ -12,6 +12,11 @@ public struct Key: CodingKey {
         self.intValue = nil
     }
 
+    public init(_ stringValue: String) {
+        self.stringValue = stringValue
+        self.intValue = nil
+    }
+
     public let intValue: Int?
     public init?(intValue: Int) {
         return nil
