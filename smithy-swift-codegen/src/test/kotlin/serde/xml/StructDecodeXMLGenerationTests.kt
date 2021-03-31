@@ -175,7 +175,7 @@ class StructDecodeXMLGenerationTests {
 
     @Test
     fun `nestednested flattened list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-nestednested-Flattened-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListOutputBody+Decodable.swift")
         val expectedContents =
             """
