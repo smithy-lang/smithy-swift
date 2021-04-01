@@ -90,12 +90,12 @@ class RecursiveShapesEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedRecursiveList = nestedRecursiveList {
-                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedRecursiveList)
+                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedRecursiveList)
                         for nestedrecursiveshapeslist0 in nestedRecursiveList {
                             if let nestedrecursiveshapeslist0 = nestedrecursiveshapeslist0 {
-                                var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                 for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
-                                    try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: .member)
+                                    try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: Key("member"))
                                 }
                             }
                         }

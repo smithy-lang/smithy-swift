@@ -67,7 +67,8 @@ class TimeStampDecodeGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedTimestampList)
+                    struct KeyVal0{struct member{}}
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var nestedTimestampListBuffer:[[Date]?]? = nil
@@ -110,7 +111,8 @@ class TimeStampDecodeGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedTimestampList)
+                    struct KeyVal0{struct member{}}
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var nestedTimestampListBuffer:[[Date]?]? = nil

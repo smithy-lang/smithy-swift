@@ -22,9 +22,9 @@ class StructEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let myGroceryList = myGroceryList {
-                        var myGroceryListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .myGroceryList)
+                        var myGroceryListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myGroceryList)
                         for string0 in myGroceryList {
-                            try myGroceryListContainer.encode(string0, forKey: .member)
+                            try myGroceryListContainer.encode(string0, forKey: Key("member"))
                         }
                     }
                 }
@@ -127,12 +127,12 @@ class StructEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedStringList = nestedStringList {
-                        var nestedStringListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedStringList)
+                        var nestedStringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedStringList)
                         for stringlist0 in nestedStringList {
                             if let stringlist0 = stringlist0 {
-                                var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                 for string1 in stringlist0 {
-                                    try stringlist0Container0.encode(string1, forKey: .member)
+                                    try stringlist0Container0.encode(string1, forKey: Key("member"))
                                 }
                             }
                         }
@@ -157,15 +157,15 @@ class StructEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedNestedStringList = nestedNestedStringList {
-                        var nestedNestedStringListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedNestedStringList)
+                        var nestedNestedStringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedNestedStringList)
                         for nestedstringlist0 in nestedNestedStringList {
                             if let nestedstringlist0 = nestedstringlist0 {
-                                var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                 for stringlist1 in nestedstringlist0 {
                                     if let stringlist1 = stringlist1 {
-                                        var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                        var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                         for string2 in stringlist1 {
-                                            try stringlist1Container1.encode(string2, forKey: .member)
+                                            try stringlist1Container1.encode(string2, forKey: Key("member"))
                                         }
                                     }
                                 }
@@ -195,12 +195,12 @@ class StructEncodeXMLGenerationTests {
                         var nestedNestedStringListContainer = container.nestedUnkeyedContainer(forKey: .nestedNestedStringList)
                         for nestedstringlist0 in nestedNestedStringList {
                             if let nestedstringlist0 = nestedstringlist0 {
-                                var nestedstringlist0ContainerForUnkeyed0 = nestedNestedStringListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)
-                                var nestedstringlist0Container0 = nestedstringlist0ContainerForUnkeyed0.nestedUnkeyedContainer(forKey: .member)
+                                var nestedstringlist0ContainerForUnkeyed0 = nestedNestedStringListContainer.nestedContainer(keyedBy: Key.self)
+                                var nestedstringlist0Container0 = nestedstringlist0ContainerForUnkeyed0.nestedUnkeyedContainer(forKey: Key("member"))
                                 for stringlist1 in nestedstringlist0 {
                                     if let stringlist1 = stringlist1 {
-                                        var stringlist1ContainerForUnkeyed1 = nestedstringlist0Container0.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self)
-                                        var stringlist1Container1 = stringlist1ContainerForUnkeyed1.nestedUnkeyedContainer(forKey: .member)
+                                        var stringlist1ContainerForUnkeyed1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self)
+                                        var stringlist1Container1 = stringlist1ContainerForUnkeyed1.nestedUnkeyedContainer(forKey: Key("member"))
                                         for string2 in stringlist1 {
                                             try stringlist1Container1.encode(string2)
                                         }
@@ -232,27 +232,27 @@ class StructEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let booleanList = booleanList {
-                        var booleanListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .booleanList)
+                        var booleanListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .booleanList)
                         for primitiveboolean0 in booleanList {
-                            try booleanListContainer.encode(primitiveboolean0, forKey: .member)
+                            try booleanListContainer.encode(primitiveboolean0, forKey: Key("member"))
                         }
                     }
                     if let integerList = integerList {
-                        var integerListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .integerList)
+                        var integerListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .integerList)
                         for integer0 in integerList {
-                            try integerListContainer.encode(integer0, forKey: .member)
+                            try integerListContainer.encode(integer0, forKey: Key("member"))
                         }
                     }
                     if let stringList = stringList {
-                        var stringListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringList)
+                        var stringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringList)
                         for string0 in stringList {
-                            try stringListContainer.encode(string0, forKey: .member)
+                            try stringListContainer.encode(string0, forKey: Key("member"))
                         }
                     }
                     if let stringSet = stringSet {
-                        var stringSetContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .stringSet)
+                        var stringSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: .stringSet)
                         for string0 in stringSet {
-                            try stringSetContainer.encode(string0, forKey: .member)
+                            try stringSetContainer.encode(string0, forKey: Key("member"))
                         }
                     }
                 }
@@ -260,6 +260,7 @@ class StructEncodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

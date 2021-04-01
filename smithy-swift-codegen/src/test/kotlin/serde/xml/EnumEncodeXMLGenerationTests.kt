@@ -34,9 +34,9 @@ class EnumEncodeXMLGenerationTests {
                         try container.encode(fooEnum3, forKey: .fooEnum3)
                     }
                     if let fooEnumList = fooEnumList {
-                        var fooEnumListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .fooEnumList)
+                        var fooEnumListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumList)
                         for fooenum0 in fooEnumList {
-                            try fooEnumListContainer.encode(fooenum0, forKey: .member)
+                            try fooEnumListContainer.encode(fooenum0, forKey: Key("member"))
                         }
                     }
                 }
@@ -59,12 +59,12 @@ class EnumEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedEnumsList = nestedEnumsList {
-                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .nestedEnumsList)
+                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedEnumsList)
                         for nestedenumslist0 in nestedEnumsList {
                             if let nestedenumslist0 = nestedenumslist0 {
-                                var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: WrappedListMember.CodingKeys.self, forKey: .member)
+                                var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                                 for fooenum1 in nestedenumslist0 {
-                                    try nestedenumslist0Container0.encode(fooenum1, forKey: .member)
+                                    try nestedenumslist0Container0.encode(fooenum1, forKey: Key("member"))
                                 }
                             }
                         }
