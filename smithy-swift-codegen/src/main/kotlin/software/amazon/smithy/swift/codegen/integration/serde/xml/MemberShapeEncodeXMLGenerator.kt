@@ -66,10 +66,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             when (nestedMemberTarget) {
                 is CollectionShape -> {
                     val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
-                    // TODO: We believe this is a workaround for nested sets:
-                    // https://github.com/awslabs/smithy/issues/752
-                    val isSetShape = nestedMemberTarget is SetShape
-                    if (isBoxed && !isSetShape) {
+                    if (isBoxed && !(nestedMemberTarget is SetShape)) {
                         writer.openBlock("if let $nestedMemberName = $nestedMemberName {", "}") {
                             renderNestedListEntryMember(nestedMemberName, nestedMemberTarget, nestedMemberKeyName, containerName, isKeyed, level)
                         }
