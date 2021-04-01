@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class TimeStampDecodeGenerationTests {
     @Test
-    fun `decode all timestamps`() {
+    fun `001 decode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsOutputBody+Decodable.swift")
         val expectedContents = """
@@ -55,7 +55,7 @@ class TimeStampDecodeGenerationTests {
     }
 
     @Test
-    fun `decode nested timestamps`() {
+    fun `002 decode nested timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedOutputBody+Decodable.swift")
         val expectedContents = """
@@ -99,7 +99,7 @@ class TimeStampDecodeGenerationTests {
     }
 
     @Test
-    fun `decode nested timestamps HttpDate`() {
+    fun `003 decode nested timestamps HttpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedHTTPDateOutputBody+Decodable.swift")
         val expectedContents = """
@@ -123,6 +123,49 @@ class TimeStampDecodeGenerationTests {
                                 if let listContainer0 = listContainer0 {
                                     for timestampContainer1 in listContainer0 {
                                         try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
+                                    }
+                                }
+                                nestedTimestampListBuffer?.append(listBuffer0)
+                            }
+                        }
+                        nestedTimestampList = nestedTimestampListBuffer
+                    } else {
+                        nestedTimestampList = []
+                    }
+                } else {
+                    nestedTimestampList = nil
+                }
+            }
+        }
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    @Test
+    fun `004 decode nested timestamps xmlName`() {
+        val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedXmlNameOutputBody+Decodable.swift")
+        val expectedContents = """
+        extension XmlTimestampsNestedXmlNameOutputBody: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case nestedTimestampList
+            }
+        
+            public init (from decoder: Decoder) throws {
+                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                if containerValues.contains(.nestedTimestampList) {
+                    struct KeyVal0{struct nestedTag1{}}
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
+                    if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
+                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
+                        var nestedTimestampListBuffer:[[Date]?]? = nil
+                        if let nestedTimestampListContainer = nestedTimestampListContainer {
+                            nestedTimestampListBuffer = [[Date]?]()
+                            for listContainer0 in nestedTimestampListContainer {
+                                var listBuffer0 = [Date]()
+                                if let listContainer0 = listContainer0 {
+                                    for timestampContainer1 in listContainer0 {
+                                        try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                     }
                                 }
                                 nestedTimestampListBuffer?.append(listBuffer0)
