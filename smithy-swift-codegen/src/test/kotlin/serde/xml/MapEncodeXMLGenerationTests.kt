@@ -20,9 +20,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myMap)
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: Key("entry"))
@@ -48,9 +48,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let `protocol` = `protocol` {
-                        var protocolContainer = container.nestedContainer(keyedBy: Key.self, forKey: .protocol)
+                        var protocolContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("protocol"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, greetingstructValue0) in `protocol` {
                             var entry = protocolContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: Key("entry"))
@@ -76,9 +76,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myMap)
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: Key("entry"))
@@ -112,9 +112,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myMap)
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, [String:GreetingStruct], KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: Key("entry"))
@@ -156,9 +156,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedUnkeyedContainer(forKey: .myMap)
+                        var myMapContainer = container.nestedUnkeyedContainer(forKey: Key("myMap"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self)
@@ -184,9 +184,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedUnkeyedContainer(forKey: .myMap)
+                        var myMapContainer = container.nestedUnkeyedContainer(forKey: Key("myMap"))
                         struct KeyVal0{struct key{}; struct value{}}
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self)
@@ -220,9 +220,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myMap)
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         struct KeyVal0{struct Attribute{}; struct Setting{}}
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>.CodingKeys.self, forKey: Key("entry"))
@@ -248,9 +248,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedUnkeyedContainer(forKey: .myMap)
+                        var myMapContainer = container.nestedUnkeyedContainer(forKey: Key("myMap"))
                         struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>.CodingKeys.self)
@@ -276,9 +276,9 @@ class MapEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: .myMap)
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         struct KeyVal0{struct CustomKey1{}; struct CustomValue1{}}
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: MapKeyValue<String, GreetingStruct, KeyVal0.CustomKey1, KeyVal0.CustomValue1>.CodingKeys.self, forKey: Key("entry"))

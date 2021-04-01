@@ -9,20 +9,18 @@ import software.amazon.smithy.swift.codegen.integration.serde.xml.DynamicNodeEnc
 
 class DynamicNodeEncodingGeneratorStrategy(
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val shape: Shape
+    private val shape: Shape,
+    private val xmlNamespaces: Set<String>
 ) {
     fun renderIfNeeded() {
-        if (shouldRenderDynamicNodeEncodingProtocol(ctx, shape)) {
-            DynamicNodeEncodingXMLGenerator(ctx, shape).render()
+        val hasXMLAttributes = isRestXmlProtocolAndHasXmlAttributesInMembers(ctx, shape)
+        if (hasXMLAttributes || xmlNamespaces.isNotEmpty()) {
+            DynamicNodeEncodingXMLGenerator(ctx, shape, hasXMLAttributes, xmlNamespaces).render()
         }
-    }
-
-    private fun shouldRenderDynamicNodeEncodingProtocol(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Boolean {
-        return isRestXmlProtocolAndHasXmlTraitsInMembers(ctx, shape)
     }
 }
 
-fun isRestXmlProtocolAndHasXmlTraitsInMembers(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Boolean {
+fun isRestXmlProtocolAndHasXmlAttributesInMembers(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Boolean {
     val isRestXML = ctx.protocol == RestXmlTrait.ID
     if (isRestXML) {
         return shape.members()

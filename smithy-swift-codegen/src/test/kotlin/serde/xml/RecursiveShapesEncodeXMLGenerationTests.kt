@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class RecursiveShapesEncodeXMLGenerationTests {
     @Test
-    fun `encode recursive shape Nested1`() {
+    fun `001 encode recursive shape Nested1`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/RecursiveShapesInputOutputNested1+Codable.swift")
         val expectedContents =
@@ -21,12 +21,12 @@ class RecursiveShapesEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let foo = foo {
-                        try container.encode(foo, forKey: .foo)
+                        try container.encode(foo, forKey: Key("foo"))
                     }
                     if let nested = nested {
-                        try container.encode(nested, forKey: .nested)
+                        try container.encode(nested, forKey: Key("nested"))
                     }
                 }
             
@@ -55,12 +55,12 @@ class RecursiveShapesEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let bar = bar {
-                        try container.encode(bar, forKey: .bar)
+                        try container.encode(bar, forKey: Key("bar"))
                     }
                     if let recursiveMember = recursiveMember {
-                        try container.encode(recursiveMember, forKey: .recursiveMember)
+                        try container.encode(recursiveMember, forKey: Key("recursiveMember"))
                     }
                 }
             
@@ -88,9 +88,9 @@ class RecursiveShapesEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedRecursiveList = nestedRecursiveList {
-                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedRecursiveList)
+                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedRecursiveList"))
                         for nestedrecursiveshapeslist0 in nestedRecursiveList {
                             if let nestedrecursiveshapeslist0 = nestedrecursiveshapeslist0 {
                                 var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))

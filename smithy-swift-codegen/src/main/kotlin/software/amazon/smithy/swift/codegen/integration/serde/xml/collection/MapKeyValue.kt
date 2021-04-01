@@ -1,7 +1,8 @@
-package software.amazon.smithy.swift.codegen.integration.serde.xml
+package software.amazon.smithy.swift.codegen.integration.serde.xml.collection
 
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NameTraitGenerator
 
 class MapKeyValue(
     val namespace: String,
@@ -10,8 +11,8 @@ class MapKeyValue(
 ) {
     companion object {
         fun constructMapKeyValue(keyMemberShape: MemberShape, valueMemberShape: MemberShape, level: Int): MapKeyValue {
-            val keyTagName = XMLNameValue.getCustomNameIfAvailable(keyMemberShape, "key")
-            val valueTagName = XMLNameValue.getCustomNameIfAvailable(valueMemberShape, "value")
+            val keyTagName = NameTraitGenerator.construct(keyMemberShape, "key").toString()
+            val valueTagName = NameTraitGenerator.construct(valueMemberShape, "value").toString()
             val namespace = "KeyVal$level"
             return MapKeyValue(namespace, keyTagName, valueTagName)
         }

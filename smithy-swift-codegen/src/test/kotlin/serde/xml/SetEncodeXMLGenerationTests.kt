@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class SetEncodeXMLGenerationTests {
     @Test
-    fun `wrapped set serialization`() {
+    fun `001 wrapped set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumSetInput+Encodable.swift")
         val expectedContents =
@@ -21,9 +21,9 @@ class SetEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumSet)
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("fooEnumSet"))
                         for fooenum0 in fooEnumSet {
                             try fooEnumSetContainer.encode(fooenum0, forKey: Key("member"))
                         }
@@ -36,7 +36,7 @@ class SetEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `wrapped nested set serialization`() {
+    fun `002 wrapped nested set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
         print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumNestedSetInput+Encodable.swift")
@@ -48,9 +48,9 @@ class SetEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumSet)
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("fooEnumSet"))
                         for fooenumset0 in fooEnumSet {
                             var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                             for fooenum1 in fooenumset0 {

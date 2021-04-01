@@ -16,6 +16,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
+import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMember
+import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 

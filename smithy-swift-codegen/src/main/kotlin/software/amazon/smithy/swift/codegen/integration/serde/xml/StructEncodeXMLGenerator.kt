@@ -8,17 +8,21 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NamespaceTraitGenerator
 
 class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
+    private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
+
     override fun render() {
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
             if (members.isNotEmpty()) {
@@ -29,7 +33,15 @@ class StructEncodeXMLGenerator(
 
     private fun renderEncodeBody() {
         val containerName = "container"
-        writer.write("var $containerName = encoder.container(keyedBy: CodingKeys.self)")
+        writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+
+        val namespace = NamespaceTraitGenerator.construct(shapeContainingMembers)
+        namespace?.let {
+            writer.openBlock("if encoder.codingPath.isEmpty {", "}") {
+                it.render(writer, containerName)
+                it.appendKey(xmlNamespaces)
+            }
+        }
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
         membersSortedByName.forEach { member ->
             renderSingleMember(member, containerName)

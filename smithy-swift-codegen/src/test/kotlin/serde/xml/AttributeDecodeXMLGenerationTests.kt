@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class AttributeDecodeXMLGenerationTests {
     @Test
-    fun `001 xml attributes encoding for input type`() {
+    fun `001 xml attributes decode for input type`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlAttributesOutputBody+DynamicNodeDecoding.swift")
         val expectedContents = """

@@ -16,12 +16,15 @@ class AttributeEncodeXMLGenerationTests {
             """
             extension XmlAttributesInput: DynamicNodeEncoding {
                 public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
-                    switch(key) {
-                        case XmlAttributesInput.CodingKeys.foo: return .element
-                        case XmlAttributesInput.CodingKeys.attr: return .attribute
-                        default:
-                            return .element
+                    let codingKeys = [
+                        "test"
+                    ]
+                    if let key = key as? Key {
+                        if codingKeys.contains(key.stringValue) {
+                            return .attribute
+                        }
                     }
+                    return .element
                 }
             }
             """.trimIndent()
@@ -29,18 +32,24 @@ class AttributeEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `002 creates DynanmicNodeDecoding for input body`() {
+    fun `002 creates encodable`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlAttributesInputBody+DynamicNodeDecoding.swift")
+        val contents = getFileContents(context.manifest, "/example/models/XmlAttributesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlAttributesInputBody: DynamicNodeDecoding {
-                public static func nodeDecoding(for key: CodingKey) -> NodeDecoding {
-                    switch(key) {
-                        case XmlAttributesInputBody.CodingKeys.foo: return .element
-                        case XmlAttributesInputBody.CodingKeys.attr: return .attribute
-                        default:
-                            return .element
+            extension XmlAttributesInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case attr = "test"
+                    case foo
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let attr = attr {
+                        try container.encode(attr, forKey: Key("test"))
+                    }
+                    if let foo = foo {
+                        try container.encode(foo, forKey: Key("foo"))
                     }
                 }
             }

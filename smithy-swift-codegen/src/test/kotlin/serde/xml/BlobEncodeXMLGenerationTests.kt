@@ -20,9 +20,9 @@ class BlobEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let data = data {
-                        try container.encode(data, forKey: .data)
+                        try container.encode(data, forKey: Key("data"))
                     }
                 }
             }
@@ -43,9 +43,9 @@ class BlobEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedBlobList = nestedBlobList {
-                        var nestedBlobListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedBlobList)
+                        var nestedBlobListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedBlobList"))
                         for nestedbloblist0 in nestedBlobList {
                             if let nestedbloblist0 = nestedbloblist0 {
                                 var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
