@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class TimeStampEncodeGenerationTests {
     @Test
-    fun `encode all timestamps`() {
+    fun `001 encode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsInput+Encodable.swift")
         val expectedContents =
@@ -44,7 +44,7 @@ class TimeStampEncodeGenerationTests {
     }
 
     @Test
-    fun `encode nested list with timestamps`() {
+    fun `002 encode nested list with timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedInput+Encodable.swift")
         val expectedContents =
@@ -75,7 +75,7 @@ class TimeStampEncodeGenerationTests {
     }
 
     @Test
-    fun `encode nested list with timestamps httpDate`() {
+    fun `003 encode nested list with timestamps httpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedHTTPDateInput+Encodable.swift")
         val expectedContents =
@@ -105,6 +105,36 @@ class TimeStampEncodeGenerationTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `004 encode nested list with timestamps with xmlname`() {
+        val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedXmlNameInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlTimestampsNestedXmlNameInput: Encodable, Reflection {
+                private enum CodingKeys: String, CodingKey {
+                    case nestedTimestampList
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    if let nestedTimestampList = nestedTimestampList {
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedTimestampList)
+                        for nestedtimestamplist0 in nestedTimestampList {
+                            if let nestedtimestamplist0 = nestedtimestamplist0 {
+                                var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTag1"))
+                                for timestamp1 in nestedtimestamplist0 {
+                                    try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("nestedTag2"))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

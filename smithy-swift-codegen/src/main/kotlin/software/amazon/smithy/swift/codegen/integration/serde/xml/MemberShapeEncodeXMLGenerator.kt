@@ -78,8 +78,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     throw Exception("Maps not supported yet")
                 }
                 is TimestampShape -> {
-                    // This will probably be changed when we go to write unit tests for timestamp shape
-                    val forKey = if (isKeyed) ", forKey: Key(\"member\")" else ""
+                    val forKey = if (isKeyed) ", forKey: Key(\"${nestedMemberKeyName}\")" else ""
                     val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
                     val encodeValue = "TimestampWrapper($nestedMemberName, format: .$format)$forKey"
                     writer.write("try $containerName.encode($encodeValue)")
