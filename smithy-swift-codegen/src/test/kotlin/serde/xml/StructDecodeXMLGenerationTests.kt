@@ -15,7 +15,7 @@ class StructDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlWrappedListOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case myGroceryList
             }
         
@@ -54,7 +54,7 @@ class StructDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlFlattenedListOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlFlattenedListOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case myGroceryList
             }
         
@@ -87,7 +87,7 @@ class StructDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
         val expectedContents = """
         extension SimpleScalarPropertiesOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case byteValue
                 case doubleValue = "DoubleDribble"
                 case falseBooleanValue
@@ -132,7 +132,7 @@ class StructDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlNestedNestedWrappedListOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case nestedNestedStringList
             }
         
@@ -182,7 +182,7 @@ class StructDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlNestedNestedFlattenedListOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedNestedStringList
                 }
             
@@ -226,7 +226,7 @@ class StructDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEmptyListsOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case booleanList
                     case integerList
                     case stringList

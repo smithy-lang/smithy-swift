@@ -43,7 +43,7 @@ class StructEncodeGenerationIsolatedTests {
         val expectedContents =
             """
             extension NestedNestedJsonListInputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedNestedStringList
                 }
             

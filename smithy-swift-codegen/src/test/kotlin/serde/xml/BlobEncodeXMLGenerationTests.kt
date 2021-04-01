@@ -15,7 +15,7 @@ class BlobEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlBlobsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case data
                 }
             
@@ -38,7 +38,7 @@ class BlobEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlBlobsNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedBlobList
                 }
             

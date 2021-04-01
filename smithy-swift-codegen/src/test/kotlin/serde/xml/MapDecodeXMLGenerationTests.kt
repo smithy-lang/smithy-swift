@@ -15,7 +15,7 @@ class MapDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlMapsOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case myMap
             }
         
@@ -52,7 +52,7 @@ class MapDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsWithNameProtocolOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlMapsWithNameProtocolOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case `protocol` = "protocol"
             }
         
@@ -90,7 +90,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsNestedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -136,7 +136,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsNestedNestedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -190,7 +190,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlFlattenedMapsOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -223,7 +223,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -264,7 +264,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -302,7 +302,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameFlattenedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -335,7 +335,7 @@ class MapDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameNestedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             

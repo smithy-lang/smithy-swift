@@ -51,7 +51,7 @@ class StructDecodeGenerationTests {
             }
 
             extension SmokeTestOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
                     case payload3
@@ -78,7 +78,7 @@ class StructDecodeGenerationTests {
         val expectedContents =
             """
             extension Nested4: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case intList
                     case intMap
                     case member1
@@ -170,7 +170,7 @@ struct TimestampInputOutputBody: Equatable {
 }
 
 extension TimestampInputOutputBody: Decodable {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case dateTime
         case epochSeconds
         case httpDate
@@ -258,7 +258,7 @@ struct MapInputOutputBody: Equatable {
 }
 
 extension MapInputOutputBody: Decodable {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case blobMap
         case dateMap
         case enumMap
@@ -352,7 +352,7 @@ struct NestedShapesOutputBody: Equatable {
 }
 
 extension NestedShapesOutputBody: Decodable {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case nestedDictInList
         case nestedListInDict
     }
@@ -410,7 +410,7 @@ extension NestedShapesOutputBody: Decodable {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested1: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case foo
                     case nested
                 }
@@ -448,7 +448,7 @@ extension NestedShapesOutputBody: Decodable {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested2: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case bar
                     case recursiveMember
                 }

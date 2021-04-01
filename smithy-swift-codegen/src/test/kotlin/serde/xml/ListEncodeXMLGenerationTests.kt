@@ -15,7 +15,7 @@ class ListEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlListXmlNameInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
@@ -40,7 +40,7 @@ class ListEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlListXmlNameNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
@@ -63,6 +63,7 @@ class ListEncodeXMLGenerationTests {
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

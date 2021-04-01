@@ -15,7 +15,7 @@ class TimeStampEncodeGenerationTests {
         val expectedContents =
             """
             extension XmlTimestampsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case dateTime
                     case epochSeconds
                     case httpDate
@@ -50,7 +50,7 @@ class TimeStampEncodeGenerationTests {
         val expectedContents =
             """
             extension XmlTimestampsNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedTimestampList
                 }
             
@@ -81,7 +81,7 @@ class TimeStampEncodeGenerationTests {
         val expectedContents =
             """
             extension XmlTimestampsNestedHTTPDateInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedTimestampList
                 }
             
@@ -112,7 +112,7 @@ class TimeStampEncodeGenerationTests {
         val expectedContents =
             """
             extension XmlTimestampsNestedXmlNameInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedTimestampList
                 }
             

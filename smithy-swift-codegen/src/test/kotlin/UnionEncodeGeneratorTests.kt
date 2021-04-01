@@ -39,7 +39,7 @@ class UnionEncodeGeneratorTests {
         val expectedContents =
             """
             extension JsonUnionsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case contents
                 }
 
@@ -61,7 +61,7 @@ class UnionEncodeGeneratorTests {
         val expectedContents =
             """
             extension MyUnion: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case blobValue
                     case booleanValue
                     case enumValue

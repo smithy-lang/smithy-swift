@@ -44,7 +44,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension SmokeTestInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
                     case payload3
@@ -74,7 +74,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension Nested4: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case intList
                     case intMap
                     case member1
@@ -156,7 +156,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension TimestampInputInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case dateTime
                     case epochSeconds
                     case httpDate
@@ -197,7 +197,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension MapInputInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case blobMap
                     case dateMap
                     case enumMap
@@ -250,7 +250,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension EnumInputInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedWithEnum
                 }
 
@@ -269,7 +269,7 @@ class StructEncodeGenerationTests {
         val expectedContents2 =
             """
             extension NestedEnum: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myEnum
                 }
             
@@ -301,7 +301,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested1: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case foo
                     case nested
                 }
@@ -339,7 +339,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested2: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case bar
                     case recursiveMember
                 }
@@ -373,7 +373,7 @@ class StructEncodeGenerationTests {
         val expectedContents =
             """
 extension JsonListsInput: Encodable, Reflection {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case booleanList
         case integerList
         case nestedStringList
@@ -445,7 +445,7 @@ extension JsonListsInput: Encodable, Reflection {
         val expectedContents =
             """
 extension JsonMapsInput: Encodable, Reflection {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case denseBooleanMap
         case denseNumberMap
         case denseStringMap
@@ -519,7 +519,7 @@ extension JsonMapsInput: Encodable, Reflection {
         val expectedContents =
             """
 extension PrimitiveTypesInput: Encodable, Reflection {
-    private enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case booleanVal
         case byteVal
         case doubleVal

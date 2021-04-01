@@ -48,6 +48,8 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
+import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.StructDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.StructEncodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
@@ -158,17 +160,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    writer.addFoundationImport()
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
                         .toList()
                     generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                    writer.write("") // need enter space between coding keys and encode implementation
+                    writer.write("")
                     StructEncodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                 }
             }
-            // this rendering of the body struct and conformance to decodable is purely for protocol tests
+            // For protocol tests
             renderBodyStructAndDecodableExtension(ctx, shape)
+            DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
+
+            DynamicNodeEncodingGeneratorStrategy(ctx, shape).renderIfNeeded()
         }
     }
 
@@ -206,6 +210,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // handle top level output shapes which includes creating a new http body struct to handle deserialization
         for (shape in shapesNeedingDecodableConformance) {
             renderBodyStructAndDecodableExtension(ctx, shape)
+            DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
         }
     }
 
