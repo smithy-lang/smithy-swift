@@ -44,7 +44,7 @@ class UnionDecodeGeneratorTests {
             }
 
             extension JsonUnionsOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case contents
                 }
 
@@ -65,7 +65,7 @@ class UnionDecodeGeneratorTests {
         val expectedContents =
             """
             extension MyUnion: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case blobValue
                     case booleanValue
                     case enumValue

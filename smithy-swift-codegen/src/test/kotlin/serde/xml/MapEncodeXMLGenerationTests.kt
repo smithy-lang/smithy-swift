@@ -15,7 +15,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -43,7 +43,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsWithNameProtocolInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case `protocol` = "protocol"
                 }
             
@@ -71,7 +71,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -107,7 +107,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsNestedNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -151,7 +151,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlFlattenedMapsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -179,7 +179,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -215,7 +215,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -243,7 +243,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameFlattenedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             
@@ -271,7 +271,7 @@ class MapEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlMapsXmlNameNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myMap
                 }
             

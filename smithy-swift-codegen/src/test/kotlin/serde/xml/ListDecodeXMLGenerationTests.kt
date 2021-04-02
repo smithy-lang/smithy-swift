@@ -15,7 +15,7 @@ class ListDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlListXmlNameOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
@@ -52,7 +52,7 @@ class ListDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlListXmlNameNestedOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlListXmlNameNestedOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case renamedListMembers = "renamed"
             }
         

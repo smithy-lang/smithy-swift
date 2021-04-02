@@ -14,7 +14,7 @@ class TimeStampDecodeGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlTimestampsOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case dateTime
                 case epochSeconds
                 case httpDate
@@ -60,7 +60,7 @@ class TimeStampDecodeGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlTimestampsNestedOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }
         
@@ -104,7 +104,7 @@ class TimeStampDecodeGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedHTTPDateOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlTimestampsNestedHTTPDateOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }
         
@@ -147,7 +147,7 @@ class TimeStampDecodeGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedXmlNameOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlTimestampsNestedXmlNameOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }
         

@@ -15,7 +15,7 @@ class EnumDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumsOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlEnumsOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case fooEnum1
                 case fooEnum2
                 case fooEnum3
@@ -62,7 +62,7 @@ class EnumDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEnumsNestedOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedEnumsList
                 }
             

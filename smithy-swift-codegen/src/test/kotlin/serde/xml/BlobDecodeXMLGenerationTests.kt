@@ -15,7 +15,7 @@ class BlobDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlBlobsOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlBlobsOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case data
             }
         
@@ -44,7 +44,7 @@ class BlobDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlBlobsNestedOutputBody+Decodable.swift")
         val expectedContents = """
         extension XmlBlobsNestedOutputBody: Decodable {
-            private enum CodingKeys: String, CodingKey {
+            enum CodingKeys: String, CodingKey {
                 case nestedBlobList
             }
         

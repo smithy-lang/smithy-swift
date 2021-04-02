@@ -15,7 +15,7 @@ class EnumEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEnumsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case fooEnum1
                     case fooEnum2
                     case fooEnum3
@@ -52,7 +52,7 @@ class EnumEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEnumsNestedInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedEnumsList
                 }
             

@@ -15,7 +15,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested1: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case foo
                     case nested
                 }
@@ -49,7 +49,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension RecursiveShapesInputOutputNested2: Codable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case bar
                     case recursiveMember
                 }
@@ -83,7 +83,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlNestedRecursiveShapesInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedRecursiveList
                 }
             

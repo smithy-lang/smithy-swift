@@ -15,7 +15,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlWrappedListInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myGroceryList
                 }
             
@@ -41,7 +41,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlFlattenedListInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case myGroceryList
                 }
             
@@ -67,7 +67,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension SimpleScalarPropertiesInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case byteValue
                     case doubleValue = "DoubleDribble"
                     case falseBooleanValue
@@ -120,7 +120,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlNestedWrappedListInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedStringList
                 }
             
@@ -150,7 +150,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlNestedNestedWrappedListInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedNestedStringList
                 }
             
@@ -185,7 +185,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlNestedNestedFlattenedListInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case nestedNestedStringList
                 }
             
@@ -222,7 +222,7 @@ class StructEncodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEmptyListsInput: Encodable, Reflection {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case booleanList
                     case integerList
                     case stringList

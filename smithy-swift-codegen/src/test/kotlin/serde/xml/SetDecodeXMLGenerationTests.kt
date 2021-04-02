@@ -15,7 +15,7 @@ class SetDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEnumSetOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case fooEnumSet
                 }
             
@@ -54,7 +54,7 @@ class SetDecodeXMLGenerationTests {
         val expectedContents =
             """
             extension XmlEnumNestedSetOutputBody: Decodable {
-                private enum CodingKeys: String, CodingKey {
+                enum CodingKeys: String, CodingKey {
                     case fooEnumSet
                 }
             
