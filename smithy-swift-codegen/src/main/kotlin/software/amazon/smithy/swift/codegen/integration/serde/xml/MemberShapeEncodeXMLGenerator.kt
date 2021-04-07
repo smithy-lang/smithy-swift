@@ -114,7 +114,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val resolvedMemberName = NameTraitGenerator.construct(member, defaultMemberName)
-        val nestedContainer = "${memberName}Container${level}"
+        val nestedContainer = "${memberName}Container$level"
 
         writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
             when (nestedMemberTarget) {
