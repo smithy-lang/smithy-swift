@@ -7,7 +7,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NameTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 
 class DynamicNodeEncodingXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -46,7 +46,7 @@ class DynamicNodeEncodingXMLGenerator(
         val httpBodyMembers = shape.members()
             .filter { it.isInHttpBody() }
             .filter { it.hasTrait(XmlAttributeTrait::class.java) }
-            .map { NameTraitGenerator.construct(it, ctx.symbolProvider.toMemberName(it)).toString() }
+            .map { XMLNameTraitGenerator.construct(it, ctx.symbolProvider.toMemberName(it)).toString() }
             .toSet()
         renderGenericAttributeElementBlock(writer, "codingKeys", httpBodyMembers)
     }

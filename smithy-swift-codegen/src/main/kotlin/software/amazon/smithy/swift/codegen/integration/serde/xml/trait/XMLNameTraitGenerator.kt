@@ -3,15 +3,15 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml.trait
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlNameTrait
 
-class NameTraitGenerator(val xmlNameValue: String) {
+class XMLNameTraitGenerator(val xmlNameValue: String) {
     companion object {
-        fun construct(shape: Shape, defaultMemberName: String): NameTraitGenerator {
+        fun construct(shape: Shape, defaultMemberName: String): XMLNameTraitGenerator {
             if (shape.hasTrait(XmlNameTrait::class.java)) {
                 val trait = shape.getTrait(XmlNameTrait::class.java).get()
-                return NameTraitGenerator(trait.value)
+                return XMLNameTraitGenerator(trait.value)
             }
             val unquotedDefaultMemberName = defaultMemberName.removeSurrounding("`", "`")
-            return NameTraitGenerator(unquotedDefaultMemberName)
+            return XMLNameTraitGenerator(unquotedDefaultMemberName)
         }
     }
     override fun toString(): String {

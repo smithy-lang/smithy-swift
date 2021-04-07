@@ -13,7 +13,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NamespaceTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 
 class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -35,7 +35,7 @@ class StructEncodeXMLGenerator(
         val containerName = "container"
         writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
 
-        val namespace = NamespaceTraitGenerator.construct(shapeContainingMembers)
+        val namespace = XMLNamespaceTraitGenerator.construct(shapeContainingMembers)
         namespace?.let {
             writer.openBlock("if encoder.codingPath.isEmpty {", "}") {
                 it.render(writer, containerName)

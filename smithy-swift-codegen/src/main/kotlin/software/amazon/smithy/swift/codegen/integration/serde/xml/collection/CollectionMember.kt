@@ -2,7 +2,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml.collection
 
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NameTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 
 class CollectionMember(
     val namespace: String,
@@ -10,7 +10,7 @@ class CollectionMember(
 ) {
     companion object {
         fun constructCollectionMember(memberShape: MemberShape, level: Int): CollectionMember {
-            val memberTagName = NameTraitGenerator.construct(memberShape, "member").toString()
+            val memberTagName = XMLNameTraitGenerator.construct(memberShape, "member").toString()
             val namespace = "KeyVal$level"
             return CollectionMember(namespace, memberTagName)
         }

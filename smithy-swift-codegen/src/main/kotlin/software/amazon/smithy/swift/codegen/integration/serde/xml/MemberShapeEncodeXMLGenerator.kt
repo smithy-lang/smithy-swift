@@ -19,8 +19,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeG
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NameTraitGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NamespaceTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 import software.amazon.smithy.swift.codegen.isBoxed
 
 abstract class MemberShapeEncodeXMLGenerator(
@@ -42,14 +42,14 @@ abstract class MemberShapeEncodeXMLGenerator(
         containerName: String
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = NameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
                 renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
             } else {
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                NamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+                XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
                 renderListMemberItems(memberName, memberTarget, nestedContainer)
             }
         }
@@ -62,7 +62,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int = 0
     ) {
         val nestedMember = memberTarget.member
-        val nestedMemberResolvedName = NameTraitGenerator.construct(nestedMember, "member").toString()
+        val nestedMemberResolvedName = XMLNameTraitGenerator.construct(nestedMember, "member").toString()
 
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
@@ -87,7 +87,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     writer.write("try $containerName.encode($encodeValue)")
                 }
                 else -> {
-                    val nestedMemberNamespaceTraitGenerator = NamespaceTraitGenerator.construct(nestedMember)
+                    val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
                     val nestedContainerName = "${memberName}Container$level"
                     renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberResolvedName)
                 }
@@ -98,7 +98,7 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
         var nestedContainerName = "${nestedMemberTargetName}Container$level"
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${nestedMemberResolvedName}\"))")
-        NamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
+        XMLNamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
     }
 
@@ -113,7 +113,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         val defaultMemberName = if (level == 0) memberName else "member"
-        val resolvedMemberName = NameTraitGenerator.construct(member, defaultMemberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
         val nestedContainer = "${memberName}Container$level"
 
         writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
@@ -134,13 +134,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                     val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
-                    NamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+                    XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
                     val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
                     writer.write("try $nestedContainer.encode($encodeValue)")
                 }
                 else -> {
                     writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                    NamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+                    XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
                     writer.write("try $nestedContainer.encode($nestedMemberTargetName, forKey: Key(\"\"))")
                 }
             }
@@ -149,15 +149,15 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderFlattenedListContainer(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, memberName: String, member: MemberShape, containerName: String, level: Int) {
         var nestedContainerName = "${nestedMemberTargetName}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
-        val memberResolvedName = NameTraitGenerator.construct(member, defaultMemberName)
+        val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${memberResolvedName}\"))")
-        NamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
+        XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderFlattenedListMemberItems(nestedMemberTargetName, nestedMember, nestedMemberTarget, nestedContainerName, level + 1)
     }
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = NameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
         val nestedContainer = "${resolvedMemberName}Container"
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
@@ -224,7 +224,7 @@ abstract class MemberShapeEncodeXMLGenerator(
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = NameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
         val format = determineTimestampFormat(member, defaultTimestampFormat)
         val isBoxed = symbol.isBoxed()
         val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
@@ -240,11 +240,11 @@ abstract class MemberShapeEncodeXMLGenerator(
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = NameTraitGenerator.construct(member, memberName).toString()
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName).toString()
         val isBoxed = symbol.isBoxed()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
-                val namespaceTraitGenerator = NamespaceTraitGenerator.construct(member)
+                val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
                 val nestedContainerName = "${memberName}Container"
                 renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, resolvedMemberName)
             }
@@ -260,8 +260,8 @@ abstract class MemberShapeEncodeXMLGenerator(
         }
     }
 
-    private fun renderItem(writer: SwiftWriter, namespaceTraitGenerator: NamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, resolvedMemberName: String) {
-        namespaceTraitGenerator?.let {
+    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, resolvedMemberName: String) {
+        XMLNamespaceTraitGenerator?.let {
             writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedMemberName}\"))")
             writer.write("try $nestedContainerName.encode($memberName, forKey: Key(\"\"))")
             it.render(writer, nestedContainerName)
