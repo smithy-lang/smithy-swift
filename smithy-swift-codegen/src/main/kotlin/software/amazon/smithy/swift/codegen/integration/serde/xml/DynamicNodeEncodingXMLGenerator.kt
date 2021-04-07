@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.NameTrai
 class DynamicNodeEncodingXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shape: Shape,
-    private val hasXMLAttributes: Boolean,
     private val xmlNamespaces: Set<String>
 ) {
     fun render() {
@@ -26,19 +25,15 @@ class DynamicNodeEncodingXMLGenerator(
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension $symbolName: DynamicNodeEncoding {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                renderNodeEncodingConformance(symbolName, writer)
+                renderNodeEncodingConformance(writer)
             }
         }
     }
 
-    private fun renderNodeEncodingConformance(symbolName: String, writer: SwiftWriter) {
+    private fun renderNodeEncodingConformance(writer: SwiftWriter) {
         writer.openBlock("public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {", "}") {
-            xmlNamespaces?.let {
-                renderNamespaces(it, writer)
-            }
-            if (hasXMLAttributes) {
-                renderAttributes(writer)
-            }
+            renderNamespaces(xmlNamespaces, writer)
+            renderAttributes(writer)
             writer.write("return .element")
         }
     }

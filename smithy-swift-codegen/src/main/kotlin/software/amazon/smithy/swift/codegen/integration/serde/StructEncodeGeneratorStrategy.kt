@@ -14,7 +14,7 @@ class StructEncodeGeneratorStrategy(
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     var generator: MemberShapeEncodeGeneratable? = null
 
