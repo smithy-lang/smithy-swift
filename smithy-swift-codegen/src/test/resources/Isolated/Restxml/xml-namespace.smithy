@@ -29,7 +29,7 @@ structure XmlNamespacesInputOutput {
 }
 
 //This @xmlNamespace is ignored since it is a nested structure
-@xmlNamespace(uri: "http://foo.com")
+@xmlNamespace(uri: "http://boo.com")
 structure XmlNamespaceNested {
     @xmlNamespace(uri: "http://baz.com", prefix: "baz")
     foo: String,
