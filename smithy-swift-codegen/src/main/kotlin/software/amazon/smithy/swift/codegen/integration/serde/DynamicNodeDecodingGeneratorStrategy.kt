@@ -16,6 +16,6 @@ class DynamicNodeDecodingGeneratorStrategy(
     }
 
     private fun shouldRenderDynamicNodeDecodingProtocol(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Boolean {
-        return isRestXmlProtocolAndHasXmlTraitsInMembers(ctx, shape)
+        return isRestXmlProtocolAndHasXmlAttributesInMembers(ctx, shape)
     }
 }

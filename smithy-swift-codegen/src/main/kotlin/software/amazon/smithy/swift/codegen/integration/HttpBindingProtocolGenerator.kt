@@ -157,6 +157,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .name(symbolName)
                 .build()
 
+            var xmlNamespaces: Set<String> = setOf()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -165,14 +166,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .toList()
                     generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                     writer.write("")
-                    StructEncodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                    val structEncodeStrategy = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
+                    structEncodeStrategy.render()
+                    xmlNamespaces = structEncodeStrategy.xmlNamespaces()
                 }
             }
             // For protocol tests
             renderBodyStructAndDecodableExtension(ctx, shape)
             DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
 
-            DynamicNodeEncodingGeneratorStrategy(ctx, shape).renderIfNeeded()
+            DynamicNodeEncodingGeneratorStrategy(ctx, shape, xmlNamespaces).renderIfNeeded()
         }
     }
 
@@ -231,6 +234,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(symbolName)
             .build()
 
+        var xmlNamespaces: Set<String> = setOf()
+
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -242,7 +247,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("") // need enter space between coding keys and encode implementation
-                        StructEncodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        val structEncode = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
+                        structEncode.render()
+                        xmlNamespaces = structEncode.xmlNamespaces()
                         writer.write("")
                         StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                     }
@@ -260,6 +267,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
         }
+
+        DynamicNodeEncodingGeneratorStrategy(ctx, shape, xmlNamespaces).renderIfNeeded()
     }
 
     private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {

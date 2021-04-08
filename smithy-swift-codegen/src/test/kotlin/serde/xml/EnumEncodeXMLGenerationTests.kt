@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class EnumEncodeXMLGenerationTests {
     @Test
-    fun `encode enum`() {
+    fun `001 encode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumsInput+Encodable.swift")
         val expectedContents =
@@ -23,18 +23,18 @@ class EnumEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let fooEnum1 = fooEnum1 {
-                        try container.encode(fooEnum1, forKey: .fooEnum1)
+                        try container.encode(fooEnum1, forKey: Key("fooEnum1"))
                     }
                     if let fooEnum2 = fooEnum2 {
-                        try container.encode(fooEnum2, forKey: .fooEnum2)
+                        try container.encode(fooEnum2, forKey: Key("fooEnum2"))
                     }
                     if let fooEnum3 = fooEnum3 {
-                        try container.encode(fooEnum3, forKey: .fooEnum3)
+                        try container.encode(fooEnum3, forKey: Key("fooEnum3"))
                     }
                     if let fooEnumList = fooEnumList {
-                        var fooEnumListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .fooEnumList)
+                        var fooEnumListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("fooEnumList"))
                         for fooenum0 in fooEnumList {
                             try fooEnumListContainer.encode(fooenum0, forKey: Key("member"))
                         }
@@ -46,7 +46,7 @@ class EnumEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `encode nested enum`() {
+    fun `002 encode nested enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlEnumsNestedInput+Encodable.swift")
         val expectedContents =
@@ -57,9 +57,9 @@ class EnumEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedEnumsList = nestedEnumsList {
-                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedEnumsList)
+                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedEnumsList"))
                         for nestedenumslist0 in nestedEnumsList {
                             if let nestedenumslist0 = nestedenumslist0 {
                                 var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))

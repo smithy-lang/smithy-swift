@@ -23,18 +23,18 @@ class TimeStampEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let dateTime = dateTime {
-                        try container.encode(TimestampWrapper(dateTime, format: .dateTime), forKey: .dateTime)
+                        try container.encode(TimestampWrapper(dateTime, format: .dateTime), forKey: Key("dateTime"))
                     }
                     if let epochSeconds = epochSeconds {
-                        try container.encode(TimestampWrapper(epochSeconds, format: .epochSeconds), forKey: .epochSeconds)
+                        try container.encode(TimestampWrapper(epochSeconds, format: .epochSeconds), forKey: Key("epochSeconds"))
                     }
                     if let httpDate = httpDate {
-                        try container.encode(TimestampWrapper(httpDate, format: .httpDate), forKey: .httpDate)
+                        try container.encode(TimestampWrapper(httpDate, format: .httpDate), forKey: Key("httpDate"))
                     }
                     if let normal = normal {
-                        try container.encode(TimestampWrapper(normal, format: .dateTime), forKey: .normal)
+                        try container.encode(TimestampWrapper(normal, format: .dateTime), forKey: Key("normal"))
                     }
                 }
             }
@@ -55,9 +55,9 @@ class TimeStampEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedTimestampList)
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
                             if let nestedtimestamplist0 = nestedtimestamplist0 {
                                 var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
@@ -86,9 +86,9 @@ class TimeStampEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedTimestampList)
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedhttpdatetimestamplist0 in nestedTimestampList {
                             if let nestedhttpdatetimestamplist0 = nestedhttpdatetimestamplist0 {
                                 var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
@@ -117,9 +117,9 @@ class TimeStampEncodeGenerationTests {
                 }
             
                 public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    var container = encoder.container(keyedBy: Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: .nestedTimestampList)
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
                             if let nestedtimestamplist0 = nestedtimestamplist0 {
                                 var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTag1"))
@@ -128,6 +128,33 @@ class TimeStampEncodeGenerationTests {
                                 }
                             }
                         }
+                    }
+                }
+            }
+            """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `005 encode all timestamps, withxmlName`() {
+        val context = setupTests("Isolated/Restxml/xml-timestamp-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsXmlNameInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlTimestampsXmlNameInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case dateTime
+                    case normal = "notNormalName"
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let dateTime = dateTime {
+                        try container.encode(TimestampWrapper(dateTime, format: .dateTime), forKey: Key("dateTime"))
+                    }
+                    if let normal = normal {
+                        try container.encode(TimestampWrapper(normal, format: .dateTime), forKey: Key("notNormalName"))
                     }
                 }
             }
