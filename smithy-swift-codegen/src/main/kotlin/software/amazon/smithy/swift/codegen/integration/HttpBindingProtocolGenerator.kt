@@ -623,7 +623,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("self.\$L = mapMember", memberName)
             .closeBlock("} else {")
         writer.indent()
-        writer.write("self.\$L = nil", memberName)
+        writer.write("self.\$L = [:]", memberName)
         writer.dedent()
         writer.write("}")
     }
