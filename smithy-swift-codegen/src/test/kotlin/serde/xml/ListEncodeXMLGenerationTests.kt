@@ -143,15 +143,20 @@ class ListEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let nestedNestedStringList = nestedNestedStringList {
-                        for nestedstringlist0 in nestedNestedStringList {
-                            if let nestedstringlist0 = nestedstringlist0 {
-                                var nestedstringlist0Container0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedNestedStringList"))
-                                for stringlist1 in nestedstringlist0 {
-                                    if let stringlist1 = stringlist1 {
-                                        var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                        for string2 in stringlist1 {
-                                            var stringlist1Container2 = stringlist1Container1.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                            try stringlist1Container2.encode(string2, forKey: Key(""))
+                        if nestedNestedStringList.isEmpty {
+                            var nestedNestedStringListContainer = container.nestedUnkeyedContainer(forKey: Key("nestedNestedStringList"))
+                            try nestedNestedStringListContainer.encodeNil()
+                        } else {
+                            for nestedstringlist0 in nestedNestedStringList {
+                                if let nestedstringlist0 = nestedstringlist0 {
+                                    var nestedstringlist0Container0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedNestedStringList"))
+                                    for stringlist1 in nestedstringlist0 {
+                                        if let stringlist1 = stringlist1 {
+                                            var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                                            for string2 in stringlist1 {
+                                                var stringlist1Container2 = stringlist1Container1.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                                                try stringlist1Container2.encode(string2, forKey: Key(""))
+                                            }
                                         }
                                     }
                                 }
@@ -250,9 +255,14 @@ class ListEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let myGroceryList = myGroceryList {
-                        for string0 in myGroceryList {
-                            var myGroceryListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myGroceryList"))
-                            try myGroceryListContainer0.encode(string0, forKey: Key(""))
+                        if myGroceryList.isEmpty {
+                            var myGroceryListContainer = container.nestedUnkeyedContainer(forKey: Key("myGroceryList"))
+                            try myGroceryListContainer.encodeNil()
+                        } else {
+                            for string0 in myGroceryList {
+                                var myGroceryListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myGroceryList"))
+                                try myGroceryListContainer0.encode(string0, forKey: Key(""))
+                            }
                         }
                     }
                 }
@@ -263,7 +273,7 @@ class ListEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `005 encode nested flattened date time with namespace`() {
+    fun `009 encode nested flattened date time with namespace`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nested-flattened-datetime.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedFlattenedInput+DynamicNodeEncoding.swift")
         val expectedContents =
@@ -287,7 +297,7 @@ class ListEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `005 encode nested flattened datetime encodable`() {
+    fun `010 encode nested flattened datetime encodable`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nested-flattened-datetime.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedFlattenedInput+Encodable.swift")
         val expectedContents =
@@ -300,13 +310,18 @@ class ListEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        for nestedtimestamplist0 in nestedTimestampList {
-                            if let nestedtimestamplist0 = nestedtimestamplist0 {
-                                var nestedtimestamplist0Container0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
-                                for timestamp1 in nestedtimestamplist0 {
-                                    var nestedtimestamplist0Container1 = nestedtimestamplist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("nestedMember"))
-                                    try nestedtimestamplist0Container1.encode("http://baz.com", forKey: Key("xmlns:baz"))
-                                    try nestedtimestamplist0Container1.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key(""))
+                        if nestedTimestampList.isEmpty {
+                            var nestedTimestampListContainer = container.nestedUnkeyedContainer(forKey: Key("nestedTimestampList"))
+                            try nestedTimestampListContainer.encodeNil()
+                        } else {
+                            for nestedtimestamplist0 in nestedTimestampList {
+                                if let nestedtimestamplist0 = nestedtimestamplist0 {
+                                    var nestedtimestamplist0Container0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
+                                    for timestamp1 in nestedtimestamplist0 {
+                                        var nestedtimestamplist0Container1 = nestedtimestamplist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("nestedMember"))
+                                        try nestedtimestamplist0Container1.encode("http://baz.com", forKey: Key("xmlns:baz"))
+                                        try nestedtimestamplist0Container1.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key(""))
+                                    }
                                 }
                             }
                         }
@@ -317,6 +332,63 @@ class ListEncodeXMLGenerationTests {
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `011 encode flattened empty list`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-emptyFlattened.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlEmptyFlattenedListsInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlEmptyFlattenedListsInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case booleanList
+                    case integerList
+                    case stringList
+                    case stringSet
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let booleanList = booleanList {
+                        var booleanListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("booleanList"))
+                        for primitiveboolean0 in booleanList {
+                            try booleanListContainer.encode(primitiveboolean0, forKey: Key("member"))
+                        }
+                    }
+                    if let integerList = integerList {
+                        var integerListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("integerList"))
+                        for integer0 in integerList {
+                            try integerListContainer.encode(integer0, forKey: Key("member"))
+                        }
+                    }
+                    if let stringList = stringList {
+                        if stringList.isEmpty {
+                            var stringListContainer = container.nestedUnkeyedContainer(forKey: Key("stringList"))
+                            try stringListContainer.encodeNil()
+                        } else {
+                            for string0 in stringList {
+                                var stringListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringList"))
+                                try stringListContainer0.encode(string0, forKey: Key(""))
+                            }
+                        }
+                    }
+                    if let stringSet = stringSet {
+                        if stringSet.isEmpty {
+                            var stringSetContainer = container.nestedUnkeyedContainer(forKey: Key("stringSet"))
+                            try stringSetContainer.encodeNil()
+                        } else {
+                            for string0 in stringSet {
+                                var stringSetContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringSet"))
+                                try stringSetContainer0.encode(string0, forKey: Key(""))
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

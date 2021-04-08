@@ -36,38 +36,42 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
-        writer.write("if $containerName.contains(.$memberName) {")
-        writer.indent()
-        if (!memberIsFlattened) {
-            val memberValue = determineSymbolForShapeInList(memberTarget)
+
+        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+            var containerUsedForDecoding: String
+            var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberName}WrappedContainer"
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
-            currContainerKey = ".member"
-            currContainerName = nextContainerName
+            if (!memberIsFlattened) {
+                val memberValue = determineSymbolForShapeInList(memberTarget)
+                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
+                currContainerKey = ".member"
+                currContainerName = nextContainerName
+                containerUsedForDecoding = currContainerName
+                ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
+            } else {
+                val memberValue = "CollectionMember<Key>"
+                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
+                // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
+                currContainerName = nextContainerName
+                containerUsedForDecoding = containerName
+                ifNilOrIfLetStatement = "if $currContainerName != nil {"
+            }
 
-            writer.write("if let $currContainerName = $currContainerName {")
-            writer.indent()
-        }
-
-        val memberBuffer = "${memberName}Buffer"
-        val memberContainerName = "${memberName}Container"
-        val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
-        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
-        writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-        writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-            writer.write("$memberBuffer = $memberTargetSymbol()")
-
-            renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
-        }
-        writer.write("$memberName = $memberBuffer")
-        if (!memberIsFlattened) {
-            writer.dedent()
-            writer.write("} else {")
+            writer.openBlock(ifNilOrIfLetStatement, "} else {") {
+                val memberBuffer = "${memberName}Buffer"
+                val memberContainerName = "${memberName}Container"
+                val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
+                writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
+                writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
+                writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+                    writer.write("$memberBuffer = $memberTargetSymbol()")
+                    renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
+                }
+                writer.write("$memberName = $memberBuffer")
+            }
             writer.indent().write("$memberName = []")
             writer.dedent().write("}")
         }
-
-        writer.dedent().write("} else {")
         writer.indent().write("$memberName = nil")
         writer.dedent().write("}")
     }

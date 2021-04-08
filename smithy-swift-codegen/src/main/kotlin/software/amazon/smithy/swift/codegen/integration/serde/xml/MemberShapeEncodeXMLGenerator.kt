@@ -46,7 +46,14 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+                writer.openBlock("if $memberName.isEmpty {", "} else {") {
+                    writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
+                    writer.write("try $nestedContainer.encodeNil()")
+                }
+                writer.indent()
                 renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
+                writer.dedent()
+                writer.write("}")
             } else {
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                 XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
