@@ -48,39 +48,6 @@ class StructDecodeXMLGenerationTests {
     }
 
     @Test
-    fun `XmlFlattenedListOutputBody decodable`() {
-        val context = setupTests("Isolated/Restxml/xml-lists-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-
-        val contents = getFileContents(context.manifest, "/example/models/XmlFlattenedListOutputBody+Decodable.swift")
-        val expectedContents = """
-        extension XmlFlattenedListOutputBody: Decodable {
-            enum CodingKeys: String, CodingKey {
-                case myGroceryList
-            }
-        
-            public init (from decoder: Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                if containerValues.contains(.myGroceryList) {
-                    let myGroceryListContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
-                    var myGroceryListBuffer:[String]? = nil
-                    if let myGroceryListContainer = myGroceryListContainer {
-                        myGroceryListBuffer = [String]()
-                        for stringContainer0 in myGroceryListContainer {
-                            myGroceryListBuffer?.append(stringContainer0)
-                        }
-                    }
-                    myGroceryList = myGroceryListBuffer
-                } else {
-                    myGroceryList = nil
-                }
-            }
-        }
-        """.trimIndent()
-
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `SimpleScalarPropertiesOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
 
@@ -172,50 +139,6 @@ class StructDecodeXMLGenerationTests {
             }
         }
         """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `nestednested flattened list serialization`() {
-        val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNestedNestedFlattenedListOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlNestedNestedFlattenedListOutputBody: Decodable {
-                enum CodingKeys: String, CodingKey {
-                    case nestedNestedStringList
-                }
-            
-                public init (from decoder: Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    if containerValues.contains(.nestedNestedStringList) {
-                        let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
-                        var nestedNestedStringListBuffer:[[[String]?]?]? = nil
-                        if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                            nestedNestedStringListBuffer = [[[String]?]?]()
-                            for listContainer0 in nestedNestedStringListContainer {
-                                var listBuffer0 = [[String]?]()
-                                if let listContainer0 = listContainer0 {
-                                    for listContainer1 in listContainer0 {
-                                        var listBuffer1 = [String]()
-                                        if let listContainer1 = listContainer1 {
-                                            for stringContainer2 in listContainer1 {
-                                                listBuffer1.append(stringContainer2)
-                                            }
-                                        }
-                                        listBuffer0.append(listBuffer1)
-                                    }
-                                }
-                                nestedNestedStringListBuffer?.append(listBuffer0)
-                            }
-                        }
-                        nestedNestedStringList = nestedNestedStringListBuffer
-                    } else {
-                        nestedNestedStringList = nil
-                    }
-                }
-            }
-            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

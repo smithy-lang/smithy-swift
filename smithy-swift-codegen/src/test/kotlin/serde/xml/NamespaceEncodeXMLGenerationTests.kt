@@ -221,10 +221,15 @@ class NamespaceEncodeXMLGenerationTests {
                         try container.encode("http://foo.com", forKey: Key("xmlns"))
                     }
                     if let nested = nested {
-                        for string0 in nested {
-                            var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
-                            try nestedContainer0.encode("http://aux.com", forKey: Key("xmlns:baz"))
-                            try nestedContainer0.encode(string0, forKey: Key(""))
+                        if nested.isEmpty {
+                            var nestedContainer = container.nestedUnkeyedContainer(forKey: Key("nested"))
+                            try nestedContainer.encodeNil()
+                        } else {
+                            for string0 in nested {
+                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
+                                try nestedContainer0.encode("http://aux.com", forKey: Key("xmlns:baz"))
+                                try nestedContainer0.encode(string0, forKey: Key(""))
+                            }
                         }
                     }
                 }
