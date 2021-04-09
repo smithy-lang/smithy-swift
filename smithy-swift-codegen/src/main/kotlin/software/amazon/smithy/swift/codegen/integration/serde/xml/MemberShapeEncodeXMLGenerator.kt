@@ -176,6 +176,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             } else {
                 val nestedContainer = "${resolvedMemberName}Container"
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
                 renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
             }
         }
@@ -199,9 +200,18 @@ abstract class MemberShapeEncodeXMLGenerator(
                     throw Exception("nested collections not supported (yet)")
                 }
                 else -> {
+                    val mapShapeKeyNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.key)
+                    val mapShapeValueNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.value)
+
                     writer.write("var entry = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
-                    writer.write("try entry.encode(${nestedKeyValueName.first}, forKey: Key(\"$resolvedKeyName\"))")
-                    writer.write("try entry.encode(${nestedKeyValueName.second}, forKey: Key(\"$resolvedValueName\"))")
+
+                    writer.write("var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedKeyName}\"))")
+                    mapShapeKeyNamespaceTraitGenerator?.render(writer, "keyContainer")?.appendKey(xmlNamespaces)
+                    writer.write("try keyContainer.encode(${nestedKeyValueName.first}, forKey: Key(\"\"))")
+
+                    writer.write("var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedValueName}\"))")
+                    mapShapeValueNamespaceTraitGenerator?.render(writer, "valueContainer")?.appendKey(xmlNamespaces)
+                    writer.write("try valueContainer.encode(${nestedKeyValueName.second}, forKey: Key(\"\"))")
                 }
             }
         }

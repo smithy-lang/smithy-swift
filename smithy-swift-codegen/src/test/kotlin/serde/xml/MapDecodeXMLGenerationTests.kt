@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapDecodeXMLGenerationTests {
@@ -389,6 +390,49 @@ class MapDecodeXMLGenerationTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `010 decode map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    @Test
+    fun `011 decode flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct Uid{}; struct Val{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
+                        var myMapBuffer: [String:String]? = nil
+                        if let myMapContainer = myMapContainer {
+                            myMapBuffer = [String:String]()
+                            for stringContainer0 in myMapContainer {
+                                myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                            }
+                        }
+                        myMap = myMapBuffer
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

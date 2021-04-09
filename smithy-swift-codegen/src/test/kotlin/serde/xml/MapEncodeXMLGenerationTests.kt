@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -297,6 +298,53 @@ class MapEncodeXMLGenerationTests {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `010 encode map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsXmlNamespaceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("http://aoo.com", forKey: Key("xmlns"))
+                    }
+                    if let myMap = myMap {
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        try myMapContainer.encode("http://boo.com", forKey: Key("xmlns"))
+                        for (stringKey0, stringValue0) in myMap {
+                            var entry = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Quality"))
+                            try keyContainer.encode("http://doo.com", forKey: Key("xmlns"))
+                            try keyContainer.encode(stringKey0, forKey: Key(""))
+                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Degree"))
+                            try valueContainer.encode("http://eoo.com", forKey: Key("xmlns"))
+                            try valueContainer.encode(stringValue0, forKey: Key(""))
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    @Test
+    fun `011 encode flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        val expectedContents =
+            """
+
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
