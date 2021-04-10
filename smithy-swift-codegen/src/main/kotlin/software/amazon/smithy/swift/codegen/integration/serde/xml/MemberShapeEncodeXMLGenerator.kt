@@ -194,7 +194,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
             when (valueTargetShape) {
                 is MapShape -> {
-                    renderWrappedMapMemberItem(nestedKeyValueName, nestedKeyValueKeyName, valueTargetShape, containerName, level)
+                    renderWrappedMapMemberItem(nestedKeyValueName, nestedKeyValueKeyName, valueTargetShape, mapShape, containerName, level)
                 }
                 is CollectionShape -> {
                     throw Exception("nested collections not supported (yet)")
@@ -220,6 +220,7 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderWrappedMapMemberItem(
         nestedKeyValueName: Pair<String, String>,
         nestedKeyValueTagName: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
+        valueTargetShape: MapShape,
         mapShape: MapShape,
         containerName: String,
         level: Int
@@ -232,10 +233,16 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedContainer = "nestedMapEntryContainer$level"
         writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
         writer.openBlock("if let $valueName = $valueName {", "}") {
-            writer.write("try $nestedContainer.encode($keyName, forKey: Key(\"${keyTagName}\"))")
+            val nestedKeyContainer = "nestedKeyContainer$level"
+            writer.write("var ${nestedKeyContainer} = ${nestedContainer}.nestedContainer(keyedBy: Key.self, forKey: Key(\"${keyTagName}\"))")
+            XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
+            writer.write("try ${nestedKeyContainer}.encode($keyName, forKey: Key(\"\"))")
+
             val nextContainer = "nestedMapEntryContainer${level + 1}"
             writer.write("var $nextContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"${valueTagName}\"))")
-            renderWrappedMapMemberItem(valueName, mapShape, nextContainer, level + 1)
+            XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
+
+            renderWrappedMapMemberItem(valueName, valueTargetShape, nextContainer, level + 1)
         }
     }
 

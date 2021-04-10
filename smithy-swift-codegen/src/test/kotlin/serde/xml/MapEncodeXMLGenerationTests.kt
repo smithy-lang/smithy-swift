@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -382,6 +383,62 @@ class MapEncodeXMLGenerationTests {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `011 encode nested map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedNamespaceInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsNestedNamespaceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("http://aoo.com", forKey: Key("xmlns"))
+                    }
+                    if let myMap = myMap {
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        try myMapContainer.encode("http://boo.com", forKey: Key("xmlns"))
+                        for (stringKey0, xmlmapsnestednestednamespaceinputoutputmapValue0) in myMap {
+                            var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                            if let xmlmapsnestednestednamespaceinputoutputmapValue0 = xmlmapsnestednestednamespaceinputoutputmapValue0 {
+                                var nestedKeyContainer0 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("yek"))
+                                try nestedKeyContainer0.encode("http://doo.com", forKey: Key("xmlns"))
+                                try nestedKeyContainer0.encode(stringKey0, forKey: Key(""))
+                                var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("eulav"))
+                                try nestedMapEntryContainer1.encode("http://eoo.com", forKey: Key("xmlns"))
+                                for (stringKey1, stringValue1) in xmlmapsnestednestednamespaceinputoutputmapValue0 {
+                                    var entry = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                    var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("K"))
+                                    try keyContainer.encode("http://goo.com", forKey: Key("xmlns"))
+                                    try keyContainer.encode(stringKey1, forKey: Key(""))
+                                    var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("V"))
+                                    try valueContainer.encode("http://hoo.com", forKey: Key("xmlns"))
+                                    try valueContainer.encode(stringValue1, forKey: Key(""))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `012 encode nested flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        val expectedContents =
+            """
+
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

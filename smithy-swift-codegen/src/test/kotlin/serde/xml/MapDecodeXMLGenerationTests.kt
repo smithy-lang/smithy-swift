@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapDecodeXMLGenerationTests {
@@ -460,6 +461,28 @@ class MapDecodeXMLGenerationTests {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `012 decode nested map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `013 decode nested flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        val expectedContents =
+            """
+
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
