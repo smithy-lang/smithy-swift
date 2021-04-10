@@ -5,7 +5,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapDecodeXMLGenerationTests {
@@ -393,11 +392,37 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `010 decode map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceOutputBody+Decodable.swift")
         val expectedContents =
             """
-
+            extension XmlMapsXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct Quality{}; struct Degree{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Quality, KeyVal0.Degree>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Quality, KeyVal0.Degree>].self, forKey: .entry)
+                            var myMapBuffer: [String:String]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:String]()
+                                for stringContainer0 in myMapContainer {
+                                    myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -416,15 +441,20 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     struct KeyVal0{struct Uid{}; struct Val{}}
                     if containerValues.contains(.myMap) {
-                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
-                        var myMapBuffer: [String:String]? = nil
-                        if let myMapContainer = myMapContainer {
-                            myMapBuffer = [String:String]()
-                            for stringContainer0 in myMapContainer {
-                                myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Uid, KeyVal0.Val>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
+                            var myMapBuffer: [String:String]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:String]()
+                                for stringContainer0 in myMapContainer {
+                                    myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
                             }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
                         }
-                        myMap = myMapBuffer
                     } else {
                         myMap = nil
                     }
