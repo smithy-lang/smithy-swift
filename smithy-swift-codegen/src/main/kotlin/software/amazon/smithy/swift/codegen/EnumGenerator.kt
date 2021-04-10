@@ -149,11 +149,11 @@ class EnumGenerator(
     }
 
     fun addEnumCaseToAllCases(definition: EnumDefinition) {
-        allCasesBuilder.add(".${definition.swiftEnumCaseName()}")
+        allCasesBuilder.add(".${definition.swiftEnumCaseName(false)}")
     }
 
     fun addEnumCaseToRawValuesEnum(definition: EnumDefinition) {
-        rawValuesBuilder.add("case .${definition.swiftEnumCaseName()}: return \"${definition.value}\"")
+        rawValuesBuilder.add("case .${definition.swiftEnumCaseName(false)}: return \"${definition.value}\"")
     }
 
     fun createEnumWriterContexts() {
@@ -206,7 +206,7 @@ class EnumGenerator(
      * Uses either name or value attributes of EnumDefinition in that order and formats
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
-    fun EnumDefinition.swiftEnumCaseName(): String {
+    fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
         var enumCaseName = CaseUtils.toCamelCase(
             name.orElseGet {
                 value
@@ -216,7 +216,7 @@ class EnumGenerator(
             enumCaseName = "_$enumCaseName"
         }
 
-        if (reservedKeywords.contains(enumCaseName)) {
+        if (shouldBeEscaped && reservedKeywords.contains(enumCaseName)) {
             enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
         }
 
