@@ -118,6 +118,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedMember = memberTarget.member
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
+        //Todo: look into consistency of this with maps
         val defaultMemberName = if (level == 0) memberName else "member"
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
         val nestedContainer = "${memberName}Container$level"
@@ -250,8 +251,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
-        val defaultMemberName = if (level == 0) memberName else "entry"
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
+        val resolvedMemberName = if (level != 0) "entry" else XMLNameTraitGenerator.construct(member, memberName)
 
         val resolvedKeyName = XMLNameTraitGenerator.construct(mapShape.key, "key")
         val resolvedValueName = XMLNameTraitGenerator.construct(mapShape.value, "value")
@@ -270,6 +270,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     throw Exception("nested collections not supported (yet)")
                 }
                 else -> {
+                    //is any of htis even correct? seriously.. what?
                     val memberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
                     val mapShapeKeyNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.key)
                     val mapShapeValueNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.value)

@@ -12,35 +12,41 @@ use smithy.test#httpResponseTests
 service RestXml {
     version: "2019-12-16",
     operations: [
-        XmlMapsNestedNamespace
+        XmlMapsFlattenedNestedNamespace
     ]
 }
 
-@http(uri: "/XmlMapsNestedNamespace", method: "POST")
-operation XmlMapsNestedNamespace {
-    input: XmlMapsNestedNamespaceInputOutput,
-    output: XmlMapsNestedNamespaceInputOutput
+@http(uri: "/XmlMapsFlattenedNestedNamespace", method: "POST")
+operation XmlMapsFlattenedNestedNamespace {
+    input: XmlMapsFlattenedNestedNamespaceInputOutput,
+    output: XmlMapsFlattenedNestedNamespaceInputOutput
 }
 
 @xmlNamespace(uri: "http://aoo.com")
-structure XmlMapsNestedNamespaceInputOutput {
+structure XmlMapsFlattenedNestedNamespaceInputOutput {
     @xmlNamespace(uri: "http://boo.com")
     @xmlFlattened
-    myMap: XmlMapsNestedNamespaceInputOutputMap,
+    myMap: XmlMapsFlattenedNestedNamespaceInputOutputMap,
 }
 
 @xmlNamespace(uri: "http://coo.com")
-map XmlMapsNestedNamespaceInputOutputMap {
+map XmlMapsFlattenedNestedNamespaceInputOutputMap {
     @xmlNamespace(uri: "http://doo.com")
+    @xmlName("yek")
     key: String,
+
+    @xmlName("eulav")
     @xmlNamespace(uri: "http://eoo.com")
-    value: XmlMapsNestedNestedNamespaceInputOutputMap
+    value: XmlMapsFlattenedNestedNestedNamespaceInputOutputMap
 }
 
 @xmlNamespace(uri: "http://foo.com")
-map XmlMapsNestedNestedNamespaceInputOutputMap {
+map XmlMapsFlattenedNestedNestedNamespaceInputOutputMap {
     @xmlNamespace(uri: "http://goo.com")
+    @xmlName("K")
     key: String,
+
     @xmlNamespace(uri: "http://hoo.com")
+    @xmlName("V")
     value: String
 }

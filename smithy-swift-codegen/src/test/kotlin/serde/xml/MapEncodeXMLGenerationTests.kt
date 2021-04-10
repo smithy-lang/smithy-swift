@@ -435,7 +435,8 @@ class MapEncodeXMLGenerationTests {
     @Test
     fun `012 encode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedNestedNamespaceInput+Encodable.swift")
         val expectedContents =
             """
 
