@@ -362,3 +362,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
 fun String.clientName(): String =
     split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }
+
+fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
+    val escapedName = toMemberName(shape)
+    return Pair(escapedName, escapedName.removeSurroundingBackticks())
+}

@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.toMemberNames
 
 /**
  * Generates decode function for members bound to the payload.
@@ -53,10 +54,10 @@ class StructDecodeGenerator(
                 writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
                 members.forEach { member ->
                     val target = ctx.model.expectShape(member.target)
-                    val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+                    val memberNames = ctx.symbolProvider.toMemberNames(member)
                     when (target) {
-                        is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
-                        is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
+                        is CollectionShape -> renderDecodeListMember(target, memberNames.second, containerName, member)
+                        is MapShape -> renderDecodeMapMember(target, memberNames.second, containerName, member)
                         is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
                         else -> writeDecodeForPrimitive(target, member, containerName)
                     }
