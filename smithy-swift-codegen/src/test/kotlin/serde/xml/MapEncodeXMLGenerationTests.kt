@@ -5,7 +5,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -303,9 +302,8 @@ class MapEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `010 encode map with xmlnamespace`() {
+    fun `010 encode map with xmlnamespace, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
@@ -337,14 +335,41 @@ class MapEncodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `011 encode flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
-        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-
+            extension XmlMapsFlattenedXmlNamespaceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("http://aoo.com", forKey: Key("xmlns"))
+                    }
+                    if let myMap = myMap {
+                        if myMap.isEmpty {
+                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        } else {
+                            for (stringKey0, stringValue0) in myMap {
+                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                                try nestedContainer0.encode("http://boo.com", forKey: Key("xmlns"))
+                                var keyContainer = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("Uid"))
+                                try keyContainer.encode("http://doo.com", forKey: Key("xmlns"))
+                                try keyContainer.encode(stringKey0, forKey: Key(""))
+                                var valueContainer = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("Val"))
+                                try valueContainer.encode("http://eoo.com", forKey: Key("xmlns"))
+                                try valueContainer.encode(stringValue0, forKey: Key(""))
+                            }
+                        }
+                    }
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

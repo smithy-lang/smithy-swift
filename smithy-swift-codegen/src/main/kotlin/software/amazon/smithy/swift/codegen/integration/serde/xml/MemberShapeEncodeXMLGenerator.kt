@@ -263,15 +263,19 @@ abstract class MemberShapeEncodeXMLGenerator(
                     throw Exception("nested collections not supported (yet)")
                 }
                 else -> {
+                    val memberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
+                    val mapShapeKeyNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.key)
+                    val mapShapeValueNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.value)
+
                     writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                    // todo add in namespace to member if needed
+                    memberNamespaceTraitGenerator?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
 
                     writer.write("var keyContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedKeyName\"))")
-                    // todo add in key to member if needed
+                    mapShapeKeyNamespaceTraitGenerator?.render(writer, "keyContainer")?.appendKey(xmlNamespaces)
                     writer.write("try keyContainer.encode(${nestedKeyValue.first}, forKey: Key(\"\"))")
 
                     writer.write("var valueContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedValueName\"))")
-                    // todo add in value to member if needed
+                    mapShapeValueNamespaceTraitGenerator?.render(writer, "valueContainer")?.appendKey(xmlNamespaces)
                     writer.write("try valueContainer.encode(${nestedKeyValue.second}, forKey: Key(\"\"))")
                 }
             }
