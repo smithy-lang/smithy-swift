@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -300,6 +301,47 @@ class MapEncodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `010 encode flattened nested map with xmlname`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedNestedXmlNameInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedNestedXmlNameInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let myMap = myMap {
+                        if myMap.isEmpty {
+                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        } else {
+                            for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
+                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                                if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
+                                    try nestedContainer0.encode(stringKey0, forKey: Key("yek"))
+                                    var nestedMapEntryContainer1 = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("eulav"))
+                                    for (stringKey1, stringValue1) in xmlmapsnestednestedinputoutputmapValue0 {
+                                        var nestedContainer1 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                        var keyContainer = nestedContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("K"))
+                                        try keyContainer.encode(stringKey1, forKey: Key(""))
+                                        var valueContainer = nestedContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("V"))
+                                        try valueContainer.encode(stringValue1, forKey: Key(""))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

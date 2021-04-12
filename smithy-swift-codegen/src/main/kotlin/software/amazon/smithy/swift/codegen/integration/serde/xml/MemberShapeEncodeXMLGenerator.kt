@@ -233,8 +233,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
-        val defaultMemberName = if (level == 0) memberName else "entry"
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
+        val resolvedMemberName = if (level == 0) XMLNameTraitGenerator.construct(member, memberName) else "entry"
 
         val resolvedKeyName = XMLNameTraitGenerator.construct(mapShape.key, "key")
         val resolvedValueName = XMLNameTraitGenerator.construct(mapShape.value, "value")
