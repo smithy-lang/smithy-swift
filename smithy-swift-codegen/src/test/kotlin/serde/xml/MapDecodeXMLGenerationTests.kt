@@ -393,7 +393,6 @@ class MapDecodeXMLGenerationTests {
     fun `011 decode flattened nested map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedNestedXmlNameOutputBody+Decodable.swift")
-//I am gonna guess this is just gonna magically work
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedXmlNameOutputBody: Decodable {
