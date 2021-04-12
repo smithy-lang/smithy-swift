@@ -26,8 +26,10 @@ class MapEncodeXMLGenerationTests {
                         var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                            try entry.encode(stringKey0, forKey: Key("key"))
-                            try entry.encode(greetingstructValue0, forKey: Key("value"))
+                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                            try keyContainer.encode(stringKey0, forKey: Key(""))
+                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                            try valueContainer.encode(greetingstructValue0, forKey: Key(""))
                         }
                     }
                 }
@@ -53,8 +55,10 @@ class MapEncodeXMLGenerationTests {
                         var protocolContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("protocol"))
                         for (stringKey0, greetingstructValue0) in `protocol` {
                             var entry = protocolContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                            try entry.encode(stringKey0, forKey: Key("key"))
-                            try entry.encode(greetingstructValue0, forKey: Key("value"))
+                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                            try keyContainer.encode(stringKey0, forKey: Key(""))
+                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                            try valueContainer.encode(greetingstructValue0, forKey: Key(""))
                         }
                     }
                 }
@@ -81,12 +85,15 @@ class MapEncodeXMLGenerationTests {
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
                             if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
-                                try nestedMapEntryContainer0.encode(stringKey0, forKey: Key("key"))
+                                var nestedKeyContainer0 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                try nestedKeyContainer0.encode(stringKey0, forKey: Key(""))
                                 var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
                                 for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
                                     var entry = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                    try entry.encode(stringKey1, forKey: Key("key"))
-                                    try entry.encode(greetingstructValue1, forKey: Key("value"))
+                                    var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                    try keyContainer.encode(stringKey1, forKey: Key(""))
+                                    var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                    try valueContainer.encode(greetingstructValue1, forKey: Key(""))
                                 }
                             }
                         }
@@ -103,30 +110,33 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedNestedInput+Encodable.swift")
         val expectedContents =
             """
-                extension XmlMapsNestedNestedInput: Encodable, Reflection {
-                    enum CodingKeys: String, CodingKey {
-                        case myMap
-                    }
-                
-                    public func encode(to encoder: Encoder) throws {
-                        var container = encoder.container(keyedBy: Key.self)
-                        if let myMap = myMap {
-                            var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
-                            for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                                var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
-                                    try nestedMapEntryContainer0.encode(stringKey0, forKey: Key("key"))
-                                    var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                                    for (stringKey1, xmlmapsnestednestednestedinputoutputmapValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                        var nestedMapEntryContainer1 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                        if let xmlmapsnestednestednestedinputoutputmapValue1 = xmlmapsnestednestednestedinputoutputmapValue1 {
-                                            try nestedMapEntryContainer1.encode(stringKey1, forKey: Key("key"))
-                                            var nestedMapEntryContainer2 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                                            for (stringKey2, greetingstructValue2) in xmlmapsnestednestednestedinputoutputmapValue1 {
-                                                var entry = nestedMapEntryContainer2.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                                try entry.encode(stringKey2, forKey: Key("key"))
-                                                try entry.encode(greetingstructValue2, forKey: Key("value"))
-                                            }
+            extension XmlMapsNestedNestedInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let myMap = myMap {
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
+                            var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                            if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
+                                var nestedKeyContainer0 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                try nestedKeyContainer0.encode(stringKey0, forKey: Key(""))
+                                var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                for (stringKey1, xmlmapsnestednestednestedinputoutputmapValue1) in xmlmapsnestednestedinputoutputmapValue0 {
+                                    var nestedMapEntryContainer1 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                    if let xmlmapsnestednestednestedinputoutputmapValue1 = xmlmapsnestednestednestedinputoutputmapValue1 {
+                                        var nestedKeyContainer1 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                        try nestedKeyContainer1.encode(stringKey1, forKey: Key(""))
+                                        var nestedMapEntryContainer2 = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                        for (stringKey2, greetingstructValue2) in xmlmapsnestednestednestedinputoutputmapValue1 {
+                                            var entry = nestedMapEntryContainer2.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                            try keyContainer.encode(stringKey2, forKey: Key(""))
+                                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                            try valueContainer.encode(greetingstructValue2, forKey: Key(""))
                                         }
                                     }
                                 }
@@ -134,6 +144,7 @@ class MapEncodeXMLGenerationTests {
                         }
                     }
                 }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -226,8 +237,10 @@ class MapEncodeXMLGenerationTests {
                         var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
                         for (stringKey0, greetingstructValue0) in myMap {
                             var entry = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                            try entry.encode(stringKey0, forKey: Key("Attribute"))
-                            try entry.encode(greetingstructValue0, forKey: Key("Setting"))
+                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Attribute"))
+                            try keyContainer.encode(stringKey0, forKey: Key(""))
+                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Setting"))
+                            try valueContainer.encode(greetingstructValue0, forKey: Key(""))
                         }
                     }
                 }
@@ -286,12 +299,15 @@ class MapEncodeXMLGenerationTests {
                         for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
                             var nestedMapEntryContainer0 = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
                             if let xmlmapsnestednestedinputoutputmapValue0 = xmlmapsnestednestedinputoutputmapValue0 {
-                                try nestedMapEntryContainer0.encode(stringKey0, forKey: Key("CustomKey1"))
+                                var nestedKeyContainer0 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("CustomKey1"))
+                                try nestedKeyContainer0.encode(stringKey0, forKey: Key(""))
                                 var nestedMapEntryContainer1 = nestedMapEntryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("CustomValue1"))
                                 for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
                                     var entry = nestedMapEntryContainer1.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                    try entry.encode(stringKey1, forKey: Key("CustomKey2"))
-                                    try entry.encode(greetingstructValue1, forKey: Key("CustomValue2"))
+                                    var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("CustomKey2"))
+                                    try keyContainer.encode(stringKey1, forKey: Key(""))
+                                    var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("CustomValue2"))
+                                    try valueContainer.encode(greetingstructValue1, forKey: Key(""))
                                 }
                             }
                         }
@@ -338,6 +354,48 @@ class MapEncodeXMLGenerationTests {
                     }
                 }
             }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `011 encode map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceInput+Encodable.swift")
+        val expectedContents =
+            """
+
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    @Test
+    fun `012 encode flattened map xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+Encodable.swift")
+        val expectedContents =
+            """
+
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `013 encode nested map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedXmlNamespaceInput+Encodable.swift")
+        val expectedContents =
+            """
+                       """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    @Test
+    fun `014 encode nested flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+DynamicNodeEncoding.swift")
+        val expectedContents =
+            """
+
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
