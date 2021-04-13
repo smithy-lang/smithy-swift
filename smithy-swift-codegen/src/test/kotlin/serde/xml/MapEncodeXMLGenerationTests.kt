@@ -364,7 +364,31 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-
+            extension XmlMapsXmlNamespaceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("http://aoo.com", forKey: Key("xmlns"))
+                    }
+                    if let myMap = myMap {
+                        var myMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        try myMapContainer.encode("http://boo.com", forKey: Key("xmlns"))
+                        for (stringKey0, stringValue0) in myMap {
+                            var entry = myMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                            var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Quality"))
+                            try keyContainer.encode("http://doo.com", forKey: Key("xmlns"))
+                            try keyContainer.encode(stringKey0, forKey: Key(""))
+                            var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("Degree"))
+                            try valueContainer.encode("http://eoo.com", forKey: Key("xmlns"))
+                            try valueContainer.encode(stringValue0, forKey: Key(""))
+                        }
+                    }
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -374,7 +398,34 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-
+            extension XmlMapsFlattenedXmlNamespaceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("http://aoo.com", forKey: Key("xmlns"))
+                    }
+                    if let myMap = myMap {
+                        if myMap.isEmpty {
+                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                        } else {
+                            for (stringKey0, stringValue0) in myMap {
+                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myMap"))
+                                try nestedContainer0.encode("http://boo.com", forKey: Key("xmlns"))
+                                var keyContainer = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("Uid"))
+                                try keyContainer.encode("http://doo.com", forKey: Key("xmlns"))
+                                try keyContainer.encode(stringKey0, forKey: Key(""))
+                                var valueContainer = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("Val"))
+                                try valueContainer.encode("http://eoo.com", forKey: Key("xmlns"))
+                                try valueContainer.encode(stringValue0, forKey: Key(""))
+                            }
+                        }
+                    }
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
