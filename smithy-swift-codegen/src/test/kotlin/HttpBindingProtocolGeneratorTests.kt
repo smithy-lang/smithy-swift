@@ -162,4 +162,34 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `default fooMap to an empty map if keysForFooMap is empty`() {
+        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+ResponseInit.swift", newTestContext.manifest)
+        val expectedContents =
+            """
+            extension HttpPrefixHeadersOutput: HttpResponseBinding {
+                public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+                    if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+                        self.foo = fooHeaderValue
+                    } else {
+                        self.foo = nil
+                    }
+                    let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
+                    if (!keysForFooMap.isEmpty) {
+                        var mapMember = [String: String]()
+                        for headerKey in keysForFooMap {
+                            let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
+                            let mapMemberKey = headerKey.removePrefix("X-Foo-")
+                            mapMember[mapMemberKey] = mapMemberValue
+                        }
+                        self.fooMap = mapMember
+                    } else {
+                        self.fooMap = [:]
+                    }
+            
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }
