@@ -202,7 +202,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 else -> {
                     writer.write("var entry = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
                     writer.write("try entry.encode(${nestedKeyValueName.first}, forKey: Key(\"${resolvedCodingKeys.first}\"))")
-                    writer.write("try entry.encode(${nestedKeyValueName.second}, forKey: Key(\"${resolvedCodingKeys.second}}\"))")
+                    writer.write("try entry.encode(${nestedKeyValueName.second}, forKey: Key(\"${resolvedCodingKeys.second}\"))")
                 }
             }
         }
