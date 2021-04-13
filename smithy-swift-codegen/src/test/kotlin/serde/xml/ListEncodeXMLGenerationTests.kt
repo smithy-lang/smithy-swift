@@ -5,7 +5,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class ListEncodeXMLGenerationTests {
@@ -393,7 +392,6 @@ class ListEncodeXMLGenerationTests {
     @Test
     fun `011 encode list flattened nested with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/XmlListNestedFlattenedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
