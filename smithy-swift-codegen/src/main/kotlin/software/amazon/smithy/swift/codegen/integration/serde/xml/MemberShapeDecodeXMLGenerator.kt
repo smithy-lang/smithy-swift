@@ -140,37 +140,42 @@ abstract class MemberShapeDecodeXMLGenerator(
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
-        writer.write("if $containerName.contains(.$memberName) {")
-        writer.indent()
-        if (!memberIsFlattened) {
+        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+
+            var containerUsedForDecoding: String
+            var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberNameUnquoted}WrappedContainer"
             writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
-            currContainerKey = ".entry"
-            currContainerName = nextContainerName
-            writer.write("if let $currContainerName = $currContainerName {")
-            writer.indent()
-        }
+            if (!memberIsFlattened) {
+                currContainerKey = ".entry"
+                currContainerName = nextContainerName
+                containerUsedForDecoding = currContainerName
+                ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
+            } else {
+                // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
+                currContainerName = nextContainerName
+                containerUsedForDecoding = containerName
+                ifNilOrIfLetStatement = "if $currContainerName != nil {"
+            }
 
-        val memberBuffer = "${memberNameUnquoted}Buffer"
-        val memberContainerName = "${memberNameUnquoted}Container"
-        val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
+            writer.openBlock("$ifNilOrIfLetStatement", "} else {") {
+                val memberBuffer = "${memberNameUnquoted}Buffer"
+                val memberContainerName = "${memberNameUnquoted}Container"
+                val memberTargetSymbol = "[$memberTargetKey:$memberTargetValue]"
 
-        val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, "MapKeyValue", false)
-        writer.write("let $memberContainerName = try $currContainerName.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
-        writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil",)
-        writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-            writer.write("$memberBuffer = $memberTargetSymbol()")
-            val memberTargetValueTarget = ctx.model.expectShape(memberTarget.value.target)
-            renderMapMemberItems(memberTargetValueTarget, memberContainerName, memberBuffer)
-        }
-        writer.write("$memberName = $memberBuffer")
-        if (!memberIsFlattened) {
-            writer.dedent()
-            writer.write("} else {")
+                val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, "MapKeyValue", false)
+                writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
+                writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil",)
+                writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+                    writer.write("$memberBuffer = $memberTargetSymbol()")
+                    val memberTargetValueTarget = ctx.model.expectShape(memberTarget.value.target)
+                    renderMapMemberItems(memberTargetValueTarget, memberContainerName, memberBuffer)
+                }
+                writer.write("$memberName = $memberBuffer")
+            }
             writer.indent().write("$memberName = [:]")
             writer.dedent().write("}")
         }
-        writer.dedent().write("} else {")
         writer.indent().write("$memberName = nil")
         writer.dedent().write("}")
     }
