@@ -233,9 +233,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("if let $valueName = $valueName {", "}") {
 
             val nestedKeyContainer = "nestedKeyContainer$level"
-            writer.write("var ${nestedKeyContainer} = ${nestedContainer}.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.first}\"))")
+            writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.first}\"))")
             XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
-            writer.write("try ${nestedKeyContainer}.encode($keyName, forKey: Key(\"\"))")
+            writer.write("try $nestedKeyContainer.encode($keyName, forKey: Key(\"\"))")
 
             val nextContainer = "nestedMapEntryContainer${level + 1}"
             writer.write("var $nextContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
@@ -263,7 +263,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             when (valueTargetShape) {
                 is MapShape -> {
                     writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                    renderFlattenedNestedMapEntry(nestedKeyValue, resolvedCodingKeys, mapShape.value, valueTargetShape, nestedContainer, level)
+                    renderFlattenedNestedMapEntry(nestedKeyValue, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level)
                 }
                 is CollectionShape -> {
                     throw Exception("nested collections not supported (yet)")
@@ -274,7 +274,9 @@ abstract class MemberShapeEncodeXMLGenerator(
                     val mapShapeValueNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.value)
 
                     writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                    memberNamespaceTraitGenerator?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+                    if (level == 0) {
+                        memberNamespaceTraitGenerator?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+                    }
 
                     writer.write("var keyContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.first}\"))")
                     mapShapeKeyNamespaceTraitGenerator?.render(writer, "keyContainer")?.appendKey(xmlNamespaces)
@@ -291,18 +293,24 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderFlattenedNestedMapEntry(
         keyValueName: Pair<String, String>,
         resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
-        memberShape: MemberShape,
         mapShape: MapShape,
+        valueTargetShape: MapShape,
         containerName: String,
         level: Int
     ) {
         val keyName = keyValueName.first
         val valueName = keyValueName.second
         writer.openBlock("if let $valueName = $valueName {", "}") {
-            writer.write("try $containerName.encode($keyName, forKey: Key(\"${resolvedCodingKeys.first}\"))")
-            val nextContainer = "nestedMapEntryContainer${level + 1}"
-            writer.write("var $nextContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
-            renderFlattenedMapMemberItem(valueName, memberShape, mapShape, nextContainer, level + 1)
+            val nestedKeyContainer = "nestedKeyContainer$level"
+            writer.write("var $nestedKeyContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.first}\"))")
+            XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
+            writer.write("try $nestedKeyContainer.encode($keyName, forKey: Key(\"\"))")
+
+            val nestedValueContainer = "nestedValueContainer$level"
+            writer.write("var $nestedValueContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
+            XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nestedValueContainer)?.appendKey(xmlNamespaces)
+
+            renderFlattenedMapMemberItem(valueName, mapShape.value, valueTargetShape, nestedValueContainer, level + 1)
         }
     }
 

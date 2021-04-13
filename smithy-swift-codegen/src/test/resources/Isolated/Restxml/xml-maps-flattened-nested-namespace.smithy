@@ -12,18 +12,18 @@ use smithy.test#httpResponseTests
 service RestXml {
     version: "2019-12-16",
     operations: [
-        XmlMapsNestedNamespace
+        XmlMapsFlattenedNestedXmlNamespace
     ]
 }
 
-@http(uri: "/XmlMapsNestedNamespace", method: "POST")
-operation XmlMapsNestedNamespace {
-    input: XmlMapsNestedNamespaceInputOutput,
-    output: XmlMapsNestedNamespaceInputOutput
+@http(uri: "/XmlMapsFlattenedNestedXmlNamespace", method: "POST")
+operation XmlMapsFlattenedNestedXmlNamespace {
+    input: XmlMapsFlattenedNestedXmlNamespaceInputOutput,
+    output: XmlMapsFlattenedNestedXmlNamespaceInputOutput
 }
 
 @xmlNamespace(uri: "http://aoo.com")
-structure XmlMapsNestedNamespaceInputOutput {
+structure XmlMapsFlattenedNestedXmlNamespaceInputOutput {
     @xmlNamespace(uri: "http://boo.com")
     @xmlFlattened
     myMap: XmlMapsNestedNamespaceInputOutputMap,
@@ -32,15 +32,21 @@ structure XmlMapsNestedNamespaceInputOutput {
 @xmlNamespace(uri: "http://coo.com")
 map XmlMapsNestedNamespaceInputOutputMap {
     @xmlNamespace(uri: "http://doo.com")
+    @xmlName("yek")
     key: String,
+
     @xmlNamespace(uri: "http://eoo.com")
+    @xmlName("eulav")
     value: XmlMapsNestedNestedNamespaceInputOutputMap
 }
 
 @xmlNamespace(uri: "http://foo.com")
 map XmlMapsNestedNestedNamespaceInputOutputMap {
     @xmlNamespace(uri: "http://goo.com")
+    @xmlName("K")
     key: String,
+
     @xmlNamespace(uri: "http://hoo.com")
+    @xmlName("V")
     value: String
 }
