@@ -113,17 +113,19 @@ class StructDecodeXMLGenerationTests {
                         var nestedNestedStringListBuffer:[[[String]?]?]? = nil
                         if let nestedNestedStringListContainer = nestedNestedStringListContainer {
                             nestedNestedStringListBuffer = [[[String]?]?]()
+                            var listBuffer0: [[String]?]? = nil
                             for listContainer0 in nestedNestedStringListContainer {
-                                var listBuffer0 = [[String]?]()
+                                listBuffer0 = [[String]?]()
                                 if let listContainer0 = listContainer0 {
+                                    var listBuffer1: [String]? = nil
                                     for listContainer1 in listContainer0 {
-                                        var listBuffer1 = [String]()
+                                        listBuffer1 = [String]()
                                         if let listContainer1 = listContainer1 {
                                             for stringContainer2 in listContainer1 {
-                                                listBuffer1.append(stringContainer2)
+                                                listBuffer1?.append(stringContainer2)
                                             }
                                         }
-                                        listBuffer0.append(listBuffer1)
+                                        listBuffer0?.append(listBuffer1)
                                     }
                                 }
                                 nestedNestedStringListBuffer?.append(listBuffer0)

@@ -85,7 +85,16 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is MapShape -> {
-                    throw Exception("Maps not supported yet")
+                    val nestedContainerName = "${memberName}Container$level"
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${nestedMemberResolvedName}\"))")
+                    val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+                    if (isBoxed) {
+                        writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
+                            renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
+                        }
+                    } else {
+                        renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
+                    }
                 }
                 is TimestampShape -> {
                     val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)

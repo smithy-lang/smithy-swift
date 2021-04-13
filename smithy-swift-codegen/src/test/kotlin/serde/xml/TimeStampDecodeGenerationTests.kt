@@ -74,11 +74,12 @@ class TimeStampDecodeGenerationTests {
                         var nestedTimestampListBuffer:[[Date]?]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
                             nestedTimestampListBuffer = [[Date]?]()
+                            var listBuffer0: [Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                var listBuffer0 = [Date]()
+                                listBuffer0 = [Date]()
                                 if let listContainer0 = listContainer0 {
                                     for timestampContainer1 in listContainer0 {
-                                        try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                        try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                     }
                                 }
                                 nestedTimestampListBuffer?.append(listBuffer0)
@@ -118,11 +119,12 @@ class TimeStampDecodeGenerationTests {
                         var nestedTimestampListBuffer:[[Date]?]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
                             nestedTimestampListBuffer = [[Date]?]()
+                            var listBuffer0: [Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                var listBuffer0 = [Date]()
+                                listBuffer0 = [Date]()
                                 if let listContainer0 = listContainer0 {
                                     for timestampContainer1 in listContainer0 {
-                                        try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
+                                        try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
                                     }
                                 }
                                 nestedTimestampListBuffer?.append(listBuffer0)
@@ -161,11 +163,12 @@ class TimeStampDecodeGenerationTests {
                         var nestedTimestampListBuffer:[[Date]?]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
                             nestedTimestampListBuffer = [[Date]?]()
+                            var listBuffer0: [Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                var listBuffer0 = [Date]()
+                                listBuffer0 = [Date]()
                                 if let listContainer0 = listContainer0 {
                                     for timestampContainer1 in listContainer0 {
-                                        try listBuffer0.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                        try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                     }
                                 }
                                 nestedTimestampListBuffer?.append(listBuffer0)

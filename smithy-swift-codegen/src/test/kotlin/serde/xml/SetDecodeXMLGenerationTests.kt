@@ -68,12 +68,15 @@ class SetDecodeXMLGenerationTests {
                             var fooEnumSetBuffer:Set<Set<FooEnum>>? = nil
                             if let fooEnumSetContainer = fooEnumSetContainer {
                                 fooEnumSetBuffer = Set<Set<FooEnum>>()
+                                var setBuffer0: Set<FooEnum>? = nil
                                 for setContainer0 in fooEnumSetContainer {
-                                    var setBuffer0 = Set<FooEnum>()
+                                    setBuffer0 = Set<FooEnum>()
                                     for stringContainer1 in setContainer0 {
-                                        setBuffer0.insert(stringContainer1)
+                                        setBuffer0?.insert(stringContainer1)
                                     }
-                                    fooEnumSetBuffer?.insert(setBuffer0)
+                                    if let setBuffer0 = setBuffer0 {
+                                        fooEnumSetBuffer?.insert(setBuffer0)
+                                    }
                                 }
                             }
                             fooEnumSet = fooEnumSetBuffer
