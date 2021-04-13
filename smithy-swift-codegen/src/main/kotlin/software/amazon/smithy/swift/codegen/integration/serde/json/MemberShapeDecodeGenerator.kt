@@ -23,6 +23,8 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.recursiveSymbol
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
+import software.amazon.smithy.swift.codegen.toMemberNames
 
 /*
 Includes functions to help render conformance to Decodable protocol for shapes
@@ -58,7 +60,7 @@ abstract class MemberShapeDecodeGenerator(
 
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
-        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        val memberName = ctx.symbolProvider.toMemberNames(member).second
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
@@ -130,7 +132,7 @@ abstract class MemberShapeDecodeGenerator(
     ) {
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val decodedMemberName = "${memberName.removeSurrounding("`", "`")}Decoded$level"
+        val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
         val insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
             is SetShape -> "insert"
             is ListShape -> "append"
