@@ -274,7 +274,7 @@ class ListEncodeXMLGenerationTests {
 
     @Test
     fun `009 encode nested flattened date time with namespace`() {
-        val context = setupTests("Isolated/Restxml/xml-lists-nested-flattened-datetime.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened-nested-datetime.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedFlattenedInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
@@ -298,7 +298,7 @@ class ListEncodeXMLGenerationTests {
 
     @Test
     fun `010 encode nested flattened datetime encodable`() {
-        val context = setupTests("Isolated/Restxml/xml-lists-nested-flattened-datetime.smithy", "aws.protocoltests.restxml#RestXml")
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened-nested-datetime.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/example/models/XmlTimestampsNestedFlattenedInput+Encodable.swift")
         val expectedContents =
             """
@@ -379,6 +379,42 @@ class ListEncodeXMLGenerationTests {
                             for string0 in stringSet {
                                 var stringSetContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringSet"))
                                 try stringSetContainer0.encode(string0, forKey: Key(""))
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `011 encode list flattened nested with xmlname`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlListNestedFlattenedXmlNameInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlListNestedFlattenedXmlNameInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case nestedList = "listOfNestedStrings"
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let nestedList = nestedList {
+                        if nestedList.isEmpty {
+                            var nestedListContainer = container.nestedUnkeyedContainer(forKey: Key("listOfNestedStrings"))
+                            try nestedListContainer.encodeNil()
+                        } else {
+                            for nestedstringmember0 in nestedList {
+                                if let nestedstringmember0 = nestedstringmember0 {
+                                    var nestedstringmember0Container0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("listOfNestedStrings"))
+                                    for string1 in nestedstringmember0 {
+                                        var nestedstringmember0Container1 = nestedstringmember0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("nestedMember"))
+                                        try nestedstringmember0Container1.encode(string1, forKey: Key(""))
+                                    }
+                                }
                             }
                         }
                     }
