@@ -169,8 +169,12 @@ abstract class MemberShapeEncodeXMLGenerator(
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
-                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
+                writer.openBlock("if $memberName.isEmpty {", "} else {") {
+                    writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                }
+                writer.indent().write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
                 renderMapMemberItem(memberName, memberTarget, nestedContainer, false)
+                writer.dedent().write("}")
             } else {
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                 renderMapMemberItem(memberName, memberTarget, nestedContainer, true)

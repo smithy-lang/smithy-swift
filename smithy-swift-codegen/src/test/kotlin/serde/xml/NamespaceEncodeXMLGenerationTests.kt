@@ -71,7 +71,7 @@ class NamespaceEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: Key("xmlns"))
+                        try container.encode("http://boo.com", forKey: Key("xmlns"))
                     }
                     if let foo = foo {
                         var fooContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("foo"))

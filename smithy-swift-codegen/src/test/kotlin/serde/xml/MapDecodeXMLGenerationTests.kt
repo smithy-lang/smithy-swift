@@ -198,15 +198,20 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     struct KeyVal0{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
-                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
-                        var myMapBuffer: [String:GreetingStruct]? = nil
-                        if let myMapContainer = myMapContainer {
-                            myMapBuffer = [String:GreetingStruct]()
-                            for structureContainer0 in myMapContainer {
-                                myMapBuffer?[structureContainer0.key] = structureContainer0.value
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                            var myMapBuffer: [String:GreetingStruct]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:GreetingStruct]()
+                                for structureContainer0 in myMapContainer {
+                                    myMapBuffer?[structureContainer0.key] = structureContainer0.value
+                                }
                             }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
                         }
-                        myMap = myMapBuffer
                     } else {
                         myMap = nil
                     }
@@ -232,22 +237,27 @@ class MapDecodeXMLGenerationTests {
                     struct KeyVal0{struct key{}; struct value{}}
                     struct KeyVal1{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
-                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
-                        var myMapBuffer: [String:[String:GreetingStruct]]? = nil
-                        if let myMapContainer = myMapContainer {
-                            myMapBuffer = [String:[String:GreetingStruct]]()
-                            var nestedBuffer0: [String:GreetingStruct]? = nil
-                            for mapContainer0 in myMapContainer {
-                                nestedBuffer0 = [String:GreetingStruct]()
-                                if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
-                                    for structureContainer1 in mapContainer0NestedEntry0 {
-                                        nestedBuffer0?[structureContainer1.key] = structureContainer1.value
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                            var myMapBuffer: [String:[String:GreetingStruct]]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:[String:GreetingStruct]]()
+                                var nestedBuffer0: [String:GreetingStruct]? = nil
+                                for mapContainer0 in myMapContainer {
+                                    nestedBuffer0 = [String:GreetingStruct]()
+                                    if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
+                                        for structureContainer1 in mapContainer0NestedEntry0 {
+                                            nestedBuffer0?[structureContainer1.key] = structureContainer1.value
+                                        }
                                     }
+                                    myMapBuffer?[mapContainer0.key] = nestedBuffer0
                                 }
-                                myMapBuffer?[mapContainer0.key] = nestedBuffer0
                             }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
                         }
-                        myMap = myMapBuffer
                     } else {
                         myMap = nil
                     }
@@ -310,15 +320,20 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
                     if containerValues.contains(.myMap) {
-                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>].self, forKey: .myMap)
-                        var myMapBuffer: [String:GreetingStruct]? = nil
-                        if let myMapContainer = myMapContainer {
-                            myMapBuffer = [String:GreetingStruct]()
-                            for structureContainer0 in myMapContainer {
-                                myMapBuffer?[structureContainer0.key] = structureContainer0.value
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>].self, forKey: .myMap)
+                            var myMapBuffer: [String:GreetingStruct]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:GreetingStruct]()
+                                for structureContainer0 in myMapContainer {
+                                    myMapBuffer?[structureContainer0.key] = structureContainer0.value
+                                }
                             }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
                         }
-                        myMap = myMapBuffer
                     } else {
                         myMap = nil
                     }
