@@ -331,8 +331,10 @@ abstract class MemberShapeDecodeXMLGenerator(
                 "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
-                writer.write("traverse the chain")
-                "${ctx.symbolProvider.toSymbol(currShape)}"
+                val targetShape = ctx.model.expectShape(currShape.member.target)
+                val nestedShape = determineSymbolForShapeInMap(targetShape, "MapEntry", shouldRenderStructs, level + 1)
+                "[$nestedShape]"
+                //"${ctx.symbolProvider.toSymbol(currShape)}"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"
