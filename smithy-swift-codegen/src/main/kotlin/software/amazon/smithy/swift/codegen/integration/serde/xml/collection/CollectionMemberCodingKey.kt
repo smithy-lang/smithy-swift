@@ -4,15 +4,15 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 
-class CollectionMember(
+class CollectionMemberCodingKey(
     val namespace: String,
     val memberTagName: String
 ) {
     companion object {
-        fun constructCollectionMember(memberShape: MemberShape, level: Int): CollectionMember {
+        fun construct(memberShape: MemberShape, level: Int = 0): CollectionMemberCodingKey {
             val memberTagName = XMLNameTraitGenerator.construct(memberShape, "member").toString()
             val namespace = "KeyVal$level"
-            return CollectionMember(namespace, memberTagName)
+            return CollectionMemberCodingKey(namespace, memberTagName)
         }
     }
     fun renderStructs(writer: SwiftWriter) {

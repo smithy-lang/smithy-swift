@@ -4,8 +4,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-
-public struct CollectionMember<CustomMemberName> {
+	
+public struct CollectionMember<M, MemberCodingKey>: Codable where M: Codable {
+    let member: [M]
     public enum CodingKeys: String, CodingKey {
         case member
 
@@ -16,7 +17,7 @@ public struct CollectionMember<CustomMemberName> {
         }
 
         func customMemberName() -> String {
-            return String(describing: CustomMemberName.self)
+            return String(describing: MemberCodingKey.self)
         }
     }
 }

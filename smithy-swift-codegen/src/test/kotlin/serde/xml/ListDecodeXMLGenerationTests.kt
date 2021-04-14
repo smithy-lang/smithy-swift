@@ -23,7 +23,7 @@ class ListDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.renamedListMembers) {
                         struct KeyVal0{struct item{}}
-                        let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
+                        let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                         if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
                             let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                             var renamedListMembersBuffer:[String]? = nil
@@ -60,7 +60,7 @@ class ListDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.renamedListMembers) {
                     struct KeyVal0{struct item{}}
-                    let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
+                    let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                     if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
                         let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var renamedListMembersBuffer:[[String]?]? = nil
@@ -104,7 +104,7 @@ class ListDecodeXMLGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myGroceryList) {
-                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<Key>.CodingKeys.self, forKey: .myGroceryList)
+                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myGroceryList)
                     if myGroceryListWrappedContainer != nil {
                         let myGroceryListContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
                         var myGroceryListBuffer:[String]? = nil
@@ -144,7 +144,7 @@ class ListDecodeXMLGenerationTests {
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.stringList) {
-                    let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<Key>.CodingKeys.self, forKey: .stringList)
+                    let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .stringList)
                     if stringListWrappedContainer != nil {
                         let stringListContainer = try containerValues.decodeIfPresent([String].self, forKey: .stringList)
                         var stringListBuffer:[String]? = nil
@@ -162,7 +162,7 @@ class ListDecodeXMLGenerationTests {
                     stringList = nil
                 }
                 if containerValues.contains(.stringSet) {
-                    let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<Key>.CodingKeys.self, forKey: .stringSet)
+                    let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .stringSet)
                     if stringSetWrappedContainer != nil {
                         let stringSetContainer = try containerValues.decodeIfPresent([String].self, forKey: .stringSet)
                         var stringSetBuffer:Set<String>? = nil
@@ -181,7 +181,7 @@ class ListDecodeXMLGenerationTests {
                 }
                 if containerValues.contains(.integerList) {
                     struct KeyVal0{struct member{}}
-                    let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
+                    let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
                     if let integerListWrappedContainer = integerListWrappedContainer {
                         let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Int].self, forKey: .member)
                         var integerListBuffer:[Int]? = nil
@@ -200,7 +200,7 @@ class ListDecodeXMLGenerationTests {
                 }
                 if containerValues.contains(.booleanList) {
                     struct KeyVal0{struct member{}}
-                    let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
+                    let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
                     if let booleanListWrappedContainer = booleanListWrappedContainer {
                         let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Bool].self, forKey: .member)
                         var booleanListBuffer:[Bool]? = nil
@@ -237,7 +237,7 @@ class ListDecodeXMLGenerationTests {
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedNestedStringList) {
-                        let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<Key>.CodingKeys.self, forKey: .nestedNestedStringList)
+                        let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .nestedNestedStringList)
                         if nestedNestedStringListWrappedContainer != nil {
                             let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
                             var nestedNestedStringListBuffer:[[[String]?]?]? = nil
@@ -289,7 +289,7 @@ class ListDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         struct KeyVal0{struct member{}}
-                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .myList)
+                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .myList)
                         if let myListWrappedContainer = myListWrappedContainer {
                             struct KeyVal0{struct key{}; struct value{}}
                             let myListContainer = try myListWrappedContainer.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
@@ -335,7 +335,7 @@ class ListDecodeXMLGenerationTests {
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
-                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<Key>.CodingKeys.self, forKey: .myList)
+                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myList)
                         if myListWrappedContainer != nil {
                             struct KeyVal0{struct key{}; struct value{}}
                             let myListContainer = try containerValues.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)

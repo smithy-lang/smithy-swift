@@ -52,7 +52,7 @@ class BlobDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedBlobList) {
                     struct KeyVal0{struct member{}}
-                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
+                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
                     if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
                         let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]?].self, forKey: .member)
                         var nestedBlobListBuffer:[[Data]?]? = nil

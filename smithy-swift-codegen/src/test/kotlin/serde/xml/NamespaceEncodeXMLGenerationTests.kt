@@ -95,7 +95,7 @@ class NamespaceEncodeXMLGenerationTests {
                     foo = fooDecoded
                     if containerValues.contains(.values) {
                         struct KeyVal0{struct member{}}
-                        let valuesWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .values)
+                        let valuesWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .values)
                         if let valuesWrappedContainer = valuesWrappedContainer {
                             let valuesContainer = try valuesWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                             var valuesBuffer:[String]? = nil

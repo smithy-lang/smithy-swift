@@ -68,7 +68,7 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var nestedTimestampListBuffer:[[Date]?]? = nil
@@ -113,7 +113,7 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var nestedTimestampListBuffer:[[Date]?]? = nil
@@ -157,7 +157,7 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct nestedTag1{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
                         var nestedTimestampListBuffer:[[Date]?]? = nil
