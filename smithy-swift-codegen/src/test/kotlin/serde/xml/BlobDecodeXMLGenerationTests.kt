@@ -58,11 +58,12 @@ class BlobDecodeXMLGenerationTests {
                         var nestedBlobListBuffer:[[Data]?]? = nil
                         if let nestedBlobListContainer = nestedBlobListContainer {
                             nestedBlobListBuffer = [[Data]?]()
+                            var listBuffer0: [Data]? = nil
                             for listContainer0 in nestedBlobListContainer {
-                                var listBuffer0 = [Data]()
+                                listBuffer0 = [Data]()
                                 if let listContainer0 = listContainer0 {
                                     for blobContainer1 in listContainer0 {
-                                        listBuffer0.append(blobContainer1)
+                                        listBuffer0?.append(blobContainer1)
                                     }
                                 }
                                 nestedBlobListBuffer?.append(listBuffer0)

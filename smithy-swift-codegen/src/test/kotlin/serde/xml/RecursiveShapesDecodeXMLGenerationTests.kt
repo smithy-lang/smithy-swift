@@ -50,11 +50,12 @@ class RecursiveShapesDecodeXMLGenerationTests {
                             var nestedRecursiveListBuffer:[[RecursiveShapesInputOutputNested1]?]? = nil
                             if let nestedRecursiveListContainer = nestedRecursiveListContainer {
                                 nestedRecursiveListBuffer = [[RecursiveShapesInputOutputNested1]?]()
+                                var listBuffer0: [RecursiveShapesInputOutputNested1]? = nil
                                 for listContainer0 in nestedRecursiveListContainer {
-                                    var listBuffer0 = [RecursiveShapesInputOutputNested1]()
+                                    listBuffer0 = [RecursiveShapesInputOutputNested1]()
                                     if let listContainer0 = listContainer0 {
                                         for structureContainer1 in listContainer0 {
-                                            listBuffer0.append(structureContainer1)
+                                            listBuffer0?.append(structureContainer1)
                                         }
                                     }
                                     nestedRecursiveListBuffer?.append(listBuffer0)

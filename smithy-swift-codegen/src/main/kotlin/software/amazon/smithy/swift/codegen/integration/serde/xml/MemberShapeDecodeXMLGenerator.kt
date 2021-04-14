@@ -42,7 +42,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberName}WrappedContainer"
             if (!memberIsFlattened) {
-                val memberValue = determineSymbolForShapeInList(memberTarget)
+                val memberValue = determineCollectionMemberType(memberTarget)
                 writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
                 currContainerKey = ".member"
                 currContainerName = nextContainerName
@@ -80,7 +80,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMember = memberTarget.member
         val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
-        val delimiter = if (level == 0) "?" else ""
 
         val nestedMemberTargetType = "${nestedMemberTarget.type.name.toLowerCase()}"
         val nestedContainerName = "${nestedMemberTargetType}Container$level"
@@ -90,23 +89,33 @@ abstract class MemberShapeDecodeXMLGenerator(
             is ListShape -> "append"
             else -> "append"
         }
+        if (nestedMemberTarget is CollectionShape || nestedMemberTarget is MapShape) {
+            writer.write("var $nestedMemberBuffer: $nestedMemberTargetSymbol? = nil")
+        }
+
         writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
             when (nestedMemberTarget) {
-                is CollectionShape -> {
-                    writer.write("var $nestedMemberBuffer = $nestedMemberTargetSymbol()")
+                is ListShape -> {
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
-                    writer.write("$memberBuffer$delimiter.$insertMethod($nestedMemberBuffer)")
+                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                 }
                 is MapShape -> {
-                    throw Exception("renderListMemberItems: maps not supported")
+                    renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, level + 1)
+                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                }
+                is SetShape -> {
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
+                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
+                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    }
                 }
                 is TimestampShape -> {
                     val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
                     val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
-                    writer.write("try $memberBuffer$delimiter.$insertMethod($wrappedNestedMemberBuffer)")
+                    writer.write("try $memberBuffer?.$insertMethod($wrappedNestedMemberBuffer)")
                 }
                 else -> {
-                    writer.write("$memberBuffer$delimiter.$insertMethod($nestedContainerName)")
+                    writer.write("$memberBuffer?.$insertMethod($nestedContainerName)")
                 }
             }
         }
@@ -116,10 +125,10 @@ abstract class MemberShapeDecodeXMLGenerator(
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
 
-        // TODO: We believe this is a workaround for nested sets:
-        // https://github.com/awslabs/smithy/issues/752
         val isSetShape = memberTarget is SetShape
 
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        writer.write("$memberBuffer = $memberTargetSymbol()")
         if (nestedMemberTargetIsBoxed && !isSetShape) {
             writer.openBlock("if let $containerName = $containerName {", "}") {
                 renderListMemberItems(memberTarget, containerName, memberBuffer, level)
@@ -195,7 +204,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                     throw Exception("renderMapMemberItems: nested collections in maps not supported")
                 }
                 is MapShape -> {
-                    renderMapEntry(memberTarget, itemInContainerName, nestedBuffer, level)
+                    renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, level)
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is TimestampShape -> {
@@ -208,12 +217,12 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, memberBuffer: String, level: Int) {
+    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, entryLocation: String, memberBuffer: String, level: Int) {
         val entryContainerName = "${itemInContainerName}NestedEntry$level"
 
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         writer.write("$memberBuffer = $memberTargetSymbol()")
-        writer.openBlock("if let $entryContainerName = $itemInContainerName.value.entry  {", "}") {
+        writer.openBlock("if let $entryContainerName = $itemInContainerName.$entryLocation {", "}") {
             val nestedMemberTarget = ctx.model.expectShape(memberTarget.value.target)
             renderMapMemberItems(nestedMemberTarget, entryContainerName, memberBuffer, level + 1)
         }
@@ -276,50 +285,35 @@ abstract class MemberShapeDecodeXMLGenerator(
             val updatedName = symbol.name.replace("[Date]", "[String]")
             return Pair(symbol, updatedName)
         }
-        if (collectionShape is SetShape) {
-            val nestedMemberTarget = ctx.model.expectShape(collectionShape.member.target)
-            val symbolName = "[${convertSetNameToListSymbol(nestedMemberTarget)}]"
-            return Pair(symbol, symbolName)
-        }
-        return Pair(symbol, symbol.name)
+        val nestedMemberTarget = ctx.model.expectShape(collectionShape.member.target)
+        val symbolName = "[${convertListSymbolName(nestedMemberTarget)}]"
+        return Pair(symbol, symbolName)
     }
 
-    private fun convertSetNameToListSymbol(shape: Shape): String {
+    private fun convertListSymbolName(shape: Shape): String {
         val mappedSymbol = when (shape) {
-            is CollectionShape -> {
+            is ListShape -> {
                 val nestedShape = ctx.model.expectShape(shape.member.target)
-                "[${convertSetNameToListSymbol(nestedShape)}]"
+                "[${convertListSymbolName(nestedShape)}]?"
+            }
+            is SetShape -> {
+                val nestedShape = ctx.model.expectShape(shape.member.target)
+                "[${convertListSymbolName(nestedShape)}]"
             }
             is MapShape -> {
-                throw Exception("nested maps in sets not yet supported")
+                return determineSymbolForShapeInMap(shape, "MapEntry", true)
             }
             else -> {
-                "${ctx.symbolProvider.toSymbol(shape)}"
+                "${ctx.symbolProvider.toSymbol(shape).name}"
             }
         }
         return mappedSymbol
     }
 
-    /*
-     * There is some expectation that this function will need to be recursive based on
-     * what we know about decoding Maps.  That being said, this seems to "just work"
-     * when decoding lists of lists.  We'll need to revisit this when we handle maps in lists
-     * and maps in lists.
-     */
-    private fun determineSymbolForShapeInList(currShape: Shape, level: Int = 0): String {
-        var mappedSymbol = when (currShape) {
-            is MapShape -> {
-                throw Exception("nested map in list not supported yet")
-            }
-            is CollectionShape -> {
-                val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
-                collectionMember.renderStructs(writer)
-                "CollectionMember<${collectionMember.keyTag()}>"
-            } else -> {
-                "${ctx.symbolProvider.toSymbol(currShape)}"
-            }
-        }
-        return mappedSymbol
+    private fun determineCollectionMemberType(currShape: CollectionShape, level: Int = 0): String {
+        val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
+        collectionMember.renderStructs(writer)
+        return "CollectionMember<${collectionMember.keyTag()}>"
     }
 
     private fun determineSymbolForShapeInMap(currShape: Shape, containingSymbol: String, shouldRenderStructs: Boolean, level: Int = 0): String {

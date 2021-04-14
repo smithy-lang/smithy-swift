@@ -66,11 +66,12 @@ class ListDecodeXMLGenerationTests {
                         var renamedListMembersBuffer:[[String]?]? = nil
                         if let renamedListMembersContainer = renamedListMembersContainer {
                             renamedListMembersBuffer = [[String]?]()
+                            var listBuffer0: [String]? = nil
                             for listContainer0 in renamedListMembersContainer {
-                                var listBuffer0 = [String]()
+                                listBuffer0 = [String]()
                                 if let listContainer0 = listContainer0 {
                                     for stringContainer1 in listContainer0 {
-                                        listBuffer0.append(stringContainer1)
+                                        listBuffer0?.append(stringContainer1)
                                     }
                                 }
                                 renamedListMembersBuffer?.append(listBuffer0)
@@ -242,17 +243,19 @@ class ListDecodeXMLGenerationTests {
                             var nestedNestedStringListBuffer:[[[String]?]?]? = nil
                             if let nestedNestedStringListContainer = nestedNestedStringListContainer {
                                 nestedNestedStringListBuffer = [[[String]?]?]()
+                                var listBuffer0: [[String]?]? = nil
                                 for listContainer0 in nestedNestedStringListContainer {
-                                    var listBuffer0 = [[String]?]()
+                                    listBuffer0 = [[String]?]()
                                     if let listContainer0 = listContainer0 {
+                                        var listBuffer1: [String]? = nil
                                         for listContainer1 in listContainer0 {
-                                            var listBuffer1 = [String]()
+                                            listBuffer1 = [String]()
                                             if let listContainer1 = listContainer1 {
                                                 for stringContainer2 in listContainer1 {
-                                                    listBuffer1.append(stringContainer2)
+                                                    listBuffer1?.append(stringContainer2)
                                                 }
                                             }
-                                            listBuffer0.append(listBuffer1)
+                                            listBuffer0?.append(listBuffer1)
                                         }
                                     }
                                     nestedNestedStringListBuffer?.append(listBuffer0)
@@ -270,6 +273,54 @@ class ListDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `012 decode list containing map`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlListContainMapOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlListContainMapOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myList
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    if containerValues.contains(.myList) {
+                        struct KeyVal0{struct member{}}
+                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .myList)
+                        if let myListWrappedContainer = myListWrappedContainer {
+                            struct KeyVal0{struct key{}; struct value{}}
+                            let myListContainer = try myListWrappedContainer.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
+                            var myListBuffer:[[String:String]?]? = nil
+                            if let myListContainer = myListContainer {
+                                myListBuffer = [[String:String]?]()
+                                var mapBuffer0: [String:String]? = nil
+                                for mapContainer0 in myListContainer {
+                                    mapBuffer0 = [String:String]()
+                                    if let mapContainer0NestedEntry1 = mapContainer0.entry {
+                                        for stringContainer2 in mapContainer0NestedEntry1 {
+                                            mapBuffer0?[stringContainer2.key] = stringContainer2.value
+                                        }
+                                    }
+                                    myListBuffer?.append(mapBuffer0)
+                                }
+                            }
+                            myList = myListBuffer
+                        } else {
+                            myList = []
+                        }
+                    } else {
+                        myList = nil
+                    }
+                }
+            }
+            """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

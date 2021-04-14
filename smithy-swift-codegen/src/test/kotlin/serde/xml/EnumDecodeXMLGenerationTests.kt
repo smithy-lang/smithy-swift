@@ -76,11 +76,12 @@ class EnumDecodeXMLGenerationTests {
                             var nestedEnumsListBuffer:[[FooEnum]?]? = nil
                             if let nestedEnumsListContainer = nestedEnumsListContainer {
                                 nestedEnumsListBuffer = [[FooEnum]?]()
+                                var listBuffer0: [FooEnum]? = nil
                                 for listContainer0 in nestedEnumsListContainer {
-                                    var listBuffer0 = [FooEnum]()
+                                    listBuffer0 = [FooEnum]()
                                     if let listContainer0 = listContainer0 {
                                         for stringContainer1 in listContainer0 {
-                                            listBuffer0.append(stringContainer1)
+                                            listBuffer0?.append(stringContainer1)
                                         }
                                     }
                                     nestedEnumsListBuffer?.append(listBuffer0)
