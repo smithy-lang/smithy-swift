@@ -433,6 +433,175 @@ class MapDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `011 decode map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct Quality{}; struct Degree{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Quality, KeyVal0.Degree>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Quality, KeyVal0.Degree>].self, forKey: .entry)
+                            var myMapBuffer: [String:String]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:String]()
+                                for stringContainer0 in myMapContainer {
+                                    myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `012 decode flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct Uid{}; struct Val{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Uid, KeyVal0.Val>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
+                            var myMapBuffer: [String:String]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:String]()
+                                for stringContainer0 in myMapContainer {
+                                    myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `013 decode nested map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsNestedXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsNestedXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct yek{}; struct eulav{}}
+                    struct KeyVal1{struct K{}; struct V{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .entry)
+                            var myMapBuffer: [String:[String:String]]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:[String:String]]()
+                                var nestedBuffer0: [String:String]? = nil
+                                for mapContainer0 in myMapContainer {
+                                    nestedBuffer0 = [String:String]()
+                                    if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
+                                        for stringContainer1 in mapContainer0NestedEntry0 {
+                                            nestedBuffer0?[stringContainer1.key] = stringContainer1.value
+                                        }
+                                    }
+                                    myMapBuffer?[mapContainer0.key] = nestedBuffer0
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `014 decode nested flattened map with xmlnamespace`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedNestedXmlNamespaceOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedNestedXmlNamespaceOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct yek{}; struct eulav{}}
+                    struct KeyVal1{struct K{}; struct V{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
+                        if myMapWrappedContainer != nil {
+                            let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
+                            var myMapBuffer: [String:[String:String]]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:[String:String]]()
+                                var nestedBuffer0: [String:String]? = nil
+                                for mapContainer0 in myMapContainer {
+                                    nestedBuffer0 = [String:String]()
+                                    if let mapContainer0NestedEntry0 = mapContainer0.value.entry  {
+                                        for stringContainer1 in mapContainer0NestedEntry0 {
+                                            nestedBuffer0?[stringContainer1.key] = stringContainer1.value
+                                        }
+                                    }
+                                    myMapBuffer?[mapContainer0.key] = nestedBuffer0
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
