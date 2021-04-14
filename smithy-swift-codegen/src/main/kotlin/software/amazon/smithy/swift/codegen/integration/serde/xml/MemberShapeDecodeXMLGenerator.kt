@@ -42,7 +42,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberName}WrappedContainer"
             if (!memberIsFlattened) {
-                val memberValue = determineKeyedByValueForWrappedList(memberTarget)
+                val memberValue = determineCollectionMemberType(memberTarget)
                 writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
                 currContainerKey = ".member"
                 currContainerName = nextContainerName
@@ -310,7 +310,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         return mappedSymbol
     }
 
-    private fun determineKeyedByValueForWrappedList(currShape: CollectionShape, level: Int = 0): String {
+    private fun determineCollectionMemberType(currShape: CollectionShape, level: Int = 0): String {
         val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
         collectionMember.renderStructs(writer)
         return "CollectionMember<${collectionMember.keyTag()}>"
