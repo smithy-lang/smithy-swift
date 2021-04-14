@@ -201,7 +201,8 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
             when (memberTarget) {
                 is CollectionShape -> {
-                    throw Exception("renderMapMemberItems: nested collections in maps not supported")
+                    //throw Exception("renderMapMemberItems: nested collections in maps not supported")
+                    writer.write("render map member items: write the decoder")
                 }
                 is MapShape -> {
                     renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, level)
@@ -330,7 +331,8 @@ abstract class MemberShapeDecodeXMLGenerator(
                 "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
-                throw Exception("nested CollectionShape not yet supported")
+                writer.write("traverse the chain")
+                "${ctx.symbolProvider.toSymbol(currShape)}"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"
