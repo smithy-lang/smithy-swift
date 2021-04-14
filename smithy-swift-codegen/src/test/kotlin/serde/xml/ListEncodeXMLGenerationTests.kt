@@ -459,7 +459,44 @@ class ListEncodeXMLGenerationTests {
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `013 encode flattened list containing map`() {
+        val context = setupTests("Isolated/Restxml/xml-lists-flattened-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlListFlattenedContainMapInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlListFlattenedContainMapInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case myList
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let myList = myList {
+                        if myList.isEmpty {
+                            var myListContainer = container.nestedUnkeyedContainer(forKey: Key("myList"))
+                            try myListContainer.encodeNil()
+                        } else {
+                            for mysimplemap0 in myList {
+                                var myListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myList"))
+                                if let mysimplemap0 = mysimplemap0 {
+                                    for (stringKey0, stringValue0) in mysimplemap0 {
+                                        var entry = myListContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                        var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                        try keyContainer.encode(stringKey0, forKey: Key(""))
+                                        var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                        try valueContainer.encode(stringValue0, forKey: Key(""))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
 
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
