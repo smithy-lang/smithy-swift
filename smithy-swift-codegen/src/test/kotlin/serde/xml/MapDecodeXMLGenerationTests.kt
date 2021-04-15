@@ -601,7 +601,49 @@ class MapDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-
+    @Test
+    fun `015 decode map containing list`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsContainListOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsContainListOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct key{}; struct value{}}
+                    struct KeyVal1{struct member{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var myMapBuffer: [String:[String]]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:[String]]()
+                                var nestedBuffer0: [String]? = nil
+                                for listContainer0 in myMapContainer {
+                                    nestedBuffer0 = [String]()
+                                    for stringContainer0 in listContainer0.value.member {
+                                        nestedBuffer0?.append(stringContainer0)
+                                    }
+                                    myMapBuffer?[listContainer0.key] = nestedBuffer0
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

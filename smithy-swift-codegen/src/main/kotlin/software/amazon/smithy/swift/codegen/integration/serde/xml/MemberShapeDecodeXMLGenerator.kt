@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
-import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMember
+import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.recursiveSymbol
@@ -42,15 +42,15 @@ abstract class MemberShapeDecodeXMLGenerator(
             var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberName}WrappedContainer"
             if (!memberIsFlattened) {
-                val memberValue = determineCollectionMemberType(memberTarget)
-                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
+                val memberCodingKey = CollectionMemberCodingKey.construct(memberTarget.member)
+                memberCodingKey.renderStructs(writer)
+                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)")
                 currContainerKey = ".member"
                 currContainerName = nextContainerName
                 containerUsedForDecoding = currContainerName
                 ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
             } else {
-                val memberValue = "CollectionMember<Key>"
-                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
+                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: $currContainerKey)")
                 // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
                 currContainerName = nextContainerName
                 containerUsedForDecoding = containerName
@@ -201,7 +201,9 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
             when (memberTarget) {
                 is CollectionShape -> {
-                    throw Exception("renderMapMemberItems: nested collections in maps not supported")
+                    writer.write("$nestedBuffer = $memberTargetSymbol()")
+                    renderListMemberItems(memberTarget, "$itemInContainerName.value.member", nestedBuffer, level)
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is MapShape -> {
                     renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, level)
@@ -310,12 +312,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         return mappedSymbol
     }
 
-    private fun determineCollectionMemberType(currShape: CollectionShape, level: Int = 0): String {
-        val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
-        collectionMember.renderStructs(writer)
-        return "CollectionMember<${collectionMember.keyTag()}>"
-    }
-
     private fun determineSymbolForShapeInMap(currShape: Shape, containingSymbol: String, shouldRenderStructs: Boolean, level: Int = 0): String {
         var mappedSymbol = when (currShape) {
             is MapShape -> {
@@ -330,7 +326,13 @@ abstract class MemberShapeDecodeXMLGenerator(
                 "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
-                throw Exception("nested CollectionShape not yet supported")
+                val collectionName = CollectionMemberCodingKey.construct(currShape.member, level)
+                if (shouldRenderStructs) {
+                    collectionName.renderStructs(writer)
+                }
+                val targetShape = ctx.model.expectShape(currShape.member.target)
+                val nestedShape = determineSymbolForShapeInMap(targetShape, "MapEntry", shouldRenderStructs, level + 1)
+                "CollectionMember<$nestedShape, ${collectionName.keyTag()}>"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"

@@ -23,7 +23,7 @@ class SetDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}
-                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
+                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
                             let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
                             var fooEnumSetBuffer:Set<FooEnum>? = nil
@@ -62,7 +62,7 @@ class SetDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}
-                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
+                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
                             let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
                             var fooEnumSetBuffer:Set<Set<FooEnum>>? = nil

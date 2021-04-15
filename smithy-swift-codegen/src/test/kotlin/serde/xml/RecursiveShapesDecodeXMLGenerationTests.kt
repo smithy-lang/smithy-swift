@@ -44,7 +44,7 @@ class RecursiveShapesDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedRecursiveList) {
                         struct KeyVal0{struct member{}}
-                        let nestedRecursiveListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMember<KeyVal0.member>.CodingKeys.self, forKey: .nestedRecursiveList)
+                        let nestedRecursiveListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedRecursiveList)
                         if let nestedRecursiveListWrappedContainer = nestedRecursiveListWrappedContainer {
                             let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RecursiveShapesInputOutputNested1]?].self, forKey: .member)
                             var nestedRecursiveListBuffer:[[RecursiveShapesInputOutputNested1]?]? = nil
