@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/*
+ * Used to for wrapped lists that use a custom coding key for `member` for RestXML
+ */
 public struct CollectionMemberCodingKey<MemberCodingKey> {
     public enum CodingKeys: String, CodingKey {
         case member

@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 	
+/*
+ * Used for decoding lists for RestXML
+ */
 public struct CollectionMember<M, MemberCodingKey>: Codable where M: Codable {
     let member: [M]
     public enum CodingKeys: String, CodingKey {
