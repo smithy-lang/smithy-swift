@@ -27,7 +27,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -63,7 +63,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<EnumInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<EnumInputOutput, EnumInputOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<EnumInputOutput, EnumInputOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -100,7 +100,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
-                              next: H) -> Swift.Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -134,7 +134,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,

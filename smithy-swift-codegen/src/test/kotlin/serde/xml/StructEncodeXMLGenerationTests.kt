@@ -22,6 +22,7 @@ class StructEncodeXMLGenerationTests {
                     case floatValue
                     case integerValue
                     case longValue
+                    case `protocol` = "protocol"
                     case shortValue
                     case stringValue
                     case trueBooleanValue
@@ -46,6 +47,9 @@ class StructEncodeXMLGenerationTests {
                     }
                     if let longValue = longValue {
                         try container.encode(longValue, forKey: Key("longValue"))
+                    }
+                    if let `protocol` = `protocol` {
+                        try container.encode(`protocol`, forKey: Key("protocol"))
                     }
                     if let shortValue = shortValue {
                         try container.encode(shortValue, forKey: Key("shortValue"))

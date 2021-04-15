@@ -41,7 +41,7 @@ class MiddlewareGenerator(
             writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: ${middleware.inputType.name},")
-                writer.write("  next: H) -> Swift.Result<${middleware.outputType.name}, Error>")
+                writer.write("  next: H) -> Swift.Result<${middleware.outputType.name}, Swift.Error>")
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")

@@ -274,7 +274,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
-        val decodedMemberName = "${memberName}Decoded"
+        val decodedMemberName = "${memberNameUnquoted}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(${memberTargetSymbol.name}.self, forKey: .$memberNameUnquoted)")
         writer.write("$memberName = $decodedMemberName")
     }

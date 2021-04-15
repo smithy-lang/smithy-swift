@@ -26,7 +26,7 @@ class MiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: String,
-                              next: H) -> Swift.Result<OperationOutput<String, Error>, Error>
+                              next: H) -> Swift.Result<OperationOutput<String, Error>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,

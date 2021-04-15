@@ -37,6 +37,7 @@ structure SimpleScalarPropertiesInputOutput {
     integerValue: Integer,
     longValue: Long,
     floatValue: Float,
+    protocol: String,
 
     @xmlName("DoubleDribble")
     doubleValue: Double,
