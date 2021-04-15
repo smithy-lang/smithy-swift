@@ -61,6 +61,7 @@ class StructDecodeXMLGenerationTests {
                 case floatValue
                 case integerValue
                 case longValue
+                case `protocol` = "protocol"
                 case shortValue
                 case stringValue
                 case trueBooleanValue
@@ -84,6 +85,8 @@ class StructDecodeXMLGenerationTests {
                 longValue = longValueDecoded
                 let floatValueDecoded = try containerValues.decodeIfPresent(Float.self, forKey: .floatValue)
                 floatValue = floatValueDecoded
+                let protocolDecoded = try containerValues.decodeIfPresent(String.self, forKey: .protocol)
+                `protocol` = protocolDecoded
                 let doubleValueDecoded = try containerValues.decodeIfPresent(Double.self, forKey: .doubleValue)
                 doubleValue = doubleValueDecoded
             }

@@ -32,7 +32,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -72,7 +72,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStringInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -107,7 +107,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -142,7 +142,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobStreamInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -177,7 +177,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStructInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>, Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>, Swift.Error>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
