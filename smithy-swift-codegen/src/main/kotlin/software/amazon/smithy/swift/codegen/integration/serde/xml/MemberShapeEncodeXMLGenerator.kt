@@ -189,7 +189,6 @@ abstract class MemberShapeEncodeXMLGenerator(
         }
     }
 
-    
     private fun renderWrappedMapMemberItem(memberName: String, mapShape: MapShape, containerName: String, level: Int = 0) {
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
