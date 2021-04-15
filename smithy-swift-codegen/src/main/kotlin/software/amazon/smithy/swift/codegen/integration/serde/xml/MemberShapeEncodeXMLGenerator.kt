@@ -205,7 +205,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     renderWrappedNestedMapEntry(nestedKeyValueName, resolvedCodingKeys, valueTargetShape, mapShape, containerName, level)
                 }
                 is CollectionShape -> {
-                    var entryContainerName = "entryContainer${level}"
+                    var entryContainerName = "entryContainer$level"
                     writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
 
                     val mapShapeKeyNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(mapShape.key)
@@ -223,7 +223,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                             renderListMemberItems(nestedKeyValueName.second, valueTargetShape, "valueContainer")
                         }
                     } else {
-                        //Todo: Write a unit test for this
+                        // Todo: Write a unit test for this
                         writer.write("var valueContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
                         mapShapeValueNamespaceTraitGenerator?.render(writer, "valueContainer")?.appendKey(xmlNamespaces)
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, "valueContainer")

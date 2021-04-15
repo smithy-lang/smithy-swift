@@ -49,6 +49,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 containerUsedForDecoding = currContainerName
                 ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
             } else {
+                // TODO: Convert this to use Key instead of CollectionMember
                 val memberValue = "CollectionMember<Key>"
                 writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $memberValue.CodingKeys.self, forKey: $currContainerKey)")
                 // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
@@ -201,8 +202,9 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
             when (memberTarget) {
                 is CollectionShape -> {
-                    //throw Exception("renderMapMemberItems: nested collections in maps not supported")
-                    writer.write("render map member items: write the decoder")
+                    writer.write("$nestedBuffer = $memberTargetSymbol()")
+                    renderListMemberItems(memberTarget, "$itemInContainerName.value.member", nestedBuffer, level)
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is MapShape -> {
                     renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, level)
@@ -311,6 +313,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         return mappedSymbol
     }
 
+    // TODO: Convert this to use something other than CollectionMember
     private fun determineCollectionMemberType(currShape: CollectionShape, level: Int = 0): String {
         val collectionMember = CollectionMember.constructCollectionMember(currShape.member, level)
         collectionMember.renderStructs(writer)
@@ -331,10 +334,13 @@ abstract class MemberShapeDecodeXMLGenerator(
                 "$containingSymbol<$currShapeKey, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
+                val collectionName = CollectionMember.constructCollectionMember(currShape.member, level)
+                if (shouldRenderStructs) {
+                    collectionName.renderStructs(writer)
+                }
                 val targetShape = ctx.model.expectShape(currShape.member.target)
                 val nestedShape = determineSymbolForShapeInMap(targetShape, "MapEntry", shouldRenderStructs, level + 1)
-                "[$nestedShape]"
-                //"${ctx.symbolProvider.toSymbol(currShape)}"
+                "DecodableCollectionMember<$nestedShape, ${collectionName.keyTag()}>"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"

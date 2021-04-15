@@ -5,7 +5,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapDecodeXMLGenerationTests {
@@ -608,8 +607,40 @@ class MapDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/example/models/XmlMapsContainListOutputBody+Decodable.swift")
         val expectedContents =
             """
-
-
+            extension XmlMapsContainListOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct key{}; struct value{}}
+                    struct KeyVal1{struct member{}}
+                    if containerValues.contains(.myMap) {
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, DecodableCollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, DecodableCollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var myMapBuffer: [String:[String]]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:[String]]()
+                                var nestedBuffer0: [String]? = nil
+                                for listContainer0 in myMapContainer {
+                                    nestedBuffer0 = [String]()
+                                    for stringContainer0 in listContainer0.value.member {
+                                        nestedBuffer0?.append(stringContainer0)
+                                    }
+                                    myMapBuffer?[listContainer0.key] = nestedBuffer0
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
