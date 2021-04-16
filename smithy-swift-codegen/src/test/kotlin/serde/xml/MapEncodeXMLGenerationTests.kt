@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -587,6 +588,29 @@ class MapEncodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `017 encode map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsTimestampsInput+Encodable.swift")
+        val expectedContents =
+            """
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+    /*
+    @Test
+    fun `016 encode flattened map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/xxx+Encodable.swift")
+        val expectedContents =
+            """
+
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }*/
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

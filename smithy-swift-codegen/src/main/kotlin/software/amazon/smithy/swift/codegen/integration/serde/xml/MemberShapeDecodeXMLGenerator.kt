@@ -210,7 +210,8 @@ abstract class MemberShapeDecodeXMLGenerator(
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is TimestampShape -> {
-                    throw Exception("renderMapMemberItems: nested timestamps not supported")
+                    //throw Exception("renderMapMemberItems: nested timestamps not supported")
+                    writer.write("writer decoder for timestamp shape here")
                 }
                 else -> {
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
