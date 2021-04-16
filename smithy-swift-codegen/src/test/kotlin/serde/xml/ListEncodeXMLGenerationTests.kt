@@ -444,11 +444,11 @@ class ListEncodeXMLGenerationTests {
                             var myListContainer0 = myListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
                             if let mysimplemap0 = mysimplemap0 {
                                 for (stringKey0, stringValue0) in mysimplemap0 {
-                                    var entry = myListContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                    var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
-                                    try keyContainer.encode(stringKey0, forKey: Key(""))
-                                    var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                                    try valueContainer.encode(stringValue0, forKey: Key(""))
+                                    var entryContainer0 = myListContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                    var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                    try keyContainer0.encode(stringKey0, forKey: Key(""))
+                                    var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                    try valueContainer0.encode(stringValue0, forKey: Key(""))
                                 }
                             }
                         }
@@ -481,11 +481,11 @@ class ListEncodeXMLGenerationTests {
                                 var myListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("myList"))
                                 if let mysimplemap0 = mysimplemap0 {
                                     for (stringKey0, stringValue0) in mysimplemap0 {
-                                        var entry = myListContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                        var keyContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
-                                        try keyContainer.encode(stringKey0, forKey: Key(""))
-                                        var valueContainer = entry.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                                        try valueContainer.encode(stringValue0, forKey: Key(""))
+                                        var entryContainer0 = myListContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                        var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                        try keyContainer0.encode(stringKey0, forKey: Key(""))
+                                        var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                        try valueContainer0.encode(stringValue0, forKey: Key(""))
                                     }
                                 }
                             }
