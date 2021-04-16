@@ -205,17 +205,17 @@ abstract class MemberShapeEncodeXMLGenerator(
             renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
             when (valueTargetShape) {
                 is MapShape -> {
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
+                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
                         renderWrappedMapMemberItem(nestedKeyValueName.second, valueTargetShape, valueContainer, level + 1)
                     }
                 }
                 is CollectionShape -> {
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
+                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, valueContainer, level + 1)
                     }
                 }
                 else -> {
-                    renderMapUnnestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
                 }
             }
         }
@@ -239,13 +239,13 @@ abstract class MemberShapeEncodeXMLGenerator(
             when (valueTargetShape) {
                 is MapShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
+                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
                         renderFlattenedMapMemberItem(nestedKeyValueName.second, mapShape.value, valueTargetShape, nestedValueContainer, level + 1)
                     }
                 }
                 is CollectionShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
+                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, nestedValueContainer, level + 1)
                     }
                 }
@@ -255,7 +255,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                         memberNamespaceTraitGenerator?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
                     }
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapUnnestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                 }
             }
         }
@@ -274,7 +274,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: Key(\"\"))")
     }
 
-    private fun renderMapUnnestedValue(
+    private fun renderMapValue(
         nestedKeyValueName: Pair<String, String>,
         resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
         mapShape: MapShape,
@@ -287,7 +287,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: Key(\"\"))")
     }
 
-    private fun renderMapValue(
+    private fun renderMapNestedValue(
         nestedKeyValueName: Pair<String, String>,
         resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
         mapShape: MapShape,
