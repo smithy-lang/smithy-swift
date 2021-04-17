@@ -699,19 +699,19 @@ class MapDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    /*
+
     @Test
-    fun `018 encode flattened map containing timestamp`() {
-        val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+    fun `018 decode flattened map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
         print(listFilesFromManifest(context.manifest))
-        val contents = getFileContents(context.manifest, "/example/models/xxx+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedTimestampsOutputBody+Decodable.swift")
         val expectedContents =
             """
-
+//todo
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    */
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

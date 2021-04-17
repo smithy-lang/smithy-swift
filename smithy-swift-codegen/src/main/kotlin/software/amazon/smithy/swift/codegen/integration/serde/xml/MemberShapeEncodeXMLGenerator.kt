@@ -255,6 +255,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, nestedValueContainer, level + 1)
                     }
                 }
+                is TimestampShape -> {
+                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
+                        val format = determineTimestampFormat(mapShape.value, defaultTimestampFormat)
+                        writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                    }
+                }
                 else -> {
                     if (level == 0) {
                         val memberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
