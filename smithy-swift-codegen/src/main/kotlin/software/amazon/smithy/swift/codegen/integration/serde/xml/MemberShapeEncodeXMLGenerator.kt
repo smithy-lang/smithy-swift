@@ -293,7 +293,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         mapShape: MapShape,
         entryContainerName: String,
         level: Int,
-        customValueRenderer:((String) -> Unit)? = null
+        customValueRenderer: ((String) -> Unit)? = null
     ) {
         val valueContainerName = "valueContainer$level"
         writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
