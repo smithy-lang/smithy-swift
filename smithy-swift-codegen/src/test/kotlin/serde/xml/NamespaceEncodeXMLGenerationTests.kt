@@ -5,6 +5,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class NamespaceEncodeXMLGenerationTests {
@@ -262,6 +263,91 @@ class NamespaceEncodeXMLGenerationTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `009 xmlnamespace on service, dynamic node encoding`() {
+        val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceInput+DynamicNodeEncoding.swift")
+        val expectedContents =
+            """
+            extension XmlNamespacesOnServiceInput: DynamicNodeEncoding {
+                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+                    let xmlNamespaceValues = [
+                        "xmlns",
+                        "xmlns:xsi"
+                    ]
+                    if let key = key as? Key {
+                        if xmlNamespaceValues.contains(key.stringValue) {
+                            return .attribute
+                        }
+                    }
+                    return .element
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `010 xmlnamespace on service, encodable`() {
+        val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlNamespacesOnServiceInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case foo
+                    case nested
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("https://example.com", forKey: Key("xmlns"))
+                    }
+                    if let foo = foo {
+                        try container.encode(foo, forKey: Key("foo"))
+                    }
+                    if let nested = nested {
+                        var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
+                        try nestedContainer.encode(nested, forKey: Key(""))
+                        try nestedContainer.encode("https://example.com", forKey: Key("xmlns:xsi"))
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `011 xmlnamespace on service, encodable`() {
+        val context = setupTests("Isolated/Restxml/xml-namespace-onservice-overridable.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlNamespacesOnServiceOverridableInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case foo
+                    case nested
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if encoder.codingPath.isEmpty {
+                        try container.encode("https://overridable.com", forKey: Key("xmlns"))
+                    }
+                    if let foo = foo {
+                        try container.encode(foo, forKey: Key("foo"))
+                    }
+                    if let nested = nested {
+                        var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
+                        try nestedContainer.encode(nested, forKey: Key(""))
+                        try nestedContainer.encode("https://example.com", forKey: Key("xmlns:xsi"))
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
