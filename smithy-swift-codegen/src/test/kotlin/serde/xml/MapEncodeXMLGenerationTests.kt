@@ -587,6 +587,67 @@ class MapEncodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+    @Test
+    fun `017 encode map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsTimestampsInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsTimestampsInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case timestampMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let timestampMap = timestampMap {
+                        var timestampMapContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("timestampMap"))
+                        for (stringKey0, timestampValue0) in timestampMap {
+                            var entryContainer0 = timestampMapContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                            try keyContainer0.encode(stringKey0, forKey: Key(""))
+                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                            try valueContainer0.encode(TimestampWrapper(timestampValue0, format: .epochSeconds), forKey: Key(""))
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `017 encode flattened map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedTimestampsInput+Encodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedTimestampsInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case timestampMap
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.container(keyedBy: Key.self)
+                    if let timestampMap = timestampMap {
+                        if timestampMap.isEmpty {
+                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("timestampMap"))
+                        } else {
+                            for (stringKey0, timestampValue0) in timestampMap {
+                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("timestampMap"))
+                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
+                                try keyContainer0.encode(stringKey0, forKey: Key(""))
+                                var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                                try valueContainer0.encode(TimestampWrapper(timestampValue0, format: .epochSeconds), forKey: Key(""))
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

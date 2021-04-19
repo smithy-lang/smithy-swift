@@ -214,6 +214,12 @@ abstract class MemberShapeEncodeXMLGenerator(
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, valueContainer, level + 1)
                     }
                 }
+                is TimestampShape -> {
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
+                        val format = determineTimestampFormat(mapShape.value, defaultTimestampFormat)
+                        writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                    }
+                }
                 else -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
                 }
@@ -249,6 +255,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                         renderListMemberItems(nestedKeyValueName.second, valueTargetShape, nestedValueContainer, level + 1)
                     }
                 }
+                is TimestampShape -> {
+                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
+                        val format = determineTimestampFormat(mapShape.value, defaultTimestampFormat)
+                        writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                    }
+                }
                 else -> {
                     if (level == 0) {
                         val memberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
@@ -279,12 +292,17 @@ abstract class MemberShapeEncodeXMLGenerator(
         resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
         mapShape: MapShape,
         entryContainerName: String,
-        level: Int
+        level: Int,
+        customValueRenderer: ((String) -> Unit)? = null
     ) {
         val valueContainerName = "valueContainer$level"
         writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
         XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, valueContainerName)?.appendKey(xmlNamespaces)
-        writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: Key(\"\"))")
+        if (customValueRenderer != null) {
+            customValueRenderer(valueContainerName)
+        } else {
+            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: Key(\"\"))")
+        }
     }
 
     private fun renderMapNestedValue(

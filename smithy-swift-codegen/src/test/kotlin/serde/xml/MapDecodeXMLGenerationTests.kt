@@ -687,6 +687,83 @@ class MapDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `017 decode map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsTimestampsOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsTimestampsOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case timestampMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct key{}; struct value{}}
+                    if containerValues.contains(.timestampMap) {
+                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
+                        if let timestampMapWrappedContainer = timestampMapWrappedContainer {
+                            let timestampMapContainer = try timestampMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var timestampMapBuffer: [String:Date]? = nil
+                            if let timestampMapContainer = timestampMapContainer {
+                                timestampMapBuffer = [String:Date]()
+                                for timestampContainer0 in timestampMapContainer {
+                                    timestampMapBuffer?[timestampContainer0.key] = try TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                }
+                            }
+                            timestampMap = timestampMapBuffer
+                        } else {
+                            timestampMap = [:]
+                        }
+                    } else {
+                        timestampMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `018 decode flattened map containing timestamp`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/example/models/XmlMapsFlattenedTimestampsOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsFlattenedTimestampsOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case timestampMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    struct KeyVal0{struct key{}; struct value{}}
+                    if containerValues.contains(.timestampMap) {
+                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
+                        if timestampMapWrappedContainer != nil {
+                            let timestampMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .timestampMap)
+                            var timestampMapBuffer: [String:Date]? = nil
+                            if let timestampMapContainer = timestampMapContainer {
+                                timestampMapBuffer = [String:Date]()
+                                for timestampContainer0 in timestampMapContainer {
+                                    timestampMapBuffer?[timestampContainer0.key] = try TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                }
+                            }
+                            timestampMap = timestampMapBuffer
+                        } else {
+                            timestampMap = [:]
+                        }
+                    } else {
+                        timestampMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
