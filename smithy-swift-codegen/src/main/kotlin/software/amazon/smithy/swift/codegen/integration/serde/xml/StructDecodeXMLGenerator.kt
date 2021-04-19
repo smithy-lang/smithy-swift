@@ -52,4 +52,8 @@ class StructDecodeXMLGenerator(
             }
         }
     }
+
+    override fun renderAssigningDecodedMember(topLevelMemberName: String, decodedMemberName: String, isBoxed: Boolean) {
+        writer.write("$topLevelMemberName = $decodedMemberName")
+    }
 }

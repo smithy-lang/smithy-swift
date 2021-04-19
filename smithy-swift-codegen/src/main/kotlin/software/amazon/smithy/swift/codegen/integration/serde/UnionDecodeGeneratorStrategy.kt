@@ -6,6 +6,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.UnionDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.UnionDecodeXMLGenerator
 
 class UnionDecodeGeneratorStrategy(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -14,11 +15,13 @@ class UnionDecodeGeneratorStrategy(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     fun render() {
-        val generator = when (ctx.protocol) {
-            // TODO: update this for xml
-            RestXmlTrait.ID -> UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
-            else -> UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        when (ctx.protocol) {
+            RestXmlTrait.ID -> {
+                UnionDecodeXMLGenerator(ctx, members, writer, defaultTimestampFormat).render()
+            }
+            else -> {
+                UnionDecodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
+            }
         }
-        generator.render()
     }
 }
