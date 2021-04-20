@@ -51,7 +51,8 @@ class UnionGenerator(
         writer.putContext("union.name", unionSymbol.name)
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public enum \$union.name:L: Equatable {", "}\n") {
+        val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
+        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: Equatable {", "}\n") {
             shape.allMembers.values.forEach {
                 writer.writeMemberDocs(model, it)
                 val enumCaseName = symbolProvider.toMemberName(it)
@@ -62,5 +63,11 @@ class UnionGenerator(
             writer.write("case sdkUnknown(String?)")
         }
         writer.removeContext("union.name")
+    }
+    private fun needsIndirectKeyword(unionSymbolName: String, shape: UnionShape): Boolean {
+        val membersReferencingUnion = shape.allMembers.values.filter {
+            (symbolProvider.toSymbol(it).name).equals(unionSymbolName)
+        }
+        return membersReferencingUnion.isNotEmpty()
     }
 }

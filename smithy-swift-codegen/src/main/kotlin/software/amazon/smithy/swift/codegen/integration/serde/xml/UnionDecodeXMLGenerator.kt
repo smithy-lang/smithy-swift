@@ -9,11 +9,12 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
-class UnionDecodeXMLGenerator(private val ctx: ProtocolGenerator.GenerationContext,
-private val members: List<MemberShape>,
-private val writer: SwiftWriter,
-private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat)  {
+class UnionDecodeXMLGenerator(
+    private val ctx: ProtocolGenerator.GenerationContext,
+    private val members: List<MemberShape>,
+    private val writer: SwiftWriter,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
+) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "values"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
@@ -24,17 +25,16 @@ private val defaultTimestampFormat: TimestampFormatTrait.Format
                     is CollectionShape -> {
                         renderListMember(member, memberTarget, containerName)
                     }
-                    is MapShape ->  {
+                    is MapShape -> {
                         renderMapMember(member, memberTarget, containerName)
                     }
                     is TimestampShape -> {
-                        renderTimestampMember(member,memberTarget, containerName)
+                        renderTimestampMember(member, memberTarget, containerName)
                     }
                     else -> {
                         renderScalarMember(member, memberTarget, containerName)
                     }
                 }
-
             }
             writer.write("self = .sdkUnknown(\"\")")
         }

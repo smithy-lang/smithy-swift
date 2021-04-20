@@ -15,11 +15,11 @@ class UnionEncodeGeneratorStrategy(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     fun render() {
-     when (ctx.protocol) {
+        when (ctx.protocol) {
             RestXmlTrait.ID -> {
                 UnionEncodeXMLGenerator(ctx, members, writer, defaultTimestampFormat).render()
             }
-            else ->  {
+            else -> {
                 UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat).render()
             }
         }

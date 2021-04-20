@@ -71,7 +71,6 @@ abstract class MemberShapeDecodeXMLGenerator(
                     renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
                 }
                 renderAssigningDecodedMember(memberName, memberBuffer)
-
             }
             writer.indent()
             renderAssigningSymbol(memberName, "[]")
@@ -186,7 +185,6 @@ abstract class MemberShapeDecodeXMLGenerator(
                     renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer)
                 }
                 renderAssigningDecodedMember(memberName, memberBuffer)
-
             }
             writer.indent()
             renderAssigningSymbol(memberName, "[:]")
@@ -271,7 +269,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.indent().write("$memberName = \"\".data(using: .utf8)")
             writer.dedent().write("}")
         }
-        //TODO: Suport unions
+        // TODO: Suport unions
         writer.indent().write("$memberName = nil")
         writer.dedent().write("}")
     }

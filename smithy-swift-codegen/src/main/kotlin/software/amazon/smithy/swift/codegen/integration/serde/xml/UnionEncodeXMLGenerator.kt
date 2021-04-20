@@ -9,11 +9,12 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeXMLGenerator
 
-class UnionEncodeXMLGenerator(private val ctx: ProtocolGenerator.GenerationContext,
-                              private val members: List<MemberShape>,
-                              private val writer: SwiftWriter,
-                              defaultTimestampFormat: TimestampFormatTrait.Format
-): MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
+class UnionEncodeXMLGenerator(
+    private val ctx: ProtocolGenerator.GenerationContext,
+    private val members: List<MemberShape>,
+    private val writer: SwiftWriter,
+    defaultTimestampFormat: TimestampFormatTrait.Format
+) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "container"
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
