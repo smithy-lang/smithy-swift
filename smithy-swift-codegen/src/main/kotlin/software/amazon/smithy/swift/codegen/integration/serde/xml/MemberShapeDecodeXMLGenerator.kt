@@ -26,8 +26,9 @@ abstract class MemberShapeDecodeXMLGenerator(
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeGeneratable {
-    abstract fun renderAssigningDecodedMember(topLevelMemberName: String, decodedMemberName: String, isBoxed: Boolean = false)
-
+    abstract fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean = false)
+    abstract fun renderAssigningSymbol(memberName: String, symbol: String)
+    abstract fun renderAssigningNil(memberName: String)
 
     fun renderListMember(
         member: MemberShape,
@@ -72,10 +73,12 @@ abstract class MemberShapeDecodeXMLGenerator(
                 renderAssigningDecodedMember(memberName, memberBuffer)
 
             }
-            writer.indent().write("$memberName = []")
+            writer.indent()
+            renderAssigningSymbol(memberName, "[]")
             writer.dedent().write("}")
         }
-        writer.indent().write("$memberName = nil")
+        writer.indent()
+        renderAssigningNil(memberName)
         writer.dedent().write("}")
     }
 
@@ -185,10 +188,12 @@ abstract class MemberShapeDecodeXMLGenerator(
                 renderAssigningDecodedMember(memberName, memberBuffer)
 
             }
-            writer.indent().write("$memberName = [:]")
+            writer.indent()
+            renderAssigningSymbol(memberName, "[:]")
             writer.dedent().write("}")
         }
-        writer.indent().write("$memberName = nil")
+        writer.indent()
+        renderAssigningNil(memberName)
         writer.dedent().write("}")
     }
 
@@ -266,6 +271,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.indent().write("$memberName = \"\".data(using: .utf8)")
             writer.dedent().write("}")
         }
+        //TODO: Suport unions
         writer.indent().write("$memberName = nil")
         writer.dedent().write("}")
     }
@@ -284,8 +290,6 @@ abstract class MemberShapeDecodeXMLGenerator(
     }
 
     private fun nestedMemberTargetSymbolMapper(collectionShape: CollectionShape): Pair<Symbol, String> {
-        // TODO: double check this when we get around to supporting the following:
-        //  * Unions
         val symbol = ctx.symbolProvider.toSymbol(collectionShape)
         if (symbol.name.contains("[Date]")) {
             val updatedName = symbol.name.replace("[Date]", "[String]")

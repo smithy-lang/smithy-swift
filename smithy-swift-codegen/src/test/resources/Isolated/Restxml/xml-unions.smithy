@@ -29,12 +29,26 @@ structure XmlUnionsInputOutput {
 
 union XmlUnionShape {
     doubleValue: Double,
-
     unionValue: XmlUnionShape,
     structValue: XmlNestedUnionStruct,
+    mapValue: XmlMapsXmlNameInputOutputMap,
+    stringList: StringList,
+    timeStampValue: Timestamp
 }
 
 structure XmlNestedUnionStruct {
     stringValue: String,
     doubleValue: Double,
+}
+
+map XmlMapsXmlNameInputOutputMap {
+    @xmlName("K")
+    key: String,
+
+    @xmlName("V")
+    value: String
+}
+
+list StringList {
+    member: String,
 }

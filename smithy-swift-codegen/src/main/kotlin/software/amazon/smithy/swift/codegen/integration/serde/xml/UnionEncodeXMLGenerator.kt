@@ -3,6 +3,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -26,10 +27,13 @@ class UnionEncodeXMLGenerator(private val ctx: ProtocolGenerator.GenerationConte
                     writer.indent()
                     when (memberTarget) {
                         is CollectionShape -> {
-                            throw Exception("TODO: Add collection support")
+                            renderListMember(member, memberTarget, containerName)
                         }
                         is MapShape -> {
-                            throw Exception("TODO: Add map support")
+                            renderMapMember(member, memberTarget, containerName)
+                        }
+                        is TimestampShape -> {
+                            renderTimestampMember(member, memberTarget, containerName)
                         }
                         else -> {
                             renderScalarMember(member, memberTarget, containerName)

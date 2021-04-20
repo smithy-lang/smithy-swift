@@ -22,16 +22,17 @@ private val defaultTimestampFormat: TimestampFormatTrait.Format
                 val memberTarget = ctx.model.expectShape(member.target)
                 when (memberTarget) {
                     is CollectionShape -> {
-                        throw Exception("todo: Support collections")
+                        renderListMember(member, memberTarget, containerName)
                     }
                     is MapShape ->  {
-                        throw Exception("todo: support maps")
+                        renderMapMember(member, memberTarget, containerName)
                     }
                     is TimestampShape -> {
-                        //renderTimestampMember(member,memberTarget, containerName)
-                        throw Exception("todo: support timestamps")
+                        renderTimestampMember(member,memberTarget, containerName)
                     }
-                    else -> renderScalarMember(member, memberTarget, containerName)
+                    else -> {
+                        renderScalarMember(member, memberTarget, containerName)
+                    }
                 }
 
             }
@@ -39,15 +40,24 @@ private val defaultTimestampFormat: TimestampFormatTrait.Format
         }
     }
 
-    override fun renderAssigningDecodedMember(topLevelMemberName: String, decodedMemberName: String, isBoxed: Boolean) {
-        val member = topLevelMemberName.removeSurroundingBackticks()
-        writer.openBlock("if let $topLevelMemberName = $decodedMemberName {", "}") {
+    override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {
+        val member = memberName.removeSurroundingBackticks()
+        writer.openBlock("if let $memberName = $decodedMemberName {", "}") {
             if (isBoxed) {
-                writer.write("self = .$member($topLevelMemberName.value)")
+                writer.write("self = .$member($memberName.value)")
             } else {
-                writer.write("self = .$member($topLevelMemberName)")
+                writer.write("self = .$member($memberName)")
             }
             writer.write("return")
         }
+    }
+    override fun renderAssigningSymbol(memberName: String, symbol: String) {
+        val member = memberName.removeSurroundingBackticks()
+        writer.write("self = .$member($symbol)")
+        writer.write("return")
+    }
+
+    override fun renderAssigningNil(memberName: String) {
+        writer.write("//No-op")
     }
 }
