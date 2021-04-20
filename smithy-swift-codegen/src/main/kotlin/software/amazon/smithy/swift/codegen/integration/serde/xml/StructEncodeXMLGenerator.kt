@@ -34,17 +34,27 @@ class StructEncodeXMLGenerator(
     private fun renderEncodeBody() {
         val containerName = "container"
         writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+        renderTopLevelNamespace(containerName)
 
-        val namespace = XMLNamespaceTraitGenerator.construct(shapeContainingMembers)
+        val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
+        membersSortedByName.forEach { member ->
+            renderSingleMember(member, containerName)
+        }
+    }
+    private fun renderTopLevelNamespace(containerName: String) {
+        val serviceNamespace = XMLNamespaceTraitGenerator.construct(ctx.service)
+        val shapeContainingMembersNamespace = XMLNamespaceTraitGenerator.construct(shapeContainingMembers)
+        val namespace = if (serviceNamespace != null && shapeContainingMembersNamespace == null) {
+            serviceNamespace
+        } else {
+            shapeContainingMembersNamespace
+        }
+
         namespace?.let {
             writer.openBlock("if encoder.codingPath.isEmpty {", "}") {
                 it.render(writer, containerName)
                 it.appendKey(xmlNamespaces)
             }
-        }
-        val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
-        membersSortedByName.forEach { member ->
-            renderSingleMember(member, containerName)
         }
     }
 
