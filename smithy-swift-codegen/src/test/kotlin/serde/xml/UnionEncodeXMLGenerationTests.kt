@@ -73,15 +73,15 @@ class UnionEncodeXMLGenerationTests {
                 }
             
                 public init (from decoder: Decoder) throws {
-                    let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let doubleValueDecoded = try values.decodeIfPresent(Double.self, forKey: .doubleValue)
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let doubleValueDecoded = try containerValues.decodeIfPresent(Double.self, forKey: .doubleValue)
                     if let doubleValue = doubleValueDecoded {
                         self = .doubleValue(doubleValue)
                         return
                     }
-                    if values.contains(.dataValue) {
+                    if containerValues.contains(.dataValue) {
                         do {
-                            let dataValueDecoded = try values.decodeIfPresent(Data.self, forKey: .dataValue)
+                            let dataValueDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .dataValue)
                             if let dataValue = dataValueDecoded {
                                 self = .dataValue(dataValue)
                                 return
@@ -95,19 +95,19 @@ class UnionEncodeXMLGenerationTests {
                     } else {
                         //No-op
                     }
-                    let unionValueDecoded = try values.decodeIfPresent(Box<XmlUnionShape>.self, forKey: .unionValue)
+                    let unionValueDecoded = try containerValues.decodeIfPresent(Box<XmlUnionShape>.self, forKey: .unionValue)
                     if let unionValue = unionValueDecoded {
                         self = .unionValue(unionValue.value)
                         return
                     }
-                    let structValueDecoded = try values.decodeIfPresent(XmlNestedUnionStruct.self, forKey: .structValue)
+                    let structValueDecoded = try containerValues.decodeIfPresent(XmlNestedUnionStruct.self, forKey: .structValue)
                     if let structValue = structValueDecoded {
                         self = .structValue(structValue)
                         return
                     }
                     struct KeyVal0{struct K{}; struct V{}}
-                    if values.contains(.mapValue) {
-                        let mapValueWrappedContainer = values.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapValue)
+                    if containerValues.contains(.mapValue) {
+                        let mapValueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapValue)
                         if let mapValueWrappedContainer = mapValueWrappedContainer {
                             let mapValueContainer = try mapValueWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
                             var mapValueBuffer: [String:String]? = nil
@@ -128,9 +128,9 @@ class UnionEncodeXMLGenerationTests {
                     } else {
                         //No-op
                     }
-                    if values.contains(.stringList) {
+                    if containerValues.contains(.stringList) {
                         struct KeyVal0{struct member{}}
-                        let stringListWrappedContainer = values.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringList)
+                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringList)
                         if let stringListWrappedContainer = stringListWrappedContainer {
                             let stringListContainer = try stringListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
                             var stringListBuffer:[String]? = nil
@@ -151,7 +151,7 @@ class UnionEncodeXMLGenerationTests {
                     } else {
                         //No-op
                     }
-                    let timeStampValueDecoded = try values.decodeIfPresent(String.self, forKey: .timeStampValue)
+                    let timeStampValueDecoded = try containerValues.decodeIfPresent(String.self, forKey: .timeStampValue)
                     var timeStampValueBuffer:Date? = nil
                     if let timeStampValueDecoded = timeStampValueDecoded {
                         timeStampValueBuffer = try TimestampWrapperDecoder.parseDateStringValue(timeStampValueDecoded, format: .dateTime)

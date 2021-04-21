@@ -17,7 +17,7 @@ class UnionDecodeXMLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
-        val containerName = "values"
+        val containerName = "containerValues"
         writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
