@@ -52,4 +52,14 @@ class StructDecodeXMLGenerator(
             }
         }
     }
+
+    override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {
+        writer.write("$memberName = $decodedMemberName")
+    }
+    override fun renderAssigningSymbol(memberName: String, symbol: String) {
+        writer.write("$memberName = $symbol")
+    }
+    override fun renderAssigningNil(memberName: String) {
+        writer.write("$memberName = nil")
+    }
 }
