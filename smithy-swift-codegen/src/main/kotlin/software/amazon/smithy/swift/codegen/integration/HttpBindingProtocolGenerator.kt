@@ -47,6 +47,7 @@ import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.bodyName
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
@@ -277,19 +278,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
         val decodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
+            .definitionFile("./$rootNamespace/models/${structSymbol.bodyName()}+Decodable.swift")
             .name(structSymbol.name)
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${structSymbol.name}Body: Equatable {", "}") {
+            writer.openBlock("struct ${structSymbol.bodyName()}: Equatable {", "}") {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
+            writer.openBlock("extension ${structSymbol.bodyName()}: Decodable {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
