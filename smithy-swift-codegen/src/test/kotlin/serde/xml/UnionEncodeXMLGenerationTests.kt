@@ -16,6 +16,7 @@ class UnionEncodeXMLGenerationTests {
             """
             extension XmlUnionShape: Codable, Reflection {
                 enum CodingKeys: String, CodingKey {
+                    case dataValue
                     case doubleValue
                     case mapValue
                     case sdkUnknown
@@ -28,6 +29,10 @@ class UnionEncodeXMLGenerationTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     switch self {
+                        case let .dataValue(dataValue):
+                            if let dataValue = dataValue {
+                                try container.encode(dataValue, forKey: Key("dataValue"))
+                            }
                         case let .doubleValue(doubleValue):
                             if let doubleValue = doubleValue {
                                 try container.encode(doubleValue, forKey: Key("doubleValue"))
@@ -73,6 +78,22 @@ class UnionEncodeXMLGenerationTests {
                     if let doubleValue = doubleValueDecoded {
                         self = .doubleValue(doubleValue)
                         return
+                    }
+                    if values.contains(.dataValue) {
+                        do {
+                            let dataValueDecoded = try values.decodeIfPresent(Data.self, forKey: .dataValue)
+                            if let dataValue = dataValueDecoded {
+                                self = .dataValue(dataValue)
+                                return
+                            }
+                        } catch {
+                            if let dataValue = "".data(using: .utf8) {
+                                self = .dataValue(dataValue)
+                                return
+                            }
+                        }
+                    } else {
+                        //No-op
                     }
                     let unionValueDecoded = try values.decodeIfPresent(Box<XmlUnionShape>.self, forKey: .unionValue)
                     if let unionValue = unionValueDecoded {
@@ -155,6 +176,7 @@ class UnionEncodeXMLGenerationTests {
             """
             public indirect enum XmlUnionShape: Equatable {
                 case doubleValue(Double?)
+                case dataValue(Data?)
                 case unionValue(XmlUnionShape?)
                 case structValue(XmlNestedUnionStruct?)
                 case mapValue([String:String]?)

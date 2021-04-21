@@ -29,6 +29,7 @@ structure XmlUnionsInputOutput {
 
 union XmlUnionShape {
     doubleValue: Double,
+    dataValue: Blob,
     unionValue: XmlUnionShape,
     structValue: XmlNestedUnionStruct,
     mapValue: XmlMapsXmlNameInputOutputMap,

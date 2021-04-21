@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -30,6 +31,9 @@ class UnionDecodeXMLGenerator(
                     }
                     is TimestampShape -> {
                         renderTimestampMember(member, memberTarget, containerName)
+                    }
+                    is BlobShape -> {
+                        renderBlobMember(member, memberTarget, containerName)
                     }
                     else -> {
                         renderScalarMember(member, memberTarget, containerName)

@@ -261,16 +261,17 @@ abstract class MemberShapeDecodeXMLGenerator(
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
         val decodedMemberName = "${memberName}Decoded"
-        writer.openBlock("if containerValues.contains(.$memberNameUnquoted) {", "} else {") {
+        writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
             writer.openBlock("do {", "} catch {") {
                 writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: .$memberNameUnquoted)")
                 renderAssigningDecodedMember(memberName, decodedMemberName)
             }
-            writer.indent().write("$memberName = \"\".data(using: .utf8)")
+            writer.indent()
+            renderAssigningDecodedMember(memberName, "\"\".data(using: .utf8)")
             writer.dedent().write("}")
         }
-        // TODO: Suport unions
-        writer.indent().write("$memberName = nil")
+        writer.indent()
+        renderAssigningNil(memberName)
         writer.dedent().write("}")
     }
 
