@@ -3,7 +3,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
@@ -11,6 +10,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratorJson
 
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
@@ -19,7 +20,12 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = HttpProtocolCustomizable()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
-    override val errorFromHttpResponseGenerator: ErrorFromHttpResponseGenerator = TestErrorFromHttpResponseGenerator()
+    override val httpResponseGenerator: HttpResponseGenerator = HttpResponseGeneratorJson(
+        TestErrorFromHttpResponseGenerator(),
+        unknownServiceErrorSymbol,
+        serviceErrorProtocolSymbol,
+        defaultTimestampFormat
+    )
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
 
