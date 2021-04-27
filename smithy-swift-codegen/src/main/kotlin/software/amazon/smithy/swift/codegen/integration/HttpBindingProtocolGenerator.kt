@@ -33,7 +33,7 @@ import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.defaultName
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.StructDecodeGeneratorStrategy
@@ -479,7 +479,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val codingKeysGenerator: CodingKeysGenerator
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
-    protected abstract val httpResponseGenerator: HttpResponseGenerator
+    protected abstract val httpResponseGenerator: HttpResponseGeneratable
 
     /**
      * Get the operations with HTTP Bindings.

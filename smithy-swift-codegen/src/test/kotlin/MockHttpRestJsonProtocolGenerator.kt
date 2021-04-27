@@ -10,8 +10,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratorJson
 
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
@@ -20,7 +20,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = HttpProtocolCustomizable()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
-    override val httpResponseGenerator: HttpResponseGenerator = HttpResponseGeneratorJson(
+    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         TestErrorFromHttpResponseGenerator(),
         unknownServiceErrorSymbol,
         serviceErrorProtocolSymbol,
