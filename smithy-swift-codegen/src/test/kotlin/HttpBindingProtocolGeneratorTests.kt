@@ -96,7 +96,6 @@ class HttpBindingProtocolGeneratorTests {
             """
 extension ExplicitStructOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
-
         if case .data(let data) = httpResponse.body,
            let unwrappedData = data {
             if let responseDecoder = decoder {
@@ -129,7 +128,6 @@ extension ExplicitStructOutput: HttpResponseBinding {
             """
 extension HttpResponseCodeOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
-
         self.status = httpResponse.statusCode.rawValue
     }
 }
@@ -145,7 +143,6 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
             """
 extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
-
         if case .data(let data) = httpResponse.body,
            let unwrappedData = data {
             if let responseDecoder = decoder {
@@ -186,7 +183,6 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
                     } else {
                         self.fooMap = [:]
                     }
-            
                 }
             }
             """.trimIndent()

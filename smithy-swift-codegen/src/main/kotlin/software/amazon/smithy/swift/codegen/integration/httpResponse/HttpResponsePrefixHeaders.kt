@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.SetShape
@@ -11,10 +12,17 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpResponsePrefixHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
-    val binding: HttpBindingDescriptor,
+    val responseBindings: List<HttpBindingDescriptor>,
     val writer: SwiftWriter
 ) {
     fun render() {
+        val binding = responseBindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+        if (binding != null) {
+            renderBinding(binding)
+        }
+    }
+
+    private fun renderBinding(binding: HttpBindingDescriptor) {
         val targetShape = ctx.model.expectShape(binding.member.target) as? MapShape
             ?: throw CodegenException("prefixHeader bindings can only be attached to Map shapes")
 

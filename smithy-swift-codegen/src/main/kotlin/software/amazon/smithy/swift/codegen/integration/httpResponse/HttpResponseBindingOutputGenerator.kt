@@ -9,6 +9,9 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayload
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitQueryParams
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitResponseCode
 
 class HttpResponseBindingOutputGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -39,12 +42,10 @@ class HttpResponseBindingOutputGenerator(
             writer.openBlock("extension $outputShapeName: HttpResponseBinding {", "}") {
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
-                    responseBindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
-                        ?.let {
-                            HttpResponsePrefixHeaders(ctx, it, writer).render()
-                        }
-                    writer.write("")
-                    HttpResponsePayload(ctx, responseBindings, outputShapeName, writer).render()
+                    HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                    HttpResponseTraitPayload(ctx, responseBindings, outputShapeName, writer).render()
+                    HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                    HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                 }
             }
             writer.write("")
