@@ -93,6 +93,14 @@ fun Symbol.defaultValue(): String? {
     return if (default.isPresent) default.get() else null
 }
 
+fun Symbol.bodySymbol(): Symbol {
+    return Symbol.builder()
+        .name("${name}Body")
+        .putProperty("boxed", isBoxed())
+        .putProperty("defaultValue", defaultValue())
+        .build()
+}
+
 fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)

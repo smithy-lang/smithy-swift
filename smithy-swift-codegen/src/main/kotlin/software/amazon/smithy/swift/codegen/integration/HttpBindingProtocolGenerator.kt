@@ -32,6 +32,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.bodySymbol
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
@@ -229,24 +230,24 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
-        val structSymbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+        val bodySymbol: Symbol = ctx.symbolProvider.toSymbol(shape).bodySymbol()
         val rootNamespace = ctx.settings.moduleName
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
         val decodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${structSymbol.name}Body+Decodable.swift")
-            .name(structSymbol.name)
+            .definitionFile("./$rootNamespace/models/${bodySymbol.name}+Decodable.swift")
+            .name(bodySymbol.name)
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${structSymbol.name}Body: Equatable {", "}") {
+            writer.openBlock("struct ${decodeSymbol.name}: Equatable {", "}") {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${structSymbol.name}Body: Decodable {", "}") {
+            writer.openBlock("extension ${decodeSymbol.name}: Decodable {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
