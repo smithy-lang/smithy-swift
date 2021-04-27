@@ -16,17 +16,20 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-        switch input.body {
-        case .data(let data):
-            if let contentLength = data?.count {
-                input.withHeader(name: "Content-Length", value: String(contentLength))
+        
+        let contentLength: Int64 = {
+            switch input.body {
+            case .data(let data):
+                return Int64(data?.count ?? 0)
+            case .streamSource(let stream):
+                // TODO: implement dynamic streaming with transfer-encoded-chunk header
+                return stream.unwrap().contentLength
+            case .none, .streamSink:
+                return 0
             }
-        case .none, .streamSink:
-            break
-        case .streamSource(let sourceProvider):
-            let contentLength = sourceProvider.unwrap().contentLength
-            input.withHeader(name: contentLengthHeaderName, value: String(contentLength))
-        }
+        }()
+        
+        input.headers.update(name: "Content-Length", value: String(contentLength))
         
         return next.handle(context: context, input: input)
     }
