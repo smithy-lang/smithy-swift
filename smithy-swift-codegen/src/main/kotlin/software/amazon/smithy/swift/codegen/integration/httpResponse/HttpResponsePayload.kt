@@ -98,7 +98,6 @@ class HttpResponsePayload(
         writer.openBlock("if case .data(let data) = httpResponse.body,\n   let unwrappedData = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
-                    // TODO deal with document type
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
                             "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",

@@ -5,10 +5,9 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class HttpResponseBindingErrorNarrowingGenerator(
+class HttpResponseBindingErrorNarrowGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val op: OperationShape,
     val unknownServiceErrorSymbol: Symbol
@@ -32,17 +31,13 @@ class HttpResponseBindingErrorNarrowingGenerator(
                 writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
                     writer.write("switch errorType {")
                     for (errorShape in errorShapes) {
-                        renderErrorNarrowed(errorShape, writer)
+                        val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
+                        writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeName.decapitalize(), errorShapeName)
                     }
                     writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
                     writer.write("}")
                 }
             }
         }
-    }
-
-    private fun renderErrorNarrowed(errorShape: StructureShape, writer: SwiftWriter) {
-        val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
-        writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeName.decapitalize(), errorShapeName)
     }
 }

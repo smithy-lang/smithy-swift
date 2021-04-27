@@ -30,12 +30,12 @@ class HttpResponseGenerator(
 
         httpOperations.forEach {
             errorFromHttpResponseGenerator.renderHttpResponseBinding(ctx, it)
-            HttpResponseBindingErrorNarrowingGenerator(ctx, it, unknownServiceErrorSymbol).render()
+            HttpResponseBindingErrorNarrowGenerator(ctx, it, unknownServiceErrorSymbol).render()
         }
 
         val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
         modeledErrors.forEach {
-            HttpResponseBindingErrorNarrowedGenerator(ctx, it, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat).render()
+            HttpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat).render()
         }
     }
 }

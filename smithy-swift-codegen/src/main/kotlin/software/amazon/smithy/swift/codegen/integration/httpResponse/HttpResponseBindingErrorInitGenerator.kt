@@ -8,7 +8,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class HttpResponseBindingErrorNarrowedGenerator(
+class HttpResponseBindingErrorInitGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val shape: StructureShape,
     val httpBindingResolver: HttpBindingResolver,
@@ -25,7 +25,7 @@ class HttpResponseBindingErrorNarrowedGenerator(
         val errorShapeName = ctx.symbolProvider.toSymbol(shape).name
 
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$errorShapeName+HttpResponseBindingNarrowed.swift")
+            .definitionFile("./$rootNamespace/models/$errorShapeName+Init.swift")
             .name(errorShapeName)
             .build()
 

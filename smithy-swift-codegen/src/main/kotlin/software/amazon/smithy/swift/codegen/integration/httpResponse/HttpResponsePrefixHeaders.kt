@@ -37,7 +37,6 @@ class HttpResponsePrefixHeaders(
                     is SetShape -> "Set(httpResponse.headers.dictionary[headerKey])"
                     else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
                 }
-                // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...
                 writer.write("let mapMemberValue = $mapMemberValue")
                 if (prefix.isNotEmpty()) {
                     writer.write("let mapMemberKey = headerKey.removePrefix(\$S)", prefix)
