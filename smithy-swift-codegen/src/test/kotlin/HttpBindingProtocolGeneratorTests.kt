@@ -16,20 +16,20 @@ import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.ErrorFromHttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingErrorGeneratable
 
-class TestErrorFromHttpResponseGenerator : ErrorFromHttpResponseGenerator {
-    override fun generateInitOperationFromHttpResponse(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+class TestErrorFromHttpResponseGenerator : HttpResponseBindingErrorGeneratable {
+    override fun renderHttpResponseBinding(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
         val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+ResponseInit.swift")
+            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseBinding.swift")
             .name(operationErrorName)
             .build()
 
@@ -90,7 +90,7 @@ class HttpBindingProtocolGeneratorTests {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructOutput+ResponseInit.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -123,7 +123,7 @@ extension ExplicitStructOutput: HttpResponseBinding {
 
     @Test
     fun `httpResponseCodeOutput response init content`() {
-        val contents = getModelFileContents("example", "HttpResponseCodeOutput+ResponseInit.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -139,7 +139,7 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+ResponseInit.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -164,7 +164,7 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
     }
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
-        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+ResponseInit.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents =
             """
             extension HttpPrefixHeadersOutput: HttpResponseBinding {
