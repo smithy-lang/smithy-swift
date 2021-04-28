@@ -12,15 +12,25 @@ import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.isBoxed
+
+interface HttpResponseTraitWithoutHttpPayloadFactory {
+    fun construct(
+        ctx: ProtocolGenerator.GenerationContext,
+        responseBindings: List<HttpBindingDescriptor>,
+        outputShapeName: String,
+        writer: SwiftWriter
+    ): HttpResponseBindingRenderable
+}
 
 class HttpResponseTraitWithoutHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
     val outputShapeName: String,
     val writer: SwiftWriter
-) {
-    fun render() {
+) : HttpResponseBindingRenderable {
+    override fun render() {
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
 
         val bodyMembersWithoutQueryTrait = bodyMembers

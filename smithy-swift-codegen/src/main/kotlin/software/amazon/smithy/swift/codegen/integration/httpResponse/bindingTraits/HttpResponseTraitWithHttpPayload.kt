@@ -5,13 +5,14 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 
 class HttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val binding: HttpBindingDescriptor,
     val writer: SwiftWriter
-) {
-    fun render() {
+) : HttpResponseBindingRenderable {
+    override fun render() {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
