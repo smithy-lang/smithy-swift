@@ -6,6 +6,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.bodySymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 
@@ -15,18 +16,16 @@ class DynamicNodeDecodingXMLGenerator(
     private val isForBodyStruct: Boolean
 ) {
     fun render() {
-        val symbol = ctx.symbolProvider.toSymbol(shape)
-        // TODO: Add convenience function for appending body to a symbol.name
-        val symbolName = if (isForBodyStruct) "${symbol.name}Body" else symbol.name
+        val symbol = if (isForBodyStruct) ctx.symbolProvider.toSymbol(shape).bodySymbol() else ctx.symbolProvider.toSymbol(shape)
         val rootNamespace = ctx.settings.moduleName
         val encodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$symbolName+DynamicNodeDecoding.swift")
-            .name(symbolName)
+            .definitionFile("./$rootNamespace/models/${symbol.name}+DynamicNodeDecoding.swift")
+            .name(symbol.name)
             .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension $symbolName: DynamicNodeDecoding {", "}") {
+            writer.openBlock("extension ${symbol.name}: DynamicNodeDecoding {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                renderDynamicNodeDecodingConformance(symbolName, writer)
+                renderDynamicNodeDecodingConformance(symbol.name, writer)
             }
         }
     }
