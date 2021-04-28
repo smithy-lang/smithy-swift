@@ -1,4 +1,5 @@
 
+import mocks.MockHttpResponseBindingErrorGenerator
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -21,13 +22,11 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = HttpProtocolCustomizable()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
-
-    // TODO: Update for RestXML
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        TestErrorFromHttpResponseGenerator(),
         serviceErrorProtocolSymbol,
         unknownServiceErrorSymbol,
-        defaultTimestampFormat
+        defaultTimestampFormat,
+        MockHttpResponseBindingErrorGenerator()
     )
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {

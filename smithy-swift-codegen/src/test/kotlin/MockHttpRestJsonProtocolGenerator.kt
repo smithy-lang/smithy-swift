@@ -1,3 +1,4 @@
+import mocks.MockHttpResponseBindingErrorGenerator
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -21,10 +22,10 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolCustomizable = HttpProtocolCustomizable()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        TestErrorFromHttpResponseGenerator(),
         unknownServiceErrorSymbol,
         serviceErrorProtocolSymbol,
-        defaultTimestampFormat
+        defaultTimestampFormat,
+        MockHttpResponseBindingErrorGenerator()
     )
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {

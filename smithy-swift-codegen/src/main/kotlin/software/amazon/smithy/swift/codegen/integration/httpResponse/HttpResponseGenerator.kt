@@ -9,10 +9,10 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpResponseGenerator(
-    val errorFromHttpResponseGenerator: HttpResponseBindingErrorGeneratable,
     val serviceErrorProtocolSymbol: Symbol,
     val unknownServiceErrorSymbol: Symbol,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
+    val httpResponseBindingErrorGenerator: HttpResponseBindingErrorGeneratable,
     val httpResponseBindingErrorInitGeneratorFactory: HttpResponseBindingErrorInitGeneratorFactory? = null
 ) : HttpResponseGeneratable {
 
@@ -30,7 +30,7 @@ class HttpResponseGenerator(
         }
 
         httpOperations.forEach {
-            errorFromHttpResponseGenerator.renderHttpResponseBinding(ctx, it)
+            httpResponseBindingErrorGenerator.render(ctx, it)
             HttpResponseBindingErrorNarrowGenerator(ctx, it, unknownServiceErrorSymbol).render()
         }
 
