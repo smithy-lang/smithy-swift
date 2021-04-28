@@ -11,6 +11,7 @@ class HttpResponseTraitQueryParams(
     val responseBindings: List<HttpBindingDescriptor>,
     val writer: SwiftWriter
 ) {
+    // TODO: Support proper deserialization of http response query
     fun render() {
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
 
