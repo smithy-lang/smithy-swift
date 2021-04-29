@@ -24,6 +24,7 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
+    private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -65,6 +66,7 @@ class HttpProtocolTestGenerator(
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
                             .httpProtocolCustomizable(httpProtocolCustomizable)
+                            .serdeContext(serdeContext)
                             .build()
                             .renderTestClass(testClassName)
                     }
@@ -96,6 +98,7 @@ class HttpProtocolTestGenerator(
                             .serviceName(serviceSymbol.name)
                             .testCases(testCases)
                             .httpProtocolCustomizable(httpProtocolCustomizable)
+                            .serdeContext(serdeContext)
                             .build()
                             .renderTestClass(testClassName)
                     }
@@ -131,6 +134,7 @@ class HttpProtocolTestGenerator(
                                 .serviceName(serviceSymbol.name)
                                 .testCases(testCases)
                                 .httpProtocolCustomizable(httpProtocolCustomizable)
+                                .serdeContext(serdeContext)
                                 .build()
                                 .renderTestClass(testClassName)
                         }

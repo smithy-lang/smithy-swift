@@ -67,23 +67,11 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("}")
     }
 
-    /*
-    Resolves the Response Decoder to use based on the bodyMediaType trait of HttpResponseTestCase
-     */
     protected fun resolveResponseDecoder(test: HttpResponseTestCase): String? {
         var responseDecoder: String? = null
         test.body.ifPresent { body ->
             if (body.isNotBlank() && body.isNotEmpty() && test.bodyMediaType.isPresent) {
-                val bodyMediaType = test.bodyMediaType.get()
-                responseDecoder = when (bodyMediaType.toLowerCase()) {
-                    "application/json" -> "JSONDecoder()"
-                    "application/xml" -> "XMLDecoder()"
-                    // TODO: Remove this once we upgrade our version of smithy
-                    // https://github.com/awslabs/smithy/blob/3488bf6e742d6a56443267f5697bcecffff6064b/smithy-aws-protocol-tests/model/restXml/http-query.smithy#L268
-                    "xml" -> "XMLDecoder()"
-                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
-                    else -> "bodyMediaType: \"${bodyMediaType}\" is not supported"
-                }
+                responseDecoder = serdeContext.protocolDecoder
             }
         }
         return responseDecoder
@@ -97,9 +85,12 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected fun renderResponseDecoderConfiguration(responseDecoder: String?) {
-        responseDecoder ?: return
-        writer.write("let decoder = $responseDecoder")
-        writer.write("decoder.dateDecodingStrategy = .secondsSince1970")
+        responseDecoder?.let {
+            writer.write("let decoder = $it")
+            serdeContext.defaultTimestampFormat?.let {
+                writer.write("decoder.dateDecodingStrategy = $it")
+            }
+        }
     }
 
     protected fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {
