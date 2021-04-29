@@ -9,6 +9,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGener
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -30,7 +31,6 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     )
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
-
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
         val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
@@ -40,7 +40,8 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
             requestTestBuilder,
             responseTestBuilder,
             errorTestBuilder,
-            httpProtocolCustomizable
+            httpProtocolCustomizable,
+            HttpProtocolUnitTestGenerator.SerdeContext("XMLEncoder()", "XMLDecoder()")
         ).generateProtocolTests()
     }
 }

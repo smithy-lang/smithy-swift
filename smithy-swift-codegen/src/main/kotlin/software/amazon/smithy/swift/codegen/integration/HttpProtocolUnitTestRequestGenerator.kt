@@ -16,14 +16,9 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
-/**
- * Generates HTTP protocol unit tests for `httpRequestTest` cases
- */
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
-    private var protocolEncoder = "JSONEncoder()"
-    private var protocolDecoder = "JSONDecoder()"
     private var bodyAssertMethod = "assertEqualHttpBodyJSONData"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
@@ -69,13 +64,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val bodyMediaType = test.bodyMediaType.get()
                 when (bodyMediaType.toLowerCase()) {
                     "application/json" -> {
-                        protocolEncoder = "JSONEncoder()"
-                        protocolDecoder = "JSONDecoder()"
                         bodyAssertMethod = "assertEqualHttpBodyJSONData"
                     }
                     "application/xml" -> {
-                        protocolEncoder = "XMLEncoder()"
-                        protocolDecoder = "XMLDecoder()"
                         bodyAssertMethod = "assertEqualHttpBodyXMLData"
                     }
                     "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
@@ -97,8 +88,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputErrorName = "${operation.defaultName()}OutputError"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
 
-            writer.write("let encoder = \$L", protocolEncoder)
-            writer.write("encoder.dateEncodingStrategy = .secondsSince1970")
+            writer.write("let encoder = \$L", serdeContext.protocolEncoder)
+            serdeContext.defaultTimestampFormat?.let {
+                writer.write("encoder.dateEncodingStrategy = $it")
+            }
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
             val hasIdempotencyTokenTrait = idempotentMember != null
@@ -266,7 +259,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("let decoder = $protocolDecoder")
+            writer.write("let decoder = ${serdeContext.protocolDecoder}")
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")

@@ -25,6 +25,7 @@ protected constructor(builder: Builder<T>) {
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!
     protected val httpProtocolCustomizable = builder.httpProtocolCustomizable!!
+    protected val serdeContext = builder.serdeContext!!
     protected val serviceName: String = builder.serviceName!!
     abstract val baseTestClassName: String
 
@@ -62,6 +63,12 @@ protected constructor(builder: Builder<T>) {
      */
     protected abstract fun renderTestBody(test: T)
 
+    data class SerdeContext(
+        val protocolEncoder: String,
+        val protocolDecoder: String,
+        val defaultTimestampFormat: String? = null
+    )
+
     abstract class Builder<T : HttpMessageTestCase> {
         var symbolProvider: SymbolProvider? = null
         var model: Model? = null
@@ -70,6 +77,7 @@ protected constructor(builder: Builder<T>) {
         var writer: SwiftWriter? = null
         var serviceName: String? = null
         var httpProtocolCustomizable: HttpProtocolCustomizable? = null
+        var serdeContext: SerdeContext? = null
 
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
@@ -78,6 +86,7 @@ protected constructor(builder: Builder<T>) {
         fun writer(writer: SwiftWriter): Builder<T> = apply { this.writer = writer }
         fun serviceName(serviceName: String): Builder<T> = apply { this.serviceName = serviceName }
         fun httpProtocolCustomizable(httpProtocolCustomizable: HttpProtocolCustomizable): Builder<T> = apply { this.httpProtocolCustomizable = httpProtocolCustomizable }
+        fun serdeContext(serdeContext: SerdeContext): Builder<T> = apply { this.serdeContext = serdeContext }
         abstract fun build(): HttpProtocolUnitTestGenerator<T>
     }
 }
