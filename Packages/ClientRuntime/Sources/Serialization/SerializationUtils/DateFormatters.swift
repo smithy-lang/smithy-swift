@@ -5,6 +5,8 @@
 
 import Foundation
 
+public typealias DateFormatter = Foundation.DateFormatter
+
 extension DateFormatter {
     /*
     Configures RFC 5322(822) Date Formatter

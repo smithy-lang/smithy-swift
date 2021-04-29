@@ -5,6 +5,8 @@
 
 import Foundation
 
+public typealias Data = Foundation.Data
+
 extension Data {
     init(reading inputStream: InputStream) throws {
         self.init()

@@ -259,7 +259,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", true)
+        return createSymbolBuilder(shape, "Date", "ClientRuntime", true)
             .build()
     }
 
@@ -273,7 +273,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return createSymbolBuilder(shape, "Data", "Foundation", true).build()
+        return createSymbolBuilder(shape, "Data", "ClientRuntime", true).build()
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {

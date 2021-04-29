@@ -197,7 +197,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                writer.addFoundationImport()
                 val members = shape.members().toList()
                 when (shape) {
                     is StructureShape -> {
@@ -249,8 +248,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
             writer.openBlock("extension ${decodeSymbol.name}: Decodable {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                // TODO: Determine if we need to add Foundation Import
-                writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("") // need enter space between coding keys and decode implementation
                 StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
@@ -426,7 +423,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addFoundationImport()
             val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
             MiddlewareGenerator(writer, queryItemMiddleware).generate()
         }
@@ -451,7 +447,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                writer.addFoundationImport()
 
                 val bodyMiddleware =
                     HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
