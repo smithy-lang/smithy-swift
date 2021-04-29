@@ -249,6 +249,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
             writer.openBlock("extension ${decodeSymbol.name}: Decodable {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                // TODO: Determine if we need to add Foundation Import
                 writer.addFoundationImport()
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("") // need enter space between coding keys and decode implementation
