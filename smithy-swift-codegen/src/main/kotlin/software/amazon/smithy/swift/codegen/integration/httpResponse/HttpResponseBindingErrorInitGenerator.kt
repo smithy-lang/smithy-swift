@@ -5,21 +5,35 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayload
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayloadFactory
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitResponseCode
+
+interface HttpResponseBindingErrorInitGeneratorFactory {
+    fun construct(
+        ctx: ProtocolGenerator.GenerationContext,
+        structureShape: StructureShape,
+        httpBindingResolver: HttpBindingResolver,
+        serviceErrorProtocolSymbol: Symbol,
+        defaultTimestampFormat: TimestampFormatTrait.Format
+    ): HttpResponseBindingRenderable
+}
 
 class HttpResponseBindingErrorInitGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val shape: StructureShape,
     val httpBindingResolver: HttpBindingResolver,
     val serviceErrorProtocolSymbol: Symbol,
-    val defaultTimestampFormat: TimestampFormatTrait.Format
-) {
+    val defaultTimestampFormat: TimestampFormatTrait.Format,
+    val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
+) : HttpResponseBindingRenderable {
 
-    fun render() {
+    override fun render() {
         val responseBindings = httpBindingResolver.responseBindings(shape)
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
@@ -39,7 +53,7 @@ class HttpResponseBindingErrorInitGenerator(
                 writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
                     HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                    HttpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer).render()
+                    httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
                     HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                     HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                     writer.write("self._headers = httpResponse.headers")
@@ -50,5 +64,14 @@ class HttpResponseBindingErrorInitGenerator(
             }
             writer.write("")
         }
+    }
+
+    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShapeName: String, writer: SwiftWriter) {
+        val responseTraitPayload = httpResponseTraitPayloadFactory?.let {
+            it.construct(ctx, responseBindings, errorShapeName, writer)
+        } ?: run {
+            HttpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+        }
+        responseTraitPayload.render()
     }
 }

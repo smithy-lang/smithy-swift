@@ -12,7 +12,8 @@ class HttpResponseGenerator(
     val errorFromHttpResponseGenerator: HttpResponseBindingErrorGeneratable,
     val serviceErrorProtocolSymbol: Symbol,
     val unknownServiceErrorSymbol: Symbol,
-    val defaultTimestampFormat: TimestampFormatTrait.Format
+    val defaultTimestampFormat: TimestampFormatTrait.Format,
+    val httpResponseBindingErrorInitGeneratorFactory: HttpResponseBindingErrorInitGeneratorFactory? = null
 ) : HttpResponseGeneratable {
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, httpOperations: List<OperationShape>, httpBindingResolver: HttpBindingResolver) {
@@ -35,7 +36,22 @@ class HttpResponseGenerator(
 
         val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
         modeledErrors.forEach {
-            HttpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat).render()
+            httpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat)
         }
+    }
+
+    fun httpResponseBindingErrorInitGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        structureShape: StructureShape,
+        httpBindingResolver: HttpBindingResolver,
+        serviceErrorProtocolSymbol: Symbol,
+        defaultTimestampFormat: TimestampFormatTrait.Format
+    ) {
+        val httpResponseBindingErrorInitGenerator = httpResponseBindingErrorInitGeneratorFactory?.let {
+            it.construct(ctx, structureShape, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat)
+        } ?: run {
+            HttpResponseBindingErrorInitGenerator(ctx, structureShape, httpBindingResolver, serviceErrorProtocolSymbol, defaultTimestampFormat)
+        }
+        httpResponseBindingErrorInitGenerator.render()
     }
 }
