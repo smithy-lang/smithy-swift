@@ -21,7 +21,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            var queryItems: [URLQueryItem] = [URLQueryItem]()
+            var queryItems: [URLQueryItem] = []
             var queryItem: URLQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
                 queryItem = URLQueryItem(name: "RequiredQuery", value: String(requiredQuery))

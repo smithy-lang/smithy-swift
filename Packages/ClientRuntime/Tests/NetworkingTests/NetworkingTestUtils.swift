@@ -51,7 +51,7 @@ class NetworkingTestUtils: XCTestCase {
     func getMockEndpoint() -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
-        var queryItems = [URLQueryItem]()
+        var queryItems: [URLQueryItem] = []
         let endpoint: Endpoint!
 
         queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
