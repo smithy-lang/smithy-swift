@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import class Foundation.DateFormatter
+import struct Foundation.TimeZone
+import struct Foundation.Locale
 
 public typealias DateFormatter = Foundation.DateFormatter
 

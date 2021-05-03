@@ -3,5 +3,5 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import struct Foundation.Date
 public typealias Date = Foundation.Date
