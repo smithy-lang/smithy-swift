@@ -82,7 +82,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("Foundation", memberSymbol.namespace)
+        assertEquals("ClientRuntime", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 
@@ -99,7 +99,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("Foundation", memberSymbol.namespace)
+        assertEquals("ClientRuntime", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 

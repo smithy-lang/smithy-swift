@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 import AwsCommonRuntimeKit
-import struct Foundation.URL
-import struct Foundation.Data
 
 public enum HttpBody {
     case data(Data?)

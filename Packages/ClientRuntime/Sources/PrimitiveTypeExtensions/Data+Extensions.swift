@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import struct Foundation.Data
+import class Foundation.InputStream
+
+public typealias Data = Foundation.Data
 
 extension Data {
     init(reading inputStream: InputStream) throws {
