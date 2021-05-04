@@ -11,6 +11,7 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.defaultName
 import java.util.TreeSet
 import java.util.logging.Logger
@@ -48,7 +49,7 @@ class HttpProtocolTestGenerator(
                         return@ifPresent
                     }
 
-                    val testClassName = "${operation.id.name.capitalize()}RequestTest"
+                    val testClassName = "${operation.capitalizedName()}RequestTest"
                     val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
@@ -115,7 +116,7 @@ class HttpProtocolTestGenerator(
                         // multiple error (tests) may be associated with a single operation,
                         // use the operation name + error name as the class name
                         val opName = operation.id.name.capitalize()
-                        val testClassName = "${opName}${error.defaultName()}Test"
+                        val testClassName = "${opName}${error.capitalizedName()}Test"
                         val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
                         ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                             LOGGER.fine("Generating error protocol test cases for ${operation.id}")

@@ -261,7 +261,7 @@ abstract class MemberShapeDecodeGenerator(
         topLevelMember: MemberShape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
+        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
         val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
         val terminator = if (level == 0) "?" else ""
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {

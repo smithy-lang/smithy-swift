@@ -118,7 +118,7 @@ abstract class MemberShapeEncodeGenerator(
         targetShape: Shape,
         level: Int = 0
     ) {
-        val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
+        val iteratorName = "${targetShape.id.name.toLowerCase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is CollectionShape -> {
@@ -189,7 +189,7 @@ abstract class MemberShapeEncodeGenerator(
         valueTargetShape: Shape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
+        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
         val target = when (valueTargetShape) {
             is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
             else -> valueTargetShape

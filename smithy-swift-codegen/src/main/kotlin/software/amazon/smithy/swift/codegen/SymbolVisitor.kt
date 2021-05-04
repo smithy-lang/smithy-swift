@@ -101,14 +101,26 @@ fun Symbol.bodySymbol(): Symbol {
         .build()
 }
 
-fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
+fun Shape.capitalizedName(): String {
+    return StringUtils.capitalize(this.id.name)
+}
+
+fun Shape.defaultName(serviceShape: ServiceShape?): String {
+    if (serviceShape != null) {
+        return StringUtils.capitalize(id.getName(serviceShape))
+    }
+    return StringUtils.capitalize(this.id.name)
+}
 
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "", private val sdkId: String) :
+class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
 
+    private val rootNamespace = swiftSettings.moduleName
+    private val sdkId = swiftSettings.sdkId
+    private val service: ServiceShape? =  try { swiftSettings.getService(model) } catch(e: CodegenException) { null }
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
     private var escaper: Escaper
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
@@ -188,7 +200,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
-        val name = shape.defaultName()
+        val name = shape.defaultName(service)
         val builder = createSymbolBuilder(shape, name, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
@@ -204,7 +216,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
-        val name = shape.defaultName()
+        val name = shape.defaultName(service)
         val builder = createSymbolBuilder(shape, name, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 

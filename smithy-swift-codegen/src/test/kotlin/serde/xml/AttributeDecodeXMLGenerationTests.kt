@@ -11,7 +11,7 @@ class AttributeDecodeXMLGenerationTests {
     @Test
     fun `001 xml attributes decode for input type`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlAttributesOutputBody+DynamicNodeDecoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesOutputBody+DynamicNodeDecoding.swift")
         val expectedContents = """
         extension XmlAttributesOutputBody: DynamicNodeDecoding {
             public static func nodeDecoding(for key: CodingKey) -> NodeDecoding {

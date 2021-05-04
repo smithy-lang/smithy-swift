@@ -11,7 +11,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `001 xmlnamespace, XmlNamespacesInput, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNamespacesInput: Encodable, Reflection {
@@ -36,7 +36,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `002 xmlnamespace, XmlNamespacesInput, DynamicNodeEncoding`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesInput+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
             extension XmlNamespacesInput: DynamicNodeEncoding {
@@ -59,7 +59,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `003 xmlnamespace, XmlNamespaceNested`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceNested+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+Codable.swift")
         val expectedContents =
             """
             extension XmlNamespaceNested: Codable, Reflection {
@@ -121,7 +121,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `004 xmlnamespace, XmlNamespaceNested, nested structure needs dynamic node encoding`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceNested+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+DynamicNodeEncoding.swift")
         val expectedContents =
             """
             extension XmlNamespaceNested: DynamicNodeEncoding {
@@ -145,7 +145,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `005 xmlnamespace nested list, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceNestedListInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNamespaceNestedListInput: Encodable, Reflection {
@@ -182,7 +182,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `006 xmlnamespace nested list, dynamic node encoding`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceNestedListInput+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
             extension XmlNamespaceNestedListInput: DynamicNodeEncoding {
@@ -207,7 +207,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `007 xmlnamespace nested flattened list, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-flattenedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceFlattenedListInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNamespaceFlattenedListInput: Encodable, Reflection {
@@ -241,7 +241,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `008 xmlnamespace nested flattened list, dynamic node encoding`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-flattenedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespaceFlattenedListInput+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
             extension XmlNamespaceFlattenedListInput: DynamicNodeEncoding {
@@ -265,7 +265,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `009 xmlnamespace on service, dynamic node encoding`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceInput+DynamicNodeEncoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
             extension XmlNamespacesOnServiceInput: DynamicNodeEncoding {
@@ -289,7 +289,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `010 xmlnamespace on service, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNamespacesOnServiceInput: Encodable, Reflection {
@@ -320,7 +320,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `011 xmlnamespace on service, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice-overridable.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNamespacesOnServiceOverridableInput: Encodable, Reflection {
