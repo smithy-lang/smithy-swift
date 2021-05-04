@@ -26,6 +26,7 @@ import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -53,7 +54,8 @@ fun Shape.isInHttpBody(): Boolean {
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
         !this.hasTrait(HttpHeaderTrait::class.java) &&
         !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
-        !this.hasTrait(HttpQueryTrait::class.java)
+        !this.hasTrait(HttpQueryTrait::class.java) &&
+        !this.hasTrait(HttpQueryParamsTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
 }
 
@@ -413,7 +415,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
-        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS}
         val queryLiterals = httpTrait.uri.queryLiterals
 
         val rootNamespace = ctx.settings.moduleName

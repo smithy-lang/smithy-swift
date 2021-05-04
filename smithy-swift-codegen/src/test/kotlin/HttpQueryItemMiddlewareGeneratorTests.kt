@@ -1,22 +1,18 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.swift.codegen.AddOperationShapes
+import java.nio.file.InvalidPathException
+import java.nio.file.Paths
+import java.util.*
 
 class HttpQueryItemMiddlewareGeneratorTests {
-    private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
-    var newTestContext: TestContext
-    init {
-        newTestContext = newTestContext()
-        newTestContext.generator.generateSerializers(newTestContext.generationCtx)
-        newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
-        newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
-        newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
-        newTestContext.generationCtx.delegator.flushWriters()
-    }
     @Test
-    fun `it creates query item middleware with idempotency token trait for httpQuery`() {
+    fun `001 it creates query item middleware with idempotency token trait for httpQuery`() {
+        val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents =
-            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemMiddleware.swift", newTestContext.manifest)
+            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -49,8 +45,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
     }
 
     @Test
-    fun `it creates query item middleware for timestamps with format`() {
-        val contents = getModelFileContents("example", "TimestampInputInput+QueryItemMiddleware.swift", newTestContext.manifest)
+    fun `002 it creates query item middleware for timestamps with format`() {
+        val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
+        val contents = getModelFileContents("example", "TimestampInputInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -89,8 +86,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
     }
 
     @Test
-    fun `it creates query item middleware smoke test`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+QueryItemMiddleware.swift", newTestContext.manifest)
+    fun `003 it creates query item middleware smoke test`() {
+        val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
+        val contents = getModelFileContents("example", "SmokeTestInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -122,9 +120,34 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun newTestContext(): TestContext {
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        return model.newTestContext()
+    @Test
+    fun `004 httpQueryParams only should not have BodyMiddleware extension`() {
+        val context = setupTests("http-query-params.smithy", "com.test#Example")
+        Assertions.assertEquals(
+            Optional.empty<String>(),
+            context.manifest.getFileString("/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
+        )
+    }
+
+    @Test
+    fun `005 httpQueryParams on StringMap`() {
+        val context = setupTests("http-query-params.smithy", "com.test#Example")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+QueryItemMiddleware.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
+        context.generator.generateSerializers(context.generationCtx)
+        context.generator.generateProtocolClient(context.generationCtx)
+        context.generator.generateDeserializers(context.generationCtx)
+        context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        return context
     }
 }

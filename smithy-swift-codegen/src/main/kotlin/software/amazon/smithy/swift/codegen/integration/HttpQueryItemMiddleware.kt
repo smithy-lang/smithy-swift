@@ -48,10 +48,14 @@ class HttpQueryItemMiddleware(
 
             if (isBoxed) {
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                    if (memberTarget is CollectionShape) {
-                        renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                    if (it.location == HttpBinding.Location.QUERY_PARAMS) {
+                        renderQueryParamMap(memberName)
                     } else {
-                        renderQueryItem(it.member, bindingIndex, memberName, paramName)
+                        if (memberTarget is CollectionShape) {
+                            renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                        } else {
+                            renderQueryItem(it.member, bindingIndex, memberName, paramName)
+                        }
                     }
                 }
             } else {
@@ -62,6 +66,13 @@ class HttpQueryItemMiddleware(
                     renderQueryItem(it.member, bindingIndex, memberName, paramName)
                 }
             }
+        }
+    }
+    //We'll need to do something more fancy here since value can be an array of strings, but we're on the right track.
+    private fun renderQueryParamMap(memberName: String) {
+        writer.openBlock("$memberName.forEach { key, value in ", "}") {
+            writer.write("let queryItem = URLQueryItem(name: key, value: value)")
+            writer.write("input.builder.withQueryItem(queryItem)")
         }
     }
 
