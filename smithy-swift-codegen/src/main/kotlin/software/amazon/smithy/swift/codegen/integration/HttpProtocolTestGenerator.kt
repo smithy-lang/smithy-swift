@@ -12,7 +12,6 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.capitalizedName
-import software.amazon.smithy.swift.codegen.defaultName
 import java.util.TreeSet
 import java.util.logging.Logger
 

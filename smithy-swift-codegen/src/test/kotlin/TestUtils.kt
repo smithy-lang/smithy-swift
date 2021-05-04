@@ -29,10 +29,7 @@ import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import java.net.URL
-import java.nio.file.FileSystems
-import java.nio.file.Path
 
 /**
  * Load and initialize a model from a String (from smithy-rs)

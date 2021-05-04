@@ -120,7 +120,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     private val rootNamespace = swiftSettings.moduleName
     private val sdkId = swiftSettings.sdkId
-    private val service: ServiceShape? =  try { swiftSettings.getService(model) } catch(e: CodegenException) { null }
+    private val service: ServiceShape? = try { swiftSettings.getService(model) } catch (e: CodegenException) { null }
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
     private var escaper: Escaper
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks

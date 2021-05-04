@@ -14,7 +14,6 @@ import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.capitalizedName
-import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
