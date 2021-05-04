@@ -11,7 +11,7 @@ class UnionEncodeXMLGenerationTests {
     @Test
     fun `001 XmlUnionShape+Codable`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlUnionShape+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
         val expectedContents =
             """
             extension XmlUnionShape: Codable, Reflection {
@@ -171,7 +171,7 @@ class UnionEncodeXMLGenerationTests {
     @Test
     fun `002 XmlUnionShape should be marked as indirect`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/XmlUnionShape.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape.swift")
         val expectedContents =
             """
             public indirect enum XmlUnionShape: Equatable {

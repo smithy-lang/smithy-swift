@@ -18,7 +18,6 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.isBoxed
@@ -261,7 +260,7 @@ abstract class MemberShapeDecodeGenerator(
         topLevelMember: MemberShape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
+        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
         val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
         val terminator = if (level == 0) "?" else ""
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {

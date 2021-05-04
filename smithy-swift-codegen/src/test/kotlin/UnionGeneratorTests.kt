@@ -30,7 +30,7 @@ class UnionGeneratorTests {
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writer = SwiftWriter("MockPackage")
 
         val generator = UnionGenerator(model, provider, writer, simpleUnionShape)
@@ -77,7 +77,7 @@ public enum MyUnion: Equatable {
         val unionShapeWithStructMember = unionShapeBuilder.build()
         val model = createModelFromShapes(struct, unionShapeWithStructMember)
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writer = SwiftWriter("MockPackage")
 
         val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember)

@@ -49,13 +49,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
         // Add operation input/output shapes if not provided for future evolution of sdk
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
-        // Add recursive shapes trait
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         model = resolvedModel
 
         service = settings.getService(model)
 
-        var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings.moduleName, settings.sdkId)
+        var resolvedSymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         for (integration in integrations) {
             resolvedSymbolProvider = integration.decorateSymbolProvider(settings, model, resolvedSymbolProvider)
         }

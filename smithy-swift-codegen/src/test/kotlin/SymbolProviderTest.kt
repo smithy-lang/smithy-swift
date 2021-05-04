@@ -30,7 +30,7 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
         val model = createModelFromShapes(struct, member)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val actual = provider.toMemberName(member)
         assertEquals("`class`", actual)
     }
@@ -62,7 +62,7 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
         val model = createModelFromShapes(struct, member)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals(namespace ?: "", memberSymbol.namespace)
@@ -79,7 +79,7 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
         val model = createModelFromShapes(struct, member)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals("ClientRuntime", memberSymbol.namespace)
@@ -96,7 +96,7 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
         val model = createModelFromShapes(struct, member)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals("ClientRuntime", memberSymbol.namespace)
@@ -113,7 +113,7 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
         val model = createModelFromShapes(struct, member)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals("ComplexModule", memberSymbol.namespace)
@@ -129,7 +129,7 @@ class SymbolProviderTest {
             .member(listMember)
             .build()
         val model = createModelFromShapes(struct, list, listMember)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val listSymbol = provider.toSymbol(list)
 
         assertEquals("[Record]", listSymbol.name)
@@ -145,7 +145,7 @@ class SymbolProviderTest {
             .member(setMember)
             .build()
         val model = createModelFromShapes(struct, set, setMember)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val setSymbol = provider.toSymbol(set)
 
         assertEquals("Set<Record>", setSymbol.name)
@@ -163,7 +163,7 @@ class SymbolProviderTest {
             .value(valueMember)
             .build()
         val model = createModelFromShapes(struct, map, keyMember, valueMember)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val mapSymbol = provider.toSymbol(map)
 
         assertEquals("[String:Record]", mapSymbol.name)
@@ -204,7 +204,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val structSymbol = provider.toSymbol(struct1)
         assertEquals("MyStruct1", structSymbol.name)
         assertEquals(true, structSymbol.isBoxed())

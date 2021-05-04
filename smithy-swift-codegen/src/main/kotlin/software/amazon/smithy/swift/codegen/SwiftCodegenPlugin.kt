@@ -24,7 +24,7 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
          * @param sdkId name to use to represent client type. e.g. an sdkId of "foo" would produce a client type "FooClient".
          * @return Returns the created provider
          */
-        fun createSymbolProvider(model: Model, rootPackageNamespace: String, sdkId: String): SymbolProvider = SymbolVisitor(model, rootPackageNamespace, sdkId)
+        fun createSymbolProvider(model: Model, swiftSettings: SwiftSettings): SymbolProvider = SymbolVisitor(model, swiftSettings)
     }
 
     override fun getName(): String = "swift-codegen"

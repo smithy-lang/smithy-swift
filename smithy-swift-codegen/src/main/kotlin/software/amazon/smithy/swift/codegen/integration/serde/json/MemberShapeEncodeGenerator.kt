@@ -17,7 +17,6 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
@@ -118,7 +117,7 @@ abstract class MemberShapeEncodeGenerator(
         targetShape: Shape,
         level: Int = 0
     ) {
-        val iteratorName = "${targetShape.defaultName().toLowerCase()}$level"
+        val iteratorName = "${targetShape.id.name.toLowerCase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is CollectionShape -> {
@@ -189,7 +188,7 @@ abstract class MemberShapeEncodeGenerator(
         valueTargetShape: Shape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.defaultName().toLowerCase()}$level"
+        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
         val target = when (valueTargetShape) {
             is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
             else -> valueTargetShape

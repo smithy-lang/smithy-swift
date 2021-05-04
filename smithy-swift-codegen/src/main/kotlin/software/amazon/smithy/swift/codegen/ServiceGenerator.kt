@@ -102,7 +102,7 @@ class ServiceGenerator(
         }
 
         fun getOperationErrorShapeName(op: OperationShape): String {
-            return "${op.defaultName()}OutputError"
+            return "${op.capitalizedName()}OutputError"
         }
 
         private fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {

@@ -16,13 +16,14 @@ import software.amazon.smithy.swift.codegen.writePackageManifest
 import kotlin.streams.toList
 
 class PackageManifestGeneratorTests {
+
     private val model: Model = javaClass.getResource("simple-service-with-operation-and-dependency.smithy").asSmithy()
     private val settings: SwiftSettings = model.defaultSettings(moduleName = "MockSDK")
     private val manifest: MockManifest = MockManifest()
     private val mockDependencies: MutableList<SymbolDependency>
 
     init {
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "MockSDK", "Test")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         mockDependencies = getMockDependenciesFromModel(model, provider)
     }
 

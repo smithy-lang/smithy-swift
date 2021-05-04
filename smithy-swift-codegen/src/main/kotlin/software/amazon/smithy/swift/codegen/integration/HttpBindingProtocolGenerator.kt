@@ -26,6 +26,7 @@ import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -33,7 +34,7 @@ import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.bodySymbol
-import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
@@ -53,7 +54,8 @@ fun Shape.isInHttpBody(): Boolean {
     val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
         !this.hasTrait(HttpHeaderTrait::class.java) &&
         !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
-        !this.hasTrait(HttpQueryTrait::class.java)
+        !this.hasTrait(HttpQueryTrait::class.java) &&
+        !this.hasTrait(HttpQueryParamsTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
 }
 
@@ -379,7 +381,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}OutputError"
+        val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
@@ -409,11 +411,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}OutputError"
+        val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
-        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
         val queryLiterals = httpTrait.uri.queryLiterals
 
         val rootNamespace = ctx.settings.moduleName
@@ -434,7 +436,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.defaultName()}OutputError"
+        val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
