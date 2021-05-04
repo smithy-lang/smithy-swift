@@ -12,6 +12,16 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            public struct MyTestOperationInput: Equatable {
+                public let bar: RenamedGreeting?
+
+                public init (
+                    bar: RenamedGreeting? = nil
+                )
+                {
+                    self.bar = bar
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -26,6 +36,16 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            public struct MyTestOperationOutput: Equatable {
+                public let baz: GreetingStruct?
+            
+                public init (
+                    baz: GreetingStruct? = nil
+                )
+                {
+                    self.baz = baz
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -40,6 +60,16 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            public struct GreetingStruct: Equatable {
+                public let hi: String?
+            
+                public init (
+                    hi: String? = nil
+                )
+                {
+                    self.hi = hi
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -55,6 +85,16 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            public struct RenamedGreeting: Equatable {
+                public let salutation: String?
+            
+                public init (
+                    salutation: String? = nil
+                )
+                {
+                    self.salutation = salutation
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -70,6 +110,24 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            extension RenamedGreeting: Codable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case salutation
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
+                    if let salutation = salutation {
+                        try encodeContainer.encode(salutation, forKey: .salutation)
+                    }
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    let salutationDecoded = try containerValues.decodeIfPresent(String.self, forKey: .salutation)
+                    salutation = salutationDecoded
+                }
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
