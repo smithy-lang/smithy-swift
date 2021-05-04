@@ -62,6 +62,13 @@ class SwiftDelegator(
         useShapeWriter(symbol, writerConsumer)
     }
 
+    fun useShapeWriterCustomStringConvertible(shape: Shape,
+                                              block: (SwiftWriter) -> Unit
+    ) {
+        val symbol = symbolProvider.toSymbol(shape)
+        val filePath = symbol.definitionFile.replace(".swift", "+CustomStringConvertible.swift")
+        return useShapeWriteWithSpecificFilePath(filePath, symbol, block)
+    }
     /**
      * Gets a previously created writer or creates a new one if needed.
      *
@@ -72,8 +79,15 @@ class SwiftDelegator(
         symbol: Symbol,
         block: (SwiftWriter) -> Unit
     ) {
-        val writer: SwiftWriter = checkoutWriter(symbol.definitionFile)
+        return useShapeWriteWithSpecificFilePath(symbol.definitionFile, symbol, block)
+    }
 
+    private fun useShapeWriteWithSpecificFilePath(
+        filePath: String,
+        symbol: Symbol,
+        block: (SwiftWriter) -> Unit
+    ) {
+        val writer: SwiftWriter = checkoutWriter(filePath)
         // Add any needed DECLARE symbols.
         writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
         writer.dependencies.addAll(symbol.dependencies)
