@@ -415,7 +415,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
-        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS}
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
         val queryLiterals = httpTrait.uri.queryLiterals
 
         val rootNamespace = ctx.settings.moduleName

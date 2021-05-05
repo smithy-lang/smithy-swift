@@ -52,7 +52,7 @@ class HttpQueryItemMiddleware(
 
             if (it.location == HttpBinding.Location.QUERY_PARAMS && memberTarget is MapShape) {
                 httpQueryParamBinding = it
-            } else if (it.location == HttpBinding.Location.QUERY){
+            } else if (it.location == HttpBinding.Location.QUERY) {
                 httpQueryParamNames.add(paramName)
                 renderHttpQuery(it, memberName, memberTarget, paramName, bindingIndex, isBoxed)
             }
@@ -72,7 +72,7 @@ class HttpQueryItemMiddleware(
             writer.openBlock("let $existingHttpQueryParamName = [", "]") {
                 for (paramName in httpQueryParamNames) {
                     val commaIfNeeded = if (paramName != httpQueryParamNames.last()) "," else ""
-                    writer.write("\"${paramName}\"${commaIfNeeded}")
+                    writer.write("\"${paramName}\"$commaIfNeeded")
                 }
             }
             writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
