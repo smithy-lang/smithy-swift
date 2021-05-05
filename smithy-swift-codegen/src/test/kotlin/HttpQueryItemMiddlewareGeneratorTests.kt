@@ -1,10 +1,7 @@
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import software.amazon.smithy.swift.codegen.AddOperationShapes
-import java.nio.file.InvalidPathException
-import java.nio.file.Paths
 import java.util.*
 
 class HttpQueryItemMiddlewareGeneratorTests {
@@ -122,7 +119,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
 
     @Test
     fun `004 httpQueryParams only should not have BodyMiddleware extension`() {
-        val context = setupTests("http-query-params.smithy", "com.test#Example")
+        val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         Assertions.assertEquals(
             Optional.empty<String>(),
             context.manifest.getFileString("/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
@@ -131,16 +128,58 @@ class HttpQueryItemMiddlewareGeneratorTests {
 
     @Test
     fun `005 httpQueryParams on StringMap`() {
-        val context = setupTests("http-query-params.smithy", "com.test#Example")
-        print(listFilesFromManifest(context.manifest))
+        val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+QueryItemMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
+            public struct AllQueryStringTypesInputQueryItemMiddleware: Middleware {
+                public let id: String = "AllQueryStringTypesInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeStepInput<AllQueryStringTypesInput>,
+                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutput, AllQueryStringTypesOutputError>, Swift.Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let queryStringList = input.operationInput.queryStringList {
+                        queryStringList.forEach { queryItemValue in
+                            let queryItem = URLQueryItem(name: "StringList", value: String(queryItemValue))
+                            input.builder.withQueryItem(queryItem)
+                        }
+                    }
+                    if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
+                        queryParamsMapOfStrings.forEach { key, value in
+                            let queryItem = URLQueryItem(name: key, value: value)
+                            input.builder.withQueryItem(queryItem)
+                        }
+                    }
+                    if let queryString = input.operationInput.queryString {
+                        let queryStringQueryItem = URLQueryItem(name: "String", value: String(queryString))
+                        input.builder.withQueryItem(queryStringQueryItem)
+                    }
+                    return next.handle(context: context, input: input)
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `006 httpQueryParams on stringListMap`() {
+        val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
+        print(listFilesFromManifest(context.manifest))
+        val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+QueryItemMiddleware.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)

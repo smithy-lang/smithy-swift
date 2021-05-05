@@ -4,7 +4,9 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -46,33 +48,48 @@ class HttpQueryItemMiddleware(
             val bindingIndex = HttpBindingIndex.of(ctx.model)
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
 
-            if (isBoxed) {
-                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                    if (it.location == HttpBinding.Location.QUERY_PARAMS) {
-                        renderQueryParamMap(memberName)
-                    } else {
-                        if (memberTarget is CollectionShape) {
-                            renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
-                        } else {
-                            renderQueryItem(it.member, bindingIndex, memberName, paramName)
-                        }
-                    }
-                }
+            if (it.location == HttpBinding.Location.QUERY_PARAMS && memberTarget is MapShape) {
+                renderHttpQueryParamMap(memberTarget, memberName)
             } else {
-                memberName = "input.operationInput.$memberName"
-                if (memberTarget is CollectionShape) {
-                    renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                renderHttpQuery(it, memberName, memberTarget, paramName, bindingIndex, isBoxed)
+            }
+        }
+    }
+
+    //We'll need to do something more fancy here since value can be an array of strings, but we're on the right track.
+    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
+        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+            writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
+                val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
+                if (valueTargetShape is CollectionShape) {
+                    writer.openBlock("value0?.forEach { value1 in", "}") {
+                        writer.write("let queryItem = URLQueryItem(name: key0, value: value1)")
+                        writer.write("input.builder.withQueryItem(queryItem)")
+                    }
                 } else {
-                    renderQueryItem(it.member, bindingIndex, memberName, paramName)
+                    writer.write("let queryItem = URLQueryItem(name: key0, value: value0)")
+                    writer.write("input.builder.withQueryItem(queryItem)")
                 }
             }
         }
     }
-    //We'll need to do something more fancy here since value can be an array of strings, but we're on the right track.
-    private fun renderQueryParamMap(memberName: String) {
-        writer.openBlock("$memberName.forEach { key, value in ", "}") {
-            writer.write("let queryItem = URLQueryItem(name: key, value: value)")
-            writer.write("input.builder.withQueryItem(queryItem)")
+
+    fun renderHttpQuery(queryBinding: HttpBindingDescriptor, memberName: String, memberTarget: Shape, paramName: String, bindingIndex: HttpBindingIndex, isBoxed: Boolean) {
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                if (memberTarget is CollectionShape) {
+                    renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                } else {
+                    renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                }
+            }
+        } else {
+            val updatedMemberName = "input.operationInput.$memberName"
+            if (memberTarget is CollectionShape) {
+                renderListOrSet(memberTarget, bindingIndex, updatedMemberName, paramName)
+            } else {
+                renderQueryItem(queryBinding.member, bindingIndex, updatedMemberName, paramName)
+            }
         }
     }
 
