@@ -41,6 +41,8 @@ class HttpQueryItemMiddleware(
             writer.write("input.builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
         }
 
+        var httpQueryParamNames = mutableListOf<String>()
+        var httpQueryParamBinding: HttpBindingDescriptor? = null
         queryBindings.forEach {
             var memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -49,26 +51,44 @@ class HttpQueryItemMiddleware(
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
 
             if (it.location == HttpBinding.Location.QUERY_PARAMS && memberTarget is MapShape) {
-                renderHttpQueryParamMap(memberTarget, memberName)
-            } else {
+                httpQueryParamBinding = it
+            } else if (it.location == HttpBinding.Location.QUERY){
+                httpQueryParamNames.add(paramName)
                 renderHttpQuery(it, memberName, memberTarget, paramName, bindingIndex, isBoxed)
+            }
+        }
+        httpQueryParamBinding?.let {
+            val memberTarget = ctx.model.expectShape(it.member.target)
+            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            if (memberTarget is MapShape) {
+                renderHttpQueryParamMap(memberTarget, memberName, httpQueryParamNames)
             }
         }
     }
 
-    //We'll need to do something more fancy here since value can be an array of strings, but we're on the right track.
-    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
+    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String, httpQueryParamNames: List<String>) {
         writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+            val existingHttpQueryParamName = "existingHttpQueryParamNames"
+            writer.openBlock("let $existingHttpQueryParamName = [", "]") {
+                for (paramName in httpQueryParamNames) {
+                    val commaIfNeeded = if (paramName != httpQueryParamNames.last()) "," else ""
+                    writer.write("\"${paramName}\"${commaIfNeeded}")
+                }
+            }
             writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
                 val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
                 if (valueTargetShape is CollectionShape) {
-                    writer.openBlock("value0?.forEach { value1 in", "}") {
-                        writer.write("let queryItem = URLQueryItem(name: key0, value: value1)")
-                        writer.write("input.builder.withQueryItem(queryItem)")
+                    writer.openBlock("if !$existingHttpQueryParamName.contains(key0) {", "}") {
+                        writer.openBlock("value0?.forEach { value1 in", "}") {
+                            writer.write("let queryItem = URLQueryItem(name: key0, value: value1)")
+                            writer.write("input.builder.withQueryItem(queryItem)")
+                        }
                     }
                 } else {
-                    writer.write("let queryItem = URLQueryItem(name: key0, value: value0)")
-                    writer.write("input.builder.withQueryItem(queryItem)")
+                    writer.openBlock("if !$existingHttpQueryParamName.contains(key0) {", "}") {
+                        writer.write("let queryItem = URLQueryItem(name: key0, value: value0)")
+                        writer.write("input.builder.withQueryItem(queryItem)")
+                    }
                 }
             }
         }
@@ -136,10 +156,10 @@ class HttpQueryItemMiddleware(
         }
     }
 
-    private fun renderDoCatch(queryItemValueWithExtension: String, queryItemName: String) {
+    private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = URLQueryItem(name: \"$queryItemName\", value: String($queryItemValueWithExtension))")
+            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValueWithExtension))")
             writer.write("input.builder.withQueryItem(queryItem)")
         }
         writer.indent()

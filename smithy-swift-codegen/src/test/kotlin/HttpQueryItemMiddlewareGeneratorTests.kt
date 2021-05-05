@@ -152,15 +152,21 @@ class HttpQueryItemMiddlewareGeneratorTests {
                             input.builder.withQueryItem(queryItem)
                         }
                     }
-                    if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
-                        queryParamsMapOfStrings.forEach { key, value in
-                            let queryItem = URLQueryItem(name: key, value: value)
-                            input.builder.withQueryItem(queryItem)
-                        }
-                    }
                     if let queryString = input.operationInput.queryString {
                         let queryStringQueryItem = URLQueryItem(name: "String", value: String(queryString))
                         input.builder.withQueryItem(queryStringQueryItem)
+                    }
+                    if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
+                        let existingHttpQueryParamNames = [
+                            "StringList",
+                            "String"
+                        ]
+                        queryParamsMapOfStrings.forEach { key0, value0 in
+                            if !existingHttpQueryParamNames.contains(key0) {
+                                let queryItem = URLQueryItem(name: key0, value: value0)
+                                input.builder.withQueryItem(queryItem)
+                            }
+                        }
                     }
                     return next.handle(context: context, input: input)
                 }
@@ -171,15 +177,87 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `006 httpQueryParams on stringListMap`() {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+QueryItemMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-
+            public struct QueryParamsAsStringListMapInputQueryItemMiddleware: Middleware {
+                public let id: String = "QueryParamsAsStringListMapInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeStepInput<QueryParamsAsStringListMapInput>,
+                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutput, QueryParamsAsStringListMapOutputError>, Swift.Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let qux = input.operationInput.qux {
+                        let quxQueryItem = URLQueryItem(name: "corge", value: String(qux))
+                        input.builder.withQueryItem(quxQueryItem)
+                    }
+                    if let foo = input.operationInput.foo {
+                        let existingHttpQueryParamNames = [
+                            "corge"
+                        ]
+                        foo.forEach { key0, value0 in
+                            if !existingHttpQueryParamNames.contains(key0) {
+                                value0?.forEach { value1 in
+                                    let queryItem = URLQueryItem(name: key0, value: value1)
+                                    input.builder.withQueryItem(queryItem)
+                                }
+                            }
+                        }
+                    }
+                    return next.handle(context: context, input: input)
+                }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    @Test
+    fun `007 query precedence with httpQuery and httpQueryParams`() {
+        val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/example/models/QueryPrecedenceInput+QueryItemMiddleware.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            public struct QueryPrecedenceInputQueryItemMiddleware: Middleware {
+                public let id: String = "QueryPrecedenceInputQueryItemMiddleware"
+            
+                public init() {}
+            
+                public func handle<H>(context: Context,
+                              input: SerializeStepInput<QueryPrecedenceInput>,
+                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutput, QueryPrecedenceOutputError>, Swift.Error>
+                where H: Handler,
+                Self.MInput == H.Input,
+                Self.MOutput == H.Output,
+                Self.Context == H.Context
+                {
+                    if let foo = input.operationInput.foo {
+                        let fooQueryItem = URLQueryItem(name: "bar", value: String(foo))
+                        input.builder.withQueryItem(fooQueryItem)
+                    }
+                    if let baz = input.operationInput.baz {
+                        let existingHttpQueryParamNames = [
+                            "bar"
+                        ]
+                        baz.forEach { key0, value0 in
+                            if !existingHttpQueryParamNames.contains(key0) {
+                                let queryItem = URLQueryItem(name: key0, value: value0)
+                                input.builder.withQueryItem(queryItem)
+                            }
+                        }
+                    }
+                    return next.handle(context: context, input: input)
+                }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)
