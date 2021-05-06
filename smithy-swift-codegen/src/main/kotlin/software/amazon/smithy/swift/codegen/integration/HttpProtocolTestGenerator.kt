@@ -38,14 +38,13 @@ class HttpProtocolTestGenerator(
      * Generates the API HTTP protocol tests defined in the smithy model.
      */
     fun generateProtocolTests() {
-        val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
 
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
             renderRequestTests(operation, serviceSymbol)
             renderResponseTests(operation, serviceSymbol)
-            renderErrorTestCases(operation, serviceSymbol, operationIndex)
+            renderErrorTestCases(operation, serviceSymbol)
         }
     }
 
@@ -113,41 +112,43 @@ class HttpProtocolTestGenerator(
         }
     }
 
-    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol, operationIndex: OperationIndex) {
+    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol) {
+        val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
+
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
-            error.getTrait(HttpResponseTestsTrait::class.java)
-                .ifPresent { trait: HttpResponseTestsTrait ->
-                    val testCases = filterProtocolTestCases(trait.testCases)
-                    if (testCases.isEmpty()) {
-                        return@ifPresent
-                    }
-                    // multiple error (tests) may be associated with a single operation,
-                    // use the operation name + error name as the class name
-                    val opName = operation.id.name.capitalize()
-                    val testClassName = "${opName}${error.capitalizedName()}Test"
-                    val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
-                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
-                        LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+            val tempTestCases = error.getTrait(HttpResponseTestsTrait::class.java)
+                .getOrNull()
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                .orEmpty()
+            val testCases = filterProtocolTestCases(tempTestCases)
+            if (testCases.isNotEmpty()) {
+                // multiple error (tests) may be associated with a single operation,
+                // use the operation name + error name as the class name
+                val opName = operation.id.name.capitalize()
+                val testClassName = "${opName}${error.capitalizedName()}Test"
+                val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
+                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                    LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                        writer.addImport(ctx.settings.moduleName, true)
-                        writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
-                        writer.addImport(SwiftDependency.XCTest.target)
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(ctx.settings.moduleName, true)
+                    writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                    writer.addImport(SwiftDependency.XCTest.target)
 
-                        errorTestBuilder
-                            .error(error)
-                            .writer(writer)
-                            .model(ctx.model)
-                            .symbolProvider(ctx.symbolProvider)
-                            .operation(operation)
-                            .serviceName(serviceSymbol.name)
-                            .testCases(testCases)
-                            .httpProtocolCustomizable(httpProtocolCustomizable)
-                            .serdeContext(serdeContext)
-                            .build()
-                            .renderTestClass(testClassName)
-                    }
+                    errorTestBuilder
+                        .error(error)
+                        .writer(writer)
+                        .model(ctx.model)
+                        .symbolProvider(ctx.symbolProvider)
+                        .operation(operation)
+                        .serviceName(serviceSymbol.name)
+                        .testCases(testCases)
+                        .httpProtocolCustomizable(httpProtocolCustomizable)
+                        .serdeContext(serdeContext)
+                        .build()
+                        .renderTestClass(testClassName)
                 }
+            }
         }
     }
 
