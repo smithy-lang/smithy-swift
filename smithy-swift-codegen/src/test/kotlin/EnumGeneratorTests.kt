@@ -25,7 +25,7 @@ class EnumGeneratorTests {
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Foo")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writer = SwiftWriter("MockPackage")
 
         val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
@@ -93,7 +93,7 @@ class EnumGeneratorTests {
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
 
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, "test", "Foo")
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writer = SwiftWriter("MockPackage")
 
         val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)

@@ -11,7 +11,7 @@ class StructEncodeXMLGenerationTests {
     @Test
     fun `simpleScalar serialization`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/SimpleScalarPropertiesInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Encodable.swift")
         val expectedContents =
             """
             extension SimpleScalarPropertiesInput: Encodable, Reflection {
@@ -69,7 +69,7 @@ class StructEncodeXMLGenerationTests {
     @Test
     fun `008 structure xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-lists-structure.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/example/models/StructureListMember+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+Codable.swift")
         val expectedContents =
             """
             extension StructureListMember: Codable, Reflection {

@@ -4,7 +4,9 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -39,6 +41,7 @@ class HttpQueryItemMiddleware(
             writer.write("input.builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
         }
 
+        var httpQueryParamBinding: HttpBindingDescriptor? = null
         queryBindings.forEach {
             var memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -46,21 +49,60 @@ class HttpQueryItemMiddleware(
             val bindingIndex = HttpBindingIndex.of(ctx.model)
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
 
-            if (isBoxed) {
-                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                    if (memberTarget is CollectionShape) {
-                        renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
-                    } else {
-                        renderQueryItem(it.member, bindingIndex, memberName, paramName)
+            if (it.location == HttpBinding.Location.QUERY_PARAMS && memberTarget is MapShape) {
+                httpQueryParamBinding = it
+            } else if (it.location == HttpBinding.Location.QUERY) {
+                renderHttpQuery(it, memberName, memberTarget, paramName, bindingIndex, isBoxed)
+            }
+        }
+        httpQueryParamBinding?.let {
+            val memberTarget = ctx.model.expectShape(it.member.target)
+            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            if (memberTarget is MapShape) {
+                renderHttpQueryParamMap(memberTarget, memberName)
+            }
+        }
+    }
+
+    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
+        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+            val currentQueryItemsNames = "currentQueryItemNames"
+            writer.write("let $currentQueryItemsNames = input.builder.currentQueryItems.map({\$L.name})", "\$0")
+
+            writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
+                val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
+                if (valueTargetShape is CollectionShape) {
+                    writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
+                        writer.openBlock("value0?.forEach { value1 in", "}") {
+                            writer.write("let queryItem = URLQueryItem(name: key0, value: value1)")
+                            writer.write("input.builder.withQueryItem(queryItem)")
+                        }
+                    }
+                } else {
+                    writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
+                        writer.write("let queryItem = URLQueryItem(name: key0, value: value0)")
+                        writer.write("input.builder.withQueryItem(queryItem)")
                     }
                 }
-            } else {
-                memberName = "input.operationInput.$memberName"
+            }
+        }
+    }
+
+    fun renderHttpQuery(queryBinding: HttpBindingDescriptor, memberName: String, memberTarget: Shape, paramName: String, bindingIndex: HttpBindingIndex, isBoxed: Boolean) {
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
-                    renderQueryItem(it.member, bindingIndex, memberName, paramName)
+                    renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
                 }
+            }
+        } else {
+            val updatedMemberName = "input.operationInput.$memberName"
+            if (memberTarget is CollectionShape) {
+                renderListOrSet(memberTarget, bindingIndex, updatedMemberName, paramName)
+            } else {
+                renderQueryItem(queryBinding.member, bindingIndex, updatedMemberName, paramName)
             }
         }
     }
@@ -108,10 +150,10 @@ class HttpQueryItemMiddleware(
         }
     }
 
-    private fun renderDoCatch(queryItemValueWithExtension: String, queryItemName: String) {
+    private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = URLQueryItem(name: \"$queryItemName\", value: String($queryItemValueWithExtension))")
+            writer.write("let queryItem = URLQueryItem(name: \"$paramName\", value: String($queryItemValueWithExtension))")
             writer.write("input.builder.withQueryItem(queryItem)")
         }
         writer.indent()

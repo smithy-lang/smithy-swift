@@ -267,16 +267,34 @@ class TestContext(
             httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
             swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
         ): TestContext {
-            var model = javaClass.getResource(smithyFile).asSmithy()
+            return initContextFrom(listOf(smithyFile), serviceShapeId, httpBindingProtocolGenerator, swiftSettingCallback)
+        }
+        fun initContextFrom(
+            smithyFiles: List<String>,
+            serviceShapeId: String,
+            httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
+            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
+        ): TestContext {
+
+            var modelAssembler = Model.assembler()
+            for (smithyFile in smithyFiles) {
+                modelAssembler.addImport(javaClass.getResource(smithyFile))
+            }
+            var model = modelAssembler
+                .discoverModels()
+                .assemble()
+                .unwrap()
+
             val manifest = MockManifest()
-            val pluginContext = buildMockPluginContext(model, manifest, serviceShapeId)
+            val swiftSettings = if (swiftSettingCallback == null) model.defaultSettings() else swiftSettingCallback(model)
+
+            val pluginContext = buildPluginContext(model, manifest, serviceShapeId, swiftSettings.moduleName, swiftSettings.moduleVersion)
             SwiftCodegenPlugin().execute(pluginContext)
 
-            val swiftSettings = if (swiftSettingCallback == null) model.defaultSettings() else swiftSettingCallback(model)
             model = AddOperationShapes.execute(model, swiftSettings.getService(model), swiftSettings.moduleName)
             model = RecursiveShapeBoxer.transform(model)
             val protocolGenerator = httpBindingProtocolGenerator ?: MockHttpRestJsonProtocolGenerator()
-            return model.newTestContext(manifest, serviceShapeId, model.defaultSettings(), protocolGenerator)
+            return model.newTestContext(manifest, serviceShapeId, swiftSettings, protocolGenerator)
         }
     }
 }
@@ -299,8 +317,7 @@ fun Model.newTestContext(
     settings: SwiftSettings,
     generator: ProtocolGenerator
 ): TestContext {
-    val serviceShapeName = serviceShapeId.split("#")[1]
-    val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, serviceShapeName, serviceShapeName)
+    val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, settings)
     val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
     val delegator = SwiftDelegator(settings, this, manifest, provider)
 

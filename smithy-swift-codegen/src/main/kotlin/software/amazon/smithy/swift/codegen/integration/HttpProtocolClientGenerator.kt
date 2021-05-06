@@ -22,7 +22,7 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.camelCaseName
-import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
@@ -54,7 +54,7 @@ open class HttpProtocolClientGenerator(
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
         val topDownIndex = TopDownIndex.of(model)
-        val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.defaultName() }
+        val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.capitalizedName() }
         val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
@@ -140,7 +140,7 @@ open class HttpProtocolClientGenerator(
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val outputShape = model.expectShape(op.output.get())
         val outputShapeName = symbolProvider.toSymbol(outputShape).name
-        val outputErrorName = "${op.defaultName()}OutputError"
+        val outputErrorName = "${op.capitalizedName()}OutputError"
         val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
         val hasIdempotencyTokenTrait = idempotentMember != null
         if (hasIdempotencyTokenTrait) {
@@ -167,7 +167,7 @@ open class HttpProtocolClientGenerator(
         val requestBindings = httpBindingResolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         renderUriPath(httpTrait, pathBindings, writer)
-        val operationErrorName = "${op.defaultName()}OutputError"
+        val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
         writer.write("let context = HttpContextBuilder()")

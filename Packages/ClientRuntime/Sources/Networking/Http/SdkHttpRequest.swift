@@ -88,6 +88,10 @@ public class SdkHttpRequestBuilder {
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
+    public var currentQueryItems: [URLQueryItem] {
+        return queryItems
+    }
+
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
     // @discardableResult attribute we won't get warnings if we

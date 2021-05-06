@@ -13,7 +13,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
-import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
@@ -85,7 +85,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShapeId = operation.output.get()
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
-            val outputErrorName = "${operation.defaultName()}OutputError"
+            val outputErrorName = "${operation.capitalizedName()}OutputError"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
 
             writer.write("let encoder = \$L", serdeContext.protocolEncoder)
