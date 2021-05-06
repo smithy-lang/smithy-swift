@@ -106,10 +106,11 @@ fun Shape.capitalizedName(): String {
 }
 
 fun Shape.defaultName(serviceShape: ServiceShape?): String {
-    if (serviceShape != null) {
-        return StringUtils.capitalize(id.getName(serviceShape))
+    return serviceShape?.let {
+        StringUtils.capitalize(id.getName(it))
+    } ?: run {
+        StringUtils.capitalize(this.id.name)
     }
-    return StringUtils.capitalize(this.id.name)
 }
 
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)

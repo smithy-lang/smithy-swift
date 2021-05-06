@@ -157,12 +157,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         input.builder.withQueryItem(queryStringQueryItem)
                     }
                     if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
-                        let existingHttpQueryParamNames = [
-                            "StringList",
-                            "String"
-                        ]
+                        let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         queryParamsMapOfStrings.forEach { key0, value0 in
-                            if !existingHttpQueryParamNames.contains(key0) {
+                            if !currentQueryItemNames.contains(key0) {
                                 let queryItem = URLQueryItem(name: key0, value: value0)
                                 input.builder.withQueryItem(queryItem)
                             }
@@ -199,11 +196,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         input.builder.withQueryItem(quxQueryItem)
                     }
                     if let foo = input.operationInput.foo {
-                        let existingHttpQueryParamNames = [
-                            "corge"
-                        ]
+                        let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         foo.forEach { key0, value0 in
-                            if !existingHttpQueryParamNames.contains(key0) {
+                            if !currentQueryItemNames.contains(key0) {
                                 value0?.forEach { value1 in
                                     let queryItem = URLQueryItem(name: key0, value: value1)
                                     input.builder.withQueryItem(queryItem)
@@ -242,11 +237,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         input.builder.withQueryItem(fooQueryItem)
                     }
                     if let baz = input.operationInput.baz {
-                        let existingHttpQueryParamNames = [
-                            "bar"
-                        ]
+                        let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         baz.forEach { key0, value0 in
-                            if !existingHttpQueryParamNames.contains(key0) {
+                            if !currentQueryItemNames.contains(key0) {
                                 let queryItem = URLQueryItem(name: key0, value: value0)
                                 input.builder.withQueryItem(queryItem)
                             }
