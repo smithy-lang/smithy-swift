@@ -41,7 +41,6 @@ class HttpQueryItemMiddleware(
             writer.write("input.builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
         }
 
-        var httpQueryParamNames = mutableListOf<String>()
         var httpQueryParamBinding: HttpBindingDescriptor? = null
         queryBindings.forEach {
             var memberName = ctx.symbolProvider.toMemberName(it.member)
@@ -53,7 +52,6 @@ class HttpQueryItemMiddleware(
             if (it.location == HttpBinding.Location.QUERY_PARAMS && memberTarget is MapShape) {
                 httpQueryParamBinding = it
             } else if (it.location == HttpBinding.Location.QUERY) {
-                httpQueryParamNames.add(paramName)
                 renderHttpQuery(it, memberName, memberTarget, paramName, bindingIndex, isBoxed)
             }
         }
@@ -61,31 +59,27 @@ class HttpQueryItemMiddleware(
             val memberTarget = ctx.model.expectShape(it.member.target)
             var memberName = ctx.symbolProvider.toMemberName(it.member)
             if (memberTarget is MapShape) {
-                renderHttpQueryParamMap(memberTarget, memberName, httpQueryParamNames)
+                renderHttpQueryParamMap(memberTarget, memberName)
             }
         }
     }
 
-    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String, httpQueryParamNames: List<String>) {
+    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
         writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-            val existingHttpQueryParamName = "existingHttpQueryParamNames"
-            writer.openBlock("let $existingHttpQueryParamName = [", "]") {
-                for (paramName in httpQueryParamNames) {
-                    val commaIfNeeded = if (paramName != httpQueryParamNames.last()) "," else ""
-                    writer.write("\"${paramName}\"$commaIfNeeded")
-                }
-            }
+            val currentQueryItemsNames = "currentQueryItemNames"
+            writer.write("let $currentQueryItemsNames = input.builder.currentQueryItems.map({\$L.name})", "\$0")
+
             writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
                 val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
                 if (valueTargetShape is CollectionShape) {
-                    writer.openBlock("if !$existingHttpQueryParamName.contains(key0) {", "}") {
+                    writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         writer.openBlock("value0?.forEach { value1 in", "}") {
                             writer.write("let queryItem = URLQueryItem(name: key0, value: value1)")
                             writer.write("input.builder.withQueryItem(queryItem)")
                         }
                     }
                 } else {
-                    writer.openBlock("if !$existingHttpQueryParamName.contains(key0) {", "}") {
+                    writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         writer.write("let queryItem = URLQueryItem(name: key0, value: value0)")
                         writer.write("input.builder.withQueryItem(queryItem)")
                     }
