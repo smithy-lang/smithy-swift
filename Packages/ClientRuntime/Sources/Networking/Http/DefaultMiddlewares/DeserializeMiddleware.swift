@@ -15,7 +15,6 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
           Self.Context == H.Context {
         
         let decoder = context.getDecoder()
-        
         let response = next.handle(context: context, input: input) // call handler to get http response
         return response.flatMap { (deserializeOutput) -> Result<OperationOutput<Output, OutputError>, Error> in
             var copiedResponse = deserializeOutput
