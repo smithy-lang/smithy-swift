@@ -212,7 +212,7 @@ class ShapeValueGenerator(
                         }
                         val recursiveMemberWithTrait = member.hasTrait(SwiftBoxTrait::class.java)
                         memberShape = generator.model.expectShape(member.target)
-                        val memberName = generator.symbolProvider.toMemberName(member)
+                        val memberName = generator.symbolProvider.toMemberNames(member).second
                         // NOTE - `write()` appends a newline and keeps indentation,
                         // `writeInline()` doesn't keep indentation but also doesn't append a newline
                         // ...except it does insert indentation if it encounters a newline.
