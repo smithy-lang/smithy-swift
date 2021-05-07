@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.camelCaseName
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.toMemberNames
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -80,7 +81,7 @@ open class HttpProtocolClientGenerator(
 
                 // shape must be string, number, boolean, or timestamp
                 val targetShape = model.expectShape(binding.member.target)
-                val labelMemberName = binding.member.memberName.decapitalize()
+                val labelMemberName = ctx.symbolProvider.toMemberNames(binding.member).first.decapitalize()
                 val formattedLabel: String
                 if (targetShape.isTimestampShape) {
                     val bindingIndex = HttpBindingIndex.of(model)
