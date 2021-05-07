@@ -66,39 +66,13 @@ extension SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
         host = originalRequest.endpoint.host
-        let pathAndQueryItems = crtRequest.path?.components(separatedBy: "?")
-        path = pathAndQueryItems?.first ?? "/"
-        queryItems = convertSignedQueryItemsToQueryItems(pathAndQueryItems: pathAndQueryItems)
-       
+        let pathAndQueryItems = URLComponents(string: crtRequest.path ?? "/")
+        path = pathAndQueryItems?.path ?? "/"
+        queryItems = pathAndQueryItems?.queryItems ?? [URLQueryItem]()
+
         return self
     }
-    
-    func convertSignedQueryItemsToQueryItems(pathAndQueryItems: [String]?) -> [URLQueryItem] {
-        var convertedQueryItems = [URLQueryItem]()
-        guard let pathAndQueryItems = pathAndQueryItems,
-              pathAndQueryItems.count > 1 else {
-            return convertedQueryItems
-        }
-        let signedQueryItems = pathAndQueryItems[1]
         
-        let queryItemStrings = signedQueryItems.components(separatedBy: "&")
-        
-        guard !queryItemStrings.isEmpty else {
-            return convertedQueryItems
-        }
-        
-        for queryItem in queryItemStrings {
-            let keyValue = queryItem.components(separatedBy: "=")
-            guard let key = keyValue.first, let value = keyValue.last else {
-                continue
-            }
-            let signedQueryItem = URLQueryItem(name: key, value: value)
-            convertedQueryItems.append(signedQueryItem)
-        }
-        
-        return convertedQueryItems
-    }
-    
     func convertSignedHeadersToHeaders(crtRequest: HttpRequest) -> Headers {
         let httpHeaders = HttpHeaders()
         httpHeaders.addArray(headers: crtRequest.getHeaders())
