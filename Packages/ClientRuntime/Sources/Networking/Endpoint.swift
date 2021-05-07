@@ -44,9 +44,7 @@ public extension Endpoint {
         guard let queryItems = queryItems, !queryItems.isEmpty else {
             return ""
         }
-        let queryString = queryItems.map { queryItem in
-            return "\(queryItem.name)=\(queryItem.value ?? "")"
-        }.joined(separator: "&")
+        let queryString = queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
         return "?\(queryString)"
     }
 }

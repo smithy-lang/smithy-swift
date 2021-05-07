@@ -60,7 +60,7 @@ class HttpRequestTests: NetworkingTestUtils {
     
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() {
         let queryItem1 = URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = URLQueryItem(name: "quz", value: "bar")
+        let queryItem2 = URLQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -80,9 +80,13 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem1)
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
+        
+        XCTAssert(builder.queryItems.count == 2)
+        
         let httpRequest = builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
+        
         XCTAssert(updatedRequest.path == "/hello")
         XCTAssert(updatedRequest.queryItems.count == 3)
         XCTAssert(updatedRequest.queryItems.contains(queryItem1))

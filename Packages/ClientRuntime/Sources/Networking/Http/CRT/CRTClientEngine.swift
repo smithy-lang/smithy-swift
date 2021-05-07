@@ -39,7 +39,7 @@ class CRTClientEngine: HttpClientEngine {
         self.tlsContext = try TlsContext(options: tlsContextOptions, mode: .client)
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
-        self.crtLogger = Logger(pipe: stdout, level: .debug, allocator: defaultAllocator)
+        self.crtLogger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
     }
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
@@ -108,7 +108,7 @@ class CRTClientEngine: HttpClientEngine {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection()
             .chained { (connectionResult) -> Future<HttpResponse> in
-                self.logger.debug("connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+                self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
                 let (requestOptions, future) = isStreaming ?
                     self.makeHttpRequestStreamOptions(request): self.makeHttpRequestOptions(request)
                 switch connectionResult {
@@ -135,7 +135,7 @@ class CRTClientEngine: HttpClientEngine {
     
     public func close() {
         for (endpoint, value) in connectionPools {
-            logger.debug("connection to endpoint: \(endpoint.url?.absoluteString)")
+            logger.debug("Connection to endpoint: \(endpoint.url?.absoluteString) is closing")
             value.closePendingConnections()
         }
     }
