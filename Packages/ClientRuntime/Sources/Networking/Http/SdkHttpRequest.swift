@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import struct Foundation.URLQueryItem
+import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers
