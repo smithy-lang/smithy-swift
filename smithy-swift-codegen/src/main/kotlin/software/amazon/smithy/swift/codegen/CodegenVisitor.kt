@@ -18,6 +18,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.integration.CustomStringConvertibleGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import java.util.ServiceLoader
@@ -61,7 +62,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         symbolProvider = resolvedSymbolProvider
 
         writers = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
-
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
     }
 
@@ -100,7 +100,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
                 protocolGenerator.protocol,
                 writers
             )
-
             LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
             generateSerializers(ctx)
             generateDeserializers(ctx)
@@ -129,6 +128,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun structureShape(shape: StructureShape): Void? {
         writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape).render() }
+        writers.useShapeExtensionWriter(shape, "CustomStringConvertible") { writer: SwiftWriter ->
+            CustomStringConvertibleGenerator(symbolProvider, writer, shape).render()
+        }
         return null
     }
 
@@ -145,7 +147,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun serviceShape(shape: ServiceShape): Void? {
-
         writers.useShapeWriter(shape) {
             writer: SwiftWriter ->
             ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()

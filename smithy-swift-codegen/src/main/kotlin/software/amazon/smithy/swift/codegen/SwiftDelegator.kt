@@ -93,6 +93,18 @@ class SwiftDelegator(
         writer.popState()
     }
 
+    fun useShapeExtensionWriter(shape: Shape, extensionName: String, block: (SwiftWriter) -> Unit) {
+        val symbol = symbolProvider.toSymbol(shape)
+        val extensionSymbol = Symbol.builder()
+            .name("${symbol.name}")
+            .definitionFile("${symbol.definitionFile.replace(".swift", "+$extensionName.swift")}")
+            .putProperty("boxed", symbol.isBoxed())
+            .putProperty("defaultValue", symbol.defaultValue())
+            .build()
+
+        useShapeWriter(extensionSymbol, block)
+    }
+
     /**
      * Gets a previously created writer or creates a new one if needed
      * and adds a new line if the writer already exists.
