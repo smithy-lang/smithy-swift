@@ -13,7 +13,6 @@ class Resources {
             }
 
             var userDirPath = System.getProperty("user.dir")
-
             while (userDirPath.isNotEmpty()) {
                 val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
                 if (File(fileName).isDirectory) {
@@ -21,7 +20,7 @@ class Resources {
                 }
                 userDirPath = userDirPath.substring(0, userDirPath.length - 1)
             }
-            return userDirPath
+            return ""
         }
     }
 }

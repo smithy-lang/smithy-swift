@@ -110,7 +110,7 @@ public class SdkHttpRequestBuilder {
     
     public init() {}
 
-    public var headers: Headers = Headers()
+    var headers: Headers = Headers()
     var methodType: HttpMethodType = .get
     var host: String = ""
     var path: String = "/"

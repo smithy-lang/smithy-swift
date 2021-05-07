@@ -47,13 +47,5 @@ public struct OperationOutput<Output: HttpResponseBinding, OutputError: HttpResp
         self.httpResponse = httpResponse
         self.output = output
         self.error = error
-        switch(httpResponse?.body) {
-        case .data(let data):
-            let response = String(data: data!, encoding: .utf8)
-            print(response)
-        default:
-            print("no data :(")
-        }
-
     }
 }
