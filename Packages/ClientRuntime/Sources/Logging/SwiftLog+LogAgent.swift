@@ -6,7 +6,9 @@
 import Logging
 import enum AwsCommonRuntimeKit.LogLevel
 
-extension Logger: LogAgent {
+typealias SwiftLogger = Logger
+
+extension SwiftLogger: LogAgent {
     
     var level: LogLevel {
         get {

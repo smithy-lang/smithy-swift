@@ -4,15 +4,18 @@
  */
 
 import AwsCommonRuntimeKit
-import Logging
+#if os(Linux)
+     import Glibc
+ #else
+     import Darwin
+ #endif
 
 class CRTClientEngine: HttpClientEngine {    
     
     private var logger: LogAgent
+    private var crtLogger: Logger
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
     private let CONTENT_LENGTH_HEADER = "Content-Length"
-    private let CONNECTION_HEADER = "Connection"
-    private let KEEP_ALIVE = "keep-alive"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
@@ -35,7 +38,8 @@ class CRTClientEngine: HttpClientEngine {
         self.tlsContextOptions = tlsContextOptions
         self.tlsContext = try TlsContext(options: tlsContextOptions, mode: .client)
         self.windowSize = config.windowSize
-        self.logger = Logger(label: "CRTClientEngine")
+        self.logger = SwiftLogger(label: "CRTClientEngine")
+        self.crtLogger = Logger(pipe: stdout, level: .debug, allocator: defaultAllocator)
     }
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
@@ -50,7 +54,7 @@ class CRTClientEngine: HttpClientEngine {
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
                                                   enableManualWindowManagement: false) // not using backpressure yet
-        logger.debug("Creating connection pool for \(endpoint.urlString)" +
+        logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
                         "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
     }
@@ -69,7 +73,6 @@ class CRTClientEngine: HttpClientEngine {
     private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
         
         var headers = request.headers
-        headers.update(name: CONNECTION_HEADER, value: KEEP_ALIVE)
         
         let contentLength: Int64 = {
             switch request.body {
@@ -105,7 +108,7 @@ class CRTClientEngine: HttpClientEngine {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection()
             .chained { (connectionResult) -> Future<HttpResponse> in
-                self.logger.debug("connection was acquired to: \(request.endpoint.urlString)")
+                self.logger.debug("connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
                 let (requestOptions, future) = isStreaming ?
                     self.makeHttpRequestStreamOptions(request): self.makeHttpRequestOptions(request)
                 switch connectionResult {
@@ -132,7 +135,7 @@ class CRTClientEngine: HttpClientEngine {
     
     public func close() {
         for (endpoint, value) in connectionPools {
-            logger.debug("connection to endpoint: \(endpoint.urlString)")
+            logger.debug("connection to endpoint: \(endpoint.url?.absoluteString)")
             value.closePendingConnections()
         }
     }

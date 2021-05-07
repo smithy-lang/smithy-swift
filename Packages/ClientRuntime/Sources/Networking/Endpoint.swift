@@ -40,29 +40,13 @@ public extension Endpoint {
         return components.url
     }
     
-    var urlString: String {
-        /*
-         TODO: Before removing the references to XMLCoder in our code base, the body of this function
-         was the following two lines:
-         
-             let queryItemString = queryItems != nil && queryItems!.isEmpty ? "?\(queryItems!.xmlString ?? "")" : ""
-             return host + path + queryItemString
-         
-         To the best of our knowlege `queryItems!.xmlString` was always returning nil.
-         https://github.com/awslabs/smithy-swift/pull/79/files
-         
-         For example, this would always return nil:
-             let myQueryItem = URLQueryItem(name: "meow", value: "woof")
-             let myQueryItems = [myQueryItem]
-             print("my string is: \(myQueryItems.xmlString)")   //This returns nil!
-         
-         We believe this returns nil (and therefore renders an empty string) because of this code:
-         https://github.com/awslabs/smithy-swift/blob/5ff9cac8cde13374785eaa20f751c33ae1ce9bec/Packages/ClientRuntime/Sources/Serialization/XML/XMLContainers/XMLArrayBasedContainer.swift#L18
-         
-         To unblock development, we will simply return a question mark, until we figure out what we need
-         to encode for the return value.
-         */
-        let queryItemString = queryItems != nil && queryItems!.isEmpty ? "?" : ""
-        return host + path + queryItemString
+    var queryItemString: String {
+        guard let queryItems = queryItems, !queryItems.isEmpty else {
+            return ""
+        }
+        let queryString = queryItems.map { queryItem in
+            return "\(queryItem.name)=\(String(describing: queryItem.value))"
+        }
+        return "?\(queryString)"
     }
 }

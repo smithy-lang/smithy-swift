@@ -8,7 +8,7 @@ import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public class SdkHttpRequest {
+public class SdkHttpRequest: CustomStringConvertible {
     public var body: HttpBody
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
@@ -26,6 +26,10 @@ public class SdkHttpRequest {
         self.body = body
         self.queryItems = queryItems
     }
+    
+    public var description: String {
+        return "SdkHttpRequest(body: \(body), headers: \(headers), queryItems: \(String(describing: queryItems)), endpoint: \(endpoint), method: \(method))"
+    }
 }
 
 extension SdkHttpRequest {
@@ -33,7 +37,7 @@ extension SdkHttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = endpoint.url?.absoluteString ?? endpoint.urlString
+        httpRequest.path = "\(endpoint.path)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
         var awsInputStream: AwsInputStream?
         switch body {
@@ -58,20 +62,47 @@ extension SdkHttpRequest {
 }
 
 extension SdkHttpRequestBuilder {
-    public func update(from crtRequest: HttpRequest) -> SdkHttpRequestBuilder {
+    public func update(from crtRequest: HttpRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+        headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
+        methodType = originalRequest.method
+        host = originalRequest.endpoint.host
+        let pathAndQueryItems = crtRequest.path?.components(separatedBy: "?")
+        path = pathAndQueryItems?.first ?? "/"
+        queryItems = convertSignedQueryItemsToQueryItems(pathAndQueryItems: pathAndQueryItems)
+       
+        return self
+    }
+    
+    func convertSignedQueryItemsToQueryItems(pathAndQueryItems: [String]?) -> [URLQueryItem] {
+        var convertedQueryItems = [URLQueryItem]()
+        guard let pathAndQueryItems = pathAndQueryItems,
+              pathAndQueryItems.count > 1 else {
+            return convertedQueryItems
+        }
+        let signedQueryItems = pathAndQueryItems[1]
+        
+        let queryItemStrings = signedQueryItems.components(separatedBy: "&")
+        
+        guard !queryItemStrings.isEmpty else {
+            return convertedQueryItems
+        }
+        
+        for queryItem in queryItemStrings {
+            let keyValue = queryItem.components(separatedBy: "=")
+            guard let key = keyValue.first, let value = keyValue.last else {
+                continue
+            }
+            let signedQueryItem = URLQueryItem(name: key, value: value)
+            convertedQueryItems.append(signedQueryItem)
+        }
+        
+        return convertedQueryItems
+    }
+    
+    func convertSignedHeadersToHeaders(crtRequest: HttpRequest) -> Headers {
         let httpHeaders = HttpHeaders()
         httpHeaders.addArray(headers: crtRequest.getHeaders())
-        headers = Headers(httpHeaders: httpHeaders)
-        methodType = HttpMethodType(rawValue: crtRequest.method ?? "GET") ?? HttpMethodType.get
-        if let crtPath = crtRequest.path,
-           let url = URL(string: crtPath) {
-            path = url.path
-            host = url.host ?? ""
-            if let queryItems = url.toQueryItems() {
-                self.queryItems = queryItems
-            }
-        }
-        return self
+        return Headers(httpHeaders: httpHeaders)
     }
 }
 
