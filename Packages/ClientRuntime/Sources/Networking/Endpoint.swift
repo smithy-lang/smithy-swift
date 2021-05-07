@@ -45,8 +45,8 @@ public extension Endpoint {
             return ""
         }
         let queryString = queryItems.map { queryItem in
-            return "\(queryItem.name)=\(String(describing: queryItem.value))"
-        }
+            return "\(queryItem.name)=\(queryItem.value ?? "")"
+        }.joined(separator: "&")
         return "?\(queryString)"
     }
 }

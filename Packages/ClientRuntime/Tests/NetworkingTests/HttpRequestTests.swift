@@ -4,6 +4,8 @@
  */
 
 import XCTest
+import AwsCommonRuntimeKit
+import struct Foundation.URLQueryItem
 @testable import ClientRuntime
 
 class HttpRequestTests: NetworkingTestUtils {
@@ -38,6 +40,54 @@ class HttpRequestTests: NetworkingTestUtils {
         if let bodyLength = httpRequest.body?.length {
             XCTAssertEqual(Int(bodyLength), expectedMockRequestData.count)
         }
+    }
+    
+    func testCRTHeadersToSdkHeaders() {
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "amazon.aws.com")
+            .withPath("/hello")
+            .withHeader(name: "Content-Length", value: "6")
+        let httpRequest = builder.build().toHttpRequest()
+        let newHeaders = HttpHeaders()
+        _ = newHeaders.add(name: "SomeSignedHeader", value: "IAMSIGNED")
+        httpRequest.addHeaders(headers: newHeaders)
+        let headers = builder.convertSignedHeadersToHeaders(crtRequest: httpRequest)
+        XCTAssert(headers.headers.count == 3)
+        XCTAssert(headers.headers.contains(Header(name: "SomeSignedHeader", value: "IAMSIGNED")))
+        XCTAssert(headers.headers.contains(Header(name: "Content-Length", value: "6")))
+        XCTAssert(headers.headers.contains(Header(name: "Host", value: "amazon.aws.com")))
+    }
+    
+    func testSdkPathAndQueryItemsToCRTPathAndQueryItems() {
+        let queryItem1 = URLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URLQueryItem(name: "quz", value: "bar")
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "amazon.aws.com")
+            .withPath("/hello")
+            .withQueryItem(queryItem1)
+            .withQueryItem(queryItem2)
+            .withHeader(name: "Content-Length", value: "6")
+        let httpRequest = builder.build().toHttpRequest()
+        XCTAssert(httpRequest.path == "/hello?foo=bar&quz=bar")
+    }
+    
+    func testCRTPathAndQueryItemsToSdkPathAndQueryItems() {
+        let queryItem1 = URLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URLQueryItem(name: "quz", value: "bar")
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "amazon.aws.com")
+            .withPath("/hello")
+            .withQueryItem(queryItem1)
+            .withQueryItem(queryItem2)
+            .withHeader(name: "Content-Length", value: "6")
+        let httpRequest = builder.build().toHttpRequest()
+        httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
+        let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
+        XCTAssert(updatedRequest.path == "/hello")
+        XCTAssert(updatedRequest.queryItems.count == 3)
+        XCTAssert(updatedRequest.queryItems.contains(queryItem1))
+        XCTAssert(updatedRequest.queryItems.contains(queryItem2))
+        XCTAssert(updatedRequest.queryItems.contains(URLQueryItem(name: "signedthing", value: "signed")))
     }
     
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
