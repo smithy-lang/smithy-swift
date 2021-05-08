@@ -68,7 +68,7 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
         let httpRequest = builder.build().toHttpRequest()
-        XCTAssert(httpRequest.path == "/hello?foo=bar&quz=bar")
+        XCTAssert(httpRequest.path == "/hello?foo=bar&quz=baz")
     }
     
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() {
