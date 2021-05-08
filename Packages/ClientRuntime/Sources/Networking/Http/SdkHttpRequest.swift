@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import struct Foundation.URLQueryItem
+import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public class SdkHttpRequest {
+public class SdkHttpRequest: CustomStringConvertible {
     public var body: HttpBody
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
@@ -26,6 +27,10 @@ public class SdkHttpRequest {
         self.body = body
         self.queryItems = queryItems
     }
+    
+    public var description: String {
+        return "SdkHttpRequest(body: \(body), headers: \(headers), queryItems: \(String(describing: queryItems)), endpoint: \(endpoint), method: \(method))"
+    }
 }
 
 extension SdkHttpRequest {
@@ -33,7 +38,7 @@ extension SdkHttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = endpoint.url?.absoluteString ?? endpoint.urlString
+        httpRequest.path = "\(endpoint.path)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
         var awsInputStream: AwsInputStream?
         switch body {
@@ -58,20 +63,22 @@ extension SdkHttpRequest {
 }
 
 extension SdkHttpRequestBuilder {
-    public func update(from crtRequest: HttpRequest) -> SdkHttpRequestBuilder {
+    public func update(from crtRequest: HttpRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+        headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
+        methodType = originalRequest.method
+        host = originalRequest.endpoint.host
+        //TODO: remove extra slash if not needed
+        let pathAndQueryItems = URLComponents(string: crtRequest.path ?? "/")
+        path = pathAndQueryItems?.path ?? "/"
+        queryItems = pathAndQueryItems?.queryItems ?? [URLQueryItem]()
+
+        return self
+    }
+        
+    func convertSignedHeadersToHeaders(crtRequest: HttpRequest) -> Headers {
         let httpHeaders = HttpHeaders()
         httpHeaders.addArray(headers: crtRequest.getHeaders())
-        headers = Headers(httpHeaders: httpHeaders)
-        methodType = HttpMethodType(rawValue: crtRequest.method ?? "GET") ?? HttpMethodType.get
-        if let crtPath = crtRequest.path,
-           let url = URL(string: crtPath) {
-            path = url.path
-            host = url.host ?? ""
-            if let queryItems = url.toQueryItems() {
-                self.queryItems = queryItems
-            }
-        }
-        return self
+        return Headers(httpHeaders: httpHeaders)
     }
 }
 
