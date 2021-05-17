@@ -27,7 +27,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.Context == H.Context
                 {
                     if let token = input.operationInput.token {
-                        let tokenQueryItem = URLQueryItem(name: "token", value: String(token))
+                        let tokenQueryItem = URLQueryItem(name: "token".urlPercentEncoding(), value: String(token).urlPercentEncoding())
                         input.builder.withQueryItem(tokenQueryItem)
                     }
                     return next.handle(context: context, input: input)
@@ -62,12 +62,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.Context == H.Context
                 {
                     if let queryTimestamp = input.operationInput.queryTimestamp {
-                        let queryTimestampQueryItem = URLQueryItem(name: "qtime", value: String(queryTimestamp.iso8601WithoutFractionalSeconds()))
+                        let queryTimestampQueryItem = URLQueryItem(name: "qtime".urlPercentEncoding(), value: String(queryTimestamp.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
                         input.builder.withQueryItem(queryTimestampQueryItem)
                     }
                     if let queryTimestampList = input.operationInput.queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList", value: String(queryItemValue.iso8601WithoutFractionalSeconds()))
+                            let queryItem = URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: String(queryItemValue.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
                             input.builder.withQueryItem(queryItem)
                         }
                     }
@@ -103,7 +103,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.Context == H.Context
                 {
                     if let query1 = input.operationInput.query1 {
-                        let query1QueryItem = URLQueryItem(name: "Query1", value: String(query1))
+                        let query1QueryItem = URLQueryItem(name: "Query1".urlPercentEncoding(), value: String(query1).urlPercentEncoding())
                         input.builder.withQueryItem(query1QueryItem)
                     }
                     return next.handle(context: context, input: input)
@@ -148,19 +148,19 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 {
                     if let queryStringList = input.operationInput.queryStringList {
                         queryStringList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "StringList", value: String(queryItemValue))
+                            let queryItem = URLQueryItem(name: "StringList".urlPercentEncoding(), value: String(queryItemValue).urlPercentEncoding())
                             input.builder.withQueryItem(queryItem)
                         }
                     }
                     if let queryString = input.operationInput.queryString {
-                        let queryStringQueryItem = URLQueryItem(name: "String", value: String(queryString))
+                        let queryStringQueryItem = URLQueryItem(name: "String".urlPercentEncoding(), value: String(queryString).urlPercentEncoding())
                         input.builder.withQueryItem(queryStringQueryItem)
                     }
                     if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
                         let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         queryParamsMapOfStrings.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
-                                let queryItem = URLQueryItem(name: key0, value: value0)
+                                let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                                 input.builder.withQueryItem(queryItem)
                             }
                         }
@@ -192,7 +192,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.Context == H.Context
                 {
                     if let qux = input.operationInput.qux {
-                        let quxQueryItem = URLQueryItem(name: "corge", value: String(qux))
+                        let quxQueryItem = URLQueryItem(name: "corge".urlPercentEncoding(), value: String(qux).urlPercentEncoding())
                         input.builder.withQueryItem(quxQueryItem)
                     }
                     if let foo = input.operationInput.foo {
@@ -200,7 +200,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         foo.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
                                 value0?.forEach { value1 in
-                                    let queryItem = URLQueryItem(name: key0, value: value1)
+                                    let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
                                     input.builder.withQueryItem(queryItem)
                                 }
                             }
@@ -233,14 +233,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.Context == H.Context
                 {
                     if let foo = input.operationInput.foo {
-                        let fooQueryItem = URLQueryItem(name: "bar", value: String(foo))
+                        let fooQueryItem = URLQueryItem(name: "bar".urlPercentEncoding(), value: String(foo).urlPercentEncoding())
                         input.builder.withQueryItem(fooQueryItem)
                     }
                     if let baz = input.operationInput.baz {
                         let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         baz.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
-                                let queryItem = URLQueryItem(name: key0, value: value0)
+                                let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                                 input.builder.withQueryItem(queryItem)
                             }
                         }

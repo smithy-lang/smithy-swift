@@ -29,7 +29,7 @@ open class HttpRequestTestBase: XCTestCase {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
-                                           value: queryParamComponents[1].removingPercentEncoding))
+                                                   value: queryParamComponents[1]))
             } else {
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
             }
@@ -184,47 +184,39 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
     
-    /**
-    Asserts that Http Query Items  match
-    /// - Parameter expected: Expected array of Query Items
-    /// - Parameter actual: Actual array of Query Items to compare against
-    */
     public func assertEqualQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
-
         guard let expectedQueryItems = expected else {
-            XCTAssertNil(actual,
-                         "expected query items is nil but actual are not")
+            XCTAssertNil(actual, "expected query items is nil but actual are not")
             return
         }
-        
         guard let actualQueryItems = actual else {
             XCTFail("actual query items in Endpoint is nil but expected are not")
             return
         }
-        // take arrays of query items and convert to dictionary
-        let expectedNamesAndValues = expectedQueryItems.map { ($0.name, Set(arrayLiteral: $0.value)) }
-        let expectedMap = Dictionary(expectedNamesAndValues, uniquingKeysWith: { first, last in
-            return first.union(last)
-        })
-        
-        let actualNamesAndValues = actualQueryItems.map {($0.name, Set(arrayLiteral: $0.value))}
-        let actualMap = Dictionary(actualNamesAndValues, uniquingKeysWith: { first, last in
-            return first.union(last)
-        })
-        
-        for expectedQueryItem in expectedQueryItems {
-            XCTAssertTrue(actualQueryItems.contains(expectedQueryItem),
-                          "Actual query item does not contain expected query Item with name: \(expectedQueryItem.name)")
-            let actualQueryItemValue = actualMap[expectedQueryItem.name]
-            XCTAssertEqual(actualQueryItemValue,
-                           expectedMap[expectedQueryItem.name],
-                           "Expected query item [\(expectedQueryItem.name)=" +
-                           "\(String(describing: expectedQueryItem.value))]" +
-                           " does not match actual query item [\(expectedQueryItem.name)" +
-                            "=\(String(describing: actualQueryItemValue))]")
 
+        let expectedKVCount = generateKeyValueDictionaryCount(expectedQueryItems)
+        let actualKVCount = generateKeyValueDictionaryCount(actualQueryItems)
+
+        XCTAssert(expectedQueryItems.count == actualQueryItems.count, "Number of query params does not match")
+        for (keyValue, expectedCount) in expectedKVCount {
+            XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Acutal: \(actualKVCount[keyValue] ?? 0)")
         }
     }
+    func generateKeyValueDictionaryCount(_ urlQueryItems: [URLQueryItem]) -> [String:Int] {
+        var dict: [String:Int] = [:]
+        for urlQueryItem in urlQueryItems {
+            let name = urlQueryItem.name
+            let value = urlQueryItem.value ?? "nil"
+            let key = "\(name)=\(value)"
+            if let value = dict[key] {
+                dict[key] = value + 1
+            } else {
+                dict[key] = 1
+            }
+        }
+        return dict
+    }
+    
     struct InternalHttpRequestTestBaseError: Error {
         let localizedDescription: String
         public init(_ description: String) {
