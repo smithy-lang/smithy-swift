@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 
-class StructEncodeXMLGenerator(
+open class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
@@ -25,15 +25,18 @@ class StructEncodeXMLGenerator(
 
     override fun render() {
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
+            val containerName = "container"
+            writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
             if (members.isNotEmpty()) {
-                renderEncodeBody()
+                renderEncodeBody(containerName)
             }
+            addConstantMembers(containerName)
         }
     }
+    open fun addConstantMembers(containerName: String) {
+    }
 
-    private fun renderEncodeBody() {
-        val containerName = "container"
-        writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+    private fun renderEncodeBody(containerName: String) {
         renderTopLevelNamespace(containerName)
 
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
@@ -41,7 +44,7 @@ class StructEncodeXMLGenerator(
             renderSingleMember(member, containerName)
         }
     }
-    private fun renderTopLevelNamespace(containerName: String) {
+    open fun renderTopLevelNamespace(containerName: String) {
         val serviceNamespace = XMLNamespaceTraitGenerator.construct(ctx.service)
         val shapeContainingMembersNamespace = XMLNamespaceTraitGenerator.construct(shapeContainingMembers)
         val namespace = if (serviceNamespace != null && shapeContainingMembersNamespace == null) {

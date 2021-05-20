@@ -97,18 +97,18 @@ open class HttpRequestTestBase: XCTestCase {
     }
     
     public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
-        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+        genericAssertEqualHttpBodyData(expected, actual) { (expectedData, actualData) in
             callback(expectedData, actualData)
         }
     }
 
     public func assertEqualHttpBodyXMLData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
-        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
+        genericAssertEqualHttpBodyData(expected, actual) { (expectedData, actualData) in
             callback(expectedData, actualData)
         }
     }
     
-    private func genericAssertEqualHttpBodyData(_ expected: HttpBody, actual: HttpBody, _ callback: (Data, Data) -> Void) {
+    public func genericAssertEqualHttpBodyData(_ expected: HttpBody,_ actual: HttpBody, _ callback: (Data, Data) -> Void) {
         guard case .success(let expectedData) = extractData(expected) else {
             XCTFail("Failed to extract data from httpbody for expected")
             return
@@ -182,6 +182,35 @@ open class HttpRequestTestBase: XCTestCase {
                             " does not match actual header value" +
                             "\(String(describing: actual.dictionary[expectedHeaderName]))]")
         }
+    }
+    public func assertEqualFormURLRequest(_ expected: Data,_ actual: Data) {
+        let expectedQueryItems = convertToQueryItems(data: expected)
+        let acutalQueryItems = convertToQueryItems(data: actual)
+        assertEqualQueryItems(expectedQueryItems, acutalQueryItems)
+    }
+
+    private func convertToQueryItems(data: Data) -> [URLQueryItem] {
+        guard let queryString = String(data: data, encoding: .utf8) else {
+            XCTFail("Failed to decode data")
+            return []
+        }
+        var queryItems: [URLQueryItem] = []
+        let keyValuePairs = queryString.components(separatedBy: "\n")
+        for keyValue in keyValuePairs {
+            let keyValueArray = keyValue.components(separatedBy: "=")
+            guard keyValueArray.count >= 1 else {
+                XCTFail("Failed to decode query string. Problem with the encoding? Query string is:\n\(queryString)")
+                return []
+            }
+            let name: String = sanitizeQueryStringName(keyValueArray[0])
+            let value = keyValueArray.count >= 2 ? keyValueArray[1] : nil
+            queryItems.append(URLQueryItem(name: name, value:value))
+        }
+        return queryItems
+    }
+    
+    private func sanitizeQueryStringName(_ name: String) -> String {
+        return name.hasPrefix("&") ? String(name.dropFirst()) : name
     }
     
     public func assertEqualQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {

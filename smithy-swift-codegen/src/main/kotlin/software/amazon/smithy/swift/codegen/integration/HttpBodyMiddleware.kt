@@ -40,12 +40,13 @@ class HttpBodyMiddleware(
 
     private fun renderSerializablePayload() {
         writer.openBlock("do {", "} catch let err {") {
-            writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
+            //Good lord this is such a hack
+            //writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
                 writer.write("let encoder = context.getEncoder()")
                 writer.write("let data = try encoder.encode(input.operationInput)")
                 writer.write("let body = HttpBody.data(data)")
                 writer.write("input.builder.withBody(body)")
-            }
+            //}
         }
         writer.indent()
         writer.write("return .failure(err)")

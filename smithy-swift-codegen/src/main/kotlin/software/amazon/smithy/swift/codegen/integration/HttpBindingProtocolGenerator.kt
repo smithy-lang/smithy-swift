@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -135,7 +136,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render conformance to Encodable for all input shapes and their nested types
         val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
 
-        for (shape in shapesNeedingEncodableConformance) {
+        for ((shape, shapeMetadata) in shapesNeedingEncodableConformance) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
@@ -153,7 +154,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .toList()
                     generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                     writer.write("")
-                    val structEncodeStrategy = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
+                    val structEncodeStrategy = StructEncodeGeneratorStrategy(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                     structEncodeStrategy.render()
                     xmlNamespaces = structEncodeStrategy.xmlNamespaces()
                 }
@@ -206,7 +207,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("") // need enter space between coding keys and encode implementation
-                        val structEncode = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
+                        //todo -- for nested codable stuff.
+                        val structEncode = StructEncodeGeneratorStrategy(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
                         structEncode.render()
                         xmlNamespaces = structEncode.xmlNamespaces()
                         writer.write("")
@@ -265,20 +267,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
-    /**
-     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types
-     * and their nested types.
-     * Operation inputs and all nested types will conform to `Encodable`.
-     *
-     * @return The set of shapes that require a `Encodable` conformance and coding keys.
-     */
-    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation inputs with an http body must conform to Encodable
-        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
-        // get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx).toMutableSet()
+    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<String, Any>> {
+        //val inputShapes = resolveOperationInputShapes(ctx).toMutableSet()
+        var shapesInfo: MutableMap<Shape, Map<String, Any>> = mutableMapOf()
+        val operations = getHttpBindingOperations(ctx)
+        for (operation in operations) {
+            val inputType = ctx.model.expectShape(operation.input.get())
+            var metadata = mapOf<String, Any>(
+                Pair("operationShape", operation),
+                Pair("serviceVersion", ctx.service.version))
+            shapesInfo.put(inputType, metadata)
 
-        return inputShapes
+        }
+        //val inputOperations = resolveOperationsWithInputHack(ctx).toMutableSet()
+        return shapesInfo
     }
 
     /**
@@ -330,9 +332,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return nestedTypes
     }
 
-    private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) }.toSet()
-    }
+    //private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+    //}
+
+    //private fun resolveOperationsWithInputHack(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+//        return getHttpBindingOperations(ctx).map { it }.toSet()
+//    }
 
     private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) }.toSet()
@@ -441,7 +446,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        if (hasHttpBody) {
+        //yuck
+        if (hasHttpBody || ctx.protocol.equals(AwsQueryTrait.ID)) {
             val rootNamespace = ctx.settings.moduleName
             val headerMiddlewareSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")

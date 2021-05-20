@@ -19,7 +19,8 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
-    private var bodyAssertMethod = "assertEqualHttpBodyJSONData"
+    //private var bodyAssertMethod = "assertEqualHttpBodyJSONData"
+    private var bodyAssertUsesFormURL = false
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
@@ -61,15 +62,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             model = RecursiveShapeBoxer.transform(model)
 
             if (test.bodyMediaType.isPresent) {
+                //bodyAssertMethod = "genericAssertEqualHttpBodyData"
+
                 val bodyMediaType = test.bodyMediaType.get()
                 when (bodyMediaType.toLowerCase()) {
+                    /*
                     "application/json" -> {
                         bodyAssertMethod = "assertEqualHttpBodyJSONData"
                     }
                     "application/xml" -> {
                         bodyAssertMethod = "assertEqualHttpBodyXMLData"
+                    }*/
+                    "application/x-www-form-urlencoded" ->  {
+                        bodyAssertUsesFormURL = true
                     }
-                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
                 }
             }
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
@@ -131,9 +137,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     ) {
         writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
         writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
-        if (hasHttpBody) {
+
+        //yet another hack
+        //if (hasHttpBody) {
             writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
-        }
+        //}
 
         if (test.headers.keys.contains("Content-Type")) {
             val contentType = test.headers["Content-Type"]
@@ -229,14 +237,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.openBlock("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
+                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
                     val firstHttpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
                     if (firstHttpPayloadShape != null) {
                         val target = model.expectShape(firstHttpPayloadShape.target)
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                renderBodyComparison(nestedSymbol)
+                                renderBodyComparison(nestedSymbol, false)
                             }
                             else -> writer.write("XCTAssertEqual(expectedData, actualData)")
                         }
@@ -256,18 +264,22 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
-        val bodyString = if (appendBody) "Body" else ""
-        writer.openBlock("do {", "} catch let err {") {
-            writer.write("let decoder = ${serdeContext.protocolDecoder}")
-            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
-            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
-            writer.write("XCTAssertEqual(expectedObj, actualObj)")
+    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean) {
+        if (bodyAssertUsesFormURL) {
+            writer.write("self.assertEqualFormURLRequest(expectedData, actualData)")
+        } else {
+            val bodyString = if (appendBody) "Body" else ""
+            writer.openBlock("do {", "} catch let err {") {
+                writer.write("let decoder = ${serdeContext.protocolDecoder}")
+                writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
+                writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
+                writer.write("XCTAssertEqual(expectedObj, actualObj)")
+                writer.indent()
+                writer.write("XCTFail(\"Failed to verify body \\(err)\")")
+                writer.dedent()
+                writer.write("}")
+            }
         }
-        writer.indent()
-        writer.write("XCTFail(\"Failed to verify body \\(err)\")")
-        writer.dedent()
-        writer.write("}")
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
