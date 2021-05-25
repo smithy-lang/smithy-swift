@@ -8,7 +8,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 
 open class HttpProtocolCustomizable {
     open fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
-        val middlewares = getDefaultProtocolMiddlewares(ctx)
+        val middlewares = getHttpMiddlewares(ctx)
         for (middleware in middlewares) {
             middleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName)
         }
@@ -43,7 +43,21 @@ open class HttpProtocolCustomizable {
         return emptyList()
     }
 
-    open fun getDefaultProtocolMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
+    /**
+     * Get all of the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
+     * This is the function that protocol client generators should invoke to get the fully resolved set of middleware
+     * to be rendered (i.e. after integrations have had a chance to intercept). The default set of middleware for
+     * a protocol can be overridden by [getDefaultHttpMiddleware].
+     */
+    fun getHttpMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
+        val defaultMiddleware = getDefaultProtocolMiddlewares(ctx)
+        return ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
+            integration.customizeMiddleware(ctx, middleware)
+        }
+    }
+
+
+    protected open fun getDefaultProtocolMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         return emptyList()
     }
 }
