@@ -12,9 +12,9 @@ interface ProtocolMiddleware {
 
     val name: String
 
-    val middlewareStep: String
+    val middlewareStep: MiddlewareStep
 
-    val position: String
+    val position: MiddlewarePosition
 
     fun renderMiddleware(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape, operationStackName: String) {}
 
