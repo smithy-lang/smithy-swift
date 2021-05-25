@@ -96,19 +96,7 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpBody(expected.body, actual.body)
     }
     
-    public func assertEqualHttpBodyJSONData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
-        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
-            callback(expectedData, actualData)
-        }
-    }
-
-    public func assertEqualHttpBodyXMLData(_ expected: HttpBody, _ actual: HttpBody, callback: ValidateCallback) {
-        genericAssertEqualHttpBodyData(expected, actual: actual) { (expectedData, actualData) in
-            callback(expectedData, actualData)
-        }
-    }
-    
-    private func genericAssertEqualHttpBodyData(_ expected: HttpBody, actual: HttpBody, _ callback: (Data, Data) -> Void) {
+    public func genericAssertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody, _ callback: (Data, Data) -> Void) {
         guard case .success(let expectedData) = extractData(expected) else {
             XCTFail("Failed to extract data from httpbody for expected")
             return
@@ -202,8 +190,9 @@ open class HttpRequestTestBase: XCTestCase {
             XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Acutal: \(actualKVCount[keyValue] ?? 0)")
         }
     }
-    func generateKeyValueDictionaryCount(_ urlQueryItems: [URLQueryItem]) -> [String:Int] {
-        var dict: [String:Int] = [:]
+
+    private func generateKeyValueDictionaryCount(_ urlQueryItems: [URLQueryItem]) -> [String: Int] {
+        var dict: [String: Int] = [:]
         for urlQueryItem in urlQueryItems {
             let name = urlQueryItem.name
             let value = urlQueryItem.value ?? "nil"
