@@ -98,3 +98,12 @@ extension String {
         return String(substring)
     }
 }
+
+extension String {
+    public func urlPercentEncoding() -> String {
+        if let encodedString = self.addingPercentEncoding(withAllowedCharacters: .singleUrlQueryAllowed) {
+            return encodedString
+        }
+        return self
+    }
+}
