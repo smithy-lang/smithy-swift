@@ -8,7 +8,10 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 
 open class HttpProtocolCustomizable {
     open fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
-        // Default implementation is no-op
+        val middlewares = getDefaultProtocolMiddlewares(ctx)
+        for (middleware in middlewares) {
+            middleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName)
+        }
     }
 
     open fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
@@ -37,6 +40,10 @@ open class HttpProtocolCustomizable {
     }
 
     open fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
+        return emptyList()
+    }
+
+    open fun getDefaultProtocolMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         return emptyList()
     }
 }
