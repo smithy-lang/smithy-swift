@@ -1,8 +1,8 @@
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
  * Interface that allows middleware to be registered and configured with the generated protocol client

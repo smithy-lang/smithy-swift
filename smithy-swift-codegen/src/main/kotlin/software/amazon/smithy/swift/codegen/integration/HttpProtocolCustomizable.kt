@@ -56,7 +56,6 @@ open class HttpProtocolCustomizable {
         }
     }
 
-
     protected open fun getDefaultProtocolMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         return emptyList()
     }
