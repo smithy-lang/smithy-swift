@@ -10,7 +10,7 @@ import Foundation.NSCharacterSet
 extension CharacterSet {
     public static var singleUrlQueryAllowed: CharacterSet {
         var cSet = CharacterSet.urlQueryAllowed
-        cSet.remove(charactersIn: ":/?#[]@!$&'()*+,;=")
+        cSet.remove(charactersIn: ":/?#[]@!$&'()*+,;=%")
         return cSet
     }
 }
