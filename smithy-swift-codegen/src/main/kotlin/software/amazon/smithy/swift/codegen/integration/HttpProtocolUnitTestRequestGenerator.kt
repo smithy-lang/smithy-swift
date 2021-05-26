@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -19,7 +20,7 @@ import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
-    private var bodyAssertMethod = "assertEqualHttpBodyJSONData"
+    private lateinit var bodyComparisonStrategy: (Symbol, Boolean) -> Unit
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
@@ -59,19 +60,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-
-            if (test.bodyMediaType.isPresent) {
-                val bodyMediaType = test.bodyMediaType.get()
-                when (bodyMediaType.toLowerCase()) {
-                    "application/json" -> {
-                        bodyAssertMethod = "assertEqualHttpBodyJSONData"
-                    }
-                    "application/xml" -> {
-                        bodyAssertMethod = "assertEqualHttpBodyXMLData"
-                    }
-                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
-                }
-            }
+            bodyComparisonStrategy = determineBodyComparisonStrategy(test)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
@@ -86,7 +75,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
             val outputErrorName = "${operation.capitalizedName()}OutputError"
-            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0 || test.protocol == AwsQueryTrait.ID
 
             writer.write("let encoder = \$L", serdeContext.protocolEncoder)
             serdeContext.defaultTimestampFormat?.let {
@@ -229,19 +218,19 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.openBlock("self.$bodyAssertMethod(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
+                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
                     val firstHttpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
                     if (firstHttpPayloadShape != null) {
                         val target = model.expectShape(firstHttpPayloadShape.target)
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                renderBodyComparison(nestedSymbol)
+                                bodyComparisonStrategy(nestedSymbol, false)
                             }
                             else -> writer.write("XCTAssertEqual(expectedData, actualData)")
                         }
                     } else {
-                        renderBodyComparison(inputSymbol, true)
+                        bodyComparisonStrategy(inputSymbol, true)
                     }
                 }
             }
@@ -256,7 +245,22 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean = false) {
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((Symbol, Boolean) -> Unit) {
+        return when (test.protocol) {
+            AwsQueryTrait.ID -> {
+                this::renderBodyComparisonForFormURL
+            }
+            else -> {
+                this::renderBodyComparison
+            }
+        }
+    }
+
+    private fun renderBodyComparisonForFormURL(symbol: Symbol, appendBody: Boolean) {
+        writer.write("self.assertEqualFormURLBody(expectedData, actualData)")
+    }
+
+    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let decoder = ${serdeContext.protocolDecoder}")
