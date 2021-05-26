@@ -22,6 +22,7 @@ struct FormURLEncoding: Encoder {
     }
     
     var data: EncodedData
+
     init(to encodedData: EncodedData = EncodedData()) {
         self.data = encodedData
     }

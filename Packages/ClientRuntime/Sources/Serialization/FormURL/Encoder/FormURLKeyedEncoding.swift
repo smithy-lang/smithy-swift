@@ -8,6 +8,7 @@
 struct FormURLKeyedEncoding<Key: CodingKey>: KeyedEncodingContainerProtocol {
 
     private let data: FormURLEncoding.EncodedData
+
     init(to data: FormURLEncoding.EncodedData) {
         self.data = data
     }
