@@ -8,7 +8,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
  * Interface that allows middleware to be registered and configured with the generated protocol client
  * How this interface is used is entirely protocol/generator dependent
  */
-interface ProtocolMiddleware {
+interface OperationMiddlewareRenderable {
 
     val name: String
 
@@ -16,7 +16,7 @@ interface ProtocolMiddleware {
 
     val position: MiddlewarePosition
 
-    fun renderMiddleware(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape, operationStackName: String) {}
+    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape, operationStackName: String) {}
 
-    fun getParamsString(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape): String { return "" }
+    fun middlewareParamsString(ctx: ProtocolGenerator.GenerationContext, serviceShape: ServiceShape, op: OperationShape): String { return "" }
 }

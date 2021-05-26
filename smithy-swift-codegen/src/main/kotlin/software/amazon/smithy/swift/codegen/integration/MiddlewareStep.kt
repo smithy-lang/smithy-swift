@@ -5,13 +5,13 @@ enum class MiddlewareStep {
         override fun stringValue(): String = "initializeStep"
     },
     BUILDSTEP {
-        override fun stringValue() = "buildStep"
+        override fun stringValue(): String = "buildStep"
     },
     SERIALIZESTEP {
-        override fun stringValue() = "serializeStep"
+        override fun stringValue(): String = "serializeStep"
     },
     FINALIZESTEP {
-        override fun stringValue() = "finalizeStep"
+        override fun stringValue(): String = "finalizeStep"
     },
     DESERIALIZESTEP {
         override fun stringValue(): String = "deserializeStep"

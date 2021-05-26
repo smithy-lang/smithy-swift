@@ -118,8 +118,8 @@ interface SwiftIntegration {
      */
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
-        resolved: List<ProtocolMiddleware>
-    ): List<ProtocolMiddleware> {
+        resolved: List<OperationMiddlewareRenderable>
+    ): List<OperationMiddlewareRenderable> {
         return resolved
     }
 
