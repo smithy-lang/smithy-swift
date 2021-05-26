@@ -9,15 +9,15 @@ import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 
 class SensitiveTraitGeneratorTests {
     @Test
-    fun `SensitiveTraitInRequestInput+CustomStringConvertible`() {
+    fun `SensitiveTraitInRequestInput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestInput+CustomStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestInput: CustomStringConvertible {
-                public var description: String {
+            extension SensitiveTraitInRequestInput: CustomDebugStringConvertible {
+                public var debugDescription: String {
                     "SensitiveTraitInRequestInput(foo: \(String(describing: foo)), baz: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
@@ -25,15 +25,15 @@ class SensitiveTraitGeneratorTests {
     }
 
     @Test
-    fun `SensitiveTraitInRequestOutput+CustomStringConvertible`() {
+    fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestOutput+CustomStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestOutput: CustomStringConvertible {
-                public var description: String {
+            extension SensitiveTraitInRequestOutput: CustomDebugStringConvertible {
+                public var debugDescription: String {
                     "CONTENT_REDACTED"
                 }
             }
@@ -42,15 +42,15 @@ class SensitiveTraitGeneratorTests {
     }
 
     @Test
-    fun `NoSensitiveMemberStruct+CustomStringConvertible`() {
+    fun `NoSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestInput+CustomStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestInput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestInput: CustomStringConvertible {
-                public var description: String {
+            extension SensitiveTraitTestRequestInput: CustomDebugStringConvertible {
+                public var debugDescription: String {
                     "SensitiveTraitTestRequestInput(bar: \(String(describing: bar)), baz: \(String(describing: baz)), foo: \(String(describing: foo)))"}
             }
             """.trimIndent()
@@ -58,15 +58,15 @@ class SensitiveTraitGeneratorTests {
     }
 
     @Test
-    fun `AllSensitiveMemberStruct+CustomStringConvertible`() {
+    fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestOutput+CustomStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestOutput: CustomStringConvertible {
-                public var description: String {
+            extension SensitiveTraitTestRequestOutput: CustomDebugStringConvertible {
+                public var debugDescription: String {
                     "SensitiveTraitTestRequestOutput(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()

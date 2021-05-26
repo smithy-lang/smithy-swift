@@ -8,7 +8,7 @@ import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.toMemberNames
 
-class CustomStringConvertibleGenerator(
+class CustomDebugStringConvertibleGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: StructureShape
@@ -24,8 +24,8 @@ class CustomStringConvertibleGenerator(
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
 
     fun render() {
-        writer.openBlock("extension ${structSymbol.name}: CustomStringConvertible {", "}") {
-            writer.openBlock("public var description: String {", "}") {
+        writer.openBlock("extension ${structSymbol.name}: CustomDebugStringConvertible {", "}") {
+            writer.openBlock("public var debugDescription: String {", "}") {
                 if (shape.hasTrait(SensitiveTrait::class.java)) {
                     writer.write("\"$REDACT_STRING\"")
                 } else {
