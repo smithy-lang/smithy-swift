@@ -28,7 +28,7 @@ class HttpProtocolClientGeneratorTests {
             ctx.generationCtx, writer, features, config,
             HttpTraitResolver(ctx.generationCtx),
             "application/json",
-            MockRestJsonHttpProtocolCustomizable()
+            MockRestJsonHttpProtocolCustomizations()
         )
         return generator
     }
