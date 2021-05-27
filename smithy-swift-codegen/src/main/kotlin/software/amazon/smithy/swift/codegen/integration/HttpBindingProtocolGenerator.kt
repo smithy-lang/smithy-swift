@@ -30,6 +30,7 @@ import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -414,26 +415,25 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderBodyMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
         val opIndex = OperationIndex.of(ctx.model)
-        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
-        val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
-        val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.capitalizedName()}OutputError"
-        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
-        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
-        val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        if (hasHttpBody) {
+
+        if (shouldRenderHttpBodyMiddleware(inputShape)) {
             val rootNamespace = ctx.settings.moduleName
+            val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
             val headerMiddlewareSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                val outputShape = opIndex.getOutput(op).get()
+                val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+                val operationErrorName = "${op.capitalizedName()}OutputError"
+                val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
+                val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+                val requestBindings = httpBindingResolver.requestBindings(op)
+                val bodyMiddleware = httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
 
-                val bodyMiddleware =
-                    HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                 MiddlewareGenerator(writer, bodyMiddleware).generate()
             }
         }
@@ -469,6 +469,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format
     )
+
+    open fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
+        return shape.members().filter { it.isInHttpBody() }.count() > 0
+    }
+
+    open fun httpBodyMiddleware(
+        writer: SwiftWriter,
+        ctx: ProtocolGenerator.GenerationContext,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        outputErrorSymbol: Symbol,
+        requestBindings: List<HttpBindingDescriptor>
+    ): Middleware {
+        return HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
+    }
 
     /**
      * Get the operations with HTTP Bindings.
