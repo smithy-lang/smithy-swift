@@ -18,7 +18,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.swift.codegen.integration.CustomStringConvertibleGenerator
+import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import java.util.ServiceLoader
@@ -128,8 +128,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun structureShape(shape: StructureShape): Void? {
         writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape).render() }
-        writers.useShapeExtensionWriter(shape, "CustomStringConvertible") { writer: SwiftWriter ->
-            CustomStringConvertibleGenerator(symbolProvider, writer, shape).render()
+        writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+            CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
         }
         return null
     }
