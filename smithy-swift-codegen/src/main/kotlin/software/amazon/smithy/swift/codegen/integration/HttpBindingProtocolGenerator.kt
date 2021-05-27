@@ -37,11 +37,10 @@ import software.amazon.smithy.swift.codegen.bodySymbol
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
-import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.StructDecodeGeneratorStrategy
-import software.amazon.smithy.swift.codegen.integration.serde.StructEncodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
+import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -135,7 +134,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render conformance to Encodable for all input shapes and their nested types
         val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
 
-        for (shape in shapesNeedingEncodableConformance) {
+        for ((shape, shapeMetadata) in shapesNeedingEncodableConformance) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
@@ -144,7 +143,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .name(symbolName)
                 .build()
 
-            var xmlNamespaces: Set<String> = setOf()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -153,16 +151,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .toList()
                     generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                     writer.write("")
-                    val structEncodeStrategy = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
-                    structEncodeStrategy.render()
-                    xmlNamespaces = structEncodeStrategy.xmlNamespaces()
+                    renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
             // For protocol tests
             renderBodyStructAndDecodableExtension(ctx, shape)
             DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
-
-            DynamicNodeEncodingGeneratorStrategy(ctx, shape, xmlNamespaces).renderIfNeeded()
         }
     }
 
@@ -194,8 +188,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .name(symbolName)
             .build()
 
-        var xmlNamespaces: Set<String> = setOf()
-
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -205,10 +197,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                        writer.write("") // need enter space between coding keys and encode implementation
-                        val structEncode = StructEncodeGeneratorStrategy(ctx, shape, httpBodyMembers, writer, defaultTimestampFormat)
-                        structEncode.render()
-                        xmlNamespaces = structEncode.xmlNamespaces()
+                        writer.write("")
+                        renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
                         writer.write("")
                         StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
                     }
@@ -226,8 +216,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
         }
-
-        DynamicNodeEncodingGeneratorStrategy(ctx, shape, xmlNamespaces).renderIfNeeded()
     }
 
     private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
@@ -265,20 +253,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
-    /**
-     * Find and return the set of shapes that need `Encodable` conformance which includes top level input types
-     * and their nested types.
-     * Operation inputs and all nested types will conform to `Encodable`.
-     *
-     * @return The set of shapes that require a `Encodable` conformance and coding keys.
-     */
-    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation inputs with an http body must conform to Encodable
-        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Encodable
-        // get them all and return as one set to loop through
-        val inputShapes = resolveOperationInputShapes(ctx).toMutableSet()
-
-        return inputShapes
+    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
+        var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
+        val operations = getHttpBindingOperations(ctx)
+        for (operation in operations) {
+            val inputType = ctx.model.expectShape(operation.input.get())
+            var metadata = mapOf<ShapeMetadata, Any>(
+                Pair(ShapeMetadata.OPERATION_SHAPE, operation),
+                Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version)
+            )
+            shapesInfo.put(inputType, metadata)
+        }
+        return shapesInfo
     }
 
     /**
@@ -328,10 +314,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val nestedTypes = walkNestedShapesRequiringSerde(ctx, allTopLevelMembers)
         return nestedTypes
-    }
-
-    private fun resolveOperationInputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.input.get()) }.toSet()
     }
 
     private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
@@ -479,6 +461,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
+    protected abstract fun renderStructEncode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
+        shapeMetaData: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+        defaultTimestampFormat: TimestampFormatTrait.Format
+    )
 
     /**
      * Get the operations with HTTP Bindings.
