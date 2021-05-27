@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.integration.DefaultConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
@@ -29,7 +28,7 @@ class HttpProtocolClientGeneratorTests {
             ctx.generationCtx, writer, features, config,
             HttpTraitResolver(ctx.generationCtx),
             "application/json",
-            HttpProtocolCustomizable()
+            MockRestJsonHttpProtocolCustomizations()
         )
         return generator
     }
