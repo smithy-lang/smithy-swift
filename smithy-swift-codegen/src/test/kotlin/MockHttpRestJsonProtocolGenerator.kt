@@ -1,7 +1,10 @@
 import mocks.MockHttpResponseBindingErrorGenerator
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
@@ -14,6 +17,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
+import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
@@ -29,6 +34,18 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )
+
+    override fun renderStructEncode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
+        shapeMetadata: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+        defaultTimestampFormat: TimestampFormatTrait.Format,
+    ) {
+        val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        encodeGenerator.render()
+    }
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
