@@ -34,7 +34,7 @@ class HttpResponseBindingErrorNarrowGenerator(
                         val errorShapeName = ctx.symbolProvider.toSymbol(errorShape).name
                         writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeName.decapitalize(), errorShapeName)
                     }
-                    writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message))")
+                    writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID))")
                     writer.write("}")
                 }
             }
