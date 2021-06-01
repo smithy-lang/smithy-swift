@@ -41,8 +41,7 @@ class StructEncodeFormURLGenerator(
         when (memberTarget) {
 
             is CollectionShape -> {
-                // renderListMember(member, memberTarget, containerName)
-                // TODO
+                renderListMember(member, memberTarget, containerName)
             }
             is MapShape -> {
                 // renderMapMember(member, memberTarget, containerName)
