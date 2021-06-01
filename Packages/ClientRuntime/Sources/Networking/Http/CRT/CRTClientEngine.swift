@@ -10,7 +10,7 @@ import AwsCommonRuntimeKit
      import Darwin
  #endif
 
-class CRTClientEngine: HttpClientEngine {    
+public class CRTClientEngine: HttpClientEngine {
     
     private var logger: LogAgent
     private var crtLogger: Logger
@@ -19,14 +19,14 @@ class CRTClientEngine: HttpClientEngine {
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
-    private let bootstrap: ClientBootstrap
+    public let bootstrap: ClientBootstrap
     private let socketOptions: SocketOptions
     private let tlsContextOptions: TlsContextOptions
     private let tlsContext: TlsContext
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    public init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
+    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
         AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         let elg = EventLoopGroup(threadCount: 1)

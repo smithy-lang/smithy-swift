@@ -77,7 +77,7 @@ extension StreamSinkProvider {
     
     /// This function is a util to enhance developer experience. This enum only has one case so this function
     /// provides an easy way to unwrap the single case to get the associated value quicker and easier.
-    func unwrap() -> StreamSink {
+    public func unwrap() -> StreamSink {
         if case let StreamSinkProvider.provider(unwrapped) = self {
             return unwrapped
         }
