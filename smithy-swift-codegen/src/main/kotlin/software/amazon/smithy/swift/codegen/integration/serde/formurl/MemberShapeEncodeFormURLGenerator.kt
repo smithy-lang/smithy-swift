@@ -151,7 +151,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
@@ -162,7 +162,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
                 writer.dedent().write("}")
             } else {
-                val nestedContainer = "${resolvedMemberName}Container"
+                val nestedContainer = "${memberName}Container"
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                 renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
             }
@@ -180,8 +180,14 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val entryContainerName = "entryContainer$level"
-        writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
+        val index = "index${level}"
+        val element = "element${level}"
+        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+            writer.write("let ${nestedKeyValueName.first} = $element.key")
+            writer.write("let ${nestedKeyValueName.second} = $element.value")
+
+            val entry = "entry".indexAdvancedBy1(index)
+            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$entry\"))")
             renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
             when (valueTargetShape) {
                 is MapShape -> {
@@ -211,7 +217,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
-        val resolvedMemberName = if (level == 0) XMLNameTraitGenerator.construct(member, memberName) else "entry"
+        val resolvedMemberName = if (level == 0) XMLNameTraitGenerator.construct(member, member.memberName) else "entry"
 
         val resolvedCodingKeys = Pair(
             XMLNameTraitGenerator.construct(mapShape.key, "key"),
@@ -220,8 +226,14 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val nestedContainer = "nestedContainer$level"
-        writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+        val index = "index${level}"
+        val element = "element${level}"
+        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+            writer.write("let ${nestedKeyValueName.first} = $element.key")
+            writer.write("let ${nestedKeyValueName.second} = $element.value")
+
+            val entry = resolvedMemberName.toString().indexAdvancedBy1(index)
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$entry\"))")
             when (valueTargetShape) {
                 is MapShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)

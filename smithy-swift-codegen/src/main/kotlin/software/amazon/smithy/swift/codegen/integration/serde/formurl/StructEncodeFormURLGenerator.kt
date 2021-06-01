@@ -44,8 +44,7 @@ class StructEncodeFormURLGenerator(
                 renderListMember(member, memberTarget, containerName)
             }
             is MapShape -> {
-                // renderMapMember(member, memberTarget, containerName)
-                // TODO
+                renderMapMember(member, memberTarget, containerName)
             }
             is TimestampShape -> {
                 // renderTimestampMember(member, memberTarget, containerName)
