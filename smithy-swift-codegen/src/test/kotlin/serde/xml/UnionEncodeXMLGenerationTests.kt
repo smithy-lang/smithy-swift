@@ -105,8 +105,8 @@ class UnionEncodeXMLGenerationTests {
                         self = .structValue(structValue)
                         return
                     }
-                    struct KeyVal0{struct K{}; struct V{}}
                     if containerValues.contains(.mapValue) {
+                        struct KeyVal0{struct K{}; struct V{}}
                         let mapValueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapValue)
                         if let mapValueWrappedContainer = mapValueWrappedContainer {
                             let mapValueContainer = try mapValueWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
