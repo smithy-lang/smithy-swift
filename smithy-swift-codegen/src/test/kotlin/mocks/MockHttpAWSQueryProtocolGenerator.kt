@@ -56,6 +56,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )
+    override val shouldRenderDecodableBodyStructForEncodableTypes = false
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
