@@ -180,8 +180,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val entryContainerName = "entryContainer$level"
-        val index = "index${level}"
-        val element = "element${level}"
+        val index = "index$level"
+        val element = "element$level"
         writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
@@ -226,8 +226,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val nestedContainer = "nestedContainer$level"
-        val index = "index${level}"
-        val element = "element${level}"
+        val index = "index$level"
+        val element = "element$level"
         writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
