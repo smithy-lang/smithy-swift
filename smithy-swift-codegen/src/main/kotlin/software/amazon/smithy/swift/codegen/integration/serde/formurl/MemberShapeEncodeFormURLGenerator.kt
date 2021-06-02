@@ -5,12 +5,12 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
@@ -23,18 +23,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
 
-    private val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
-        ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
-        ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
-    )
-
     fun renderListMember(
         member: MemberShape,
         memberTarget: CollectionShape,
         containerName: String
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
@@ -60,11 +55,11 @@ abstract class MemberShapeEncodeFormURLGenerator(
         level: Int = 0
     ) {
         val nestedMember = memberTarget.member
-        val nestedMemberResolvedName = XMLNameTraitGenerator.construct(nestedMember, "member").toString()
+        val nestedMemberResolvedName = XMLNameTraitGenerator.construct(nestedMember, "member").toString().indexAdvancedBy1("index$level")
 
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
-        writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
+        writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
                     val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
@@ -111,11 +106,11 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedMember = memberTarget.member
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
-        val defaultMemberName = if (level == 0) memberName else "member"
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
+        val defaultMemberName = if (level == 0) member.memberName else "member"
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName).toString().indexAdvancedBy1("index$level")
         val nestedContainerName = "${memberName}Container$level"
 
-        writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
+        writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
                     val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
@@ -335,7 +330,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 renderItem(writer, containerName, memberName, resolvedMemberName)
             }
         } else {
-            if (primitiveSymbols.contains(memberTarget.type)) {
+            if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
                     writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")

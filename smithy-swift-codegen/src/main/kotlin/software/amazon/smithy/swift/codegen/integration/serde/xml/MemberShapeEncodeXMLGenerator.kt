@@ -9,12 +9,12 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
@@ -29,11 +29,6 @@ abstract class MemberShapeEncodeXMLGenerator(
 ) : MemberShapeEncodeGeneratable {
 
     val xmlNamespaces = mutableSetOf<String>()
-
-    private val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
-        ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
-        ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
-    )
 
     fun renderListMember(
         member: MemberShape,
@@ -360,7 +355,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, resolvedMemberName)
             }
         } else {
-            if (primitiveSymbols.contains(memberTarget.type)) {
+            if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
                     writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
