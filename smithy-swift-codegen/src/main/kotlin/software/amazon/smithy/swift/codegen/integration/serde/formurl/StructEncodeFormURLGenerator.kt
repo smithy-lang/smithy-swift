@@ -47,8 +47,7 @@ class StructEncodeFormURLGenerator(
                 renderMapMember(member, memberTarget, containerName)
             }
             is TimestampShape -> {
-                // renderTimestampMember(member, memberTarget, containerName)
-                // TODO
+                renderTimestampMember(member, memberTarget, containerName)
             }
             else -> {
                 renderScalarMember(member, memberTarget, containerName)

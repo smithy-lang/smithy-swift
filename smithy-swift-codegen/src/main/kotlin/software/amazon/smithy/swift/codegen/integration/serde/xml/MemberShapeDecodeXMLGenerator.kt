@@ -115,7 +115,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                     }
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
                     writer.write("try $memberBuffer?.$insertMethod($wrappedNestedMemberBuffer)")
                 }
@@ -217,7 +217,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(memberShape, defaultTimestampFormat)
+                    val format = determineTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
                     writer.write("$memberBuffer?[$itemInContainerName.key] = try TimestampWrapperDecoder.parseDateStringValue($itemInContainerName.value, format: .$format)")
                 }
                 else -> {
@@ -245,7 +245,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(String.self, forKey: .$memberName)")
 
         val memberBuffer = "${memberName}Buffer"
-        val format = determineTimestampFormat(member, defaultTimestampFormat)
+        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
         writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
             writer.write("$memberBuffer = try TimestampWrapperDecoder.parseDateStringValue($decodedMemberName, format: .$format)")
