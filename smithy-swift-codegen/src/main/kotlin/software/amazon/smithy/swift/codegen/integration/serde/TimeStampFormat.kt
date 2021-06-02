@@ -3,18 +3,21 @@ package software.amazon.smithy.swift.codegen.integration.serde
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.model.getTrait
 
 class TimeStampFormat {
     companion object {
         fun determineTimestampFormat(member: MemberShape, memberTarget: TimestampShape, defaultTimestampFormat: TimestampFormatTrait.Format): String {
             var formatTrait = defaultTimestampFormat
-            if (member.hasTrait(TimestampFormatTrait::class.java)) {
-                val timestampFormatTrait = member.getTrait(TimestampFormatTrait::class.java)
-                formatTrait = timestampFormatTrait.get().format
-            } else if (memberTarget.hasTrait(TimestampFormatTrait::class.java)) {
-                val timestampFormatTrait = memberTarget.getTrait(TimestampFormatTrait::class.java)
-                formatTrait = timestampFormatTrait.get().format
+
+            member.getTrait<TimestampFormatTrait>()?.let {
+                formatTrait = it.format
+            } ?: run {
+                memberTarget.getTrait<TimestampFormatTrait>()?.let {
+                    formatTrait = it.format
+                }
             }
+
             when (formatTrait) {
                 TimestampFormatTrait.Format.EPOCH_SECONDS -> {
                     return "epochSeconds"
