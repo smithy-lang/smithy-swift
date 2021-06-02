@@ -19,7 +19,8 @@ public struct TimestampWrapper: Encodable {
     func dateFormatted() -> String {
         switch format {
         case .epochSeconds:
-            return "\(date.timeIntervalSince1970)"
+            let secondsWithoutFractional = Int(date.timeIntervalSince1970)
+            return "\(secondsWithoutFractional)"
         case .dateTime:
             return date.iso8601WithoutFractionalSeconds()
         case .httpDate:

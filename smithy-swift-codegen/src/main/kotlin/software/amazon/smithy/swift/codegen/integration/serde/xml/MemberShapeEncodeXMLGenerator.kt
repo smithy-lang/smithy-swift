@@ -87,7 +87,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"${nestedMemberResolvedName}\")"
                     writer.write("try $containerName.encode($encodeValue)")
                 }
@@ -141,7 +141,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                    val format = determineTimestampFormat(nestedMember, defaultTimestampFormat)
+                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
                     val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
                     writer.write("try $nestedContainerName.encode($encodeValue)")
@@ -211,7 +211,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
-                        val format = determineTimestampFormat(mapShape.value, defaultTimestampFormat)
+                        val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
                         writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
                     }
                 }
@@ -253,7 +253,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val format = determineTimestampFormat(mapShape.value, defaultTimestampFormat)
+                        val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
                         writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
                     }
                 }
@@ -331,7 +331,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
-        val format = determineTimestampFormat(member, defaultTimestampFormat)
+        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         val isBoxed = symbol.isBoxed()
         val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
         if (isBoxed) {
