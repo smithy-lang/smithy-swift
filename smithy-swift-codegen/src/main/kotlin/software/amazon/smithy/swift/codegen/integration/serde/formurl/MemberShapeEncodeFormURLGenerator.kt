@@ -182,7 +182,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val entryContainerName = "entryContainer$level"
         val index = "index$level"
         val element = "element$level"
-        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+        // Sorting the unordered map is needed for passing protocol codegen tests
+        writer.openBlock("for ($index, $element) in $memberName.sorted(by: { $$0.key < $$1.key }).enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
 
@@ -228,7 +229,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedContainer = "nestedContainer$level"
         val index = "index$level"
         val element = "element$level"
-        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+        // Sorting the unordered map is needed for passing protocol codegen tests
+        writer.openBlock("for ($index, $element) in $memberName.sorted(by: { $$0.key < $$1.key }).enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
 
