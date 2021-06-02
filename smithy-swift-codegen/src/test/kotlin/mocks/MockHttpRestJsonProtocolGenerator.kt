@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.json.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
@@ -45,6 +46,16 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     ) {
         val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
         encodeGenerator.render()
+    }
+    override fun renderStructDecode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeMetadata: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+        defaultTimestampFormat: TimestampFormatTrait.Format,
+    ) {
+        val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        decodeGenerator.render()
     }
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
