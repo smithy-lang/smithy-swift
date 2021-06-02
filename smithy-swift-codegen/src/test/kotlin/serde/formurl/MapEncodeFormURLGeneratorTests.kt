@@ -31,7 +31,7 @@ class MapEncodeFormURLGeneratorTests {
                     var container = encoder.container(keyedBy: Key.self)
                     if let complexMapArg = complexMapArg {
                         var complexMapArgContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("ComplexMapArg"))
-                        for (index0, element0) in complexMapArg.enumerated() {
+                        for (index0, element0) in complexMapArg.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                             let stringKey0 = element0.key
                             let greetingstructValue0 = element0.value
                             var entryContainer0 = complexMapArgContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))
@@ -45,7 +45,7 @@ class MapEncodeFormURLGeneratorTests {
                         if flattenedMap.isEmpty {
                             let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap"))
                         } else {
-                            for (index0, element0) in flattenedMap.enumerated() {
+                            for (index0, element0) in flattenedMap.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                                 let stringKey0 = element0.key
                                 let stringValue0 = element0.value
                                 var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap.\(index0.advanced(by: 1))"))
@@ -60,7 +60,7 @@ class MapEncodeFormURLGeneratorTests {
                         if flattenedMapWithXmlName.isEmpty {
                             let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("Hi"))
                         } else {
-                            for (index0, element0) in flattenedMapWithXmlName.enumerated() {
+                            for (index0, element0) in flattenedMapWithXmlName.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                                 let stringKey0 = element0.key
                                 let stringValue0 = element0.value
                                 var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("Hi.\(index0.advanced(by: 1))"))
@@ -73,7 +73,7 @@ class MapEncodeFormURLGeneratorTests {
                     }
                     if let mapArg = mapArg {
                         var mapArgContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("MapArg"))
-                        for (index0, element0) in mapArg.enumerated() {
+                        for (index0, element0) in mapArg.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                             let stringKey0 = element0.key
                             let stringValue0 = element0.value
                             var entryContainer0 = mapArgContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))
@@ -85,7 +85,7 @@ class MapEncodeFormURLGeneratorTests {
                     }
                     if let mapOfLists = mapOfLists {
                         var mapOfListsContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("MapOfLists"))
-                        for (index0, element0) in mapOfLists.enumerated() {
+                        for (index0, element0) in mapOfLists.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                             let stringKey0 = element0.key
                             let stringlistValue0 = element0.value
                             var entryContainer0 = mapOfListsContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))
@@ -101,7 +101,7 @@ class MapEncodeFormURLGeneratorTests {
                     }
                     if let mapWithXmlMemberName = mapWithXmlMemberName {
                         var mapWithXmlMemberNameContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("MapWithXmlMemberName"))
-                        for (index0, element0) in mapWithXmlMemberName.enumerated() {
+                        for (index0, element0) in mapWithXmlMemberName.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                             let stringKey0 = element0.key
                             let stringValue0 = element0.value
                             var entryContainer0 = mapWithXmlMemberNameContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))
@@ -113,7 +113,7 @@ class MapEncodeFormURLGeneratorTests {
                     }
                     if let renamedMapArg = renamedMapArg {
                         var renamedMapArgContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("Foo"))
-                        for (index0, element0) in renamedMapArg.enumerated() {
+                        for (index0, element0) in renamedMapArg.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                             let stringKey0 = element0.key
                             let stringValue0 = element0.value
                             var entryContainer0 = renamedMapArgContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))

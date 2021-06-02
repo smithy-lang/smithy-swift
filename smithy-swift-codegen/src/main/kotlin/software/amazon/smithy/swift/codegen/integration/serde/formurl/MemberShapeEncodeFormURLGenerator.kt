@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.formurl
 
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -83,6 +84,9 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"${nestedMemberResolvedName}\")"
                     writer.write("try $containerName.encode($encodeValue)")
                 }
+                is BlobShape -> {
+                    renderBlobMemberName(nestedMemberTargetName, nestedMemberResolvedName, containerName, false)
+                }
                 else -> {
                     renderItem(writer, containerName, nestedMemberTargetName, nestedMemberResolvedName)
                 }
@@ -134,6 +138,9 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
                     writer.write("try $nestedContainerName.encode($encodeValue)")
                 }
+                is BlobShape -> {
+                    renderBlobMemberName(nestedMemberTargetName, resolvedMemberName, containerName, false)
+                }
                 else -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                     writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: Key(\"\"))")
@@ -182,7 +189,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val entryContainerName = "entryContainer$level"
         val index = "index$level"
         val element = "element$level"
-        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+        // Sorting the unordered map is needed for passing protocol codegen tests
+        writer.openBlock("for ($index, $element) in $memberName.sorted(by: { $$0.key < $$1.key }).enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
 
@@ -204,6 +212,11 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
                         val format = TimeStampFormat.determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
                         writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                    }
+                }
+                is BlobShape -> {
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
+                        renderBlobMemberName(nestedKeyValueName.second, "", valueContainer, false)
                     }
                 }
                 else -> {
@@ -228,7 +241,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedContainer = "nestedContainer$level"
         val index = "index$level"
         val element = "element$level"
-        writer.openBlock("for ($index, $element) in $memberName.enumerated() {", "}") {
+        // Sorting the unordered map is needed for passing protocol codegen tests
+        writer.openBlock("for ($index, $element) in $memberName.sorted(by: { $$0.key < $$1.key }).enumerated() {", "}") {
             writer.write("let ${nestedKeyValueName.first} = $element.key")
             writer.write("let ${nestedKeyValueName.second} = $element.value")
 
@@ -252,6 +266,12 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
                         val format = TimeStampFormat.determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
                         writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                    }
+                }
+                is BlobShape -> {
+                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
+                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
+                        renderBlobMemberName(nestedKeyValueName.second, "", valueContainer, false)
                     }
                 }
                 else -> {
@@ -332,10 +352,29 @@ abstract class MemberShapeEncodeFormURLGenerator(
         }
     }
 
+    fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName).toString()
+        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val isBoxed = symbol.isBoxed()
+        renderBlobMemberName(memberName, resolvedMemberName, containerName, isBoxed)
+    }
+
+    private fun renderBlobMemberName(memberName: String, resolvedMemberName: String, containerName: String, isBoxed: Boolean) {
+        val encodeLine = "try $containerName.encode($memberName.base64EncodedString(), forKey: Key(\"$resolvedMemberName\"))"
+        if (isBoxed) {
+            writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.write(encodeLine)
+            }
+        } else {
+            writer.write(encodeLine)
+        }
+    }
+
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName).toString()
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName).toString()
         val isBoxed = symbol.isBoxed()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
