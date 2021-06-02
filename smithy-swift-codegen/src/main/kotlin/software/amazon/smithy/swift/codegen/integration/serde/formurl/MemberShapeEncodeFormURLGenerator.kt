@@ -337,7 +337,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName).toString()
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName).toString()
         val isBoxed = symbol.isBoxed()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
