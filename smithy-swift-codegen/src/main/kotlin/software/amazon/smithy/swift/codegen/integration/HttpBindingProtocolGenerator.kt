@@ -38,7 +38,6 @@ import software.amazon.smithy.swift.codegen.bodySymbol
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
-import software.amazon.smithy.swift.codegen.integration.serde.StructDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -155,9 +154,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
-            // For protocol tests
-            renderBodyStructAndDecodableExtension(ctx, shape)
-            DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
+            if (shouldRenderDecodableBodyStructForEncodableTypes) {
+                renderBodyStructAndDecodableExtension(ctx, shape)
+                DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
+            }
         }
     }
 
@@ -201,7 +201,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("")
                         renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
                         writer.write("")
-                        StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                        renderStructDecode(ctx, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
                     }
                     is UnionShape -> {
                         // get all members of the union shape
@@ -209,7 +209,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         val unionMembersForCodingKeys = members.toMutableList()
                         unionMembersForCodingKeys.add(0, sdkUnknownMember)
                         generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
-                        writer.write("") // need enter space between coding keys and encode implementation
+                        writer.write("")
                         UnionEncodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
                         writer.write("")
                         UnionDecodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
@@ -241,7 +241,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("") // need enter space between coding keys and decode implementation
-                StructDecodeGeneratorStrategy(ctx, httpBodyMembers, writer, defaultTimestampFormat).render()
+                renderStructDecode(ctx, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
             }
         }
     }
@@ -461,9 +461,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
+    protected abstract val shouldRenderDecodableBodyStructForEncodableTypes: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
+        shapeMetaData: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+        defaultTimestampFormat: TimestampFormatTrait.Format
+    )
+    protected abstract fun renderStructDecode(
+        ctx: ProtocolGenerator.GenerationContext,
         shapeMetaData: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,

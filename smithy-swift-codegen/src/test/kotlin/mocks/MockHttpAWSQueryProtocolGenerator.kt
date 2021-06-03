@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEncodeFormURLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockAWSQueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
@@ -55,6 +56,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )
+    override val shouldRenderDecodableBodyStructForEncodableTypes = false
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -67,6 +69,17 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         val encodeGenerator = StructEncodeFormURLGenerator(ctx, shapeContainingMembers, shapeMetadata, members, writer, defaultTimestampFormat)
         encodeGenerator.render()
     }
+    override fun renderStructDecode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeMetadata: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+        defaultTimestampFormat: TimestampFormatTrait.Format,
+    ) {
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, writer, defaultTimestampFormat)
+        decodeGenerator.render()
+    }
+
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext):
         HttpBindingResolver = MockAwsQueryHttpBindingResolver(ctx)
 
