@@ -4,14 +4,17 @@ import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class StructDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
+    private val metadata: Map<ShapeMetadata, Any>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
@@ -24,9 +27,18 @@ class StructDecodeXMLGenerator(
         }
     }
 
-    private fun renderDecodeBody() {
+    fun renderDecodeBody() {
         val containerName = "containerValues"
-        writer.write("let $containerName = try decoder.container(keyedBy: CodingKeys.self)")
+        if (metadata.containsKey(ShapeMetadata.OPERATION_SHAPE)) {
+            val topLevelContainerName = "topLevelContainer"
+            writer.write("let $topLevelContainerName = try decoder.container(keyedBy: Key.self)")
+
+            val operationShape = metadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
+            val wrappedKeyValue = operationShape.id.name + "Result"
+            writer.write("let $containerName = try $topLevelContainerName.nestedContainer(keyedBy: CodingKeys.self, forKey: Key(\"$wrappedKeyValue\"))")
+        } else {
+            writer.write("let $containerName = try decoder.container(keyedBy: CodingKeys.self)")
+        }
         members.forEach { member ->
             renderSingleMember(member, containerName)
         }
