@@ -21,8 +21,8 @@ class MapDecodeXMLGenerationTests {
         
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                struct KeyVal0{struct key{}; struct value{}}
                 if containerValues.contains(.myMap) {
+                    struct KeyVal0{struct key{}; struct value{}}
                     let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                     if let myMapWrappedContainer = myMapWrappedContainer {
                         let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -58,8 +58,8 @@ class MapDecodeXMLGenerationTests {
         
             public init (from decoder: Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                struct KeyVal0{struct key{}; struct value{}}
                 if containerValues.contains(.`protocol`) {
+                    struct KeyVal0{struct key{}; struct value{}}
                     let protocolWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .protocol)
                     if let protocolWrappedContainer = protocolWrappedContainer {
                         let protocolContainer = try protocolWrappedContainer.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -96,9 +96,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
-                    struct KeyVal1{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        struct KeyVal1{struct key{}; struct value{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -142,10 +142,10 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
-                    struct KeyVal1{struct key{}; struct value{}}
-                    struct KeyVal2{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        struct KeyVal1{struct key{}; struct value{}}
+                        struct KeyVal2{struct key{}; struct value{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, MapEntry<String, GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, MapEntry<String, GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -196,8 +196,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
@@ -234,9 +234,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
-                    struct KeyVal1{struct key{}; struct value{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        struct KeyVal1{struct key{}; struct value{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
@@ -280,8 +280,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct Attribute{}; struct Setting{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct Attribute{}; struct Setting{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>].self, forKey: .entry)
@@ -318,8 +318,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>].self, forKey: .myMap)
@@ -356,9 +356,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct CustomKey1{}; struct CustomValue1{}}
-                    struct KeyVal1{struct CustomKey2{}; struct CustomValue2{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct CustomKey1{}; struct CustomValue1{}}
+                        struct KeyVal1{struct CustomKey2{}; struct CustomValue2{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>].self, forKey: .entry)
@@ -401,9 +401,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct yek{}; struct eulav{}}
-                    struct KeyVal1{struct K{}; struct V{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct yek{}; struct eulav{}}
+                        struct KeyVal1{struct K{}; struct V{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
@@ -447,8 +447,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct Quality{}; struct Degree{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct Quality{}; struct Degree{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Quality, KeyVal0.Degree>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Quality, KeyVal0.Degree>].self, forKey: .entry)
@@ -485,8 +485,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct Uid{}; struct Val{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct Uid{}; struct Val{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.Uid, KeyVal0.Val>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
@@ -523,9 +523,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct yek{}; struct eulav{}}
-                    struct KeyVal1{struct K{}; struct V{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct yek{}; struct eulav{}}
+                        struct KeyVal1{struct K{}; struct V{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .entry)
@@ -569,9 +569,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct yek{}; struct eulav{}}
-                    struct KeyVal1{struct K{}; struct V{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct yek{}; struct eulav{}}
+                        struct KeyVal1{struct K{}; struct V{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, MapEntry<String, String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
@@ -614,9 +614,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
-                    struct KeyVal1{struct member{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        struct KeyVal1{struct member{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -657,9 +657,9 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
-                    struct KeyVal1{struct member{}}
                     if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        struct KeyVal1{struct member{}}
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
                             let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, CollectionMember<String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
@@ -701,8 +701,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
                     if containerValues.contains(.timestampMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
                         let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if let timestampMapWrappedContainer = timestampMapWrappedContainer {
                             let timestampMapContainer = try timestampMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
@@ -739,8 +739,8 @@ class MapDecodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    struct KeyVal0{struct key{}; struct value{}}
                     if containerValues.contains(.timestampMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
                         let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if timestampMapWrappedContainer != nil {
                             let timestampMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .timestampMap)
@@ -763,7 +763,63 @@ class MapDecodeXMLGenerationTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-
+    @Test
+    fun `019 two maps that may conflict with KeyValue`() {
+        val context = setupTests("Isolated/Restxml/xml-maps-2x.smithy", "aws.protocoltests.restxml#RestXml")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTwoOutputBody+Decodable.swift")
+        val expectedContents =
+            """
+            extension XmlMapsTwoOutputBody: Decodable {
+                enum CodingKeys: String, CodingKey {
+                    case myMap
+                    case mySecondMap
+                }
+            
+                public init (from decoder: Decoder) throws {
+                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+                    if containerValues.contains(.myMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        if let myMapWrappedContainer = myMapWrappedContainer {
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var myMapBuffer: [String:String]? = nil
+                            if let myMapContainer = myMapContainer {
+                                myMapBuffer = [String:String]()
+                                for stringContainer0 in myMapContainer {
+                                    myMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
+                            }
+                            myMap = myMapBuffer
+                        } else {
+                            myMap = [:]
+                        }
+                    } else {
+                        myMap = nil
+                    }
+                    if containerValues.contains(.mySecondMap) {
+                        struct KeyVal0{struct key{}; struct value{}}
+                        let mySecondMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .mySecondMap)
+                        if let mySecondMapWrappedContainer = mySecondMapWrappedContainer {
+                            let mySecondMapContainer = try mySecondMapWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var mySecondMapBuffer: [String:String]? = nil
+                            if let mySecondMapContainer = mySecondMapContainer {
+                                mySecondMapBuffer = [String:String]()
+                                for stringContainer0 in mySecondMapContainer {
+                                    mySecondMapBuffer?[stringContainer0.key] = stringContainer0.value
+                                }
+                            }
+                            mySecondMap = mySecondMapBuffer
+                        } else {
+                            mySecondMap = [:]
+                        }
+                    } else {
+                        mySecondMap = nil
+                    }
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")

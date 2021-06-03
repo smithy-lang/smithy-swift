@@ -150,12 +150,11 @@ abstract class MemberShapeDecodeXMLGenerator(
 
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, "MapEntry", true)
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
-
+            val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, "MapEntry", true)
             var containerUsedForDecoding: String
             var ifNilOrIfLetStatement: String
             val nextContainerName = "${memberNameUnquoted}WrappedContainer"
