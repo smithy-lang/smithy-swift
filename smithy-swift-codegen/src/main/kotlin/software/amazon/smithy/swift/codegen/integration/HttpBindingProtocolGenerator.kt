@@ -165,14 +165,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
 
-        val outputShapesNeedingDecodableConformance = resolveOutputShapes(ctx)
-        for ((shape, metadata) in outputShapesNeedingDecodableConformance) {
+        val outputShapesWithMetadata = resolveOutputShapes(ctx)
+        for ((shape, metadata) in outputShapesWithMetadata) {
             renderBodyStructAndDecodableExtension(ctx, shape, metadata)
             DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
         }
 
-        val errorShapesNeedingDecodableConformance = resolveErrorShapes(ctx)
-        for (shape in errorShapesNeedingDecodableConformance) {
+        val errorShapes = resolveErrorShapes(ctx)
+        for (shape in errorShapes) {
             renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
             DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
         }
@@ -285,6 +285,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         return shapesInfo
     }
+
     private fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         val operationErrorShapes = getHttpBindingOperations(ctx)
             .flatMap { it.errors }

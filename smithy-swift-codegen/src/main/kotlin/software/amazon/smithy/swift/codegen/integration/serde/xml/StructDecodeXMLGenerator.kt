@@ -27,7 +27,7 @@ class StructDecodeXMLGenerator(
         }
     }
 
-    fun renderDecodeBody() {
+    private fun renderDecodeBody() {
         val containerName = "containerValues"
         if (metadata.containsKey(ShapeMetadata.OPERATION_SHAPE)) {
             val topLevelContainerName = "topLevelContainer"
