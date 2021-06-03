@@ -45,6 +45,7 @@ class HttpResponseBindingErrorNarrowGenerator(
         }
     }
 
+    //TODO: Move to be called from a protocol
     private fun resolveErrorShapeName(errorShape: StructureShape): String {
         errorShape.getTrait<AwsQueryErrorTrait>()?.let {
             return it.code
