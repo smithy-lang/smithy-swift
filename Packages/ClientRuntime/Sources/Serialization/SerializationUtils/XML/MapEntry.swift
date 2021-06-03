@@ -6,7 +6,7 @@
 //
 	
 public struct MapEntry<K, V, CustomKeyName, CustomValueName>: Codable where K: Codable, V: Codable {
-    let entry: [MapKeyValue<K, V, CustomKeyName, CustomValueName>]?
+    public let entry: [MapKeyValue<K, V, CustomKeyName, CustomValueName>]?
     public enum CodingKeys: String, CodingKey {
         case entry
     }

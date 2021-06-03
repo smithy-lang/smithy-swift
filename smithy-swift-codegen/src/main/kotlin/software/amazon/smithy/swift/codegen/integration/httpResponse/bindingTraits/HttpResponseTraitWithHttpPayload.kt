@@ -6,6 +6,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.model.isEnum
 
 class HttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -30,12 +31,12 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
-                        writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
-                            symbol
-                        )
-                        writer.write("self.\$L = output", memberName)
+                    writer.openBlock("if let output = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
+                        if (target.isEnum) {
+                            writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
+                        } else {
+                            writer.write("self.\$L = output", memberName)
+                        }
                     }
                     writer.indent()
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -43,7 +44,14 @@ class HttpResponseTraitWithHttpPayload(
                 ShapeType.BLOB -> {
                     writer.write("self.\$L = unwrappedData", memberName)
                 }
-                ShapeType.STRUCTURE, ShapeType.UNION -> {
+                ShapeType.UNION -> {
+                    writer.openBlock("if let rawValue = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
+                        writer.write("self.\$L = \$L(rawValue: rawValue)", memberName, symbol)
+                    }
+                    writer.indent()
+                    writer.write("self.\$L = nil", memberName).closeBlock("}")
+                }
+                ShapeType.STRUCTURE -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
                             "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
