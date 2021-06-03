@@ -56,7 +56,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )
-    override val shouldRenderDecodableBodyStructForEncodableTypes = false
+    override val shouldRenderDecodableBodyStructForInputShapes = false
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -76,7 +76,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, shapeMetadata, writer, defaultTimestampFormat)
         decodeGenerator.render()
     }
 

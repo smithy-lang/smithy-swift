@@ -38,7 +38,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )
-    override val shouldRenderDecodableBodyStructForEncodableTypes = true
+    override val shouldRenderDecodableBodyStructForInputShapes = true
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
@@ -59,7 +59,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, mapOf(), writer, defaultTimestampFormat)
         decodeGenerator.render()
     }
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {

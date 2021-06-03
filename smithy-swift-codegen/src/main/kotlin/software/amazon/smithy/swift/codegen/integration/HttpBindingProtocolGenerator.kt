@@ -131,10 +131,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
-        // render conformance to Encodable for all input shapes and their nested types
-        val shapesNeedingEncodableConformance = resolveShapesNeedingEncodableConformance(ctx)
 
-        for ((shape, shapeMetadata) in shapesNeedingEncodableConformance) {
+        val inputShapesWithMetadata = resolveInputShapes(ctx)
+        for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
@@ -154,8 +153,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
-            if (shouldRenderDecodableBodyStructForEncodableTypes) {
-                renderBodyStructAndDecodableExtension(ctx, shape)
+            if (shouldRenderDecodableBodyStructForInputShapes) {
+                renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
                 DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }
         }
@@ -166,9 +165,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
 
-        val shapesNeedingDecodableConformance = resolveShapesNeedingDecodableConformance(ctx)
-        for (shape in shapesNeedingDecodableConformance) {
-            renderBodyStructAndDecodableExtension(ctx, shape)
+        val outputShapesWithMetadata = resolveOutputShapes(ctx)
+        for ((shape, metadata) in outputShapesWithMetadata) {
+            renderBodyStructAndDecodableExtension(ctx, shape, metadata)
+            DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
+        }
+
+        val errorShapes = resolveErrorShapes(ctx)
+        for (shape in errorShapes) {
+            renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
             DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
         }
     }
@@ -219,7 +224,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+    private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape, metadata: Map<ShapeMetadata, Any>) {
         val bodySymbol: Symbol = ctx.symbolProvider.toSymbol(shape).bodySymbol()
         val rootNamespace = ctx.settings.moduleName
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
@@ -240,8 +245,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.openBlock("extension ${decodeSymbol.name}: Decodable {", "}") {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                writer.write("") // need enter space between coding keys and decode implementation
-                renderStructDecode(ctx, mapOf(), httpBodyMembers, writer, defaultTimestampFormat)
+                writer.write("")
+                renderStructDecode(ctx, metadata, httpBodyMembers, writer, defaultTimestampFormat)
             }
         }
     }
@@ -254,7 +259,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
-    private fun resolveShapesNeedingEncodableConformance(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
+    private fun resolveInputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
         var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
         val operations = getHttpBindingOperations(ctx)
         for (operation in operations) {
@@ -268,22 +273,25 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return shapesInfo
     }
 
-    /**
-     * Find and return the set of shapes that need `Decodable` conformance which includes top level output, error types with members returned in the http body
-     * and their nested types.
-     * Operation outputs, errors and all nested types will conform to `Decodable`.
-     *
-     * @return The set of shapes that require a `Decodable` conformance and coding keys.
-     */
-    private fun resolveShapesNeedingDecodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation outputs, errors with an http body must conform to Decodable
-        // any structure shape that shows up as a nested member (direct or indirect) needs to also conform to Decodable
-        // get them all and return as one set to loop through
+    private fun resolveOutputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
+        var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
+        val operations = getHttpBindingOperations(ctx)
+        for (operation in operations) {
+            val outputType = ctx.model.expectShape(operation.output.get())
+            var metadata = mapOf<ShapeMetadata, Any>(
+                Pair(ShapeMetadata.OPERATION_SHAPE, operation),
+            )
+            shapesInfo.put(outputType, metadata)
+        }
+        return shapesInfo
+    }
 
-        val outputShapes = resolveOperationOutputShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
-        val errorShapes = resolveOperationErrorShapes(ctx).filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
-
-        return outputShapes.union(errorShapes)
+    private fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+        val operationErrorShapes = getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .map { ctx.model.expectShape(it) }
+            .toSet()
+        return operationErrorShapes.filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
     }
 
     private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
@@ -315,17 +323,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val nestedTypes = walkNestedShapesRequiringSerde(ctx, allTopLevelMembers)
         return nestedTypes
-    }
-
-    private fun resolveOperationOutputShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        return getHttpBindingOperations(ctx).map { ctx.model.expectShape(it.output.get()) }.toSet()
-    }
-
-    private fun resolveOperationErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        return getHttpBindingOperations(ctx)
-            .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) }
-            .toSet()
     }
 
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
@@ -461,7 +458,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
-    protected abstract val shouldRenderDecodableBodyStructForEncodableTypes: Boolean
+    protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
