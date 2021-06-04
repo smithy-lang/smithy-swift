@@ -38,6 +38,14 @@ interface HttpProtocolCustomizable {
         return emptyList()
     }
 
+    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, Symbol, Boolean, String, String) -> Unit)? {
+        return null
+    }
+
+    fun alwaysHasHttpBody(): Boolean {
+        return false
+    }
+
     /**
      * Get all of the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
      * This is the function that protocol client generators should invoke to get the fully resolved set of middleware

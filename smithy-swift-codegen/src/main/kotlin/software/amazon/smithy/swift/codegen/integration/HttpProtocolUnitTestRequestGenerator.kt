@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -14,13 +13,13 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
-    private lateinit var bodyComparisonStrategy: (Symbol, Boolean) -> Unit
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
@@ -60,7 +59,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-            bodyComparisonStrategy = determineBodyComparisonStrategy(test)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
@@ -75,7 +73,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
             val outputErrorName = "${operation.capitalizedName()}OutputError"
-            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0 || test.protocol == AwsQueryTrait.ID
+            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0 || httpProtocolCustomizable.alwaysHasHttpBody()
 
             writer.write("let encoder = \$L", serdeContext.protocolEncoder)
             serdeContext.defaultTimestampFormat?.let {
@@ -218,19 +216,22 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
-                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in ", "}") {
+                val expectedData = "expectedData"
+                val actualData = "actualData"
+                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { $expectedData, $actualData in ", "}") {
                     val firstHttpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
+                    val bodyComparisonStrategy = determineBodyComparisonStrategy(test)
                     if (firstHttpPayloadShape != null) {
                         val target = model.expectShape(firstHttpPayloadShape.target)
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                bodyComparisonStrategy(nestedSymbol, false)
+                                bodyComparisonStrategy(writer, nestedSymbol, false, expectedData, actualData)
                             }
-                            else -> writer.write("XCTAssertEqual(expectedData, actualData)")
+                            else -> writer.write("XCTAssertEqual($expectedData, $actualData)")
                         }
                     } else {
-                        bodyComparisonStrategy(inputSymbol, true)
+                        bodyComparisonStrategy(writer, inputSymbol, true, expectedData, actualData)
                     }
                 }
             }
@@ -245,27 +246,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((Symbol, Boolean) -> Unit) {
-        return when (test.protocol) {
-            AwsQueryTrait.ID -> {
-                this::renderBodyComparisonForFormURL
-            }
-            else -> {
-                this::renderBodyComparison
-            }
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, Symbol, Boolean, String, String) -> Unit) {
+        httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
+            return it
+        } ?: run {
+            return this::renderBodyComparison
         }
     }
 
-    private fun renderBodyComparisonForFormURL(symbol: Symbol, appendBody: Boolean) {
-        writer.write("self.assertEqualFormURLBody(expectedData, actualData)")
-    }
-
-    private fun renderBodyComparison(symbol: Symbol, appendBody: Boolean) {
+    private fun renderBodyComparison(writer: SwiftWriter, symbol: Symbol, appendBody: Boolean, expectedData: String, actualData: String) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let decoder = ${serdeContext.protocolDecoder}")
-            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: expectedData)")
-            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: actualData)")
+            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
+            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")
         }
         writer.indent()
