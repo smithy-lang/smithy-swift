@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.isBoxed
 
 abstract class MemberShapeEncodeFormURLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
+    private val customizations: FormURLEncodeCustomizable,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
@@ -33,7 +34,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+            if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
                 writer.openBlock("if $memberName.isEmpty {", "} else {") {
                     writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
                     writer.write("try $nestedContainer.encodeNil()")
@@ -161,7 +162,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+            if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
                 writer.openBlock("if $memberName.isEmpty {", "} else {") {
                     writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                 }
