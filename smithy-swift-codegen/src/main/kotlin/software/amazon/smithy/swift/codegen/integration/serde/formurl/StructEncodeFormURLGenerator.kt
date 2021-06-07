@@ -14,12 +14,13 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class StructEncodeFormURLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
+    private val customizations: FormURLEncodeCustomizable,
     private val shapeContainingMembers: Shape,
     private val shapeMetadata: Map<ShapeMetadata, Any>,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeEncodeFormURLGenerator(ctx, writer, defaultTimestampFormat) {
+) : MemberShapeEncodeFormURLGenerator(ctx, customizations, writer, defaultTimestampFormat) {
     override fun render() {
         writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
             val containerName = "container"

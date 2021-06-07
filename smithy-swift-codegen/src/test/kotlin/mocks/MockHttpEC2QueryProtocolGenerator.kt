@@ -28,9 +28,9 @@ import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEnco
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class MockAWSQueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
+class MockEC2QueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
 
-class MockAwsQueryHttpBindingResolver(
+class MockEC2QueryHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
 ) : StaticHttpBindingResolver(context, awsQueryHttpTrait) {
 
@@ -44,18 +44,18 @@ class MockAwsQueryHttpBindingResolver(
     }
 }
 
-class MockAWSQueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
+class MockEc2QueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
     override fun alwaysUsesFlattenedCollections(): Boolean {
-        return false
+        return true
     }
 }
 
-class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
+class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/x-www-form-urlencoded"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = AwsQueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val httpProtocolCustomizable = MockAWSQueryHttpProtocolCustomizations()
+    override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
@@ -73,7 +73,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        val customizations = MockAWSQueryFormURLEncodeCustomizations()
+        val customizations = MockEc2QueryFormURLEncodeCustomizations()
         val encodeGenerator = StructEncodeFormURLGenerator(ctx, customizations, shapeContainingMembers, shapeMetadata, members, writer, defaultTimestampFormat)
         encodeGenerator.render()
     }
@@ -89,7 +89,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext):
-        HttpBindingResolver = MockAwsQueryHttpBindingResolver(ctx)
+        HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx)
 
     override fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
         return true
