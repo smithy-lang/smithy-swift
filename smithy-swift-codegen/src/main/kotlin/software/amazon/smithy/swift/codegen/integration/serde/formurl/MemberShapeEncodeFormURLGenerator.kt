@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeC
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.isBoxed
 
 abstract class MemberShapeEncodeFormURLGenerator(
@@ -31,7 +30,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         containerName: String
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
@@ -57,7 +56,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         level: Int = 0
     ) {
         val nestedMember = memberTarget.member
-        val nestedMemberResolvedName = XMLNameTraitGenerator.construct(nestedMember, "member").toString().indexAdvancedBy1("index$level")
+        val nestedMemberResolvedName = customizations.customNameTraitGenerator(nestedMember, "member").indexAdvancedBy1("index$level")
 
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
@@ -112,7 +111,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         val defaultMemberName = if (level == 0) member.memberName else "member"
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName).toString().indexAdvancedBy1("index$level")
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, defaultMemberName).indexAdvancedBy1("index$level")
         val nestedContainerName = "${memberName}Container$level"
 
         writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
@@ -152,14 +151,14 @@ abstract class MemberShapeEncodeFormURLGenerator(
     private fun renderFlattenedListContainer(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, memberName: String, member: MemberShape, containerName: String, level: Int) {
         var nestedContainerName = "${nestedMemberTargetName}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
-        val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
+        val memberResolvedName = customizations.customNameTraitGenerator(member, defaultMemberName)
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${memberResolvedName}\"))")
         renderFlattenedListMemberItems(nestedMemberTargetName, nestedMember, nestedMemberTarget, nestedContainerName, level + 1)
     }
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName)
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
@@ -182,8 +181,8 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
         val resolvedCodingKeys = Pair(
-            XMLNameTraitGenerator.construct(mapShape.key, "key"),
-            XMLNameTraitGenerator.construct(mapShape.value, "value")
+            customizations.customNameTraitGenerator(mapShape.key, "key"),
+            customizations.customNameTraitGenerator(mapShape.value, "value")
         )
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
@@ -231,11 +230,11 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
-        val resolvedMemberName = if (level == 0) XMLNameTraitGenerator.construct(member, member.memberName) else "entry"
+        val resolvedMemberName = if (level == 0) customizations.customNameTraitGenerator(member, member.memberName) else "entry"
 
         val resolvedCodingKeys = Pair(
-            XMLNameTraitGenerator.construct(mapShape.key, "key"),
-            XMLNameTraitGenerator.construct(mapShape.value, "value")
+            customizations.customNameTraitGenerator(mapShape.key, "key"),
+            customizations.customNameTraitGenerator(mapShape.value, "value")
         )
 
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
@@ -285,7 +284,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
     private fun renderMapKey(
         nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
+        resolvedCodingKeys: Pair<String, String>,
         mapShape: MapShape,
         nestedContainer: String,
         level: Int
@@ -297,7 +296,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
     private fun renderMapValue(
         nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
+        resolvedCodingKeys: Pair<String, String>,
         mapShape: MapShape,
         entryContainerName: String,
         level: Int,
@@ -314,7 +313,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
     private fun renderMapNestedValue(
         nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
+        resolvedCodingKeys: Pair<String, String>,
         mapShape: MapShape,
         valueTargetShape: Shape,
         entryContainerName: String,
@@ -340,7 +339,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, memberName)
         val format = TimeStampFormat.determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         val isBoxed = symbol.isBoxed()
         val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
@@ -355,7 +354,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
     fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName).toString()
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val isBoxed = symbol.isBoxed()
         renderBlobMemberName(memberName, resolvedMemberName, containerName, isBoxed)
@@ -375,7 +374,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, member.memberName).toString()
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
         val isBoxed = symbol.isBoxed()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
