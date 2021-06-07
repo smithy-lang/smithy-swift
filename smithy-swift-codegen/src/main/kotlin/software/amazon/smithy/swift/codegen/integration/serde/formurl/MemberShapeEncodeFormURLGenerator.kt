@@ -34,14 +34,9 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
-                writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                    writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
-                    writer.write("try $nestedContainer.encodeNil()")
+                writer.openBlock("if !$memberName.isEmpty {", "}") {
+                    renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
                 }
-                writer.indent()
-                renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
-                writer.dedent()
-                writer.write("}")
             } else {
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
                 renderListMemberItems(memberName, memberTarget, nestedContainer)
@@ -162,12 +157,9 @@ abstract class MemberShapeEncodeFormURLGenerator(
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
-                writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                    writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                writer.openBlock("if !$memberName.isEmpty {", "}") {
+                    renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
                 }
-                writer.indent()
-                renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
-                writer.dedent().write("}")
             } else {
                 val nestedContainer = "${memberName}Container"
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")

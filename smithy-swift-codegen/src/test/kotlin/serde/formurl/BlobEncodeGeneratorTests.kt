@@ -34,10 +34,7 @@ class BlobEncodeGeneratorTests {
                         }
                     }
                     if let blobListFlattened = blobListFlattened {
-                        if blobListFlattened.isEmpty {
-                            var blobListFlattenedContainer = container.nestedUnkeyedContainer(forKey: Key("BlobListFlattened"))
-                            try blobListFlattenedContainer.encodeNil()
-                        } else {
+                        if !blobListFlattened.isEmpty {
                             for (index0, blob0) in blobListFlattened.enumerated() {
                                 try container.encode(blob0.base64EncodedString(), forKey: Key("BlobListFlattened.\(index0.advanced(by: 1))"))
                             }
@@ -56,9 +53,7 @@ class BlobEncodeGeneratorTests {
                         }
                     }
                     if let blobMapFlattened = blobMapFlattened {
-                        if blobMapFlattened.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("BlobMapFlattened"))
-                        } else {
+                        if !blobMapFlattened.isEmpty {
                             for (index0, element0) in blobMapFlattened.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                                 let stringKey0 = element0.key
                                 let blobValue0 = element0.value
