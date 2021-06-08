@@ -1,4 +1,4 @@
-package serde.formurl.ec2
+package serde.ec2
 
 import TestContext
 import defaultSettings
@@ -12,7 +12,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
 
     @Test
     fun `001 encode different types of lists`() {
-        val context = setupTests("Isolated/formurl/ec2/query-lists.smithy", "aws.protocoltests.ec2#AwsEc2")
+        val context = setupTests("Isolated/ec2/query-lists.smithy", "aws.protocoltests.ec2#AwsEc2")
         val contents = getFileContents(context.manifest, "/Example/models/Ec2QueryListsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
