@@ -9,8 +9,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.CodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -20,12 +18,16 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGene
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationXmlName
+import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.FormURLEncodeCustomizable
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEncodeFormURLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockAWSQueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
@@ -48,6 +50,9 @@ class MockAWSQueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
     override fun alwaysUsesFlattenedCollections(): Boolean {
         return false
     }
+    override fun customNameTraitGenerator(shape: Shape, defaultName: String): String {
+        return XMLNameTraitGenerator.construct(shape, defaultName).toString()
+    }
 }
 
 class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
@@ -56,7 +61,7 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = AwsQueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockAWSQueryHttpProtocolCustomizations()
-    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator()
+    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         serviceErrorProtocolSymbol,
