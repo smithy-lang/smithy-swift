@@ -28,10 +28,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let complexListArg = complexListArg {
-                        if complexListArg.isEmpty {
-                            var complexListArgContainer = container.nestedUnkeyedContainer(forKey: Key("ComplexListArg"))
-                            try complexListArgContainer.encodeNil()
-                        } else {
+                        if !complexListArg.isEmpty {
                             for (index0, greetingstruct0) in complexListArg.enumerated() {
                                 var complexListArgContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("ComplexListArg.\(index0.advanced(by: 1))"))
                                 try complexListArgContainer0.encode(greetingstruct0, forKey: Key(""))
@@ -39,10 +36,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let listArg = listArg {
-                        if listArg.isEmpty {
-                            var listArgContainer = container.nestedUnkeyedContainer(forKey: Key("ListArg"))
-                            try listArgContainer.encodeNil()
-                        } else {
+                        if !listArg.isEmpty {
                             for (index0, string0) in listArg.enumerated() {
                                 var listArgContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("ListArg.\(index0.advanced(by: 1))"))
                                 try listArgContainer0.encode(string0, forKey: Key(""))
@@ -50,10 +44,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let listArgWithXmlName = listArgWithXmlName {
-                        if listArgWithXmlName.isEmpty {
-                            var listArgWithXmlNameContainer = container.nestedUnkeyedContainer(forKey: Key("Hi"))
-                            try listArgWithXmlNameContainer.encodeNil()
-                        } else {
+                        if !listArgWithXmlName.isEmpty {
                             for (index0, string0) in listArgWithXmlName.enumerated() {
                                 var listArgWithXmlNameContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("Hi.\(index0.advanced(by: 1))"))
                                 try listArgWithXmlNameContainer0.encode(string0, forKey: Key(""))
@@ -61,10 +52,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let listArgWithXmlNameMember = listArgWithXmlNameMember {
-                        if listArgWithXmlNameMember.isEmpty {
-                            var listArgWithXmlNameMemberContainer = container.nestedUnkeyedContainer(forKey: Key("ListArgWithXmlNameMember"))
-                            try listArgWithXmlNameMemberContainer.encodeNil()
-                        } else {
+                        if !listArgWithXmlNameMember.isEmpty {
                             for (index0, string0) in listArgWithXmlNameMember.enumerated() {
                                 var listArgWithXmlNameMemberContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("ListArgWithXmlNameMember.\(index0.advanced(by: 1))"))
                                 try listArgWithXmlNameMemberContainer0.encode(string0, forKey: Key(""))

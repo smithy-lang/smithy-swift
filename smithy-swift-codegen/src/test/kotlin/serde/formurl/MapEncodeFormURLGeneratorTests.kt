@@ -42,9 +42,7 @@ class MapEncodeFormURLGeneratorTests {
                         }
                     }
                     if let flattenedMap = flattenedMap {
-                        if flattenedMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap"))
-                        } else {
+                        if !flattenedMap.isEmpty {
                             for (index0, element0) in flattenedMap.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                                 let stringKey0 = element0.key
                                 let stringValue0 = element0.value
@@ -57,9 +55,7 @@ class MapEncodeFormURLGeneratorTests {
                         }
                     }
                     if let flattenedMapWithXmlName = flattenedMapWithXmlName {
-                        if flattenedMapWithXmlName.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("Hi"))
-                        } else {
+                        if !flattenedMapWithXmlName.isEmpty {
                             for (index0, element0) in flattenedMapWithXmlName.sorted(by: { ${'$'}0.key < ${'$'}1.key }).enumerated() {
                                 let stringKey0 = element0.key
                                 let stringValue0 = element0.value

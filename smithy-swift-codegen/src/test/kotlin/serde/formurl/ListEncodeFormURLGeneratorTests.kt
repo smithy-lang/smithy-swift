@@ -36,10 +36,7 @@ class ListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let flattenedListArg = flattenedListArg {
-                        if flattenedListArg.isEmpty {
-                            var flattenedListArgContainer = container.nestedUnkeyedContainer(forKey: Key("FlattenedListArg"))
-                            try flattenedListArgContainer.encodeNil()
-                        } else {
+                        if !flattenedListArg.isEmpty {
                             for (index0, string0) in flattenedListArg.enumerated() {
                                 var flattenedListArgContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedListArg.\(index0.advanced(by: 1))"))
                                 try flattenedListArgContainer0.encode(string0, forKey: Key(""))
@@ -47,10 +44,7 @@ class ListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let flattenedListArgWithXmlName = flattenedListArgWithXmlName {
-                        if flattenedListArgWithXmlName.isEmpty {
-                            var flattenedListArgWithXmlNameContainer = container.nestedUnkeyedContainer(forKey: Key("Hi"))
-                            try flattenedListArgWithXmlNameContainer.encodeNil()
-                        } else {
+                        if !flattenedListArgWithXmlName.isEmpty {
                             for (index0, string0) in flattenedListArgWithXmlName.enumerated() {
                                 var flattenedListArgWithXmlNameContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("Hi.\(index0.advanced(by: 1))"))
                                 try flattenedListArgWithXmlNameContainer0.encode(string0, forKey: Key(""))
@@ -70,10 +64,7 @@ class ListEncodeFormURLGeneratorTests {
                         }
                     }
                     if let flatTsList = flatTsList {
-                        if flatTsList.isEmpty {
-                            var flatTsListContainer = container.nestedUnkeyedContainer(forKey: Key("flatTsList"))
-                            try flatTsListContainer.encodeNil()
-                        } else {
+                        if !flatTsList.isEmpty {
                             for (index0, timestamp0) in flatTsList.enumerated() {
                                 var flatTsListContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("flatTsList.\(index0.advanced(by: 1))"))
                                 try flatTsListContainer0.encode(TimestampWrapper(timestamp0, format: .epochSeconds), forKey: Key(""))
