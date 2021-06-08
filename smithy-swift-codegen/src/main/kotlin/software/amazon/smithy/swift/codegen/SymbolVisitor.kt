@@ -45,6 +45,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.utils.toPascalCase
 import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
 
@@ -381,8 +382,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 }
 
 // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String =
-    split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }
+fun String.clientName(): String = toPascalCase()
 
 fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
     val escapedName = toMemberName(shape)

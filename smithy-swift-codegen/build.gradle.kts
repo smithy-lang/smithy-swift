@@ -21,6 +21,7 @@ version = "0.1.0"
 val smithyVersion: String by project
 val kotestVersion: String by project
 val junitVersion: String by project
+val jacocoVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -30,6 +31,10 @@ dependencies {
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+}
+
+jacoco {
+    toolVersion = "$jacocoVersion"
 }
 
 tasks.test {
