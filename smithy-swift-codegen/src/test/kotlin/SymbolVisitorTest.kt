@@ -10,14 +10,13 @@ class SymbolVisitorTest {
     fun `it produces the correct string transformation for client names`() {
         assertEquals("ApiGateway", "API Gateway".clientName())
         assertEquals("Lambda", "Lambda".clientName())
-        assertEquals("Elasticache", "ElastiCache".clientName())
-        assertEquals("Apigatewaymanagementapi", "ApiGatewayManagementApi".clientName())
-        assertEquals("MigrationhubConfig", "MigrationHub Config".clientName())
-        assertEquals("Iotfleethub", "IoTFleetHub".clientName())
-        assertEquals("Iot1clickProjects", "IoT 1Click Projects".clientName())
+        assertEquals("ElastiCache", "ElastiCache".clientName())
+        assertEquals("ApiGatewayManagementApi", "ApiGatewayManagementApi".clientName())
+        assertEquals("MigrationHubConfig", "MigrationHub Config".clientName())
+        assertEquals("IoTFleetHub", "IoTFleetHub".clientName())
+        assertEquals("Iot1ClickProjects", "IoT 1Click Projects".clientName())
+        assertEquals("DynamoDb", "DynamoDB".clientName())
         assertEquals("ExampleClient", "Example Client".clientName())
         assertEquals("ExampleClient", " Example Client ".clientName())
-        assertEquals("ExampleClient", "Example Client ".clientName())
-        assertEquals("ExámpleClient", "Exámple Client ".clientName())
     }
 }
