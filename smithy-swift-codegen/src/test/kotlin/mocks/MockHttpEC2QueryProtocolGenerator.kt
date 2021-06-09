@@ -1,7 +1,7 @@
 package mocks
 
 import TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -58,7 +58,7 @@ class MockEc2QueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
 class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/x-www-form-urlencoded"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
-    override val protocol: ShapeId = AwsQueryTrait.ID
+    override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationEc2QueryName())
@@ -89,7 +89,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, shapeMetadata, writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, mapOf(), writer, defaultTimestampFormat)
         decodeGenerator.render()
     }
 
