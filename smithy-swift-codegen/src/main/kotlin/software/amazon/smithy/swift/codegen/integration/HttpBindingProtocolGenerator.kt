@@ -149,8 +149,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
                         .toList()
-                    generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                    writer.write("")
+                    if (shouldRenderCodingKeysForEncodable) {
+                        generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                        writer.write("")
+                    }
                     renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
@@ -460,6 +462,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
+    protected abstract val shouldRenderCodingKeysForEncodable: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,

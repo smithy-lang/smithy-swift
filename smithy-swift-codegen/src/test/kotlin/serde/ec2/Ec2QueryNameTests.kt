@@ -17,18 +17,6 @@ class Ec2QueryNameTests {
         val expectedContents =
             """
             extension Ec2SimpleInputParamsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case bamInt = "BamInt"
-                    case barString = "BarString"
-                    case bazBoolean = "BazBoolean"
-                    case booDouble = "BooDouble"
-                    case fzzEnum = "FzzEnum"
-                    case hasQueryAndXmlNameString = "B"
-                    case hasQueryNameString = "A"
-                    case quxBlob = "QuxBlob"
-                    case usesXmlNameString = "C"
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let bamInt = bamInt {

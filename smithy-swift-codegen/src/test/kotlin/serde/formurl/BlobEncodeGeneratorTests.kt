@@ -17,14 +17,6 @@ class BlobEncodeGeneratorTests {
         val expectedContents =
             """
             extension BlobInputParamsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case blobList = "BlobList"
-                    case blobListFlattened = "BlobListFlattened"
-                    case blobMap = "BlobMap"
-                    case blobMapFlattened = "BlobMapFlattened"
-                    case blobMember = "BlobMember"
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let blobList = blobList {

@@ -17,10 +17,6 @@ class QueryIdempotencyTokenAutoFillGeneratorTests {
         val expectedContents =
             """
             extension QueryIdempotencyTokenAutoFillInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case token
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let token = token {

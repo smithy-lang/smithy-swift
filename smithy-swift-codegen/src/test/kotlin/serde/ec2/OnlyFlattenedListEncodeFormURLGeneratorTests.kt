@@ -18,13 +18,6 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
         val expectedContents =
             """
             extension Ec2QueryListsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case complexListArg = "ComplexListArg"
-                    case listArg = "ListArg"
-                    case listArgWithXmlName = "Hi"
-                    case listArgWithXmlNameMember = "ListArgWithXmlNameMember"
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let complexListArg = complexListArg {

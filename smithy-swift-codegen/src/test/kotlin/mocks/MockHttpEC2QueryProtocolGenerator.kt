@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGene
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationEc2QueryName
+import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationXmlName
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
@@ -61,7 +61,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
-    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationEc2QueryName())
+    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         serviceErrorProtocolSymbol,
@@ -69,7 +69,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         MockHttpResponseBindingErrorGenerator()
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
-
+    override val shouldRenderCodingKeysForEncodable = false
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,

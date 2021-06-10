@@ -37,6 +37,8 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         MockHttpResponseBindingErrorGenerator()
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
+    override val shouldRenderCodingKeysForEncodable = true
+
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
