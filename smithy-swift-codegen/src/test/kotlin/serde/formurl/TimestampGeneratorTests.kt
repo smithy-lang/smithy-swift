@@ -17,12 +17,6 @@ class TimestampGeneratorTests {
         val expectedContents =
             """
             extension QueryTimestampsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case epochMember
-                    case epochTarget
-                    case normalFormat
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let epochMember = epochMember {

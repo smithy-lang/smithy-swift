@@ -17,16 +17,6 @@ class MapEncodeFormURLGeneratorTests {
         val expectedContents =
             """
             extension QueryMapsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case complexMapArg = "ComplexMapArg"
-                    case flattenedMap = "FlattenedMap"
-                    case flattenedMapWithXmlName = "Hi"
-                    case mapArg = "MapArg"
-                    case mapOfLists = "MapOfLists"
-                    case mapWithXmlMemberName = "MapWithXmlMemberName"
-                    case renamedMapArg = "Foo"
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let complexMapArg = complexMapArg {

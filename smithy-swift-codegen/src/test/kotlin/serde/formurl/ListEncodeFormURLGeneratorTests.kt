@@ -17,16 +17,6 @@ class ListEncodeFormURLGeneratorTests {
         val expectedContents =
             """
             extension QueryListsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
-                    case complexListArg = "ComplexListArg"
-                    case flattenedListArg = "FlattenedListArg"
-                    case flattenedListArgWithXmlName = "Hi"
-                    case listArg = "ListArg"
-                    case listArgWithXmlNameMember = "ListArgWithXmlNameMember"
-                    case flatTsList
-                    case tsList
-                }
-            
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     if let complexListArg = complexListArg {
