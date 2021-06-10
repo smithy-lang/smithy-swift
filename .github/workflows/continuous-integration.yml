@@ -20,7 +20,9 @@ env:
 
 jobs:
   macos-compat:
-    runs-on: macos-latest
+    runs-on: macos-11
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -46,7 +48,9 @@ jobs:
 
   downstream:
     needs: macos-compat
-    runs-on: macos-latest
+    runs-on: macos-11
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2

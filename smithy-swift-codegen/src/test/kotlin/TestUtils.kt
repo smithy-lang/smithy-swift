@@ -347,7 +347,7 @@ fun getSettingsNode(
         .withMember("sdkId", Node.from(sdkId))
         .withMember("author", Node.from("Amazon Web Services"))
         .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
-        .withMember("swiftVersion", Node.from("5.1.0"))
+        .withMember("swiftVersion", Node.from("5.4.0"))
         .build()
 }
 
