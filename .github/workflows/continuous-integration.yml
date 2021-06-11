@@ -19,33 +19,6 @@ env:
   SMITHY_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift
 
 jobs:
-  macos-compat:
-    runs-on: macos-11
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_12.5.app
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '11'
-      - name: Build and Test ${{ env.PACKAGE_NAME }}
-        env:
-          CI_USER: ${{ secrets.CI_USER }}
-          CI_ACCESS_TOKEN: ${{ secrets.CI_ACCESS_TOKEN }}
-        run: |
-          python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
-          chmod a+x builder.pyz
-          GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" AWS_SDK_SWIFT_CI_DIR="${{ env.AWS_SDK_SWIFT_CI_DIR }}" SMITHY_SWIFT_CI_DIR="${{ env.SMITHY_SWIFT_CI_DIR }}" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
-
   downstream:
     runs-on: macos-11
     env:
