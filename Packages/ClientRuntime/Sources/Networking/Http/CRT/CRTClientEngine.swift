@@ -20,6 +20,7 @@ public class CRTClientEngine: HttpClientEngine {
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
     public let bootstrap: ClientBootstrap
+    public let eventLoopGroup: EventLoopGroup
     private let socketOptions: SocketOptions
     private let tlsContextOptions: TlsContextOptions
     private let tlsContext: TlsContext
@@ -29,9 +30,9 @@ public class CRTClientEngine: HttpClientEngine {
     init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
         AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
-        let elg = EventLoopGroup(threadCount: 1)
-        let hostResolver = DefaultHostResolver(eventLoopGroup: elg, maxHosts: 8, maxTTL: 30)
-        self.bootstrap = try ClientBootstrap(eventLoopGroup: elg, hostResolver: hostResolver)
+        self.eventLoopGroup = EventLoopGroup(threadCount: 1)
+        let hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup, maxHosts: 8, maxTTL: 30)
+        self.bootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup, hostResolver: hostResolver)
         self.socketOptions = SocketOptions(socketType: .stream)
         let tlsContextOptions = TlsContextOptions()
         tlsContextOptions.setVerifyPeer(config.verifyPeer)
