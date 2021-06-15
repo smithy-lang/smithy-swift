@@ -1,3 +1,4 @@
+
 {
   "name": "smithy-swift",
   "needs_compiler": false,
@@ -6,11 +7,11 @@
     "gradlew": "{source_dir}/gradlew -p {source_dir}"
   },
   "test_steps": [
-    "swift test"
+    "cd {source_dir}/Packages && swift test"
   ],
   "build_steps": [
     "{gradlew} build",
-    "swift build"
+    "cd {source_dir}/Packages && swift build"
   ],
   "post_build_steps": [
     "{gradlew} publishToMavenLocal"

@@ -4,7 +4,7 @@ import java.io.File
 
 class Resources {
     companion object {
-        fun computeAbsolutePath(relativePath: String, environmentVariableOverride: String? = null): String {
+        fun computeAbsolutePath(relativePath: String, suffixToBeRemoved: String, environmentVariableOverride: String): String {
             if (environmentVariableOverride != null) {
                 val userDirPathOverride = System.getenv(environmentVariableOverride)
                 if (!userDirPathOverride.isNullOrEmpty()) {
@@ -16,7 +16,7 @@ class Resources {
             while (userDirPath.isNotEmpty()) {
                 val fileName = userDirPath.removeSuffix("/") + "/" + relativePath
                 if (File(fileName).isDirectory) {
-                    return fileName
+                    return fileName.removeSuffix("/$suffixToBeRemoved")
                 }
                 userDirPath = userDirPath.substring(0, userDirPath.length - 1)
             }
