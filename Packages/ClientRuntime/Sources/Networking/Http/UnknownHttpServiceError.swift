@@ -11,7 +11,7 @@ public struct UnknownHttpServiceError: HttpServiceError {
     
     public var _message: String?
     
-    public var _retryable: Bool? = false
+    public var _retryable: Bool = false
     
     public var _type: ErrorType = .unknown
 }

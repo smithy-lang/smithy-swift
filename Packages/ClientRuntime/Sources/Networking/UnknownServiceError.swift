@@ -8,7 +8,7 @@
 public struct UnknownServiceError: ServiceError, Equatable {
     public var _message: String?
     
-    public var _retryable: Bool? = false
+    public var _retryable: Bool = false
     
     public var _type: ErrorType = .unknown
 }
