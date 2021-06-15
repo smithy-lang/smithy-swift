@@ -6,7 +6,7 @@
 import Foundation
 
 public protocol ServiceError {
-    var _retryable: Bool? { get set }
+    var _retryable: Bool { get set }
     var _type: ErrorType { get set }
     var _message: String? { get set }
 }

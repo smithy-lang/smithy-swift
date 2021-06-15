@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
-
 public enum SdkError<E>: Error {
   // Service specific error
   case service(E)

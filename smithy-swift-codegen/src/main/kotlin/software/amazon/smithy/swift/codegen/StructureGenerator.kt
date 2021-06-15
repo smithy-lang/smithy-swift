@@ -170,7 +170,7 @@ class StructureGenerator(
      *     public var _headers: Headers?
      *     public var _message: String?
      *     public var _requestID: String?
-     *     public var _retryable: Bool? = true
+     *     public var _retryable: Bool = true
      *     public var _statusCode: HttpStatusCode?
      *     public var _type: ErrorType = .client
      *     public var message: String?
@@ -214,7 +214,7 @@ class StructureGenerator(
         writer.write("public var _message: String?")
         writer.write("public var _requestID: String?")
         val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
-        writer.write("public var _retryable: Bool? = \$L", isRetryable)
+        writer.write("public var _retryable: Bool = \$L", isRetryable)
         writer.write("public var _type: ErrorType = .\$L", errorTrait.value)
 
         membersSortedByName.forEach {
