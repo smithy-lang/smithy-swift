@@ -47,10 +47,9 @@ let package = Package(
     ]
 )
 
-let relatedDependenciesBranch = "master"
-if ProcessInfo.processInfo.environment["AWS_SDK_SWIFT_CI_DIR"] != nil {
+if let crtDir = ProcessInfo.processInfo.environment["AWS_CRT_SWIFT_CI_DIR"] {
     package.dependencies += [
-        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch(relatedDependenciesBranch))
+        .package(name: "AwsCrt", path: "\(crtDir)")
     ]
 } else {
     package.dependencies += [
