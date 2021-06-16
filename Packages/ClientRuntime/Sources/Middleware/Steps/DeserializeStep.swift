@@ -43,10 +43,10 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
 }
 
 public struct OperationOutput<Output: HttpResponseBinding> {
-    public var httpResponse: HttpResponse?
+    public var httpResponse: HttpResponse
     public var output: Output?
     
-    public init(httpResponse: HttpResponse? = nil, output: Output? = nil) {
+    public init(httpResponse: HttpResponse, output: Output? = nil) {
         self.httpResponse = httpResponse
         self.output = output
     }

@@ -24,17 +24,13 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
         case .success(let result) :
             var copiedResponse = result
             do {
-                if let httpResponse = copiedResponse.httpResponse {
-                    if (200..<300).contains(httpResponse.statusCode.rawValue) {
-                        let output = try Output(httpResponse: httpResponse, decoder: decoder)
-                        copiedResponse.output = output
-                        return .success(copiedResponse)
-                    } else {
-                        let error = try OutputError(httpResponse: httpResponse, decoder: decoder)
-                        return .failure(.service(error))
-                    }
+                if (200..<300).contains(copiedResponse.httpResponse.statusCode.rawValue) {
+                    let output = try Output(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+                    copiedResponse.output = output
+                    return .success(copiedResponse)
                 } else {
-                    return .failure(.client(ClientError.unknownError("Http response was nil which should never happen")))
+                    let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+                    return .failure(.service(error))
                 }
             } catch let err {
                 return .failure(.client(ClientError.deserializationFailed(err)))

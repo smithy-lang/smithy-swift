@@ -39,15 +39,13 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
         do {
             let successResponse = try response.get()
             var copiedResponse = successResponse
-            if let httpResponse = copiedResponse.httpResponse {
-                let decoder = context.getDecoder()
-                let output = try OperationStackOutput(httpResponse: httpResponse, decoder: decoder)
-                copiedResponse.output = output
-                
-                return .success(copiedResponse)
-            } else {
-                return .failure(.client(ClientError.unknownError("Http response was nil which should never happen")))
-            }
+        
+            let decoder = context.getDecoder()
+            let output = try OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+            copiedResponse.output = output
+            
+            return .success(copiedResponse)
+
         } catch let err {
             return .failure(.client(ClientError.deserializationFailed(err)))
         }
