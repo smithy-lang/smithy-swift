@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import java.util.*
+import java.util.Locale
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
