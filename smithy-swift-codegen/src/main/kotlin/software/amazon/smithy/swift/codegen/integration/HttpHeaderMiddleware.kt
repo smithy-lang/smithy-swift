@@ -147,7 +147,7 @@ class HttpHeaderMiddleware(
             writer.write("input.builder.withHeader(name: \"$headerName\", value: String(base64EncodedValue))")
         }
         writer.indent()
-        writer.write("return .failure(err)")
+        writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
         writer.dedent()
         writer.write("}")
     }
