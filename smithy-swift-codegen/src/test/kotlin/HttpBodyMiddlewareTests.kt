@@ -47,7 +47,7 @@ class HttpBodyMiddlewareTests {
                             input.builder.withBody(body)
                         }
                     } catch let err {
-                        return .failure(err)
+                        return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
                     }
                     return next.handle(context: context, input: input)
                 }
@@ -199,7 +199,7 @@ class HttpBodyMiddlewareTests {
                             let body = HttpBody.data(data)
                             input.builder.withBody(body)
                         } catch let err {
-                            return .failure(err)
+                            return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
                         }
                     }
                     return next.handle(context: context, input: input)
