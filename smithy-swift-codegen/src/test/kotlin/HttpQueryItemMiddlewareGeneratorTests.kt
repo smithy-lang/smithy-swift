@@ -20,11 +20,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let token = input.operationInput.token {
                         let tokenQueryItem = URLQueryItem(name: "token".urlPercentEncoding(), value: String(token).urlPercentEncoding())
@@ -34,8 +35,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
-                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput, QueryIdempotencyTokenAutoFillOutputError>
+                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<QueryIdempotencyTokenAutoFillOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -55,11 +57,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let queryTimestamp = input.operationInput.queryTimestamp {
                         let queryTimestampQueryItem = URLQueryItem(name: "qtime".urlPercentEncoding(), value: String(queryTimestamp.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
@@ -75,8 +78,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputOutputError>
+                public typealias MOutput = OperationOutput<TimestampInputOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<TimestampInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -96,11 +100,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let query1 = input.operationInput.query1 {
                         let query1QueryItem = URLQueryItem(name: "Query1".urlPercentEncoding(), value: String(query1).urlPercentEncoding())
@@ -110,8 +115,9 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -140,11 +146,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<AllQueryStringTypesInput>,
-                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutput, AllQueryStringTypesOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let queryStringList = input.operationInput.queryStringList {
                         queryStringList.forEach { queryItemValue in
@@ -185,11 +192,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryParamsAsStringListMapInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutput, QueryParamsAsStringListMapOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let qux = input.operationInput.qux {
                         let quxQueryItem = URLQueryItem(name: "corge".urlPercentEncoding(), value: String(qux).urlPercentEncoding())
@@ -226,11 +234,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryPrecedenceInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutput, QueryPrecedenceOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let foo = input.operationInput.foo {
                         let fooQueryItem = URLQueryItem(name: "bar".urlPercentEncoding(), value: String(foo).urlPercentEncoding())

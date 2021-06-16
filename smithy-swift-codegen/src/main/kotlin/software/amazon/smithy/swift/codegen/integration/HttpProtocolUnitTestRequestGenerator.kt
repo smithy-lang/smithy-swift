@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import java.util.Locale
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -97,12 +98,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
             if (hasIdempotencyTokenTrait) {
 
-                IdempotencyTokenMiddlewareGenerator(writer, idempotentMember!!.memberName.decapitalize(), operationStack, outputSymbol.name, outputErrorName).renderIdempotencyMiddleware()
+                IdempotencyTokenMiddlewareGenerator(
+                    writer,
+                    idempotentMember!!.memberName.replaceFirstChar { it.lowercase(Locale.getDefault()) }, operationStack, outputSymbol.name, outputErrorName
+                ).renderIdempotencyMiddleware()
             }
 
             writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
-                writer.write("return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))")
+                writer.write("let serviceError = try! $outputErrorName(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))")
+                writer.write("return .failure(.service(serviceError))")
             }
             writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
         }
@@ -151,7 +156,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
             writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
-            writer.write("let output = OperationOutput<$outputSymbol, $outputErrorName>(httpResponse: response, output: mockOutput)")
+            writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("deserializeMiddleware.fulfill()")
             writer.write("return .success(output)")
         }

@@ -41,12 +41,13 @@ class MiddlewareGenerator(
             writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: ${middleware.inputType.name},")
-                writer.write("  next: H) -> Swift.Result<${middleware.outputType.name}, Swift.Error>")
+                writer.write("  next: H) -> Swift.Result<${middleware.outputType.name}, MError>")
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")
             writer.write("Self.MOutput == H.Output,")
-            writer.write("Self.Context == H.Context").openBlock("{", "}") {
+            writer.write("Self.Context == H.Context,")
+            writer.write("Self.MError == H.MiddlewareError").openBlock("{", "}") {
                 middleware.generateMiddlewareClosure()
                 middleware.renderReturn()
             }
@@ -54,6 +55,7 @@ class MiddlewareGenerator(
             writer.write("public typealias MInput = ${middleware.inputType.name}")
             writer.write("public typealias MOutput = ${middleware.outputType.name}")
             writer.write("public typealias Context = ${middleware.contextType.name}")
+            writer.write("public typealias MError = ${middleware.errorType.name}")
         }
     }
 }

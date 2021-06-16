@@ -11,11 +11,12 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: MInput,
-                          next: H) -> Result<MOutput, Error>
+                          next: H) -> Result<MOutput, MError>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.Context == H.Context,
+          Self.MError == H.MiddlewareError {
         
         let contentLength: Int64 = {
             switch input.body {
@@ -35,6 +36,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
     }
     
     public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput, OperationStackError>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+    public typealias MError = SdkError<OperationStackError>
 }

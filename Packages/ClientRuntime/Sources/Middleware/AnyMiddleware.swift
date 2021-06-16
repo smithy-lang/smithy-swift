@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware protocol
-public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {    
+public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext, MError: Error>: Middleware {
     
-    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context>) -> Result<MOutput, Error>
+    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context, MError>) -> Result<MOutput, MError>
 
     public var id: String
 
     public init<M: Middleware>(_ realMiddleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
-        if let alreadyErased = realMiddleware as? AnyMiddleware<MInput, MOutput, Context> {
+    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context, M.MError == MError {
+        if let alreadyErased = realMiddleware as? AnyMiddleware<MInput, MOutput, Context, MError> {
             self = alreadyErased
             return
         }
@@ -19,7 +19,10 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self._handle = realMiddleware.handle
     }
     
-    public init<H: Handler>(handler: H, id: String) where H.Input == MInput, H.Output == MOutput, H.Context == Context {
+    public init<H: Handler>(handler: H, id: String) where H.Input == MInput,
+                                                          H.Output == MOutput,
+                                                          H.Context == Context,
+                                                          H.MiddlewareError == MError {
         
         self._handle = { context, input, handler in
             handler.handle(context: context, input: input)
@@ -27,8 +30,11 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self.id = id
     }
 
-    public func handle<H: Handler>(context: Context, input: MInput, next: H) -> Result<MOutput, Error>
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
+    public func handle<H: Handler>(context: Context, input: MInput, next: H) -> Result<MOutput, MError>
+    where H.Input == MInput,
+          H.Output == MOutput,
+          H.Context == Context,
+          H.MiddlewareError == MError {
         return _handle(context, input, next.eraseToAnyHandler())
     }
 }

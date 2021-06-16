@@ -17,10 +17,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         
         func handle<H>(context: HttpContext,
                        input: SerializeStepInput<SayHelloInput>,
-                       next: H) -> Result<OperationOutput<StackOutput, StackError>, Error> where H: Handler,
+                       next: H) -> Result<MOutput, MError> where H: Handler,
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
+                                                                Self.MOutput == H.Output,
+                                                                Self.MError == H.MiddlewareError {
             var queryItems: [URLQueryItem] = []
             var queryItem: URLQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
@@ -34,9 +35,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         
         typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = OperationOutput<StackOutput, StackError>
+        typealias MOutput = OperationOutput<StackOutput>
         
         typealias Context = HttpContext
+        
+        typealias MError = SdkError<StackError>
     }
     
     struct SayHelloInputHeaderMiddleware<StackOutput: HttpResponseBinding,
@@ -45,10 +48,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         
         func handle<H>(context: HttpContext,
                        input: MInput,
-                       next: H) -> Result<MOutput, Error> where H: Handler,
+                       next: H) -> Result<MOutput, MError> where H: Handler,
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
+                                                                Self.MOutput == H.Output,
+                                                                Self.MError == H.MiddlewareError {
             var headers = Headers()
             headers.add(name: "Content-Type", value: "application/json")
             if let requiredHeader = input.operationInput.requiredHeader {
@@ -60,9 +64,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         
         typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = OperationOutput<StackOutput, StackError>
+        typealias MOutput = OperationOutput<StackOutput>
         
         typealias Context = HttpContext
+        
+        typealias MError = SdkError<StackError>
     }
     
     struct SayHelloInputBodyMiddleware<StackOutput: HttpResponseBinding,
@@ -71,25 +77,28 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         
         func handle<H>(context: HttpContext,
                        input: MInput,
-                       next: H) -> Result<MOutput, Error> where H: Handler,
+                       next: H) -> Result<MOutput, MError> where H: Handler,
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
+                                                                Self.MOutput == H.Output,
+                                                                Self.MError == H.MiddlewareError {
             do {
                 let encoder = context.getEncoder()
                 let body = HttpBody.data(try encoder.encode(input.operationInput))
                 input.builder.withBody(body)
                 return next.handle(context: context, input: input)
             } catch let err {
-                return .failure(err)
+                return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
             }
         }
         
         typealias MInput = SerializeStepInput<SayHelloInput>
         
-        typealias MOutput = OperationOutput<StackOutput, StackError>
+        typealias MOutput = OperationOutput<StackOutput>
         
         typealias Context = HttpContext
+        
+        typealias MError = SdkError<StackError>
     }
     
     struct SayHelloInput: Encodable, Reflection {
@@ -196,7 +205,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<MockOutput, MockMiddlewareError>(httpResponse: response, output: mockOutput)
+            let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
            })
@@ -204,7 +213,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
-            return .failure(try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest)))
+            let mockServiceError = try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
+            return .failure(.service(mockServiceError))
         })
         
         wait(for: [deserializeMiddleware], timeout: 2.0)
