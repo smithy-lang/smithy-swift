@@ -1,5 +1,6 @@
 // swift-tools-version:5.4
 import PackageDescription
+import class Foundation.ProcessInfo
 
 let package = Package(
     name: "ClientRuntime",
@@ -12,7 +13,6 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(name: "AwsCrt", path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.12.0")
     ],
@@ -46,3 +46,15 @@ let package = Package(
         )
     ]
 )
+
+let relatedDependenciesBranch = "master"
+if ProcessInfo.processInfo.environment["AWS_SDK_SWIFT_CI_DIR"] != nil {
+    package.dependencies += [
+        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift", .branch(relatedDependenciesBranch))
+    ]
+} else {
+    package.dependencies += [
+        .package(name: "AwsCrt", path: "~/Projects/Amplify/SwiftSDK/aws-crt-swift")
+    ]
+}
+
