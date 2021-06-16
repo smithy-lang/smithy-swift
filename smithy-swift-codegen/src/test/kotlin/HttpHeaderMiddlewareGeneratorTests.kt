@@ -27,11 +27,12 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let header1 = input.operationInput.header1 {
                         input.builder.withHeader(name: "X-Header1", value: String(header1))
@@ -43,8 +44,9 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -63,11 +65,12 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<EnumInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<EnumInputOutput, EnumInputOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<EnumInputOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let enumHeader = input.operationInput.enumHeader {
                         input.builder.withHeader(name: "X-EnumHeader", value: String(enumHeader.rawValue))
@@ -76,8 +79,9 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<EnumInputInput>
-                public typealias MOutput = OperationOutput<EnumInputOutput, EnumInputOutputError>
+                public typealias MOutput = OperationOutput<EnumInputOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<EnumInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -100,11 +104,12 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
-                              next: H) -> Swift.Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let token = input.operationInput.token {
                         input.builder.withHeader(name: "token", value: String(token))
@@ -113,8 +118,9 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
-                public typealias MOutput = OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput, IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>
+                public typealias MOutput = OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -134,11 +140,12 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput, TimestampInputOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let headerEpoch = input.operationInput.headerEpoch {
                         input.builder.withHeader(name: "X-Epoch", value: String(headerEpoch.timeIntervalSince1970.clean))
@@ -150,8 +157,9 @@ class HttpHeaderMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutput, TimestampInputOutputError>
+                public typealias MOutput = OperationOutput<TimestampInputOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<TimestampInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

@@ -42,7 +42,7 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: OperationStackInput,
-                                             next: H) -> SdkResult<OperationStackOutput, SdkError<OperationStackError>>
+                                             next: H) -> SdkResult<OperationStackOutput, OperationStackError>
     where H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput>,
           H.Context == HttpContext,
@@ -55,12 +55,8 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
         let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
         
         let result = initialize.handle(context: context, input: input)
-        
-        switch result {
-        case .failure(let error):
-            return .failure(.unknown(error))
-        case .success(let output):
-            return .success(output.output!)
+        return result.flatMap { operationOutput in
+            return .success(operationOutput.output!)
         }
     }
     

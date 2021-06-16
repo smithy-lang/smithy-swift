@@ -9,7 +9,9 @@ import ClientRuntime
 
 public struct MockInitializeMiddleware: Middleware {
     public typealias Context = HttpContext
-    public typealias MOutput = OperationOutput<MockOutput, MockMiddlewareError>
+    public typealias MInput = MockInput
+    public typealias MOutput = OperationOutput<MockOutput>
+    public typealias MError = SdkError<MockMiddlewareError>
     public typealias MockInitializeMiddlewareCallback = (HttpContext, MInput) -> Void
     public let id: String
     let callback: MockInitializeMiddlewareCallback?
@@ -19,11 +21,12 @@ public struct MockInitializeMiddleware: Middleware {
         self.callback = callback
     }
     
-    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, Error>
+    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, MError>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.Context == H.Context,
+          Self.MError == H.MiddlewareError {
         if let callback = self.callback {
             callback(context, input)
         }
@@ -32,6 +35,4 @@ public struct MockInitializeMiddleware: Middleware {
         
         return next.handle(context: context, input: copiedInput)
     }
-    
-    public typealias MInput = MockInput
 }

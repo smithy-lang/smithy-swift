@@ -9,6 +9,8 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
 
     open val outputType: Symbol = step.outputType
 
+    open val errorType: Symbol = step.errorType
+
     open val contextType: Symbol = Symbol
         .builder()
         .name("HttpContext")

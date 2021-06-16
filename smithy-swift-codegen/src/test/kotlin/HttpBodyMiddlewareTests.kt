@@ -32,11 +32,12 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput, SmokeTestOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     do {
                         if try !input.operationInput.allPropertiesAreNull() {
@@ -52,8 +53,9 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput, SmokeTestOutputError>
+                public typealias MOutput = OperationOutput<SmokeTestOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -72,11 +74,12 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStringInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStringOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1.data(using: .utf8)
@@ -87,8 +90,9 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitStringInput>
-                public typealias MOutput = OperationOutput<ExplicitStringOutput, ExplicitStringOutputError>
+                public typealias MOutput = OperationOutput<ExplicitStringOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<ExplicitStringOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -107,11 +111,12 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1
@@ -122,8 +127,9 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitBlobInput>
-                public typealias MOutput = OperationOutput<ExplicitBlobOutput, ExplicitBlobOutputError>
+                public typealias MOutput = OperationOutput<ExplicitBlobOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<ExplicitBlobOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -142,11 +148,12 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitBlobStreamInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitBlobStreamOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1
@@ -157,8 +164,9 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitBlobStreamInput>
-                public typealias MOutput = OperationOutput<ExplicitBlobStreamOutput, ExplicitBlobStreamOutputError>
+                public typealias MOutput = OperationOutput<ExplicitBlobStreamOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<ExplicitBlobStreamOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -177,11 +185,12 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<ExplicitStructInput>,
-                              next: H) -> Swift.Result<OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>, Swift.Error>
+                              next: H) -> Swift.Result<OperationOutput<ExplicitStructOutput>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context
+                Self.Context == H.Context,
+                Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
                         do {
@@ -197,8 +206,9 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = SerializeStepInput<ExplicitStructInput>
-                public typealias MOutput = OperationOutput<ExplicitStructOutput, ExplicitStructOutputError>
+                public typealias MOutput = OperationOutput<ExplicitStructOutput>
                 public typealias Context = HttpContext
+                public typealias MError = SdkError<ExplicitStructOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

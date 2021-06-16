@@ -11,9 +11,8 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
                                  OperationStackError: HttpResponseBinding>: Middleware {
     // swiftlint:disable line_length
     public typealias MockDeserializeMiddlewareCallback = (Context,
-                                                          SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput,
-                                                                                                    OperationStackError>,
-                                                                                    Error>?
+                                                          SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput>,
+                                                                                    MError>?
     public var id: String
     let callback: MockDeserializeMiddlewareCallback?
 
@@ -24,11 +23,12 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<OperationOutput<OperationStackOutput, OperationStackError>, Error>
+                          next: H) -> Result<OperationOutput<OperationStackOutput>, MError>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.Context == H.Context,
+          Self.MError == H.MiddlewareError {
         
         if let callback = self.callback,
            let callbackReturnValue = callback(context, input) {
@@ -46,14 +46,15 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
                 
                 return .success(copiedResponse)
             } else {
-                return .failure(ClientError.unknownError("Http response was nil which should never happen"))
+                return .failure(.client(ClientError.unknownError("Http response was nil which should never happen")))
             }
         } catch let err {
-            return .failure(ClientError.deserializationFailed(err))
+            return .failure(.client(ClientError.deserializationFailed(err)))
         }
     }
     
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<OperationStackOutput, OperationStackError>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+    public typealias MError = SdkError<OperationStackError>
 }

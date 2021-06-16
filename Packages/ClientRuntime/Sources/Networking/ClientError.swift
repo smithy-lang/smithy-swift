@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+import AwsCommonRuntimeKit
 
 public enum ClientError: Error, Equatable {
     case networkError(Error)
+    case crtError(CRTError)
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
