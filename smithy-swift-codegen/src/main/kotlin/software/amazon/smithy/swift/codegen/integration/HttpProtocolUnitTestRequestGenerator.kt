@@ -98,8 +98,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
             if (hasIdempotencyTokenTrait) {
 
-                IdempotencyTokenMiddlewareGenerator(writer,
-                    idempotentMember!!.memberName.replaceFirstChar { it.lowercase(Locale.getDefault()) }, operationStack, outputSymbol.name, outputErrorName).renderIdempotencyMiddleware()
+                IdempotencyTokenMiddlewareGenerator(
+                    writer,
+                    idempotentMember!!.memberName.replaceFirstChar { it.lowercase(Locale.getDefault()) }, operationStack, outputSymbol.name, outputErrorName
+                ).renderIdempotencyMiddleware()
             }
 
             writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
