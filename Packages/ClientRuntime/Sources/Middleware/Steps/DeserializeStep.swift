@@ -13,7 +13,8 @@
 public typealias DeserializeStep<O: HttpResponseBinding,
                                  E: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                           SdkHttpRequest,
-                                                                          OperationOutput<O, E>>
+                                                                          OperationOutput<O>,
+                                                                          SdkError<E>>
 
 public let DeserializeStepId = "Deserialize"
 
@@ -21,12 +22,14 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
                                      OperationStackError: HttpResponseBinding,
                                      H: Handler>: Handler where H.Context == HttpContext,
                                                                 H.Input == SdkHttpRequest,
-                                                                H.Output == OperationOutput<OperationStackOutput,
-                                                                                            OperationStackError> {
+                                                                H.Output == OperationOutput<OperationStackOutput>,
+                                                                H.MiddlewareError == SdkError<OperationStackError> {
     
     public typealias Input = SdkHttpRequest
     
-    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
+    public typealias Output = OperationOutput<OperationStackOutput>
+    
+    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -34,18 +37,17 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
        return handler.handle(context: context, input: input)
     }
 }
 
-public struct OperationOutput<Output: HttpResponseBinding, OutputError: HttpResponseBinding> {
+public struct OperationOutput<Output: HttpResponseBinding> {
     public var httpResponse: HttpResponse?
     public var output: Output?
-    public var error: OutputError?
-    public init(httpResponse: HttpResponse? = nil, output: Output? = nil, error: OutputError? = nil) {
+    
+    public init(httpResponse: HttpResponse? = nil, output: Output? = nil) {
         self.httpResponse = httpResponse
         self.output = output
-        self.error = error
     }
 }

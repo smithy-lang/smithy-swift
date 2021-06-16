@@ -8,16 +8,21 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<OperationOutput<Output, OutputError>, Error>
+                          next: H) -> Result<OperationOutput<Output>, SdkError<OutputError>>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.Context == H.Context,
+          Self.MError == H.MiddlewareError {
         
         let decoder = context.getDecoder()
         let response = next.handle(context: context, input: input) // call handler to get http response
-        return response.flatMap { (deserializeOutput) -> Result<OperationOutput<Output, OutputError>, Error> in
-            var copiedResponse = deserializeOutput
+        
+        switch response {
+        case .failure(let err):
+            return .failure(.client(ClientError.deserializationFailed(err)))
+        case .success(let result) :
+            var copiedResponse = result
             do {
                 if let httpResponse = copiedResponse.httpResponse {
                     if (200..<300).contains(httpResponse.statusCode.rawValue) {
@@ -26,19 +31,20 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                         return .success(copiedResponse)
                     } else {
                         let error = try OutputError(httpResponse: httpResponse, decoder: decoder)
-                        copiedResponse.error = error
-                        return .success(copiedResponse)
+                        return .failure(.service(error))
                     }
                 } else {
-                    return .failure(ClientError.unknownError("Http response was nil which should never happen"))
+                    return .failure(.client(ClientError.unknownError("Http response was nil which should never happen")))
                 }
             } catch let err {
-                return .failure(ClientError.deserializationFailed(err))
+                return .failure(.client(ClientError.deserializationFailed(err)))
             }
         }
+        
     }
     
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<Output, OutputError>
+    public typealias MOutput = OperationOutput<Output>
     public typealias Context = HttpContext
+    public typealias MError = SdkError<OutputError>
 }

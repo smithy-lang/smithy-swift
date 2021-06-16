@@ -3,5 +3,5 @@
 
 public typealias HandlerFunction<MInput,
                                  MOutput,
-                                 Context: MiddlewareContext> = (Context,
-                                                                MInput) -> Result<MOutput, Error>
+                                 Context: MiddlewareContext,
+                                 MError: Error> = (Context,MInput) -> Result<MOutput, MError>

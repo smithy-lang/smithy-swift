@@ -11,7 +11,8 @@ public typealias SerializeStep<I: Encodable & Reflection,
                                O: HttpResponseBinding,
                                E: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                         SerializeStepInput<I>,
-                                                                        OperationOutput<O, E>>
+                                                                        OperationOutput<O>,
+                                                                        SdkError<E>>
 
 public let SerializeStepId = "Serialize"
 
@@ -20,12 +21,14 @@ public struct SerializeStepHandler<OperationStackInput: Encodable & Reflection,
                                    OperationStackError: HttpResponseBinding,
                                    H: Handler>: Handler where H.Context == HttpContext,
                                                               H.Input == SdkHttpRequestBuilder,
-                                                              H.Output == OperationOutput<OperationStackOutput,
-                                                                                          OperationStackError> {
+                                                              H.Output == OperationOutput<OperationStackOutput>,
+                                                              H.MiddlewareError == SdkError<OperationStackError> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
     
-    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
+    public typealias Output = OperationOutput<OperationStackOutput>
+    
+    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -33,7 +36,7 @@ public struct SerializeStepHandler<OperationStackInput: Encodable & Reflection,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
         return handler.handle(context: context, input: input.builder)
     }
 }

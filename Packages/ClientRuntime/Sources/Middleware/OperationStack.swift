@@ -42,11 +42,11 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: OperationStackInput,
-                                             next: H) -> SdkResult<OperationStackOutput, OperationStackError>
+                                             next: H) -> SdkResult<OperationStackOutput, SdkError<OperationStackError>>
     where H.Input == SdkHttpRequest,
-          H.Output == OperationOutput<OperationStackOutput,
-                                      OperationStackError>,
-          H.Context == HttpContext {
+          H.Output == OperationOutput<OperationStackOutput>,
+          H.Context == HttpContext,
+          H.MiddlewareError == SdkError<OperationStackError> {
         
         let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
         let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
@@ -60,11 +60,7 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
         case .failure(let error):
             return .failure(.unknown(error))
         case .success(let output):
-            if let stackError = output.error {
-                return .failure(.service(stackError))
-            } else {
-                return .success(output.output!) // output should not be nil here ever if error is nil
-            }
+            return .success(output.output!)
         }
     }
     
@@ -72,10 +68,12 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     private func compose<H: Handler, M: Middleware>(next handler: H,
                                                     with middlewares: M...) -> AnyHandler<H.Input,
                                                                                           H.Output,
-                                                                                          H.Context>
+                                                                                          H.Context,
+                                                                                          H.MiddlewareError>
     where M.MOutput == H.Output,
           M.MInput == H.Input,
-          H.Context == M.Context {
+          H.Context == M.Context,
+          H.MiddlewareError == M.MError {
         guard !middlewares.isEmpty,
               let lastMiddleware = middlewares.last else {
             return handler.eraseToAnyHandler()

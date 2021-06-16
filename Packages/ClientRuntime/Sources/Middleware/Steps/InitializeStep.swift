@@ -11,7 +11,8 @@ public typealias InitializeStep<I: Encodable & Reflection,
                                 O: HttpResponseBinding,
                                 E: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                          I,
-                                                                         OperationOutput<O, E>>
+                                                                         OperationOutput<O>,
+                                                                         SdkError<E>>
 
 public let InitializeStepId = "Initialize"
 
@@ -20,19 +21,21 @@ public struct InitializeStepHandler<OperationStackInput: Encodable & Reflection,
                                     OperationStackError: HttpResponseBinding,
                                     H: Handler>: Handler where H.Context == HttpContext,
                                                                H.Input == SerializeStepInput<OperationStackInput>,
-                                                               H.Output == OperationOutput<OperationStackOutput,
-                                                                                           OperationStackError> {
+                                                               H.Output == OperationOutput<OperationStackOutput>,
+                                                               H.MiddlewareError == SdkError<OperationStackError> {
     
     public typealias Input = OperationStackInput
     
-    public typealias Output = OperationOutput<OperationStackOutput, OperationStackError>
+    public typealias Output = OperationOutput<OperationStackOutput>
+    
+    public typealias MiddlewareError = SdkError<OperationStackError>
     let handler: H
     
     public init(handler: H) {
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, Error> {
+    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
         
         return handler.handle(context: context, input: serializeInput)

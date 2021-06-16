@@ -4,14 +4,16 @@
 /// An instance of MiddlewareStep will be contained in the operation stack, and recognized as a single
 /// step (initialize, build, etc..) that contains an ordered list of middlewares. This class is
 /// responsible for ordering these middlewares so that they are executed in the correct order.
-public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
+public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output, MError: Error>: Middleware {
     public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
+    public typealias MError = MError
     
     var orderedMiddleware: OrderedGroup<MInput,
                                         MOutput,
-                                        Context> = OrderedGroup<MInput, MOutput, Context>()
+                                        Context,
+                                        MError> = OrderedGroup<MInput, MOutput, Context, MError>()
     
     public let id: String
     
@@ -19,15 +21,15 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
         self.id = id
     }
     
-    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
+    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context, MError>? {
         return orderedMiddleware.get(id: id)
     }
     
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handle<H: Handler>(context: Context,
                                    input: MInput,
-                                   next: H) -> Result<MOutput, Error>
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
+                                   next: H) -> Result<MOutput, MError>
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context, H.MiddlewareError == MError {
         
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
@@ -47,7 +49,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     }
     
     public mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
+    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context, M.MError == MError {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
     
@@ -59,7 +61,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     ///
     public mutating func intercept(position: Position,
                                    id: String,
-                                   middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
+                                   middleware: @escaping MiddlewareFunction<MInput, MOutput, Context, MError>) {
         let middleware = WrappedMiddleware(middleware, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
