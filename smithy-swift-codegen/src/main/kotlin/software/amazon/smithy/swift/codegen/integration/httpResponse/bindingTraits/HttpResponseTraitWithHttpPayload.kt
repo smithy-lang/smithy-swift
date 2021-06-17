@@ -44,14 +44,7 @@ class HttpResponseTraitWithHttpPayload(
                 ShapeType.BLOB -> {
                     writer.write("self.\$L = unwrappedData", memberName)
                 }
-                ShapeType.UNION -> {
-                    writer.openBlock("if let rawValue = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
-                        writer.write("self.\$L = \$L(rawValue: rawValue)", memberName, symbol)
-                    }
-                    writer.indent()
-                    writer.write("self.\$L = nil", memberName).closeBlock("}")
-                }
-                ShapeType.STRUCTURE -> {
+                ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
                             "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
