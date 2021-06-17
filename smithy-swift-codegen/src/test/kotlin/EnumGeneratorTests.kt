@@ -35,43 +35,43 @@ class EnumGeneratorTests {
 
         contents.shouldContain(SwiftWriter.staticHeader)
 
-        val expectedGeneratedEnum = "" +
-            "/**\n" +
-            " Really long multi-line\n" +
-            " Documentation for the enum\n" +
-            " */\n" +
-            "public enum MyEnum {\n" +
-            "    /// Documentation for BAR\n" +
-            "    case bar\n" +
-            "    case fooBazXap\n" +
-            "    case sdkUnknown(String)\n" +
-            "}\n" +
-            "\n" +
-            "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {\n" +
-            "    public static var allCases: [MyEnum] {\n" +
-            "        return [\n" +
-            "            .bar,\n" +
-            "            .fooBazXap,\n" +
-            "            .sdkUnknown(\"\")\n" +
-            "        ]\n" +
-            "    }\n" +
-            "    public init?(rawValue: String) {\n" +
-            "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-            "        self = value ?? Self.sdkUnknown(rawValue)\n" +
-            "    }\n" +
-            "    public var rawValue: String {\n" +
-            "        switch self {\n" +
-            "        case .bar: return \"BAR\"\n" +
-            "        case .fooBazXap: return \"FOO_BAZ@-. XAP - . \"\n" +
-            "        case let .sdkUnknown(s): return s\n" +
-            "        }\n" +
-            "    }\n" +
-            "    public init(from decoder: Decoder) throws {\n" +
-            "        let container = try decoder.singleValueContainer()\n" +
-            "        let rawValue = try container.decode(RawValue.self)\n" +
-            "        self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)\n" +
-            "    }\n" +
-            "}"
+        val expectedGeneratedEnum =
+            """
+            /// Really long multi-line
+            /// Documentation for the enum
+            public enum MyEnum {
+                /// Documentation for BAR
+                case bar
+                case fooBazXap
+                case sdkUnknown(String)
+            }
+            
+            extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
+                public static var allCases: [MyEnum] {
+                    return [
+                        .bar,
+                        .fooBazXap,
+                        .sdkUnknown("")
+                    ]
+                }
+                public init?(rawValue: String) {
+                    let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+                    self = value ?? Self.sdkUnknown(rawValue)
+                }
+                public var rawValue: String {
+                    switch self {
+                    case .bar: return "BAR"
+                    case .fooBazXap: return "FOO_BAZ@-. XAP - . "
+                    case let .sdkUnknown(s): return s
+                    }
+                }
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    let rawValue = try container.decode(RawValue.self)
+                    self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)
+                }
+            }
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
     }
@@ -103,49 +103,47 @@ class EnumGeneratorTests {
 
         contents.shouldContain(SwiftWriter.staticHeader)
 
-        val expectedGeneratedEnum = "" +
-            "/**\n" +
-            " Really long multi-line\n" +
-            " Documentation for the enum\n" +
-            " */\n" +
-            "public enum MyEnum {\n" +
-            "    /**\n" +
-            "     \"\"\"\n" +
-            "     T2 instances are Burstable Performance\n" +
-            "     Instances that provide a baseline level of CPU\n" +
-            "     performance with the ability to burst above the\n" +
-            "     baseline.\"\"\"\n" +
-            "     */\n" +
-            "    case t2Micro\n" +
-            "    case t2Nano\n" +
-            "    case sdkUnknown(String)\n" +
-            "}\n" +
-            "\n" +
-            "extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {\n" +
-            "    public static var allCases: [MyEnum] {\n" +
-            "        return [\n" +
-            "            .t2Micro,\n" +
-            "            .t2Nano,\n" +
-            "            .sdkUnknown(\"\")\n" +
-            "        ]\n" +
-            "    }\n" +
-            "    public init?(rawValue: String) {\n" +
-            "        let value = Self.allCases.first(where: { \$0.rawValue == rawValue })\n" +
-            "        self = value ?? Self.sdkUnknown(rawValue)\n" +
-            "    }\n" +
-            "    public var rawValue: String {\n" +
-            "        switch self {\n" +
-            "        case .t2Micro: return \"t2.micro\"\n" +
-            "        case .t2Nano: return \"t2.nano\"\n" +
-            "        case let .sdkUnknown(s): return s\n" +
-            "        }\n" +
-            "    }\n" +
-            "    public init(from decoder: Decoder) throws {\n" +
-            "        let container = try decoder.singleValueContainer()\n" +
-            "        let rawValue = try container.decode(RawValue.self)\n" +
-            "        self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)\n" +
-            "    }\n" +
-            "}"
+        val expectedGeneratedEnum =
+            """
+            /// Really long multi-line
+            /// Documentation for the enum
+            public enum MyEnum {
+                /// ""${'"'}
+                /// T2 instances are Burstable Performance
+                /// Instances that provide a baseline level of CPU
+                /// performance with the ability to burst above the
+                /// baseline.""${'"'}
+                case t2Micro
+                case t2Nano
+                case sdkUnknown(String)
+            }
+            
+            extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
+                public static var allCases: [MyEnum] {
+                    return [
+                        .t2Micro,
+                        .t2Nano,
+                        .sdkUnknown("")
+                    ]
+                }
+                public init?(rawValue: String) {
+                    let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+                    self = value ?? Self.sdkUnknown(rawValue)
+                }
+                public var rawValue: String {
+                    switch self {
+                    case .t2Micro: return "t2.micro"
+                    case .t2Nano: return "t2.nano"
+                    case let .sdkUnknown(s): return s
+                    }
+                }
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    let rawValue = try container.decode(RawValue.self)
+                    self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)
+                }
+            }
+            """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
     }

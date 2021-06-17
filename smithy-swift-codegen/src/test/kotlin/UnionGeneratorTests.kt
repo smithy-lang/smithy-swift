@@ -42,17 +42,15 @@ class UnionGeneratorTests {
 
         val expectedGeneratedEnum =
             """
-/**
- Really long multi-line
- Documentation for MyUnion
- */
-public enum MyUnion: Equatable {
-    case foo(String?)
-    case baz(Int?)
-    /// Documentation for bar
-    case bar(Int)
-    case sdkUnknown(String?)
-}
+            /// Really long multi-line
+            /// Documentation for MyUnion
+            public enum MyUnion: Equatable {
+                case foo(String?)
+                case baz(Int?)
+                /// Documentation for bar
+                case bar(Int)
+                case sdkUnknown(String?)
+            }
             """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
@@ -89,17 +87,15 @@ public enum MyUnion: Equatable {
 
         val expectedGeneratedEnum =
             """
-/**
- Really long multi-line
- Documentation for MyUnion
- */
-public enum MyUnion: Equatable {
-    case foo(String?)
-    /// Documentation for bar
-    case bar(Int)
-    case myStruct(MyStruct?)
-    case sdkUnknown(String?)
-}
+            /// Really long multi-line
+            /// Documentation for MyUnion
+            public enum MyUnion: Equatable {
+                case foo(String?)
+                /// Documentation for bar
+                case bar(Int)
+                case myStruct(MyStruct?)
+                case sdkUnknown(String?)
+            }
             """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
