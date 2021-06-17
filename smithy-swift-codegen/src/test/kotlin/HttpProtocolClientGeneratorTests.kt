@@ -47,8 +47,8 @@ class HttpProtocolClientGeneratorTests {
                     let encoder: RequestEncoder
                     let decoder: ResponseDecoder
                 
-                    public init(config: ExampleClientConfiguration) throws {
-                        client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+                    public init(config: ExampleClientConfiguration) {
+                        client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                         self.encoder = config.encoder
                         self.decoder = config.decoder
                         self.config = config
@@ -57,7 +57,7 @@ class HttpProtocolClientGeneratorTests {
                     public class ExampleClientConfiguration: ClientRuntime.Configuration {
                 
                         public static func `default`() throws -> ExampleClientConfiguration {
-                            return ExampleClientConfiguration()
+                            return try ExampleClientConfiguration()
                         }
                     }
                 }
