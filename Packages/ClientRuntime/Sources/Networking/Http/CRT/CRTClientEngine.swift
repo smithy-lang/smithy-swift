@@ -20,7 +20,7 @@ public class CRTClientEngine: HttpClientEngine {
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
     public let bootstrap: ClientBootstrap
-    public let eventLoopGroup: EventLoopGroup
+    public var eventLoopGroup: EventLoopGroup
     private let socketOptions: SocketOptions
     private let tlsContextOptions: TlsContextOptions
     private let tlsContext: TlsContext
