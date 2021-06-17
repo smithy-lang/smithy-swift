@@ -4,9 +4,19 @@
  */
 
 import Foundation
+import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
 class MockHttpClientEngine: HttpClientEngine {
+    var eventLoopGroup: EventLoopGroup
+    
+    init() {
+        let shutDownOptions = ShutDownCallbackOptions { semaphore in
+            semaphore.signal()
+        }
+        self.eventLoopGroup = EventLoopGroup(threadCount: 1, shutDownOptions: shutDownOptions)
+    }
+    
     func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {
         let future = SdkFuture<HttpResponse>()
         future.fulfill(successHttpResponse(request: request))

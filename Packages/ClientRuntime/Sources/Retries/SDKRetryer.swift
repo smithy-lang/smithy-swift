@@ -67,7 +67,13 @@ public class SDKRetryer: Retryer {
             default:
                 return .clientError
             }
-        case .service(_):
+        case .service(let serviceError):
+            guard let castedServiceError = serviceError as? ServiceError else {
+                return .serverError
+            }
+            if castedServiceError._isThrottling {
+                return .throttling
+            }
             return .serverError
         case .unknown(_):
             return .clientError
