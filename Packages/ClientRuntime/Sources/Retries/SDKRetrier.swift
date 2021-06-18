@@ -43,9 +43,7 @@ public class SDKRetrier: Retrier {
         switch error {
         case .client(let clientError, _) :
             switch clientError {
-            case .networkError:
-                return true
-            case .crtError:
+            case .networkError, .crtError:
                 return true
             default:
                 return false
@@ -55,8 +53,8 @@ public class SDKRetrier: Retrier {
                 return true
             }
             
-            if let castedServiceError = serviceError as? ServiceError {
-                return castedServiceError._retryable
+            if let serviceError = serviceError as? ServiceError {
+                return serviceError._retryable
             }
             
             if httpResponse.statusCode.isRetryable {
@@ -82,8 +80,8 @@ public class SDKRetrier: Retrier {
                 return .serverError
             }
             
-            if let castedServiceError = serviceError as? ServiceError {
-                if castedServiceError._isThrottling {
+            if let serviceError = serviceError as? ServiceError {
+                if serviceError._isThrottling {
                     return .throttling
                 }
                 return .serverError
