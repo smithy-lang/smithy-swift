@@ -258,7 +258,8 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                     public var _statusCode: HttpStatusCode?
                     public var _message: String?
                     public var _requestID: String?
-                    public var _retryable: Bool? = true
+                    public var _retryable: Bool = true
+                    public var _isThrottling: Bool = false
                     public var _type: ErrorType = .client
                     /// This *is* documentation about the member.
                     public var baz: Int?

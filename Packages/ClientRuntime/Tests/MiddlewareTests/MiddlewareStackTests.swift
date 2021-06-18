@@ -80,7 +80,8 @@ class MiddlewareStackTests: XCTestCase {
     
     func testFullBlownOperationRequestWithClientHandler() {
         let httpClientConfiguration = HttpClientConfiguration()
-        let httpClient = try! SdkHttpClient(config: httpClientConfiguration)
+        let clientEngine = try! CRTClientEngine()
+        let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
 
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)

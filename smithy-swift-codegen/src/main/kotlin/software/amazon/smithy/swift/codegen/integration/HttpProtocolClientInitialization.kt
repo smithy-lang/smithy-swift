@@ -22,8 +22,8 @@ open class HttpProtocolClientInitialization(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) throws {", "}") {
-                writer.write("client = try SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
+            writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) {", "}") {
+                writer.write("client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
                     if (prop.needsConfigure) {
@@ -61,7 +61,7 @@ open class HttpProtocolClientInitialization(
     private fun renderConfigInit(configFields: List<ConfigField>) {
         if (configFields.isNotEmpty()) {
             val configFieldsSortedByName = configFields.sortedBy { it.name }
-            writer.openBlock("public init (", ")") {
+            writer.openBlock("public init (", ") throws") {
                 for ((index, member) in configFieldsSortedByName.withIndex()) {
                     val memberName = member.name
                     val memberSymbol = member.type

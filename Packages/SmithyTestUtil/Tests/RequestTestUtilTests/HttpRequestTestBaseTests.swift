@@ -213,8 +213,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let mockServiceError = try! MockMiddlewareError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(mockServiceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let mockServiceError = try! MockMiddlewareError(httpResponse: httpResponse)
+            return .failure(.service(mockServiceError, httpResponse))
         })
         
         wait(for: [deserializeMiddleware], timeout: 2.0)

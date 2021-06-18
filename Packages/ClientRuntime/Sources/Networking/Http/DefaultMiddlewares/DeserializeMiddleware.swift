@@ -30,10 +30,10 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                     return .success(copiedResponse)
                 } else {
                     let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
-                    return .failure(.service(error))
+                    return .failure(.service(error, copiedResponse.httpResponse))
                 }
             } catch let err {
-                return .failure(.client(ClientError.deserializationFailed(err)))
+                return .failure(.client(ClientError.deserializationFailed(err), copiedResponse.httpResponse))
             }
         }
         
