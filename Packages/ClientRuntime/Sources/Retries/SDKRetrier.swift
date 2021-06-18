@@ -41,7 +41,7 @@ public class SDKRetrier: Retrier {
     
     public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
         switch error {
-        case .client(let clientError) :
+        case .client(let clientError, _) :
             switch clientError {
             case .networkError:
                 return true
@@ -50,9 +50,19 @@ public class SDKRetrier: Retrier {
             default:
                 return false
             }
-        case .service(let serviceError):
-            let castedServiceError = serviceError as? ServiceError
-            return castedServiceError?._retryable ?? false
+        case .service(let serviceError, let httpResponse):
+            if httpResponse.headers.value(for: "x-amz-retry-after") != nil {
+                return true
+            }
+            
+            if let castedServiceError = serviceError as? ServiceError {
+                return castedServiceError._retryable
+            }
+            
+            if httpResponse.statusCode.isRetryable {
+                return true
+            }
+            return false
         case .unknown:
             return false
         }
@@ -60,20 +70,29 @@ public class SDKRetrier: Retrier {
     
     public func getErrorType<E>(error: SdkError<E>) -> RetryError {
         switch error {
-        case .client(let clientError) :
+        case .client(let clientError, _) :
             switch clientError {
             case .crtError:
                 return .transient
             default:
                 return .clientError
             }
-        case .service(let serviceError):
-            guard let castedServiceError = serviceError as? ServiceError else {
+        case .service(let serviceError, let httpResponse):
+            if httpResponse.headers.value(for: "x-amz-retry-after") != nil {
                 return .serverError
             }
-            if castedServiceError._isThrottling {
-                return .throttling
+            
+            if let castedServiceError = serviceError as? ServiceError {
+                if castedServiceError._isThrottling {
+                    return .throttling
+                }
+                return .serverError
             }
+            
+            if httpResponse.statusCode.isRetryable {
+                return .transient
+            }
+            
             return .serverError
         case .unknown:
             return .clientError

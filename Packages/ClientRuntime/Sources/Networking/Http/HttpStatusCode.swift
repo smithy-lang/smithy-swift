@@ -146,3 +146,13 @@ extension HttpStatusCode: CustomStringConvertible {
         )
     }
 }
+
+
+extension HttpStatusCode {
+    public var isRetryable: Bool {
+        if (502..<505).contains(rawValue) || rawValue == 501 {
+            return true
+        }
+        return false
+    }
+}
