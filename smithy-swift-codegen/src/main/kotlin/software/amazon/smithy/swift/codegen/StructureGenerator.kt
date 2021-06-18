@@ -207,7 +207,9 @@ class StructureGenerator(
 
     private fun generateErrorStructMembers() {
         val errorTrait = shape.getTrait<ErrorTrait>()
-        if (shape.getTrait<HttpErrorTrait>() != null || errorTrait != null) {
+        val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
+        val hasErrorTrait = httpErrorTrait != null || errorTrait != null
+        if (hasErrorTrait) {
             writer.write("public var _headers: Headers?")
             writer.write("public var _statusCode: HttpStatusCode?")
         }

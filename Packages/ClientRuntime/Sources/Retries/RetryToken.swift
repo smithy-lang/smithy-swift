@@ -13,5 +13,3 @@ public struct RetryToken {
         self.crtToken = crtToken
     }
 }
-
-
