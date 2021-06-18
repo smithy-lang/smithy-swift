@@ -144,7 +144,7 @@ abstract class MemberShapeDecodeXMLGenerator(
     }
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
-        val memberTargetKey = ctx.symbolProvider.toSymbol(memberTarget.key)
+        val memberTargetKey = "String"
         val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
         val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
 
@@ -325,7 +325,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 if (shouldRenderStructs) {
                     keyValueName.renderStructs(writer)
                 }
-                val currShapeKey = ctx.symbolProvider.toSymbol(currShape.key)
+                val currShapeKey = "String"
 
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShapeInMap(targetShape, "MapEntry", shouldRenderStructs, level + 1)
