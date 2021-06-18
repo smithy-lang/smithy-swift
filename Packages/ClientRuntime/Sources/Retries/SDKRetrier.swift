@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 
-public class SDKRetryer: Retryer {
+public class SDKRetrier: Retrier {
     let crtRetryStrategy: CRTAWSRetryStrategy
     
     public init(options: RetryOptions) throws {
@@ -43,9 +43,9 @@ public class SDKRetryer: Retryer {
         switch error {
         case .client(let clientError) :
             switch clientError {
-            case .networkError(_):
+            case .networkError:
                 return true
-            case .crtError(_):
+            case .crtError:
                 return true
             default:
                 return false
@@ -53,7 +53,7 @@ public class SDKRetryer: Retryer {
         case .service(let serviceError):
             let castedServiceError = serviceError as? ServiceError
             return castedServiceError?._retryable ?? false
-        case .unknown(_):
+        case .unknown:
             return false
         }
     }
@@ -62,7 +62,7 @@ public class SDKRetryer: Retryer {
         switch error {
         case .client(let clientError) :
             switch clientError {
-            case .crtError(_):
+            case .crtError:
                 return .transient
             default:
                 return .clientError
@@ -75,7 +75,7 @@ public class SDKRetryer: Retryer {
                 return .throttling
             }
             return .serverError
-        case .unknown(_):
+        case .unknown:
             return .clientError
         }
     }

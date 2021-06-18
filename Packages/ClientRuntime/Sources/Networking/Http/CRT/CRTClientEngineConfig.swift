@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
-
 struct CRTClientEngineConfig {
     
     /// Max connections the manager can contain per endpoint

@@ -8,13 +8,19 @@ import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
 class MockHttpClientEngine: HttpClientEngine {
-    var eventLoopGroup: EventLoopGroup
     
-    init() {
+    let eventLoopGroup: EventLoopGroup
+    
+    convenience init() {
         let shutDownOptions = ShutDownCallbackOptions { semaphore in
             semaphore.signal()
         }
-        self.eventLoopGroup = EventLoopGroup(threadCount: 1, shutDownOptions: shutDownOptions)
+        let eventLoopGroup = EventLoopGroup(threadCount: 1, shutDownOptions: shutDownOptions)
+        try! self.init(eventLoopGroup: eventLoopGroup)
+    }
+    
+    required init(eventLoopGroup: EventLoopGroup) throws {
+        self.eventLoopGroup = eventLoopGroup
     }
     
     func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {

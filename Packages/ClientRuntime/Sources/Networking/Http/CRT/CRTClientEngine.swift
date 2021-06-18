@@ -12,6 +12,7 @@ import AwsCommonRuntimeKit
 
 public class CRTClientEngine: HttpClientEngine {
     
+    
     private var logger: LogAgent
     private var crtLogger: Logger
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
@@ -20,17 +21,17 @@ public class CRTClientEngine: HttpClientEngine {
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
     
     public let bootstrap: ClientBootstrap
-    public var eventLoopGroup: EventLoopGroup
+    public let eventLoopGroup: EventLoopGroup
     private let socketOptions: SocketOptions
     private let tlsContextOptions: TlsContextOptions
     private let tlsContext: TlsContext
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
+    init(eventLoopGroup: EventLoopGroup, config: CRTClientEngineConfig) throws {
         AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
-        self.eventLoopGroup = EventLoopGroup(threadCount: 1)
+        self.eventLoopGroup = eventLoopGroup
         let hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup, maxHosts: 8, maxTTL: 30)
         self.bootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup, hostResolver: hostResolver)
         self.socketOptions = SocketOptions(socketType: .stream)
@@ -41,6 +42,14 @@ public class CRTClientEngine: HttpClientEngine {
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
         self.crtLogger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
+    }
+    
+    public required convenience init(eventLoopGroup: EventLoopGroup) throws {
+        try self.init(eventLoopGroup: eventLoopGroup, config: CRTClientEngineConfig())
+    }
+    
+    public convenience init() throws {
+        try self.init(eventLoopGroup: EventLoopGroup(threadCount: 1))
     }
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
