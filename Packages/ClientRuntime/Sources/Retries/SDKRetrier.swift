@@ -69,12 +69,11 @@ public class SDKRetrier: Retrier {
     public func getErrorType<E>(error: SdkError<E>) -> RetryError {
         switch error {
         case .client(let clientError, _) :
-            switch clientError {
-            case .crtError:
+            if case ClientError.crtError = clientError {
                 return .transient
-            default:
-                return .clientError
             }
+            return .clientError
+
         case .service(let serviceError, let httpResponse):
             if httpResponse.headers.value(for: "x-amz-retry-after") != nil {
                 return .serverError
