@@ -109,8 +109,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! SmokeTestOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! SmokeTestOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -179,8 +180,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! ExplicitStringOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! ExplicitStringOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -231,8 +233,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! EmptyInputAndEmptyOutputOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! EmptyInputAndEmptyOutputOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -289,8 +292,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! SimpleScalarPropertiesOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! SimpleScalarPropertiesOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -354,8 +358,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! StreamingTraitsOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! StreamingTraitsOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -411,8 +416,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! HttpPrefixHeadersOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! HttpPrefixHeadersOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -486,8 +492,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! JsonUnionsOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! JsonUnionsOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
     }
@@ -584,8 +591,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! RecursiveShapesOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! RecursiveShapesOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
  """
@@ -667,8 +675,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! InlineDocumentOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! InlineDocumentOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
  """
@@ -746,8 +755,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         })
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let serviceError = try! InlineDocumentAsPayloadOutputError(httpResponse: HttpResponse(body: .none, statusCode: .badRequest))
-            return .failure(.service(serviceError))
+            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let serviceError = try! InlineDocumentAsPayloadOutputError(httpResponse: httpResponse)
+            return .failure(.service(serviceError, httpResponse))
         })
         wait(for: [deserializeMiddleware], timeout: 0.3)
  """

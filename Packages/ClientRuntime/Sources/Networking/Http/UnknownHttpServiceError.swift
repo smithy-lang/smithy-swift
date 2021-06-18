@@ -5,13 +5,15 @@
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHttpServiceError: HttpServiceError {
+    public var _isThrottling: Bool = false
+    
     public var _statusCode: HttpStatusCode?
     
     public var _headers: Headers?
     
     public var _message: String?
     
-    public var _retryable: Bool? = false
+    public var _retryable: Bool = false
     
     public var _type: ErrorType = .unknown
 }

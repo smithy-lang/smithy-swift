@@ -16,6 +16,8 @@ import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.isError
 
 fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
     val shapeId = toShapeId()
@@ -52,7 +54,7 @@ class StructureGenerator(
 
     fun render() {
         writer.putContext("struct.name", structSymbol.name)
-        if (shape.hasTrait(ErrorTrait::class.java)) {
+        if (shape.isError) {
             renderErrorStructure()
         } else {
             renderNonErrorStructure()
@@ -170,7 +172,7 @@ class StructureGenerator(
      *     public var _headers: Headers?
      *     public var _message: String?
      *     public var _requestID: String?
-     *     public var _retryable: Bool? = true
+     *     public var _retryable: Bool = true
      *     public var _statusCode: HttpStatusCode?
      *     public var _type: ErrorType = .client
      *     public var message: String?
@@ -204,18 +206,23 @@ class StructureGenerator(
     }
 
     private fun generateErrorStructMembers() {
-        val errorTrait: ErrorTrait = shape.getTrait(ErrorTrait::class.java).get()
-        if (shape.getTrait(HttpErrorTrait::class.java).isPresent ||
-            shape.getTrait(ErrorTrait::class.java).isPresent
-        ) {
+        val errorTrait = shape.getTrait<ErrorTrait>()
+        val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
+        val hasErrorTrait = httpErrorTrait != null || errorTrait != null
+        if (hasErrorTrait) {
             writer.write("public var _headers: Headers?")
             writer.write("public var _statusCode: HttpStatusCode?")
         }
         writer.write("public var _message: String?")
         writer.write("public var _requestID: String?")
-        val isRetryable: Boolean = shape.getTrait(RetryableTrait::class.java).isPresent
-        writer.write("public var _retryable: Bool? = \$L", isRetryable)
-        writer.write("public var _type: ErrorType = .\$L", errorTrait.value)
+        val retryableTrait = shape.getTrait<RetryableTrait>()
+        val isRetryable = retryableTrait != null
+        val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
+
+        writer.write("public var _retryable: Bool = \$L", isRetryable)
+        writer.write("public var _isThrottling: Bool = \$L", isThrottling)
+
+        writer.write("public var _type: ErrorType = .\$L", errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

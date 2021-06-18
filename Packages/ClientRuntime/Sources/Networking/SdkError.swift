@@ -3,14 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
-
 public enum SdkError<E>: Error {
   // Service specific error
-  case service(E)
+  case service(E, HttpResponse)
 
   // error from the underlying client runtime
-  case client(ClientError)
+  case client(ClientError, HttpResponse? = nil)
 
   // unknown error 
   case unknown(Error?)

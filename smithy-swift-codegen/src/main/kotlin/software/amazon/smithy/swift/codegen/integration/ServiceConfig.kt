@@ -21,7 +21,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open fun renderStaticDefaultImplementation(serviceSymbol: Symbol) {
         writer.openBlock("public static func `default`() throws -> ${serviceSymbol.name}Configuration {", "}") {
-            writer.write("return ${serviceSymbol.name}Configuration()")
+            writer.write("return try ${serviceSymbol.name}Configuration()")
         }
     }
 

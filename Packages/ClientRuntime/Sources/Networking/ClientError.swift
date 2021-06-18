@@ -13,6 +13,7 @@ public enum ClientError: Error, Equatable {
     case dataNotFound(String)
     case unknownError(String)
     case authError(String)
+    case retryError(Error)
     
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
         switch (lhs, rhs) {
@@ -35,6 +36,9 @@ public enum ClientError: Error, Equatable {
         case (let .authError(lhsAuthString),
               let .authError(rhsAuthString)):
             return lhsAuthString == rhsAuthString
+        case (let .retryError(lhsRetryError),
+              let .retryError(rhsRetryError)):
+            return String(reflecting: lhsRetryError) == String(reflecting: rhsRetryError)
         default:
             return false
         }

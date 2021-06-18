@@ -8,13 +8,8 @@ public class SdkHttpClient {
     
     let engine: HttpClientEngine
     
-    public init(engine: HttpClientEngine? = nil, config: HttpClientConfiguration) throws {
-        if let engine = engine {
-            self.engine = engine
-        } else {
-            // CRT is the default engine
-            self.engine = try CRTClientEngine()
-        }
+    public init(engine: HttpClientEngine, config: HttpClientConfiguration) {
+        self.engine = engine
     }
     
     public func getHandler<Output: HttpResponseBinding,

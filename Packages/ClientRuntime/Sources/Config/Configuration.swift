@@ -10,18 +10,23 @@
 open class Configuration {
     public var encoder: RequestEncoder?
     public var decoder: ResponseDecoder?
-    public let httpClientEngine: HttpClientEngine?
+    public let httpClientEngine: HttpClientEngine
     public let httpClientConfiguration: HttpClientConfiguration
     public let idempotencyTokenGenerator: IdempotencyTokenGenerator
+    public let retrier: Retrier
     
     public init(encoder: RequestEncoder? = nil,
                 decoder: ResponseDecoder? = nil,
                 httpClientEngine: HttpClientEngine? = nil,
                 httpClientConfiguration: HttpClientConfiguration = HttpClientConfiguration(),
-                idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) {
+                retrier: Retrier? = nil,
+                idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws {
         self.encoder = encoder
         self.decoder = decoder
-        self.httpClientEngine = httpClientEngine
+        let engine = try httpClientEngine ?? CRTClientEngine()
+        self.httpClientEngine = engine
+        self.retrier = try retrier ?? SDKRetrier(clientEngine: engine)
+        
         self.httpClientConfiguration = httpClientConfiguration
         self.idempotencyTokenGenerator = idempotencyTokenGenerator
     }
