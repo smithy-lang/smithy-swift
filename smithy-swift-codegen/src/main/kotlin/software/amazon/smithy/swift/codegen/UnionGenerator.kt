@@ -52,7 +52,8 @@ class UnionGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
-        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: Equatable {", "}\n") {
+        val hashable = hashableIfPossible()
+        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: Equatable$hashable {", "}\n") {
             shape.allMembers.values.forEach {
                 writer.writeMemberDocs(model, it)
                 val enumCaseName = symbolProvider.toMemberName(it)
@@ -64,6 +65,17 @@ class UnionGenerator(
         }
         writer.removeContext("union.name")
     }
+
+    fun hashableIfPossible(): String {
+        shape.allMembers.values.forEach {
+            val enumCaseAssociatedType = symbolProvider.toSymbol(it)
+            if (enumCaseAssociatedType.name != "String") {
+                return ""
+            }
+        }
+        return ", Hashable"
+    }
+
     private fun needsIndirectKeyword(unionSymbolName: String, shape: UnionShape): Boolean {
         val membersReferencingUnion = shape.allMembers.values.filter {
             (symbolProvider.toSymbol(it).name).equals(unionSymbolName)
