@@ -136,36 +136,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     /**
-     * Configures the writer with the appropriate opening/closing multi-line doc comments and calls the [block]
-     * with this writer. Any calls to `write()` inside of block will be escaped appropriately.
-     * On return the writer's original state is restored.
-     *
-     * e.g.
-     * ```
-     * writer.writeMultiLineDocs() {
-     *     write("This is a multi-line \n doc comment")
-     * }
-     * ```
-     *
-     * would output
-     *
-     * ```
-     * /**
-     *  This is a multi-line
-     *  doc comment
-     *  */
-     * ```
-     */
-    fun writeMultiLineDocs(block: SwiftWriter.() -> Unit) {
-        pushState("multiLineDocs")
-        write("/**")
-        setNewlinePrefix(" ")
-        block(this)
-        popState()
-        write(" */")
-    }
-
-    /**
      * Configures the writer with the appropriate single-line doc comment and calls the [block]
      * with this writer. Any calls to `write()` inside of block will be escaped appropriately.
      * On return the writer's original state is restored.
@@ -194,14 +164,8 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      * Writes documentation comments from a doc string.
      */
     fun writeDocs(docs: String) {
-        if (docs.contains("\n")) {
-            writeMultiLineDocs {
-                write(sanitizeDocumentation(docs))
-            }
-        } else {
-            writeSingleLineDocs {
-                write(sanitizeDocumentation(docs))
-            }
+        writeSingleLineDocs {
+            write(sanitizeDocumentation(docs))
         }
     }
 

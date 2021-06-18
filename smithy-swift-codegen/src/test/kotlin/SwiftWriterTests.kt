@@ -14,7 +14,12 @@ class SwiftWriterTests {
         val docs = "This is a big doc string.\nMore."
         writer.writeDocs(docs)
         val result = writer.toString()
-        result.shouldContain(createMultiLineDocComment(docs))
+        val expectedResult =
+            """
+            /// This is a big doc string.
+            /// More.
+            """.trimIndent()
+        result.shouldContain(expectedResult)
     }
 
     @Test fun `escapes $ in doc strings`() {
