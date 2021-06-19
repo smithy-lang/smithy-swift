@@ -48,14 +48,14 @@ class NestedListEncodeJSONGenerationTests {
                     if let targetMaps = targetMaps {
                         var targetMapsContainer = encodeContainer.nestedUnkeyedContainer(forKey: .targetMaps)
                         for targetmaps0 in targetMaps {
-                        //THIS IS BROKEN:
                             var targetmaps0Container = targetMapsContainer.nestedContainer(keyedBy: Key.self)
                             if let targetmaps0 = targetmaps0 {
                                 for (dictKey1, targetmap1) in targetmaps0 {
-                                //THIS IS BROKEN
-                                    var targetmap1Container = targetmaps0Container.nestedContainer(keyedBy: Key.self)
-                                    for (dictKey2, targetmapvaluelist2) in targetmap1 {
-                                        try targetmap1Container.encode(targetmapvaluelist2, forKey: Key(stringValue: dictKey2))
+                                    var targetmap1Container = targetmaps0Container.nestedUnkeyedContainer(forKey: Key(dictKey1))
+                                    if let targetmap1 = targetmap1 {
+                                        for item in targetmap1 {
+                                            try targetmap1Container.encode(item)
+                                        }
                                     }
                                 }
                             }
