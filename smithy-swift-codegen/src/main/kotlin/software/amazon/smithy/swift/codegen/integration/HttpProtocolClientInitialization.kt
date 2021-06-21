@@ -71,11 +71,9 @@ open class HttpProtocolClientInitialization(
                 }
             }
             writer.openBlock("{", "}") {
-                writer.write("try super.init()")
                 configFieldsSortedByName.forEach {
                     writer.write("self.\$1L = \$1L", it.name)
                 }
-
             }
         }
     }
