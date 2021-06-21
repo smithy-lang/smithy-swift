@@ -137,6 +137,6 @@ extension Headers {
 
 extension Headers: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return dictionary.map {"\($0.key): \($0.value)"}.joined(separator: ",")
+        return dictionary.map {"\($0.key): \($0.value.joined(separator: ", "))"}.joined(separator: ", \n")
     }
 }

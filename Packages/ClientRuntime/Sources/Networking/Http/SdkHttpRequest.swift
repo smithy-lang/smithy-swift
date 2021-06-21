@@ -65,11 +65,11 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
     }
     
     public var debugDescription: String {
-        return "\(method) / \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Host: \(endpoint.host) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
+        return "\(method.rawValue.uppercased()) \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Path: \(endpoint.path), \n \(headers) \n \(String(describing: queryItems))"
     }
     
     public var description: String {
-        return "\(method) / \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Host: \(endpoint.host) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
+        return "\(method.rawValue.uppercased()) \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
     }
 }
 

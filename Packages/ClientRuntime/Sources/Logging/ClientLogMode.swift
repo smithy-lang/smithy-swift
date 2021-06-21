@@ -10,4 +10,5 @@ public enum ClientLogMode {
     case requestWithBody
     case response
     case responseWithBody
+    case requestAndResponse
 }

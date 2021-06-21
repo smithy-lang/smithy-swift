@@ -14,7 +14,7 @@ open class Configuration {
     public let httpClientConfiguration: HttpClientConfiguration
     public let idempotencyTokenGenerator: IdempotencyTokenGenerator
     public let retrier: Retrier
-    public let clientLogMode: ClientLogMode
+    public var clientLogMode: ClientLogMode
     public let logger: LogAgent
     
     public init(encoder: RequestEncoder? = nil,
