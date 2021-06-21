@@ -35,7 +35,6 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
     public mutating func addDefaultOperationMiddlewares() {
         finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackOutput,
                                                                                    OperationStackError>())
-        
         deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<OperationStackOutput,
                                                                                        OperationStackError>())
     }
