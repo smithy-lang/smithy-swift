@@ -29,8 +29,26 @@ extension HttpBody: Equatable {
 }
 
 public extension HttpBody {
-
     static var empty: HttpBody {
         .data(nil)
+    }
+}
+
+extension HttpBody: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        var bodyAsString: String?
+        switch self {
+        case .data(let data):
+            if let data = data {
+                bodyAsString = String(data: data, encoding: .utf8)
+            }
+        case .streamSource(let stream):
+            let byteBuffer = ByteBuffer(size: 1024)
+            stream.unwrap().sendData(writeTo: byteBuffer)
+            bodyAsString = String(data: byteBuffer.toData(), encoding: .utf8)
+        default:
+            bodyAsString = nil
+        }
+        return bodyAsString ?? ""
     }
 }

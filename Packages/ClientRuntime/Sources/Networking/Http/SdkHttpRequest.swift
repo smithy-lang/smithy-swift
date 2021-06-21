@@ -9,7 +9,7 @@ import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public class SdkHttpRequest: CustomStringConvertible {
+public class SdkHttpRequest {
     public var body: HttpBody
     public var headers: Headers
     public let queryItems: [URLQueryItem]?
@@ -26,10 +26,6 @@ public class SdkHttpRequest: CustomStringConvertible {
         self.headers = headers
         self.body = body
         self.queryItems = queryItems
-    }
-    
-    public var description: String {
-        return "SdkHttpRequest(body: \(body), headers: \(headers), queryItems: \(String(describing: queryItems)), endpoint: \(endpoint), method: \(method))"
     }
 }
 
@@ -59,6 +55,21 @@ extension SdkHttpRequest {
         }
         
         return httpRequest
+    }
+}
+
+extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible {
+    
+    public var debugDescriptionWithBody: String {
+        return debugDescription + "\n \(body)"
+    }
+    
+    public var debugDescription: String {
+        return "\(method) / \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Host: \(endpoint.host) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
+    }
+    
+    public var description: String {
+        return "\(method) / \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Host: \(endpoint.host) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
     }
 }
 

@@ -14,19 +14,24 @@ open class Configuration {
     public let httpClientConfiguration: HttpClientConfiguration
     public let idempotencyTokenGenerator: IdempotencyTokenGenerator
     public let retrier: Retrier
+    public let clientLogMode: ClientLogMode
+    public let logger: LogAgent
     
     public init(encoder: RequestEncoder? = nil,
                 decoder: ResponseDecoder? = nil,
                 httpClientEngine: HttpClientEngine? = nil,
                 httpClientConfiguration: HttpClientConfiguration = HttpClientConfiguration(),
                 retrier: Retrier? = nil,
+                clientLogMode: ClientLogMode = .request,
+                logger: LogAgent? = nil,
                 idempotencyTokenGenerator: IdempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()) throws {
         self.encoder = encoder
         self.decoder = decoder
         let engine = try httpClientEngine ?? CRTClientEngine()
         self.httpClientEngine = engine
         self.retrier = try retrier ?? SDKRetrier(clientEngine: engine)
-        
+        self.clientLogMode = clientLogMode
+        self.logger = logger ?? SwiftLogger(label: "Swift SDK Logger")
         self.httpClientConfiguration = httpClientConfiguration
         self.idempotencyTokenGenerator = idempotencyTokenGenerator
     }

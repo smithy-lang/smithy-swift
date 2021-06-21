@@ -125,6 +125,7 @@ open class HttpProtocolClientGenerator(
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
+        writer.write("  .withLogger(value: config.logger)")
 
         op.getTrait(EndpointTrait::class.java).ifPresent {
             val inputShape = model.expectShape(op.input.get())

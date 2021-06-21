@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-protocol LogAgent {
+public protocol LogAgent {
     /// name of the struct or class where the logger was instantiated from
     var name: String {get}
     
@@ -31,7 +31,7 @@ protocol LogAgent {
              line: UInt)
 }
 
-extension LogAgent {
+public extension LogAgent {
     
     internal static func currentModule(filePath: String = #file) -> String {
         let utf8All = filePath.utf8
