@@ -6,11 +6,11 @@
 import Logging
 import enum AwsCommonRuntimeKit.LogLevel
 
-typealias SwiftLogger = Logger
+public typealias SwiftLogger = Logger
 
 extension SwiftLogger: LogAgent {
     
-    var level: LogLevel {
+    public var level: LogLevel {
         get {
             return LogLevel.fromString(string: logLevel.rawValue)
         }
@@ -19,11 +19,11 @@ extension SwiftLogger: LogAgent {
         }
     }
     
-    var name: String {
+    public var name: String {
             return label
     }
     
-    func log(level: LogLevel,
+    public func log(level: LogLevel,
              message: String,
              metadata: [String: String]?,
              source: String,

@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddleware
 
 abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
     override fun renderMiddlewares(
@@ -23,6 +24,6 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
         }
     }
     override fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<OperationMiddlewareRenderable> {
-        return emptyList()
+        return listOf(LoggingMiddleware())
     }
 }

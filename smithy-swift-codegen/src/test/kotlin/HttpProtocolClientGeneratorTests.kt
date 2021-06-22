@@ -78,6 +78,7 @@ class HttpProtocolClientGeneratorTests {
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                      .withLogger(value: config.logger)
                       .withHostPrefix(value: "\(input.foo).data.")
         """
         writer.toString().shouldContainOnlyOnce(expectedFragment)

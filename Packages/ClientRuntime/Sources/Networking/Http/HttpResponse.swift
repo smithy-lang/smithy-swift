@@ -24,3 +24,12 @@ public class HttpResponse: HttpUrlResponse {
         self.headers = headers
     }
 }
+
+extension HttpResponse: CustomDebugStringConvertible {
+    public var debugDescriptionWithBody: String {
+        return debugDescription + "\n \(body)"
+    }
+    public var debugDescription: String {
+        return "\(statusCode) \n \(headers)"
+    }
+}
