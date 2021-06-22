@@ -31,9 +31,7 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
         
         if clientLogMode == .request || clientLogMode == .requestAndResponse {
             logger.debug("Request: \(input.debugDescription)")
-        }
-        
-        if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
+        }else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
             logger.debug("Request: \(input.debugDescriptionWithBody)")
         }
         
@@ -43,9 +41,7 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
             let output = try response.get()
             if clientLogMode == .response || clientLogMode == .requestAndResponse {
                 logger.debug("Response: \(output.httpResponse.debugDescription)")
-            }
-            
-            if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
+            } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
                 logger.debug("Response: \(output.httpResponse.debugDescriptionWithBody)")
             }
             
