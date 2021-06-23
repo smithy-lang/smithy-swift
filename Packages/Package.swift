@@ -2,6 +2,8 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
+let excludes = ["README.md"]
+
 let package = Package(
     name: "ClientRuntime",
     platforms: [
@@ -24,7 +26,8 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
-            path: "./ClientRuntime/Sources"
+            path: "./ClientRuntime/Sources",
+            exclude: excludes
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -37,7 +40,8 @@ let package = Package(
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"],
-            path: "./SmithyTestUtil/Sources"
+            path: "./SmithyTestUtil/Sources",
+            exclude: excludes
         ),
         .testTarget(
             name: "SmithyTestUtilTests",

@@ -145,7 +145,7 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func close() {
         for (endpoint, value) in connectionPools {
-            logger.debug("Connection to endpoint: \(endpoint.url?.absoluteString) is closing")
+            logger.debug("Connection to endpoint: \(String(describing: endpoint.url?.absoluteString)) is closing")
             value.closePendingConnections()
         }
     }

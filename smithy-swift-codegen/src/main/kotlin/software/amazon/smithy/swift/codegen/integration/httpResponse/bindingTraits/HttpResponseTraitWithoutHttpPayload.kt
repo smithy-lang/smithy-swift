@@ -35,8 +35,9 @@ class HttpResponseTraitWithoutHttpPayload(
 
         val bodyMembersWithoutQueryTrait = bodyMembers
             .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
-            .map { ctx.symbolProvider.toMemberName(it.member) }
             .toMutableSet()
+
+        val bodyMembersWithoutQueryTraitMemberNames = bodyMembersWithoutQueryTrait.map { ctx.symbolProvider.toMemberName(it.member) }
 
         if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
             writer.write("if case .data(let data) = httpResponse.body,")
@@ -44,13 +45,13 @@ class HttpResponseTraitWithoutHttpPayload(
             writer.write("let unwrappedData = data,")
             writer.write("let responseDecoder = decoder {")
             writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: unwrappedData)")
-            bodyMembersWithoutQueryTrait.sorted().forEach {
+            bodyMembersWithoutQueryTraitMemberNames.sorted().forEach {
                 writer.write("self.$it = output.$it")
             }
             writer.dedent()
             writer.write("} else {")
             writer.indent()
-            bodyMembers.sortedBy { it.memberName }.forEach {
+            bodyMembersWithoutQueryTrait.sortedBy { it.memberName }.forEach {
                 val memberName = ctx.symbolProvider.toMemberName(it.member)
                 val type = ctx.model.expectShape(it.member.target)
                 val value = if (ctx.symbolProvider.toSymbol(it.member).isBoxed()) "nil" else {

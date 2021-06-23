@@ -349,12 +349,14 @@ extension MapInputOutputBody: Decodable {
 struct NestedShapesOutputBody: Equatable {
     public let nestedListInDict: [String:[Date]?]?
     public let nestedDictInList: [[String:String]?]?
+    public let nestedListOfListInDict: [String:[[Int]?]?]?
 }
 
 extension NestedShapesOutputBody: Decodable {
     enum CodingKeys: String, CodingKey {
         case nestedDictInList
         case nestedListInDict
+        case nestedListOfListInDict
     }
 
     public init (from decoder: Decoder) throws {
@@ -393,6 +395,27 @@ extension NestedShapesOutputBody: Decodable {
             }
         }
         nestedDictInList = nestedDictInListDecoded0
+        let nestedListOfListInDictContainer = try containerValues.decodeIfPresent([String:[[Int]?]?].self, forKey: .nestedListOfListInDict)
+        var nestedListOfListInDictDecoded0: [String:[[Int]?]?]? = nil
+        if let nestedListOfListInDictContainer = nestedListOfListInDictContainer {
+            nestedListOfListInDictDecoded0 = [String:[[Int]?]?]()
+            for (key0, nestedintlist0) in nestedListOfListInDictContainer {
+                var nestedintlist0Decoded0 = [[Int]?]()
+                if let nestedintlist0 = nestedintlist0 {
+                    for list1 in nestedintlist0 {
+                        var list1Decoded1 = [Int]()
+                        if let list1 = list1 {
+                            for integer2 in list1 {
+                                list1Decoded1.append(integer2)
+                            }
+                        }
+                        nestedintlist0Decoded0.append(list1Decoded1)
+                    }
+                }
+                nestedListOfListInDictDecoded0?[key0] = nestedintlist0Decoded0
+            }
+        }
+        nestedListOfListInDict = nestedListOfListInDictDecoded0
     }
 }
             """.trimIndent()
