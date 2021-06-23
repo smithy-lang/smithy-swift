@@ -142,7 +142,7 @@ list NestedDictInList {
 
 map NestedListOfListInDict {
     key: String,
-    value: NestedIntList
+    value: NestedLongList
 }
 
 /// Recursive shapes
@@ -597,6 +597,10 @@ list StructList {
 // A list of lists of integers
 list NestedIntList {
     member: IntList
+}
+
+list NestedLongList {
+    member: LongList
 }
 
 // A list of enums

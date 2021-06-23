@@ -54,7 +54,7 @@ class MiddlewareGenerator(
             writer.write("")
             writer.write("public typealias MInput = ${middleware.inputType.name}")
             writer.write("public typealias MOutput = ${middleware.outputType.name}")
-            writer.write("public typealias Context = ${middleware.contextType.name}")
+            writer.write("public typealias Context = ClientRuntime.${middleware.contextType.name}")
             writer.write("public typealias MError = ${middleware.errorType.name}")
         }
     }
