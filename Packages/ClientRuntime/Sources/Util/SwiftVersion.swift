@@ -7,8 +7,7 @@
 
 public var currentSwiftVersion: String {
     #if swift(>=5.6)
-    public let failure: String?
-    return failure!
+      #error("Cannot use a version of Swift greater than available")
     #elseif swift(>=5.5)
     return "5.5"
     #elseif swift(>=5.4)
