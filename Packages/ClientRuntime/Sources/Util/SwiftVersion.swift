@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public var currentSwiftVersion: String {
+public var swiftVersion: String {
     #if swift(>=5.6)
-      #error("Cannot use a version of Swift greater than available")
+      #error("Cannot use a version of Swift greater than available. Please create a Github issue for us to add support for the version of Swift you want to use.")
     #elseif swift(>=5.5)
     return "5.5"
     #elseif swift(>=5.4)
@@ -21,7 +21,7 @@ public var currentSwiftVersion: String {
     #elseif swift(>=5.0)
     return "5.0"
     #else
-    return "unknown"
+      #error("Cannot use a version of Swift less than 5.0")
     #endif
 }
 

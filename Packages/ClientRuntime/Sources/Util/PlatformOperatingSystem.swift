@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
         
-public enum OSFamily: String {
+public enum PlatformOperatingSystem: String {
     case windows
     case linux
     case iOS
@@ -16,7 +16,7 @@ public enum OSFamily: String {
 }
 
 
-public var currentOS: OSFamily {
+public var currentOS: PlatformOperatingSystem {
     #if os(Linux)
     return .linux
     #elseif os(macOS)
@@ -30,7 +30,7 @@ public var currentOS: OSFamily {
     #elseif os(tvOS)
     return .tvOS
     #else
-    return .unknown
+     #error("Cannot use a an operating system we do not support")
     #endif
 }
 
