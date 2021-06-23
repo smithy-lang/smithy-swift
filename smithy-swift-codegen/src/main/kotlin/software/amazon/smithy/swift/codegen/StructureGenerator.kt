@@ -97,7 +97,7 @@ class StructureGenerator(
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: Equatable {")
+        writer.openBlock("public struct \$struct.name:L: Equatable, Hashable {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -210,7 +210,7 @@ class StructureGenerator(
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
         if (hasErrorTrait) {
-            writer.write("public var _headers: Headers?")
+            writer.write("public var _headers: ClientRuntime.Headers?")
             writer.write("public var _statusCode: HttpStatusCode?")
         }
         writer.write("public var _message: String?")
