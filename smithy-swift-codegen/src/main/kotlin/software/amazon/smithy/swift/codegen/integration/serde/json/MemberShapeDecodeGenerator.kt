@@ -154,7 +154,7 @@ abstract class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+            val isBoxed = originalSymbol.isBoxed()
             if (isBoxed) {
                 writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                     renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
