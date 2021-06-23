@@ -27,7 +27,7 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputBody+Decodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputResponseBody+Decodable.swift"))
     }
 
     @Test
@@ -40,17 +40,17 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates smoke test request decodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct SmokeTestOutputBody: Equatable {
+            struct SmokeTestOutputResponseBody: Equatable {
                 public let payload1: String?
                 public let payload2: Int?
                 public let payload3: Nested?
             }
 
-            extension SmokeTestOutputBody: Decodable {
+            extension SmokeTestOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
@@ -156,11 +156,11 @@ class StructDecodeGenerationTests {
     @Test
     fun `it provides decodable conformance to operation outputs with timestamps`() {
         val contents =
-            getModelFileContents("example", "TimestampInputOutputBody+Decodable.swift", newTestContext.manifest)
+            getModelFileContents("example", "TimestampInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct TimestampInputOutputBody: Equatable {
+struct TimestampInputOutputResponseBody: Equatable {
     public let normal: Date?
     public let dateTime: Date?
     public let epochSeconds: Date?
@@ -169,7 +169,7 @@ struct TimestampInputOutputBody: Equatable {
     public let timestampList: [Date]?
 }
 
-extension TimestampInputOutputBody: Decodable {
+extension TimestampInputOutputResponseBody: Decodable {
     enum CodingKeys: String, CodingKey {
         case dateTime
         case epochSeconds
@@ -244,11 +244,11 @@ extension TimestampInputOutputBody: Decodable {
 
     @Test
     fun `it decodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct MapInputOutputBody: Equatable {
+struct MapInputOutputResponseBody: Equatable {
     public let intMap: [String:Int]?
     public let structMap: [String:ReachableOnlyThroughMap]?
     public let enumMap: [String:MyEnum]?
@@ -257,7 +257,7 @@ struct MapInputOutputBody: Equatable {
     public let dateMap: [String:Date]?
 }
 
-extension MapInputOutputBody: Decodable {
+extension MapInputOutputResponseBody: Decodable {
     enum CodingKeys: String, CodingKey {
         case blobMap
         case dateMap
@@ -342,17 +342,17 @@ extension MapInputOutputBody: Decodable {
     @Test
     fun `it decodes nested diverse shapes correctly`() {
         val contents =
-            getModelFileContents("example", "NestedShapesOutputBody+Decodable.swift", newTestContext.manifest)
+            getModelFileContents("example", "NestedShapesOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct NestedShapesOutputBody: Equatable {
+struct NestedShapesOutputResponseBody: Equatable {
     public let nestedListInDict: [String:[Date]?]?
     public let nestedDictInList: [[String:String]?]?
     public let nestedListOfListInDict: [String:[[Int]?]?]?
 }
 
-extension NestedShapesOutputBody: Decodable {
+extension NestedShapesOutputResponseBody: Decodable {
     enum CodingKeys: String, CodingKey {
         case nestedDictInList
         case nestedListInDict
@@ -399,20 +399,20 @@ extension NestedShapesOutputBody: Decodable {
         var nestedListOfListInDictDecoded0: [String:[[Int]?]?]? = nil
         if let nestedListOfListInDictContainer = nestedListOfListInDictContainer {
             nestedListOfListInDictDecoded0 = [String:[[Int]?]?]()
-            for (key0, nestedintlist0) in nestedListOfListInDictContainer {
-                var nestedintlist0Decoded0 = [[Int]?]()
-                if let nestedintlist0 = nestedintlist0 {
-                    for list1 in nestedintlist0 {
+            for (key0, nestedlonglist0) in nestedListOfListInDictContainer {
+                var nestedlonglist0Decoded0 = [[Int]?]()
+                if let nestedlonglist0 = nestedlonglist0 {
+                    for list1 in nestedlonglist0 {
                         var list1Decoded1 = [Int]()
                         if let list1 = list1 {
-                            for integer2 in list1 {
-                                list1Decoded1.append(integer2)
+                            for long2 in list1 {
+                                list1Decoded1.append(long2)
                             }
                         }
-                        nestedintlist0Decoded0.append(list1Decoded1)
+                        nestedlonglist0Decoded0.append(list1Decoded1)
                     }
                 }
-                nestedListOfListInDictDecoded0?[key0] = nestedintlist0Decoded0
+                nestedListOfListInDictDecoded0?[key0] = nestedlonglist0Decoded0
             }
         }
         nestedListOfListInDict = nestedListOfListInDictDecoded0

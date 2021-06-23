@@ -20,7 +20,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -35,8 +35,8 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
-                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutput>
-                public typealias Context = HttpContext
+                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
                 public typealias MError = SdkError<QueryIdempotencyTokenAutoFillOutputError>
             }
             """.trimIndent()
@@ -57,7 +57,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -78,8 +78,8 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutput>
-                public typealias Context = HttpContext
+                public typealias MOutput = OperationOutput<TimestampInputOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
                 public typealias MError = SdkError<TimestampInputOutputError>
             }
             """.trimIndent()
@@ -100,7 +100,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -115,8 +115,8 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutput>
-                public typealias Context = HttpContext
+                public typealias MOutput = OperationOutput<SmokeTestOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
                 public typealias MError = SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
@@ -146,7 +146,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<AllQueryStringTypesInput>,
-                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -192,7 +192,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryParamsAsStringListMapInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -234,7 +234,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: SerializeStepInput<QueryPrecedenceInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutput>, MError>
+                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,

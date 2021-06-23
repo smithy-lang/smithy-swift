@@ -16,7 +16,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationInput: Equatable {
+            public struct MyTestOperationInput: Equatable, Hashable {
                 public let bar: RenamedGreeting?
 
                 public init (
@@ -40,11 +40,11 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationOutput.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationOutputResponse.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationOutput: Equatable {
+            public struct MyTestOperationOutputResponse: Equatable, Hashable {
                 public let baz: GreetingStruct?
             
                 public init (
@@ -72,7 +72,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct GreetingStruct: Equatable {
+            public struct GreetingStruct: Equatable, Hashable {
                 public let hi: String?
             
                 public init (
@@ -101,7 +101,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct RenamedGreeting: Equatable {
+            public struct RenamedGreeting: Equatable, Hashable {
                 public let salutation: String?
             
                 public init (

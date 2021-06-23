@@ -44,7 +44,7 @@ internal class RecursiveShapeBoxerTests {
             .getFileString("example/models/RecursiveShapesInput.swift").get()
         Assertions.assertNotNull(recursiveShapesInput)
         recursiveShapesInput.shouldContain(
-            "public struct RecursiveShapesInput: Equatable {\n" +
+            "public struct RecursiveShapesInput: Equatable, Hashable {\n" +
                 "    public let nested: RecursiveShapesInputOutputNested1?\n" +
                 "\n" +
                 "    public init (\n" +
@@ -57,10 +57,10 @@ internal class RecursiveShapeBoxerTests {
         )
 
         val recursiveShapesOutput = manifest
-            .getFileString("example/models/RecursiveShapesOutput.swift").get()
+            .getFileString("example/models/RecursiveShapesOutputResponse.swift").get()
         Assertions.assertNotNull(recursiveShapesOutput)
         recursiveShapesOutput.shouldContain(
-            "public struct RecursiveShapesOutput: Equatable {\n" +
+            "public struct RecursiveShapesOutputResponse: Equatable, Hashable {\n" +
                 "    public let nested: RecursiveShapesInputOutputNested1?\n" +
                 "\n" +
                 "    public init (\n" +
@@ -76,7 +76,7 @@ internal class RecursiveShapeBoxerTests {
             .getFileString("example/models/RecursiveShapesInputOutputNested1.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested1)
         recursiveShapesInputOutputNested1.shouldContain(
-            "public struct RecursiveShapesInputOutputNested1: Equatable {\n" +
+            "public struct RecursiveShapesInputOutputNested1: Equatable, Hashable {\n" +
                 "    public let foo: String?\n" +
                 "    public let nested: Box<RecursiveShapesInputOutputNested2>?\n" +
                 "\n" +
@@ -95,7 +95,7 @@ internal class RecursiveShapeBoxerTests {
             .getFileString("example/models/RecursiveShapesInputOutputNested2.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
         recursiveShapesInputOutputNested2.shouldContain(
-            "public struct RecursiveShapesInputOutputNested2: Equatable {\n" +
+            "public struct RecursiveShapesInputOutputNested2: Equatable, Hashable {\n" +
                 "    public let bar: String?\n" +
                 "    public let recursiveMember: RecursiveShapesInputOutputNested1?\n" +
                 "\n" +

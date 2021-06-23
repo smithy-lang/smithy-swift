@@ -12,9 +12,9 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlEnumsOutputBody: Decodable {
+        extension XmlEnumsOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case fooEnum1
                 case fooEnum2
@@ -58,10 +58,10 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum nested`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsNestedOutputBody: Decodable {
+            extension XmlEnumsNestedOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case nestedEnumsList
                 }

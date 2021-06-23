@@ -71,13 +71,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<SmokeTestInput, SmokeTestOutput, SmokeTestOutputError>(id: "SmokeTest")
+        var operationStack = OperationStack<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(id: "SmokeTest")
         operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputBodyMiddleware())
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SmokeTestOutput, SmokeTestOutputError>())
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<SmokeTestOutput, SmokeTestOutputError>(
+                     middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
@@ -102,8 +102,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! SmokeTestOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<SmokeTestOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! SmokeTestOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<SmokeTestOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -149,13 +149,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutput, ExplicitStringOutputError>(id: "ExplicitString")
+        var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
         operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputBodyMiddleware())
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<ExplicitStringOutput, ExplicitStringOutputError>())
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<ExplicitStringOutput, ExplicitStringOutputError>(
+                     middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             let requiredHeaders = ["Content-Length"]
             // assert required headers do exist
@@ -173,8 +173,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! ExplicitStringOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<ExplicitStringOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! ExplicitStringOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<ExplicitStringOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -215,19 +215,19 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutput, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
+        var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
         operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutput, EmptyInputAndEmptyOutputOutputError>(
+                     middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! EmptyInputAndEmptyOutputOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<EmptyInputAndEmptyOutputOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! EmptyInputAndEmptyOutputOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<EmptyInputAndEmptyOutputOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -271,22 +271,22 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
+        var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>(
+                     middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! SimpleScalarPropertiesOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<SimpleScalarPropertiesOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! SimpleScalarPropertiesOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<SimpleScalarPropertiesOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -334,14 +334,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutput, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
+        var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutput, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<StreamingTraitsOutput, StreamingTraitsOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<StreamingTraitsOutput, StreamingTraitsOutputError>(
+                     middleware: MockDeserializeMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
@@ -351,8 +351,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! StreamingTraitsOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<StreamingTraitsOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! StreamingTraitsOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<StreamingTraitsOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -398,19 +398,19 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutput, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
+        var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
         operationStack.serializeStep.intercept(position: .before, middleware: HttpPrefixHeadersInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: HttpPrefixHeadersInputQueryItemMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutput, HttpPrefixHeadersOutputError>(
+                     middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
                 XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! HttpPrefixHeadersOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<HttpPrefixHeadersOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! HttpPrefixHeadersOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<HttpPrefixHeadersOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -461,14 +461,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutput, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
+        var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput, JsonUnionsOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<JsonUnionsOutput, JsonUnionsOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<JsonUnionsOutput, JsonUnionsOutputError>(
+                     middleware: MockDeserializeMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
@@ -485,8 +485,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! JsonUnionsOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<JsonUnionsOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! JsonUnionsOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<JsonUnionsOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -560,14 +560,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutput, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
+        var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput, RecursiveShapesOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<RecursiveShapesOutput, RecursiveShapesOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<RecursiveShapesOutput, RecursiveShapesOutputError>(
+                     middleware: MockDeserializeMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
@@ -584,8 +584,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! RecursiveShapesOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<RecursiveShapesOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! RecursiveShapesOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<RecursiveShapesOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -644,14 +644,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutput, InlineDocumentOutputError>(id: "InlineDocumentInput")
+        var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput, InlineDocumentOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutput, InlineDocumentOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<InlineDocumentOutput, InlineDocumentOutputError>(
+                     middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
@@ -668,8 +668,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! InlineDocumentOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<InlineDocumentOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! InlineDocumentOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<InlineDocumentOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })
@@ -724,14 +724,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
-        var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
+        var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>())
+        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
+        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>(
+                     middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
@@ -748,8 +748,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! InlineDocumentAsPayloadOutput(httpResponse: response, decoder: nil)
-            let output = OperationOutput<InlineDocumentAsPayloadOutput>(httpResponse: response, output: mockOutput)
+            let mockOutput = try! InlineDocumentAsPayloadOutputResponse(httpResponse: response, decoder: nil)
+            let output = OperationOutput<InlineDocumentAsPayloadOutputResponse>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return .success(output)
         })

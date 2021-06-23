@@ -603,6 +603,10 @@ list NestedLongList {
     member: LongList
 }
 
+list LongList {
+    member: Long
+}
+
 // A list of enums
 list EnumList {
     member: MyEnum

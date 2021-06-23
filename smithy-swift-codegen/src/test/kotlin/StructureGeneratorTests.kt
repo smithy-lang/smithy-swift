@@ -34,7 +34,7 @@ class StructureGeneratorTests {
         val expectedGeneratedStructure =
             """
                 /// This *is* documentation about the shape.
-                public struct MyStruct: Equatable {
+                public struct MyStruct: Equatable, Hashable {
                     public let bar: Int
                     /// This *is* documentation about the member.
                     public let baz: Int?
@@ -66,7 +66,7 @@ class StructureGeneratorTests {
             .getFileString("example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
         primitiveTypesInput.shouldContain(
-            "public struct PrimitiveTypesInput: Equatable {\n" +
+            "public struct PrimitiveTypesInput: Equatable, Hashable {\n" +
                 "    public let booleanVal: Bool?\n" +
                 "    public let byteVal: Int8?\n" +
                 "    public let doubleVal: Double?\n" +
@@ -135,7 +135,7 @@ class StructureGeneratorTests {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNested1: Equatable {
+public struct RecursiveShapesInputOutputNested1: Equatable, Hashable {
     public let foo: String?
     public let nested: Box<RecursiveShapesInputOutputNested2>?
 
@@ -149,7 +149,7 @@ public struct RecursiveShapesInputOutputNested1: Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Equatable {
+public struct RecursiveShapesInputOutputNested2: Equatable, Hashable {
     public let bar: String?
     public let recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -164,7 +164,7 @@ public struct RecursiveShapesInputOutputNested2: Equatable {
 }
 
 /// This *is* documentation about the shape.
-public struct RecursiveShapesInputOutput: Equatable {
+public struct RecursiveShapesInputOutput: Equatable, Hashable {
     public let nested: RecursiveShapesInputOutputNested1?
 
     public init (
@@ -192,7 +192,7 @@ public struct RecursiveShapesInputOutput: Equatable {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNestedList1: Equatable {
+public struct RecursiveShapesInputOutputNestedList1: Equatable, Hashable {
     public let foo: String?
     public let recursiveList: [RecursiveShapesInputOutputNested2]?
 
@@ -206,7 +206,7 @@ public struct RecursiveShapesInputOutputNestedList1: Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Equatable {
+public struct RecursiveShapesInputOutputNested2: Equatable, Hashable {
     public let bar: String?
     public let recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -221,7 +221,7 @@ public struct RecursiveShapesInputOutputNested2: Equatable {
 }
 
 /// This *is* documentation about the shape.
-public struct RecursiveShapesInputOutputLists: Equatable {
+public struct RecursiveShapesInputOutputLists: Equatable, Hashable {
     public let nested: RecursiveShapesInputOutputNested1?
 
     public init (
@@ -254,7 +254,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
                 /// This *is* documentation about the shape.
                 public struct MyError: ClientRuntime.ServiceError, Equatable {
-                    public var _headers: Headers?
+                    public var _headers: ClientRuntime.Headers?
                     public var _statusCode: HttpStatusCode?
                     public var _message: String?
                     public var _requestID: String?
@@ -308,7 +308,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/JsonListsInput.swift").get()
         Assertions.assertNotNull(jsonListsInput)
         jsonListsInput.shouldContain(
-            "public struct JsonListsInput: Equatable {\n" +
+            "public struct JsonListsInput: Equatable, Hashable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
@@ -319,10 +319,10 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         )
 
         val jsonListsOutput = manifest
-            .getFileString("example/models/JsonListsOutput.swift").get()
+            .getFileString("example/models/JsonListsOutputResponse.swift").get()
         Assertions.assertNotNull(jsonListsOutput)
         jsonListsOutput.shouldContain(
-            "public struct JsonListsOutput: Equatable {\n" +
+            "public struct JsonListsOutputResponse: Equatable, Hashable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
@@ -349,7 +349,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(jsonMapsInput)
         val expectedJsonMapsInput =
             """
-                public struct JsonMapsInput: Equatable {
+                public struct JsonMapsInput: Equatable, Hashable {
                     public let denseBooleanMap: [String:Bool]?
                     public let denseNumberMap: [String:Int]?
                     public let denseStringMap: [String:String]?
@@ -384,11 +384,11 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
-            .getFileString("example/models/JsonMapsOutput.swift").get()
+            .getFileString("example/models/JsonMapsOutputResponse.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
             """
-                public struct JsonMapsOutput: Equatable {
+                public struct JsonMapsOutputResponse: Equatable, Hashable {
                     public let denseBooleanMap: [String:Bool]?
                     public let denseNumberMap: [String:Int]?
                     public let denseStringMap: [String:String]?
@@ -436,7 +436,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(structWithDeprecatedTrait)
         var structContainsDeprecatedTrait = """
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct StructWithDeprecatedTrait: Equatable {
+            public struct StructWithDeprecatedTrait: Equatable, Hashable {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
@@ -445,7 +445,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
             @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public struct StructSincePropertySet: Equatable {
+            public struct StructSincePropertySet: Equatable, Hashable {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
     }
@@ -462,7 +462,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct OperationWithDeprecatedTraitInput: Equatable {
+            public struct OperationWithDeprecatedTraitInput: Equatable, Hashable {
                 public let bool: Bool?
                 public let foo: Foo?
                 public let intVal: Int?
@@ -487,7 +487,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/Foo.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
-        public struct Foo: Equatable {
+        public struct Foo: Equatable, Hashable {
             /// Test documentation with deprecated
             @available(*, deprecated)
             public let baz: String?

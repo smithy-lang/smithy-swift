@@ -28,11 +28,11 @@ class SensitiveTraitGeneratorTests {
     fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestOutputResponse+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestOutput: CustomDebugStringConvertible {
+            extension SensitiveTraitInRequestOutputResponse: CustomDebugStringConvertible {
                 public var debugDescription: String {
                     "CONTENT_REDACTED"
                 }
@@ -61,13 +61,13 @@ class SensitiveTraitGeneratorTests {
     fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestOutputResponse+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestOutput: CustomDebugStringConvertible {
+            extension SensitiveTraitTestRequestOutputResponse: CustomDebugStringConvertible {
                 public var debugDescription: String {
-                    "SensitiveTraitTestRequestOutput(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
+                    "SensitiveTraitTestRequestOutputResponse(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
         extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
