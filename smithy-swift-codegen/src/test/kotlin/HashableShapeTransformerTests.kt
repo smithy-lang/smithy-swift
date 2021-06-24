@@ -27,14 +27,29 @@ class HashableShapeTransformerTests {
 
         val traitedMember = "smithy.example#HashableStructure"
         val traitedMemberShape = transformed.getShape(ShapeId.from(traitedMember)).get()
+
         Assertions.assertTrue(traitedMemberShape.hasTrait<HashableTrait>())
+    }
+
+    @Test
+    fun `test for nested types with hashable trait`() {
+        val model = javaClass.getResource("hashable-trait-test.smithy").asSmithy()
+        val transformed = HashableShapeTransformer.transform(model)
 
         val traitedMember2 = "smithy.example#NestedHashableStructure"
         val traitedMemberShape2 = transformed.getShape(ShapeId.from(traitedMember2)).get()
+
         Assertions.assertTrue(traitedMemberShape2.hasTrait<HashableTrait>())
+    }
+
+    @Test
+    fun `test that certain types do not receive the trait`() {
+        val model = javaClass.getResource("hashable-trait-test.smithy").asSmithy()
+        val transformed = HashableShapeTransformer.transform(model)
 
         val untraitedMember = "smithy.example#HashableInput"
         val untraitedMemberShape = transformed.getShape(ShapeId.from(untraitedMember)).get()
+
         Assertions.assertFalse(untraitedMemberShape.hasTrait<HashableTrait>())
     }
 
