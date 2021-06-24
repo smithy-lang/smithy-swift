@@ -277,7 +277,13 @@ class ShapeValueGenerator(
         }
 
         override fun arrayNode(node: ArrayNode) {
-            val memberShape = generator.model.expectShape((currShape as CollectionShape).member.target)
+            if(currShape.type == ShapeType.DOCUMENT) {
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+
+               // writer.writeInline("Document.array(\$L)", node.elements)
+
+            }
+            val memberShape = if(currShape.type == ShapeType.DOCUMENT) generator.model.expectShape(currShape.toShapeId()) else generator.model.expectShape((currShape as CollectionShape).member.target)
             var i = 0
             node.elements.forEach { element ->
                 writer.writeInline("\n")
@@ -312,16 +318,27 @@ class ShapeValueGenerator(
                     writer.addImport(SwiftDependency.BIG.target)
                     writer.writeInline("Complex(\$L)", (node.value as Double).toBigDecimal())
                 }
+                ShapeType.DOCUMENT -> {
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.writeInline("Document.number(Double(\$L))", node.value)
+                }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }
         }
 
         override fun booleanNode(node: BooleanNode) {
-            if (currShape.type != ShapeType.BOOLEAN) {
-                throw CodegenException("unexpected shape type $currShape for boolean value")
-            }
+            val boolValue = if (node.value) "true" else "false"
+            when(currShape.type) {
+                ShapeType.BOOLEAN -> {
+                    writer.writeInline("\$L", boolValue)
+                }
 
-            writer.writeInline("\$L", if (node.value) "true" else "false")
+                ShapeType.DOCUMENT -> {
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.writeInline("Document.boolean(\$L)", boolValue)
+                }
+                else -> throw CodegenException("unexpected shape type $currShape for boolean value")
+            }
         }
     }
 }
