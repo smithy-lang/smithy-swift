@@ -52,10 +52,10 @@ class AddOperationShapes {
                     .map { shapeId ->
                         cloneOperationShape(
                             operationId, (model.expectShape(shapeId) as StructureShape),
-                            "Output"
+                            "OutputResponse"
                         )
                     }
-                    .orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }
+                    .orElseGet { emptyOperationStructure(operationId, "OutputResponse", moduleName) }
 
                 // Add new input/output to model
                 modelBuilder.addShape(inputShape)

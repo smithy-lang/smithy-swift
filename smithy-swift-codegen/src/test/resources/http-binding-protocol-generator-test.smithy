@@ -127,7 +127,8 @@ structure InlineDocumentInputOutput {
 
 structure NestedShapesInputOutput {
     nestedListInDict: NestedListInDict,
-    nestedDictInList: NestedDictInList
+    nestedDictInList: NestedDictInList,
+    nestedListOfListInDict: NestedListOfListInDict
 }
 
 map NestedListInDict {
@@ -137,6 +138,11 @@ map NestedListInDict {
 
 list NestedDictInList {
     member: StringMap
+}
+
+map NestedListOfListInDict {
+    key: String,
+    value: NestedLongList
 }
 
 /// Recursive shapes
@@ -591,6 +597,14 @@ list StructList {
 // A list of lists of integers
 list NestedIntList {
     member: IntList
+}
+
+list NestedLongList {
+    member: LongList
+}
+
+list LongList {
+    member: Long
 }
 
 // A list of enums

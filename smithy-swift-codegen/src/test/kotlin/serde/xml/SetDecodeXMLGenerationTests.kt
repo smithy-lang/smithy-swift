@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test
 
 class SetDecodeXMLGenerationTests {
     @Test
-    fun `XmlEnumSetOutputBody decodable`() {
+    fun `XmlEnumSetOutputResponseBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumSetOutputBody: Decodable {
+            extension XmlEnumSetOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case fooEnumSet
                 }
@@ -48,12 +48,12 @@ class SetDecodeXMLGenerationTests {
     }
 
     @Test
-    fun `XmlEnumNestedSetOutputBody nested decodable`() {
+    fun `XmlEnumNestedSetOutputResponseBody nested decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumNestedSetOutputBody: Decodable {
+            extension XmlEnumNestedSetOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case fooEnumSet
                 }

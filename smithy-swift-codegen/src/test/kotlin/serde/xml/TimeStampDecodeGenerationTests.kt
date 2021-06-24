@@ -11,9 +11,9 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `001 decode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsOutputBody: Decodable {
+        extension XmlTimestampsOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case dateTime
                 case epochSeconds
@@ -57,9 +57,9 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `002 decode nested timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedOutputBody: Decodable {
+        extension XmlTimestampsNestedOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }
@@ -102,9 +102,9 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `003 decode nested timestamps HttpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedHTTPDateOutputBody: Decodable {
+        extension XmlTimestampsNestedHTTPDateOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }
@@ -146,9 +146,9 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `004 decode nested timestamps xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedXmlNameOutputBody: Decodable {
+        extension XmlTimestampsNestedXmlNameOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case nestedTimestampList
             }

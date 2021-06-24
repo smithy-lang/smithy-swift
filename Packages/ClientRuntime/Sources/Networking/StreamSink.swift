@@ -10,7 +10,7 @@ import class Foundation.FileManager
 
 // TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")
-public protocol StreamSink: class {
+public protocol StreamSink: AnyObject {
     func receiveData(readFrom buffer: ByteBuffer)
     func onError(error: StreamError)
 }

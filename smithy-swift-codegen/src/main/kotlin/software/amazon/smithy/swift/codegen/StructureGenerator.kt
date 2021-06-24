@@ -210,7 +210,7 @@ class StructureGenerator(
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
         if (hasErrorTrait) {
-            writer.write("public var _headers: Headers?")
+            writer.write("public var _headers: ClientRuntime.Headers?")
             writer.write("public var _statusCode: HttpStatusCode?")
         }
         writer.write("public var _message: String?")

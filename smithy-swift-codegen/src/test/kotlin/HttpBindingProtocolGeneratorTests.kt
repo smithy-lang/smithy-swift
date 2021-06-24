@@ -65,11 +65,11 @@ class HttpBindingProtocolGeneratorTests {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructOutput: HttpResponseBinding {
+extension ExplicitStructOutputResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         if case .data(let data) = httpResponse.body,
            let unwrappedData = data {
@@ -96,12 +96,12 @@ extension ExplicitStructOutput: HttpResponseBinding {
     }
 
     @Test
-    fun `httpResponseCodeOutput response init content`() {
-        val contents = getModelFileContents("example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
+    fun `httpResponseCodeOutputResponse response init content`() {
+        val contents = getModelFileContents("example", "HttpResponseCodeOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension HttpResponseCodeOutput: HttpResponseBinding {
+extension HttpResponseCodeOutputResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         self.status = httpResponse.statusCode.rawValue
     }
@@ -112,11 +112,11 @@ extension HttpResponseCodeOutput: HttpResponseBinding {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
+extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         if case .data(let data) = httpResponse.body,
            let unwrappedData = data {
@@ -136,10 +136,10 @@ extension InlineDocumentAsPayloadOutput: HttpResponseBinding {
     }
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
-        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents =
             """
-            extension HttpPrefixHeadersOutput: HttpResponseBinding {
+            extension HttpPrefixHeadersOutputResponse: HttpResponseBinding {
                 public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
                     if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue

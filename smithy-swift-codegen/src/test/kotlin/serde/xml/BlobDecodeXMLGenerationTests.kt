@@ -12,9 +12,9 @@ class BlobDecodeXMLGenerationTests {
     @Test
     fun `decode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsOutputBody: Decodable {
+        extension XmlBlobsOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case data
             }
@@ -41,9 +41,9 @@ class BlobDecodeXMLGenerationTests {
     @Test
     fun `decode blob nested`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsNestedOutputBody: Decodable {
+        extension XmlBlobsNestedOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
                 case nestedBlobList
             }

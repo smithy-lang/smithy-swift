@@ -11,13 +11,13 @@ class AttributeDecodeXMLGenerationTests {
     @Test
     fun `001 xml attributes decode for input type`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesOutputBody+DynamicNodeDecoding.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesOutputResponseBody+DynamicNodeDecoding.swift")
         val expectedContents = """
-        extension XmlAttributesOutputBody: DynamicNodeDecoding {
+        extension XmlAttributesOutputResponseBody: DynamicNodeDecoding {
             public static func nodeDecoding(for key: CodingKey) -> NodeDecoding {
                 switch(key) {
-                    case XmlAttributesOutputBody.CodingKeys.foo: return .element
-                    case XmlAttributesOutputBody.CodingKeys.attr: return .attribute
+                    case XmlAttributesOutputResponseBody.CodingKeys.foo: return .element
+                    case XmlAttributesOutputResponseBody.CodingKeys.attr: return .attribute
                     default:
                         return .element
                 }

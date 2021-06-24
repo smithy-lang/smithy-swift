@@ -57,10 +57,10 @@ internal class RecursiveShapeBoxerTests {
         )
 
         val recursiveShapesOutput = manifest
-            .getFileString("example/models/RecursiveShapesOutput.swift").get()
+            .getFileString("example/models/RecursiveShapesOutputResponse.swift").get()
         Assertions.assertNotNull(recursiveShapesOutput)
         recursiveShapesOutput.shouldContain(
-            "public struct RecursiveShapesOutput: Equatable {\n" +
+            "public struct RecursiveShapesOutputResponse: Equatable {\n" +
                 "    public let nested: RecursiveShapesInputOutputNested1?\n" +
                 "\n" +
                 "    public init (\n" +

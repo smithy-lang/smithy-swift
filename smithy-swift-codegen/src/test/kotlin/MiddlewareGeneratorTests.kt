@@ -39,7 +39,7 @@ class MiddlewareGeneratorTests {
             
                 public typealias MInput = String
                 public typealias MOutput = OperationOutput<String>
-                public typealias Context = HttpContext
+                public typealias Context = ClientRuntime.HttpContext
                 public typealias MError = SdkError<Error>
             }
             """.trimIndent()

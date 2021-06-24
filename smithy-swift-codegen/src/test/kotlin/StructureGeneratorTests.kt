@@ -254,7 +254,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
                 /// This *is* documentation about the shape.
                 public struct MyError: ClientRuntime.ServiceError, Equatable {
-                    public var _headers: Headers?
+                    public var _headers: ClientRuntime.Headers?
                     public var _statusCode: HttpStatusCode?
                     public var _message: String?
                     public var _requestID: String?
@@ -319,10 +319,10 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         )
 
         val jsonListsOutput = manifest
-            .getFileString("example/models/JsonListsOutput.swift").get()
+            .getFileString("example/models/JsonListsOutputResponse.swift").get()
         Assertions.assertNotNull(jsonListsOutput)
         jsonListsOutput.shouldContain(
-            "public struct JsonListsOutput: Equatable {\n" +
+            "public struct JsonListsOutputResponse: Equatable {\n" +
                 "    public let booleanList: [Bool]?\n" +
                 "    public let integerList: [Int]?\n" +
                 "    public let nestedStringList: [[String]?]?\n" +
@@ -384,11 +384,11 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
-            .getFileString("example/models/JsonMapsOutput.swift").get()
+            .getFileString("example/models/JsonMapsOutputResponse.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
             """
-                public struct JsonMapsOutput: Equatable {
+                public struct JsonMapsOutputResponse: Equatable {
                     public let denseBooleanMap: [String:Bool]?
                     public let denseNumberMap: [String:Int]?
                     public let denseStringMap: [String:String]?

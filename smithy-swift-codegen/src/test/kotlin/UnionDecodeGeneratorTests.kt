@@ -25,7 +25,7 @@ class UnionDecodeGeneratorTests {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsOutputBody+Decodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsOutputResponseBody+Decodable.swift"))
     }
 
     @Test
@@ -35,15 +35,15 @@ class UnionDecodeGeneratorTests {
 
     @Test
     fun `it decodes a union member in an operation body`() {
-        val contents = getModelFileContents("example", "JsonUnionsOutputBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonUnionsOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct JsonUnionsOutputBody: Equatable {
+            struct JsonUnionsOutputResponseBody: Equatable {
                 public let contents: MyUnion?
             }
 
-            extension JsonUnionsOutputBody: Decodable {
+            extension JsonUnionsOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case contents
                 }
