@@ -24,7 +24,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
-            path: "./Packages/ClientRuntime/Sources"
+            path: "./Sources/ClientRuntime/Sources"
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -32,17 +32,17 @@ let package = Package(
 	        "ClientRuntime",
 	        "SmithyTestUtil"
 	    ],
-	    path: "./Packages/ClientRuntime/Tests"
+	    path: "./Sources/ClientRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"],
-            path: "./Packages/SmithyTestUtil/Sources"
+            path: "./Sources/SmithyTestUtil/Sources"
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"],
-            path: "./Packages/SmithyTestUtil/Tests"
+            path: "./Sources/SmithyTestUtil/Tests"
         )
     ]
 )
