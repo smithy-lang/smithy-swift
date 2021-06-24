@@ -15,12 +15,14 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 import software.amazon.smithy.swift.codegen.toMemberNames
@@ -159,7 +161,7 @@ abstract class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = originalSymbol.isBoxed()
+            val isBoxed = originalSymbol.isBoxed() && ctx.model.expectShape(topLevelMember.target).hasTrait<SparseTrait>()
             if (isBoxed) {
                 writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                     renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
@@ -247,7 +249,7 @@ abstract class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
+            val isBoxed = originalSymbol.isBoxed() && ctx.model.expectShape(topLevelMember.target).hasTrait<SparseTrait>()
             if (isBoxed) {
                 writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                     renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)

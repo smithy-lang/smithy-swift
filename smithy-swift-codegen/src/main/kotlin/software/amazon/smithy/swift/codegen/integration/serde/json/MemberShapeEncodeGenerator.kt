@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -21,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
@@ -86,7 +88,7 @@ abstract class MemberShapeEncodeGenerator(
                     renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
-                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
                     if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                             renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
@@ -117,7 +119,7 @@ abstract class MemberShapeEncodeGenerator(
         targetShape: Shape,
         level: Int = 0
     ) {
-        val iteratorName = "${targetShape.id.name.toLowerCase()}$level"
+        val iteratorName = "${targetShape.id.name.lowercase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (targetShape) {
                 is CollectionShape -> {
@@ -135,7 +137,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(targetShape, iteratorName, targetShape.hasTrait(BoxTrait::class.java))
-                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
                     if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", iteratorName, iteratorName) {
                             writer.write("try $topLevelContainerName.encode($shapeExtension)")
@@ -167,7 +169,7 @@ abstract class MemberShapeEncodeGenerator(
             }
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
-                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
                 val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: $dictKey${level - 1})"
                 if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
