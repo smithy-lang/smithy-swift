@@ -3,7 +3,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.HashableShapeTransformer
+import software.amazon.smithy.swift.codegen.HashableTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import kotlin.streams.toList
 
@@ -98,7 +99,7 @@ class HashableShapeTransformerTests {
                 }
             }
         """.trimIndent()
-        hashableSetShape.shouldContain(expectedStructureShape )
+        hashableSetShape.shouldContain(expectedStructureShape)
 
         val hashableNestedStructure = manifest
             .getFileString("example/models/NestedHashableStructure.swift").get()

@@ -98,7 +98,7 @@ class StructureGenerator(
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val needsHashable = if(shape.hasTrait<HashableTrait>()) ", Hashable" else ""
+        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", Hashable" else ""
         writer.openBlock("public struct \$struct.name:L: Equatable$needsHashable {")
             .call { generateStructMembers() }
             .write("")
