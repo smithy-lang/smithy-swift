@@ -5,6 +5,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.HashableShapeTransformer
 import software.amazon.smithy.swift.codegen.HashableTrait
+import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import kotlin.streams.toList
 
