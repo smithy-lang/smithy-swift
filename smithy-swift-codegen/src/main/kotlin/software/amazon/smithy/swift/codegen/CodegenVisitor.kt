@@ -51,6 +51,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         // Add operation input/output shapes if not provided for future evolution of sdk
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
+        resolvedModel = HashableShapeTransformer.transform(resolvedModel)
         model = resolvedModel
 
         service = settings.getService(model)

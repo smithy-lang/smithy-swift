@@ -17,6 +17,7 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 
 fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
@@ -97,7 +98,8 @@ class StructureGenerator(
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: Equatable {")
+        val needsHashable = if(shape.hasTrait<HashableTrait>()) ", Hashable" else ""
+        writer.openBlock("public struct \$struct.name:L: Equatable$needsHashable {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
