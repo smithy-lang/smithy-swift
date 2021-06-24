@@ -24,7 +24,7 @@ object HashableShapeTransformer {
         //find all the shapes in this models shapes that have a struct shape contained within a list or set and don't already have the trait
         //find all the other shapes referencing that shape and mark with hashable.
         val allShapesNeedingHashable = mutableSetOf<Shape>()
-        val shapesNeedingHashable = model.shapes().filter { isHashable(model, it) && !it.hasTrait<HashableTrait>() && !Prelude.isPreludeShape(it) }
+        val shapesNeedingHashable = model.shapes().filter { isHashable(model, it) }
         shapesNeedingHashable.forEach {allShapesNeedingHashable.add(it)}
         val walker = Walker(model)
 
@@ -61,7 +61,7 @@ object HashableShapeTransformer {
     private fun isHashable(model: Model, shape: Shape): Boolean {
         return if (shape is StructureShape && !Prelude.isPreludeShape(shape)) {
             val allCollectionShapes = model.setShapes.filter { !Prelude.isPreludeShape(it) }
-            allCollectionShapes.any { it.member.target == shape.toShapeId() }
+            allCollectionShapes.any { it.member.target == shape.toShapeId() } && !shape.hasTrait<HashableTrait>()
         } else {
             false
         }
