@@ -279,9 +279,6 @@ class ShapeValueGenerator(
         override fun arrayNode(node: ArrayNode) {
             if(currShape.type == ShapeType.DOCUMENT) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-
-               // writer.writeInline("Document.array(\$L)", node.elements)
-
             }
             val memberShape = if(currShape.type == ShapeType.DOCUMENT) generator.model.expectShape(currShape.toShapeId()) else generator.model.expectShape((currShape as CollectionShape).member.target)
             var i = 0
@@ -302,7 +299,23 @@ class ShapeValueGenerator(
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
+                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> {
+
+                    val value = when(node.value.toString()) {
+                        "Infinity" -> {
+                            val symbol = generator.symbolProvider.toSymbol(currShape)
+                            val suffix = when(symbol.name) {
+                                "Float", "Double" -> ".infinity"
+                                else -> ".max"
+                            }
+                            "$symbol.name$suffix"
+                        }
+                        else -> "${node.value}"
+                    }
+
+
+                    writer.writeInline("\$L", value)
+                }
 
                 /*
                 TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol,
