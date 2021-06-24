@@ -29,7 +29,7 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct EnumInputInput: Equatable, Hashable {
+            public struct EnumInputInput: Equatable {
                 public let enumHeader: MyEnum?
                 public let nestedWithEnum: NestedEnum?
             """.trimIndent()

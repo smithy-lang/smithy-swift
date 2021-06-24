@@ -97,7 +97,7 @@ class StructureGenerator(
     private fun renderNonErrorStructure() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: Equatable, Hashable {")
+        writer.openBlock("public struct \$struct.name:L: Equatable {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
