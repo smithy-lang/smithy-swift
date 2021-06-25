@@ -32,7 +32,6 @@ import software.amazon.smithy.model.shapes.ResourceShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.ShortShape
@@ -235,13 +234,13 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val referenceTypeName = if(shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val referenceTypeName = if(shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
     }
 

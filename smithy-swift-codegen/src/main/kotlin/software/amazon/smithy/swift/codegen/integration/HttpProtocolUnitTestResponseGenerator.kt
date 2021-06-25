@@ -28,14 +28,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
             val symbol = symbolProvider.toSymbol(it)
-                renderBuildHttpResponse(test)
-                writer.write("")
-                renderActualOutput(test, symbol.name)
-                writer.write("")
-                renderExpectedOutput(test, it)
-                writer.write("")
-                renderAssertions(test, it)
-                writer.write("")
+            renderBuildHttpResponse(test)
+            writer.write("")
+            renderActualOutput(test, symbol.name)
+            writer.write("")
+            renderExpectedOutput(test, it)
+            writer.write("")
+            renderAssertions(test, it)
+            writer.write("")
         }
     }
 

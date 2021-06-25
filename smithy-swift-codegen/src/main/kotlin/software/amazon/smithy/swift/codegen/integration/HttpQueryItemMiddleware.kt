@@ -75,7 +75,7 @@ class HttpQueryItemMiddleware(
                 val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
                 if (valueTargetShape is CollectionShape) {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        val suffix = if(memberTarget.hasTrait<SparseTrait>()) "?" else ""
+                        val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
                         writer.openBlock("value0$suffix.forEach { value1 in", "}") {
                             writer.write("let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())")
                             writer.write("input.builder.withQueryItem(queryItem)")

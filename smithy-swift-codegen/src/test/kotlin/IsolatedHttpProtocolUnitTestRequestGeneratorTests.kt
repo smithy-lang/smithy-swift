@@ -59,7 +59,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 double: Double.infinity,
                 float: Float.infinity
             )
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

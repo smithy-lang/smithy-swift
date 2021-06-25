@@ -15,9 +15,15 @@ import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -264,9 +270,9 @@ class ShapeValueGenerator(
             when (currShape) {
                 is DoubleShape, is FloatShape -> {
                     val symbol = generator.symbolProvider.toSymbol(currShape)
-                    val value = when(node.value.toString()) {
+                    val value = when (node.value.toString()) {
                         "Infinity" -> {
-                            val suffix = when(symbol.name) {
+                            val suffix = when (symbol.name) {
                                 "Float", "Double" -> ".infinity"
                                 else -> ".max"
                             }
@@ -276,7 +282,7 @@ class ShapeValueGenerator(
                             "$symbol.nan"
                         }
                         "-Infinity" -> {
-                            val suffix = when(symbol.name) {
+                            val suffix = when (symbol.name) {
                                 "Float", "Double" -> ".infinity"
                                 else -> ".max"
                             }
@@ -288,7 +294,6 @@ class ShapeValueGenerator(
                 }
                 else -> writer.writeInline("\$S", node.value)
             }
-
         }
 
         override fun nullNode(node: NullNode) {

@@ -134,14 +134,14 @@ abstract class MemberShapeDecodeGenerator(
         val symbolName = getSymbolName(shape)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
-        var insertMethod = when(shape) {
+        var insertMethod = when (shape) {
             is SetShape -> "insert"
             is ListShape -> "append"
             else -> "append"
         }
         val nestedTarget = ctx.model.expectShape(shape.member.target)
         if (level == 0) {
-             insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
+            insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
                 is SetShape -> "insert"
                 is ListShape -> "append"
                 else -> "append"
