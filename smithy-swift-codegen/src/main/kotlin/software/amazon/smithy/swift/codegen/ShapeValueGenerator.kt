@@ -15,13 +15,7 @@ import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.DocumentShape
-import software.amazon.smithy.model.shapes.MapShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 
 /**
@@ -269,7 +263,34 @@ class ShapeValueGenerator(
         }
 
         override fun stringNode(node: StringNode) {
-            writer.writeInline("\$S", node.value)
+            when (currShape) {
+                is DoubleShape, is FloatShape -> {
+                    val symbol = generator.symbolProvider.toSymbol(currShape)
+                    val value = when(node.value.toString()) {
+                        "Infinity" -> {
+                            val suffix = when(symbol.name) {
+                                "Float", "Double" -> ".infinity"
+                                else -> ".max"
+                            }
+                            "${symbol.name}$suffix"
+                        }
+                        "NaN" -> {
+                            "$symbol.nan"
+                        }
+                        "-Infinity" -> {
+                            val suffix = when(symbol.name) {
+                                "Float", "Double" -> ".infinity"
+                                else -> ".max"
+                            }
+                            "-${symbol.name}$suffix"
+                        }
+                        else -> "${node.value}"
+                    }
+                    writer.writeInline("\$L", value)
+                }
+                else -> writer.writeInline("\$S", node.value)
+            }
+
         }
 
         override fun nullNode(node: NullNode) {
@@ -299,23 +320,7 @@ class ShapeValueGenerator(
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> {
-
-                    val value = when(node.value.toString()) {
-                        "Infinity" -> {
-                            val symbol = generator.symbolProvider.toSymbol(currShape)
-                            val suffix = when(symbol.name) {
-                                "Float", "Double" -> ".infinity"
-                                else -> ".max"
-                            }
-                            "$symbol.name$suffix"
-                        }
-                        else -> "${node.value}"
-                    }
-
-
-                    writer.writeInline("\$L", value)
-                }
+                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
                 /*
                 TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol,
