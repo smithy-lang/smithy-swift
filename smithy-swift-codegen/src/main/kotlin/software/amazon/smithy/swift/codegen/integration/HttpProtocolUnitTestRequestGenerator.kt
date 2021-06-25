@@ -61,6 +61,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
+            writer.write("let decoder = ${serdeContext.protocolDecoder}")
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -263,7 +264,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyComparison(writer: SwiftWriter, symbol: Symbol, appendBody: Boolean, expectedData: String, actualData: String) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("let decoder = ${serdeContext.protocolDecoder}")
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")

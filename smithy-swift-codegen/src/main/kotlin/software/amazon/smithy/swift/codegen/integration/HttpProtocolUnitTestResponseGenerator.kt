@@ -28,7 +28,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
             val symbol = symbolProvider.toSymbol(it)
-            writer.openBlock("do {", "} catch let err {") {
                 renderBuildHttpResponse(test)
                 writer.write("")
                 renderActualOutput(test, symbol.name)
@@ -37,11 +36,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.write("")
                 renderAssertions(test, it)
                 writer.write("")
-            }
-            writer.indent()
-            writer.write("XCTFail(err.localizedDescription)")
-            writer.dedent()
-            writer.write("}")
         }
     }
 

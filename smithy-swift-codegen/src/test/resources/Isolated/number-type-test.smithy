@@ -4,6 +4,7 @@ namespace aws.protocoltests.restjson
 use aws.protocols#restJson1
 use smithy.test#httpRequestTests
 use smithy.test#httpResponseTests
+
 @restJson1
 service RestJson {
     version: "1.0.0",
@@ -11,6 +12,7 @@ service RestJson {
         HttpRequestWithFloatLabels
     ]
 }
+
 
 apply HttpRequestWithFloatLabels @httpRequestTests([
     {

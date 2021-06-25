@@ -17,6 +17,7 @@ import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -52,6 +53,7 @@ class ShapeValueGenerator(
             ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
                 params.accept(nodeVisitor)
             }
+            ShapeType.DOCUMENT -> documentDecl(writer, params)
             else -> primitiveDecl(writer, shape) {
                 params.accept(nodeVisitor)
             }
@@ -110,6 +112,15 @@ class ShapeValueGenerator(
     private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
+    }
+
+    private fun documentDecl(writer: SwiftWriter, node: Node) {
+        writer.writeInline("try decoder.decode(Document.self, from:")
+            .write("")
+            .indent()
+            .write("\"\"\"")
+            .write(Node.prettyPrintJson(node))
+            .write("\"\"\".data(using: .utf8)!)")
     }
 
     private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {
@@ -230,19 +241,6 @@ class ShapeValueGenerator(
                             writer.writeInline(",")
                         }
                     }
-                    is DocumentShape -> {
-                        val documentValue = generator.symbolProvider.toSymbol(currShape).name
-                        writer.openBlock("$documentValue( ", ")") {
-                            writer.write("dictionaryLiteral:")
-                            writer.openBlock("(", ")") {
-                                keyNode.accept(this)
-                                writer.write(",").insertTrailingNewline()
-                                writer.openBlock("$documentValue(", ")") {
-                                    valueNode.accept(this)
-                                }
-                            }
-                        }
-                    }
                     is UnionShape -> {
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
@@ -298,10 +296,7 @@ class ShapeValueGenerator(
         }
 
         override fun arrayNode(node: ArrayNode) {
-            if(currShape.type == ShapeType.DOCUMENT) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            }
-            val memberShape = if(currShape.type == ShapeType.DOCUMENT) generator.model.expectShape(currShape.toShapeId()) else generator.model.expectShape((currShape as CollectionShape).member.target)
+            val memberShape = generator.model.expectShape((currShape as CollectionShape).member.target)
             var i = 0
             node.elements.forEach { element ->
                 writer.writeInline("\n")
@@ -336,27 +331,13 @@ class ShapeValueGenerator(
                     writer.addImport(SwiftDependency.BIG.target)
                     writer.writeInline("Complex(\$L)", (node.value as Double).toBigDecimal())
                 }
-                ShapeType.DOCUMENT -> {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    writer.writeInline("Document.number(Double(\$L))", node.value)
-                }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }
         }
 
         override fun booleanNode(node: BooleanNode) {
             val boolValue = if (node.value) "true" else "false"
-            when(currShape.type) {
-                ShapeType.BOOLEAN -> {
-                    writer.writeInline("\$L", boolValue)
-                }
-
-                ShapeType.DOCUMENT -> {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    writer.writeInline("Document.boolean(\$L)", boolValue)
-                }
-                else -> throw CodegenException("unexpected shape type $currShape for boolean value")
-            }
+            writer.writeInline("\$L", boolValue)
         }
     }
 }

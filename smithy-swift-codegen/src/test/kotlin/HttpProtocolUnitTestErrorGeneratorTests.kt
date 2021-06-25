@@ -18,33 +18,29 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 class GreetingWithErrorsFooErrorTest: HttpResponseTestBase {
     let host = "my-api.us-east-2.amazonaws.com"
     /// Serializes the X-Amzn-ErrorType header. For an example service, see Amazon EKS.
-    func testRestJsonFooErrorUsingXAmznErrorType() {
-        do {
-            guard let httpResponse = buildHttpResponse(
-                code: 500,
-                headers: [
-                    "X-Amzn-Errortype": "FooError"
-                ],
-                host: host
-            ) else {
-                XCTFail("Something is wrong with the created http response")
-                return
-            }
-
-            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse)
-
-            if case .fooError(let actual) = greetingWithErrorsOutputError {
-
-                let expected = FooError(
-                )
-                XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 500))
-            } else {
-                XCTFail("The deserialized error type does not match expected type")
-            }
-
-        } catch let err {
-            XCTFail(err.localizedDescription)
+    func testRestJsonFooErrorUsingXAmznErrorType() throws {
+        guard let httpResponse = buildHttpResponse(
+            code: 500,
+            headers: [
+                "X-Amzn-Errortype": "FooError"
+            ],
+            host: host
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
         }
+
+        let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse)
+
+        if case .fooError(let actual) = greetingWithErrorsOutputError {
+
+            let expected = FooError(
+            )
+            XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 500))
+        } else {
+            XCTFail("The deserialized error type does not match expected type")
+        }
+
     }
 }
 """
@@ -61,7 +57,7 @@ class GreetingWithErrorsFooErrorTest: HttpResponseTestBase {
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     let host = "my-api.us-east-2.amazonaws.com"
     /// Serializes a complex error with no message member
-    func testRestJsonComplexErrorWithNoMessage() {
+    func testRestJsonComplexErrorWithNoMessage() throws {
         do {
             guard let httpResponse = buildHttpResponse(
                 code: 403,

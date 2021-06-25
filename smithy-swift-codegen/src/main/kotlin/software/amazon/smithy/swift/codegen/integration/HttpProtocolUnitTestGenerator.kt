@@ -53,7 +53,7 @@ protected constructor(builder: Builder<T>) {
             writer.writeDocs(it)
         }
 
-        writer.openBlock("func test${test.id}() {", "}") {
+        writer.openBlock("func test${test.id}() throws {", "}") {
             renderTestBody(test)
         }
     }

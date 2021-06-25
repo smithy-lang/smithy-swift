@@ -28,7 +28,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         val expectedContents =
             """
-    func testSmokeTest() {
+    func testSmokeTest() throws {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/smoketest/{label1}/foo",
@@ -53,6 +53,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = SmokeTestInput(
             header1: "Foo",
@@ -92,7 +94,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
-                        let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(SmokeTestInputBody.self, from: actualData)
                         XCTAssertEqual(expectedObj, actualObj)
@@ -125,7 +126,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testExplicitString() {
+    func testExplicitString() throws {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/explicit/string",
@@ -140,6 +141,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = ExplicitStringInput(
             payload1: "explicit string"
@@ -196,7 +199,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonEmptyInputAndEmptyOutput() {
+    func testRestJsonEmptyInputAndEmptyOutput() throws {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
@@ -207,6 +210,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = EmptyInputAndEmptyOutputInput(
         )
@@ -249,7 +254,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonDoesntSerializeNullStructureValues() {
+    func testRestJsonDoesntSerializeNullStructureValues() throws {
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/SimpleScalarProperties",
@@ -262,6 +267,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = SimpleScalarPropertiesInput(
             stringValue: nil
@@ -308,7 +315,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonStreamingTraitsWithBlob() {
+    func testRestJsonStreamingTraitsWithBlob() throws {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/StreamingTraits",
@@ -324,6 +331,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = StreamingTraitsInput(
             blob: "blobby blob blob".data(using: .utf8)!,
@@ -374,7 +383,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonHttpPrefixHeadersAreNotPresent() {
+    func testRestJsonHttpPrefixHeadersAreNotPresent() throws {
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/HttpPrefixHeaders",
@@ -387,6 +396,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = HttpPrefixHeadersInput(
             foo: "Foo",
@@ -432,7 +443,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonSerializeStringUnionValue() {
+    func testRestJsonSerializeStringUnionValue() throws {
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/JsonUnions",
@@ -451,6 +462,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = JsonUnionsInput(
             contents: MyUnion.stringValue("foo")
@@ -508,7 +521,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonRecursiveShapes() {
+    func testRestJsonRecursiveShapes() throws {
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/RecursiveShapes",
@@ -536,6 +549,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = RecursiveShapesInput(
             nested: RecursiveShapesInputOutputNested1(
@@ -606,7 +621,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testInlineDocumentInput() {
+    func testInlineDocumentInput() throws {
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/InlineDocument",
@@ -626,6 +641,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = InlineDocumentInput(
             documentValue: Document(
@@ -690,7 +707,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testInlineDocumentAsPayloadInput() {
+    func testInlineDocumentAsPayloadInput() throws {
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/InlineDocumentAsPayload",
@@ -707,6 +724,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+        let decoder = JSONDecoder()
 
         let input = InlineDocumentAsPayloadInput(
             documentValue: Document(
