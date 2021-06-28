@@ -9,7 +9,8 @@ use smithy.test#httpResponseTests
 service RestJson {
     version: "1.0.0",
     operations: [
-        HttpRequestWithFloatLabels
+        HttpRequestWithFloatLabels,
+        InputAndOutputWithHeaders
     ]
 }
 
@@ -67,4 +68,37 @@ structure HttpRequestWithFloatLabelsInput {
     @httpLabel
     @required
     double: Double,
+}
+
+@http(uri: "/InputAndOutputWithHeaders", method: "POST")
+operation InputAndOutputWithHeaders {
+    input: InputAndOutputWithHeadersIO,
+    output: InputAndOutputWithHeadersIO
+}
+
+apply InputAndOutputWithHeaders @httpResponseTests([
+    {
+        id: "RestJsonSupportsNaNFloatHeaderOutputs",
+        documentation: "Supports handling NaN float header values.",
+        protocol: restJson1,
+        code: 200,
+        headers: {
+            "X-Float": "NaN",
+            "X-Double": "NaN",
+        },
+        params: {
+            headerFloat: "NaN",
+            headerDouble: "NaN",
+        }
+    }
+])
+
+structure InputAndOutputWithHeadersIO {
+
+    @httpHeader("X-Float")
+    headerFloat: Float,
+
+    @httpHeader("X-Double")
+    headerDouble: Double,
+
 }

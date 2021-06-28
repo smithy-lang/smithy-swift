@@ -63,60 +63,73 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-//    @Test
-//    fun `it can handle negative infinity values`() {
-//        val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-//        val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
-//
-//        val expectedContents = """
-//    /// Supports handling -Infinity float label values.
-//    func testRestJsonSupportsNegativeInfinityFloatLabels() {
-//        let expected = buildExpectedHttpRequest(
-//            method: .get,
-//            path: "/FloatHttpLabels/-Infinity/-Infinity",
-//            headers: [String: String](),
-//            queryParams: [String](),
-//            body: nil,
-//            host: host
-//        )
-//
-//        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-//
-//        let input = HttpRequestWithFloatLabelsInput(
-//            double: -Double.infinity,
-//            float: -Float.infinity
-//        )
-//        let encoder = JSONEncoder()
-//        encoder.dateEncodingStrategy = .secondsSince1970
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .build()
-//        var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutputResponse, HttpRequestWithFloatLabelsOutputError>(id: "RestJsonSupportsNegativeInfinityFloatLabels")
-//        operationStack.serializeStep.intercept(position: .before, middleware: HttpRequestWithFloatLabelsInputHeadersMiddleware())
-//        operationStack.serializeStep.intercept(position: .before, middleware: HttpRequestWithFloatLabelsInputQueryItemMiddleware())
-//        operationStack.deserializeStep.intercept(position: .after,
-//                     middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutputResponse, HttpRequestWithFloatLabelsOutputError>(
-//                             id: "TestDeserializeMiddleware"){ context, actual in
-//            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-//                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
-//                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
-//            })
-//            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-//            let mockOutput = try! HttpRequestWithFloatLabelsOutputResponse(httpResponse: response, decoder: nil)
-//            let output = OperationOutput<HttpRequestWithFloatLabelsOutputResponse>(httpResponse: response, output: mockOutput)
-//            deserializeMiddleware.fulfill()
-//            return .success(output)
-//        })
-//        _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
-//            XCTFail("Deserialize was mocked out, this should fail")
-//            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
-//            let serviceError = try! HttpRequestWithFloatLabelsOutputError(httpResponse: httpResponse)
-//            return .failure(.service(serviceError, httpResponse))
-//        })
-//        wait(for: [deserializeMiddleware], timeout: 0.3)
-//        """.trimIndent()
-//        contents.shouldContainOnlyOnce(expectedContents)
-//    }
+    @Test
+    fun `it can handle negative infinity values`() {
+        val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
+        val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
+
+        val expectedContents =
+            """
+    func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
+        let expected = buildExpectedHttpRequest(
+            method: .get,
+            path: "/FloatHttpLabels/-Infinity/-Infinity",
+            headers: [String: String](),
+            queryParams: [String](),
+            body: nil,
+            host: host
+        )
+        
+        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+
+        let decoder = JSONDecoder()
+
+        let input = HttpRequestWithFloatLabelsInput(
+            double: -Double.infinity,
+            float: -Float.infinity
+        )
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it can handle nan values in response`() {
+        val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
+        val contents = getFileContents(context.manifest, "/RestJsonTests/InputAndOutputWithHeadersResponseTest.swift")
+
+        val expectedContents =
+            """
+class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
+    let host = "my-api.us-east-2.amazonaws.com"
+    /// Supports handling NaN float header values.
+    func testRestJsonSupportsNaNFloatHeaderOutputs() throws {
+        guard let httpResponse = buildHttpResponse(
+            code: 200,
+            headers: [
+                "X-Double": "NaN",
+                "X-Float": "NaN"
+            ],
+            host: host
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
+        }
+
+        let actual = try InputAndOutputWithHeadersOutputResponse(httpResponse: httpResponse)
+
+        let expected = InputAndOutputWithHeadersOutputResponse(
+            headerDouble: Double.nan,
+            headerFloat: Float.nan
+        )
+
+        XCTAssertEqual(expected.headerFloat?.isNaN && actual.headerFloat?.isNaN)
+        XCTAssertEqual(expected.headerDouble?.isNaN && actual.headerDouble?.isNaN)
+
+    }
+}
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 
     @Test
     fun `it generates the document type correctly`() {
