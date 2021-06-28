@@ -112,26 +112,26 @@ class StructDecodeXMLGenerationTests {
                     struct KeyVal0{struct member{}}
                     let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedNestedStringList)
                     if let nestedNestedStringListWrappedContainer = nestedNestedStringListWrappedContainer {
-                        let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]?]?].self, forKey: .member)
-                        var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                        let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[String]]].self, forKey: .member)
+                        var nestedNestedStringListBuffer:[[[String]]]? = nil
                         if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                            nestedNestedStringListBuffer = [[[String]?]?]()
-                            var listBuffer0: [[String]?]? = nil
+                            nestedNestedStringListBuffer = [[[String]]]()
+                            var listBuffer0: [[String]]? = nil
                             for listContainer0 in nestedNestedStringListContainer {
-                                listBuffer0 = [[String]?]()
-                                if let listContainer0 = listContainer0 {
-                                    var listBuffer1: [String]? = nil
-                                    for listContainer1 in listContainer0 {
-                                        listBuffer1 = [String]()
-                                        if let listContainer1 = listContainer1 {
-                                            for stringContainer2 in listContainer1 {
-                                                listBuffer1?.append(stringContainer2)
-                                            }
-                                        }
+                                listBuffer0 = [[String]]()
+                                var listBuffer1: [String]? = nil
+                                for listContainer1 in listContainer0 {
+                                    listBuffer1 = [String]()
+                                    for stringContainer2 in listContainer1 {
+                                        listBuffer1?.append(stringContainer2)
+                                    }
+                                    if let listBuffer1 = listBuffer1 {
                                         listBuffer0?.append(listBuffer1)
                                     }
                                 }
-                                nestedNestedStringListBuffer?.append(listBuffer0)
+                                if let listBuffer0 = listBuffer0 {
+                                    nestedNestedStringListBuffer?.append(listBuffer0)
+                                }
                             }
                         }
                         nestedNestedStringList = nestedNestedStringListBuffer

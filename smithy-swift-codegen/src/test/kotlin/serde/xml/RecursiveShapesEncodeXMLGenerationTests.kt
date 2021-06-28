@@ -92,11 +92,9 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     if let nestedRecursiveList = nestedRecursiveList {
                         var nestedRecursiveListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedRecursiveList"))
                         for nestedrecursiveshapeslist0 in nestedRecursiveList {
-                            if let nestedrecursiveshapeslist0 = nestedrecursiveshapeslist0 {
-                                var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
-                                    try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: Key("member"))
-                                }
+                            var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
+                                try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: Key("member"))
                             }
                         }
                     }

@@ -49,11 +49,9 @@ class ListEncodeXMLGenerationTests {
                     if let renamedListMembers = renamedListMembers {
                         var renamedListMembersContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("renamed"))
                         for renamedlistmembers0 in renamedListMembers {
-                            if let renamedlistmembers0 = renamedlistmembers0 {
-                                var renamedlistmembers0Container0 = renamedListMembersContainer.nestedContainer(keyedBy: Key.self, forKey: Key("item"))
-                                for string1 in renamedlistmembers0 {
-                                    try renamedlistmembers0Container0.encode(string1, forKey: Key("subItem"))
-                                }
+                            var renamedlistmembers0Container0 = renamedListMembersContainer.nestedContainer(keyedBy: Key.self, forKey: Key("item"))
+                            for string1 in renamedlistmembers0 {
+                                try renamedlistmembers0Container0.encode(string1, forKey: Key("subItem"))
                             }
                         }
                     }
@@ -80,11 +78,9 @@ class ListEncodeXMLGenerationTests {
                     if let nestedStringList = nestedStringList {
                         var nestedStringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedStringList"))
                         for stringlist0 in nestedStringList {
-                            if let stringlist0 = stringlist0 {
-                                var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for string1 in stringlist0 {
-                                    try stringlist0Container0.encode(string1, forKey: Key("member"))
-                                }
+                            var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for string1 in stringlist0 {
+                                try stringlist0Container0.encode(string1, forKey: Key("member"))
                             }
                         }
                     }
@@ -110,15 +106,11 @@ class ListEncodeXMLGenerationTests {
                     if let nestedNestedStringList = nestedNestedStringList {
                         var nestedNestedStringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedNestedStringList"))
                         for nestedstringlist0 in nestedNestedStringList {
-                            if let nestedstringlist0 = nestedstringlist0 {
-                                var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for stringlist1 in nestedstringlist0 {
-                                    if let stringlist1 = stringlist1 {
-                                        var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                        for string2 in stringlist1 {
-                                            try stringlist1Container1.encode(string2, forKey: Key("member"))
-                                        }
-                                    }
+                            var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for stringlist1 in nestedstringlist0 {
+                                var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                                for string2 in stringlist1 {
+                                    try stringlist1Container1.encode(string2, forKey: Key("member"))
                                 }
                             }
                         }

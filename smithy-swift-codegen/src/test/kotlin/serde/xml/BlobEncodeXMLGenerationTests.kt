@@ -47,11 +47,9 @@ class BlobEncodeXMLGenerationTests {
                     if let nestedBlobList = nestedBlobList {
                         var nestedBlobListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedBlobList"))
                         for nestedbloblist0 in nestedBlobList {
-                            if let nestedbloblist0 = nestedbloblist0 {
-                                var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for blob1 in nestedbloblist0 {
-                                    try nestedbloblist0Container0.encode(blob1, forKey: Key("member"))
-                                }
+                            var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for blob1 in nestedbloblist0 {
+                                try nestedbloblist0Container0.encode(blob1, forKey: Key("member"))
                             }
                         }
                     }

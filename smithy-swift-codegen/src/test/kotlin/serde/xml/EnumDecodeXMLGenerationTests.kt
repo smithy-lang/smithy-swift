@@ -72,19 +72,19 @@ class EnumDecodeXMLGenerationTests {
                         struct KeyVal0{struct member{}}
                         let nestedEnumsListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedEnumsList)
                         if let nestedEnumsListWrappedContainer = nestedEnumsListWrappedContainer {
-                            let nestedEnumsListContainer = try nestedEnumsListWrappedContainer.decodeIfPresent([[FooEnum]?].self, forKey: .member)
-                            var nestedEnumsListBuffer:[[FooEnum]?]? = nil
+                            let nestedEnumsListContainer = try nestedEnumsListWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
+                            var nestedEnumsListBuffer:[[FooEnum]]? = nil
                             if let nestedEnumsListContainer = nestedEnumsListContainer {
-                                nestedEnumsListBuffer = [[FooEnum]?]()
+                                nestedEnumsListBuffer = [[FooEnum]]()
                                 var listBuffer0: [FooEnum]? = nil
                                 for listContainer0 in nestedEnumsListContainer {
                                     listBuffer0 = [FooEnum]()
-                                    if let listContainer0 = listContainer0 {
-                                        for stringContainer1 in listContainer0 {
-                                            listBuffer0?.append(stringContainer1)
-                                        }
+                                    for stringContainer1 in listContainer0 {
+                                        listBuffer0?.append(stringContainer1)
                                     }
-                                    nestedEnumsListBuffer?.append(listBuffer0)
+                                    if let listBuffer0 = listBuffer0 {
+                                        nestedEnumsListBuffer?.append(listBuffer0)
+                                    }
                                 }
                             }
                             nestedEnumsList = nestedEnumsListBuffer

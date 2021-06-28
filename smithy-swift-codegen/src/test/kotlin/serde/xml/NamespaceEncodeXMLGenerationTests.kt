@@ -162,14 +162,12 @@ class NamespaceEncodeXMLGenerationTests {
                         var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
                         try nestedContainer.encode("http://aux.com", forKey: Key("xmlns"))
                         for xmlnestednamespacedlist0 in nested {
-                            if let xmlnestednamespacedlist0 = xmlnestednamespacedlist0 {
-                                var xmlnestednamespacedlist0Container0 = nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                try xmlnestednamespacedlist0Container0.encode("http://bux.com", forKey: Key("xmlns:baz"))
-                                for string1 in xmlnestednamespacedlist0 {
-                                    var xmlnestednamespacedlist0Container1 = xmlnestednamespacedlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                    try xmlnestednamespacedlist0Container1.encode(string1, forKey: Key(""))
-                                    try xmlnestednamespacedlist0Container1.encode("http://bar.com", forKey: Key("xmlns:bzzzz"))
-                                }
+                            var xmlnestednamespacedlist0Container0 = nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            try xmlnestednamespacedlist0Container0.encode("http://bux.com", forKey: Key("xmlns:baz"))
+                            for string1 in xmlnestednamespacedlist0 {
+                                var xmlnestednamespacedlist0Container1 = xmlnestednamespacedlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                                try xmlnestednamespacedlist0Container1.encode(string1, forKey: Key(""))
+                                try xmlnestednamespacedlist0Container1.encode("http://bar.com", forKey: Key("xmlns:bzzzz"))
                             }
                         }
                     }
