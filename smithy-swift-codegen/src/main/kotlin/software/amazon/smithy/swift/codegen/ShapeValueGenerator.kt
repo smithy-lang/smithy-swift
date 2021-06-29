@@ -341,8 +341,11 @@ class ShapeValueGenerator(
         }
 
         override fun booleanNode(node: BooleanNode) {
-            val boolValue = if (node.value) "true" else "false"
-            writer.writeInline("\$L", boolValue)
+            if (currShape.type != ShapeType.BOOLEAN) {
+                throw CodegenException("unexpected shape type $currShape for boolean value")
+            }
+
+            writer.writeInline("\$L", if (node.value) "true" else "false")
         }
     }
 }

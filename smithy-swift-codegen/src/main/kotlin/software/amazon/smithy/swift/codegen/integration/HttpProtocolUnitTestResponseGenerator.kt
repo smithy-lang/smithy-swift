@@ -86,6 +86,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             serdeContext.defaultTimestampFormat?.let {
                 writer.write("decoder.dateDecodingStrategy = $it")
             }
+            writer.write("decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
         }
     }
 

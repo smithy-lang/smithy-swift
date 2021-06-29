@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import java.util.Locale
+import java.util.*
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -62,6 +62,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             model = RecursiveShapeBoxer.transform(model)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
             writer.write("let decoder = ${serdeContext.protocolDecoder}")
+            writer.write("decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -81,6 +82,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             serdeContext.defaultTimestampFormat?.let {
                 writer.write("encoder.dateEncodingStrategy = $it")
             }
+            writer.write("encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
             val hasIdempotencyTokenTrait = idempotentMember != null
