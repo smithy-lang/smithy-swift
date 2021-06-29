@@ -31,7 +31,7 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
         
         if clientLogMode == .request || clientLogMode == .requestAndResponse {
             logger.debug("Request: \(input.debugDescription)")
-        }else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
+        } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
             logger.debug("Request: \(input.debugDescriptionWithBody)")
         }
         

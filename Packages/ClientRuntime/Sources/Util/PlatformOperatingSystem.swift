@@ -15,7 +15,6 @@ public enum PlatformOperatingSystem: String {
     case unknown
 }
 
-
 public var currentOS: PlatformOperatingSystem {
     #if os(Linux)
     return .linux
@@ -33,4 +32,3 @@ public var currentOS: PlatformOperatingSystem {
      #error("Cannot use a an operating system we do not support")
     #endif
 }
-

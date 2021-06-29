@@ -311,7 +311,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             
                     }
                 }
- """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -360,7 +360,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             
                     }
                 }
-             """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

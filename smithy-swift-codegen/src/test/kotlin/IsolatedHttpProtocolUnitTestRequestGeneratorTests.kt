@@ -90,7 +90,8 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let input = HttpRequestWithFloatLabelsInput(
                 double: -Double.infinity,
                 float: -Float.infinity
-            )""".trimIndent()
+            )
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -129,7 +130,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
 
     }
 }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

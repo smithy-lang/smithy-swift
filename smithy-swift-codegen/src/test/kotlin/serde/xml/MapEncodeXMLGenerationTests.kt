@@ -5,7 +5,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class MapEncodeXMLGenerationTests {
@@ -634,7 +633,7 @@ class MapEncodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-maps-nested-fooenum.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/NestedXmlMapsInput+Encodable.swift")
         val expectedContents =
-        """
+            """
         extension NestedXmlMapsInput: Encodable, Reflection {
             enum CodingKeys: String, CodingKey {
                 case flatNestedMap
@@ -680,7 +679,7 @@ class MapEncodeXMLGenerationTests {
                 }
             }
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

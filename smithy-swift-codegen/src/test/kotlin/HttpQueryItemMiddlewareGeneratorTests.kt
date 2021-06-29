@@ -2,7 +2,7 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.Optional
 
 class HttpQueryItemMiddlewareGeneratorTests {
     @Test

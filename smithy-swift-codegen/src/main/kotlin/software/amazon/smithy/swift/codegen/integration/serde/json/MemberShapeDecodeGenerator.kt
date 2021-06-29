@@ -75,13 +75,13 @@ abstract class MemberShapeDecodeGenerator(
 
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShape(targetShape, topLevel)
-                val terminator = if(topLevel) "?" else ""
+                val terminator = if (topLevel) "?" else ""
                 "[$currShapeKey: $valueEvaluated$terminator]"
             }
             is ListShape -> {
                 val targetShape = ctx.model.expectShape(currShape.member.target)
                 val nestedShape = determineSymbolForShape(targetShape, topLevel)
-                val terminator = if(topLevel) "?" else ""
+                val terminator = if (topLevel) "?" else ""
                 "[$nestedShape$terminator]"
             }
             is SetShape -> {
@@ -191,7 +191,7 @@ abstract class MemberShapeDecodeGenerator(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        if(!isSparse && !isSetShape) {
+                        if (!isSparse && !isSetShape) {
                             writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
                                 writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
                             }
@@ -225,7 +225,7 @@ abstract class MemberShapeDecodeGenerator(
                     }
                 }
                 else -> {
-                    if(!isSparse && !isSetShape) {
+                    if (!isSparse && !isSetShape) {
                         writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
                             writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
                         }
@@ -306,7 +306,7 @@ abstract class MemberShapeDecodeGenerator(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        if(!isSparse) {
+                        if (!isSparse) {
                             writer.openBlock("if let $valueIterator = $valueIterator {", "}") {
                                 writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
                             }
@@ -324,7 +324,7 @@ abstract class MemberShapeDecodeGenerator(
                     }
                 }
                 else -> {
-                    if(!isSparse) {
+                    if (!isSparse) {
                         writer.openBlock("if let $valueIterator = $valueIterator {", "}") {
                             writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
                         }

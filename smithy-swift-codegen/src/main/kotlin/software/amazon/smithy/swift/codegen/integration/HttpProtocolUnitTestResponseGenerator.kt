@@ -110,8 +110,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
             } else if ((shape.isDoubleShape || shape.isFloatShape)) {
                 val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
-                if(stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
-                    val suffix = if(symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
+                if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
+                    val suffix = if (symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
                     writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
                 } else {
                     writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)

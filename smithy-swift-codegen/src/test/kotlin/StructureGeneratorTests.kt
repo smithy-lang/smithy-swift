@@ -332,7 +332,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                     self.timestampList = timestampList
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

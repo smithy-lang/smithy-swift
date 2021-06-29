@@ -12,7 +12,6 @@ import AwsCommonRuntimeKit
 
 public class CRTClientEngine: HttpClientEngine {
     
-    
     private var logger: LogAgent
     private var crtLogger: Logger
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
