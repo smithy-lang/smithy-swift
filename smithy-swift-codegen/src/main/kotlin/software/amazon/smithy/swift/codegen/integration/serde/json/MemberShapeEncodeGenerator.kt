@@ -93,6 +93,8 @@ abstract class MemberShapeEncodeGenerator(
                         writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                             renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                         }
+                    } else {
+                        renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                     }
                 }
             }
