@@ -88,8 +88,8 @@ abstract class MemberShapeEncodeGenerator(
                     renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
-                    val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
-                    if (isBoxed) {
+                    val isSparse = targetShape.hasTrait<SparseTrait>()
+                    if (isSparse) {
                         writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                             renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                         }
@@ -102,7 +102,12 @@ abstract class MemberShapeEncodeGenerator(
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"
                 writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
-                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                val isSparse = targetShape.hasTrait<SparseTrait>()
+                if (isSparse) {
+                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                        renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
+                    }
+                } else {
                     renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
                 }
             }
