@@ -34,13 +34,13 @@ class StructEncodeXMLGenerationTests {
                         try container.encode(byteValue, forKey: Key("byteValue"))
                     }
                     if let doubleValue = doubleValue {
-                        try container.encode(doubleValue, forKey: Key("DoubleDribble"))
+                        try container.encode(String(doubleValue), forKey: Key("DoubleDribble"))
                     }
                     if let falseBooleanValue = falseBooleanValue {
                         try container.encode(falseBooleanValue, forKey: Key("falseBooleanValue"))
                     }
                     if let floatValue = floatValue {
-                        try container.encode(floatValue, forKey: Key("floatValue"))
+                        try container.encode(String(floatValue), forKey: Key("floatValue"))
                     }
                     if let integerValue = integerValue {
                         try container.encode(integerValue, forKey: Key("integerValue"))

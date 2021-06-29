@@ -12,6 +12,9 @@ class MemberShapeEncodeConstants {
             ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
             ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
         )
+        val floatingPointPrimitiveSymbols: MutableSet <ShapeType> = hashSetOf(
+            ShapeType.FLOAT, ShapeType.DOUBLE
+        )
     }
 }
 
