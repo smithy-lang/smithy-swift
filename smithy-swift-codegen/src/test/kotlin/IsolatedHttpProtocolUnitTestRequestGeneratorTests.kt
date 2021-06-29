@@ -72,7 +72,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         val expectedContents =
             """
-        func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
+    func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
@@ -81,17 +81,16 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 body: nil,
                 host: host
             )
-        
+    
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+    
             let decoder = JSONDecoder()
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        
+    
             let input = HttpRequestWithFloatLabelsInput(
                 double: -Double.infinity,
                 float: -Float.infinity
-            )
-        """.trimIndent()
+            )""".trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
