@@ -12,13 +12,11 @@ import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
-import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
-import software.amazon.smithy.swift.codegen.defaultName
 import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -241,12 +239,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                bodyComparisonStrategy(writer, test, nestedSymbol, target, false, expectedData, actualData)
+                                bodyComparisonStrategy(writer, test, nestedSymbol, target, true, false, expectedData, actualData)
                             }
                             else -> writer.write("XCTAssertEqual($expectedData, $actualData)")
                         }
                     } else {
-                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, true, expectedData, actualData)
+                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, false, true, expectedData, actualData)
                     }
                 }
             }
@@ -261,7 +259,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, Boolean, String, String) -> Unit) {
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape,Boolean, Boolean, String, String) -> Unit) {
         httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
             return it
         } ?: run {
@@ -269,19 +267,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, appendBody: Boolean, expectedData: String, actualData: String) {
+    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, isHttpPayload: Boolean, appendBody: Boolean, expectedData: String, actualData: String) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
 
             // this needs to be fixed for a unit tests.. sigh.
-            if (shape.members().filterNot{ it.hasTrait(HttpPayloadTrait::class.java)}.isEmpty()) {
+            if (isHttpPayload) {
                 writer.write("XCTAssertEqual(expectedObj, actualObj)")
 
             } else {
                 renderAssertions(test, shape)
-
             }
         }
         writer.indent()

@@ -39,7 +39,7 @@ interface HttpProtocolCustomizable {
         return emptyList()
     }
 
-    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, Boolean, String, String) -> Unit)? {
+    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, Boolean, Boolean, String, String) -> Unit)? {
         return null
     }
 
