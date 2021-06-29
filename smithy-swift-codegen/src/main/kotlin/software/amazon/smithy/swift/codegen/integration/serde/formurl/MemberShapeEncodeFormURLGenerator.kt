@@ -376,7 +376,11 @@ abstract class MemberShapeEncodeFormURLGenerator(
             if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
+                    if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
+                        writer.write("try $containerName.encode(String($memberName), forKey: Key(\"$resolvedMemberName\"))")
+                    } else {
+                        writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
+                    }
                 }
             } else {
                 writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")

@@ -87,7 +87,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 else -> {
                     val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
                     val nestedContainerName = "${memberName}Container$level"
-                    renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberResolvedName)
+                    renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberTarget, nestedMemberResolvedName)
                 }
             }
         }
@@ -333,7 +333,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
                 val nestedContainerName = "${memberName}Container"
-                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, resolvedMemberName)
+                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
             }
         } else {
             if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
@@ -347,14 +347,18 @@ abstract class MemberShapeEncodeXMLGenerator(
         }
     }
 
-    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, resolvedMemberName: String) {
+    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
+        var renderableMemberName = memberName
+        if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
+            renderableMemberName = "String($memberName)"
+        }
         XMLNamespaceTraitGenerator?.let {
             writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedMemberName}\"))")
-            writer.write("try $nestedContainerName.encode($memberName, forKey: Key(\"\"))")
+            writer.write("try $nestedContainerName.encode($renderableMemberName, forKey: Key(\"\"))")
             it.render(writer, nestedContainerName)
             it.appendKey(xmlNamespaces)
         } ?: run {
-            writer.write("try $containerName.encode($memberName, forKey: Key(\"${resolvedMemberName}\"))")
+            writer.write("try $containerName.encode($renderableMemberName, forKey: Key(\"${resolvedMemberName}\"))")
         }
     }
 }
