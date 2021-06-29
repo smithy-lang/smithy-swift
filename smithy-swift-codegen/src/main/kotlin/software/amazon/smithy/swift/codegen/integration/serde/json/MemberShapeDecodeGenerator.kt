@@ -267,7 +267,7 @@ abstract class MemberShapeDecodeGenerator(
             writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                 val previousDecodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded${level - 1}"
                 val symbolName = determineSymbolForShape(shape, false)
-                writer.write("\$L = \$L()", previousDecodedMemberName, symbolName)
+                writer.write("\$L = \$L()", containerName, symbolName)
                 renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
             }
         }
