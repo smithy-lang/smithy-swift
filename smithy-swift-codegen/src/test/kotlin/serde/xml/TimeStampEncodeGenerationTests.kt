@@ -59,11 +59,9 @@ class TimeStampEncodeGenerationTests {
                     if let nestedTimestampList = nestedTimestampList {
                         var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
-                            if let nestedtimestamplist0 = nestedtimestamplist0 {
-                                var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for timestamp1 in nestedtimestamplist0 {
-                                    try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("member"))
-                                }
+                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for timestamp1 in nestedtimestamplist0 {
+                                try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("member"))
                             }
                         }
                     }
@@ -90,11 +88,9 @@ class TimeStampEncodeGenerationTests {
                     if let nestedTimestampList = nestedTimestampList {
                         var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedhttpdatetimestamplist0 in nestedTimestampList {
-                            if let nestedhttpdatetimestamplist0 = nestedhttpdatetimestamplist0 {
-                                var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for timestamp1 in nestedhttpdatetimestamplist0 {
-                                    try nestedhttpdatetimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .httpDate), forKey: Key("member"))
-                                }
+                            var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for timestamp1 in nestedhttpdatetimestamplist0 {
+                                try nestedhttpdatetimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .httpDate), forKey: Key("member"))
                             }
                         }
                     }
@@ -121,11 +117,9 @@ class TimeStampEncodeGenerationTests {
                     if let nestedTimestampList = nestedTimestampList {
                         var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
-                            if let nestedtimestamplist0 = nestedtimestamplist0 {
-                                var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTag1"))
-                                for timestamp1 in nestedtimestamplist0 {
-                                    try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("nestedTag2"))
-                                }
+                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTag1"))
+                            for timestamp1 in nestedtimestamplist0 {
+                                try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("nestedTag2"))
                             }
                         }
                     }
