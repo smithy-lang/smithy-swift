@@ -98,7 +98,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     do {
                         let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(SmokeTestInputBody.self, from: actualData)
-                        XCTAssertEqual(expectedObj, actualObj)
+                        XCTAssertEqual(expectedObj.label1, actualObj.label1)
+                        XCTAssertEqual(expectedObj.payload1, actualObj.payload1)
+                        XCTAssertEqual(expectedObj.payload2, actualObj.payload2)
+                        XCTAssertEqual(expectedObj.payload3, actualObj.payload3)
                     } catch let err {
                         XCTFail("Failed to verify body \(err)")
                     }
@@ -504,7 +507,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     do {
                         let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(JsonUnionsInputBody.self, from: actualData)
-                        XCTAssertEqual(expectedObj, actualObj)
+                        XCTAssertEqual(expectedObj.contents, actualObj.contents)
                     } catch let err {
                         XCTFail("Failed to verify body \(err)")
                     }
@@ -606,7 +609,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     do {
                         let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(RecursiveShapesInputBody.self, from: actualData)
-                        XCTAssertEqual(expectedObj, actualObj)
+                        XCTAssertEqual(expectedObj.nested, actualObj.nested)
                     } catch let err {
                         XCTFail("Failed to verify body \(err)")
                     }
@@ -691,7 +694,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                         do {
                             let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
                             let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
-                            XCTAssertEqual(expectedObj, actualObj)
+                            XCTAssertEqual(expectedObj.stringValue, actualObj.stringValue)
+                            XCTAssertEqual(expectedObj.documentValue, actualObj.documentValue)
                         } catch let err {
                             XCTFail("Failed to verify body \(err)")
                         }

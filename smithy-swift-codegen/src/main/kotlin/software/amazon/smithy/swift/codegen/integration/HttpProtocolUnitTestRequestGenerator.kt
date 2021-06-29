@@ -7,14 +7,20 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
+import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.capitalizedName
+import software.amazon.smithy.swift.codegen.defaultName
+import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import java.util.Locale
 
@@ -235,12 +241,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                bodyComparisonStrategy(writer, nestedSymbol, false, expectedData, actualData)
+                                bodyComparisonStrategy(writer, test, nestedSymbol, target, false, expectedData, actualData)
                             }
                             else -> writer.write("XCTAssertEqual($expectedData, $actualData)")
                         }
                     } else {
-                        bodyComparisonStrategy(writer, inputSymbol, true, expectedData, actualData)
+                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, true, expectedData, actualData)
                     }
                 }
             }
@@ -255,7 +261,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, Symbol, Boolean, String, String) -> Unit) {
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, Boolean, String, String) -> Unit) {
         httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
             return it
         } ?: run {
@@ -263,17 +269,48 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyComparison(writer: SwiftWriter, symbol: Symbol, appendBody: Boolean, expectedData: String, actualData: String) {
+    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, appendBody: Boolean, expectedData: String, actualData: String) {
         val bodyString = if (appendBody) "Body" else ""
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
-            writer.write("XCTAssertEqual(expectedObj, actualObj)")
+
+            // this needs to be fixed for a unit tests.. sigh.
+            if (shape.members().filterNot{ it.hasTrait(HttpPayloadTrait::class.java)}.isEmpty()) {
+                writer.write("XCTAssertEqual(expectedObj, actualObj)")
+
+            } else {
+                renderAssertions(test, shape)
+
+            }
         }
         writer.indent()
         writer.write("XCTFail(\"Failed to verify body \\(err)\")")
         writer.dedent()
         writer.write("}")
+    }
+
+    protected open fun renderAssertions(test: HttpRequestTestCase, outputShape: Shape) {
+        val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
+                                            .filterNot { it.hasTrait(HttpHeaderTrait::class.java) }
+        for (member in members) {
+            val shape = model.expectShape(member.target.toShapeId())
+            val expectedMemberName = "expectedObj.${symbolProvider.toMemberName(member)}"
+            val actualMemberName = "actualObj.${symbolProvider.toMemberName(member)}"
+            if (member.isStructureShape) {
+                writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
+            } else if ((shape.isDoubleShape || shape.isFloatShape)) {
+                val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
+                if(stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
+                    val suffix = if(symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
+                    writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
+                } else {
+                    writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
+                }
+            } else {
+                writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
+            }
+        }
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
