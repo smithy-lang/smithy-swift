@@ -54,19 +54,19 @@ class BlobDecodeXMLGenerationTests {
                     struct KeyVal0{struct member{}}
                     let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
                     if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
-                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]?].self, forKey: .member)
-                        var nestedBlobListBuffer:[[Data]?]? = nil
+                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]].self, forKey: .member)
+                        var nestedBlobListBuffer:[[Data]]? = nil
                         if let nestedBlobListContainer = nestedBlobListContainer {
-                            nestedBlobListBuffer = [[Data]?]()
+                            nestedBlobListBuffer = [[Data]]()
                             var listBuffer0: [Data]? = nil
                             for listContainer0 in nestedBlobListContainer {
                                 listBuffer0 = [Data]()
-                                if let listContainer0 = listContainer0 {
-                                    for blobContainer1 in listContainer0 {
-                                        listBuffer0?.append(blobContainer1)
-                                    }
+                                for blobContainer1 in listContainer0 {
+                                    listBuffer0?.append(blobContainer1)
                                 }
-                                nestedBlobListBuffer?.append(listBuffer0)
+                                if let listBuffer0 = listBuffer0 {
+                                    nestedBlobListBuffer?.append(listBuffer0)
+                                }
                             }
                         }
                         nestedBlobList = nestedBlobListBuffer

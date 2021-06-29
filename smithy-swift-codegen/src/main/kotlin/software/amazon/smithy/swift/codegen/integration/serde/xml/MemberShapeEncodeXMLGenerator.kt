@@ -70,14 +70,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
-                    val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
-                    if (isBoxed && !(nestedMemberTarget is SetShape)) {
-                        writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
-                            renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
-                        }
-                    } else {
-                        renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
-                    }
+                    renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
                 }
                 is MapShape -> {
                     val nestedContainerName = "${memberName}Container$level"
@@ -309,22 +302,10 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int,
         nextRenderer: (String) -> Unit
     ) {
-        val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
         val nextContainer = "valueContainer${level + 1}"
-        if (isBoxed && !(valueTargetShape is SetShape)) {
-            writer.openBlock("if let ${nestedKeyValueName.second} = ${nestedKeyValueName.second} {", "}") {
-                writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
-                XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
-                nextRenderer(nextContainer)
-            }
-        } else {
-            // Todo: Write a unit test for this
-            writer.openBlock("if let ${nestedKeyValueName.second} = ${nestedKeyValueName.second} {", "}") {
-                writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
-                XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
-                nextRenderer(nextContainer)
-            }
-        }
+        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
+        XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
+        nextRenderer(nextContainer)
     }
 
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {

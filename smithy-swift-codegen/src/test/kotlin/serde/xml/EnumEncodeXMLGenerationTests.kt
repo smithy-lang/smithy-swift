@@ -61,11 +61,9 @@ class EnumEncodeXMLGenerationTests {
                     if let nestedEnumsList = nestedEnumsList {
                         var nestedEnumsListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedEnumsList"))
                         for nestedenumslist0 in nestedEnumsList {
-                            if let nestedenumslist0 = nestedenumslist0 {
-                                var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                for fooenum1 in nestedenumslist0 {
-                                    try nestedenumslist0Container0.encode(fooenum1, forKey: Key("member"))
-                                }
+                            var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            for fooenum1 in nestedenumslist0 {
+                                try nestedenumslist0Container0.encode(fooenum1, forKey: Key("member"))
                             }
                         }
                     }

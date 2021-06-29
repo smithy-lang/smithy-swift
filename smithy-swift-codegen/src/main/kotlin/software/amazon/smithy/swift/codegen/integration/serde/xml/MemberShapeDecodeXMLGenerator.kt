@@ -104,11 +104,15 @@ abstract class MemberShapeDecodeXMLGenerator(
             when (nestedMemberTarget) {
                 is ListShape -> {
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
-                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
+                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    }
                 }
                 is MapShape -> {
                     renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, level + 1)
-                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
+                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    }
                 }
                 is SetShape -> {
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
@@ -304,7 +308,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val mappedSymbol = when (shape) {
             is ListShape -> {
                 val nestedShape = ctx.model.expectShape(shape.member.target)
-                "[${convertListSymbolName(nestedShape)}]?"
+                "[${convertListSymbolName(nestedShape)}]"
             }
             is SetShape -> {
                 val nestedShape = ctx.model.expectShape(shape.member.target)
