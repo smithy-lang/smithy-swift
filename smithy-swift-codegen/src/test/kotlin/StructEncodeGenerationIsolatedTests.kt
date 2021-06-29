@@ -49,20 +49,32 @@ class StructEncodeGenerationIsolatedTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]]].self, forKey: .nestedNestedStringList)
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String?]?]?].self, forKey: .nestedNestedStringList)
                     var nestedNestedStringListDecoded0:[[[String]]]? = nil
                     if let nestedNestedStringListContainer = nestedNestedStringListContainer {
                         nestedNestedStringListDecoded0 = [[[String]]]()
                         for list0 in nestedNestedStringListContainer {
-                            var list0Decoded0 = [[String]]()
-                            for list1 in list0 {
-                                var list1Decoded1 = [String]()
-                                for string2 in list1 {
-                                    list1Decoded1.append(string2)
+                            var list0Decoded0: [[String]]? = nil
+                            if let list0 = list0 {
+                                list0Decoded0 = [[String]]()
+                                for list1 in list0 {
+                                    var list1Decoded1: [String]? = nil
+                                    if let list1 = list1 {
+                                        list1Decoded1 = [String]()
+                                        for string2 in list1 {
+                                            if let string2 = string2 {
+                                                list1Decoded1?.append(string2)
+                                            }
+                                        }
+                                    }
+                                    if let list1Decoded1 = list1Decoded1 {
+                                        list0Decoded0?.append(list1Decoded1)
+                                    }
                                 }
-                                list0Decoded0.append(list1Decoded1)
                             }
-                            nestedNestedStringListDecoded0?.append(list0Decoded0)
+                            if let list0Decoded0 = list0Decoded0 {
+                                nestedNestedStringListDecoded0?.append(list0Decoded0)
+                            }
                         }
                     }
                     nestedNestedStringList = nestedNestedStringListDecoded0

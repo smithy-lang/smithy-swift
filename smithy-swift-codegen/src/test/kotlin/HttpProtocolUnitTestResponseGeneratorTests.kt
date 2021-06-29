@@ -56,6 +56,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try SmokeTestOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = SmokeTestOutputResponse(
@@ -179,6 +180,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = JsonUnionsOutputResponse(
@@ -230,6 +232,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try RecursiveShapesOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = RecursiveShapesOutputResponse(
@@ -264,47 +267,51 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testInlineDocumentOutput() throws {
-        guard let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "Content-Type": "application/json"
-            ],
-            content: HttpBody.data(""${'"'}
-            {
-                "stringValue": "string",
-                "documentValue": {
-                    "foo": "bar"
+            class InlineDocumentResponseTest: HttpResponseTestBase {
+                let host = "my-api.us-east-2.amazonaws.com"
+                /// Serializes inline documents as part of the JSON response payload with no escaping.
+                func testInlineDocumentOutput() throws {
+                    guard let httpResponse = buildHttpResponse(
+                        code: 200,
+                        headers: [
+                            "Content-Type": "application/json"
+                        ],
+                        content: HttpBody.data(""${'"'}
+                        {
+                            "stringValue": "string",
+                            "documentValue": {
+                                "foo": "bar"
+                            }
+                        }
+                        ""${'"'}.data(using: .utf8)),
+                        host: host
+                    ) else {
+                        XCTFail("Something is wrong with the created http response")
+                        return
+                    }
+            
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .secondsSince1970
+                    decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+                    let actual = try InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
+            
+                    let expected = InlineDocumentOutputResponse(
+                        documentValue: try decoder.decode(Document.self, from:
+                            ""${'"'}
+                            {
+                                "foo": "bar"
+                            }
+                            ""${'"'}.data(using: .utf8)!)
+                            ,
+                            stringValue: "string"
+                        )
+            
+                        XCTAssertEqual(expected.stringValue, actual.stringValue)
+                        XCTAssertEqual(expected.documentValue, actual.documentValue)
+            
+                    }
                 }
-            }
-            ""${'"'}.data(using: .utf8)),
-            host: host
-        ) else {
-            XCTFail("Something is wrong with the created http response")
-            return
-        }
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        let actual = try InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
-
-        let expected = InlineDocumentOutputResponse(
-            documentValue: Document(
-                dictionaryLiteral:
-                (
-                    "foo",
-                    Document(
-                        "bar")
-                )
-            )
-            ,
-            stringValue: "string"
-        )
-
-        XCTAssertEqual(expected.stringValue, actual.stringValue)
-        XCTAssertEqual(expected.documentValue, actual.documentValue)
-
- """
+ """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -314,45 +321,46 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-class InlineDocumentAsPayloadResponseTest: HttpResponseTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
-    /// Serializes an inline document as the target of the httpPayload trait.
-    func testInlineDocumentAsPayloadInputOutput() throws {
-        guard let httpResponse = buildHttpResponse(
-            code: 200,
-            headers: [
-                "Content-Type": "application/json"
-            ],
-            content: HttpBody.data(""${'"'}
-            {
-                "foo": "bar"
-            }
-            ""${'"'}.data(using: .utf8)),
-            host: host
-        ) else {
-            XCTFail("Something is wrong with the created http response")
-            return
-        }
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        let actual = try InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)
-
-        let expected = InlineDocumentAsPayloadOutputResponse(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
-                {
-                    "foo": "bar"
+            class InlineDocumentAsPayloadResponseTest: HttpResponseTestBase {
+                let host = "my-api.us-east-2.amazonaws.com"
+                /// Serializes an inline document as the target of the httpPayload trait.
+                func testInlineDocumentAsPayloadInputOutput() throws {
+                    guard let httpResponse = buildHttpResponse(
+                        code: 200,
+                        headers: [
+                            "Content-Type": "application/json"
+                        ],
+                        content: HttpBody.data(""${'"'}
+                        {
+                            "foo": "bar"
+                        }
+                        ""${'"'}.data(using: .utf8)),
+                        host: host
+                    ) else {
+                        XCTFail("Something is wrong with the created http response")
+                        return
+                    }
+            
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .secondsSince1970
+                    decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+                    let actual = try InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)
+            
+                    let expected = InlineDocumentAsPayloadOutputResponse(
+                        documentValue: try decoder.decode(Document.self, from:
+                            ""${'"'}
+                            {
+                                "foo": "bar"
+                            }
+                            ""${'"'}.data(using: .utf8)!)
+            
+                        )
+            
+                        XCTAssertEqual(expected.documentValue, actual.documentValue)
+            
+                    }
                 }
-                ""${'"'}.data(using: .utf8)!)
-
-            )
-
-            XCTAssertEqual(expected.documentValue, actual.documentValue)
-
-        }
-    }
- """
+             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

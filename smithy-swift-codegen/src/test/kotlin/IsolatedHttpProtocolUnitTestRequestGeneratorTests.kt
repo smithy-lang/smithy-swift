@@ -24,6 +24,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = HttpRequestWithFloatLabelsInput(
             double: Double.nan,
@@ -54,6 +55,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
             let decoder = JSONDecoder()
+            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
             let input = HttpRequestWithFloatLabelsInput(
                 double: Double.infinity,
@@ -70,24 +72,25 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         val expectedContents =
             """
-    func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
-        let expected = buildExpectedHttpRequest(
-            method: .get,
-            path: "/FloatHttpLabels/-Infinity/-Infinity",
-            headers: [String: String](),
-            queryParams: [String](),
-            body: nil,
-            host: host
-        )
+        func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
+            let expected = buildExpectedHttpRequest(
+                method: .get,
+                path: "/FloatHttpLabels/-Infinity/-Infinity",
+                headers: [String: String](),
+                queryParams: [String](),
+                body: nil,
+                host: host
+            )
         
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-
-        let decoder = JSONDecoder()
-
-        let input = HttpRequestWithFloatLabelsInput(
-            double: -Double.infinity,
-            float: -Float.infinity
-        )
+            let deserializeMiddleware = expectation(description: "deserializeMiddleware")
+        
+            let decoder = JSONDecoder()
+            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        
+            let input = HttpRequestWithFloatLabelsInput(
+                double: -Double.infinity,
+                float: -Float.infinity
+            )
         """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -122,8 +125,8 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             headerFloat: Float.nan
         )
 
-        XCTAssertEqual(expected.headerFloat?.isNaN && actual.headerFloat?.isNaN)
-        XCTAssertEqual(expected.headerDouble?.isNaN && actual.headerDouble?.isNaN)
+        XCTAssertEqual(expected.headerFloat?.isNaN, actual.headerFloat?.isNaN)
+        XCTAssertEqual(expected.headerDouble?.isNaN, actual.headerDouble?.isNaN)
 
     }
 }
@@ -175,6 +178,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = DocumentTypeInput(
             documentValue: try decoder.decode(Document.self, from:
@@ -199,48 +203,6 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                 ,
                 stringValue: "string"
             )
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .secondsSince1970
-            let context = HttpContextBuilder()
-                          .withEncoder(value: encoder)
-                          .build()
-            var operationStack = OperationStack<DocumentTypeInput, DocumentTypeOutputResponse, DocumentTypeOutputError>(id: "DocumentInputWithList")
-            operationStack.serializeStep.intercept(position: .before, middleware: DocumentTypeInputHeadersMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: DocumentTypeInputQueryItemMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: DocumentTypeInputBodyMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<DocumentTypeInput, DocumentTypeOutputResponse, DocumentTypeOutputError>(contentType: "application/json"))
-            operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<DocumentTypeOutputResponse, DocumentTypeOutputError>())
-            operationStack.deserializeStep.intercept(position: .after,
-                         middleware: MockDeserializeMiddleware<DocumentTypeOutputResponse, DocumentTypeOutputError>(
-                                 id: "TestDeserializeMiddleware"){ context, actual in
-                self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                    self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
-                        do {
-                            let expectedObj = try decoder.decode(DocumentTypeInputBody.self, from: expectedData)
-                            let actualObj = try decoder.decode(DocumentTypeInputBody.self, from: actualData)
-                            XCTAssertEqual(expectedObj, actualObj)
-                        } catch let err {
-                            XCTFail("Failed to verify body \(err)")
-                        }
-                    }
-                })
-                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-                let mockOutput = try! DocumentTypeOutputResponse(httpResponse: response, decoder: nil)
-                let output = OperationOutput<DocumentTypeOutputResponse>(httpResponse: response, output: mockOutput)
-                deserializeMiddleware.fulfill()
-                return .success(output)
-            })
-            _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
-                XCTFail("Deserialize was mocked out, this should fail")
-                let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
-                let serviceError = try! DocumentTypeOutputError(httpResponse: httpResponse)
-                return .failure(.service(serviceError, httpResponse))
-            })
-            wait(for: [deserializeMiddleware], timeout: 0.3)
-        }
-    }
         """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

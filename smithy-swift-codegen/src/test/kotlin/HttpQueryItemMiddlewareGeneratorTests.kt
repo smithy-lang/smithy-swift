@@ -2,7 +2,7 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.Optional
+import java.util.*
 
 class HttpQueryItemMiddlewareGeneratorTests {
     @Test
@@ -207,7 +207,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         foo.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
-                                value0?.forEach { value1 in
+                                value0.forEach { value1 in
                                     let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
                                     input.builder.withQueryItem(queryItem)
                                 }
@@ -216,6 +216,12 @@ class HttpQueryItemMiddlewareGeneratorTests {
                     }
                     return next.handle(context: context, input: input)
                 }
+            
+                public typealias MInput = SerializeStepInput<QueryParamsAsStringListMapInput>
+                public typealias MOutput = OperationOutput<QueryParamsAsStringListMapOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
+                public typealias MError = SdkError<QueryParamsAsStringListMapOutputError>
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

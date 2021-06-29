@@ -295,42 +295,45 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
     @Test
     fun `check for sparse and dense datatypes in list`() {
-        /*  Also the integration test for model evolution: Struct JsonListsInputOutput is generating 2
-            separate structs for input and output with members given in smithy model, without creating
-            additional structs in the model
-         */
         val model = javaClass.getResource("sparse-trait-test.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
+        val contents = getModelFileContents("example", "JsonListsInput.swift", manifest)
+        contents.shouldSyntacticSanityCheck()
 
-        val jsonListsInput = manifest
-            .getFileString("example/models/JsonListsInput.swift").get()
-        Assertions.assertNotNull(jsonListsInput)
-        jsonListsInput.shouldContain(
-            "public struct JsonListsInput: Equatable {\n" +
-                "    public let booleanList: [Bool]?\n" +
-                "    public let integerList: [Int]?\n" +
-                "    public let nestedStringList: [[String]?]?\n" +
-                "    public let sparseStringList: [String?]?\n" +
-                "    public let stringList: [String]?\n" +
-                "    public let stringSet: Set<String>?\n" +
-                "    public let timestampList: [Date]?"
-        )
+        val expectedContents =
+            """
+            public struct JsonListsInput: Equatable {
+                public let booleanList: [Bool]?
+                public let integerList: [Int]?
+                public let nestedStringList: [[String]]?
+                public let sparseStringList: [String?]?
+                public let stringList: [String]?
+                public let stringSet: Set<String>?
+                public let timestampList: [Date]?
 
-        val jsonListsOutput = manifest
-            .getFileString("example/models/JsonListsOutputResponse.swift").get()
-        Assertions.assertNotNull(jsonListsOutput)
-        jsonListsOutput.shouldContain(
-            "public struct JsonListsOutputResponse: Equatable {\n" +
-                "    public let booleanList: [Bool]?\n" +
-                "    public let integerList: [Int]?\n" +
-                "    public let nestedStringList: [[String]?]?\n" +
-                "    public let sparseStringList: [String?]?\n" +
-                "    public let stringList: [String]?\n" +
-                "    public let stringSet: Set<String>?\n" +
-                "    public let timestampList: [Date]?"
-        )
+                public init (
+                    booleanList: [Bool]? = nil,
+                    integerList: [Int]? = nil,
+                    nestedStringList: [[String]]? = nil,
+                    sparseStringList: [String?]? = nil,
+                    stringList: [String]? = nil,
+                    stringSet: Set<String>? = nil,
+                    timestampList: [Date]? = nil
+                )
+                {
+                    self.booleanList = booleanList
+                    self.integerList = integerList
+                    self.nestedStringList = nestedStringList
+                    self.sparseStringList = sparseStringList
+                    self.stringList = stringList
+                    self.stringSet = stringSet
+                    self.timestampList = timestampList
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test

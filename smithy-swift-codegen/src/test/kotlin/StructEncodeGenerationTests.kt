@@ -110,33 +110,40 @@ class StructEncodeGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .member1)
                     member1 = member1Decoded
-                    let intListContainer = try containerValues.decodeIfPresent([Int].self, forKey: .intList)
+                    let intListContainer = try containerValues.decodeIfPresent([Int?].self, forKey: .intList)
                     var intListDecoded0:[Int]? = nil
                     if let intListContainer = intListContainer {
                         intListDecoded0 = [Int]()
                         for integer0 in intListContainer {
-                            intListDecoded0?.append(integer0)
+                            if let integer0 = integer0 {
+                                intListDecoded0?.append(integer0)
+                            }
                         }
                     }
                     intList = intListDecoded0
-                    let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    let intMapContainer = try containerValues.decodeIfPresent([String: Int?].self, forKey: .intMap)
                     var intMapDecoded0: [String:Int]? = nil
                     if let intMapContainer = intMapContainer {
                         intMapDecoded0 = [String:Int]()
                         for (key0, integer0) in intMapContainer {
-                            intMapDecoded0?[key0] = integer0
+                            if let integer0 = integer0 {
+                                intMapDecoded0?[key0] = integer0
+                            }
                         }
                     }
                     intMap = intMapDecoded0
-                    let stringMapContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
-                    var stringMapDecoded0: [String:[String]?]? = nil
+                    let stringMapContainer = try containerValues.decodeIfPresent([String: [String?]?].self, forKey: .stringMap)
+                    var stringMapDecoded0: [String:[String]]? = nil
                     if let stringMapContainer = stringMapContainer {
-                        stringMapDecoded0 = [String:[String]?]()
+                        stringMapDecoded0 = [String:[String]]()
                         for (key0, stringlist0) in stringMapContainer {
-                            var stringlist0Decoded0 = [String]()
+                            var stringlist0Decoded0: [String]? = nil
                             if let stringlist0 = stringlist0 {
+                                stringlist0Decoded0 = [String]()
                                 for string1 in stringlist0 {
-                                    stringlist0Decoded0.append(string1)
+                                    if let string1 = string1 {
+                                        stringlist0Decoded0?.append(string1)
+                                    }
                                 }
                             }
                             stringMapDecoded0?[key0] = stringlist0Decoded0
@@ -401,10 +408,8 @@ extension JsonListsInput: Encodable, Reflection {
             var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
             for nestedstringlist0 in nestedStringList {
                 var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
-                if let nestedstringlist0 = nestedstringlist0 {
-                    for stringlist1 in nestedstringlist0 {
-                        try nestedstringlist0Container.encode(stringlist1)
-                    }
+                for stringlist1 in nestedstringlist0 {
+                    try nestedstringlist0Container.encode(stringlist1)
                 }
             }
         }

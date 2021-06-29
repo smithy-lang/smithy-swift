@@ -53,8 +53,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SmokeTestInput(
             header1: "Foo",
@@ -70,6 +71,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -141,14 +143,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = ExplicitStringInput(
             payload1: "explicit string"
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -210,13 +214,15 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = EmptyInputAndEmptyOutputInput(
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -267,14 +273,16 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SimpleScalarPropertiesInput(
             stringValue: nil
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -331,8 +339,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = StreamingTraitsInput(
             blob: "blobby blob blob".data(using: .utf8)!,
@@ -340,6 +349,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -396,8 +406,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = HttpPrefixHeadersInput(
             foo: "Foo",
@@ -406,6 +417,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -462,8 +474,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = JsonUnionsInput(
             contents: MyUnion.stringValue("foo")
@@ -471,6 +484,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -488,7 +502,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
-                        let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(JsonUnionsInputBody.self, from: actualData)
                         XCTAssertEqual(expectedObj, actualObj)
@@ -549,8 +562,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = RecursiveShapesInput(
             nested: RecursiveShapesInputOutputNested1(
@@ -572,6 +586,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .build()
@@ -589,7 +604,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                     do {
-                        let decoder = JSONDecoder()
                         let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(RecursiveShapesInputBody.self, from: actualData)
                         XCTAssertEqual(expectedObj, actualObj)
@@ -641,62 +655,62 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = InlineDocumentInput(
-            documentValue: Document(
-                dictionaryLiteral:
-                (
-                    "foo",
-                    Document(
-                        "bar")
-                )
-            )
-            ,
-            stringValue: "string"
-        )
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        let context = HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .build()
-        var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>())
-        operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
-                             id: "TestDeserializeMiddleware"){ context, actual in
-            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
-                    do {
-                        let decoder = JSONDecoder()
-                        let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
-                        let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
-                        XCTAssertEqual(expectedObj, actualObj)
-                    } catch let err {
-                        XCTFail("Failed to verify body \(err)")
-                    }
+            documentValue: try decoder.decode(Document.self, from:
+                ""${'"'}
+                {
+                    "foo": "bar"
                 }
+                ""${'"'}.data(using: .utf8)!)
+                ,
+                stringValue: "string"
+            )
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+            let context = HttpContextBuilder()
+                          .withEncoder(value: encoder)
+                          .build()
+            var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputHeadersMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputQueryItemMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
+            operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>())
+            operationStack.deserializeStep.intercept(position: .after,
+                         middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
+                                 id: "TestDeserializeMiddleware"){ context, actual in
+                self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                    self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                        do {
+                            let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
+                            let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
+                            XCTAssertEqual(expectedObj, actualObj)
+                        } catch let err {
+                            XCTFail("Failed to verify body \(err)")
+                        }
+                    }
+                })
+                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+                let mockOutput = try! InlineDocumentOutputResponse(httpResponse: response, decoder: nil)
+                let output = OperationOutput<InlineDocumentOutputResponse>(httpResponse: response, output: mockOutput)
+                deserializeMiddleware.fulfill()
+                return .success(output)
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! InlineDocumentOutputResponse(httpResponse: response, decoder: nil)
-            let output = OperationOutput<InlineDocumentOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
-            return .success(output)
-        })
-        _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
-            XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
-            let serviceError = try! InlineDocumentOutputError(httpResponse: httpResponse)
-            return .failure(.service(serviceError, httpResponse))
-        })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
+            _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
+                XCTFail("Deserialize was mocked out, this should fail")
+                let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+                let serviceError = try! InlineDocumentOutputError(httpResponse: httpResponse)
+                return .failure(.service(serviceError, httpResponse))
+            })
+            wait(for: [deserializeMiddleware], timeout: 0.3)
+        }
  """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -724,61 +738,61 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-        
+
         let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = InlineDocumentAsPayloadInput(
-            documentValue: Document(
-                dictionaryLiteral:
-                (
-                    "foo",
-                    Document(
-                        "bar")
-                )
-            )
-
-        )
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        let context = HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .build()
-        var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>())
-        operationStack.deserializeStep.intercept(position: .after,
-                     middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
-                             id: "TestDeserializeMiddleware"){ context, actual in
-            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
-                    do {
-                        let decoder = JSONDecoder()
-                        let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
-                        let actualObj = try decoder.decode(ClientRuntime.Document.self, from: actualData)
-                        XCTAssertEqual(expectedObj, actualObj)
-                    } catch let err {
-                        XCTFail("Failed to verify body \(err)")
-                    }
+            documentValue: try decoder.decode(Document.self, from:
+                ""${'"'}
+                {
+                    "foo": "bar"
                 }
+                ""${'"'}.data(using: .utf8)!)
+
+            )
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .secondsSince1970
+            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+            let context = HttpContextBuilder()
+                          .withEncoder(value: encoder)
+                          .build()
+            var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
+            operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>())
+            operationStack.deserializeStep.intercept(position: .after,
+                         middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
+                                 id: "TestDeserializeMiddleware"){ context, actual in
+                self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                    self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                        do {
+                            let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
+                            let actualObj = try decoder.decode(ClientRuntime.Document.self, from: actualData)
+                            XCTAssertEqual(expectedObj, actualObj)
+                        } catch let err {
+                            XCTFail("Failed to verify body \(err)")
+                        }
+                    }
+                })
+                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+                let mockOutput = try! InlineDocumentAsPayloadOutputResponse(httpResponse: response, decoder: nil)
+                let output = OperationOutput<InlineDocumentAsPayloadOutputResponse>(httpResponse: response, output: mockOutput)
+                deserializeMiddleware.fulfill()
+                return .success(output)
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
-            let mockOutput = try! InlineDocumentAsPayloadOutputResponse(httpResponse: response, decoder: nil)
-            let output = OperationOutput<InlineDocumentAsPayloadOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
-            return .success(output)
-        })
-        _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
-            XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
-            let serviceError = try! InlineDocumentAsPayloadOutputError(httpResponse: httpResponse)
-            return .failure(.service(serviceError, httpResponse))
-        })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
+            _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
+                XCTFail("Deserialize was mocked out, this should fail")
+                let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+                let serviceError = try! InlineDocumentAsPayloadOutputError(httpResponse: httpResponse)
+                return .failure(.service(serviceError, httpResponse))
+            })
+            wait(for: [deserializeMiddleware], timeout: 0.3)
+        }
  """
         contents.shouldContainOnlyOnce(expectedContents)
     }
