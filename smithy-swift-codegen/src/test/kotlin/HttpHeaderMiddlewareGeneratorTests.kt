@@ -16,7 +16,7 @@ class HttpHeaderMiddlewareGeneratorTests {
 
     @Test
     fun `it creates smoke test request builder`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+HeaderMiddleware.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -54,7 +54,7 @@ class HttpHeaderMiddlewareGeneratorTests {
 
     @Test
     fun `it builds headers with enums as raw values`() {
-        val contents = getModelFileContents("example", "EnumInputInput+HeaderMiddleware.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputInput+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -91,7 +91,7 @@ class HttpHeaderMiddlewareGeneratorTests {
     fun `it builds header with idempotency token value`() {
         val contents = getModelFileContents(
             "example",
-            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderMiddleware.swift",
+            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+Extensions.swift",
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
@@ -129,7 +129,7 @@ class HttpHeaderMiddlewareGeneratorTests {
     @Test
     fun `it creates http headers for timestamps with format`() {
         val contents =
-            getModelFileContents("example", "TimestampInputInput+HeaderMiddleware.swift", newTestContext.manifest)
+            getModelFileContents("example", "TimestampInputInput+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

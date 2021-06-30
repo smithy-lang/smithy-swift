@@ -12,7 +12,7 @@ class SetEncodeXMLGenerationTests {
     @Test
     fun `001 wrapped set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetInput+Extensions.swift")
         val expectedContents =
             """
             extension XmlEnumSetInput: Encodable, Reflection {
@@ -39,7 +39,7 @@ class SetEncodeXMLGenerationTests {
     fun `002 wrapped nested set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
         print(listFilesFromManifest(context.manifest))
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetInput+Extensions.swift")
         val expectedContents =
             """
             extension XmlEnumNestedSetInput: Encodable, Reflection {

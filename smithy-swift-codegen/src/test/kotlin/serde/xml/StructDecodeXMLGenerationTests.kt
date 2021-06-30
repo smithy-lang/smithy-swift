@@ -12,7 +12,7 @@ class StructDecodeXMLGenerationTests {
     fun `XmlWrappedListOutputResponseBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-lists-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListOutputResponseBody+Extensions.swift")
         val expectedContents = """
         extension XmlWrappedListOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -51,7 +51,7 @@ class StructDecodeXMLGenerationTests {
     fun `SimpleScalarPropertiesOutputResponseBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputResponseBody+Extensions.swift")
         val expectedContents = """
         extension SimpleScalarPropertiesOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -99,7 +99,7 @@ class StructDecodeXMLGenerationTests {
     @Test
     fun `nestednested wrapped list deserialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListOutputResponseBody+Extensions.swift")
         val expectedContents = """
         extension XmlNestedNestedWrappedListOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -150,7 +150,7 @@ class StructDecodeXMLGenerationTests {
     @Test
     fun `empty lists decode`() {
         val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlEmptyListsOutputResponseBody: Decodable {

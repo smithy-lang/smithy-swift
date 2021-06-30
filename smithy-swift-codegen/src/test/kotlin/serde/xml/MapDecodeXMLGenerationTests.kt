@@ -12,7 +12,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `001 decode wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsOutputResponseBody+Extensions.swift")
         val expectedContents = """
         extension XmlMapsOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -49,7 +49,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `002 decode wrapped map with name protocol`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsWithNameProtocolOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsWithNameProtocolOutputResponseBody+Extensions.swift")
         val expectedContents = """
         extension XmlMapsWithNameProtocolOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -86,7 +86,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `003 decode nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsNestedOutputResponseBody: Decodable {
@@ -132,7 +132,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `004 decode nested nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nestednested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedNestedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedNestedOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsNestedNestedOutputResponseBody: Decodable {
@@ -186,7 +186,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `005 decode flattened map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedMapsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedMapsOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlFlattenedMapsOutputResponseBody: Decodable {
@@ -224,7 +224,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `006 decode flattened nested map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedOutputResponseBody: Decodable {
@@ -270,7 +270,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `007 decode map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsXmlNameOutputResponseBody: Decodable {
@@ -308,7 +308,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `008 decode map with xmlname flattened`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameFlattenedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameFlattenedOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsXmlNameFlattenedOutputResponseBody: Decodable {
@@ -346,7 +346,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `009 decode map with xmlname nested`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameNestedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameNestedOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsXmlNameNestedOutputResponseBody: Decodable {
@@ -391,7 +391,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `011 decode flattened nested map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNameOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNameOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedXmlNameOutputResponseBody: Decodable {
@@ -437,7 +437,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `011 decode map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNamespaceOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNamespaceOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsXmlNamespaceOutputResponseBody: Decodable {
@@ -475,7 +475,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `012 decode flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedXmlNamespaceOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedXmlNamespaceOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedXmlNamespaceOutputResponseBody: Decodable {
@@ -513,7 +513,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `013 decode nested map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedXmlNamespaceOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedXmlNamespaceOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsNestedXmlNamespaceOutputResponseBody: Decodable {
@@ -559,7 +559,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `014 decode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedNestedXmlNamespaceOutputResponseBody: Decodable {
@@ -604,7 +604,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `015 decode map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsContainListOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsContainListOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsContainListOutputResponseBody: Decodable {
@@ -647,7 +647,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `016 decode flattened map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedContainListOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedContainListOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedContainListOutputResponseBody: Decodable {
@@ -691,7 +691,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `017 decode map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTimestampsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTimestampsOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsTimestampsOutputResponseBody: Decodable {
@@ -729,7 +729,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `018 decode flattened map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedTimestampsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedTimestampsOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsFlattenedTimestampsOutputResponseBody: Decodable {
@@ -766,7 +766,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `019 two maps that may conflict with KeyValue`() {
         val context = setupTests("Isolated/Restxml/xml-maps-2x.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTwoOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTwoOutputResponseBody+Extensions.swift")
         val expectedContents =
             """
             extension XmlMapsTwoOutputResponseBody: Decodable {
