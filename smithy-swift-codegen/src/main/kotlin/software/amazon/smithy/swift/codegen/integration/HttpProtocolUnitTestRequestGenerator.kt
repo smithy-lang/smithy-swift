@@ -243,7 +243,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         }
                     } ?: run {
                         val bodyComparisonStrategy = determineBodyComparisonStrategy(test)
-                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, true, expectedData, actualData)
+                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, expectedData, actualData)
                     }
                 }
             }
@@ -258,7 +258,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, Boolean, String, String) -> Unit) {
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit) {
         httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
             return it
         } ?: run {
@@ -278,11 +278,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("}")
     }
 
-    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, appendBody: Boolean, expectedData: String, actualData: String) {
-        val bodyString = if (appendBody) "Body" else ""
+    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, expectedData: String, actualData: String) {
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
-            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
+            writer.write("let expectedObj = try decoder.decode(${symbol}Body.self, from: $expectedData)")
+            writer.write("let actualObj = try decoder.decode(${symbol}Body.self, from: $actualData)")
             renderAssertions(test, shape)
         }
         writer.indent()
