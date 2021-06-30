@@ -4,11 +4,16 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.HttpQueryTrait
+import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.isBoxed
 
@@ -102,24 +107,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
-        for (member in members) {
-            val shape = model.expectShape(member.target.toShapeId())
-            val expectedMemberName = "expected.${symbolProvider.toMemberName(member)}"
-            val actualMemberName = "actual.${symbolProvider.toMemberName(member)}"
-            if (member.isStructureShape) {
-                writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
-            } else if ((shape.isDoubleShape || shape.isFloatShape)) {
-                val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
-                if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
-                    val suffix = if (symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
-                    writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
-                } else {
-                    writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
-                }
-            } else {
-                writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
-            }
-        }
+        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected", "actual")
     }
 
     private fun renderHeadersInHttpResponse(test: HttpResponseTestCase) {
@@ -138,6 +126,27 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
         override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> {
             return HttpProtocolUnitTestResponseGenerator(this)
+        }
+    }
+}
+
+fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, members: Collection<MemberShape>, model: Model, symbolProvider: SymbolProvider, expected: String, actual: String) {
+    for (member in members) {
+        val shape = model.expectShape(member.target.toShapeId())
+        val expectedMemberName = "$expected.${symbolProvider.toMemberName(member)}"
+        val actualMemberName = "$actual.${symbolProvider.toMemberName(member)}"
+        if (member.isStructureShape) {
+            writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
+        } else if ((shape.isDoubleShape || shape.isFloatShape)) {
+            val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
+            if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
+                val suffix = if (symbolProvider.toSymbol(shape).isBoxed()) "?" else ""
+                writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
+            } else {
+                writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
+            }
+        } else {
+            writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
         }
     }
 }
