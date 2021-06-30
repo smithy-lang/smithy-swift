@@ -24,7 +24,7 @@ class UnionEncodeGeneratorTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsInput+Encodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsInput+Extensions.swift"))
     }
 
     @Test
@@ -34,7 +34,7 @@ class UnionEncodeGeneratorTests {
 
     @Test
     fun `it encodes a union member in an operation`() {
-        val contents = getModelFileContents("example", "JsonUnionsInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonUnionsInput+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

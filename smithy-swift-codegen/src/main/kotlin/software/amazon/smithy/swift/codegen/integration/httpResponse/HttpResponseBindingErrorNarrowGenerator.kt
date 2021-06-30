@@ -20,7 +20,7 @@ class HttpResponseBindingErrorNarrowGenerator(
         val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseBinding.swift")
+            .definitionFile("./$rootNamespace/models/$operationErrorName+Extensions.swift")
             .name(operationErrorName)
             .build()
 
