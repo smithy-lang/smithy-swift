@@ -62,19 +62,19 @@ class ListDecodeXMLGenerationTests {
                     struct KeyVal0{struct item{}}
                     let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                     if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
-                        let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[String]?].self, forKey: .member)
-                        var renamedListMembersBuffer:[[String]?]? = nil
+                        let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[String]].self, forKey: .member)
+                        var renamedListMembersBuffer:[[String]]? = nil
                         if let renamedListMembersContainer = renamedListMembersContainer {
-                            renamedListMembersBuffer = [[String]?]()
+                            renamedListMembersBuffer = [[String]]()
                             var listBuffer0: [String]? = nil
                             for listContainer0 in renamedListMembersContainer {
                                 listBuffer0 = [String]()
-                                if let listContainer0 = listContainer0 {
-                                    for stringContainer1 in listContainer0 {
-                                        listBuffer0?.append(stringContainer1)
-                                    }
+                                for stringContainer1 in listContainer0 {
+                                    listBuffer0?.append(stringContainer1)
                                 }
-                                renamedListMembersBuffer?.append(listBuffer0)
+                                if let listBuffer0 = listBuffer0 {
+                                    renamedListMembersBuffer?.append(listBuffer0)
+                                }
                             }
                         }
                         renamedListMembers = renamedListMembersBuffer
@@ -239,26 +239,26 @@ class ListDecodeXMLGenerationTests {
                     if containerValues.contains(.nestedNestedStringList) {
                         let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .nestedNestedStringList)
                         if nestedNestedStringListWrappedContainer != nil {
-                            let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
-                            var nestedNestedStringListBuffer:[[[String]?]?]? = nil
+                            let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]]].self, forKey: .nestedNestedStringList)
+                            var nestedNestedStringListBuffer:[[[String]]]? = nil
                             if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                                nestedNestedStringListBuffer = [[[String]?]?]()
-                                var listBuffer0: [[String]?]? = nil
+                                nestedNestedStringListBuffer = [[[String]]]()
+                                var listBuffer0: [[String]]? = nil
                                 for listContainer0 in nestedNestedStringListContainer {
-                                    listBuffer0 = [[String]?]()
-                                    if let listContainer0 = listContainer0 {
-                                        var listBuffer1: [String]? = nil
-                                        for listContainer1 in listContainer0 {
-                                            listBuffer1 = [String]()
-                                            if let listContainer1 = listContainer1 {
-                                                for stringContainer2 in listContainer1 {
-                                                    listBuffer1?.append(stringContainer2)
-                                                }
-                                            }
+                                    listBuffer0 = [[String]]()
+                                    var listBuffer1: [String]? = nil
+                                    for listContainer1 in listContainer0 {
+                                        listBuffer1 = [String]()
+                                        for stringContainer2 in listContainer1 {
+                                            listBuffer1?.append(stringContainer2)
+                                        }
+                                        if let listBuffer1 = listBuffer1 {
                                             listBuffer0?.append(listBuffer1)
                                         }
                                     }
-                                    nestedNestedStringListBuffer?.append(listBuffer0)
+                                    if let listBuffer0 = listBuffer0 {
+                                        nestedNestedStringListBuffer?.append(listBuffer0)
+                                    }
                                 }
                             }
                             nestedNestedStringList = nestedNestedStringListBuffer
@@ -293,9 +293,9 @@ class ListDecodeXMLGenerationTests {
                         if let myListWrappedContainer = myListWrappedContainer {
                             struct KeyVal0{struct key{}; struct value{}}
                             let myListContainer = try myListWrappedContainer.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
-                            var myListBuffer:[[String:String]?]? = nil
+                            var myListBuffer:[[String:String]]? = nil
                             if let myListContainer = myListContainer {
-                                myListBuffer = [[String:String]?]()
+                                myListBuffer = [[String:String]]()
                                 var mapBuffer0: [String:String]? = nil
                                 for mapContainer0 in myListContainer {
                                     mapBuffer0 = [String:String]()
@@ -304,7 +304,9 @@ class ListDecodeXMLGenerationTests {
                                             mapBuffer0?[stringContainer2.key] = stringContainer2.value
                                         }
                                     }
-                                    myListBuffer?.append(mapBuffer0)
+                                    if let mapBuffer0 = mapBuffer0 {
+                                        myListBuffer?.append(mapBuffer0)
+                                    }
                                 }
                             }
                             myList = myListBuffer
@@ -339,9 +341,9 @@ class ListDecodeXMLGenerationTests {
                         if myListWrappedContainer != nil {
                             struct KeyVal0{struct key{}; struct value{}}
                             let myListContainer = try containerValues.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)
-                            var myListBuffer:[[String:String]?]? = nil
+                            var myListBuffer:[[String:String]]? = nil
                             if let myListContainer = myListContainer {
-                                myListBuffer = [[String:String]?]()
+                                myListBuffer = [[String:String]]()
                                 var mapBuffer0: [String:String]? = nil
                                 for mapContainer0 in myListContainer {
                                     mapBuffer0 = [String:String]()
@@ -350,7 +352,9 @@ class ListDecodeXMLGenerationTests {
                                             mapBuffer0?[stringContainer2.key] = stringContainer2.value
                                         }
                                     }
-                                    myListBuffer?.append(mapBuffer0)
+                                    if let mapBuffer0 = mapBuffer0 {
+                                        myListBuffer?.append(mapBuffer0)
+                                    }
                                 }
                             }
                             myList = myListBuffer

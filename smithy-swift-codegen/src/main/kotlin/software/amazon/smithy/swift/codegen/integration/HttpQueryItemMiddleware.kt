@@ -7,11 +7,13 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -73,7 +75,8 @@ class HttpQueryItemMiddleware(
                 val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)
                 if (valueTargetShape is CollectionShape) {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        writer.openBlock("value0?.forEach { value1 in", "}") {
+                        val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
+                        writer.openBlock("value0$suffix.forEach { value1 in", "}") {
                             writer.write("let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())")
                             writer.write("input.builder.withQueryItem(queryItem)")
                         }

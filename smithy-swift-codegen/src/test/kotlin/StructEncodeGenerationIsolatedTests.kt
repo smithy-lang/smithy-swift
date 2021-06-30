@@ -49,27 +49,80 @@ class StructEncodeGenerationIsolatedTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]?]?].self, forKey: .nestedNestedStringList)
-                    var nestedNestedStringListDecoded0:[[[String]?]?]? = nil
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String?]?]?].self, forKey: .nestedNestedStringList)
+                    var nestedNestedStringListDecoded0:[[[String]]]? = nil
                     if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListDecoded0 = [[[String]?]?]()
+                        nestedNestedStringListDecoded0 = [[[String]]]()
                         for list0 in nestedNestedStringListContainer {
-                            var list0Decoded0 = [[String]?]()
+                            var list0Decoded0: [[String]]? = nil
                             if let list0 = list0 {
+                                list0Decoded0 = [[String]]()
                                 for list1 in list0 {
-                                    var list1Decoded1 = [String]()
+                                    var list1Decoded1: [String]? = nil
                                     if let list1 = list1 {
+                                        list1Decoded1 = [String]()
                                         for string2 in list1 {
-                                            list1Decoded1.append(string2)
+                                            if let string2 = string2 {
+                                                list1Decoded1?.append(string2)
+                                            }
                                         }
                                     }
-                                    list0Decoded0.append(list1Decoded1)
+                                    if let list1Decoded1 = list1Decoded1 {
+                                        list0Decoded0?.append(list1Decoded1)
+                                    }
                                 }
                             }
-                            nestedNestedStringListDecoded0?.append(list0Decoded0)
+                            if let list0Decoded0 = list0Decoded0 {
+                                nestedNestedStringListDecoded0?.append(list0Decoded0)
+                            }
                         }
                     }
                     nestedNestedStringList = nestedNestedStringListDecoded0
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it can handle nested string lists`() {
+        val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
+
+        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Encodable.swift")
+        contents.shouldSyntacticSanityCheck()
+
+        val expectedContents =
+            """
+            extension JsonListsInput: Encodable, Reflection {
+                enum CodingKeys: String, CodingKey {
+                    case nestedStringList
+                    case stringList
+                    case stringSet
+                }
+            
+                public func encode(to encoder: Encoder) throws {
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
+                    if let nestedStringList = nestedStringList {
+                        var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
+                        for nestedstringlist0 in nestedStringList {
+                            var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
+                            for stringlist1 in nestedstringlist0 {
+                                try nestedstringlist0Container.encode(stringlist1)
+                            }
+                        }
+                    }
+                    if let stringList = stringList {
+                        var stringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringList)
+                        for stringlist0 in stringList {
+                            try stringListContainer.encode(stringlist0)
+                        }
+                    }
+                    if let stringSet = stringSet {
+                        var stringSetContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringSet)
+                        for stringset0 in stringSet {
+                            try stringSetContainer.encode(stringset0)
+                        }
+                    }
                 }
             }
             """.trimIndent()

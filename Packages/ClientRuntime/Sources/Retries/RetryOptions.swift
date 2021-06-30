@@ -18,7 +18,6 @@ public struct RetryOptions {
     }
 }
 
-
 extension RetryOptions {
     func toCRTType() -> TransformRetryOptions {
         return TransformRetryOptions(initialBucketCapacity: initialBucketCapacity,

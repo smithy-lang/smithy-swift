@@ -28,15 +28,18 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
-                                                   value: queryParamComponents[1]))
+                                                   value: value))
             } else {
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
         
         for (headerName, headerValue) in headers {
-            builder.withHeader(name: headerName, value: headerValue)
+            let value = sanitizeStringForNonConformingValues(headerValue)
+            builder.withHeader(name: headerName, value: value)
         }
         
         guard let body = body else {
@@ -51,6 +54,16 @@ open class HttpRequestTestBase: XCTestCase {
     
         return builder.build()
         
+    }
+    
+    func sanitizeStringForNonConformingValues(_ input: String) -> String {
+        switch input {
+        case "Infinity": return "inf"
+        case "-Infinity": return "-inf"
+        case "NaN": return "nan"
+        default:
+            return input
+        }
     }
     
     /**
@@ -187,7 +200,7 @@ open class HttpRequestTestBase: XCTestCase {
 
         XCTAssert(expectedQueryItems.count == actualQueryItems.count, "Number of query params does not match")
         for (keyValue, expectedCount) in expectedKVCount {
-            XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Acutal: \(actualKVCount[keyValue] ?? 0)")
+            XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Actual: \(actualKVCount[keyValue] ?? 0)")
         }
     }
 

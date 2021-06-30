@@ -35,7 +35,7 @@ class UnionEncodeXMLGenerationTests {
                             }
                         case let .doubleValue(doubleValue):
                             if let doubleValue = doubleValue {
-                                try container.encode(doubleValue, forKey: Key("doubleValue"))
+                                try container.encode(String(doubleValue), forKey: Key("doubleValue"))
                             }
                         case let .mapValue(mapValue):
                             if let mapValue = mapValue {

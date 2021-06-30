@@ -24,4 +24,3 @@ public var swiftVersion: String {
       #error("Cannot use a version of Swift less than 5.0")
     #endif
 }
-

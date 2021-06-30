@@ -9,6 +9,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
@@ -19,6 +20,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Co
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 
 abstract class MemberShapeDecodeXMLGenerator(
@@ -102,11 +104,15 @@ abstract class MemberShapeDecodeXMLGenerator(
             when (nestedMemberTarget) {
                 is ListShape -> {
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
-                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
+                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    }
                 }
                 is MapShape -> {
                     renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, level + 1)
-                    writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
+                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
+                    }
                 }
                 is SetShape -> {
                     renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
@@ -128,7 +134,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, level: Int) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed() && memberTarget.hasTrait<SparseTrait>()
 
         val isSetShape = memberTarget is SetShape
 
@@ -302,7 +308,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val mappedSymbol = when (shape) {
             is ListShape -> {
                 val nestedShape = ctx.model.expectShape(shape.member.target)
-                "[${convertListSymbolName(nestedShape)}]?"
+                "[${convertListSymbolName(nestedShape)}]"
             }
             is SetShape -> {
                 val nestedShape = ctx.model.expectShape(shape.member.target)

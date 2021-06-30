@@ -149,12 +149,12 @@ class MapDecodeXMLGenerationTests {
                         let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, MapEntry<String, MapEntry<String, GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
                             let myMapContainer = try myMapWrappedContainer.decodeIfPresent([MapKeyValue<String, MapEntry<String, MapEntry<String, GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
-                            var myMapBuffer: [String:[String:[String:GreetingStruct]?]]? = nil
+                            var myMapBuffer: [String:[String:[String:GreetingStruct]]]? = nil
                             if let myMapContainer = myMapContainer {
-                                myMapBuffer = [String:[String:[String:GreetingStruct]?]]()
-                                var nestedBuffer0: [String:[String:GreetingStruct]?]? = nil
+                                myMapBuffer = [String:[String:[String:GreetingStruct]]]()
+                                var nestedBuffer0: [String:[String:GreetingStruct]]? = nil
                                 for mapContainer0 in myMapContainer {
-                                    nestedBuffer0 = [String:[String:GreetingStruct]?]()
+                                    nestedBuffer0 = [String:[String:GreetingStruct]]()
                                     if let mapContainer0NestedEntry0 = mapContainer0.value.entry {
                                         var nestedBuffer1: [String:GreetingStruct]? = nil
                                         for mapContainer1 in mapContainer0NestedEntry0 {

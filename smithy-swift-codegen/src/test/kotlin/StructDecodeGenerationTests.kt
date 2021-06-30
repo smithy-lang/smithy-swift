@@ -114,33 +114,40 @@ class StructDecodeGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .member1)
                     member1 = member1Decoded
-                    let intListContainer = try containerValues.decodeIfPresent([Int].self, forKey: .intList)
+                    let intListContainer = try containerValues.decodeIfPresent([Int?].self, forKey: .intList)
                     var intListDecoded0:[Int]? = nil
                     if let intListContainer = intListContainer {
                         intListDecoded0 = [Int]()
                         for integer0 in intListContainer {
-                            intListDecoded0?.append(integer0)
+                            if let integer0 = integer0 {
+                                intListDecoded0?.append(integer0)
+                            }
                         }
                     }
                     intList = intListDecoded0
-                    let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
+                    let intMapContainer = try containerValues.decodeIfPresent([String: Int?].self, forKey: .intMap)
                     var intMapDecoded0: [String:Int]? = nil
                     if let intMapContainer = intMapContainer {
                         intMapDecoded0 = [String:Int]()
                         for (key0, integer0) in intMapContainer {
-                            intMapDecoded0?[key0] = integer0
+                            if let integer0 = integer0 {
+                                intMapDecoded0?[key0] = integer0
+                            }
                         }
                     }
                     intMap = intMapDecoded0
-                    let stringMapContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .stringMap)
-                    var stringMapDecoded0: [String:[String]?]? = nil
+                    let stringMapContainer = try containerValues.decodeIfPresent([String: [String?]?].self, forKey: .stringMap)
+                    var stringMapDecoded0: [String:[String]]? = nil
                     if let stringMapContainer = stringMapContainer {
-                        stringMapDecoded0 = [String:[String]?]()
+                        stringMapDecoded0 = [String:[String]]()
                         for (key0, stringlist0) in stringMapContainer {
-                            var stringlist0Decoded0 = [String]()
+                            var stringlist0Decoded0: [String]? = nil
                             if let stringlist0 = stringlist0 {
+                                stringlist0Decoded0 = [String]()
                                 for string1 in stringlist0 {
-                                    stringlist0Decoded0.append(string1)
+                                    if let string1 = string1 {
+                                        stringlist0Decoded0?.append(string1)
+                                    }
                                 }
                             }
                             stringMapDecoded0?[key0] = stringlist0Decoded0
@@ -165,7 +172,7 @@ struct TimestampInputOutputResponseBody: Equatable {
     public let dateTime: Date?
     public let epochSeconds: Date?
     public let httpDate: Date?
-    public let nestedTimestampList: [[Date]?]?
+    public let nestedTimestampList: [[Date]]?
     public let timestampList: [Date]?
 }
 
@@ -204,26 +211,29 @@ extension TimestampInputOutputResponseBody: Decodable {
             httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
         }
         httpDate = httpDateDecoded
-        let nestedTimestampListContainer = try containerValues.decodeIfPresent([[String]?].self, forKey: .nestedTimestampList)
-        var nestedTimestampListDecoded0:[[Date]?]? = nil
+        let nestedTimestampListContainer = try containerValues.decodeIfPresent([[String?]?].self, forKey: .nestedTimestampList)
+        var nestedTimestampListDecoded0:[[Date]]? = nil
         if let nestedTimestampListContainer = nestedTimestampListContainer {
-            nestedTimestampListDecoded0 = [[Date]?]()
+            nestedTimestampListDecoded0 = [[Date]]()
             for list0 in nestedTimestampListContainer {
-                var list0Decoded0 = [Date]()
+                var list0Decoded0: [String]? = nil
                 if let list0 = list0 {
+                    list0Decoded0 = [String]()
                     for timestamp1 in list0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
                         }
-                        list0Decoded0.append(date1)
+                        list0Decoded0?.append(date1)
                     }
                 }
-                nestedTimestampListDecoded0?.append(list0Decoded0)
+                if let list0Decoded0 = list0Decoded0 {
+                    nestedTimestampListDecoded0?.append(list0Decoded0)
+                }
             }
         }
         nestedTimestampList = nestedTimestampListDecoded0
-        let timestampListContainer = try containerValues.decodeIfPresent([String].self, forKey: .timestampList)
+        let timestampListContainer = try containerValues.decodeIfPresent([String?].self, forKey: .timestampList)
         var timestampListDecoded0:[Date]? = nil
         if let timestampListContainer = timestampListContainer {
             timestampListDecoded0 = [Date]()
@@ -253,7 +263,7 @@ struct MapInputOutputResponseBody: Equatable {
     public let structMap: [String:ReachableOnlyThroughMap]?
     public let enumMap: [String:MyEnum]?
     public let blobMap: [String:Data]?
-    public let nestedMap: [String:[String:Int]?]?
+    public let nestedMap: [String:[String:Int]]?
     public let dateMap: [String:Date]?
 }
 
@@ -269,58 +279,69 @@ extension MapInputOutputResponseBody: Decodable {
 
     public init (from decoder: Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-        let intMapContainer = try containerValues.decodeIfPresent([String:Int].self, forKey: .intMap)
+        let intMapContainer = try containerValues.decodeIfPresent([String: Int?].self, forKey: .intMap)
         var intMapDecoded0: [String:Int]? = nil
         if let intMapContainer = intMapContainer {
             intMapDecoded0 = [String:Int]()
             for (key0, integer0) in intMapContainer {
-                intMapDecoded0?[key0] = integer0
+                if let integer0 = integer0 {
+                    intMapDecoded0?[key0] = integer0
+                }
             }
         }
         intMap = intMapDecoded0
-        let structMapContainer = try containerValues.decodeIfPresent([String:ReachableOnlyThroughMap].self, forKey: .structMap)
+        let structMapContainer = try containerValues.decodeIfPresent([String: ReachableOnlyThroughMap?].self, forKey: .structMap)
         var structMapDecoded0: [String:ReachableOnlyThroughMap]? = nil
         if let structMapContainer = structMapContainer {
             structMapDecoded0 = [String:ReachableOnlyThroughMap]()
             for (key0, reachableonlythroughmap0) in structMapContainer {
-                structMapDecoded0?[key0] = reachableonlythroughmap0
+                if let reachableonlythroughmap0 = reachableonlythroughmap0 {
+                    structMapDecoded0?[key0] = reachableonlythroughmap0
+                }
             }
         }
         structMap = structMapDecoded0
-        let enumMapContainer = try containerValues.decodeIfPresent([String:MyEnum].self, forKey: .enumMap)
+        let enumMapContainer = try containerValues.decodeIfPresent([String: MyEnum?].self, forKey: .enumMap)
         var enumMapDecoded0: [String:MyEnum]? = nil
         if let enumMapContainer = enumMapContainer {
             enumMapDecoded0 = [String:MyEnum]()
             for (key0, myenum0) in enumMapContainer {
-                enumMapDecoded0?[key0] = myenum0
+                if let myenum0 = myenum0 {
+                    enumMapDecoded0?[key0] = myenum0
+                }
             }
         }
         enumMap = enumMapDecoded0
-        let blobMapContainer = try containerValues.decodeIfPresent([String:Data].self, forKey: .blobMap)
+        let blobMapContainer = try containerValues.decodeIfPresent([String: ClientRuntime.Data?].self, forKey: .blobMap)
         var blobMapDecoded0: [String:Data]? = nil
         if let blobMapContainer = blobMapContainer {
             blobMapDecoded0 = [String:Data]()
             for (key0, blob0) in blobMapContainer {
-                blobMapDecoded0?[key0] = blob0
+                if let blob0 = blob0 {
+                    blobMapDecoded0?[key0] = blob0
+                }
             }
         }
         blobMap = blobMapDecoded0
-        let nestedMapContainer = try containerValues.decodeIfPresent([String:[String:Int]?].self, forKey: .nestedMap)
-        var nestedMapDecoded0: [String:[String:Int]?]? = nil
+        let nestedMapContainer = try containerValues.decodeIfPresent([String: [String: Int?]?].self, forKey: .nestedMap)
+        var nestedMapDecoded0: [String:[String:Int]]? = nil
         if let nestedMapContainer = nestedMapContainer {
-            nestedMapDecoded0 = [String:[String:Int]?]()
+            nestedMapDecoded0 = [String:[String:Int]]()
             for (key0, intmap0) in nestedMapContainer {
-                var intmap0Decoded0 = [String:Int]()
+                var intmap0Decoded0: [String: Int]? = nil
                 if let intmap0 = intmap0 {
+                    intmap0Decoded0 = [String: Int]()
                     for (key1, integer1) in intmap0 {
-                        intmap0Decoded0[key1] = integer1
+                        if let integer1 = integer1 {
+                            intmap0Decoded0?[key1] = integer1
+                        }
                     }
                 }
                 nestedMapDecoded0?[key0] = intmap0Decoded0
             }
         }
         nestedMap = nestedMapDecoded0
-        let dateMapContainer = try containerValues.decodeIfPresent([String:String].self, forKey: .dateMap)
+        let dateMapContainer = try containerValues.decodeIfPresent([String: String?].self, forKey: .dateMap)
         var dateMapDecoded0: [String:Date]? = nil
         if let dateMapContainer = dateMapContainer {
             dateMapDecoded0 = [String:Date]()
@@ -347,9 +368,9 @@ extension MapInputOutputResponseBody: Decodable {
         val expectedContents =
             """
 struct NestedShapesOutputResponseBody: Equatable {
-    public let nestedListInDict: [String:[Date]?]?
-    public let nestedDictInList: [[String:String]?]?
-    public let nestedListOfListInDict: [String:[[Int]?]?]?
+    public let nestedListInDict: [String:[Date]]?
+    public let nestedDictInList: [[String:String]]?
+    public let nestedListOfListInDict: [String:[[Int]]]?
 }
 
 extension NestedShapesOutputResponseBody: Decodable {
@@ -361,55 +382,67 @@ extension NestedShapesOutputResponseBody: Decodable {
 
     public init (from decoder: Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-        let nestedListInDictContainer = try containerValues.decodeIfPresent([String:[String]?].self, forKey: .nestedListInDict)
-        var nestedListInDictDecoded0: [String:[Date]?]? = nil
+        let nestedListInDictContainer = try containerValues.decodeIfPresent([String: [String?]?].self, forKey: .nestedListInDict)
+        var nestedListInDictDecoded0: [String:[Date]]? = nil
         if let nestedListInDictContainer = nestedListInDictContainer {
-            nestedListInDictDecoded0 = [String:[Date]?]()
+            nestedListInDictDecoded0 = [String:[Date]]()
             for (key0, timestamplist0) in nestedListInDictContainer {
-                var timestamplist0Decoded0 = [Date]()
+                var timestamplist0Decoded0: [String]? = nil
                 if let timestamplist0 = timestamplist0 {
+                    timestamplist0Decoded0 = [String]()
                     for timestamp1 in timestamplist0 {
                         let timestamp1Formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
                         }
-                        timestamplist0Decoded0.append(date1)
+                        timestamplist0Decoded0?.append(date1)
                     }
                 }
                 nestedListInDictDecoded0?[key0] = timestamplist0Decoded0
             }
         }
         nestedListInDict = nestedListInDictDecoded0
-        let nestedDictInListContainer = try containerValues.decodeIfPresent([[String:String]?].self, forKey: .nestedDictInList)
-        var nestedDictInListDecoded0:[[String:String]?]? = nil
+        let nestedDictInListContainer = try containerValues.decodeIfPresent([[String: String?]?].self, forKey: .nestedDictInList)
+        var nestedDictInListDecoded0:[[String:String]]? = nil
         if let nestedDictInListContainer = nestedDictInListContainer {
-            nestedDictInListDecoded0 = [[String:String]?]()
+            nestedDictInListDecoded0 = [[String:String]]()
             for map0 in nestedDictInListContainer {
-                var nestedDictInListContainerDecoded0 = [String:String]()
+                var nestedDictInListContainerDecoded0: [String: String]? = nil
                 if let map0 = map0 {
+                    nestedDictInListContainerDecoded0 = [String: String]()
                     for (key1, string1) in map0 {
-                        nestedDictInListContainerDecoded0[key1] = string1
+                        if let string1 = string1 {
+                            nestedDictInListContainerDecoded0?[key1] = string1
+                        }
                     }
                 }
-                nestedDictInListDecoded0?.append(nestedDictInListContainerDecoded0)
+                if let nestedDictInListContainerDecoded0 = nestedDictInListContainerDecoded0 {
+                    nestedDictInListDecoded0?.append(nestedDictInListContainerDecoded0)
+                }
             }
         }
         nestedDictInList = nestedDictInListDecoded0
-        let nestedListOfListInDictContainer = try containerValues.decodeIfPresent([String:[[Int]?]?].self, forKey: .nestedListOfListInDict)
-        var nestedListOfListInDictDecoded0: [String:[[Int]?]?]? = nil
+        let nestedListOfListInDictContainer = try containerValues.decodeIfPresent([String: [[Int?]?]?].self, forKey: .nestedListOfListInDict)
+        var nestedListOfListInDictDecoded0: [String:[[Int]]]? = nil
         if let nestedListOfListInDictContainer = nestedListOfListInDictContainer {
-            nestedListOfListInDictDecoded0 = [String:[[Int]?]?]()
+            nestedListOfListInDictDecoded0 = [String:[[Int]]]()
             for (key0, nestedlonglist0) in nestedListOfListInDictContainer {
-                var nestedlonglist0Decoded0 = [[Int]?]()
+                var nestedlonglist0Decoded0: [[Int]]? = nil
                 if let nestedlonglist0 = nestedlonglist0 {
+                    nestedlonglist0Decoded0 = [[Int]]()
                     for list1 in nestedlonglist0 {
-                        var list1Decoded1 = [Int]()
+                        var list1Decoded1: [Int]? = nil
                         if let list1 = list1 {
+                            list1Decoded1 = [Int]()
                             for long2 in list1 {
-                                list1Decoded1.append(long2)
+                                if let long2 = long2 {
+                                    list1Decoded1?.append(long2)
+                                }
                             }
                         }
-                        nestedlonglist0Decoded0.append(list1Decoded1)
+                        if let list1Decoded1 = list1Decoded1 {
+                            nestedlonglist0Decoded0?.append(list1Decoded1)
+                        }
                     }
                 }
                 nestedListOfListInDictDecoded0?[key0] = nestedlonglist0Decoded0

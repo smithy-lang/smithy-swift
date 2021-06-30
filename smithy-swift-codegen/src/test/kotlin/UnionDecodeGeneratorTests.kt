@@ -165,24 +165,28 @@ class UnionDecodeGeneratorTests {
                         self = .enumValue(enumValue)
                         return
                     }
-                    let listValueContainer = try values.decodeIfPresent([String].self, forKey: .listValue)
+                    let listValueContainer = try values.decodeIfPresent([String?].self, forKey: .listValue)
                     var listValueDecoded0:[String]? = nil
                     if let listValueContainer = listValueContainer {
                         listValueDecoded0 = [String]()
                         for string0 in listValueContainer {
-                            listValueDecoded0?.append(string0)
+                            if let string0 = string0 {
+                                listValueDecoded0?.append(string0)
+                            }
                         }
                     }
                     if let listValue = listValueDecoded0 {
                         self = .listValue(listValue)
                         return
                     }
-                    let mapValueContainer = try values.decodeIfPresent([String:String].self, forKey: .mapValue)
+                    let mapValueContainer = try values.decodeIfPresent([String: String?].self, forKey: .mapValue)
                     var mapValueDecoded0: [String:String]? = nil
                     if let mapValueContainer = mapValueContainer {
                         mapValueDecoded0 = [String:String]()
                         for (key0, string0) in mapValueContainer {
-                            mapValueDecoded0?[key0] = string0
+                            if let string0 = string0 {
+                                mapValueDecoded0?[key0] = string0
+                            }
                         }
                     }
                     if let mapValue = mapValueDecoded0 {

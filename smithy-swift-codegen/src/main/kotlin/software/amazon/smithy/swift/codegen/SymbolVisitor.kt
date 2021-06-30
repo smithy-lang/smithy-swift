@@ -32,7 +32,6 @@ import software.amazon.smithy.model.shapes.ResourceShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.ShortShape
@@ -45,6 +44,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toPascalCase
 import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
@@ -234,26 +234,14 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseTrait(shape, shape.member.target)
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val referenceTypeName = "${reference.name}" + getSuffixBasedOnSparseTrait(shape, shape.value.target)
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
-    }
-
-    private fun getSuffixBasedOnSparseTrait(shape: Shape, memberShapeId: ShapeId): String {
-        val memberShape = model.getShape(memberShapeId).get()
-        return when (
-            shape.hasTrait(SparseTrait::class.java) ||
-                memberShape is MapShape ||
-                memberShape is ListShape
-        ) {
-            true -> "?"
-            false -> ""
-        }
     }
 
     override fun setShape(shape: SetShape): Symbol {

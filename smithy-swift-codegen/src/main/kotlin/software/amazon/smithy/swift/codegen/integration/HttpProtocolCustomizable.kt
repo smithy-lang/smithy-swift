@@ -3,6 +3,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
@@ -34,11 +35,11 @@ interface HttpProtocolCustomizable {
         // Default implementation is no-op
     }
 
-    fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
+    fun getClientProperties(): List<ClientProperty> {
         return emptyList()
     }
 
-    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, Symbol, Boolean, String, String) -> Unit)? {
+    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit)? {
         return null
     }
 

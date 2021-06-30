@@ -5,22 +5,21 @@
 package software.amazon.smithy.swift.codegen.integration.serde.json
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.model.neighbor.RelationshipType
-import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 import software.amazon.smithy.swift.codegen.toMemberNames
@@ -69,41 +68,39 @@ abstract class MemberShapeDecodeGenerator(
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
-    // TODO remove this when we switch to a custom date type as this wont be necessary anymore
-    private fun getSymbolName(shape: Shape): String {
-        val symbol = ctx.symbolProvider.toSymbol(shape)
-        val walker = Walker(ctx.model)
-        if (symbol.name.contains("Date")) {
-            // if symbol name contains the Date symbol, check timestamp format. if the timestamp format is not epoch seconds,
-            // change Date to String to properly decode
-            val walkedShapes = walker.iterateShapes(shape) { relationship ->
-                when (relationship.relationshipType) {
-                    RelationshipType.MEMBER_TARGET,
-                    RelationshipType.STRUCTURE_MEMBER,
-                    RelationshipType.LIST_MEMBER,
-                    RelationshipType.SET_MEMBER,
-                    RelationshipType.MAP_VALUE,
-                    RelationshipType.UNION_MEMBER -> true
-                    else -> false
-                }
+    private fun determineSymbolForShape(currShape: Shape, topLevel: Boolean): String {
+        var mappedSymbol = when (currShape) {
+            is MapShape -> {
+                val currShapeKey = "String"
+
+                val targetShape = ctx.model.expectShape(currShape.value.target)
+                val valueEvaluated = determineSymbolForShape(targetShape, topLevel)
+                val terminator = if (topLevel) "?" else ""
+                "[$currShapeKey: $valueEvaluated$terminator]"
             }
-            loop@ for (walkedShape in walkedShapes) {
-                return if (walkedShape.type == ShapeType.TIMESTAMP) {
-                    val tsFormat = walkedShape
-                        .getTrait(TimestampFormatTrait::class.java)
-                        .map { it.format }
-                        .orElse(defaultTimestampFormat)
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                        symbol.name
-                    } else {
-                        symbol.name.replace("Date", "String")
-                    }
-                } else {
-                    continue@loop
-                }
+            is ListShape -> {
+                val targetShape = ctx.model.expectShape(currShape.member.target)
+                val nestedShape = determineSymbolForShape(targetShape, topLevel)
+                val terminator = if (topLevel) "?" else ""
+                "[$nestedShape$terminator]"
+            }
+            is SetShape -> {
+                val targetShape = ctx.model.expectShape(currShape.member.target)
+                val nestedShape = determineSymbolForShape(targetShape, topLevel)
+                "Set<$nestedShape>"
+            }
+            is TimestampShape -> {
+                val tsFormat = currShape
+                    .getTrait(TimestampFormatTrait::class.java)
+                    .map { it.format }
+                    .orElse(defaultTimestampFormat)
+                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "Date" else "String"
+            }
+            else -> {
+                "${ctx.symbolProvider.toSymbol(currShape)}"
             }
         }
-        return symbol.name
+        return mappedSymbol
     }
 
     private fun writeDateFormatter(formatterName: String, tsFormat: TimestampFormatTrait.Format, writer: SwiftWriter) {
@@ -129,16 +126,22 @@ abstract class MemberShapeDecodeGenerator(
         topLevelMember: MemberShape,
         level: Int = 0
     ) {
-        val symbolName = getSymbolName(shape)
+        val isSparse = ctx.model.expectShape(topLevelMember.target).hasTrait<SparseTrait>()
+        val symbolName = determineSymbolForShape(shape, true)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
-        val insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
+        var insertMethod = when (shape) {
             is SetShape -> "insert"
             is ListShape -> "append"
             else -> "append"
         }
         val nestedTarget = ctx.model.expectShape(shape.member.target)
         if (level == 0) {
+            insertMethod = when (ctx.model.expectShape(topLevelMember.target)) {
+                is SetShape -> "insert"
+                is ListShape -> "append"
+                else -> "append"
+            }
             val listContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
@@ -147,20 +150,19 @@ abstract class MemberShapeDecodeGenerator(
                 symbolName,
                 memberName
             )
+
             writer.write("var \$L:\$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
                 writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
-                renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, topLevelMember, level)
+                renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, topLevelMember, shape.isSetShape, level)
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = originalSymbol.isBoxed()
-            if (isBoxed) {
-                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                    renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
-                }
-            } else {
-                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, level)
+            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                val previousDecodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded${level - 1}"
+                val symbolName = determineSymbolForShape(shape, isSparse)
+                writer.write("\$L = \$L()", previousDecodedMemberName, symbolName)
+                renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, shape.isSetShape, level)
             }
         }
     }
@@ -174,10 +176,12 @@ abstract class MemberShapeDecodeGenerator(
         writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
     }
 
-    private fun renderDecodeListTarget(shape: Shape, decodedMemberName: String, collectionName: String, insertMethod: String, topLevelMember: MemberShape, level: Int = 0) {
-        val iteratorName = "${shape.type.name.toLowerCase()}$level"
-        val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val terminator = if (level == 0) "?" else ""
+    private fun renderDecodeListTarget(shape: Shape, decodedMemberName: String, collectionName: String, insertMethod: String, topLevelMember: MemberShape, isSetShape: Boolean, level: Int = 0) {
+        val topLevelShape = ctx.model.expectShape(topLevelMember.target)
+        val isSparse = topLevelShape.hasTrait<SparseTrait>()
+        val iteratorName = "${shape.type.name.lowercase()}$level"
+        val symbolName = determineSymbolForShape(shape, false)
+        val terminator = "?"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (shape) {
                 is TimestampShape -> {
@@ -187,7 +191,13 @@ abstract class MemberShapeDecodeGenerator(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                        if (!isSparse && !isSetShape) {
+                            writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
+                                writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                            }
+                        } else {
+                            writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                        }
                     } else { // decode date as a string manually
                         val formatterName = "${iteratorName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
@@ -200,17 +210,29 @@ abstract class MemberShapeDecodeGenerator(
                 }
                 is CollectionShape -> {
                     val nestedDecodedMemberName = "${iteratorName}Decoded$level"
-                    writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeListMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
-                    writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
+                    writer.openBlock("if let $nestedDecodedMemberName = $nestedDecodedMemberName {", "}") {
+                        writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
+                    }
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${collectionName}Decoded$level"
-                    writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeMapMember(shape, iteratorName, nestedDecodedMemberName, topLevelMember, level + 1)
-                    writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
+                    writer.openBlock("if let $nestedDecodedMemberName = $nestedDecodedMemberName {", "}") {
+                        writer.write("$decodedMemberName$terminator.$insertMethod($nestedDecodedMemberName)")
+                    }
                 }
-                else -> writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                else -> {
+                    if (!isSparse && !isSetShape) {
+                        writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
+                            writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                        }
+                    } else {
+                        writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
+                    }
+                }
             }
         }
     }
@@ -222,9 +244,9 @@ abstract class MemberShapeDecodeGenerator(
         topLevelMember: MemberShape,
         level: Int = 0
     ) {
-        val symbolName = getSymbolName(shape)
+        val symbolName = determineSymbolForShape(shape, true)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
-        val decodedMemberName = "${memberName}Decoded$level"
+        val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
             val topLevelContainerName = "${memberName}Container"
@@ -242,12 +264,10 @@ abstract class MemberShapeDecodeGenerator(
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
         } else {
-            val isBoxed = ctx.symbolProvider.toSymbol(nestedTarget).isBoxed()
-            if (isBoxed) {
-                writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                    renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
-                }
-            } else {
+            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
+                val previousDecodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded${level - 1}"
+                val symbolName = determineSymbolForShape(shape, false)
+                writer.write("\$L = \$L()", containerName, symbolName)
                 renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
             }
         }
@@ -260,21 +280,22 @@ abstract class MemberShapeDecodeGenerator(
         topLevelMember: MemberShape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
-        val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
-        val terminator = if (level == 0) "?" else ""
+        val topLevelShape = ctx.model.expectShape(topLevelMember.target)
+        val isSparse = topLevelShape.hasTrait<SparseTrait>()
+        val valueIterator = "${valueTargetShape.id.name.lowercase()}$level"
+        val symbolName = determineSymbolForShape(valueTargetShape, false)
+        val terminator = "?"
         writer.openBlock("for (key$level, $valueIterator) in $mapName {", "}") {
             when (valueTargetShape) {
                 is CollectionShape -> {
-                    val originalSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
-                    writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
-                    writer.write("var \$L = \$L()", nestedDecodedMemberName, originalSymbol)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
@@ -285,7 +306,13 @@ abstract class MemberShapeDecodeGenerator(
                         .orElse(defaultTimestampFormat)
 
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
-                        writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                        if (!isSparse) {
+                            writer.openBlock("if let $valueIterator = $valueIterator {", "}") {
+                                writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                            }
+                        } else {
+                            writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                        }
                     } else { // decode date as a string manually
                         val formatterName = "${mapName}Formatter"
                         writeDateFormatter(formatterName, tsFormat, writer)
@@ -296,7 +323,15 @@ abstract class MemberShapeDecodeGenerator(
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
                 }
-                else -> writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                else -> {
+                    if (!isSparse) {
+                        writer.openBlock("if let $valueIterator = $valueIterator {", "}") {
+                            writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                        }
+                    } else {
+                        writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
+                    }
+                }
             }
         }
     }

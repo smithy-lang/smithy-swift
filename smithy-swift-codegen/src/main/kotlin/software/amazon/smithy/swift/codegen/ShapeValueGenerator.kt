@@ -16,7 +16,8 @@ import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.DocumentShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -58,6 +59,7 @@ class ShapeValueGenerator(
             ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
                 params.accept(nodeVisitor)
             }
+            ShapeType.DOCUMENT -> documentDecl(writer, params)
             else -> primitiveDecl(writer, shape) {
                 params.accept(nodeVisitor)
             }
@@ -116,6 +118,15 @@ class ShapeValueGenerator(
     private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
+    }
+
+    private fun documentDecl(writer: SwiftWriter, node: Node) {
+        writer.writeInline("try decoder.decode(Document.self, from:")
+            .write("")
+            .indent()
+            .write("\"\"\"")
+            .write(Node.prettyPrintJson(node))
+            .write("\"\"\".data(using: .utf8)!)")
     }
 
     private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {
@@ -236,19 +247,6 @@ class ShapeValueGenerator(
                             writer.writeInline(",")
                         }
                     }
-                    is DocumentShape -> {
-                        val documentValue = generator.symbolProvider.toSymbol(currShape).name
-                        writer.openBlock("$documentValue( ", ")") {
-                            writer.write("dictionaryLiteral:")
-                            writer.openBlock("(", ")") {
-                                keyNode.accept(this)
-                                writer.write(",").insertTrailingNewline()
-                                writer.openBlock("$documentValue(", ")") {
-                                    valueNode.accept(this)
-                                }
-                            }
-                        }
-                    }
                     is UnionShape -> {
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
@@ -269,7 +267,23 @@ class ShapeValueGenerator(
         }
 
         override fun stringNode(node: StringNode) {
-            writer.writeInline("\$S", node.value)
+            when (currShape) {
+                is DoubleShape, is FloatShape -> {
+                    val symbol = generator.symbolProvider.toSymbol(currShape)
+                    val value = when (node.value.toString()) {
+                        "NaN" -> {
+                            "$symbol.nan"
+                        }
+                        "-Infinity", "Infinity" -> {
+                            val isNegative = if (node.value.toString() == "-Infinity") "-" else ""
+                            "$isNegative${symbol.name}.infinity"
+                        }
+                        else -> "${node.value}"
+                    }
+                    writer.writeInline("\$L", value)
+                }
+                else -> writer.writeInline("\$S", node.value)
+            }
         }
 
         override fun nullNode(node: NullNode) {
