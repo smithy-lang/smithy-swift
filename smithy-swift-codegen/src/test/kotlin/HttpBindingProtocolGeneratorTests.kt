@@ -65,7 +65,7 @@ class HttpBindingProtocolGeneratorTests {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructOutputResponse+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -97,7 +97,7 @@ extension ExplicitStructOutputResponse: HttpResponseBinding {
 
     @Test
     fun `httpResponseCodeOutputResponse response init content`() {
-        val contents = getModelFileContents("example", "HttpResponseCodeOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpResponseCodeOutputResponse+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -112,7 +112,7 @@ extension HttpResponseCodeOutputResponse: HttpResponseBinding {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutputResponse+Extensions.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -136,7 +136,7 @@ extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
     }
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
-        val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+Extensions.swift", newTestContext.manifest)
         val expectedContents =
             """
             extension HttpPrefixHeadersOutputResponse: HttpResponseBinding {

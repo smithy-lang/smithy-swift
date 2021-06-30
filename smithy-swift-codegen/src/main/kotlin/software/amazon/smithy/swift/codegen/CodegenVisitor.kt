@@ -131,8 +131,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.useShapeWriter(shape) { writer: SwiftWriter ->
             StructureGenerator(model, symbolProvider, writer, shape).render()
             writer.write("")
-            //////writers.useShapeExtensionWriter(shape, "Extensions") { writer: SwiftWriter ->
-
             CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
         }
         return null
