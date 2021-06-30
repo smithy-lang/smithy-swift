@@ -38,7 +38,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
-        val decoderParameter = if(needsResponseDecoder) ", decoder: decoder" else ""
+        val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
 
         writer.write(
             "let \$L = try \$L(httpResponse: httpResponse\$L)",

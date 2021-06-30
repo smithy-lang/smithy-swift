@@ -83,7 +83,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
-        val decoderParameter = if(needsResponseDecoder) ", decoder: decoder" else ""
+        val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
         writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStructName, decoderParameter)
     }
 
