@@ -5,6 +5,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
@@ -12,6 +13,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpRequestEncoder
+import software.amazon.smithy.swift.codegen.integration.HttpResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationJsonName
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
@@ -22,7 +25,28 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.StructDecodeG
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
+class MockHttpRequestJsonEncoder(
+    requestEncoderOptions: MutableMap<String, String> = mutableMapOf()
+) : HttpRequestEncoder("JSONEncoder", requestEncoderOptions)
+
+class MockHttpRequestJsonDecoder(
+    requestDecoderOptions: MutableMap<String, String> = mutableMapOf()
+) : HttpResponseDecoder("JSONDecoder", requestDecoderOptions)
+
+class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations() {
+    override fun getClientProperties(): List<ClientProperty> {
+        val properties = mutableListOf<ClientProperty>()
+        val requestEncoderOptions = mutableMapOf<String, String>()
+        val responseDecoderOptions = mutableMapOf<String, String>()
+        requestEncoderOptions["dateEncodingStrategy"] = ".secondsSince1970"
+        requestEncoderOptions["nonConformingFloatEncodingStrategy"] = ".convertToString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")"
+        responseDecoderOptions["dateDecodingStrategy"] = ".secondsSince1970"
+        responseDecoderOptions["nonConformingFloatDecodingStrategy"] = ".convertFromString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")"
+        properties.add(MockHttpRequestJsonEncoder(requestEncoderOptions))
+        properties.add(MockHttpRequestJsonDecoder(responseDecoderOptions))
+        return properties
+    }
+}
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
@@ -75,4 +99,6 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
             HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }
+
+
 }

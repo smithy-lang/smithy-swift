@@ -88,11 +88,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected fun renderResponseDecoder() {
-        val clientProperties = httpProtocolCustomizable.getClientProperties(ctx).filter { it.name == "decoder" }
-        for (prop in clientProperties) {
-            prop.renderInstantiation(writer)
-            prop.renderConfiguration(writer)
-        }
+        val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
+        decoderProperty?.renderInstantiation(writer)
+        decoderProperty?.renderConfiguration(writer)
     }
 
     protected fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {

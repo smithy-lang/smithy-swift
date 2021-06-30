@@ -63,11 +63,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
-            val clientProperties = httpProtocolCustomizable.getClientProperties(ctx)
-            for (prop in clientProperties) {
-                prop.renderInstantiation(writer)
-                prop.renderConfiguration(writer)
-            }
+            val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
+            decoderProperty?.renderInstantiation(writer)
+            decoderProperty?.renderConfiguration(writer)
+
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -75,6 +74,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
+            val encoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpRequestEncoder>().firstOrNull()
+            encoderProperty?.renderInstantiation(writer)
+            encoderProperty?.renderConfiguration(writer)
 
             val inputSymbol = symbolProvider.toSymbol(inputShape)
             val outputShapeId = operation.output.get()

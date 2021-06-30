@@ -24,6 +24,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = HttpRequestWithFloatLabelsInput(
@@ -55,6 +56,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
             let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
             let input = HttpRequestWithFloatLabelsInput(
@@ -85,6 +87,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
     
             let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
     
             let input = HttpRequestWithFloatLabelsInput(
@@ -178,6 +181,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = DocumentTypeInput(

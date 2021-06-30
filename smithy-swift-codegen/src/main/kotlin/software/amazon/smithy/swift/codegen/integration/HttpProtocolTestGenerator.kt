@@ -67,7 +67,6 @@ class HttpProtocolTestGenerator(
 
                 requestTestBuilder
                     .writer(writer)
-                    .ctx(ctx)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
                     .operation(operation)
@@ -100,7 +99,6 @@ class HttpProtocolTestGenerator(
 
                 responseTestBuilder
                     .writer(writer)
-                    .ctx(ctx)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
                     .operation(operation)
@@ -140,7 +138,6 @@ class HttpProtocolTestGenerator(
                     errorTestBuilder
                         .error(error)
                         .writer(writer)
-                        .ctx(ctx)
                         .model(ctx.model)
                         .symbolProvider(ctx.symbolProvider)
                         .operation(operation)

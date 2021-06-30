@@ -55,6 +55,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SmokeTestInput(
@@ -148,6 +149,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = ExplicitStringInput(
@@ -219,6 +221,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = EmptyInputAndEmptyOutputInput(
@@ -278,6 +281,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SimpleScalarPropertiesInput(
@@ -344,6 +348,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = StreamingTraitsInput(
@@ -411,6 +416,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = HttpPrefixHeadersInput(
@@ -479,6 +485,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = JsonUnionsInput(
@@ -567,6 +574,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = RecursiveShapesInput(
@@ -660,6 +668,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = InlineDocumentInput(
@@ -744,6 +753,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = InlineDocumentAsPayloadInput(

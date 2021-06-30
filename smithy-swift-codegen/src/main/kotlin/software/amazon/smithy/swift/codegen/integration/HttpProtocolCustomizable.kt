@@ -35,7 +35,7 @@ interface HttpProtocolCustomizable {
         // Default implementation is no-op
     }
 
-    fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
+    fun getClientProperties(): List<ClientProperty> {
         return emptyList()
     }
 
