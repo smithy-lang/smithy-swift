@@ -28,15 +28,7 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-                let value = { () -> String in
-                    switch queryParamComponents[1] {
-                    case "Infinity": return "inf"
-                    case "-Infinity": return "-inf"
-                    case "NaN": return "nan"
-                    default:
-                        return queryParamComponents[1]
-                    }
-                }()
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
 
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
                                                    value: value))
@@ -46,15 +38,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for (headerName, headerValue) in headers {
-            let value = { () -> String in
-                switch headerValue {
-                case "Infinity": return "inf"
-                case "-Infinity": return "-inf"
-                case "NaN": return "nan"
-                default:
-                    return headerValue
-                }
-            }()
+            let value = sanitizeStringForNonConformingValues(headerValue)
             builder.withHeader(name: headerName, value: value)
         }
         
@@ -70,6 +54,16 @@ open class HttpRequestTestBase: XCTestCase {
     
         return builder.build()
         
+    }
+    
+    func sanitizeStringForNonConformingValues(_ input: String) -> String {
+        switch input {
+        case "Infinity": return "inf"
+        case "-Infinity": return "-inf"
+        case "NaN": return "nan"
+        default:
+            return input
+        }
     }
     
     /**
