@@ -34,9 +34,11 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     private fun renderInitOperationError(test: HttpResponseTestCase, operationErrorType: String) {
         val operationErrorVariableName = operationErrorType.decapitalize()
-        val responseDecoder = resolveResponseDecoder(test)
-        renderResponseDecoderConfiguration(responseDecoder)
-        val decoderParameter = responseDecoder?.let { ", decoder: decoder" } ?: ""
+        val needsResponseDecoder = needsResponseDecoder(test)
+        if (needsResponseDecoder) {
+            renderResponseDecoder()
+        }
+        val decoderParameter = if(needsResponseDecoder) ", decoder: decoder" else ""
 
         writer.write(
             "let \$L = try \$L(httpResponse: httpResponse\$L)",

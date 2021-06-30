@@ -271,22 +271,12 @@ class ShapeValueGenerator(
                 is DoubleShape, is FloatShape -> {
                     val symbol = generator.symbolProvider.toSymbol(currShape)
                     val value = when (node.value.toString()) {
-                        "Infinity" -> {
-                            val suffix = when (symbol.name) {
-                                "Float", "Double" -> ".infinity"
-                                else -> ".max"
-                            }
-                            "${symbol.name}$suffix"
-                        }
                         "NaN" -> {
                             "$symbol.nan"
                         }
-                        "-Infinity" -> {
-                            val suffix = when (symbol.name) {
-                                "Float", "Double" -> ".infinity"
-                                else -> ".max"
-                            }
-                            "-${symbol.name}$suffix"
+                        "-Infinity", "Infinity" -> {
+                            val isNegative = if(node.value.toString() == "-Infinity") "-" else ""
+                            "$isNegative${symbol.name}.infinity"
                         }
                         else -> "${node.value}"
                     }

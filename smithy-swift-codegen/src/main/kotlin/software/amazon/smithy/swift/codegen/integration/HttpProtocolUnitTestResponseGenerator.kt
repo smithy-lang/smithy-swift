@@ -63,30 +63,30 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("}")
     }
 
-    protected fun resolveResponseDecoder(test: HttpResponseTestCase): String? {
-        var responseDecoder: String? = null
+    protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
+        var needsDecoder = false
         test.body.ifPresent { body ->
             if (body.isNotBlank() && body.isNotEmpty() && test.bodyMediaType.isPresent) {
-                responseDecoder = serdeContext.protocolDecoder
+                needsDecoder = true
             }
         }
-        return responseDecoder
+        return needsDecoder
     }
 
     private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
-        val responseDecoder = resolveResponseDecoder(test)
-        renderResponseDecoderConfiguration(responseDecoder)
-        val decoderParameter = responseDecoder?.let { ", decoder: decoder" } ?: ""
+        val needsResponseDecoder = needsResponseDecoder(test)
+        if (needsResponseDecoder) {
+            renderResponseDecoder()
+        }
+        val decoderParameter = if(needsResponseDecoder) ", decoder: decoder" else ""
         writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStructName, decoderParameter)
     }
 
-    protected fun renderResponseDecoderConfiguration(responseDecoder: String?) {
-        responseDecoder?.let {
-            writer.write("let decoder = $it")
-            serdeContext.defaultTimestampFormat?.let {
-                writer.write("decoder.dateDecodingStrategy = $it")
-            }
-            writer.write("decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
+    protected fun renderResponseDecoder() {
+        val clientProperties = httpProtocolCustomizable.getClientProperties(ctx).filter { it.name == "decoder" }
+        for (prop in clientProperties) {
+            prop.renderInstantiation(writer)
+            prop.renderConfiguration(writer)
         }
     }
 

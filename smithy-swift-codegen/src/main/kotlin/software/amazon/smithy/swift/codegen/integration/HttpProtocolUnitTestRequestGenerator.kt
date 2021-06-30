@@ -61,8 +61,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
             writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
-            writer.write("let decoder = ${serdeContext.protocolDecoder}")
-            writer.write("decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
+            val clientProperties = httpProtocolCustomizable.getClientProperties(ctx)
+            for (prop in clientProperties) {
+                prop.renderInstantiation(writer)
+                prop.renderConfiguration(writer)
+            }
             // TODO:: handle streaming inputs
             // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
@@ -78,11 +81,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputErrorName = "${operation.capitalizedName()}OutputError"
             val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0 || httpProtocolCustomizable.alwaysHasHttpBody()
 
-            writer.write("let encoder = \$L", serdeContext.protocolEncoder)
-            serdeContext.defaultTimestampFormat?.let {
-                writer.write("encoder.dateEncodingStrategy = $it")
-            }
-            writer.write("encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: \"Infinity\", negativeInfinity: \"-Infinity\", nan: \"NaN\")")
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
             val hasIdempotencyTokenTrait = idempotentMember != null
