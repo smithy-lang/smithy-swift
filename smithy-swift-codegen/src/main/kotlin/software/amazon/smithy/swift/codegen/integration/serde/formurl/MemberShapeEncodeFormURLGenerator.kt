@@ -312,20 +312,9 @@ abstract class MemberShapeEncodeFormURLGenerator(
         level: Int,
         nextRenderer: (String) -> Unit
     ) {
-        val isBoxed = ctx.symbolProvider.toSymbol(valueTargetShape).isBoxed()
         val nextContainer = "valueContainer${level + 1}"
-        if (isBoxed && !(valueTargetShape is SetShape)) {
-            writer.openBlock("if let ${nestedKeyValueName.second} = ${nestedKeyValueName.second} {", "}") {
-                writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
-                nextRenderer(nextContainer)
-            }
-        } else {
-            // Todo: Write a unit test for this
-            writer.openBlock("if let ${nestedKeyValueName.second} = ${nestedKeyValueName.second} {", "}") {
-                writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
-                nextRenderer(nextContainer)
-            }
-        }
+        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
+        nextRenderer(nextContainer)
     }
 
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {

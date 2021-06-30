@@ -77,11 +77,9 @@ class MapEncodeFormURLGeneratorTests {
                             var entryContainer0 = mapOfListsContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index0.advanced(by: 1))"))
                             var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
                             try keyContainer0.encode(stringKey0, forKey: Key(""))
-                            if let stringlistValue0 = stringlistValue0 {
-                                var valueContainer1 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                                for (index1, string1) in stringlistValue0.enumerated() {
-                                    try valueContainer1.encode(string1, forKey: Key("member.\(index1.advanced(by: 1))"))
-                                }
+                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
+                            for (index1, string1) in stringlistValue0.enumerated() {
+                                try valueContainer1.encode(string1, forKey: Key("member.\(index1.advanced(by: 1))"))
                             }
                         }
                     }

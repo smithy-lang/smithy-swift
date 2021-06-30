@@ -7,7 +7,9 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
@@ -226,19 +228,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val expectedData = "expectedData"
                 val actualData = "actualData"
                 writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { $expectedData, $actualData in ", "}") {
-                    val firstHttpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
-                    val bodyComparisonStrategy = determineBodyComparisonStrategy(test)
-                    if (firstHttpPayloadShape != null) {
-                        val target = model.expectShape(firstHttpPayloadShape.target)
+                    val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
+
+                    httpPayloadShape?.let {
+                        val target = model.expectShape(it.target)
                         when (target.type) {
                             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                                 val nestedSymbol = symbolProvider.toSymbol(target)
-                                bodyComparisonStrategy(writer, nestedSymbol, false, expectedData, actualData)
+                                renderBodyForHttpPayload(writer, nestedSymbol, expectedData, actualData)
                             }
                             else -> writer.write("XCTAssertEqual($expectedData, $actualData)")
                         }
-                    } else {
-                        bodyComparisonStrategy(writer, inputSymbol, true, expectedData, actualData)
+                    } ?: run {
+                        val bodyComparisonStrategy = determineBodyComparisonStrategy(test)
+                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, expectedData, actualData)
                     }
                 }
             }
@@ -253,7 +256,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, Symbol, Boolean, String, String) -> Unit) {
+    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit) {
         httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
             return it
         } ?: run {
@@ -261,17 +264,34 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBodyComparison(writer: SwiftWriter, symbol: Symbol, appendBody: Boolean, expectedData: String, actualData: String) {
-        val bodyString = if (appendBody) "Body" else ""
+    private fun renderBodyForHttpPayload(writer: SwiftWriter, symbol: Symbol, expectedData: String, actualData: String) {
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("let expectedObj = try decoder.decode(${symbol}$bodyString.self, from: $expectedData)")
-            writer.write("let actualObj = try decoder.decode(${symbol}$bodyString.self, from: $actualData)")
+            writer.write("let expectedObj = try decoder.decode($symbol.self, from: $expectedData)")
+            writer.write("let actualObj = try decoder.decode($symbol.self, from: $actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")
         }
         writer.indent()
         writer.write("XCTFail(\"Failed to verify body \\(err)\")")
         writer.dedent()
         writer.write("}")
+    }
+
+    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, expectedData: String, actualData: String) {
+        writer.openBlock("do {", "} catch let err {") {
+            writer.write("let expectedObj = try decoder.decode(${symbol}Body.self, from: $expectedData)")
+            writer.write("let actualObj = try decoder.decode(${symbol}Body.self, from: $actualData)")
+            renderAssertions(test, shape)
+        }
+        writer.indent()
+        writer.write("XCTFail(\"Failed to verify body \\(err)\")")
+        writer.dedent()
+        writer.write("}")
+    }
+
+    protected open fun renderAssertions(test: HttpRequestTestCase, outputShape: Shape) {
+        val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
+            .filterNot { it.hasTrait(HttpHeaderTrait::class.java) }
+        renderMemberAssertions(writer, test, members, model, symbolProvider, "expectedObj", "actualObj")
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
