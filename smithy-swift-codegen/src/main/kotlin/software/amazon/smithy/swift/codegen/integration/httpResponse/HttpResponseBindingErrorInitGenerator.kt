@@ -42,7 +42,7 @@ class HttpResponseBindingErrorInitGenerator(
         val errorShapeName = ctx.symbolProvider.toSymbol(shape).name
 
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$errorShapeName+Init.swift")
+            .definitionFile("./$rootNamespace/models/$errorShapeName.swift")
             .name(errorShapeName)
             .build()
 
