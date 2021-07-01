@@ -139,7 +139,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName.swift")
+                .definitionFile("./$rootNamespace/models/Models.swift")
                 .name(symbolName)
                 .build()
 
@@ -193,7 +193,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val symbolName = symbol.name
         val rootNamespace = ctx.settings.moduleName
         val encodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$symbolName.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(symbolName)
             .build()
 
@@ -233,7 +233,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
         val decodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${bodySymbol.name}.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(bodySymbol.name)
             .build()
 
@@ -377,7 +377,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val rootNamespace = ctx.settings.moduleName
         val headerMiddlewareSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${inputSymbol.name}.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
@@ -403,7 +403,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val rootNamespace = ctx.settings.moduleName
         val headerMiddlewareSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${inputSymbol.name}.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(inputSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
@@ -421,7 +421,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val rootNamespace = ctx.settings.moduleName
             val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
             val headerMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}.swift")
+                .definitionFile("./$rootNamespace/models/Models.swift")
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->

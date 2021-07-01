@@ -180,7 +180,7 @@ class ServiceGenerator(
         val errorShapes = op.errors.map { model.expectShape(it) as StructureShape }.toSet().sorted()
         val operationErrorName = getOperationErrorShapeName(op)
         val operationErrorSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(operationErrorName)
             .build()
         val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol

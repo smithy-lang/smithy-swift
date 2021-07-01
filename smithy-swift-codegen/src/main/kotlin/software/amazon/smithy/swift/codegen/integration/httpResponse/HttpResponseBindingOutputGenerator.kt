@@ -32,7 +32,7 @@ class HttpResponseBindingOutputGenerator(
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$outputShapeName.swift")
+            .definitionFile("./$rootNamespace/models/Models.swift")
             .name(outputShapeName)
             .build()
 

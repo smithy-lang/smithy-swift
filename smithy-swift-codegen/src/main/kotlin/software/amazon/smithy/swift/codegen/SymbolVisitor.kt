@@ -327,7 +327,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         // All shapes except for the service are stored in models.
         return when (shapeType) {
             ShapeType.SERVICE -> "./$rootNamespace/${name}ClientProtocol.swift"
-            else -> "./$rootNamespace/models/$name.swift"
+            else -> "./$rootNamespace/models/Models.swift"
         }
     }
 
