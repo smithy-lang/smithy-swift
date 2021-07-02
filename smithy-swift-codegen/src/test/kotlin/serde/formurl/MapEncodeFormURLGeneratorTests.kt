@@ -12,7 +12,7 @@ class MapEncodeFormURLGeneratorTests {
     @Test
     fun `001 encode different types of maps`() {
         val context = setupTests("Isolated/FormUrl/query-maps.smithy", "aws.protocoltests.query#AwsQuery")
-        val contents = getFileContents(context.manifest, "/Example/models/QueryMapsInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/Example/models/QueryMapsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

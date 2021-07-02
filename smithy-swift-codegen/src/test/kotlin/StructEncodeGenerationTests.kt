@@ -26,7 +26,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestInput+Extensions.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestInput+Encodable.swift"))
     }
 
     @Test
@@ -39,7 +39,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it creates smoke test request encodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -158,7 +158,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it provides encodable conformance to operation inputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampInputInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "TimestampInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -199,7 +199,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it encodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -252,7 +252,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it encodes nested enums correctly`() {
-        val contents = getModelFileContents("example", "EnumInputInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -375,7 +375,7 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it encodes structure with sparse list`() {
-        val contents = getModelFileContents("example", "JsonListsInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonListsInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -445,7 +445,7 @@ extension JsonListsInput: Encodable, Reflection {
 
     @Test
     fun `it encodes structure with sparse map`() {
-        val contents = getModelFileContents("example", "JsonMapsInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonMapsInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -519,7 +519,7 @@ extension JsonMapsInput: Encodable, Reflection {
 
     @Test
     fun `encode checks for 0 or false for primitive types`() {
-        val contents = getModelFileContents("example", "PrimitiveTypesInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

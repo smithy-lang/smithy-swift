@@ -27,7 +27,7 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputResponseBody+Extensions.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputResponseBody+Decodable.swift"))
     }
 
     @Test
@@ -40,7 +40,7 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates smoke test request decodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestOutputResponseBody+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -163,7 +163,7 @@ class StructDecodeGenerationTests {
     @Test
     fun `it provides decodable conformance to operation outputs with timestamps`() {
         val contents =
-            getModelFileContents("example", "TimestampInputOutputResponseBody+Extensions.swift", newTestContext.manifest)
+            getModelFileContents("example", "TimestampInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -254,7 +254,7 @@ extension TimestampInputOutputResponseBody: Decodable {
 
     @Test
     fun `it decodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputOutputResponseBody+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -363,7 +363,7 @@ extension MapInputOutputResponseBody: Decodable {
     @Test
     fun `it decodes nested diverse shapes correctly`() {
         val contents =
-            getModelFileContents("example", "NestedShapesOutputResponseBody+Extensions.swift", newTestContext.manifest)
+            getModelFileContents("example", "NestedShapesOutputResponseBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

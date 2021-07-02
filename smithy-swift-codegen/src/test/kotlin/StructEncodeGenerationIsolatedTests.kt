@@ -6,20 +6,20 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        Assertions.assertTrue(context.manifest.hasFile("/example/models/BlobInputInput+Extensions.swift"))
+        Assertions.assertTrue(context.manifest.hasFile("/example/models/BlobInputInput+Encodable.swift"))
     }
 
     @Test
     fun `BlobInput Contents`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "BlobInputInput+Extensions.swift", context.manifest)
+        val contents = getModelFileContents("example", "BlobInputInput+Encodable.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
     }
 
     @Test
     fun `EnumInput`() {
         val testContext = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        Assertions.assertTrue(testContext.manifest.hasFile("/example/models/EnumInputInput+Extensions.swift"))
+        Assertions.assertTrue(testContext.manifest.hasFile("/example/models/EnumInputInput+Encodable.swift"))
     }
 
     @Test
@@ -38,7 +38,7 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `NestedNested Contents`() {
         val context = setupTests("Isolated/NestedNested-List.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/NestedNestedJsonListInputBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/example/models/NestedNestedJsonListInputBody+Decodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -88,7 +88,7 @@ class StructEncodeGenerationIsolatedTests {
     fun `it can handle nested string lists`() {
         val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
 
-        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents =

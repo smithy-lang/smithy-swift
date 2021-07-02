@@ -12,7 +12,7 @@ class Ec2QueryNameTests {
     @Test
     fun `001 encode simple types`() {
         val context = setupTests("Isolated/ec2/query-simple.smithy", "aws.protocoltests.ec2#AwsEc2")
-        val contents = getFileContents(context.manifest, "/Example/models/Ec2SimpleInputParamsInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/Example/models/Ec2SimpleInputParamsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

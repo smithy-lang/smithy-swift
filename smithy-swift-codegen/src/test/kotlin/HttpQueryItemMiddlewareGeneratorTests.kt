@@ -1,14 +1,15 @@
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import io.kotest.matchers.string.shouldNotContain
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.util.Optional
 
 class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `001 it creates query item middleware with idempotency token trait for httpQuery`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents =
-            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+Extensions.swift", context.manifest)
+            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -45,7 +46,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `002 it creates query item middleware for timestamps with format`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "TimestampInputInput+Extensions.swift", context.manifest)
+        val contents = getModelFileContents("example", "TimestampInputInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -88,7 +89,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `003 it creates query item middleware smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "SmokeTestInput+Extensions.swift", context.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+QueryItemMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -125,14 +126,16 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `004 httpQueryParams only should not have BodyMiddleware extension`() {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+Extensions.swift")
-        contents.shouldNotContain("BodyMiddleware")
+        Assertions.assertEquals(
+            Optional.empty<String>(),
+            context.manifest.getFileString("/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
+        )
     }
 
     @Test
     fun `005 httpQueryParams on StringMap`() {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+QueryItemMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -178,7 +181,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `006 httpQueryParams on stringListMap`() {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+QueryItemMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -226,7 +229,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
     @Test
     fun `007 query precedence with httpQuery and httpQueryParams`() {
         val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/QueryPrecedenceInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/example/models/QueryPrecedenceInput+QueryItemMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

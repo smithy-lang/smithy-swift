@@ -34,7 +34,7 @@ class AttributeEncodeXMLGenerationTests {
     @Test
     fun `002 creates encodable`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlAttributesInput: Encodable, Reflection {

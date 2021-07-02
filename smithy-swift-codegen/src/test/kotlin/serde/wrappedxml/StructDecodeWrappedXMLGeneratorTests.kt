@@ -12,7 +12,7 @@ class StructDecodeWrappedXMLGeneratorTests {
     @Test
     fun `wrapped map decodable`() {
         val context = setupTests("Isolated/wrappedxml/flattened-map.smithy", "aws.protocoltests.query#AwsQuery")
-        val contents = getFileContents(context.manifest, "/Example/models/FlattenedXmlMapOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/Example/models/FlattenedXmlMapOutputResponseBody+Decodable.swift")
         val expectedContents = """
         extension FlattenedXmlMapOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
