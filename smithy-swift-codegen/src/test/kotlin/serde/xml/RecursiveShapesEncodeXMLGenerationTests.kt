@@ -79,7 +79,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
     @Test
     fun `encode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesInput+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesInput+Encodable.swift")
         val expectedContents =
             """
             extension XmlNestedRecursiveShapesInput: Encodable, Reflection {

@@ -21,7 +21,7 @@ class HttpBodyMiddlewareTests {
 
     @Test
     fun `it builds body middleware smoke test`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -63,7 +63,7 @@ class HttpBodyMiddlewareTests {
 
     @Test
     fun `it builds body middleware for explicit string payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStringInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStringInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -100,7 +100,7 @@ class HttpBodyMiddlewareTests {
 
     @Test
     fun `it builds body middleware for explicit blob payloads`() {
-        val contents = getModelFileContents("example", "ExplicitBlobInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -137,7 +137,7 @@ class HttpBodyMiddlewareTests {
 
     @Test
     fun `it builds body middleware for explicit streaming blob payloads`() {
-        val contents = getModelFileContents("example", "ExplicitBlobStreamInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitBlobStreamInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -174,7 +174,7 @@ class HttpBodyMiddlewareTests {
 
     @Test
     fun `it builds body middleware for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructInput+Extensions.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """

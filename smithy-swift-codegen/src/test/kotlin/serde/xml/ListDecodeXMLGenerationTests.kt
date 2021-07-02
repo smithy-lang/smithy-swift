@@ -11,7 +11,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `001 wrapped list with xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-lists-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
             extension XmlListXmlNameOutputResponseBody: Decodable {
@@ -49,7 +49,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `002 wrapped nested list with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-lists-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
         extension XmlListXmlNameNestedOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -94,7 +94,7 @@ class ListDecodeXMLGenerationTests {
     fun `003 decode flattened list`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListOutputResponseBody+Decodable.swift")
         val expectedContents = """
         extension XmlFlattenedListOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -131,7 +131,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `004 decode flattened empty list`() {
         val context = setupTests("Isolated/Restxml/xml-lists-emptyFlattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsOutputResponseBody+Decodable.swift")
         val expectedContents = """
         extension XmlEmptyFlattenedListsOutputResponseBody: Decodable {
             enum CodingKeys: String, CodingKey {
@@ -226,7 +226,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `005 decode nestednested flattened list serialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
             extension XmlNestedNestedFlattenedListOutputResponseBody: Decodable {
@@ -277,7 +277,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `012 decode list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
             extension XmlListContainMapOutputResponseBody: Decodable {
@@ -326,7 +326,7 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `013 decode flattened list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapOutputResponseBody+Extensions.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
             extension XmlListFlattenedContainMapOutputResponseBody: Decodable {

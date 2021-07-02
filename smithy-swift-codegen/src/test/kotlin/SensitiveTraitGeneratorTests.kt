@@ -12,7 +12,7 @@ class SensitiveTraitGeneratorTests {
     fun `SensitiveTraitInRequestInput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestInput.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -28,7 +28,7 @@ class SensitiveTraitGeneratorTests {
     fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestOutputResponse.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestOutputResponse+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -45,7 +45,7 @@ class SensitiveTraitGeneratorTests {
     fun `NoSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestInput.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestInput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -61,7 +61,7 @@ class SensitiveTraitGeneratorTests {
     fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestOutputResponse.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestOutputResponse+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
