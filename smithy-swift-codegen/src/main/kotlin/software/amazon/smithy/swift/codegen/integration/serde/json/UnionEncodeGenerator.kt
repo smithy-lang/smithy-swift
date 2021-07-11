@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.utils.StringUtils.lowerCase
 
 class UnionEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -26,21 +27,22 @@ class UnionEncodeGenerator(
                 membersSortedByName.forEach { member ->
                     val target = ctx.model.expectShape(member.target)
                     val memberName = ctx.symbolProvider.toMemberName(member)
-                    writer.write("case let .\$L(\$L):", memberName, memberName)
+                    val memberNameDecapitalized = memberName.decapitalize()
+                    writer.write("case let .\$L(\$L):", memberName, memberNameDecapitalized)
                     writer.indent()
                     when (target) {
                         is CollectionShape -> {
-                            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                                renderEncodeListMember(target, memberName, containerName)
-                            }
+//                            writer.openBlock("if let \$L = \$L {", "}", memberNameDecapitalized, memberNameDecapitalized) {
+                                renderEncodeListMember(target, memberNameDecapitalized, containerName)
+//                            }
                         }
                         is MapShape -> {
-                            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                                renderEncodeMapMember(target, memberName, containerName)
-                            }
+//                            writer.openBlock("if let \$L = \$L {", "}", memberNameDecapitalized, memberNameDecapitalized) {
+                                renderEncodeMapMember(target, memberNameDecapitalized, containerName)
+//                            }
                         }
                         else -> {
-                            renderSimpleEncodeMember(target, member, containerName)
+                            renderEncodeAssociatedType(target, member, containerName)
                         }
                     }
                     writer.dedent()

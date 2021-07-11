@@ -175,14 +175,14 @@ class UnionEncodeXMLGenerationTests {
         val expectedContents =
             """
             public indirect enum XmlUnionShape: Equatable {
-                case doubleValue(Double?)
-                case dataValue(Data?)
-                case unionValue(XmlUnionShape?)
-                case structValue(XmlNestedUnionStruct?)
-                case mapValue([String:String]?)
-                case stringList([String]?)
-                case timeStampValue(Date?)
-                case sdkUnknown(String?)
+                case doubleValue(Double)
+                case dataValue(ClientRuntime.Data)
+                case unionValue(XmlUnionShape)
+                case structValue(XmlNestedUnionStruct)
+                case mapValue([String:String])
+                case stringList([String])
+                case timeStampValue(ClientRuntime.Date)
+                case sdkUnknown(String)
             }
             """.trimIndent()
 

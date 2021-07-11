@@ -14,7 +14,7 @@ class DefaultCodingKeysGenerator(private val codingKeysCustomizations: CodingKey
         writer.openBlock("enum CodingKeys: String, CodingKey {", "}") {
             for (member in membersSortedByName) {
                 val originalMemberName = member.memberName
-                val modifiedMemberName = ctx.symbolProvider.toMemberName(member)
+                val modifiedMemberName = ctx.symbolProvider.toMemberName(member).decapitalize()
 
                 if (codingKeysCustomizations.shouldHandleMember(member)) {
                     codingKeysCustomizations.handleMember(ctx, writer, member)

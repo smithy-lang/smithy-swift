@@ -24,7 +24,7 @@ class UnionDecodeGenerator(
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
-                val memberName = ctx.symbolProvider.toMemberName(member)
+                val memberName = ctx.symbolProvider.toMemberName(member).decapitalize()
                 when (target) {
                     is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
                     is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)

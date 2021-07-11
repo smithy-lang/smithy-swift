@@ -82,47 +82,29 @@ class UnionDecodeGeneratorTests {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     switch self {
                         case let .blobValue(blobValue):
-                            if let blobValue = blobValue {
-                                try container.encode(blobValue.base64EncodedString(), forKey: .blobValue)
-                            }
+                            try container.encode(blobValue.base64EncodedString(), forKey: .blobValue)
                         case let .booleanValue(booleanValue):
-                            if let booleanValue = booleanValue {
-                                try container.encode(booleanValue, forKey: .booleanValue)
-                            }
+                            try container.encode(booleanValue, forKey: .booleanValue)
                         case let .enumValue(enumValue):
-                            if let enumValue = enumValue {
-                                try container.encode(enumValue.rawValue, forKey: .enumValue)
-                            }
+                            try container.encode(enumValue.rawValue, forKey: .enumValue)
                         case let .listValue(listValue):
-                            if let listValue = listValue {
-                                var listValueContainer = container.nestedUnkeyedContainer(forKey: .listValue)
-                                for stringlist0 in listValue {
-                                    try listValueContainer.encode(stringlist0)
-                                }
+                            var listValueContainer = container.nestedUnkeyedContainer(forKey: .listValue)
+                            for stringlist0 in listValue {
+                                try listValueContainer.encode(stringlist0)
                             }
                         case let .mapValue(mapValue):
-                            if let mapValue = mapValue {
-                                var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapValue)
-                                for (dictKey0, stringmap0) in mapValue {
-                                    try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: dictKey0))
-                                }
+                            var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapValue)
+                            for (dictKey0, stringmap0) in mapValue {
+                                try mapValueContainer.encode(stringmap0, forKey: Key(stringValue: dictKey0))
                             }
                         case let .numberValue(numberValue):
-                            if let numberValue = numberValue {
-                                try container.encode(numberValue, forKey: .numberValue)
-                            }
+                            try container.encode(numberValue, forKey: .numberValue)
                         case let .stringValue(stringValue):
-                            if let stringValue = stringValue {
-                                try container.encode(stringValue, forKey: .stringValue)
-                            }
+                            try container.encode(stringValue, forKey: .stringValue)
                         case let .structureValue(structureValue):
-                            if let structureValue = structureValue {
-                                try container.encode(structureValue, forKey: .structureValue)
-                            }
+                            try container.encode(structureValue, forKey: .structureValue)
                         case let .timestampValue(timestampValue):
-                            if let timestampValue = timestampValue {
-                                try container.encode(timestampValue.iso8601WithoutFractionalSeconds(), forKey: .timestampValue)
-                            }
+                            try container.encode(timestampValue.iso8601WithoutFractionalSeconds(), forKey: .timestampValue)
                         case let .sdkUnknown(sdkUnknown):
                             try container.encode(sdkUnknown, forKey: .sdkUnknown)
                     }

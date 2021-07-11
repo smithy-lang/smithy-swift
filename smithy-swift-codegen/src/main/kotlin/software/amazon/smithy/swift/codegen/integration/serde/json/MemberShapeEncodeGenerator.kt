@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeG
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.utils.StringUtils.lowerCase
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
@@ -235,10 +236,9 @@ abstract class MemberShapeEncodeGenerator(
         target: Shape,
         member: MemberShape,
         containerName: String,
-        httpPayloadTraitNotOnAnyMember: Boolean = false
     ) {
         val symbol = ctx.symbolProvider.toSymbol(target)
-        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberName = ctx.symbolProvider.toMemberName(member).decapitalize()
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
         if (isBoxed) {
@@ -258,5 +258,17 @@ abstract class MemberShapeEncodeGenerator(
             } else
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
         }
+    }
+
+    fun renderEncodeAssociatedType(
+        target: Shape,
+        member: MemberShape,
+        containerName: String
+    ) {
+        val symbol = ctx.symbolProvider.toSymbol(target)
+        val memberName = ctx.symbolProvider.toMemberName(member).decapitalize()
+        val isBoxed = symbol.isBoxed()
+        val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
+        writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
     }
 }

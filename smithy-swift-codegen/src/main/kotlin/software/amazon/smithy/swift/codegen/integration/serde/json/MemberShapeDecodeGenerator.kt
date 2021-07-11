@@ -33,7 +33,7 @@ abstract class MemberShapeDecodeGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeGeneratable {
     fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
-        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberName = ctx.symbolProvider.toMemberName(member).decapitalize()
         val tsFormat = member
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
@@ -58,7 +58,7 @@ abstract class MemberShapeDecodeGenerator(
 
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
         var symbol = ctx.symbolProvider.toSymbol(shape)
-        val memberName = ctx.symbolProvider.toMemberNames(member).second
+        val memberName = ctx.symbolProvider.toMemberNames(member).second.decapitalize()
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
