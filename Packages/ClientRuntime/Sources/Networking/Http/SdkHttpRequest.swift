@@ -36,24 +36,7 @@ extension SdkHttpRequest {
         httpRequest.method = method.rawValue
         httpRequest.path = "\(endpoint.path)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
-        var awsInputStream: AwsInputStream?
-        switch body {
-        case .data(let data):
-            if let data = data {
-                let byteBuffer = ByteBuffer(data: data)
-                awsInputStream = AwsInputStream(byteBuffer)
-            }
-        case .streamSource(let stream):
-            let byteBuffer = ByteBuffer(size: bufferSize)
-            stream.unwrap().sendData(writeTo: byteBuffer)
-            awsInputStream = AwsInputStream(byteBuffer)
-        case .none, .streamSink:
-            awsInputStream = nil
-        }
-        if let inputStream = awsInputStream {
-            httpRequest.body = inputStream
-        }
-        
+        httpRequest.body = body.toAwsInputStream()
         return httpRequest
     }
 }

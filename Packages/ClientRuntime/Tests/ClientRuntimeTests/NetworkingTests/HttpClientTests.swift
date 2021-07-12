@@ -14,7 +14,7 @@ class HttpClientTests: NetworkingTestUtils {
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
-        httpClient = try! SdkHttpClient(engine: mockClient, config: httpClientConfiguration)
+        httpClient = SdkHttpClient(engine: mockClient, config: httpClientConfiguration)
     }
 
     override func tearDown() {

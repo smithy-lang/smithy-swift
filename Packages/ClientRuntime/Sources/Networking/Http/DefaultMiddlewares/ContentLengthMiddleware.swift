@@ -22,10 +22,10 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
             switch input.body {
             case .data(let data):
                 return Int64(data?.count ?? 0)
-            case .streamSource(let stream):
+            case .stream(let stream):
                 // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.unwrap().contentLength
-            case .none, .streamSink:
+                return stream.toBytes().length
+            case .none:
                 return 0
             }
         }()

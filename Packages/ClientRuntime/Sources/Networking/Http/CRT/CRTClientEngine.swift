@@ -87,10 +87,10 @@ public class CRTClientEngine: HttpClientEngine {
             switch request.body {
             case .data(let data):
                 return Int64(data?.count ?? 0)
-            case .streamSource(let stream):
+            case .stream(let stream):
                 // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.unwrap().contentLength
-            case .none, .streamSink:
+                return stream.toBytes().length
+            case .none:
                 return 0
             }
         }()
@@ -110,7 +110,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) -> Future<HttpResponse> {
         let isStreaming = { () -> Bool in
             switch request.body {
-            case .streamSink, .streamSource: return true
+            case .stream: return true
             default: return false
             }
         }()
@@ -155,9 +155,12 @@ public class CRTClientEngine: HttpClientEngine {
         let response = HttpResponse()
         
         var streamSink: StreamSink?
-        if case let HttpBody.streamSink(unwrappedStream) = request.body {
+        if case let HttpBody.stream(unwrappedStream) = request.body {
             // we know they want to receive a stream via their request body type
-            streamSink = unwrappedStream.unwrap()
+            if case let ByteStream.reader(reader) = unwrappedStream {
+                streamSink = reader.readFrom()
+            }
+            
         }
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
@@ -173,7 +176,8 @@ public class CRTClientEngine: HttpClientEngine {
             
             if let streamSink = streamSink {
                 let byteBuffer = ByteBuffer(data: data)
-                streamSink.receiveData(readFrom: byteBuffer)
+                streamSink.readFully(sink: byteBuffer)
+                streamSink.availableForRead = data.count
             }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
@@ -181,16 +185,10 @@ public class CRTClientEngine: HttpClientEngine {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
                     if let streamSink = streamSink {
-                        streamSink.onError(error: StreamError.unknown(error))
+                        streamSink.onError(error: ClientError.crtError(error))
                     }
                     future.fail(error)
                 }
-            }
-            
-            if let streamSink = streamSink {
-                response.body = HttpBody.streamSink(.provider(streamSink))
-            } else {
-                response.body = HttpBody.none
             }
             
             future.fulfill(response)

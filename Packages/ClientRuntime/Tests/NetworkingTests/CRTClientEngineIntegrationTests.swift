@@ -15,7 +15,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
         let crtEngine = try! CRTClientEngine()
-        httpClient = try! SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
+        httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
     
     override func tearDown() {
@@ -80,11 +80,10 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
-        let stream = MockSinkStream(testExpectation: dataReceivedExpectation)
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(.provider(stream)))
+                                     body: HttpBody.stream(.reader(MockBuffer(testExpectation: dataReceivedExpectation))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -111,13 +110,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(.defaultDataProvider()))
+                                     body: HttpBody.stream(.buffer(DataContent(data: Data()))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-                if case let HttpBody.streamSink(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toData()?.count == 1024)
+                if case let HttpBody.stream(unwrappedStream) = response.body {
+                    XCTAssert(unwrappedStream.toBytes().length == 1024)
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -141,13 +140,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(.defaultDataProvider()))
+                                     body: HttpBody.stream(.buffer(DataContent(data: Data([1])))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-                if case let HttpBody.streamSink(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toData()?.count == 1)
+                if case let HttpBody.stream(unwrappedStream) = response.body {
+                    XCTAssert(unwrappedStream.toBytes().length == 1)
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -171,13 +170,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
                                      headers: headers,
-                                     body: HttpBody.streamSink(.defaultDataProvider()))
+                                     body: HttpBody.stream(.buffer(DataContent(data: Data()))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
                 XCTAssertNotNil(response)
-                if case let HttpBody.streamSink(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toData()?.count == 3000)
+                if case let HttpBody.stream(unwrappedStream) = response.body {
+                    XCTAssert(unwrappedStream.toBytes().length == 3000)
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -204,7 +203,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
-                                     body: HttpBody.streamSource(.fromData(data: encodedData)))
+                                     body: HttpBody.stream(.buffer(DataContent(data: encodedData))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -225,24 +224,51 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 // This class implements the StreamSink protocol to simulate how a customer might set up streaming. Only difference
 // is it takes an `XCTestExpectation` to fulfill the asynchronous nature of streaming in the unit test.
 class MockSinkStream: StreamSink {
+
+    var availableForRead: Int
+    
+    var isClosedForWrite: Bool
+    
+    func readRemaining(limit: Int) -> ByteBuffer {
+        return ByteBuffer(data: receivedData)
+    }
+    
+    func readFully(sink: ByteBuffer) {
+        let data = sink.toData()
+        receivedData.append(data)
+        availableForRead = data.count
+        testExpectation.fulfill()
+    }
+    
     public var receivedData: Data
-    var error: StreamError?
+    var error: ClientError?
     let testExpectation: XCTestExpectation
     
     public init(testExpectation: XCTestExpectation) {
         self.receivedData = Data()
         self.testExpectation = testExpectation
-    }
-    func receiveData(readFrom buffer: ByteBuffer) {
-        let data = buffer.toData()
-        receivedData.append(data)
-        testExpectation.fulfill()
+        self.availableForRead = 0
+        self.isClosedForWrite = false
     }
     
-    func onError(error: StreamError) {
+    func onError(error: ClientError) {
         self.error = error
     }
     
+}
+
+struct MockBuffer: Reader {
+    func readFrom() -> StreamSink {
+        return MockSinkStream(testExpectation: testExpectation)
+    }
+    
+    var contentLength: Int? {
+        return nil
+    }
+    let testExpectation: XCTestExpectation
+    public init(testExpectation: XCTestExpectation) {
+        self.testExpectation = testExpectation
+    }
 }
 
 struct TestBody: Codable {

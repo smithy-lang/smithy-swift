@@ -6,8 +6,7 @@ import AwsCommonRuntimeKit
 
 public enum HttpBody {
     case data(Data?)
-    case streamSource(StreamSourceProvider)
-    case streamSink(StreamSinkProvider)
+    case stream(ByteStream)
     case none
 }
 
@@ -16,10 +15,8 @@ extension HttpBody: Equatable {
         switch (lhs, rhs) {
         case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
             return unwrappedlhsData == unwrappedRhsData
-        case (.streamSource, .streamSource):
-            return false
-        case (.streamSink, .streamSink):
-            return false
+        case (let .stream(byteslhs), let .stream(bytesrhs)):
+            return byteslhs.toBytes() === bytesrhs.toBytes()
         case (.none, .none):
             return true
         default:
@@ -34,6 +31,23 @@ public extension HttpBody {
     }
 }
 
+extension HttpBody {
+    func toAwsInputStream() -> AwsInputStream? {
+        switch self {
+        case .data(let data):
+            if let data = data {
+                return AwsInputStream(ByteBuffer(data: data))
+            } else {
+                return nil
+            }
+        case .stream(let stream):
+            return AwsInputStream(stream.toBytes())
+        case .none:
+            return nil
+        }
+    }
+}
+
 extension HttpBody: CustomDebugStringConvertible {
     public var debugDescription: String {
         var bodyAsString: String?
@@ -42,10 +56,8 @@ extension HttpBody: CustomDebugStringConvertible {
             if let data = data {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
-        case .streamSource(let stream):
-            let byteBuffer = ByteBuffer(size: 1024)
-            stream.unwrap().sendData(writeTo: byteBuffer)
-            bodyAsString = String(data: byteBuffer.toData(), encoding: .utf8)
+        case .stream(let stream):
+            bodyAsString = String(data: stream.toBytes().toData(), encoding: .utf8)
         default:
             bodyAsString = nil
         }

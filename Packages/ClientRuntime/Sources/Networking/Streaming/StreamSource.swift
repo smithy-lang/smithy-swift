@@ -10,19 +10,24 @@ import struct Foundation.URL
 
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")
 public protocol StreamSource {
-    var contentLength: Int64 {get set}
     @discardableResult
-    func sendData(writeTo buffer: ByteBuffer) -> Bool
-    mutating func onError(error: StreamError)
+    mutating func sendData(writeTo buffer: ByteBuffer) -> Bool
+    mutating func onError(error: ClientError)
 }
 
-struct DataStreamSource: StreamSource {
+class DataStreamSource: StreamSource {
+    var contentLength: Int?
+    
+    public func toBytes() -> ByteBuffer {
+        return ByteBuffer(data: data)
+    }
+    
     let data: Data
-    var error: StreamError?
-    var contentLength: Int64
+    var error: ClientError?
+
     init(data: Data) {
         self.data = data
-        self.contentLength = Int64(data.count)
+        self.contentLength = data.count
     }
     
     public func sendData(writeTo buffer: ByteBuffer) -> Bool {
@@ -30,22 +35,27 @@ struct DataStreamSource: StreamSource {
         return true
     }
     
-    public mutating func onError(error: StreamError) {
+    public func onError(error: ClientError) {
         self.error = error
     }
 }
 
-struct FileStreamSource: StreamSource {
+class FileStreamSource: StreamSource {
+
     let filePath: String
-    var error: StreamError?
-    var contentLength: Int64
+    var error: ClientError?
+    var contentLength: Int?
     let data: Data?
     
     init(filePath: String) {
         self.filePath = filePath
         let fileManager = FileManager.default
         self.data = fileManager.contents(atPath: filePath)
-        self.contentLength = Int64(data?.count ?? 0)
+        self.contentLength = data?.count
+    }
+    
+    func toBytes() -> ByteBuffer {
+        return ByteBuffer(data: data ?? Data())
     }
     
     public func sendData(writeTo buffer: ByteBuffer) -> Bool {
@@ -57,7 +67,7 @@ struct FileStreamSource: StreamSource {
         }
     }
     
-    public mutating func onError(error: StreamError) {
+    public func onError(error: ClientError) {
         self.error = error
     }
 }
@@ -67,11 +77,11 @@ public enum StreamSourceProvider {
 }
 
 extension StreamSourceProvider {
-    public static func fromData(data: Data) -> StreamSourceProvider {
+    public static func from(data: Data) -> StreamSourceProvider {
         return .provider(DataStreamSource(data: data))
     }
     
-    public static func fromFile(filePath: String) -> StreamSourceProvider {
+    public static func from(filePath: String) -> StreamSourceProvider {
         return .provider(FileStreamSource(filePath: filePath))
     }
     
@@ -84,3 +94,4 @@ extension StreamSourceProvider {
         fatalError() // this should never happen since only one case
     }
 }
+
