@@ -9,7 +9,7 @@ open class HttpProtocolClientInitialization(
     private val properties: List<ClientProperty>,
     private val serviceConfig: ServiceConfig
 ) {
-    private val serviceName: String = ctx.settings.sdkId
+    private val serviceName: String = sanitizeSdkId(ctx.settings.sdkId)
 
     fun renderClientInitialization(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
@@ -76,5 +76,9 @@ open class HttpProtocolClientInitialization(
                 }
             }
         }
+    }
+
+    private fun sanitizeSdkId(sdkId: String): String {
+        return sdkId.removeSuffix(" Service")
     }
 }
