@@ -259,4 +259,16 @@ abstract class MemberShapeEncodeGenerator(
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
         }
     }
+
+    fun renderEncodeAssociatedType(
+        target: Shape,
+        member: MemberShape,
+        containerName: String
+    ) {
+        val symbol = ctx.symbolProvider.toSymbol(target)
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val isBoxed = symbol.isBoxed()
+        val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
+        writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
+    }
 }

@@ -30,17 +30,13 @@ class UnionEncodeGenerator(
                     writer.indent()
                     when (target) {
                         is CollectionShape -> {
-                            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                                renderEncodeListMember(target, memberName, containerName)
-                            }
+                            renderEncodeListMember(target, memberName, containerName)
                         }
                         is MapShape -> {
-                            writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                                renderEncodeMapMember(target, memberName, containerName)
-                            }
+                            renderEncodeMapMember(target, memberName, containerName)
                         }
                         else -> {
-                            renderSimpleEncodeMember(target, member, containerName)
+                            renderEncodeAssociatedType(target, member, containerName)
                         }
                     }
                     writer.dedent()

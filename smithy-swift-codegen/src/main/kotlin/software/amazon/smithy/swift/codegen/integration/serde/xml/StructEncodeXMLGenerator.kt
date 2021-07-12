@@ -14,6 +14,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
+import software.amazon.smithy.swift.codegen.isBoxed
 
 class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -60,15 +61,29 @@ class StructEncodeXMLGenerator(
 
     private fun renderSingleMember(member: MemberShape, containerName: String) {
         val memberTarget = ctx.model.expectShape(member.target)
+        val memberName = ctx.symbolProvider.toMemberName(member)
+
         when (memberTarget) {
             is CollectionShape -> {
-                renderListMember(member, memberTarget, containerName)
+                writer.openBlock("if let $memberName = $memberName {", "}") {
+                    renderListMember(member, memberTarget, containerName)
+                }
             }
             is MapShape -> {
-                renderMapMember(member, memberTarget, containerName)
+                writer.openBlock("if let $memberName = $memberName {", "}") {
+                    renderMapMember(member, memberTarget, containerName)
+                }
             }
             is TimestampShape -> {
-                renderTimestampMember(member, memberTarget, containerName)
+                val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+                val isBoxed = symbol.isBoxed()
+                if (isBoxed) {
+                    writer.openBlock("if let $memberName = $memberName {", "}") {
+                        renderTimestampMember(member, memberTarget, containerName)
+                    }
+                } else {
+                    renderTimestampMember(member, memberTarget, containerName)
+                }
             }
             else -> {
                 renderScalarMember(member, memberTarget, containerName)

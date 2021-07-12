@@ -45,11 +45,11 @@ class UnionGeneratorTests {
             /// Really long multi-line
             /// Documentation for MyUnion
             public enum MyUnion: Equatable {
-                case foo(String?)
-                case baz(Int?)
+                case foo(String)
+                case baz(Int)
                 /// Documentation for bar
                 case bar(Int)
-                case sdkUnknown(String?)
+                case sdkUnknown(String)
             }
             """.trimIndent()
 
@@ -90,11 +90,11 @@ class UnionGeneratorTests {
             /// Really long multi-line
             /// Documentation for MyUnion
             public enum MyUnion: Equatable {
-                case foo(String?)
+                case foo(String)
                 /// Documentation for bar
                 case bar(Int)
-                case mystruct(MyStruct?)
-                case sdkUnknown(String?)
+                case mystruct(MyStruct)
+                case sdkUnknown(String)
             }
             """.trimIndent()
 

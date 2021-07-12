@@ -58,10 +58,10 @@ class UnionGenerator(
                 writer.writeMemberDocs(model, it)
                 val enumCaseName = symbolProvider.toMemberName(it)
                 val enumCaseAssociatedType = symbolProvider.toSymbol(it)
-                writer.write("case \$L(\$T)", enumCaseName, enumCaseAssociatedType)
+                writer.write("case \$L(\$L)", enumCaseName, enumCaseAssociatedType)
             }
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(String?)")
+            writer.write("case sdkUnknown(String)")
         }
         writer.removeContext("union.name")
     }
