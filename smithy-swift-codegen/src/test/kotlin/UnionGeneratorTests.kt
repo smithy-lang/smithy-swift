@@ -93,7 +93,7 @@ class UnionGeneratorTests {
                 case foo(String?)
                 /// Documentation for bar
                 case bar(Int)
-                case myStruct(MyStruct?)
+                case mystruct(MyStruct?)
                 case sdkUnknown(String?)
             }
             """.trimIndent()

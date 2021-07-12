@@ -184,7 +184,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let actual = try JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = JsonUnionsOutputResponse(
-            contents: MyUnion.stringValue("foo")
+            contents: MyUnion.stringvalue("foo")
 
         )
 
