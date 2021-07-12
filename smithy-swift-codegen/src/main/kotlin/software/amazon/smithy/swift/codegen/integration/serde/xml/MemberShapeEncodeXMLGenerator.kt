@@ -345,7 +345,6 @@ abstract class MemberShapeEncodeXMLGenerator(
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
         val nestedContainerName = "${memberName}Container"
         renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
-
     }
 
     private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
