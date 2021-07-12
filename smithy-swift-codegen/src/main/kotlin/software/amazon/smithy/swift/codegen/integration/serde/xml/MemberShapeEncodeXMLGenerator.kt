@@ -39,21 +39,19 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
         val nestedContainer = "${memberName}Container"
-        writer.openBlock("if let $memberName = $memberName {", "}") {
-            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
-                writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                    writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
-                    writer.write("try $nestedContainer.encodeNil()")
-                }
-                writer.indent()
-                renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
-                writer.dedent()
-                writer.write("}")
-            } else {
-                writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
-                renderListMemberItems(memberName, memberTarget, nestedContainer)
+        if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+            writer.openBlock("if $memberName.isEmpty {", "} else {") {
+                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
+                writer.write("try $nestedContainer.encodeNil()")
             }
+            writer.indent()
+            renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
+            writer.dedent()
+            writer.write("}")
+        } else {
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+            XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+            renderListMemberItems(memberName, memberTarget, nestedContainer)
         }
     }
 
@@ -162,20 +160,18 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
 
-        writer.openBlock("if let $memberName = $memberName {", "}") {
-            if (member.hasTrait(XmlFlattenedTrait::class.java)) {
-                writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                    writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                }
-                writer.indent()
-                renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
-                writer.dedent().write("}")
-            } else {
-                val nestedContainer = "${resolvedMemberName}Container"
-                writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
-                XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
-                renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
+        if (member.hasTrait(XmlFlattenedTrait::class.java)) {
+            writer.openBlock("if $memberName.isEmpty {", "} else {") {
+                writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
             }
+            writer.indent()
+            renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
+            writer.dedent().write("}")
+        } else {
+            val nestedContainer = "${resolvedMemberName}Container"
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+            XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
+            renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
         }
     }
 
@@ -311,20 +307,12 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
-        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
-        val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
+        val originalMemberName = member.memberName
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        val isBoxed = symbol.isBoxed()
         val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
-        if (isBoxed) {
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                writer.write(encodeLine)
-            }
-        } else {
-            writer.write(encodeLine)
-        }
+        writer.write(encodeLine)
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
@@ -349,6 +337,14 @@ abstract class MemberShapeEncodeXMLGenerator(
                 writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
             }
         }
+    }
+    fun renderEncodeAssociatedType(member: MemberShape, memberTarget: Shape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val originalMemberName = member.memberName
+        val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
+        val nestedContainerName = "${memberName}Container"
+        renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
     }
 
     private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {

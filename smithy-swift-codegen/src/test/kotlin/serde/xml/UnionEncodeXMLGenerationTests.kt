@@ -30,43 +30,29 @@ class UnionEncodeXMLGenerationTests {
                     var container = encoder.container(keyedBy: Key.self)
                     switch self {
                         case let .datavalue(datavalue):
-                            if let datavalue = datavalue {
-                                try container.encode(datavalue, forKey: Key("dataValue"))
-                            }
+                            try container.encode(datavalue, forKey: Key("dataValue"))
                         case let .doublevalue(doublevalue):
-                            if let doublevalue = doublevalue {
-                                try container.encode(String(doublevalue), forKey: Key("doubleValue"))
-                            }
+                            try container.encode(String(doublevalue), forKey: Key("doubleValue"))
                         case let .mapvalue(mapvalue):
-                            if let mapvalue = mapvalue {
-                                var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("mapValue"))
-                                for (stringKey0, stringValue0) in mapvalue {
-                                    var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
-                                    var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("K"))
-                                    try keyContainer0.encode(stringKey0, forKey: Key(""))
-                                    var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("V"))
-                                    try valueContainer0.encode(stringValue0, forKey: Key(""))
-                                }
+                            var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("mapValue"))
+                            for (stringKey0, stringValue0) in mapvalue {
+                                var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
+                                var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("K"))
+                                try keyContainer0.encode(stringKey0, forKey: Key(""))
+                                var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("V"))
+                                try valueContainer0.encode(stringValue0, forKey: Key(""))
                             }
                         case let .stringlist(stringlist):
-                            if let stringlist = stringlist {
-                                var stringlistContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringList"))
-                                for string0 in stringlist {
-                                    try stringlistContainer.encode(string0, forKey: Key("member"))
-                                }
+                            var stringlistContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringList"))
+                            for string0 in stringlist {
+                                try stringlistContainer.encode(string0, forKey: Key("member"))
                             }
                         case let .structvalue(structvalue):
-                            if let structvalue = structvalue {
-                                try container.encode(structvalue, forKey: Key("structValue"))
-                            }
+                            try container.encode(structvalue, forKey: Key("structValue"))
                         case let .timestampvalue(timestampvalue):
-                            if let timestampvalue = timestampvalue {
-                                try container.encode(TimestampWrapper(timestampvalue, format: .dateTime), forKey: Key("timeStampValue"))
-                            }
+                            try container.encode(TimestampWrapper(timestampvalue, format: .dateTime), forKey: Key("timeStampValue"))
                         case let .unionvalue(unionvalue):
-                            if let unionvalue = unionvalue {
-                                try container.encode(unionvalue, forKey: Key("unionValue"))
-                            }
+                            try container.encode(unionvalue, forKey: Key("unionValue"))
                         case let .sdkUnknown(sdkUnknown):
                             try container.encode(sdkUnknown, forKey: Key("sdkUnknown"))
                     }
@@ -175,14 +161,14 @@ class UnionEncodeXMLGenerationTests {
         val expectedContents =
             """
             public indirect enum XmlUnionShape: Equatable {
-                case doublevalue(Double?)
-                case datavalue(Data?)
-                case unionvalue(XmlUnionShape?)
-                case structvalue(XmlNestedUnionStruct?)
-                case mapvalue([String:String]?)
-                case stringlist([String]?)
-                case timestampvalue(Date?)
-                case sdkUnknown(String?)
+                case doublevalue(Double)
+                case datavalue(ClientRuntime.Data)
+                case unionvalue(XmlUnionShape)
+                case structvalue(XmlNestedUnionStruct)
+                case mapvalue([String:String])
+                case stringlist([String])
+                case timestampvalue(ClientRuntime.Date)
+                case sdkUnknown(String)
             }
             """.trimIndent()
 

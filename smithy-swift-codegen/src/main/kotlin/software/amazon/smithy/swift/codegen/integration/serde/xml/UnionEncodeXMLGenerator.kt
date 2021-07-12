@@ -37,7 +37,7 @@ class UnionEncodeXMLGenerator(
                             renderTimestampMember(member, memberTarget, containerName)
                         }
                         else -> {
-                            renderScalarMember(member, memberTarget, containerName)
+                            renderEncodeAssociatedType(member, memberTarget, containerName)
                         }
                     }
                     writer.dedent()
