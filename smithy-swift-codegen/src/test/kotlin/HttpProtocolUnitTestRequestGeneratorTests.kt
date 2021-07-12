@@ -489,7 +489,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = JsonUnionsInput(
-            contents: MyUnion.stringValue("foo")
+            contents: MyUnion.stringvalue("foo")
 
         )
         let encoder = JSONEncoder()

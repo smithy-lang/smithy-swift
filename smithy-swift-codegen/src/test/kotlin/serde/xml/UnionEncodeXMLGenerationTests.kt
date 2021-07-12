@@ -16,31 +16,31 @@ class UnionEncodeXMLGenerationTests {
             """
             extension XmlUnionShape: Codable, Reflection {
                 enum CodingKeys: String, CodingKey {
-                    case dataValue
-                    case doubleValue
-                    case mapValue
+                    case datavalue = "dataValue"
+                    case doublevalue = "doubleValue"
+                    case mapvalue = "mapValue"
                     case sdkUnknown
-                    case stringList
-                    case structValue
-                    case timeStampValue
-                    case unionValue
+                    case stringlist = "stringList"
+                    case structvalue = "structValue"
+                    case timestampvalue = "timeStampValue"
+                    case unionvalue = "unionValue"
                 }
             
                 public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: Key.self)
                     switch self {
-                        case let .dataValue(dataValue):
-                            if let dataValue = dataValue {
-                                try container.encode(dataValue, forKey: Key("dataValue"))
+                        case let .datavalue(datavalue):
+                            if let datavalue = datavalue {
+                                try container.encode(datavalue, forKey: Key("dataValue"))
                             }
-                        case let .doubleValue(doubleValue):
-                            if let doubleValue = doubleValue {
-                                try container.encode(String(doubleValue), forKey: Key("doubleValue"))
+                        case let .doublevalue(doublevalue):
+                            if let doublevalue = doublevalue {
+                                try container.encode(String(doublevalue), forKey: Key("doubleValue"))
                             }
-                        case let .mapValue(mapValue):
-                            if let mapValue = mapValue {
+                        case let .mapvalue(mapvalue):
+                            if let mapvalue = mapvalue {
                                 var mapValueContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("mapValue"))
-                                for (stringKey0, stringValue0) in mapValue {
+                                for (stringKey0, stringValue0) in mapvalue {
                                     var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry"))
                                     var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("K"))
                                     try keyContainer0.encode(stringKey0, forKey: Key(""))
@@ -48,24 +48,24 @@ class UnionEncodeXMLGenerationTests {
                                     try valueContainer0.encode(stringValue0, forKey: Key(""))
                                 }
                             }
-                        case let .stringList(stringList):
-                            if let stringList = stringList {
-                                var stringListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringList"))
-                                for string0 in stringList {
-                                    try stringListContainer.encode(string0, forKey: Key("member"))
+                        case let .stringlist(stringlist):
+                            if let stringlist = stringlist {
+                                var stringlistContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("stringList"))
+                                for string0 in stringlist {
+                                    try stringlistContainer.encode(string0, forKey: Key("member"))
                                 }
                             }
-                        case let .structValue(structValue):
-                            if let structValue = structValue {
-                                try container.encode(structValue, forKey: Key("structValue"))
+                        case let .structvalue(structvalue):
+                            if let structvalue = structvalue {
+                                try container.encode(structvalue, forKey: Key("structValue"))
                             }
-                        case let .timeStampValue(timeStampValue):
-                            if let timeStampValue = timeStampValue {
-                                try container.encode(TimestampWrapper(timeStampValue, format: .dateTime), forKey: Key("timeStampValue"))
+                        case let .timestampvalue(timestampvalue):
+                            if let timestampvalue = timestampvalue {
+                                try container.encode(TimestampWrapper(timestampvalue, format: .dateTime), forKey: Key("timeStampValue"))
                             }
-                        case let .unionValue(unionValue):
-                            if let unionValue = unionValue {
-                                try container.encode(unionValue, forKey: Key("unionValue"))
+                        case let .unionvalue(unionvalue):
+                            if let unionvalue = unionvalue {
+                                try container.encode(unionvalue, forKey: Key("unionValue"))
                             }
                         case let .sdkUnknown(sdkUnknown):
                             try container.encode(sdkUnknown, forKey: Key("sdkUnknown"))
@@ -74,90 +74,90 @@ class UnionEncodeXMLGenerationTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let doubleValueDecoded = try containerValues.decodeIfPresent(Double.self, forKey: .doubleValue)
-                    if let doubleValue = doubleValueDecoded {
-                        self = .doubleValue(doubleValue)
+                    let doublevalueDecoded = try containerValues.decodeIfPresent(Double.self, forKey: .doublevalue)
+                    if let doublevalue = doublevalueDecoded {
+                        self = .doublevalue(doublevalue)
                         return
                     }
-                    if containerValues.contains(.dataValue) {
+                    if containerValues.contains(.datavalue) {
                         do {
-                            let dataValueDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .dataValue)
-                            if let dataValue = dataValueDecoded {
-                                self = .dataValue(dataValue)
+                            let datavalueDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .datavalue)
+                            if let datavalue = datavalueDecoded {
+                                self = .datavalue(datavalue)
                                 return
                             }
                         } catch {
-                            if let dataValue = "".data(using: .utf8) {
-                                self = .dataValue(dataValue)
+                            if let datavalue = "".data(using: .utf8) {
+                                self = .datavalue(datavalue)
                                 return
                             }
                         }
                     } else {
                         //No-op
                     }
-                    let unionValueDecoded = try containerValues.decodeIfPresent(Box<XmlUnionShape>.self, forKey: .unionValue)
-                    if let unionValue = unionValueDecoded {
-                        self = .unionValue(unionValue.value)
+                    let unionvalueDecoded = try containerValues.decodeIfPresent(Box<XmlUnionShape>.self, forKey: .unionvalue)
+                    if let unionvalue = unionvalueDecoded {
+                        self = .unionvalue(unionvalue.value)
                         return
                     }
-                    let structValueDecoded = try containerValues.decodeIfPresent(XmlNestedUnionStruct.self, forKey: .structValue)
-                    if let structValue = structValueDecoded {
-                        self = .structValue(structValue)
+                    let structvalueDecoded = try containerValues.decodeIfPresent(XmlNestedUnionStruct.self, forKey: .structvalue)
+                    if let structvalue = structvalueDecoded {
+                        self = .structvalue(structvalue)
                         return
                     }
-                    if containerValues.contains(.mapValue) {
+                    if containerValues.contains(.mapvalue) {
                         struct KeyVal0{struct K{}; struct V{}}
-                        let mapValueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapValue)
-                        if let mapValueWrappedContainer = mapValueWrappedContainer {
-                            let mapValueContainer = try mapValueWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
-                            var mapValueBuffer: [String:String]? = nil
-                            if let mapValueContainer = mapValueContainer {
-                                mapValueBuffer = [String:String]()
-                                for stringContainer0 in mapValueContainer {
-                                    mapValueBuffer?[stringContainer0.key] = stringContainer0.value
+                        let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
+                        if let mapvalueWrappedContainer = mapvalueWrappedContainer {
+                            let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([MapKeyValue<String, String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
+                            var mapvalueBuffer: [String:String]? = nil
+                            if let mapvalueContainer = mapvalueContainer {
+                                mapvalueBuffer = [String:String]()
+                                for stringContainer0 in mapvalueContainer {
+                                    mapvalueBuffer?[stringContainer0.key] = stringContainer0.value
                                 }
                             }
-                            if let mapValue = mapValueBuffer {
-                                self = .mapValue(mapValue)
+                            if let mapvalue = mapvalueBuffer {
+                                self = .mapvalue(mapvalue)
                                 return
                             }
                         } else {
-                            self = .mapValue([:])
+                            self = .mapvalue([:])
                             return
                         }
                     } else {
                         //No-op
                     }
-                    if containerValues.contains(.stringList) {
+                    if containerValues.contains(.stringlist) {
                         struct KeyVal0{struct member{}}
-                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringList)
-                        if let stringListWrappedContainer = stringListWrappedContainer {
-                            let stringListContainer = try stringListWrappedContainer.decodeIfPresent([String].self, forKey: .member)
-                            var stringListBuffer:[String]? = nil
-                            if let stringListContainer = stringListContainer {
-                                stringListBuffer = [String]()
-                                for stringContainer0 in stringListContainer {
-                                    stringListBuffer?.append(stringContainer0)
+                        let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
+                        if let stringlistWrappedContainer = stringlistWrappedContainer {
+                            let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([String].self, forKey: .member)
+                            var stringlistBuffer:[String]? = nil
+                            if let stringlistContainer = stringlistContainer {
+                                stringlistBuffer = [String]()
+                                for stringContainer0 in stringlistContainer {
+                                    stringlistBuffer?.append(stringContainer0)
                                 }
                             }
-                            if let stringList = stringListBuffer {
-                                self = .stringList(stringList)
+                            if let stringlist = stringlistBuffer {
+                                self = .stringlist(stringlist)
                                 return
                             }
                         } else {
-                            self = .stringList([])
+                            self = .stringlist([])
                             return
                         }
                     } else {
                         //No-op
                     }
-                    let timeStampValueDecoded = try containerValues.decodeIfPresent(String.self, forKey: .timeStampValue)
-                    var timeStampValueBuffer:Date? = nil
-                    if let timeStampValueDecoded = timeStampValueDecoded {
-                        timeStampValueBuffer = try TimestampWrapperDecoder.parseDateStringValue(timeStampValueDecoded, format: .dateTime)
+                    let timestampvalueDecoded = try containerValues.decodeIfPresent(String.self, forKey: .timestampvalue)
+                    var timestampvalueBuffer:Date? = nil
+                    if let timestampvalueDecoded = timestampvalueDecoded {
+                        timestampvalueBuffer = try TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
                     }
-                    if let timeStampValue = timeStampValueBuffer {
-                        self = .timeStampValue(timeStampValue)
+                    if let timestampvalue = timestampvalueBuffer {
+                        self = .timestampvalue(timestampvalue)
                         return
                     }
                     self = .sdkUnknown("")
@@ -175,13 +175,13 @@ class UnionEncodeXMLGenerationTests {
         val expectedContents =
             """
             public indirect enum XmlUnionShape: Equatable {
-                case doubleValue(Double?)
-                case dataValue(Data?)
-                case unionValue(XmlUnionShape?)
-                case structValue(XmlNestedUnionStruct?)
-                case mapValue([String:String]?)
-                case stringList([String]?)
-                case timeStampValue(Date?)
+                case doublevalue(Double?)
+                case datavalue(Data?)
+                case unionvalue(XmlUnionShape?)
+                case structvalue(XmlNestedUnionStruct?)
+                case mapvalue([String:String]?)
+                case stringlist([String]?)
+                case timestampvalue(Date?)
                 case sdkUnknown(String?)
             }
             """.trimIndent()
