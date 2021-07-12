@@ -47,6 +47,7 @@ import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeyw
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toPascalCase
 import software.amazon.smithy.utils.StringUtils
+import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
 
 // PropertyBag keys
@@ -164,6 +165,11 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun toMemberName(shape: MemberShape): String {
+        val containingShape = model.expectShape(shape.container)
+        if (containingShape is UnionShape) {
+            val name = escaper.escapeMemberName(shape.memberName)
+            return if (!name.equals("sdkUnknown")) lowerCase(name) else name
+        }
         return escaper.escapeMemberName(shape.memberName.decapitalize())
     }
 

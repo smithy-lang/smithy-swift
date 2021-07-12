@@ -35,8 +35,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         memberTarget: CollectionShape,
         containerName: String
     ) {
+        val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
@@ -157,8 +158,9 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
+        val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
 
         writer.openBlock("if let $memberName = $memberName {", "}") {
             if (member.hasTrait(XmlFlattenedTrait::class.java)) {
@@ -310,8 +312,9 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName)
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         val isBoxed = symbol.isBoxed()
         val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
@@ -326,8 +329,9 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, memberName).toString()
+        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
         val isBoxed = symbol.isBoxed()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {

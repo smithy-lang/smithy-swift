@@ -24,6 +24,7 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.utils.StringUtils.lowerCase
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -252,7 +253,7 @@ class ShapeValueGenerator(
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
                         memberShape = generator.model.expectShape(member.target)
-                        writer.writeInline("\$L(", keyNode.value)
+                        writer.writeInline("\$L(", lowerCase(keyNode.value))
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
