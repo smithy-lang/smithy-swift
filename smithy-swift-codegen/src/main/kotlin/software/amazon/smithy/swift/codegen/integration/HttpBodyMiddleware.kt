@@ -9,6 +9,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
@@ -59,11 +60,11 @@ class HttpBodyMiddleware(
         writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
             when (target.type) {
                 ShapeType.BLOB -> {
-                    // FIXME handle streaming properly
                     val isBinaryStream =
-                        ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
+                        ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
+                    val bodyType = if(isBinaryStream) ".stream" else ".data"
                     writer.write("let data = \$L", memberName)
-                    writer.write("let body = HttpBody.data(data)")
+                    writer.write("let body = HttpBody$bodyType(data)")
                     writer.write("input.builder.withBody(body)")
                 }
                 ShapeType.STRING -> {

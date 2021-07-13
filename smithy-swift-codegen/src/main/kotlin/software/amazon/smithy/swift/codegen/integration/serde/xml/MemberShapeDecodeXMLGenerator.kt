@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
@@ -272,7 +273,9 @@ abstract class MemberShapeDecodeXMLGenerator(
                 renderAssigningDecodedMember(memberName, decodedMemberName)
             }
             writer.indent()
-            renderAssigningDecodedMember(memberName, "\"\".data(using: .utf8)")
+            val isStreaming = memberTarget.hasTrait<StreamingTrait>()
+            val value = if(isStreaming) "ByteStream.fromData(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
+            renderAssigningDecodedMember(memberName, "$value")
             writer.dedent().write("}")
         }
         writer.indent()

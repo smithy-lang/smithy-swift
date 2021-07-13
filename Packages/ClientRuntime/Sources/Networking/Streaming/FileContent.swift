@@ -8,8 +8,8 @@ import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
 public struct FileContent: Buffer {
-    public var contentLength: Int? {
-        return Int(fileHandle.length)
+    public var contentLength: Int64? {
+        return Int64(fileHandle.length)
     }
     
     public func toBytes() -> ByteBuffer {

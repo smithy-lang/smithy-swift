@@ -207,12 +207,8 @@ public class CRTClientEngine: HttpClientEngine {
                 streamSink
             }
             
-            var contentLength: Int?
+            var contentLength: Int64?
             var streamSink: StreamSink
-            init(contentLength: Int64, streamSink:StreamSink) {
-                self.contentLength = Int(contentLength)
-                self.streamSink = streamSink
-            }
         }
         
         return .reader(BufferedByteStream(contentLength: contentLength, streamSink: streamSink))

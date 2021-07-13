@@ -2,10 +2,12 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 
 class HttpResponseTraitWithHttpPayload(
@@ -17,12 +19,18 @@ class HttpResponseTraitWithHttpPayload(
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-        writer.openBlock("if case .data(let data) = httpResponse.body,\n   let unwrappedData = data {", "} else {") {
+        //TODO: properly support event streams and other binary stream types besides blob
+        val isBinaryStream =
+            ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
+        val bodyType = if(isBinaryStream) ".stream" else ".data"
+        val additionalUnwrap = if(!isBinaryStream) ",\n    let unwrappedData = data" else ""
+        val data = if(isBinaryStream) "data" else "unwrappedData"
+        writer.openBlock("if case $bodyType(let data) = httpResponse.body$additionalUnwrap {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: $data)",
                             symbol.name
                         )
                         writer.write("self.\$L = output", memberName)
@@ -31,7 +39,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let output = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
+                    writer.openBlock("if let output = String(data: $data, encoding: .utf8) {", "} else {") {
                         if (target.isEnum) {
                             writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                         } else {
@@ -42,12 +50,12 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.BLOB -> {
-                    writer.write("self.\$L = unwrappedData", memberName)
+                    writer.write("self.\$L = $data", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: $data)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)

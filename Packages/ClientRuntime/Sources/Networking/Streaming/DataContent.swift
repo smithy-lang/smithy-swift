@@ -7,8 +7,8 @@
 import AwsCommonRuntimeKit
 	
 public struct DataContent: Buffer {
-    public var contentLength: Int? {
-        return data.count
+    public var contentLength: Int64? {
+        return Int64(data.count)
     }
     
     public func toBytes() -> ByteBuffer {

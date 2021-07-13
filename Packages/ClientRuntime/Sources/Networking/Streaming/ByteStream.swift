@@ -21,7 +21,7 @@ public protocol Reader: Stream {
 }
 
 public protocol Stream {
-    var contentLength: Int? {get}
+    var contentLength: Int64? {get}
    
 }
 
@@ -78,16 +78,9 @@ extension ByteStream: Decodable {
     
     public init(from decoder: Decoder) throws {
 
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        // Try to decode as buffer
-        if let buffer = try container.decodeIfPresent(Data.self, forKey: .buffer) {
-            self = .buffer(buffer)
-            return
-        }
-
-        // No luck
-        throw DecodingError.dataCorruptedError(forKey: .buffer, in: container, debugDescription: "No match")
+        let container = try decoder.singleValueContainer()
+        let buffer = try container.decode(Data.self)
+        self = .buffer(buffer)
     }
 }
 
@@ -95,7 +88,7 @@ extension ByteStream: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
-        try container.encode(self.toBytes(), forKey: .buffer)
+        try container.encode(self.toBytes().toData(), forKey: .buffer)
     }
 }
 
@@ -104,7 +97,7 @@ extension Data : Buffer {
         return ByteBuffer(data: self)
     }
     
-    public var contentLength: Int? {
-        return count
+    public var contentLength: Int64? {
+        return Int64(count)
     }
 }
