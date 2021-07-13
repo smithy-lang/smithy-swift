@@ -24,6 +24,8 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.utils.StringUtils.lowerCase
 
 /**
@@ -187,8 +189,14 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 //  val symbol = symbolProvider.toSymbol(shape)
-                // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
-                ".data(using: .utf8)!"
+                val isStreaming = shape.hasTrait<StreamingTrait>()
+                if (isStreaming) {
+                    writer.writeInline("ByteStream.fromData(data: ")
+                    ".data(using: .utf8)!)"
+                } else {
+                    // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
+                    ".data(using: .utf8)!"
+                }
             }
             else -> { "" }
         }
