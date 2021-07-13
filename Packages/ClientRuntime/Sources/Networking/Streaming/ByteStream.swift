@@ -61,7 +61,7 @@ extension ByteStream: Equatable {
         case (let .reader(unwrappedLhsReader), let .reader(unwrappedRhsReader)):
             return unwrappedLhsReader.readFrom() === unwrappedRhsReader.readFrom()
         case (let .buffer(lhsBuffer), let .buffer(rhsBuffer)):
-            return lhsBuffer.toBytes() === rhsBuffer.toBytes()
+            return lhsBuffer.contentLength == rhsBuffer.contentLength
         default:
             return false
         }

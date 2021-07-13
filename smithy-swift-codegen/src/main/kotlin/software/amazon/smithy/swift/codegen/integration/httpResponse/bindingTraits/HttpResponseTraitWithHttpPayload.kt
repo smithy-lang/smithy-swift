@@ -20,17 +20,12 @@ class HttpResponseTraitWithHttpPayload(
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
         // TODO: properly support event streams and other binary stream types besides blob
-        val isBinaryStream =
-            ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
-        val bodyType = if (isBinaryStream) ".stream" else ".data"
-        val additionalUnwrap = if (!isBinaryStream) ",\n    let unwrappedData = data" else ""
-        val data = if (isBinaryStream) "data" else "unwrappedData"
-        writer.openBlock("if case $bodyType(let data) = httpResponse.body$additionalUnwrap {", "} else {") {
+        writer.openBlock("if case .data(let data) = httpResponse.body,\n  let unwrappedData = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: $data)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
                             symbol.name
                         )
                         writer.write("self.\$L = output", memberName)
@@ -39,7 +34,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let output = String(data: $data, encoding: .utf8) {", "} else {") {
+                    writer.openBlock("if let output = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
                         if (target.isEnum) {
                             writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                         } else {
@@ -50,12 +45,14 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.BLOB -> {
-                    writer.write("self.\$L = $data", memberName)
+                    val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
+                    val value = if(isBinaryStream) "ByteStream.fromData(data: unwrappedData)" else "unwrappedData"
+                    writer.write("self.\$L = $value", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: $data)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)
