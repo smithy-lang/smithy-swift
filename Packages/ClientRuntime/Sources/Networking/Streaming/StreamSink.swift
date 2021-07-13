@@ -16,93 +16,120 @@ public protocol StreamSink: AnyObject {
     ///Read up to limit of bytes into a ByteBuffer until limit is reached or channel is closed.
     ///WARNING:  Be careful as this will potentially read the entire byte stream into memory (up to limit).
     func readRemaining(limit: Int) -> ByteBuffer
-    func readFully(sink: ByteBuffer)
+    func readFully(sink: inout ByteBuffer, offset: Int, length: Int)
+    func readAvailable(sink: inout ByteBuffer, offset: Int, length: Int) -> Int
     func onError(error: ClientError)
+    func write(buffer: ByteBuffer)
 }
 
-//public class DataStreamSink: StreamSink {
-//    public var contentLength: Int? {
-//        return data.count
-//    }
-//
-//    public func toBytes() -> ByteBuffer {
-//        return ByteBuffer(data: data)
-//    }
-//
-//    public var data: Data
-//    public var error: ClientError?
-//
-//    init(data: Data = Data()) {
-//        self.data = data
-//    }
-//
-//    public func receiveData(readFrom buffer: ByteBuffer) {
-//        data.append(buffer.toData())
-//    }
-//
-//    public func onError(error: ClientError) {
-//        self.error = error
-//    }
-//}
-//
-//public class FileStreamSink: StreamSink {
-//    public var contentLength: Int? {
-//        return Int(fileHandle?.length ?? 0)
-//    }
-//
-//    public func toBytes() -> ByteBuffer {
-//        return ByteBuffer(data: fileHandle?.availableData ?? Data())
-//    }
-//
-//
-//    public var fileHandle: FileHandle?
-//    public var error: ClientError?
-//
-//    init(filePath: String) {
-//
-//        let fileManager = FileManager.default
-//        fileManager.createFile(atPath: filePath, contents: nil)
-//        self.fileHandle = FileHandle(forWritingAtPath: filePath)
-//    }
-//
-//    public func receiveData(readFrom buffer: ByteBuffer) {
-//        fileHandle?.write(buffer.toData())
-//    }
-//
-//    public func onError(error: ClientError) {
-//        self.error = error
-//    }
-//}
-//
-//public enum StreamSinkProvider {
-//    case provider(StreamSink)
-//}
-//
-//extension StreamSinkProvider {
-//    public static func defaultDataProvider() -> StreamSinkProvider {
-//        return .provider(DataStreamSink())
-//    }
-//
-//    public static func defaultFileProvider(filePath: String) -> StreamSinkProvider {
-//        return .provider(FileStreamSink(filePath: filePath))
-//    }
-//
-//    public func toData() -> Data? {
-//        let dataStream = self.unwrap() as? DataStreamSink
-//        return dataStream?.data
-//    }
-//
-//    public func toFile() -> FileHandle? {
-//        let fileStream = self.unwrap() as? FileStreamSink
-//        return fileStream?.fileHandle
-//    }
-//
-//    /// This function is a util to enhance developer experience. This enum only has one case so this function
-//    /// provides an easy way to unwrap the single case to get the associated value quicker and easier.
-//    public func unwrap() -> StreamSink {
-//        if case let StreamSinkProvider.provider(unwrapped) = self {
-//            return unwrapped
-//        }
-//        fatalError() // this should never happen since only one case
-//    }
-//}
+public class DataStreamSink: StreamSink {
+    public var availableForRead: Int
+    
+    public var isClosedForWrite: Bool
+
+    //TODO: should this be a channel of bytes to consume?
+    public var data: Data
+    public var error: ClientError?
+
+    init(data: Data = Data()) {
+        self.data = data
+        self.availableForRead = 0
+        self.isClosedForWrite = false
+    }
+    
+    public func readRemaining(limit: Int) -> ByteBuffer {
+        var buffer = ByteBuffer(size: min(availableForRead, limit))
+        let consumed = readAsMuchAsPossible(byteBuffer: &buffer, limit: limit)
+        
+        if consumed >= limit || availableForRead == 0 {
+            return buffer
+        } else {
+            //TODO: should this be suspending the thread until there is more to read?
+            return readRemaining(limit: limit - consumed)
+        }
+    }
+    
+    private func readAsMuchAsPossible(byteBuffer: inout ByteBuffer, limit: Int) -> Int {
+        var consumed = 0
+        var remaining = limit
+        
+        while availableForRead > 0 && remaining > 0 {
+            //TODO: possibly need a hand written channel that we can pull from here
+            //TODO: how do we get the next set of bytes asynchronously without holding in memory?
+            //TODO: we are putting all the data in at once and not using limit
+            byteBuffer.put(data)
+            
+            consumed += data.count
+            remaining = limit - consumed
+            markBytesConsumed(size: data.count)
+        }
+        
+        return consumed
+    }
+    
+    private func readAsMuchAsPossible(byteBuffer: inout ByteBuffer, offset: Int, length: Int) -> Int {
+        var consumed = 0
+        var currentOffset = offset
+        var remaining = length
+        
+        while availableForRead > 0 && remaining > 0 {
+            let rc = data.count
+            byteBuffer.put(data)
+            consumed += rc
+            currentOffset += rc
+            remaining = length - consumed
+            
+            markBytesConsumed(size: rc)
+        }
+        
+        return consumed
+    }
+    
+    private func markBytesConsumed(size: Int) {
+        availableForRead -= size
+    }
+    
+    public func readFully(sink: inout ByteBuffer, offset: Int, length: Int) {
+        let rc = readAsMuchAsPossible(byteBuffer: &sink, offset: offset, length: length)
+        if rc < length {
+            readFully(sink: &sink, offset: offset + rc, length: length - rc)
+        }
+    }
+    
+    public func readAvailable(sink: inout ByteBuffer, offset: Int, length: Int) -> Int {
+        let consumed = readAsMuchAsPossible(byteBuffer: &sink, offset: offset, length: length)
+        if consumed  == 0 {
+            return -1
+        } else if consumed > 0 || length == 0 {
+            return consumed
+        } else {
+            return readAvailable(sink: &sink, offset: offset, length: length)
+        }
+    }
+    
+    public func write(buffer: ByteBuffer) {
+        data.append(buffer.toData())
+        availableForRead += Int(buffer.length)
+    }
+    
+    public var contentLength: Int? {
+        return data.count
+    }
+
+    public func toBytes() -> ByteBuffer {
+        return ByteBuffer(data: data)
+    }
+
+    public func onError(error: ClientError) {
+        self.error = error
+    }
+}
+
+extension Data {
+    func copyBytes<T>(as _: T.Type) -> [T] {
+        return withUnsafeBytes { (bytes: UnsafePointer<T>) in
+            Array(UnsafeBufferPointer(start: bytes, count: count / MemoryLayout<T>.stride))
+        }
+    }
+}
+

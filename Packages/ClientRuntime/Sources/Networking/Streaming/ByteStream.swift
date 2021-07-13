@@ -50,7 +50,7 @@ extension ByteStream {
             return buffer.toBytes()
         case .reader(let reader):
             let sink = reader.readFrom()
-            let bytes = sink.readRemaining(limit: Int.max)
+            let bytes = sink.readRemaining(limit: 4096)
             return bytes
         }
     }
