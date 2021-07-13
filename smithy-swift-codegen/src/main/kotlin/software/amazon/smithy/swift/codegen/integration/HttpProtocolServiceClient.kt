@@ -3,7 +3,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-open class HttpProtocolClientInitialization(
+open class HttpProtocolServiceClient(
     ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val properties: List<ClientProperty>,
@@ -11,7 +11,7 @@ open class HttpProtocolClientInitialization(
 ) {
     private val serviceName: String = ctx.settings.sdkId
 
-    fun renderClientInitialization(serviceSymbol: Symbol) {
+    fun render(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: SdkHttpClient")
             writer.write("let config: ${serviceConfig.typeName}")
@@ -33,6 +33,10 @@ open class HttpProtocolClientInitialization(
                 }
 
                 writer.write("self.config = config")
+            }
+            writer.write("")
+            writer.openBlock("deinit {", "}") {
+                writer.write("client.close()")
             }
             writer.write("")
             // FIXME: possible move generation of the config to a separate file or above the service client

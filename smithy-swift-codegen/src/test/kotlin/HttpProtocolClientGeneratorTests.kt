@@ -53,7 +53,11 @@ class HttpProtocolClientGeneratorTests {
                         self.decoder = config.decoder
                         self.config = config
                     }
-                
+
+                    deinit {
+                        client.close()
+                    }
+
                     public class ExampleClientConfiguration: ClientRuntime.Configuration {
                 
                         public static func `default`() throws -> ExampleClientConfiguration {

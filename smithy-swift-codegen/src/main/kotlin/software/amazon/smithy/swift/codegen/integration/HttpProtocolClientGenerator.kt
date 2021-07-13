@@ -42,13 +42,13 @@ open class HttpProtocolClientGenerator(
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
-    private val clientGeneratorInitialization = HttpProtocolClientInitialization(ctx, writer, properties, serviceConfig)
+    private val httpProtocolServiceClient = HttpProtocolServiceClient(ctx, writer, properties, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         writer.addFoundationImport()
         httpProtocolCustomizable.renderInternals(ctx)
-        clientGeneratorInitialization.renderClientInitialization(serviceSymbol)
+        httpProtocolServiceClient.render(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
     }
