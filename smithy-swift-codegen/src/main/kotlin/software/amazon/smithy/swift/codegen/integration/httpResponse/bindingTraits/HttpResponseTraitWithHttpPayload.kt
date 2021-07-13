@@ -19,12 +19,12 @@ class HttpResponseTraitWithHttpPayload(
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-        //TODO: properly support event streams and other binary stream types besides blob
+        // TODO: properly support event streams and other binary stream types besides blob
         val isBinaryStream =
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
-        val bodyType = if(isBinaryStream) ".stream" else ".data"
-        val additionalUnwrap = if(!isBinaryStream) ",\n    let unwrappedData = data" else ""
-        val data = if(isBinaryStream) "data" else "unwrappedData"
+        val bodyType = if (isBinaryStream) ".stream" else ".data"
+        val additionalUnwrap = if (!isBinaryStream) ",\n    let unwrappedData = data" else ""
+        val data = if (isBinaryStream) "data" else "unwrappedData"
         writer.openBlock("if case $bodyType(let data) = httpResponse.body$additionalUnwrap {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {

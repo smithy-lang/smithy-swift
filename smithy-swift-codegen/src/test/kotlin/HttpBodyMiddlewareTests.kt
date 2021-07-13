@@ -157,7 +157,7 @@ class HttpBodyMiddlewareTests {
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let data = payload1
-                        let body = HttpBody.data(data)
+                        let body = HttpBody.stream(data)
                         input.builder.withBody(body)
                     }
                     return next.handle(context: context, input: input)

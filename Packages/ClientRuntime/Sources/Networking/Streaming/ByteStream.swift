@@ -69,26 +69,18 @@ extension ByteStream: Equatable {
     }
 }
 
-extension ByteStream: Decodable {
-    // Define associated values as keys
-    enum CodingKeys: String, CodingKey {
-        case buffer
-        case reader
-    }
-    
+extension ByteStream: Codable {
     public init(from decoder: Decoder) throws {
 
         let container = try decoder.singleValueContainer()
         let buffer = try container.decode(Data.self)
         self = .buffer(buffer)
     }
-}
-
-extension ByteStream: Encodable {
+    
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+        var container = encoder.singleValueContainer()
         
-        try container.encode(self.toBytes().toData(), forKey: .buffer)
+        try container.encode(self.toBytes().toData())
     }
 }
 

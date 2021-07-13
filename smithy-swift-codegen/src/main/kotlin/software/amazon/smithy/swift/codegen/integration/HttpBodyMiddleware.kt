@@ -62,7 +62,7 @@ class HttpBodyMiddleware(
                 ShapeType.BLOB -> {
                     val isBinaryStream =
                         ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    val bodyType = if(isBinaryStream) ".stream" else ".data"
+                    val bodyType = if (isBinaryStream) ".stream" else ".data"
                     writer.write("let data = \$L", memberName)
                     writer.write("let body = HttpBody$bodyType(data)")
                     writer.write("input.builder.withBody(body)")
