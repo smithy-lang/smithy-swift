@@ -273,14 +273,18 @@ abstract class MemberShapeDecodeXMLGenerator(
                 renderAssigningDecodedMember(memberName, decodedMemberName)
             }
             writer.indent()
-            val isStreaming = memberTarget.hasTrait<StreamingTrait>()
-            val value = if (isStreaming) "ByteStream.fromData(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
-            renderAssigningDecodedMember(memberName, "$value")
+            renderEmptyDataForBlobTarget(memberTarget, memberName)
             writer.dedent().write("}")
         }
         writer.indent()
         renderAssigningNil(memberName)
         writer.dedent().write("}")
+    }
+
+    fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
+        val isStreaming = memberTarget.hasTrait<StreamingTrait>()
+        val value = if (isStreaming) "ByteStream.fromData(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
+        renderAssigningDecodedMember(memberName, "$value")
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {

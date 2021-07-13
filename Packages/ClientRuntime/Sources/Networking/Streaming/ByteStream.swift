@@ -38,7 +38,7 @@ extension ByteStream {
     }
     
     public static func fromString(string: String) -> ByteStream {
-        return .buffer(StringContent(string: string))
+        return .buffer(StringContent(underlyingStringBuffer: string))
     }
 }
 
@@ -49,7 +49,7 @@ extension ByteStream {
             return buffer.toBytes()
         case .reader(let reader):
             let sink = reader.readFrom()
-            let bytes = sink.readRemaining(limit: Int.max)
+            let bytes = sink.readRemaining(maxBytes: UInt(Int.max))
             return bytes
         }
     }
@@ -81,7 +81,7 @@ extension ByteStream: Codable {
     }
 }
 
-extension Data : Buffer {
+extension Data: Buffer {
     public func toBytes() -> ByteBuffer {
         return ByteBuffer(data: self)
     }

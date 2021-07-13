@@ -188,13 +188,11 @@ class ShapeValueGenerator(
                 } else { "" }
             }
             ShapeType.BLOB -> {
-                //  val symbol = symbolProvider.toSymbol(shape)
-                val isStreaming = shape.hasTrait<StreamingTrait>()
-                if (isStreaming) {
+                if (shape.hasTrait<StreamingTrait>()) {
                     writer.writeInline("ByteStream.fromData(data: ")
                     ".data(using: .utf8)!)"
                 } else {
-                    // FIXME: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
+                    // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
                     ".data(using: .utf8)!"
                 }
             }

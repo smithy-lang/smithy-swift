@@ -118,6 +118,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                 XCTAssertNotNil(response)
                 if case let HttpBody.stream(unwrappedStream) = response.body {
                     XCTAssert(unwrappedStream.toBytes().length == 1024)
+                } else {
+                    XCTFail("Bytes not received")
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -148,6 +150,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                 XCTAssertNotNil(response)
                 if case let HttpBody.stream(unwrappedStream) = response.body {
                     XCTAssert(unwrappedStream.toBytes().length == 1)
+                } else {
+                    XCTFail("Bytes not received")
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -179,6 +183,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                 XCTAssertNotNil(response)
                 if case let HttpBody.stream(unwrappedStream) = response.body {
                     XCTAssert(unwrappedStream.toBytes().length == 3000)
+                } else {
+                    XCTFail("Bytes not received")
                 }
                 XCTAssert(response.statusCode == HttpStatusCode.ok)
                 expectation.fulfill()
@@ -228,7 +234,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 class MockSinkStream: DataStreamSink {
     override func write(buffer: ByteBuffer) {
         data.append(buffer.toData())
-        availableForRead += Int(buffer.length)
+        availableForRead += UInt(buffer.length)
         testExpectation.fulfill()
     }
     
@@ -244,7 +250,7 @@ struct MockReader: Reader {
         return MockSinkStream(testExpectation: testExpectation)
     }
     
-    var contentLength: Int? {
+    var contentLength: Int64? {
         return nil
     }
     let testExpectation: XCTestExpectation

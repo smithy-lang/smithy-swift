@@ -8,20 +8,20 @@ import AwsCommonRuntimeKit
 	
 public struct StringContent: Buffer {
     public var contentLength: Int64? {
-        return Int64(string.count)
+        return Int64(underlyingStringBuffer.count)
     }
     
     public func toBytes() -> ByteBuffer {
-        return ByteBuffer(data: string.data(using: .utf8) ?? Data())
+        return ByteBuffer(data: underlyingStringBuffer.data(using: .utf8) ?? Data())
     }
-    private let string: String
-    public init(string: String) {
-        self.string = string
+    private let underlyingStringBuffer: String
+    public init(underlyingStringBuffer: String) {
+        self.underlyingStringBuffer = underlyingStringBuffer
     }
 }
 
 extension String {
     public func asByteStream() -> ByteStream {
-        return .buffer(StringContent(string: self))
+        return .buffer(StringContent(underlyingStringBuffer: self))
     }
 }

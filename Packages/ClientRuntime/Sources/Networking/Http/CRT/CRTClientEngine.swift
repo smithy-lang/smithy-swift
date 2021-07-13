@@ -156,7 +156,7 @@ public class CRTClientEngine: HttpClientEngine {
         
         var streamSink: StreamSink?
         if case let HttpBody.stream(unwrappedStream) = request.body,
-           case let ByteStream.reader(reader) = unwrappedStream  {
+           case let ByteStream.reader(reader) = unwrappedStream {
             streamSink = reader.readFrom()
         }
         

@@ -20,12 +20,12 @@ class HttpResponseTraitWithHttpPayload(
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
         // TODO: properly support event streams and other binary stream types besides blob
-        writer.openBlock("if case .data(let data) = httpResponse.body,\n  let unwrappedData = data {", "} else {") {
+        writer.openBlock("if case .data(let data) = httpResponse.body,\n  let data = data {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: data)",
                             symbol.name
                         )
                         writer.write("self.\$L = output", memberName)
@@ -34,7 +34,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let output = String(data: unwrappedData, encoding: .utf8) {", "} else {") {
+                    writer.openBlock("if let output = String(data: data, encoding: .utf8) {", "} else {") {
                         if (target.isEnum) {
                             writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                         } else {
@@ -46,13 +46,13 @@ class HttpResponseTraitWithHttpPayload(
                 }
                 ShapeType.BLOB -> {
                     val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    val value = if(isBinaryStream) "ByteStream.fromData(data: unwrappedData)" else "unwrappedData"
+                    val value = if(isBinaryStream) "ByteStream.fromData(data: data)" else "data"
                     writer.write("self.\$L = $value", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: unwrappedData)",
+                            "let output: \$L = try responseDecoder.decode(responseBody: data)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)

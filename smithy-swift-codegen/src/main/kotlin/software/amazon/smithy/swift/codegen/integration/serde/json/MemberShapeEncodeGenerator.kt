@@ -51,11 +51,11 @@ abstract class MemberShapeEncodeGenerator(
             else -> shape
         }
         val optional = if ((isBoxed && isUnwrapped) || !isBoxed) "" else "?"
-
+        val memberNameOptional = "$memberName$optional"
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
-            is StringShape -> if (target.hasTrait<EnumTrait>()) "$memberName$optional.rawValue" else memberName
-            is BlobShape -> if(target.hasTrait<StreamingTrait>()) "$memberName$optional.toBytes().toData()" else "$memberName$optional.base64EncodedString()"
+            is StringShape -> if (target.hasTrait<EnumTrait>()) "$memberNameOptional.rawValue" else memberName
+            is BlobShape -> if(target.hasTrait<StreamingTrait>()) "$memberNameOptional.toBytes().toData()" else "$memberNameOptional.base64EncodedString()"
             else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }
