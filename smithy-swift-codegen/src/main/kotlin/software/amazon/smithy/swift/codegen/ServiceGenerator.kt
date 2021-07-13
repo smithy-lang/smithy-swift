@@ -64,31 +64,14 @@ class ServiceGenerator(
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
-            val hasOutputStream = operationHasOutputStream(model, opIndex, op)
-            val hasInputStream = operationHasInputStream(model, opIndex, op)
             val accessSpecifier = if (insideProtocol) "" else "public "
-            if (!hasOutputStream && !hasInputStream) {
-                writer.write(
-                    "${accessSpecifier}func \$L(\$L${paramTerminator}\$L)",
-                    operationName,
-                    inputParam,
-                    outputParam
-                )
-            } else if (hasInputStream) {
-                writer.write(
-                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamSource: StreamSource, \$L)",
-                    operationName,
-                    inputParam,
-                    outputParam
-                )
-            } else if (hasOutputStream) {
-                writer.write(
-                    "${accessSpecifier}func \$L(\$L${paramTerminator}streamSink: StreamSink, \$L)",
-                    operationName,
-                    inputParam,
-                    outputParam
-                )
-            }
+
+            writer.write(
+                "${accessSpecifier}func \$L(\$L${paramTerminator}\$L)",
+                operationName,
+                inputParam,
+                outputParam
+            )
         }
 
         fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
@@ -103,16 +86,6 @@ class ServiceGenerator(
 
         fun getOperationErrorShapeName(op: OperationShape): String {
             return "${op.capitalizedName()}OutputError"
-        }
-
-        private fun operationHasOutputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
-            val outputShape = opIndex.getOutput(op)
-            return outputShape.map { it.hasStreamingMember(model) }.orElse(false)
-        }
-
-        private fun operationHasInputStream(model: Model, opIndex: OperationIndex, op: OperationShape): Boolean {
-            val inputShape = opIndex.getInput(op)
-            return inputShape.map { it.hasStreamingMember(model) }.orElse(false)
         }
     }
 
