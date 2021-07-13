@@ -155,13 +155,11 @@ public class CRTClientEngine: HttpClientEngine {
         let response = HttpResponse()
         
         var streamSink: StreamSink?
-        if case let HttpBody.stream(unwrappedStream) = request.body {
-            // we know they want to receive a stream via their request body type
-            if case let ByteStream.reader(reader) = unwrappedStream {
-                streamSink = reader.readFrom()
-            }
-            
+        if case let HttpBody.stream(unwrappedStream) = request.body,
+           case let ByteStream.reader(reader) = unwrappedStream  {
+            streamSink = reader.readFrom()
         }
+        
         var contentLength: Int64 = 0
         let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")

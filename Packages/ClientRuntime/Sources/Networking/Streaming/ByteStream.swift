@@ -22,7 +22,6 @@ public protocol Reader: Stream {
 
 public protocol Stream {
     var contentLength: Int64? {get}
-   
 }
 
 extension ByteStream {
@@ -71,7 +70,6 @@ extension ByteStream: Equatable {
 
 extension ByteStream: Codable {
     public init(from decoder: Decoder) throws {
-
         let container = try decoder.singleValueContainer()
         let buffer = try container.decode(Data.self)
         self = .buffer(buffer)
@@ -79,7 +77,6 @@ extension ByteStream: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        
         try container.encode(self.toBytes().toData())
     }
 }
