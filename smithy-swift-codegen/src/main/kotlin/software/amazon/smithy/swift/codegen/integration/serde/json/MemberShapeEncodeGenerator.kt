@@ -55,7 +55,7 @@ abstract class MemberShapeEncodeGenerator(
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
             is StringShape -> if (target.hasTrait<EnumTrait>()) "$memberNameOptional.rawValue" else memberName
-            is BlobShape -> if(target.hasTrait<StreamingTrait>()) "$memberNameOptional.toBytes().toData()" else "$memberNameOptional.base64EncodedString()"
+            is BlobShape -> if (target.hasTrait<StreamingTrait>()) "$memberNameOptional.toBytes().toData()" else "$memberNameOptional.base64EncodedString()"
             else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }

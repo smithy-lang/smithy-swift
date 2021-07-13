@@ -46,7 +46,7 @@ class HttpResponseTraitWithHttpPayload(
                 }
                 ShapeType.BLOB -> {
                     val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    val value = if(isBinaryStream) "ByteStream.fromData(data: data)" else "data"
+                    val value = if (isBinaryStream) "ByteStream.fromData(data: data)" else "data"
                     writer.write("self.\$L = $value", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
