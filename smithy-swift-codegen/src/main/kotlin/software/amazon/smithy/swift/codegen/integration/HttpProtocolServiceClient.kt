@@ -85,25 +85,23 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderConfigInit(configFields: List<ConfigField>, serviceSymbol: Symbol) {
-        if (configFields.isNotEmpty()) {
-            val configFieldsSortedByName = configFields.sortedBy { it.name }
-            writer.openBlock("public init (", ") throws") {
-                for (member in configFieldsSortedByName) {
-                    val memberName = member.name
-                    val memberSymbol = member.type
-                    if (memberName == null) continue
-                    writer.write("\$L: \$L,", memberName, memberSymbol)
-                }
-                writer.write("clientLogMode: ClientLogMode = .request,")
-                writer.write("logger: LogAgent? = nil")
+        val configFieldsSortedByName = configFields.sortedBy { it.name }
+        writer.openBlock("public init (", ") throws") {
+            for (member in configFieldsSortedByName) {
+                val memberName = member.name
+                val memberSymbol = member.type
+                if (memberName == null) continue
+                writer.write("\$L: \$L,", memberName, memberSymbol)
             }
-            writer.openBlock("{", "}") {
-                configFieldsSortedByName.forEach {
-                    writer.write("self.\$1L = \$1L", it.name)
-                }
-                writer.write("self.clientLogMode = clientLogMode")
-                writer.write("self.logger = logger ?? SwiftLogger(label: \"${serviceSymbol.name}\")")
+            writer.write("clientLogMode: ClientLogMode = .request,")
+            writer.write("logger: LogAgent? = nil")
+        }
+        writer.openBlock("{", "}") {
+            configFieldsSortedByName.forEach {
+                writer.write("self.\$1L = \$1L", it.name)
             }
+            writer.write("self.clientLogMode = clientLogMode")
+            writer.write("self.logger = logger ?? SwiftLogger(label: \"${serviceSymbol.name}\")")
         }
     }
 }

@@ -8,7 +8,7 @@
 import Logging
 
 public class SDKLoggingSystem {
-    private static var factories: [String:SDKLogHandlerFactory] = [:]
+    private static var factories: [String: SDKLogHandlerFactory] = [:]
 
     public class func add(logHandlerFactory: SDKLogHandlerFactory) {
         let label = logHandlerFactory.label

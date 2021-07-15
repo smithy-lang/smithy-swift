@@ -17,7 +17,7 @@ public enum SDKLogLevel: String, Codable, CaseIterable {
     case critical
 
     public func toLoggerType() -> Logger.Level {
-        switch(self) {
+        switch self {
         case .trace:
             return .trace
         case .debug:
@@ -35,4 +35,3 @@ public enum SDKLogLevel: String, Codable, CaseIterable {
         }
     }
 }
-
