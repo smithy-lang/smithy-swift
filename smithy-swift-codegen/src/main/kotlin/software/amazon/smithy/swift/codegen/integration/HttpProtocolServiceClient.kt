@@ -39,8 +39,29 @@ open class HttpProtocolServiceClient(
                 writer.write("client.close()")
             }
             writer.write("")
-            // FIXME: possible move generation of the config to a separate file or above the service client
             renderConfig(serviceSymbol)
+        }
+        writer.write("")
+        renderLogHandlerFactory(serviceSymbol)
+        writer.write("")
+    }
+
+    private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
+        //This is wrong, we will clean this up later
+        writer.write("import Logging")
+        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: CRLogHandlerFactory {", "}") {
+            writer.write("public var label = \"${serviceSymbol.name}\"")
+            writer.write("let logLevel: CRLogLevel")
+
+            writer.openBlock("public func constructLogHandler(label: String) -> LogHandler {", "}") {
+                writer.write("var handler = StreamLogHandler.standardOutput(label: label)")
+                writer.write("handler.logLevel = logLevel.toLoggerType()")
+                writer.write("return handler")
+            }
+
+            writer.openBlock("public init(logLevel: CRLogLevel) {", "}") {
+                writer.write("self.logLevel = logLevel")
+            }
         }
     }
 
@@ -54,7 +75,10 @@ open class HttpProtocolServiceClient(
                 writer.write("public var ${it.name}: ${it.type}")
             }
             writer.write("")
-            renderConfigInit(configFields)
+            writer.write("public let clientLogMode: ClientLogMode")
+            writer.write("public let logger: LogAgent")
+            writer.write("")
+            renderConfigInit(configFields, serviceSymbol)
             writer.write("")
             serviceConfig.renderConvenienceInits(serviceSymbol)
             writer.write("")
@@ -62,22 +86,25 @@ open class HttpProtocolServiceClient(
         }
     }
 
-    private fun renderConfigInit(configFields: List<ConfigField>) {
+    private fun renderConfigInit(configFields: List<ConfigField>, serviceSymbol: Symbol) {
         if (configFields.isNotEmpty()) {
             val configFieldsSortedByName = configFields.sortedBy { it.name }
             writer.openBlock("public init (", ") throws") {
-                for ((index, member) in configFieldsSortedByName.withIndex()) {
+                for (member in configFieldsSortedByName) {
                     val memberName = member.name
                     val memberSymbol = member.type
                     if (memberName == null) continue
-                    val terminator = if (index == configFieldsSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$L$terminator", memberName, memberSymbol)
+                    writer.write("\$L: \$L,", memberName, memberSymbol)
                 }
+                writer.write("clientLogMode: ClientLogMode = .request,")
+                writer.write("logger: LogAgent? = nil")
             }
             writer.openBlock("{", "}") {
                 configFieldsSortedByName.forEach {
                     writer.write("self.\$1L = \$1L", it.name)
                 }
+                writer.write("self.clientLogMode = clientLogMode")
+                writer.write("self.logger = logger ?? SwiftLogger(label: \"${serviceSymbol.name}\")")
             }
         }
     }
