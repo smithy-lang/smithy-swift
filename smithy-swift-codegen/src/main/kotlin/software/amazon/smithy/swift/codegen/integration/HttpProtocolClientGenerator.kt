@@ -46,6 +46,7 @@ open class HttpProtocolClientGenerator(
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+        writer.addImport(SwiftDependency.SWIFT_LOG.target)
         writer.addFoundationImport()
         httpProtocolCustomizable.renderInternals(ctx)
         httpProtocolServiceClient.render(serviceSymbol)

@@ -18,6 +18,7 @@ enum class SwiftDependency(
     var packageName: String
 ) : SymbolDependencyContainer {
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
+    SWIFT_LOG("Logging", null, "", "", "", ""),
     CLIENT_RUNTIME(
         "ClientRuntime",
         "master",
