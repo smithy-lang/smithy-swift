@@ -6,7 +6,7 @@ import AwsCommonRuntimeKit
 
 public enum HttpBody {
     case data(Data?)
-    case stream(ByteStream)
+    case stream(Reader)
     case none
 }
 
@@ -16,7 +16,9 @@ extension HttpBody: Equatable {
         case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
             return unwrappedlhsData == unwrappedRhsData
         case (let .stream(byteslhs), let .stream(bytesrhs)):
-            return byteslhs.toBytes() === bytesrhs.toBytes()
+            let streamLhs = byteslhs.readFrom()
+            let streamRhs = bytesrhs.readFrom()
+            return streamLhs.readRemaining(maxBytes: UInt(Int.max)) === streamRhs.readRemaining(maxBytes: UInt(Int.max))
         case (.none, .none):
             return true
         default:
@@ -41,7 +43,9 @@ extension HttpBody {
                 return nil
             }
         case .stream(let stream):
-            return AwsInputStream(stream.toBytes())
+            let reader = stream.readFrom()
+            let streamSinkBodyStream = StreamSinkBodyStream(streamSink: reader)
+            return AwsInputStream(streamSinkBodyStream)
         case .none:
             return nil
         }
@@ -57,7 +61,8 @@ extension HttpBody: CustomDebugStringConvertible {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
         case .stream(let stream):
-            bodyAsString = String(data: stream.toBytes().toData(), encoding: .utf8)
+            let reader = stream.readFrom()
+            bodyAsString = String(data: reader.readRemaining(maxBytes: UInt(Int.max)).toData(), encoding: .utf8)
         default:
             bodyAsString = nil
         }

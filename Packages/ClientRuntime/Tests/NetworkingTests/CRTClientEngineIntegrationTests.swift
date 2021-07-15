@@ -83,7 +83,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.stream(.reader(MockReader(testExpectation: dataReceivedExpectation))))
+                                     body: HttpBody.stream(MockReader(testExpectation: dataReceivedExpectation)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -111,7 +111,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.stream(.reader(MockReader(testExpectation: streamExpectation))))
+                                     body: HttpBody.stream(MockReader(testExpectation: streamExpectation)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -143,7 +143,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1"),
                                      headers: headers,
-                                     body: HttpBody.stream(.buffer(DataContent(data: Data([1])))))
+                                     body: HttpBody.stream(DataContent(data: Data([1]))))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -176,7 +176,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
                                      headers: headers,
-                                     body: HttpBody.stream(.reader(MockReader(testExpectation: streamExpectation))))
+                                     body: HttpBody.stream(MockReader(testExpectation: streamExpectation)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -211,7 +211,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
-                                     body: HttpBody.stream(.buffer(DataContent(data: encodedData))))
+                                     body: HttpBody.stream(DataContent(data: encodedData)))
         httpClient.execute(request: request) { result in
             switch result {
             case .success(let response):
@@ -233,7 +233,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 // is it takes an `XCTestExpectation` to fulfill the asynchronous nature of streaming in the unit test.
 class MockSinkStream: DataStreamSink {
     override func write(buffer: ByteBuffer) {
-        data.append(buffer.toData())
+        byteBuffer.put(buffer.toData())
         availableForRead += UInt(buffer.length)
         testExpectation.fulfill()
     }

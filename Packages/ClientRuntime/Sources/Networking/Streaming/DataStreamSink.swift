@@ -13,11 +13,11 @@ public class DataStreamSink: StreamSink {
     public var isClosedForWrite: Bool
 
     //TODO: should this be a channel of bytes to consume?
-    public var data: Data
+    public var byteBuffer: ByteBuffer
     public var error: ClientError?
 
-    init(data: Data = Data()) {
-        self.data = data
+    init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
+        self.byteBuffer = byteBuffer
         self.availableForRead = 0
         self.isClosedForWrite = false
     }
@@ -42,11 +42,11 @@ public class DataStreamSink: StreamSink {
             //TODO: possibly need a hand written channel that we can pull from here
             //TODO: how do we get the next set of bytes asynchronously without holding in memory?
             //TODO: we are putting all the data in at once and not using limit
-            byteBuffer.put(data)
+            byteBuffer.put(self.byteBuffer.toData())
             
-            consumed += UInt(data.count)
+            consumed += UInt(self.byteBuffer.length)
             remaining = maxBytes - consumed
-            markBytesConsumed(size: UInt(data.count))
+            markBytesConsumed(size: UInt(self.byteBuffer.length))
         }
         
         return consumed
@@ -58,8 +58,8 @@ public class DataStreamSink: StreamSink {
         var remaining = length
         
         while availableForRead > 0 && remaining > 0 {
-            let rc = UInt(data.count)
-            byteBuffer.put(data)
+            let rc = UInt(self.byteBuffer.length)
+            byteBuffer.put(self.byteBuffer.toData())
             consumed += rc
             currentOffset += rc
             remaining = length - consumed
@@ -93,16 +93,12 @@ public class DataStreamSink: StreamSink {
     }
     
     public func write(buffer: ByteBuffer) {
-        data.append(buffer.toData())
+        byteBuffer.put(buffer.toData())
         availableForRead += UInt(buffer.length)
     }
     
-    public var contentLength: Int? {
-        return data.count
-    }
-
-    public func toBytes() -> ByteBuffer {
-        return ByteBuffer(data: data)
+    public var contentLength: Int64? {
+        return byteBuffer.length
     }
 
     public func onError(error: ClientError) {

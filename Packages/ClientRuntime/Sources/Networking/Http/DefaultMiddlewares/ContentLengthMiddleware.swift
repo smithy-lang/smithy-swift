@@ -24,7 +24,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
                 return Int64(data?.count ?? 0)
             case .stream(let stream):
                 // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.toBytes().length
+                return Int64(stream.readFrom().availableForRead)
             case .none:
                 return 0
             }

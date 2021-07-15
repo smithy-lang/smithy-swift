@@ -128,7 +128,7 @@ open class HttpRequestTestBase: XCTestCase {
         case .data(let actualData):
             return .success(actualData)
         case .stream(let byteStream):
-            return .success(byteStream.toBytes().toData())
+            return .success(byteStream.readFrom().byteBuffer.toData())
         case .none:
             return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
         }

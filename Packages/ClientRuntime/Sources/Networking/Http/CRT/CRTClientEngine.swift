@@ -79,28 +79,6 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool
     }
     
-    private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
-        
-        var headers = request.headers
-        
-        let contentLength: Int64 = {
-            switch request.body {
-            case .data(let data):
-                return Int64(data?.count ?? 0)
-            case .stream(let stream):
-                // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.toBytes().length
-            case .none:
-                return 0
-            }
-        }()
-        
-        headers.update(name: CONTENT_LENGTH_HEADER, value: "\(contentLength)")
-        
-        request.headers = headers
-        return request.toHttpRequest(bufferSize: windowSize)
-    }
-    
     public func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         execute(request: request).then { (result) in
             completion(result)
@@ -151,17 +129,16 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         let response = HttpResponse()
         
         var streamSink: StreamSink?
-        if case let HttpBody.stream(unwrappedStream) = request.body,
-           case let ByteStream.reader(reader) = unwrappedStream {
-            streamSink = reader.readFrom()
+        if case let HttpBody.stream(unwrappedStream) = request.body {
+            streamSink = unwrappedStream.readFrom()
         }
         
         var contentLength: Int64 = 0
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
+        let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
@@ -199,7 +176,7 @@ public class CRTClientEngine: HttpClientEngine {
         return (requestOptions, future)
     }
     
-    private func createResponseBody(contentLength: Int64, streamSink: StreamSink) -> ByteStream {
+    private func createResponseBody(contentLength: Int64, streamSink: StreamSink) -> Reader {
         struct BufferedByteStream: Reader {
             func readFrom() -> StreamSink {
                 streamSink
@@ -209,17 +186,17 @@ public class CRTClientEngine: HttpClientEngine {
             var streamSink: StreamSink
         }
         
-        return .reader(BufferedByteStream(contentLength: contentLength, streamSink: streamSink))
+        return BufferedByteStream(contentLength: contentLength, streamSink: streamSink)
     }
     
     public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         
         let response = HttpResponse()
         let incomingByteBuffer = ByteBuffer(size: 0)
         
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
+        let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound

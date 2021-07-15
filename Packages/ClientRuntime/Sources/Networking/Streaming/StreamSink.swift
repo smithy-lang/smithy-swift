@@ -10,6 +10,7 @@ import class Foundation.FileManager
 // TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
 @available(*, message: "This streaming interface is unstable currently for dynamic streaming")
 public protocol StreamSink: AnyObject {
+    var byteBuffer: ByteBuffer { get set}
     var availableForRead: UInt { get set }
     var isClosedForWrite: Bool {get set}
 
