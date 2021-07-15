@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 	
-public struct StringContent: Buffer {
+public struct StringContent {
     public var contentLength: Int64? {
         return Int64(underlyingStringBuffer.count)
     }
@@ -17,11 +17,5 @@ public struct StringContent: Buffer {
     private let underlyingStringBuffer: String
     public init(underlyingStringBuffer: String) {
         self.underlyingStringBuffer = underlyingStringBuffer
-    }
-}
-
-extension String {
-    public func asByteStream() -> ByteStream {
-        return .buffer(StringContent(underlyingStringBuffer: self))
     }
 }

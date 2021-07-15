@@ -5,103 +5,91 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import AwsCommonRuntimeKit
+import Foundation
 
-// TODO: handle backpressure more thoroughly to allow for indication that they are ready for more
-public class DataStreamSink: StreamSink {
+public class DataStreamSink: StreamReader {
     public var availableForRead: UInt
+    private var _isClosedForWrite: Bool = false
     
-    public var isClosedForWrite: Bool
+    public var isClosedForWrite: Bool {
+        get {
+            lock.lock()
+            defer {
+                lock.unlock()
+            }
+            return _isClosedForWrite
+        }
+        set {
+            lock.lock()
+            defer {
+                lock.unlock()
+            }
+            _isClosedForWrite = newValue
+        }
+    }
 
-    //TODO: should this be a channel of bytes to consume?
     public var byteBuffer: ByteBuffer
+    var offset: UInt
+    let lock = NSLock()
     public var error: ClientError?
 
     init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
         self.byteBuffer = byteBuffer
         self.availableForRead = 0
-        self.isClosedForWrite = false
+       
+        self.offset = 0
     }
     
-    public func readRemaining(maxBytes: UInt) -> ByteBuffer {
-        var buffer = ByteBuffer(size: min(Int(availableForRead), Int(maxBytes)))
-        let consumed = readAsMuchAsPossible(byteBuffer: &buffer, maxBytes: maxBytes)
+    public func read(maxBytes: UInt? = nil) -> ByteBuffer {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
         
-        if consumed >= maxBytes || availableForRead == 0 {
-            return buffer
+        buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
+  
+        availableForRead -= UInt(buffer.length)
+        offset += UInt(buffer.length)
+        
+        return buffer
+    }
+    
+    public func seek(offset: Int) {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        let temp = Int(self.offset) + offset
+        if temp < 0 {
+            self.offset = 0
         } else {
-            //TODO: should this be suspending the thread until there is more to read?
-            return readRemaining(maxBytes: maxBytes - consumed)
-        }
-    }
-    
-    private func readAsMuchAsPossible(byteBuffer: inout ByteBuffer, maxBytes: UInt) -> UInt {
-        var consumed: UInt = 0
-        var remaining = maxBytes
-        
-        while availableForRead > 0 && remaining > 0 {
-            //TODO: possibly need a hand written channel that we can pull from here
-            //TODO: how do we get the next set of bytes asynchronously without holding in memory?
-            //TODO: we are putting all the data in at once and not using limit
-            byteBuffer.put(self.byteBuffer.toData())
-            
-            consumed += UInt(self.byteBuffer.length)
-            remaining = maxBytes - consumed
-            markBytesConsumed(size: UInt(self.byteBuffer.length))
-        }
-        
-        return consumed
-    }
-    
-    private func readAsMuchAsPossible(byteBuffer: inout ByteBuffer, offset: UInt, length: UInt) -> UInt {
-        var consumed: UInt = 0
-        var currentOffset = offset
-        var remaining = length
-        
-        while availableForRead > 0 && remaining > 0 {
-            let rc = UInt(self.byteBuffer.length)
-            byteBuffer.put(self.byteBuffer.toData())
-            consumed += rc
-            currentOffset += rc
-            remaining = length - consumed
-            
-            markBytesConsumed(size: rc)
-        }
-        
-        return consumed
-    }
-    
-    private func markBytesConsumed(size: UInt) {
-        availableForRead -= size
-    }
-    
-    public func readFully(sink: inout ByteBuffer, offset: UInt, length: UInt) {
-        let rc = readAsMuchAsPossible(byteBuffer: &sink, offset: offset, length: length)
-        if rc < length {
-            readFully(sink: &sink, offset: offset + rc, length: length - rc)
-        }
-    }
-    
-    public func readAvailable(sink: inout ByteBuffer, offset: UInt, length: UInt) -> UInt {
-        let consumed = readAsMuchAsPossible(byteBuffer: &sink, offset: offset, length: length)
-        if consumed == 0 {
-            return 0
-        } else if consumed > 0 || length == 0 {
-            return consumed
-        } else {
-            return readAvailable(sink: &sink, offset: offset, length: length)
+            self.offset = UInt(temp)
         }
     }
     
     public func write(buffer: ByteBuffer) {
-        byteBuffer.put(buffer.toData())
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        byteBuffer.put(buffer)
         availableForRead += UInt(buffer.length)
     }
     
     public var contentLength: Int64? {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
         return byteBuffer.length
     }
 
     public func onError(error: ClientError) {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
         self.error = error
     }
 }

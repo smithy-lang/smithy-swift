@@ -7,7 +7,7 @@
 import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
-public struct FileContent: Buffer {
+public struct FileContent {
     public var contentLength: Int64? {
         return Int64(fileHandle.length)
     }
@@ -26,8 +26,3 @@ public struct FileContent: Buffer {
     }
 }
 
-extension FileHandle {
-    public func asByteStream() -> ByteStream {
-        return .buffer(FileContent(fileHandle: self))
-    }
-}

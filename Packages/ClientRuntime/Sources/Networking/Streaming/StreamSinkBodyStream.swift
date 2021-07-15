@@ -20,27 +20,19 @@ class StreamSinkBodyStream: AwsStream {
         Int64(streamSink.availableForRead)
     }
     
-    private var streamSink: StreamSink
+    private var streamSink: StreamReader
     
-    init(streamSink: StreamSink) {
+    init(streamSink: StreamReader) {
         self.streamSink = streamSink
         self.byteBuffer = ByteBuffer(size: Int(streamSink.availableForRead))
     }
     
     func seek(offset: Int64, basis: aws_stream_seek_basis) -> Bool {
-        streamSink.readAvailable(sink: &byteBuffer, offset: UInt(offset), length: UInt(length))
-        return true
+        return streamSink.byteBuffer.seek(offset: offset, basis: basis)
     }
     
     func read(buffer: inout aws_byte_buf) -> Bool {
-        let bufferCapacity = buffer.capacity - buffer.len
-        var consumed: UInt = 0
-        while(!streamSink.isClosedForWrite) {
-            _ = streamSink.byteBuffer.read(buffer: &buffer)
-            consumed += streamSink.readAvailable(sink: &byteBuffer, offset: consumed, length: UInt(bufferCapacity))
-        }
-
-        return !self.status.is_end_of_stream
+        return byteBuffer.read(buffer: &buffer)
     }
 }
 

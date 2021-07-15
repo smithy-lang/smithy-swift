@@ -8,37 +8,26 @@ import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
 public enum ByteStream {
-    case buffer(Buffer)
-    case reader(Reader)
+    case buffer(ByteBuffer)
+    case reader(StreamReader)
 }
 
-public protocol Buffer: Stream {
-    func toBytes() -> ByteBuffer
-}
-
-public protocol Reader: Stream {
-    func readFrom() -> StreamSink
-}
-
-public protocol Stream {
-    var contentLength: Int64? {get}
-}
 
 extension ByteStream {
     public static func fromData(data: Data) -> ByteStream {
-        return .buffer(DataContent(data: data))
+        return .buffer(ByteBuffer(data: data))
     }
     
     public static func fromFile(path: String) -> ByteStream {
-        return .buffer(FileContent(path: path))
+        return .buffer(FileContent(path: path).toBytes())
     }
     
     public static func fromFile(fileHandle: FileHandle) -> ByteStream {
-        return .buffer(FileContent(fileHandle: fileHandle))
+        return .buffer(FileContent(fileHandle: fileHandle).toBytes())
     }
     
     public static func fromString(string: String) -> ByteStream {
-        return .buffer(StringContent(underlyingStringBuffer: string))
+        return .buffer(StringContent(underlyingStringBuffer: string).toBytes())
     }
 }
 
@@ -46,10 +35,9 @@ extension ByteStream {
     public func toBytes() -> ByteBuffer {
         switch self {
         case .buffer(let buffer):
-            return buffer.toBytes()
+            return buffer
         case .reader(let reader):
-            let sink = reader.readFrom()
-            let bytes = sink.readRemaining(maxBytes: UInt(Int.max))
+            let bytes = reader.read(maxBytes: nil)
             return bytes
         }
     }
@@ -59,9 +47,9 @@ extension ByteStream: Equatable {
     public static func == (lhs: ByteStream, rhs: ByteStream) -> Bool {
         switch (lhs, rhs) {
         case (let .reader(unwrappedLhsReader), let .reader(unwrappedRhsReader)):
-            return unwrappedLhsReader.readFrom() === unwrappedRhsReader.readFrom()
+            return unwrappedLhsReader === unwrappedRhsReader
         case (let .buffer(lhsBuffer), let .buffer(rhsBuffer)):
-            return lhsBuffer.contentLength == rhsBuffer.contentLength
+            return lhsBuffer.toByteArray() == rhsBuffer.toByteArray()
         default:
             return false
         }
@@ -71,8 +59,8 @@ extension ByteStream: Equatable {
 extension ByteStream: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let buffer = try container.decode(Data.self)
-        self = .buffer(buffer)
+        let data = try container.decode(Data.self)
+        self = .buffer(ByteBuffer(data: data))
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -81,12 +69,3 @@ extension ByteStream: Codable {
     }
 }
 
-extension Data: Buffer {
-    public func toBytes() -> ByteBuffer {
-        return ByteBuffer(data: self)
-    }
-    
-    public var contentLength: Int64? {
-        return Int64(count)
-    }
-}

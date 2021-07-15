@@ -4,27 +4,10 @@
  */
 import AwsCommonRuntimeKit
 
-public enum HttpBody {
+public enum HttpBody: Equatable {
     case data(Data?)
-    case stream(Reader)
+    case stream(ByteStream)
     case none
-}
-
-extension HttpBody: Equatable {
-    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
-        switch (lhs, rhs) {
-        case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
-            return unwrappedlhsData == unwrappedRhsData
-        case (let .stream(byteslhs), let .stream(bytesrhs)):
-            let streamLhs = byteslhs.readFrom()
-            let streamRhs = bytesrhs.readFrom()
-            return streamLhs.readRemaining(maxBytes: UInt(Int.max)) === streamRhs.readRemaining(maxBytes: UInt(Int.max))
-        case (.none, .none):
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 public extension HttpBody {
@@ -43,9 +26,12 @@ extension HttpBody {
                 return nil
             }
         case .stream(let stream):
-            let reader = stream.readFrom()
-            let streamSinkBodyStream = StreamSinkBodyStream(streamSink: reader)
-            return AwsInputStream(streamSinkBodyStream)
+            switch stream {
+            case .reader(let reader):
+                return AwsInputStream(reader.byteBuffer)
+            case .buffer(let byteBuffer):
+                return AwsInputStream(byteBuffer)
+            }
         case .none:
             return nil
         }
@@ -61,8 +47,7 @@ extension HttpBody: CustomDebugStringConvertible {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
         case .stream(let stream):
-            let reader = stream.readFrom()
-            bodyAsString = String(data: reader.readRemaining(maxBytes: UInt(Int.max)).toData(), encoding: .utf8)
+            bodyAsString = String(data: stream.toBytes().toData(), encoding: .utf8)
         default:
             bodyAsString = nil
         }

@@ -132,12 +132,11 @@ public class CRTClientEngine: HttpClientEngine {
         let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         let response = HttpResponse()
         
-        var streamSink: StreamSink?
-        if case let HttpBody.stream(unwrappedStream) = request.body {
-            streamSink = unwrappedStream.readFrom()
+        var streamSink: StreamReader?
+        if case let HttpBody.stream(unwrappedStream) = request.body, case let ByteStream.reader(reader) = unwrappedStream {
+            streamSink = reader
         }
         
-        var contentLength: Int64 = 0
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
@@ -148,7 +147,6 @@ public class CRTClientEngine: HttpClientEngine {
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
             let contentLengthHeader = Int(response.headers.value(for: "Content-Length") ?? "0")
-            contentLength = Int64(contentLengthHeader ?? 0)
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             
@@ -168,25 +166,13 @@ public class CRTClientEngine: HttpClientEngine {
                 }
             }
             if let streamSink = streamSink {
-                response.body = .stream(createResponseBody(contentLength: contentLength, streamSink: streamSink))
+                streamSink.isClosedForWrite = true
+                response.body = .stream(.reader(streamSink))
             }
             future.fulfill(response)
         }
         
         return (requestOptions, future)
-    }
-    
-    private func createResponseBody(contentLength: Int64, streamSink: StreamSink) -> Reader {
-        struct BufferedByteStream: Reader {
-            func readFrom() -> StreamSink {
-                streamSink
-            }
-            
-            var contentLength: Int64?
-            var streamSink: StreamSink
-        }
-        
-        return BufferedByteStream(contentLength: contentLength, streamSink: streamSink)
     }
     
     public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {

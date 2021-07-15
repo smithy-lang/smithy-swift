@@ -44,7 +44,7 @@ class NetworkingTestUtils: XCTestCase {
         var headers = Headers()
         headers.add(name: "header-item-name", value: "header-item-value")
 
-        let httpBody = HttpBody.stream(DataContent(data: expectedMockRequestData))
+        let httpBody = HttpBody.stream(ByteStream.fromData(data: expectedMockRequestData))
         mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
     }
 
