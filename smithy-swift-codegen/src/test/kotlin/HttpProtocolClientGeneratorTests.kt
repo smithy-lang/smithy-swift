@@ -77,6 +77,19 @@ class HttpProtocolClientGeneratorTests {
                         }
                     }
                 }
+
+                public struct ExampleClientLogHandlerFactory: SDKLogHandlerFactory {
+                    public var label = "ExampleClient"
+                    let logLevel: SDKLogLevel
+                    public func construct(label: String) -> LogHandler {
+                        var handler = StreamLogHandler.standardOutput(label: label)
+                        handler.logLevel = logLevel.toLoggerType()
+                        return handler
+                    }
+                    public init(logLevel: SDKLogLevel) {
+                        self.logLevel = logLevel
+                    }
+                }
             """.trimIndent()
         )
     }
