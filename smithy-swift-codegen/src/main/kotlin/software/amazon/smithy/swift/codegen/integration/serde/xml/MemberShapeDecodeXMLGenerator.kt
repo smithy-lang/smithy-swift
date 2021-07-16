@@ -281,9 +281,9 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.dedent().write("}")
     }
 
-    fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
+    private fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
         val isStreaming = memberTarget.hasTrait<StreamingTrait>()
-        val value = if (isStreaming) "ByteStream.fromData(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
+        val value = if (isStreaming) "ByteStream.from(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
         renderAssigningDecodedMember(memberName, "$value")
     }
 
