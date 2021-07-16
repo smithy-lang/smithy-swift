@@ -20,7 +20,11 @@ class HttpResponseTraitWithHttpPayload(
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
         // TODO: properly support event streams and other binary stream types besides blob
-        writer.openBlock("if case .data(let data) = httpResponse.body,\n  let data = data {", "} else {") {
+        val isBinaryStream =
+            ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
+        val bodyType = if(isBinaryStream) ".stream" else ".data"
+        val additionalUnwrap = if(!isBinaryStream) ",\n    let data = data" else ""
+        writer.openBlock("if case $bodyType(let data) = httpResponse.body$additionalUnwrap {", "} else {") {
             when (target.type) {
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
@@ -45,9 +49,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.BLOB -> {
-                    val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    val value = if (isBinaryStream) "ByteStream.fromData(data: data)" else "data"
-                    writer.write("self.\$L = $value", memberName)
+                    writer.write("self.\$L = data", memberName)
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
