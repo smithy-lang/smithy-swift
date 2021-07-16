@@ -20,11 +20,9 @@ public class DataStreamSink: StreamReader {
             return _isClosedForWrite
         }
         set {
-            lock.lock()
-            defer {
-                lock.unlock()
+            withLockingClosure {
+                _isClosedForWrite = newValue
             }
-            _isClosedForWrite = newValue
         }
     }
 
@@ -40,39 +38,31 @@ public class DataStreamSink: StreamReader {
     }
     
     public func read(maxBytes: UInt? = nil) -> ByteBuffer {
-        lock.lock()
-        defer {
-            lock.unlock()
-        }
-        
         let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
-        buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
-        availableForRead -= UInt(buffer.length)
-        offset += UInt(buffer.length)
-        
+        withLockingClosure {
+            buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
+            availableForRead -= UInt(buffer.length)
+            offset += UInt(buffer.length)
+        }
         return buffer
     }
     
     public func seek(offset: Int) {
-        lock.lock()
-        defer {
-            lock.unlock()
-        }
-        let temp = Int(self.offset) + offset
-        if temp < 0 {
-            self.offset = 0
-        } else {
-            self.offset = UInt(temp)
+        withLockingClosure {
+            let temp = Int(self.offset) + offset
+            if temp < 0 {
+                self.offset = 0
+            } else {
+                self.offset = UInt(temp)
+            }
         }
     }
     
     public func write(buffer: ByteBuffer) {
-        lock.lock()
-        defer {
-            lock.unlock()
+        withLockingClosure {
+            byteBuffer.put(buffer)
+            availableForRead += UInt(buffer.length)
         }
-        byteBuffer.put(buffer)
-        availableForRead += UInt(buffer.length)
     }
     
     public var contentLength: Int64? {
@@ -84,16 +74,18 @@ public class DataStreamSink: StreamReader {
     }
 
     public func onError(error: ClientError) {
-        withLockingClosure(lock) {
+        withLockingClosure {
             self.error = error
         }
     }
+    
+    private func withLockingClosure(closure: () -> Void) {
+        lock.lock()
+        closure()
+        lock.unlock()
+    }
+
 }
 
-func withLockingClosure(_ lock: NSLock, closure: () -> Void) {
-    lock.lock()
-    closure()
-    lock.unlock()
-}
 
 

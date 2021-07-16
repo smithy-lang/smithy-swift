@@ -18,7 +18,6 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
     Self.Context == H.Context,
     Self.MError == H.MiddlewareError {
         
-        
         switch input.body {
         case .data(let data):
             input.headers.update(name: "Content-Length", value: String(data?.count ?? 0))
@@ -32,7 +31,6 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
         default:
             input.headers.update(name: "Content-Length", value: "0")
         }
-        
         
         return next.handle(context: context, input: input)
     }
