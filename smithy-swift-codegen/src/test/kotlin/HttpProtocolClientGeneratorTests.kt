@@ -53,16 +53,41 @@ class HttpProtocolClientGeneratorTests {
                         self.decoder = config.decoder
                         self.config = config
                     }
-
+                
                     deinit {
                         client.close()
                     }
-
+                
                     public class ExampleClientConfiguration: ClientRuntime.Configuration {
+                
+                        public let clientLogMode: ClientLogMode
+                        public let logger: LogAgent
+                
+                        public init (
+                            clientLogMode: ClientLogMode = .request,
+                            logger: LogAgent? = nil
+                        ) throws
+                        {
+                            self.clientLogMode = clientLogMode
+                            self.logger = logger ?? SwiftLogger(label: "ExampleClient")
+                        }
                 
                         public static func `default`() throws -> ExampleClientConfiguration {
                             return try ExampleClientConfiguration()
                         }
+                    }
+                }
+
+                public struct ExampleClientLogHandlerFactory: SDKLogHandlerFactory {
+                    public var label = "ExampleClient"
+                    let logLevel: SDKLogLevel
+                    public func construct(label: String) -> LogHandler {
+                        var handler = StreamLogHandler.standardOutput(label: label)
+                        handler.logLevel = logLevel.toLoggerType()
+                        return handler
+                    }
+                    public init(logLevel: SDKLogLevel) {
+                        self.logLevel = logLevel
                     }
                 }
             """.trimIndent()
