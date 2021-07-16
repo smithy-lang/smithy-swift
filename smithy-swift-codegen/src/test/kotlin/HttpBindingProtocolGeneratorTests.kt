@@ -72,9 +72,9 @@ class HttpBindingProtocolGeneratorTests {
 extension ExplicitStructOutputResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         if case .data(let data) = httpResponse.body,
-            let unwrappedData = data {
+          let data = data {
             if let responseDecoder = decoder {
-                let output: Nested2 = try responseDecoder.decode(responseBody: unwrappedData)
+                let output: Nested2 = try responseDecoder.decode(responseBody: data)
                 self.payload1 = output
             } else {
                 self.payload1 = nil
@@ -119,9 +119,9 @@ extension HttpResponseCodeOutputResponse: HttpResponseBinding {
 extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
     public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
         if case .data(let data) = httpResponse.body,
-            let unwrappedData = data {
+          let data = data {
             if let responseDecoder = decoder {
-                let output: Document = try responseDecoder.decode(responseBody: unwrappedData)
+                let output: Document = try responseDecoder.decode(responseBody: data)
                 self.documentValue = output
             } else {
                 self.documentValue = nil

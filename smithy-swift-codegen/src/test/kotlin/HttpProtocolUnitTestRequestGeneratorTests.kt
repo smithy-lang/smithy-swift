@@ -352,7 +352,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = StreamingTraitsInput(
-            blob: "blobby blob blob".data(using: .utf8)!,
+            blob: ByteStream.from(data: "blobby blob blob".data(using: .utf8)!),
             foo: "Foo"
         )
         let encoder = JSONEncoder()

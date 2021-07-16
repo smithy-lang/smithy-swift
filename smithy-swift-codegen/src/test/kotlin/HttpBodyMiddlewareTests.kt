@@ -82,9 +82,9 @@ class HttpBodyMiddlewareTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let data = payload1.data(using: .utf8)
-                        let body = HttpBody.data(data)
-                        input.builder.withBody(body)
+                        let payload1data = payload1.data(using: .utf8)
+                        let payload1body = HttpBody.data(payload1data)
+                        input.builder.withBody(payload1body)
                     }
                     return next.handle(context: context, input: input)
                 }
@@ -119,9 +119,9 @@ class HttpBodyMiddlewareTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let data = payload1
-                        let body = HttpBody.data(data)
-                        input.builder.withBody(body)
+                        let payload1data = payload1
+                        let payload1body = HttpBody.data(payload1data)
+                        input.builder.withBody(payload1body)
                     }
                     return next.handle(context: context, input: input)
                 }
@@ -156,9 +156,9 @@ class HttpBodyMiddlewareTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let data = payload1
-                        let body = HttpBody.stream(data)
-                        input.builder.withBody(body)
+                        let payload1data = payload1
+                        let payload1body = HttpBody.stream(payload1data)
+                        input.builder.withBody(payload1body)
                     }
                     return next.handle(context: context, input: input)
                 }
@@ -195,9 +195,9 @@ class HttpBodyMiddlewareTests {
                     if let payload1 = input.operationInput.payload1 {
                         do {
                             let encoder = context.getEncoder()
-                            let data = try encoder.encode(payload1)
-                            let body = HttpBody.data(data)
-                            input.builder.withBody(body)
+                            let payload1data = try encoder.encode(payload1)
+                            let payload1body = HttpBody.data(payload1data)
+                            input.builder.withBody(payload1body)
                         } catch let err {
                             return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
                         }

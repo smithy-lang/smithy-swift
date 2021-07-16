@@ -189,7 +189,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.writeInline("ByteStream.fromData(data: ")
+                    writer.writeInline("ByteStream.from(data: ")
                     ".data(using: .utf8)!)"
                 } else {
                     // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
