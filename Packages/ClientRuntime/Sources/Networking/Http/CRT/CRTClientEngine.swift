@@ -132,9 +132,10 @@ public class CRTClientEngine: HttpClientEngine {
         let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         let response = HttpResponse()
         
-        var streamSink: StreamReader?
-        if case let HttpBody.stream(unwrappedStream) = request.body, case let ByteStream.reader(reader) = unwrappedStream {
-            streamSink = reader
+        var streamReader: StreamReader?
+        if case let HttpBody.stream(unwrappedStream) = request.body,
+           case let ByteStream.reader(reader) = unwrappedStream {
+            streamReader = reader
         }
         
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
@@ -146,28 +147,27 @@ public class CRTClientEngine: HttpClientEngine {
             logger.debug("header block is done")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
-            let contentLengthHeader = Int(response.headers.value(for: "Content-Length") ?? "0")
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             
-            if let streamSink = streamSink {
+            if let streamReader = streamReader {
                 let byteBuffer = ByteBuffer(data: data)
-                streamSink.write(buffer: byteBuffer)
+                streamReader.write(buffer: byteBuffer)
             }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let streamSink = streamSink {
-                        streamSink.onError(error: ClientError.crtError(error))
+                    if let streamReader = streamReader {
+                        streamReader.onError(error: ClientError.crtError(error))
                     }
                     future.fail(error)
                 }
             }
-            if let streamSink = streamSink {
-                streamSink.isClosedForWrite = true
-                response.body = .stream(.reader(streamSink))
+            if let streamReader = streamReader {
+                streamReader.isClosedForWrite = true
+                response.body = .stream(.reader(streamReader))
             }
             future.fulfill(response)
         }
@@ -180,7 +180,7 @@ public class CRTClientEngine: HttpClientEngine {
         let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         
         let response = HttpResponse()
-        let incomingByteBuffer = ByteBuffer(size: 0)
+        var incomingData = Data()
         
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
@@ -193,7 +193,7 @@ public class CRTClientEngine: HttpClientEngine {
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
-            incomingByteBuffer.put(data)
+            incomingData.append(data)
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
@@ -203,7 +203,7 @@ public class CRTClientEngine: HttpClientEngine {
                 }
             }
             
-            response.body = HttpBody.data(incomingByteBuffer.toData())
+            response.body = HttpBody.data(incomingData)
             future.fulfill(response)
         }
         

@@ -12,22 +12,21 @@ public enum ByteStream {
     case reader(StreamReader)
 }
 
-
 extension ByteStream {
-    public static func fromData(data: Data) -> ByteStream {
+    public static func from(data: Data) -> ByteStream {
         return .buffer(ByteBuffer(data: data))
     }
     
-    public static func fromFile(path: String) -> ByteStream {
-        return .buffer(FileContent(path: path).toBytes())
+    public static func from(path: String) -> ByteStream {
+        return .buffer(FileHandle.toByteBuffer(path: path))
     }
     
-    public static func fromFile(fileHandle: FileHandle) -> ByteStream {
-        return .buffer(FileContent(fileHandle: fileHandle).toBytes())
+    public static func from(fileHandle: FileHandle) -> ByteStream {
+        return .buffer(fileHandle.toByteBuffer())
     }
     
-    public static func fromString(string: String) -> ByteStream {
-        return .buffer(StringContent(underlyingStringBuffer: string).toBytes())
+    public static func from(string: String) -> ByteStream {
+        return .buffer(string.toByteBuffer())
     }
 }
 

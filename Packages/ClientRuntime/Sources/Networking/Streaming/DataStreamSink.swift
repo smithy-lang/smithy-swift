@@ -36,7 +36,6 @@ public class DataStreamSink: StreamReader {
     init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
         self.byteBuffer = byteBuffer
         self.availableForRead = 0
-       
         self.offset = 0
     }
     
@@ -45,10 +44,9 @@ public class DataStreamSink: StreamReader {
         defer {
             lock.unlock()
         }
-        let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
         
+        let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
         buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
-  
         availableForRead -= UInt(buffer.length)
         offset += UInt(buffer.length)
         
@@ -86,10 +84,16 @@ public class DataStreamSink: StreamReader {
     }
 
     public func onError(error: ClientError) {
-        lock.lock()
-        defer {
-            lock.unlock()
+        withLockingClosure(lock) {
+            self.error = error
         }
-        self.error = error
     }
 }
+
+func withLockingClosure(_ lock: NSLock, closure: () -> Void) {
+    lock.lock()
+    closure()
+    lock.unlock()
+}
+
+
