@@ -166,7 +166,7 @@ public class CRTClientEngine: HttpClientEngine {
                 }
             }
             if let streamReader = streamReader {
-                streamReader.isClosedForWrite = true
+                streamReader.hasFinishedWriting = true
                 response.body = .stream(.reader(streamReader))
             }
             future.fulfill(response)

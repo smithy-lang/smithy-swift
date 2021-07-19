@@ -36,6 +36,10 @@ extension ByteStream {
             return bytes
         }
     }
+    
+    public static func defaultReader() -> ByteStream {
+        return .reader(DataStreamReader())
+    }
 }
 
 extension ByteStream: Equatable {

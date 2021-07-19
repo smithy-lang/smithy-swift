@@ -7,41 +7,45 @@
 import AwsCommonRuntimeKit
 import Foundation
 
-public class DataStreamSink: StreamReader {
-    public var availableForRead: UInt
-    private var _isClosedForWrite: Bool = false
+public class DataStreamReader: StreamReader {
+    private var _availableForRead: UInt
     
-    public var isClosedForWrite: Bool {
+    public var availableForRead: UInt {
+        return _availableForRead
+    }
+    
+    var _hasFinishedWriting: Bool
+    
+    public var hasFinishedWriting: Bool {
         get {
-            lock.lock()
-            defer {
-                lock.unlock()
+            withLockingClosure {
+                return _hasFinishedWriting
             }
-            return _isClosedForWrite
         }
         set {
             withLockingClosure {
-                _isClosedForWrite = newValue
+                _hasFinishedWriting = newValue
             }
         }
     }
 
-    public var byteBuffer: ByteBuffer
-    var offset: UInt
-    let lock = NSLock()
-    public var error: ClientError?
+    private var byteBuffer: ByteBuffer
+    private var offset: UInt
+    private let lock = NSLock()
+    private var error: ClientError?
 
     init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
         self.byteBuffer = byteBuffer
-        self.availableForRead = 0
+        self._availableForRead = 0
         self.offset = 0
+        self._hasFinishedWriting = false
     }
     
     public func read(maxBytes: UInt? = nil) -> ByteBuffer {
         let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
         withLockingClosure {
             buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
-            availableForRead -= UInt(buffer.length)
+            _availableForRead -= UInt(buffer.length)
             offset += UInt(buffer.length)
         }
         return buffer
@@ -61,16 +65,14 @@ public class DataStreamSink: StreamReader {
     public func write(buffer: ByteBuffer) {
         withLockingClosure {
             byteBuffer.put(buffer)
-            availableForRead += UInt(buffer.length)
+            _availableForRead += UInt(buffer.length)
         }
     }
     
     public var contentLength: Int64? {
-        lock.lock()
-        defer {
-            lock.unlock()
+        withLockingClosure() {
+            return byteBuffer.length
         }
-        return byteBuffer.length
     }
 
     public func onError(error: ClientError) {
@@ -79,13 +81,12 @@ public class DataStreamSink: StreamReader {
         }
     }
     
-    private func withLockingClosure(closure: () -> Void) {
+    private func withLockingClosure<T>(closure: () -> T) -> T {
         lock.lock()
-        closure()
-        lock.unlock()
+        defer {
+            lock.unlock()
+        }
+        return closure()
     }
 
 }
-
-
-

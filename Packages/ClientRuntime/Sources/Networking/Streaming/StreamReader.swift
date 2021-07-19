@@ -8,9 +8,8 @@ import class Foundation.FileHandle
 import class Foundation.FileManager
 
 public protocol StreamReader: AnyObject {
-    var byteBuffer: ByteBuffer { get set}
-    var availableForRead: UInt { get set }
-    var isClosedForWrite: Bool {get set}
+    var availableForRead: UInt { get }
+    var hasFinishedWriting: Bool {get set}
 
     ///Read up to a maximum number of bytes on a stream that is opened..
     ///WARNING:  Be careful as this will read the entire byte stream into memory (up to limit).

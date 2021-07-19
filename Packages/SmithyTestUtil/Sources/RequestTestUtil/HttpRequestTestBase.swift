@@ -132,7 +132,7 @@ open class HttpRequestTestBase: XCTestCase {
             case .buffer(let byteBuffer):
                 return .success(byteBuffer.toData())
             case .reader(let streamReader):
-                return .success(streamReader.byteBuffer.toData())
+                return .success(streamReader.read(maxBytes: nil).toData())
             }
            
         case .none:
