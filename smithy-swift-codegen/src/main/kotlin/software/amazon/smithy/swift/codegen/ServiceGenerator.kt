@@ -53,11 +53,8 @@ class ServiceGenerator(
             val inputShapeName = symbolProvider.toSymbol(inputShape).name
             val inputParam = "input: $inputShapeName"
 
-            val outputShape = opIndex.getOutput(op).get()
-            val outputShapeName = symbolProvider.toSymbol(outputShape).name
-            val errorTypeName = getOperationErrorShapeName(op)
-
-            val outputParam = "completion: @escaping (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
+            val outputType = getOutputType(opIndex, op, symbolProvider)
+            val outputParam = "completion: @escaping ($outputType) -> Void"
 
             val paramTerminator = ", "
 
@@ -72,6 +69,31 @@ class ServiceGenerator(
                 inputParam,
                 outputParam
             )
+        }
+
+        fun renderAsyncOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
+            val operationName = op.camelCaseName()
+            // Theoretically this shouldn't happen since we insert empty input/outputs for operations that don't have one or the other to allow for sdk evolution
+            if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
+
+            val inputShape = opIndex.getInput(op).get()
+            val inputShapeName = symbolProvider.toSymbol(inputShape).name
+            val inputParam = "input: $inputShapeName"
+
+            val outputParam = getOutputType(opIndex, op, symbolProvider)
+
+            writer.writeShapeDocs(op)
+            writer.writeAvailableAttribute(model, op)
+
+            writer.write("func \$L(\$L) async -> \$L", operationName, inputParam, outputParam)
+        }
+
+        fun getOutputType(opIndex: OperationIndex, op: OperationShape, symbolProvider: SymbolProvider): String {
+            val outputShape = opIndex.getOutput(op).get()
+            val outputShapeName = symbolProvider.toSymbol(outputShape).name
+            val errorTypeName = getOperationErrorShapeName(op)
+
+            return "SdkResult<$outputShapeName, $errorTypeName>"
         }
 
         fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {

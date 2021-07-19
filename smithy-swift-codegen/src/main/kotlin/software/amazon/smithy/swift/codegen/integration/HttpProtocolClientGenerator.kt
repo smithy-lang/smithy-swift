@@ -52,6 +52,11 @@ open class HttpProtocolClientGenerator(
         httpProtocolServiceClient.render(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
+        val rootNamespace = ctx.settings.moduleName
+        ctx.delegator.useFileWriter("./${rootNamespace}/${serviceSymbol.name}+AsyncExtension.swift") {
+            it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            renderAsyncOperationsInExtension(serviceSymbol, it)
+        }
     }
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
@@ -66,6 +71,33 @@ open class HttpProtocolClientGenerator(
                     renderMiddlewareExecutionBlock(operationsIndex, it)
                 }
                 writer.write("")
+            }
+        }
+    }
+
+    private fun renderAsyncOperationsInExtension(serviceSymbol: Symbol, writer: SwiftWriter) {
+        val topDownIndex = TopDownIndex.of(model)
+        val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.capitalizedName() }
+        val operationsIndex = OperationIndex.of(model)
+        writer.write("@available(macOS 12.0, iOS 15.0, *)")
+        writer.openBlock("public extension ${serviceSymbol.name} {", "}") {
+            operations.forEach {
+                ServiceGenerator.renderAsyncOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
+                writer.openBlock("{", "}") {
+                    renderContinuation(operationsIndex, it, writer)
+                }
+                writer.write("")
+            }
+        }
+    }
+
+    private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
+        val operationName = op.camelCaseName()
+        val continuationName = "${operationName}Continuation"
+        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOutputType(opIndex, op, ctx.symbolProvider)}, Never>")
+        writer.openBlock("return await withCheckedContinuation { (continuation: $continuationName) in", "}") {
+            writer.openBlock("$operationName(input: input) { result in", "}") {
+                writer.write("continuation.resume(returning: result)")
             }
         }
     }
