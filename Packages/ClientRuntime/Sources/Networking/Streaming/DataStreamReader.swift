@@ -14,7 +14,7 @@ public class DataStreamReader: StreamReader {
         return _availableForRead
     }
     
-    var _hasFinishedWriting: Bool
+    private var _hasFinishedWriting: Bool
     
     public var hasFinishedWriting: Bool {
         get {
@@ -69,7 +69,7 @@ public class DataStreamReader: StreamReader {
         }
     }
     
-    public var contentLength: Int64? {
+    public var contentLength: UInt? {
         withLockingClosure() {
             return byteBuffer.length
         }
