@@ -124,10 +124,20 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     private func extractData(_ httpBody: HttpBody) -> Result<Data?, Error> {
-        guard case .data(let actualData) = httpBody else {
+        switch httpBody {
+        case .data(let actualData):
+            return .success(actualData)
+        case .stream(let byteStream):
+            switch byteStream {
+            case .buffer(let byteBuffer):
+                return .success(byteBuffer.toData())
+            case .reader(let streamReader):
+                return .success(streamReader.read(maxBytes: nil).toData())
+            }
+           
+        case .none:
             return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
         }
-        return .success(actualData)
     }
 
     private func shouldCompareData(_ expected: Data?, _ actual: Data?) -> Bool {

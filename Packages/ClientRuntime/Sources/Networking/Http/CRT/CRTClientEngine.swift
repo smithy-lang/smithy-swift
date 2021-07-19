@@ -79,28 +79,6 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool
     }
     
-    private func addHttpHeaders(endpoint: Endpoint, request: SdkHttpRequest) -> HttpRequest {
-        
-        var headers = request.headers
-        
-        let contentLength: Int64 = {
-            switch request.body {
-            case .data(let data):
-                return Int64(data?.count ?? 0)
-            case .streamSource(let stream):
-                // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.unwrap().contentLength
-            case .none, .streamSink:
-                return 0
-            }
-        }()
-        
-        headers.update(name: CONTENT_LENGTH_HEADER, value: "\(contentLength)")
-        
-        request.headers = headers
-        return request.toHttpRequest(bufferSize: windowSize)
-    }
-    
     public func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
         execute(request: request).then { (result) in
             completion(result)
@@ -110,7 +88,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) -> Future<HttpResponse> {
         let isStreaming = { () -> Bool in
             switch request.body {
-            case .streamSink, .streamSource: return true
+            case .stream: return true
             default: return false
             }
         }()
@@ -151,15 +129,16 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         let response = HttpResponse()
         
-        var streamSink: StreamSink?
-        if case let HttpBody.streamSink(unwrappedStream) = request.body {
-            // we know they want to receive a stream via their request body type
-            streamSink = unwrappedStream.unwrap()
+        var streamReader: StreamReader?
+        if case let HttpBody.stream(unwrappedStream) = request.body,
+           case let ByteStream.reader(reader) = unwrappedStream {
+            streamReader = reader
         }
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
+        
+        let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
@@ -171,28 +150,25 @@ public class CRTClientEngine: HttpClientEngine {
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             
-            if let streamSink = streamSink {
+            if let streamReader = streamReader {
                 let byteBuffer = ByteBuffer(data: data)
-                streamSink.receiveData(readFrom: byteBuffer)
+                streamReader.write(buffer: byteBuffer)
             }
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
-                    if let streamSink = streamSink {
-                        streamSink.onError(error: StreamError.unknown(error))
+                    if let streamReader = streamReader {
+                        streamReader.onError(error: ClientError.crtError(error))
                     }
                     future.fail(error)
                 }
             }
-            
-            if let streamSink = streamSink {
-                response.body = HttpBody.streamSink(.provider(streamSink))
-            } else {
-                response.body = HttpBody.none
+            if let streamReader = streamReader {
+                streamReader.hasFinishedWriting = true
+                response.body = .stream(.reader(streamReader))
             }
-            
             future.fulfill(response)
         }
         
@@ -201,12 +177,12 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func makeHttpRequestOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
         let future = Future<HttpResponse>()
-        let requestWithHeaders = addHttpHeaders(endpoint: request.endpoint, request: request)
+        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         
         let response = HttpResponse()
-        let incomingByteBuffer = ByteBuffer(size: 0)
+        var incomingData = Data()
         
-        let requestOptions = HttpRequestOptions(request: requestWithHeaders) { [self] (stream, _, httpHeaders) in
+        let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
@@ -216,8 +192,8 @@ public class CRTClientEngine: HttpClientEngine {
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
-            logger.debug("incoming data")
-            incomingByteBuffer.put(data)
+            logger.debug("incoming data: \(data.count) bytes")
+            incomingData.append(data)
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
             if case let CRTError.crtError(unwrappedError) = error {
@@ -227,7 +203,7 @@ public class CRTClientEngine: HttpClientEngine {
                 }
             }
             
-            response.body = HttpBody.data(incomingByteBuffer.toData())
+            response.body = HttpBody.data(incomingData)
             future.fulfill(response)
         }
         

@@ -15,6 +15,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -50,11 +51,11 @@ abstract class MemberShapeEncodeGenerator(
             else -> shape
         }
         val optional = if ((isBoxed && isUnwrapped) || !isBoxed) "" else "?"
-
+        val memberNameOptional = "$memberName$optional"
         return when (target) {
             is TimestampShape -> encodeDateType(shape, memberName, isUnwrapped)
-            is StringShape -> if (target.hasTrait(EnumTrait::class.java)) "$memberName$optional.rawValue" else memberName
-            is BlobShape -> "$memberName$optional.base64EncodedString()"
+            is StringShape -> if (target.hasTrait<EnumTrait>()) "$memberNameOptional.rawValue" else memberName
+            is BlobShape -> if (target.hasTrait<StreamingTrait>()) "$memberNameOptional.toBytes().toData()" else "$memberNameOptional.base64EncodedString()"
             else -> if (isRecursiveMember) "$memberName.value" else memberName
         }
     }

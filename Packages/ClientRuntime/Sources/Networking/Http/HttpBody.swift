@@ -4,33 +4,36 @@
  */
 import AwsCommonRuntimeKit
 
-public enum HttpBody {
+public enum HttpBody: Equatable {
     case data(Data?)
-    case streamSource(StreamSourceProvider)
-    case streamSink(StreamSinkProvider)
+    case stream(ByteStream)
     case none
-}
-
-extension HttpBody: Equatable {
-    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
-        switch (lhs, rhs) {
-        case (let .data(unwrappedlhsData), let .data(unwrappedRhsData)):
-            return unwrappedlhsData == unwrappedRhsData
-        case (.streamSource, .streamSource):
-            return false
-        case (.streamSink, .streamSink):
-            return false
-        case (.none, .none):
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 public extension HttpBody {
     static var empty: HttpBody {
         .data(nil)
+    }
+}
+
+extension HttpBody {
+    func toAwsInputStream() -> AwsInputStream? {
+        switch self {
+        case .data(let data):
+            guard let data = data else {
+                return nil
+            }
+            return AwsInputStream(ByteBuffer(data: data))
+        case .stream(let stream):
+            switch stream {
+            case .reader(let reader):
+                return AwsInputStream(reader.read(maxBytes: nil))
+            case .buffer(let byteBuffer):
+                return AwsInputStream(byteBuffer)
+            }
+        case .none:
+            return nil
+        }
     }
 }
 
@@ -42,10 +45,8 @@ extension HttpBody: CustomDebugStringConvertible {
             if let data = data {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
-        case .streamSource(let stream):
-            let byteBuffer = ByteBuffer(size: 1024)
-            stream.unwrap().sendData(writeTo: byteBuffer)
-            bodyAsString = String(data: byteBuffer.toData(), encoding: .utf8)
+        case .stream(let stream):
+            bodyAsString = String(data: stream.toBytes().toData(), encoding: .utf8)
         default:
             bodyAsString = nil
         }

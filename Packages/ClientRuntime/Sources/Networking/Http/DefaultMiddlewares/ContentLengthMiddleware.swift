@@ -13,24 +13,24 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
                           input: MInput,
                           next: H) -> Result<MOutput, MError>
     where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+    Self.MInput == H.Input,
+    Self.MOutput == H.Output,
+    Self.Context == H.Context,
+    Self.MError == H.MiddlewareError {
         
-        let contentLength: Int64 = {
-            switch input.body {
-            case .data(let data):
-                return Int64(data?.count ?? 0)
-            case .streamSource(let stream):
-                // TODO: implement dynamic streaming with transfer-encoded-chunk header
-                return stream.unwrap().contentLength
-            case .none, .streamSink:
-                return 0
+        switch input.body {
+        case .data(let data):
+            input.headers.update(name: "Content-Length", value: String(data?.count ?? 0))
+        case .stream(let stream):
+            switch stream {
+            case .buffer(let bytes):
+                input.headers.update(name: "Content-Length", value: String(bytes.length))
+            case .reader(_):
+                input.headers.update(name: "Transfer-Encoded", value: "Chunked")
             }
-        }()
-        
-        input.headers.update(name: "Content-Length", value: String(contentLength))
+        default:
+            input.headers.update(name: "Content-Length", value: "0")
+        }
         
         return next.handle(context: context, input: input)
     }

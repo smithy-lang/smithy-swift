@@ -43,6 +43,7 @@ import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toPascalCase
@@ -281,7 +282,11 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return createSymbolBuilder(shape, "Data", "ClientRuntime", true).build()
+        if (shape.hasTrait<StreamingTrait>()) {
+            return createSymbolBuilder(shape, "ByteStream", "ClientRuntime", true).build()
+        } else {
+            return createSymbolBuilder(shape, "Data", "ClientRuntime", true).build()
+        }
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {

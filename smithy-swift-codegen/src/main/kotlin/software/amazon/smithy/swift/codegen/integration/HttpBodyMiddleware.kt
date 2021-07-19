@@ -9,6 +9,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
@@ -56,33 +57,31 @@ class HttpBodyMiddleware(
     private fun renderExplicitPayload(binding: HttpBindingDescriptor) {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
+        val dataDeclaration = "${memberName}data"
+        val bodyDeclaration = "${memberName}body"
         writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
             when (target.type) {
                 ShapeType.BLOB -> {
-                    // FIXME handle streaming properly
                     val isBinaryStream =
-                        ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
-                    writer.write("let data = \$L", memberName)
-                    writer.write("let body = HttpBody.data(data)")
-                    writer.write("input.builder.withBody(body)")
+                        ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
+                    val bodyType = if (isBinaryStream) ".stream" else ".data"
+                    writer.write("let $dataDeclaration = \$L", memberName)
+                    writer.write("let $bodyDeclaration = HttpBody$bodyType($dataDeclaration)")
+                    writer.write("input.builder.withBody($bodyDeclaration)")
                 }
                 ShapeType.STRING -> {
-                    val contents = if (target.hasTrait(EnumTrait::class.java)) {
-                        "$memberName.rawValue"
-                    } else {
-                        memberName
-                    }
-                    writer.write("let data = \$L.data(using: .utf8)", contents)
-                    writer.write("let body = HttpBody.data(data)")
-                    writer.write("input.builder.withBody(body)")
+                    val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
+                    writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
+                    writer.write("let $bodyDeclaration = HttpBody.data($dataDeclaration)")
+                    writer.write("input.builder.withBody($bodyDeclaration)")
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     // delegate to the member encode function
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let encoder = context.getEncoder()")
-                        writer.write("let data = try encoder.encode(\$L)", memberName)
-                        writer.write("let body = HttpBody.data(data)")
-                        writer.write("input.builder.withBody(body)")
+                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        writer.write("let $bodyDeclaration = HttpBody.data($dataDeclaration)")
+                        writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
                     writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
@@ -92,9 +91,9 @@ class HttpBodyMiddleware(
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let encoder = context.getEncoder()")
-                        writer.write("let data = try encoder.encode(\$L)", memberName)
-                        writer.write("let body = HttpBody.data(data)")
-                        writer.write("input.builder.withBody(body)")
+                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        writer.write("let $bodyDeclaration = HttpBody.data($dataDeclaration)")
+                        writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
                     writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
