@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import Foundation
+//import Foundation
+import AwsCommonRuntimeKit
 
 extension StringProtocol where Self.Index == String.Index {
     func escape(_ characterSet: [(character: String, escapedCharacter: String)]) -> String {
@@ -105,5 +106,11 @@ extension String {
             return encodedString
         }
         return self
+    }
+}
+
+extension String {
+    func toByteBuffer() -> ByteBuffer {
+        return ByteBuffer(data: self.data(using: .utf8) ?? Data())
     }
 }

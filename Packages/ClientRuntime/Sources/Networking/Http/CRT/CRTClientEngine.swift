@@ -192,7 +192,7 @@ public class CRTClientEngine: HttpClientEngine {
             response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
                 ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
-            logger.debug("incoming data")
+            logger.debug("incoming data: \(data.count) bytes")
             incomingData.append(data)
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")

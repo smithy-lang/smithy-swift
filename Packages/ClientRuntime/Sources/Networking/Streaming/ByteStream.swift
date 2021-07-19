@@ -17,16 +17,12 @@ extension ByteStream {
         return .buffer(ByteBuffer(data: data))
     }
     
-    public static func from(path: String) -> ByteStream {
-        return .buffer(FileHandle.toByteBuffer(path: path))
-    }
-    
     public static func from(fileHandle: FileHandle) -> ByteStream {
         return .buffer(fileHandle.toByteBuffer())
     }
     
-    public static func from(string: String) -> ByteStream {
-        return .buffer(string.toByteBuffer())
+    public static func from(stringValue: String) -> ByteStream {
+        return .buffer(stringValue.toByteBuffer())
     }
 }
 

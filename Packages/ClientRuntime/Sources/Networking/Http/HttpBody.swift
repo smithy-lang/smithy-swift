@@ -20,11 +20,10 @@ extension HttpBody {
     func toAwsInputStream() -> AwsInputStream? {
         switch self {
         case .data(let data):
-            if let data = data {
-                return AwsInputStream(ByteBuffer(data: data))
-            } else {
+            guard let data = data else {
                 return nil
             }
+            return AwsInputStream(ByteBuffer(data: data))
         case .stream(let stream):
             switch stream {
             case .reader(let reader):
