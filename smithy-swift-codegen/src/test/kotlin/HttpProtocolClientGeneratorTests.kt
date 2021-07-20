@@ -4,100 +4,76 @@
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.ClientProperty
-import software.amazon.smithy.swift.codegen.integration.DefaultConfig
-import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
-import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
 
-    private fun setUpTest(smithyFile: String, serviceShapeId: String, writer: SwiftWriter): HttpProtocolClientGenerator {
-        val ctx = TestContext.initContextFrom(smithyFile, serviceShapeId)
-
-        val features = mutableListOf<ClientProperty>()
-        features.add(DefaultRequestEncoder())
-        features.add(DefaultResponseDecoder())
-        val config = DefaultConfig(writer, "ExampleClient")
-
-        val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, writer, features, config,
-            HttpTraitResolver(ctx.generationCtx),
-            "application/json",
-            MockRestJsonHttpProtocolCustomizations()
-        )
-        return generator
-    }
-
     @Test
     fun `it renders client initialization block`() {
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-
-        writer.toString().shouldContainOnlyOnce(
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        contents.shouldContainOnlyOnce(
             """
-                public class ExampleClient {
-                    let client: SdkHttpClient
-                    let config: ExampleClientConfiguration
-                    let serviceName = "Example"
-                    let encoder: RequestEncoder
-                    let decoder: ResponseDecoder
-                
-                    public init(config: ExampleClientConfiguration) {
-                        client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
-                        self.encoder = config.encoder
-                        self.decoder = config.decoder
-                        self.config = config
+            public class RestJsonProtocolClient {
+                let client: SdkHttpClient
+                let config: RestJsonProtocolClientConfiguration
+                let serviceName = "Rest Json Protocol"
+                let encoder: RequestEncoder
+                let decoder: ResponseDecoder
+            
+                public init(config: RestJsonProtocolClientConfiguration) {
+                    client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+                    self.encoder = config.encoder
+                    self.decoder = config.decoder
+                    self.config = config
+                }
+            
+                deinit {
+                    client.close()
+                }
+            
+                public class RestJsonProtocolClientConfiguration: ClientRuntime.Configuration {
+            
+                    public let clientLogMode: ClientLogMode
+                    public let logger: LogAgent
+            
+                    public init (
+                        clientLogMode: ClientLogMode = .request,
+                        logger: LogAgent? = nil
+                    ) throws
+                    {
+                        self.clientLogMode = clientLogMode
+                        self.logger = logger ?? SwiftLogger(label: "RestJsonProtocolClient")
                     }
-                
-                    deinit {
-                        client.close()
-                    }
-                
-                    public class ExampleClientConfiguration: ClientRuntime.Configuration {
-                
-                        public let clientLogMode: ClientLogMode
-                        public let logger: LogAgent
-                
-                        public init (
-                            clientLogMode: ClientLogMode = .request,
-                            logger: LogAgent? = nil
-                        ) throws
-                        {
-                            self.clientLogMode = clientLogMode
-                            self.logger = logger ?? SwiftLogger(label: "ExampleClient")
-                        }
-                
-                        public static func `default`() throws -> ExampleClientConfiguration {
-                            return try ExampleClientConfiguration()
-                        }
+            
+                    public static func `default`() throws -> RestJsonProtocolClientConfiguration {
+                        return try RestJsonProtocolClientConfiguration()
                     }
                 }
-
-                public struct ExampleClientLogHandlerFactory: SDKLogHandlerFactory {
-                    public var label = "ExampleClient"
-                    let logLevel: SDKLogLevel
-                    public func construct(label: String) -> LogHandler {
-                        var handler = StreamLogHandler.standardOutput(label: label)
-                        handler.logLevel = logLevel.toLoggerType()
-                        return handler
-                    }
-                    public init(logLevel: SDKLogLevel) {
-                        self.logLevel = logLevel
-                    }
+            }
+            
+            public struct RestJsonProtocolClientLogHandlerFactory: SDKLogHandlerFactory {
+                public var label = "RestJsonProtocolClient"
+                let logLevel: SDKLogLevel
+                public func construct(label: String) -> LogHandler {
+                    var handler = StreamLogHandler.standardOutput(label: label)
+                    handler.logLevel = logLevel.toLoggerType()
+                    return handler
                 }
+                public init(logLevel: SDKLogLevel) {
+                    self.logLevel = logLevel
+                }
+            }
             """.trimIndent()
         )
     }
 
     @Test
     fun `it renders host prefix with label in context correctly`() {
-        val writer = SwiftWriter("test")
-        setUpTest("host-prefix-operation.smithy", "com.test#Example", writer).render()
+        val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
@@ -110,129 +86,92 @@ class HttpProtocolClientGeneratorTests {
                       .withLogger(value: config.logger)
                       .withHostPrefix(value: "\(input.foo).data.")
         """
-        writer.toString().shouldContainOnlyOnce(expectedFragment)
+        contents.shouldContainOnlyOnce(expectedFragment)
     }
 
     @Test
     fun `it renders operation implementations in extension`() {
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-        writer.toString().shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        contents.shouldContainOnlyOnce("extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {")
     }
 
-    // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
-//     @Test
-//     fun `it renders operation bodies`() {
-//         val expectedBodies = listOf(
-// """
-//    public func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
-//    {
-//        let path = "/foo"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFoo")
-//        var operation = OperationStack<GetFooInput, GetFooOutput, GetFooError>(id: "getFoo")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)
-//    {
-//        let path = "/foo-no-input"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooNoInput")
-//        var operation = OperationStack<GetFooNoInputInput, GetFooNoInputOutput, GetFooNoInputError>(id: "getFooNoInput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
-//    {
-//        let path = "/foo-no-output"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooNoOutput")
-//        var operation = OperationStack<GetFooNoOutputInput, GetFooNoOutputOutput, GetFooNoOutputError>(id: "getFooNoOutput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)
-//    {
-//        let path = "/foo-streaming-input"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .post)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooStreamingInput")
-//        var operation = OperationStack<GetFooStreamingInputInput, GetFooStreamingInputOutput, GetFooStreamingInputError>(id: "getFooStreamingInput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)
-//    {
-//        let path = "/foo-streaming-input-no-output"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .post)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooStreamingInputNoOutput")
-//        var operation = OperationStack<GetFooStreamingInputNoOutputInput, GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>(id: "getFooStreamingInputNoOutput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """
-//         )
-//         expectedBodies.forEach {
-//             commonTestContents.shouldContainOnlyOnce(it)
-//         }
-//     }
+    @Test
+    fun `it renders async operation implementations in extension`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+Async.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        #if swift(>=5.5)
+        @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, macCatalyst 15.0, *)
+        public extension RestJsonProtocolClient {
+            func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
+            {
+                typealias allocateWidgetContinuation = CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
+                return try await withCheckedThrowingContinuation { (continuation: allocateWidgetContinuation) in
+                    allocateWidget(input: input) { result in
+                        switch result {
+                            case .success(let output):
+                                continuation.resume(returning: output)
+                            case .failure(let error):
+                                continuation.resume(throwing: error)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 
     @Test
-    fun `it syntactic sanity checks`() {
-        // sanity check since we are testing fragments
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-        var openBraces = 0
-        var closedBraces = 0
-        var openParens = 0
-        var closedParens = 0
-        writer.toString().forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
+    fun `it renders an operation body`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected = """
+        extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
+            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
+            {
+                let urlPath = "/input/AllocateWidget"
+                let context = HttpContextBuilder()
+                              .withEncoder(value: encoder)
+                              .withDecoder(value: decoder)
+                              .withMethod(value: .post)
+                              .withPath(value: urlPath)
+                              .withServiceName(value: serviceName)
+                              .withOperation(value: "allocateWidget")
+                              .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                              .withLogger(value: config.logger)
+                var operation = OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
+                operation.addDefaultOperationMiddlewares()
+                operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Result<OperationOutput<AllocateWidgetOutputResponse>, SdkError<AllocateWidgetOutputError>> in
+                    let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
+                    var copiedInput = input
+                    if input.clientToken == nil {
+                        copiedInput.clientToken = idempotencyTokenGenerator.generateToken()
+                    }
+                    return next.handle(context: context, input: copiedInput)
+                }
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputHeadersMiddleware())
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputQueryItemMiddleware())
+                operation.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputBodyMiddleware())
+                operation.deserializeStep.intercept(position: .before, middleware: LoggerMiddleware(clientLogMode: config.clientLogMode))
+                let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
+                completion(result)
             }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+            model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
         }
-        Assertions.assertEquals(openBraces, closedBraces)
-        Assertions.assertEquals(openParens, closedParens)
+
+        context.generator.generateProtocolClient(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        return context
     }
 }

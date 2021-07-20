@@ -53,11 +53,8 @@ class ServiceGenerator(
             val inputShapeName = symbolProvider.toSymbol(inputShape).name
             val inputParam = "input: $inputShapeName"
 
-            val outputShape = opIndex.getOutput(op).get()
-            val outputShapeName = symbolProvider.toSymbol(outputShape).name
-            val errorTypeName = getOperationErrorShapeName(op)
-
-            val outputParam = "completion: @escaping (SdkResult<$outputShapeName, $errorTypeName>) -> Void"
+            val outputType = createOutputType(opIndex, op, symbolProvider)
+            val outputParam = "completion: @escaping ($outputType) -> Void"
 
             val paramTerminator = ", "
 
@@ -72,6 +69,30 @@ class ServiceGenerator(
                 inputParam,
                 outputParam
             )
+        }
+
+        fun renderAsyncOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
+            if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
+
+            val operationName = op.camelCaseName()
+            val inputShape = opIndex.getInput(op).get()
+            val inputSymbolName = symbolProvider.toSymbol(inputShape).name
+            val inputParam = "input: $inputSymbolName"
+
+            val outputType = getOperationOutputShapeName(symbolProvider, opIndex, op)
+
+            writer.writeShapeDocs(op)
+            writer.writeAvailableAttribute(model, op)
+
+            writer.write("func \$L(\$L) async throws -> \$L", operationName, inputParam, outputType)
+        }
+
+        fun createOutputType(opIndex: OperationIndex, op: OperationShape, symbolProvider: SymbolProvider): String {
+            val outputShape = opIndex.getOutput(op).get()
+            val outputShapeName = symbolProvider.toSymbol(outputShape).name
+            val errorTypeName = getOperationErrorShapeName(op)
+
+            return "SdkResult<$outputShapeName, $errorTypeName>"
         }
 
         fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
@@ -160,7 +181,7 @@ class ServiceGenerator(
 
         delegator.useShapeWriter(operationErrorSymbol) { writer ->
             writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName: Equatable {", "}") {
+            writer.openBlock("public enum $operationErrorName: Swift.Error, Equatable {", "}") {
                 for (errorShape in errorShapes) {
                     val errorShapeName = symbolProvider.toSymbol(errorShape).name
                     writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)

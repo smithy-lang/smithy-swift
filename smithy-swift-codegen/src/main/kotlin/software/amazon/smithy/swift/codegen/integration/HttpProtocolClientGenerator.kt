@@ -52,6 +52,13 @@ open class HttpProtocolClientGenerator(
         httpProtocolServiceClient.render(serviceSymbol)
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
+        val rootNamespace = ctx.settings.moduleName
+        ctx.delegator.useFileWriter("./$rootNamespace/${serviceSymbol.name}+Async.swift") {
+            it.write("#if swift(>=5.5)")
+            it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            renderAsyncOperationsInExtension(serviceSymbol, it)
+            it.write("#endif")
+        }
     }
 
     private fun renderOperationsInExtension(serviceSymbol: Symbol) {
@@ -66,6 +73,38 @@ open class HttpProtocolClientGenerator(
                     renderMiddlewareExecutionBlock(operationsIndex, it)
                 }
                 writer.write("")
+            }
+        }
+    }
+
+    private fun renderAsyncOperationsInExtension(serviceSymbol: Symbol, writer: SwiftWriter) {
+        val topDownIndex = TopDownIndex.of(model)
+        val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.capitalizedName() }
+        val operationsIndex = OperationIndex.of(model)
+        writer.write("@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, macCatalyst 15.0, *)")
+        writer.openBlock("public extension ${serviceSymbol.name} {", "}") {
+            operations.forEach {
+                ServiceGenerator.renderAsyncOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
+                writer.openBlock("{", "}") {
+                    renderContinuation(operationsIndex, it, writer)
+                }
+                writer.write("")
+            }
+        }
+    }
+
+    private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
+        val operationName = op.camelCaseName()
+        val continuationName = "${operationName}Continuation"
+        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, Swift.Error>")
+        writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
+            writer.openBlock("$operationName(input: input) { result in", "}") {
+                writer.openBlock("switch result {", "}") {
+                    writer.write("case .success(let output):")
+                    writer.indent().write("continuation.resume(returning: output)").dedent()
+                    writer.write("case .failure(let error):")
+                    writer.indent().write("continuation.resume(throwing: error)").dedent()
+                }
             }
         }
     }
