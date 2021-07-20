@@ -21,7 +21,7 @@ enum class SwiftDependency(
     SWIFT_LOG("Logging", null, "", "", "", ""),
     CLIENT_RUNTIME(
         "ClientRuntime",
-        "master",
+        "main",
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift/Packages", "Packages", "SMITHY_SWIFT_CI_DIR") + "/Packages",
@@ -30,7 +30,7 @@ enum class SwiftDependency(
     XCTest("XCTest", null, "", "", "", ""),
     SMITHY_TEST_UTIL(
         "SmithyTestUtil",
-        "master",
+        "main",
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift/Packages", "Packages", "SMITHY_SWIFT_CI_DIR") + "/Packages",
