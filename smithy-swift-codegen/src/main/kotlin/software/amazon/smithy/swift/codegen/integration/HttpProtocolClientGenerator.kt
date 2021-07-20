@@ -81,7 +81,7 @@ open class HttpProtocolClientGenerator(
         val topDownIndex = TopDownIndex.of(model)
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.capitalizedName() }
         val operationsIndex = OperationIndex.of(model)
-        writer.write("@available(macOS 12.0, iOS 15.0, *)")
+        writer.write("@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, macCatalyst 15.0, *)")
         writer.openBlock("public extension ${serviceSymbol.name} {", "}") {
             operations.forEach {
                 ServiceGenerator.renderAsyncOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
