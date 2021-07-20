@@ -103,24 +103,14 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+AsyncExtension.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-#if swift(>=5.5)
-@available(macOS 12.0, iOS 15.0, *)
-public extension RestJsonProtocolClient {
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it renders async operation continuation call`() {
-        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+AsyncExtension.swift")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-            func getFoo(input: GetFooInput) async -> SdkResult<GetFooOutputResponse, GetFooOutputError>
+        #if swift(>=5.5)
+        @available(macOS 12.0, iOS 15.0, *)
+        public extension RestJsonProtocolClient {
+            func allocateWidget(input: AllocateWidgetInput) async -> SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>
             {
-                typealias getFooContinuation = CheckedContinuation<SdkResult<GetFooOutputResponse, GetFooOutputError>, Never>
-                return await withCheckedContinuation { (continuation: getFooContinuation) in
-                    getFoo(input: input) { result in
+                typealias allocateWidgetContinuation = CheckedContinuation<SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>, Never>
+                return await withCheckedContinuation { (continuation: allocateWidgetContinuation) in
+                    allocateWidget(input: input) { result in
                         continuation.resume(returning: result)
                     }
                 }
@@ -129,100 +119,46 @@ public extension RestJsonProtocolClient {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
-//     @Test
-//     fun `it renders operation bodies`() {
-//         val expectedBodies = listOf(
-// """
-//    public func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
-//    {
-//        let path = "/foo"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFoo")
-//        var operation = OperationStack<GetFooInput, GetFooOutput, GetFooError>(id: "getFoo")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooNoInput(input: GetFooNoInputInput, completion: @escaping (SdkResult<GetFooNoInputOutput, GetFooNoInputError>) -> Void)
-//    {
-//        let path = "/foo-no-input"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooNoInput")
-//        var operation = OperationStack<GetFooNoInputInput, GetFooNoInputOutput, GetFooNoInputError>(id: "getFooNoInput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooNoOutput(input: GetFooNoOutputInput, completion: @escaping (SdkResult<GetFooNoOutputOutput, GetFooNoOutputError>) -> Void)
-//    {
-//        let path = "/foo-no-output"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .get)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooNoOutput")
-//        var operation = OperationStack<GetFooNoOutputInput, GetFooNoOutputOutput, GetFooNoOutputError>(id: "getFooNoOutput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooStreamingInput(input: GetFooStreamingInputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputOutput, GetFooStreamingInputError>) -> Void)
-//    {
-//        let path = "/foo-streaming-input"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .post)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooStreamingInput")
-//        var operation = OperationStack<GetFooStreamingInputInput, GetFooStreamingInputOutput, GetFooStreamingInputError>(id: "getFooStreamingInput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """,
-// """
-//    public func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput, streamSource: StreamSource, completion: @escaping (SdkResult<GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>) -> Void)
-//    {
-//        let path = "/foo-streaming-input-no-output"
-//        let context = HttpContextBuilder()
-//                      .withEncoder(value: encoder)
-//                      .withDecoder(value: decoder)
-//                      .withMethod(value: .post)
-//                      .withPath(value: path)
-//                      .withServiceName(value: serviceName)
-//                      .withOperation(value: "getFooStreamingInputNoOutput")
-//        var operation = OperationStack<GetFooStreamingInputNoOutputInput, GetFooStreamingInputNoOutputOutput, GetFooStreamingInputNoOutputError>(id: "getFooStreamingInputNoOutput")
-//        operation.addDefaultOperationMiddlewares()
-//        let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-//        completion(result)
-//    }
-// """
-//         )
-//         expectedBodies.forEach {
-//             commonTestContents.shouldContainOnlyOnce(it)
-//         }
-//     }
+    @Test
+    fun `it renders an operation body`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected = """
+        extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
+            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
+            {
+                let urlPath = "/input/AllocateWidget"
+                let context = HttpContextBuilder()
+                              .withEncoder(value: encoder)
+                              .withDecoder(value: decoder)
+                              .withMethod(value: .post)
+                              .withPath(value: urlPath)
+                              .withServiceName(value: serviceName)
+                              .withOperation(value: "allocateWidget")
+                              .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                              .withLogger(value: config.logger)
+                var operation = OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
+                operation.addDefaultOperationMiddlewares()
+                operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Result<OperationOutput<AllocateWidgetOutputResponse>, SdkError<AllocateWidgetOutputError>> in
+                    let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
+                    var copiedInput = input
+                    if input.clientToken == nil {
+                        copiedInput.clientToken = idempotencyTokenGenerator.generateToken()
+                    }
+                    return next.handle(context: context, input: copiedInput)
+                }
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputHeadersMiddleware())
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputQueryItemMiddleware())
+                operation.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
+                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputBodyMiddleware())
+                operation.deserializeStep.intercept(position: .before, middleware: LoggerMiddleware(clientLogMode: config.clientLogMode))
+                let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
+                completion(result)
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
