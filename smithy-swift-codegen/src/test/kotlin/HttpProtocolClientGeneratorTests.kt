@@ -4,100 +4,76 @@
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.ClientProperty
-import software.amazon.smithy.swift.codegen.integration.DefaultConfig
-import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
-import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTests {
 
-    private fun setUpTest(smithyFile: String, serviceShapeId: String, writer: SwiftWriter): HttpProtocolClientGenerator {
-        val ctx = TestContext.initContextFrom(smithyFile, serviceShapeId)
-
-        val features = mutableListOf<ClientProperty>()
-        features.add(DefaultRequestEncoder())
-        features.add(DefaultResponseDecoder())
-        val config = DefaultConfig(writer, "ExampleClient")
-
-        val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, writer, features, config,
-            HttpTraitResolver(ctx.generationCtx),
-            "application/json",
-            MockRestJsonHttpProtocolCustomizations()
-        )
-        return generator
-    }
-
     @Test
     fun `it renders client initialization block`() {
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-
-        writer.toString().shouldContainOnlyOnce(
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        contents.shouldContainOnlyOnce(
             """
-                public class ExampleClient {
-                    let client: SdkHttpClient
-                    let config: ExampleClientConfiguration
-                    let serviceName = "Example"
-                    let encoder: RequestEncoder
-                    let decoder: ResponseDecoder
-                
-                    public init(config: ExampleClientConfiguration) {
-                        client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
-                        self.encoder = config.encoder
-                        self.decoder = config.decoder
-                        self.config = config
+            public class RestJsonProtocolClient {
+                let client: SdkHttpClient
+                let config: RestJsonProtocolClientConfiguration
+                let serviceName = "Rest Json Protocol"
+                let encoder: RequestEncoder
+                let decoder: ResponseDecoder
+            
+                public init(config: RestJsonProtocolClientConfiguration) {
+                    client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+                    self.encoder = config.encoder
+                    self.decoder = config.decoder
+                    self.config = config
+                }
+            
+                deinit {
+                    client.close()
+                }
+            
+                public class RestJsonProtocolClientConfiguration: ClientRuntime.Configuration {
+            
+                    public let clientLogMode: ClientLogMode
+                    public let logger: LogAgent
+            
+                    public init (
+                        clientLogMode: ClientLogMode = .request,
+                        logger: LogAgent? = nil
+                    ) throws
+                    {
+                        self.clientLogMode = clientLogMode
+                        self.logger = logger ?? SwiftLogger(label: "RestJsonProtocolClient")
                     }
-                
-                    deinit {
-                        client.close()
-                    }
-                
-                    public class ExampleClientConfiguration: ClientRuntime.Configuration {
-                
-                        public let clientLogMode: ClientLogMode
-                        public let logger: LogAgent
-                
-                        public init (
-                            clientLogMode: ClientLogMode = .request,
-                            logger: LogAgent? = nil
-                        ) throws
-                        {
-                            self.clientLogMode = clientLogMode
-                            self.logger = logger ?? SwiftLogger(label: "ExampleClient")
-                        }
-                
-                        public static func `default`() throws -> ExampleClientConfiguration {
-                            return try ExampleClientConfiguration()
-                        }
+            
+                    public static func `default`() throws -> RestJsonProtocolClientConfiguration {
+                        return try RestJsonProtocolClientConfiguration()
                     }
                 }
-
-                public struct ExampleClientLogHandlerFactory: SDKLogHandlerFactory {
-                    public var label = "ExampleClient"
-                    let logLevel: SDKLogLevel
-                    public func construct(label: String) -> LogHandler {
-                        var handler = StreamLogHandler.standardOutput(label: label)
-                        handler.logLevel = logLevel.toLoggerType()
-                        return handler
-                    }
-                    public init(logLevel: SDKLogLevel) {
-                        self.logLevel = logLevel
-                    }
+            }
+            
+            public struct RestJsonProtocolClientLogHandlerFactory: SDKLogHandlerFactory {
+                public var label = "RestJsonProtocolClient"
+                let logLevel: SDKLogLevel
+                public func construct(label: String) -> LogHandler {
+                    var handler = StreamLogHandler.standardOutput(label: label)
+                    handler.logLevel = logLevel.toLoggerType()
+                    return handler
                 }
+                public init(logLevel: SDKLogLevel) {
+                    self.logLevel = logLevel
+                }
+            }
             """.trimIndent()
         )
     }
 
     @Test
     fun `it renders host prefix with label in context correctly`() {
-        val writer = SwiftWriter("test")
-        setUpTest("host-prefix-operation.smithy", "com.test#Example", writer).render()
+        val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
@@ -110,14 +86,47 @@ class HttpProtocolClientGeneratorTests {
                       .withLogger(value: config.logger)
                       .withHostPrefix(value: "\(input.foo).data.")
         """
-        writer.toString().shouldContainOnlyOnce(expectedFragment)
+        contents.shouldContainOnlyOnce(expectedFragment)
     }
 
     @Test
     fun `it renders operation implementations in extension`() {
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-        writer.toString().shouldContainOnlyOnce("extension ExampleClient: ExampleClientProtocol {")
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        contents.shouldContainOnlyOnce("extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {")
+    }
+
+    @Test
+    fun `it renders async operation implementations in extension`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+AsyncExtension.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+#if swift(>=5.5)
+@available(macOS 12.0, iOS 15.0, *)
+public extension RestJsonProtocolClient {
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it renders async operation continuation call`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+AsyncExtension.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+            func getFoo(input: GetFooInput) async -> SdkResult<GetFooOutputResponse, GetFooOutputError>
+            {
+                typealias getFooContinuation = CheckedContinuation<SdkResult<GetFooOutputResponse, GetFooOutputError>, Never>
+                return await withCheckedContinuation { (continuation: getFooContinuation) in
+                    getFoo(input: input) { result in
+                        continuation.resume(returning: result)
+                    }
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
     }
 
     // FIXME: this test won't pass no matter what I do. Screw it. commenting out for now.
@@ -215,24 +224,13 @@ class HttpProtocolClientGeneratorTests {
 //         }
 //     }
 
-    @Test
-    fun `it syntactic sanity checks`() {
-        // sanity check since we are testing fragments
-        val writer = SwiftWriter("test")
-        setUpTest("service-generator-test-operations.smithy", "com.test#Example", writer).render()
-        var openBraces = 0
-        var closedBraces = 0
-        var openParens = 0
-        var closedParens = 0
-        writer.toString().forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
-            }
+    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+            model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
         }
-        Assertions.assertEquals(openBraces, closedBraces)
-        Assertions.assertEquals(openParens, closedParens)
+
+        context.generator.generateProtocolClient(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        return context
     }
 }
