@@ -100,18 +100,23 @@ class HttpProtocolClientGeneratorTests {
     @Test
     fun `it renders async operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+AsyncExtension.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+Async.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
         #if swift(>=5.5)
         @available(macOS 12.0, iOS 15.0, *)
         public extension RestJsonProtocolClient {
-            func allocateWidget(input: AllocateWidgetInput) async -> SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>
+            func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
-                typealias allocateWidgetContinuation = CheckedContinuation<SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>, Never>
-                return await withCheckedContinuation { (continuation: allocateWidgetContinuation) in
+                typealias allocateWidgetContinuation = CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
+                return try await withCheckedThrowingContinuation { (continuation: allocateWidgetContinuation) in
                     allocateWidget(input: input) { result in
-                        continuation.resume(returning: result)
+                        switch result {
+                            case .success(let output):
+                                continuation.resume(returning: output)
+                            case .failure(let error):
+                                continuation.resume(throwing: error)
+                        }
                     }
                 }
             }

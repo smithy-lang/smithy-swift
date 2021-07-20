@@ -53,7 +53,7 @@ open class HttpProtocolClientGenerator(
         writer.write("")
         renderOperationsInExtension(serviceSymbol)
         val rootNamespace = ctx.settings.moduleName
-        ctx.delegator.useFileWriter("./$rootNamespace/${serviceSymbol.name}+AsyncExtension.swift") {
+        ctx.delegator.useFileWriter("./$rootNamespace/${serviceSymbol.name}+Async.swift") {
             it.write("#if swift(>=5.5)")
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             renderAsyncOperationsInExtension(serviceSymbol, it)
@@ -96,10 +96,15 @@ open class HttpProtocolClientGenerator(
     private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
         val operationName = op.camelCaseName()
         val continuationName = "${operationName}Continuation"
-        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOutputType(opIndex, op, ctx.symbolProvider)}, Never>")
-        writer.openBlock("return await withCheckedContinuation { (continuation: $continuationName) in", "}") {
+        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, Swift.Error>")
+        writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
             writer.openBlock("$operationName(input: input) { result in", "}") {
-                writer.write("continuation.resume(returning: result)")
+                writer.openBlock("switch result {", "}") {
+                    writer.write("case .success(let output):")
+                    writer.indent().write("continuation.resume(returning: output)").dedent()
+                    writer.write("case .failure(let error):")
+                    writer.indent().write("continuation.resume(throwing: error)").dedent()
+                }
             }
         }
     }
