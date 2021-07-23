@@ -11,19 +11,19 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
         op: OperationShape,
         operationStackName: String
     ) {
-        val middlewares = operationMiddlewares(ctx)
+        val middlewares = operationMiddlewares(ctx, op)
         for (middleware in middlewares) {
             middleware.render(ctx, writer, ctx.service, op, operationStackName)
         }
     }
 
-    override fun operationMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<OperationMiddlewareRenderable> {
-        val defaultMiddleware = baseMiddlewares(ctx)
+    override fun operationMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): List<OperationMiddlewareRenderable> {
+        val defaultMiddleware = baseMiddlewares(ctx, op)
         return ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
             integration.customizeMiddleware(ctx, middleware)
         }
     }
-    override fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<OperationMiddlewareRenderable> {
+    override fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): List<OperationMiddlewareRenderable> {
         return listOf(LoggingMiddleware())
     }
 }
