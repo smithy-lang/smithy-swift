@@ -83,6 +83,28 @@ class HttpHeaderMiddleware(
         }
     }
 
+    private fun renderPrefixHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
+        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
+            ctx,
+            memberName,
+            member,
+            HttpBinding.Location.HEADER,
+            bindingIndex,
+            defaultTimestampFormat
+        )
+        if (requiresDoCatch) {
+            renderDoCatch(headerValue, paramName)
+        } else {
+            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
+                writer.openBlock("if $headerValue != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+                    writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+                }
+            } else {
+                writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
+            }
+        }
+    }
+
     private fun generatePrefixHeaders() {
         prefixHeaderBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
@@ -96,53 +118,17 @@ class HttpHeaderMiddleware(
 
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
                     if (mapValueShapeTarget is CollectionShape) {
-                        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                            ctx,
-                            "headerValue",
-                            mapValueShapeTarget.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex,
-                            defaultTimestampFormat
-                        )
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    var (unwrappedHeaderValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                                        ctx,
-                                        "unwrappedHeaderValue",
-                                        mapValueShapeTarget.member,
-                                        HttpBinding.Location.HEADER,
-                                        bindingIndex,
-                                        defaultTimestampFormat
-                                    )
-                                    if (requiresDoCatch) {
-                                        renderDoCatch(unwrappedHeaderValue, paramName)
-                                    } else {
-                                        writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($unwrappedHeaderValue))")
-                                    }
+                                    renderPrefixHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", paramName, true)
                                 }
                             } else {
-                                if (requiresDoCatch) {
-                                    renderDoCatch(headerValue, paramName)
-                                } else {
-                                    writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                                }
+                                renderPrefixHeader(mapValueShapeTarget.member, "headerValue", paramName, true)
                             }
                         }
                     } else {
-                        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                            ctx,
-                            "prefixHeaderMapValue",
-                            it.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex,
-                            defaultTimestampFormat
-                        )
-                        if (requiresDoCatch) {
-                            renderDoCatch(headerValue, paramName)
-                        } else {
-                            writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                        }
+                        renderPrefixHeader(it.member, "prefixHeaderMapValue", paramName, false)
                     }
                 }
             }
