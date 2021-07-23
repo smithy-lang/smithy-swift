@@ -124,7 +124,7 @@ class HttpQueryItemMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
-            if(member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
+            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
                     writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
