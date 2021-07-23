@@ -83,28 +83,6 @@ class HttpHeaderMiddleware(
         }
     }
 
-    private fun renderPrefixHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
-        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-            ctx,
-            memberName,
-            member,
-            HttpBinding.Location.HEADER,
-            bindingIndex,
-            defaultTimestampFormat
-        )
-        if (requiresDoCatch) {
-            renderDoCatch(headerValue, paramName)
-        } else {
-            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
-                writer.openBlock("if $headerValue != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
-                    writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                }
-            } else {
-                writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-            }
-        }
-    }
-
     private fun generatePrefixHeaders() {
         prefixHeaderBindings.forEach {
             val memberName = ctx.symbolProvider.toMemberName(it.member)
@@ -121,14 +99,14 @@ class HttpHeaderMiddleware(
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    renderPrefixHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", paramName, true)
+                                    renderHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", "$paramName(prefixHeaderMapKey)", true)
                                 }
                             } else {
-                                renderPrefixHeader(mapValueShapeTarget.member, "headerValue", paramName, true)
+                                renderHeader(mapValueShapeTarget.member, "headerValue", "$paramName(prefixHeaderMapKey)", true)
                             }
                         }
                     } else {
-                        renderPrefixHeader(it.member, "prefixHeaderMapValue", paramName, false)
+                        renderHeader(it.member, "prefixHeaderMapValue", "$paramName(prefixHeaderMapKey)", false)
                     }
                 }
             }

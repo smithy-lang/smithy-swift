@@ -77,14 +77,10 @@ fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
 
 fun MemberShape.needsEncodingCheck(model: Model, symbolProvider: SymbolProvider): Boolean {
     val targetShape = model.expectShape(this.target)
-    val targetSymbol = symbolProvider.toSymbol(this)
-
-    return if ((targetShape.isNumberShape || targetShape.isBooleanShape) && !targetSymbol.isBoxed() && this.defaultValue(symbolProvider) != null) {
-        when (this.hasTrait<RequiredTrait>()) {
-            true -> false // always serialize a required member even if it's the default
-            else -> true
-        }
-    } else {
-        false
-    }
+    val isNotBoxed = !symbolProvider.toSymbol(this).isBoxed()
+    val isPrimitiveShape = (targetShape.isNumberShape || targetShape.isBooleanShape)
+    val defaultValueNotNull = this.defaultValue(symbolProvider) != null
+    val hasDefaultValueToEncode = isPrimitiveShape && isNotBoxed && defaultValueNotNull
+    val memberIsRequired = this.hasTrait<RequiredTrait>()
+    return hasDefaultValueToEncode && !memberIsRequired
 }
