@@ -10,10 +10,12 @@ import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.needsEncodingCheck
 
 class HttpHeaderMiddleware(
     private val writer: SwiftWriter,
-    private val ctx: ProtocolGenerator.GenerationContext,
+    val ctx: ProtocolGenerator.GenerationContext,
     inputSymbol: Symbol,
     outputSymbol: Symbol,
     outputErrorSymbol: Symbol,
@@ -71,7 +73,13 @@ class HttpHeaderMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberNameWithExtension, paramName)
         } else {
-            writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
+                writer.openBlock("if $memberNameWithExtension != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+                    writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+                }
+            } else {
+                writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+            }
         }
     }
 

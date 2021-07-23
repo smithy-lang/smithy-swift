@@ -13,7 +13,9 @@ import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.needsEncodingCheck
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -122,9 +124,17 @@ class HttpQueryItemMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
-            val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
-            writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
-            writer.write("input.builder.withQueryItem($queryItemName)")
+            if(member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
+                writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+                    val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
+                    writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                    writer.write("input.builder.withQueryItem($queryItemName)")
+                }
+            } else {
+                val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
+                writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                writer.write("input.builder.withQueryItem($queryItemName)")
+            }
         }
     }
 
