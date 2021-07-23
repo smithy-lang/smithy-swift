@@ -47,7 +47,7 @@ class HttpHeaderMiddleware(
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                     if (memberTarget is CollectionShape) {
                         writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                            renderHeader(memberTarget.member, "headerValue", paramName)
+                            renderHeader(memberTarget.member, "headerValue", paramName, true)
                         }
                     } else {
                         renderHeader(it.member, memberName, paramName)
@@ -60,7 +60,7 @@ class HttpHeaderMiddleware(
         }
     }
 
-    private fun renderHeader(member: MemberShape, memberName: String, paramName: String) {
+    private fun renderHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
         val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
             memberName,
@@ -73,7 +73,7 @@ class HttpHeaderMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberNameWithExtension, paramName)
         } else {
-            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
+            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
                 writer.openBlock("if $memberNameWithExtension != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
