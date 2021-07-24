@@ -53,7 +53,7 @@ interface HttpProtocolCustomizable {
      * to be rendered (i.e. after integrations have had a chance to intercept). The default set of middleware for
      * a protocol can be overridden by [baseMiddlewares].
      */
-    fun operationMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<OperationMiddlewareRenderable>
+    fun operationMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): List<OperationMiddlewareRenderable>
 
-    fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext): List<OperationMiddlewareRenderable>
+    fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): List<OperationMiddlewareRenderable>
 }

@@ -10,10 +10,12 @@ import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 
 class HttpHeaderMiddleware(
     private val writer: SwiftWriter,
-    private val ctx: ProtocolGenerator.GenerationContext,
+    val ctx: ProtocolGenerator.GenerationContext,
     inputSymbol: Symbol,
     outputSymbol: Symbol,
     outputErrorSymbol: Symbol,
@@ -45,7 +47,7 @@ class HttpHeaderMiddleware(
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                     if (memberTarget is CollectionShape) {
                         writer.openBlock("$memberName.forEach { headerValue in ", "}") {
-                            renderHeader(memberTarget.member, "headerValue", paramName)
+                            renderHeader(memberTarget.member, "headerValue", paramName, true)
                         }
                     } else {
                         renderHeader(it.member, memberName, paramName)
@@ -58,7 +60,7 @@ class HttpHeaderMiddleware(
         }
     }
 
-    private fun renderHeader(member: MemberShape, memberName: String, paramName: String) {
+    private fun renderHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
         val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
             memberName,
@@ -71,7 +73,14 @@ class HttpHeaderMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberNameWithExtension, paramName)
         } else {
-            writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+            if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
+                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
+                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
+                    writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+                }
+            } else {
+                writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+            }
         }
     }
 
@@ -88,53 +97,17 @@ class HttpHeaderMiddleware(
 
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
                     if (mapValueShapeTarget is CollectionShape) {
-                        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                            ctx,
-                            "headerValue",
-                            mapValueShapeTarget.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex,
-                            defaultTimestampFormat
-                        )
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    var (unwrappedHeaderValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                                        ctx,
-                                        "unwrappedHeaderValue",
-                                        mapValueShapeTarget.member,
-                                        HttpBinding.Location.HEADER,
-                                        bindingIndex,
-                                        defaultTimestampFormat
-                                    )
-                                    if (requiresDoCatch) {
-                                        renderDoCatch(unwrappedHeaderValue, paramName)
-                                    } else {
-                                        writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($unwrappedHeaderValue))")
-                                    }
+                                    renderHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", "$paramName\\(prefixHeaderMapKey)", true)
                                 }
                             } else {
-                                if (requiresDoCatch) {
-                                    renderDoCatch(headerValue, paramName)
-                                } else {
-                                    writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                                }
+                                renderHeader(mapValueShapeTarget.member, "headerValue", "$paramName\\(prefixHeaderMapKey)", true)
                             }
                         }
                     } else {
-                        var (headerValue, requiresDoCatch) = formatHeaderOrQueryValue(
-                            ctx,
-                            "prefixHeaderMapValue",
-                            it.member,
-                            HttpBinding.Location.HEADER,
-                            bindingIndex,
-                            defaultTimestampFormat
-                        )
-                        if (requiresDoCatch) {
-                            renderDoCatch(headerValue, paramName)
-                        } else {
-                            writer.write("input.builder.withHeader(name: \"$paramName\\(prefixHeaderMapKey)\", value: String($headerValue))")
-                        }
+                        renderHeader(it.member, "prefixHeaderMapValue", "$paramName\\(prefixHeaderMapKey)", false)
                     }
                 }
             }

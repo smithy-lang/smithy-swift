@@ -13,7 +13,10 @@ import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
+import software.amazon.smithy.swift.codegen.toMemberNames
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -122,9 +125,18 @@ class HttpQueryItemMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
-            val queryItemName = "${ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")}QueryItem"
-            writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
-            writer.write("input.builder.withQueryItem($queryItemName)")
+            if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
+                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
+                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
+                    val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
+                    writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                    writer.write("input.builder.withQueryItem($queryItemName)")
+                }
+            } else {
+                val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
+                writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                writer.write("input.builder.withQueryItem($queryItemName)")
+            }
         }
     }
 
