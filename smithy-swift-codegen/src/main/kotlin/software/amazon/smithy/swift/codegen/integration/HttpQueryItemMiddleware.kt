@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.steps.OperationSerialize
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.needsEncodingCheck
+import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.toMemberNames
 
 class HttpQueryItemMiddleware(
@@ -125,8 +125,9 @@ class HttpQueryItemMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
-            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider)) {
-                writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+            if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
+                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
+                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
                     writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
                     writer.write("input.builder.withQueryItem($queryItemName)")

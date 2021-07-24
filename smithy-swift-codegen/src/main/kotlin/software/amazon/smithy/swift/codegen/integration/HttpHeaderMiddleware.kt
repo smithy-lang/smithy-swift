@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.isBoxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
-import software.amazon.smithy.swift.codegen.model.needsEncodingCheck
+import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 
 class HttpHeaderMiddleware(
     private val writer: SwiftWriter,
@@ -73,8 +73,9 @@ class HttpHeaderMiddleware(
         if (requiresDoCatch) {
             renderDoCatch(memberNameWithExtension, paramName)
         } else {
-            if (member.needsEncodingCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
-                writer.openBlock("if $memberNameWithExtension != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+            if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
+                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
+                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
                     writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
             } else {
@@ -99,14 +100,14 @@ class HttpHeaderMiddleware(
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    renderHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", "$paramName(prefixHeaderMapKey)", true)
+                                    renderHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", "$paramName\\(prefixHeaderMapKey)", true)
                                 }
                             } else {
-                                renderHeader(mapValueShapeTarget.member, "headerValue", "$paramName(prefixHeaderMapKey)", true)
+                                renderHeader(mapValueShapeTarget.member, "headerValue", "$paramName\\(prefixHeaderMapKey)", true)
                             }
                         }
                     } else {
-                        renderHeader(it.member, "prefixHeaderMapValue", "$paramName(prefixHeaderMapKey)", false)
+                        renderHeader(it.member, "prefixHeaderMapValue", "$paramName\\(prefixHeaderMapKey)", false)
                     }
                 }
             }
