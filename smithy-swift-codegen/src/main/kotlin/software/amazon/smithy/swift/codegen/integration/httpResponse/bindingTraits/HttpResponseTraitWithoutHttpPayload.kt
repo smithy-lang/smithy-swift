@@ -40,11 +40,11 @@ class HttpResponseTraitWithoutHttpPayload(
         val bodyMembersWithoutQueryTraitMemberNames = bodyMembersWithoutQueryTrait.map { ctx.symbolProvider.toMemberName(it.member) }
 
         if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
-            writer.write("if case .data(let data) = httpResponse.body,")
+            writer.write("if case .stream(let reader) = httpResponse.body,")
             writer.indent()
-            writer.write("let unwrappedData = data,")
             writer.write("let responseDecoder = decoder {")
-            writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: unwrappedData)")
+            writer.write("let data = reader.toBytes().toData()")
+            writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: data)")
             bodyMembersWithoutQueryTraitMemberNames.sorted().forEach {
                 writer.write("self.$it = output.$it")
             }
