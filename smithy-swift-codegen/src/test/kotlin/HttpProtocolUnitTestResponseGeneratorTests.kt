@@ -37,7 +37,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Int": "1",
                 "X-String": "Hello"
             ],
-            content: HttpBody.data(""${'"'}
+            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
             {
               "payload1": "explicit string",
               "payload2": 1,
@@ -47,7 +47,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.data(using: .utf8)),
+            ""${'"'}.data(using: .utf8)!)),
             host: host
         ) else {
             XCTFail("Something is wrong with the created http response")
@@ -165,13 +165,13 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: HttpBody.data(""${'"'}
+            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
             {
                 "contents": {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.data(using: .utf8)),
+            ""${'"'}.data(using: .utf8)!)),
             host: host
         ) else {
             XCTFail("Something is wrong with the created http response")
@@ -208,7 +208,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: HttpBody.data(""${'"'}
+            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
             {
                 "nested": {
                     "foo": "Foo1",
@@ -223,7 +223,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.data(using: .utf8)),
+            ""${'"'}.data(using: .utf8)!)),
             host: host
         ) else {
             XCTFail("Something is wrong with the created http response")
@@ -276,14 +276,14 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         headers: [
                             "Content-Type": "application/json"
                         ],
-                        content: HttpBody.data(""${'"'}
+                        content: HttpBody.stream(ByteStream.from(data: ""${'"'}
                         {
                             "stringValue": "string",
                             "documentValue": {
                                 "foo": "bar"
                             }
                         }
-                        ""${'"'}.data(using: .utf8)),
+                        ""${'"'}.data(using: .utf8)!)),
                         host: host
                     ) else {
                         XCTFail("Something is wrong with the created http response")
@@ -330,11 +330,11 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         headers: [
                             "Content-Type": "application/json"
                         ],
-                        content: HttpBody.data(""${'"'}
+                        content: HttpBody.stream(ByteStream.from(data: ""${'"'}
                         {
                             "foo": "bar"
                         }
-                        ""${'"'}.data(using: .utf8)),
+                        ""${'"'}.data(using: .utf8)!)),
                         host: host
                     ) else {
                         XCTFail("Something is wrong with the created http response")
