@@ -143,15 +143,16 @@ public class CRTClientEngine: HttpClientEngine {
             streamReader.write(buffer: byteBuffer)
         } onStreamComplete: { [self] (_, error) in
             logger.debug("stream completed")
+            streamReader.hasFinishedWriting = true
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
                     streamReader.onError(error: ClientError.crtError(error))
                     future.fail(error)
+                    return
                 }
             }
 
-            streamReader.hasFinishedWriting = true
             response.body = .stream(.reader(streamReader))
             future.fulfill(response)
         }
