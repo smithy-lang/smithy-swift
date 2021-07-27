@@ -74,8 +74,7 @@ class HttpHeaderMiddleware(
             renderDoCatch(memberNameWithExtension, paramName)
         } else {
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
-                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
-                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
+                writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
                 }
             } else {

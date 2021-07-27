@@ -126,8 +126,7 @@ class HttpQueryItemMiddleware(
             renderDoCatch(memberName, paramName)
         } else {
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
-                writer.write("let needsToBeSentAcrossTheWire = $memberName != ${member.defaultValue(ctx.symbolProvider)}")
-                writer.openBlock("if needsToBeSentAcrossTheWire {", "}") {
+                writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
                     writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
                     writer.write("input.builder.withQueryItem($queryItemName)")

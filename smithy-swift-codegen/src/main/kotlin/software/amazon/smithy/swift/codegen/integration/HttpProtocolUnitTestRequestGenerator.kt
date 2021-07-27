@@ -67,8 +67,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             decoderProperty?.renderInstantiation(writer)
             decoderProperty?.renderConfiguration(writer)
 
-            // TODO:: handle streaming inputs
-            // isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
             writer.writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
