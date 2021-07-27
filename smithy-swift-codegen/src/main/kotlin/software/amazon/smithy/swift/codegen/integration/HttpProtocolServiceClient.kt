@@ -22,7 +22,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: ${serviceSymbol.name}Configuration) {", "}") {
+            writer.openBlock("public init(config: ${serviceConfig.typeName}) {", "}") {
                 writer.write("client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
@@ -35,6 +35,8 @@ open class HttpProtocolServiceClient(
                 writer.write("self.config = config")
             }
             writer.write("")
+            renderConvenienceInit(serviceSymbol)
+            writer.write("")
             writer.openBlock("deinit {", "}") {
                 writer.write("client.close()")
             }
@@ -44,6 +46,13 @@ open class HttpProtocolServiceClient(
         writer.write("")
         renderLogHandlerFactory(serviceSymbol)
         writer.write("")
+    }
+
+    fun renderConvenienceInit(serviceSymbol: Symbol) {
+        writer.openBlock("public convenience init() throws {", "}") {
+            writer.write("let config = try ${serviceSymbol.name}Configuration()")
+            writer.write("self.init(config: config)")
+        }
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
@@ -65,7 +74,8 @@ open class HttpProtocolServiceClient(
 
     private fun renderConfig(serviceSymbol: Symbol) {
 
-        val configFields = serviceConfig.getConfigFields()
+        val configFields = serviceConfig.getRuntimeConfigFields()
+        val otherConfigFields = serviceConfig.getOtherConfigFields()
         val inheritance = serviceConfig.getTypeInheritance()
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
@@ -73,35 +83,11 @@ open class HttpProtocolServiceClient(
                 writer.write("public var ${it.name}: ${it.type}")
             }
             writer.write("")
-            writer.write("public let clientLogMode: ClientLogMode")
-            writer.write("public let logger: LogAgent")
-            writer.write("")
-            renderConfigInit(configFields, serviceSymbol)
-            writer.write("")
-            serviceConfig.renderConvenienceInits(serviceSymbol)
-            writer.write("")
-            serviceConfig.renderStaticDefaultImplementation(serviceSymbol)
-        }
-    }
-
-    private fun renderConfigInit(configFields: List<ConfigField>, serviceSymbol: Symbol) {
-        val configFieldsSortedByName = configFields.sortedBy { it.name }
-        writer.openBlock("public init (", ") throws") {
-            for (member in configFieldsSortedByName) {
-                val memberName = member.name
-                val memberSymbol = member.type
-                if (memberName == null) continue
-                writer.write("\$L: \$L,", memberName, memberSymbol)
+            otherConfigFields.forEach {
+                writer.write("public var ${it.name}: ${it.type}")
             }
-            writer.write("clientLogMode: ClientLogMode = .request,")
-            writer.write("logger: LogAgent? = nil")
-        }
-        writer.openBlock("{", "}") {
-            configFieldsSortedByName.forEach {
-                writer.write("self.\$1L = \$1L", it.name)
-            }
-            writer.write("self.clientLogMode = clientLogMode")
-            writer.write("self.logger = logger ?? SwiftLogger(label: \"${serviceSymbol.name}\")")
+            writer.write("")
+            serviceConfig.renderAllInitializers(serviceSymbol)
         }
     }
 }
