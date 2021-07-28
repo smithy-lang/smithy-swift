@@ -19,7 +19,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     fun getRuntimeConfigFields(): List<ConfigField> = mutableListOf(
         ConfigField("encoder", "RequestEncoder?"),
-        ConfigField("decoder", "RequestDecoder?"),
+        ConfigField("decoder", "ResponseDecoder?"),
         ConfigField("httpClientEngine", "HttpClientEngine"),
         ConfigField("httpClientConfiguration", "HttpClientConfiguration"),
         ConfigField("idempotencyTokenGenerator", "IdempotencyTokenGenerator"),
@@ -33,25 +33,25 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         return typesToConformConfigTo.joinToString(", ")
     }
 
-    private fun renderMainInitializer(serviceSymbol: Symbol) {
-        writer.openBlock("public init() throws {", "}") {
-            writer.write("let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration(\"${serviceName}\")")
-            writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
+    open fun renderMainInitializer(serviceSymbol: Symbol) {
+        writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
+            val configFields = getRuntimeConfigFields().sortedBy { it.name }
+            configFields.forEach {
+                writer.write("self.${it.name} = runtimeConfig.${it.name}")
+            }
         }
     }
 
     fun renderAllInitializers(serviceSymbol: Symbol) {
         renderMainInitializer(serviceSymbol)
         writer.write("")
-        renderOtherInitializers(serviceSymbol)
+        renderConvenienceInitializers(serviceSymbol)
     }
 
-    open fun renderOtherInitializers(serviceSymbol: Symbol) {
-        writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
-            val configFields = getRuntimeConfigFields().sortedBy { it.name }
-            configFields.forEach {
-                writer.write("self.${it.name} = runtimeConfig.${it.name}")
-            }
+    open fun renderConvenienceInitializers(serviceSymbol: Symbol) {
+        writer.openBlock("public convenience init() throws {", "}") {
+            writer.write("let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration(\"${serviceName}\")")
+            writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }
 }

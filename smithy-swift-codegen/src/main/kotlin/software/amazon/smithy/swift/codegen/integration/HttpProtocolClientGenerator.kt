@@ -33,7 +33,6 @@ import software.amazon.smithy.swift.codegen.toMemberNames
 open class HttpProtocolClientGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    properties: List<ClientProperty>,
     serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
@@ -42,7 +41,7 @@ open class HttpProtocolClientGenerator(
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
-    private val httpProtocolServiceClient = HttpProtocolServiceClient(ctx, writer, properties, serviceConfig)
+    private val httpProtocolServiceClient = httpProtocolCustomizable.getServiceClient(ctx, writer, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)

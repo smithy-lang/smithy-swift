@@ -28,10 +28,9 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         defaultContentType: String,
         httpProtocolCustomizable: HttpProtocolCustomizable
     ): HttpProtocolClientGenerator {
-        val properties = getClientProperties(ctx)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, properties, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable)
+        return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable)
     }
 
     private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {

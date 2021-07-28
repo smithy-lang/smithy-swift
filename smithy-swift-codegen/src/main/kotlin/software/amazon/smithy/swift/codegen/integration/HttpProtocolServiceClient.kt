@@ -48,7 +48,7 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    fun renderConvenienceInit(serviceSymbol: Symbol) {
+    open fun renderConvenienceInit(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
             writer.write("let config = try ${serviceSymbol.name}Configuration()")
             writer.write("self.init(config: config)")
@@ -73,7 +73,6 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderConfig(serviceSymbol: Symbol) {
-
         val configFields = serviceConfig.getRuntimeConfigFields()
         val otherConfigFields = serviceConfig.getOtherConfigFields()
         val inheritance = serviceConfig.getTypeInheritance()

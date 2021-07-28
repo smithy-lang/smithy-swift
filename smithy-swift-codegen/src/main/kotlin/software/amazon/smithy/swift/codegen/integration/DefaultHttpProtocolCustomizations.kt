@@ -23,7 +23,15 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
             integration.customizeMiddleware(ctx, middleware)
         }
     }
+
     override fun baseMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): List<OperationMiddlewareRenderable> {
         return listOf(LoggingMiddleware())
+    }
+
+    override fun getServiceClient(ctx: ProtocolGenerator.GenerationContext,
+                                      writer: SwiftWriter,
+                                      serviceConfig: ServiceConfig): HttpProtocolServiceClient {
+        val clientProperties = getClientProperties()
+        return HttpProtocolServiceClient(ctx, writer, clientProperties, serviceConfig)
     }
 }
