@@ -16,6 +16,7 @@ public final class SDKDefaultIO {
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TlsContext
     
+    // swiftlint:disable force_try
     private init() {
         self.eventLoopGroup = EventLoopGroup(threadCount: UInt16(ProcessInfo.processInfo.activeProcessorCount))
         self.hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup, maxHosts: 8, maxTTL: 30)
