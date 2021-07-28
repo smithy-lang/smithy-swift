@@ -56,7 +56,6 @@ public extension SDKRuntimeConfiguration {
     }
 }
 
-
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var retrier: Retrier
 
