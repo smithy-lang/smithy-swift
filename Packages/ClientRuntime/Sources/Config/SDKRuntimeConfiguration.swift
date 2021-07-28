@@ -1,12 +1,13 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-/// At code generation time, a service client configuration is generated to implement this protocol to create
-/// a concrete configuration type with defaults or allow the customer to pass in their own.
-/// Anything contained in this protocol should be basics that all service clients can set while anything
-/// generated should be service specific.
+/// For each service, a concrete service client configuration class is generated to implement the SDKRuntimeConfiguration protocol.
+/// This generated concrete class provides a mechanism to adopt defaults or override by injection any of the parameters.
+/// If this concrete class is not sufficient for your use case, you have the ability to write a concrete class that conforms to SDKRuntimeConfiguration.
 public protocol SDKRuntimeConfiguration {
     var encoder: RequestEncoder? {get}
     var decoder: ResponseDecoder? {get}
@@ -37,21 +38,9 @@ public extension SDKRuntimeConfiguration {
     
     var encoder: RequestEncoder? {
         return nil
-        
     }
     
     var decoder: ResponseDecoder? {
         return nil
-    }
-}
-
-public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
-    public var retrier: Retrier
-
-    public var logger: LogAgent
-
-    public init(_ clientName: String) throws {
-        self.retrier = try SDKRetrier()
-        self.logger = SwiftLogger(label: clientName)
     }
 }
