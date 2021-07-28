@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 import class Foundation.ProcessInfo
 
-public class SDKDefaultIO {
+public final class SDKDefaultIO {
     public static let shared = SDKDefaultIO()
     
     public let eventLoopGroup: EventLoopGroup
