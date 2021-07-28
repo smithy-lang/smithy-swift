@@ -4,7 +4,6 @@
  */
 
 import AwsCommonRuntimeKit
-import class Foundation.ProcessInfo
 #if os(Linux)
      import Glibc
  #else
