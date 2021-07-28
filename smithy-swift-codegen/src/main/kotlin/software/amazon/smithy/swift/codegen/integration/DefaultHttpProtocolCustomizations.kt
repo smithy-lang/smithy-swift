@@ -28,9 +28,11 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
         return listOf(LoggingMiddleware())
     }
 
-    override fun getServiceClient(ctx: ProtocolGenerator.GenerationContext,
-                                      writer: SwiftWriter,
-                                      serviceConfig: ServiceConfig): HttpProtocolServiceClient {
+    override fun getServiceClient(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        serviceConfig: ServiceConfig
+    ): HttpProtocolServiceClient {
         val clientProperties = getClientProperties()
         return HttpProtocolServiceClient(ctx, writer, clientProperties, serviceConfig)
     }

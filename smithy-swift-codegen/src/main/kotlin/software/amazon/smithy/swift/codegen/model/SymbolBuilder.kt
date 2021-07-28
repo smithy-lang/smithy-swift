@@ -91,7 +91,7 @@ fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol =
 
 fun SymbolBuilder.namespace(dependency: SwiftDependency, type: String = "") {
     namespace = if (type.isNotEmpty()) {
-        "${dependency.target}.${type}"
+        "${dependency.target}.$type"
     } else {
         dependency.target
     }

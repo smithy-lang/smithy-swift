@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.RuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 open class HttpProtocolServiceClient(
@@ -79,7 +80,8 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
             configFields.forEach {
-                writer.write("public var ${it.memberName}: \$L", it.type)
+                val optional = if (it.type == RuntimeTypes.Serde.RequestEncoder || it.type == RuntimeTypes.Serde.ResponseDecoder) "?" else ""
+                writer.write("public var ${it.memberName}: \$L$optional", it.type)
             }
             writer.write("")
             otherConfigFields.forEach {

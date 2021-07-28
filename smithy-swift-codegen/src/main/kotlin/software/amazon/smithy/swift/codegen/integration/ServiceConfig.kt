@@ -26,7 +26,8 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         ConfigField("idempotencyTokenGenerator", RuntimeTypes.Core.IdempotencyTokenGenerator),
         ConfigField("retrier", RuntimeTypes.Core.Retrier),
         ConfigField("clientLogMode", RuntimeTypes.Core.ClientLogMode),
-        ConfigField("logger", RuntimeTypes.Core.Logger))
+        ConfigField("logger", RuntimeTypes.Core.Logger)
+    )
 
     open fun getOtherConfigFields(): List<ConfigField> = listOf()
 
