@@ -35,7 +35,7 @@ public extension SDKRuntimeConfiguration {
     
     var retrier: Retrier {
         get throws {
-            return try SDKRetrier(clientEngine: httpClientEngine)
+            return try SDKRetrier()
         }
     }
     
@@ -66,7 +66,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public init(_ clientName: String) throws {
         let engine = try CRTClientEngine()
         self.httpClientEngine = engine
-        self.retrier = try SDKRetrier(clientEngine: engine)
+        self.retrier = try SDKRetrier()
         self.logger = SwiftLogger(label: clientName)
     }
 }

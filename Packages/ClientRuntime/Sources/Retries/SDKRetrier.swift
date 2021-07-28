@@ -13,8 +13,8 @@ public class SDKRetrier: Retrier {
         self.crtRetryStrategy = try CRTAWSRetryStrategy(options: options.toCRTType())
     }
     
-    public convenience init(clientEngine: HttpClientEngine) throws {
-        let backOffOptions = ExponentialBackOffRetryOptions(client: clientEngine)
+    public convenience init() throws {
+        let backOffOptions = ExponentialBackOffRetryOptions()
         let retryOptions = RetryOptions(backOffRetryOptions: backOffOptions)
         try self.init(options: retryOptions)
     }

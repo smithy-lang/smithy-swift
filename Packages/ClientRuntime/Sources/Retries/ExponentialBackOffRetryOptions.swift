@@ -7,18 +7,15 @@
 import AwsCommonRuntimeKit
 
 public struct ExponentialBackOffRetryOptions {
-    let client: HttpClientEngine
     let maxRetries: Int
     let backOffScaleFactor: UInt32
     let jitterMode: ExponentialBackOffJitterMode
     let generateRandom: (() -> UInt64)?
     
-    public init(client: HttpClientEngine,
-                maxRetries: Int = 10,
+    public init(maxRetries: Int = 10,
                 backOffScaleFactor: UInt32 = 25,
                 jitterMode: ExponentialBackOffJitterMode = .default,
                 generateRandom: (() -> UInt64)? = nil) {
-        self.client = client
         self.maxRetries = maxRetries
         self.backOffScaleFactor = backOffScaleFactor
         self.jitterMode = jitterMode
@@ -28,7 +25,7 @@ public struct ExponentialBackOffRetryOptions {
 
 extension ExponentialBackOffRetryOptions {
     func toCRTType() -> CRTExponentialBackoffRetryOptions {
-        return CRTExponentialBackoffRetryOptions(eventLoopGroup: client.eventLoopGroup,
+        return CRTExponentialBackoffRetryOptions(eventLoopGroup: SDKDefaultIO.shared.eventLoopGroup,
                                                  maxRetries: maxRetries,
                                                  backOffScaleFactor: backOffScaleFactor,
                                                  jitterMode: jitterMode.toCRTType(),

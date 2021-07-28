@@ -4,6 +4,7 @@
  */
 
 import AwsCommonRuntimeKit
+import class Foundation.ProcessInfo
 #if os(Linux)
      import Glibc
  #else
@@ -18,42 +19,22 @@ public class CRTClientEngine: HttpClientEngine {
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
-    
-    public let bootstrap: ClientBootstrap
-    public let eventLoopGroup: EventLoopGroup
-    private let socketOptions: SocketOptions
-    private let tlsContextOptions: TlsContextOptions
-    private let tlsContext: TlsContext
+
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    init(eventLoopGroup: EventLoopGroup, config: CRTClientEngineConfig) throws {
+    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
         AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
-        self.eventLoopGroup = eventLoopGroup
-        let hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup, maxHosts: 8, maxTTL: 30)
-        self.bootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup, hostResolver: hostResolver)
-        self.socketOptions = SocketOptions(socketType: .stream)
-        let tlsContextOptions = TlsContextOptions()
-        tlsContextOptions.setVerifyPeer(config.verifyPeer)
-        self.tlsContextOptions = tlsContextOptions
-        self.tlsContext = try TlsContext(options: tlsContextOptions, mode: .client)
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
         self.crtLogger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
     }
     
-    public required convenience init(eventLoopGroup: EventLoopGroup) throws {
-        try self.init(eventLoopGroup: eventLoopGroup, config: CRTClientEngineConfig())
-    }
-    
-    public convenience init() throws {
-        try self.init(eventLoopGroup: EventLoopGroup(threadCount: 1))
-    }
-    
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
-        let tlsConnectionOptions = tlsContext.newConnectionOptions()
-        let options = HttpClientConnectionOptions(clientBootstrap: bootstrap,
+        let tlsConnectionOptions = SDKDefaultIO.shared.tlsContext.newConnectionOptions()
+        let socketOptions = SocketOptions(socketType: .stream)
+        let options = HttpClientConnectionOptions(clientBootstrap: SDKDefaultIO.shared.clientBootstrap,
                                                   hostName: endpoint.host,
                                                   initialWindowSize: windowSize,
                                                   port: UInt16(endpoint.port),

@@ -5,9 +5,6 @@
 import AwsCommonRuntimeKit
 
 public protocol HttpClientEngine {
-    init(eventLoopGroup: EventLoopGroup) throws
-    var eventLoopGroup: EventLoopGroup {get}
-    var bootstrap: ClientBootstrap {get}
     func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult)
     func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse>
     func close()
