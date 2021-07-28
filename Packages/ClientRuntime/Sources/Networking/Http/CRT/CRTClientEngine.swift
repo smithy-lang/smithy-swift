@@ -22,7 +22,7 @@ public class CRTClientEngine: HttpClientEngine {
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) throws {
+    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
         AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize

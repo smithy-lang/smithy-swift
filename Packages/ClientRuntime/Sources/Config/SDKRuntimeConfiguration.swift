@@ -20,9 +20,7 @@ public protocol SDKRuntimeConfiguration {
 
 public extension SDKRuntimeConfiguration {
     var httpClientEngine: HttpClientEngine {
-        get throws {
-            return try CRTClientEngine()
-        }
+        return CRTClientEngine()
     }
     
     var httpClientConfiguration: HttpClientConfiguration {
@@ -33,39 +31,26 @@ public extension SDKRuntimeConfiguration {
         return DefaultIdempotencyTokenGenerator()
     }
     
-    var retrier: Retrier {
-        get throws {
-            return try SDKRetrier()
-        }
-    }
-    
     var clientLogMode: ClientLogMode {
         return .request
     }
     
     var encoder: RequestEncoder? {
-        get {
-            return nil
-        }
+        return nil
+        
     }
     
     var decoder: ResponseDecoder? {
-        get {
-            return nil
-        }
+        return nil
     }
 }
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var retrier: Retrier
 
-    public var httpClientEngine: HttpClientEngine
-
     public var logger: LogAgent
 
     public init(_ clientName: String) throws {
-        let engine = try CRTClientEngine()
-        self.httpClientEngine = engine
         self.retrier = try SDKRetrier()
         self.logger = SwiftLogger(label: clientName)
     }
