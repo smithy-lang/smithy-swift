@@ -70,4 +70,3 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
         self.logger = SwiftLogger(label: clientName)
     }
 }
-
