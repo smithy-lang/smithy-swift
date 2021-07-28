@@ -22,9 +22,8 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.Trait
-import software.amazon.smithy.swift.codegen.defaultValue
 import software.amazon.smithy.swift.codegen.getOrNull
-import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.utils.StringUtils
 import kotlin.streams.toList
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
@@ -69,6 +68,20 @@ val Shape.isError: Boolean
 
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
+
+fun Shape.capitalizedName(): String {
+    return StringUtils.capitalize(this.id.name)
+}
+
+fun Shape.defaultName(serviceShape: ServiceShape?): String {
+    return serviceShape?.let {
+        StringUtils.capitalize(id.getName(it))
+    } ?: run {
+        StringUtils.capitalize(this.id.name)
+    }
+}
+
+fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
 fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
     val targetSymbol = symbolProvider.toSymbol(this)

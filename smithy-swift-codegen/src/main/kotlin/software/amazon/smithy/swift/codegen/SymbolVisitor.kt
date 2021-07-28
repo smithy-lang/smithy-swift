@@ -45,78 +45,12 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.model.SymbolProperty
+import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toPascalCase
-import software.amazon.smithy.utils.StringUtils
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
-
-// PropertyBag keys
-
-// The key that holds the default value for a type (symbol) as a string
-private const val DEFAULT_VALUE_KEY: String = "defaultValue"
-
-// Boolean property indicating this symbol should be boxed
-const val BOXED_KEY: String = "boxed"
-
-/**
- * Test if a symbol is boxed or not
- */
-fun Symbol.isBoxed(): Boolean {
-    return getProperty(BOXED_KEY).map {
-        when (it) {
-            is Boolean -> it
-            else -> false
-        }
-    }.orElse(false)
-}
-
-/**
- * Obtains the symbol for a recursive symbol to represent the symbol as Box<T>
- */
-fun Symbol.recursiveSymbol(): Symbol {
-    return Symbol.builder()
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .name("Box<$name>")
-        .putProperty("boxed", isBoxed())
-        .putProperty("defaultValue", defaultValue())
-        .build()
-}
-
-/**
- * Gets the default value for the symbol if present, else null
- */
-fun Symbol.defaultValue(): String? {
-    // boxed types should always be defaulted to null
-    if (isBoxed()) {
-        return "nil"
-    }
-
-    val default = getProperty(DEFAULT_VALUE_KEY, String::class.java)
-    return if (default.isPresent) default.get() else null
-}
-
-fun Symbol.bodySymbol(): Symbol {
-    return Symbol.builder()
-        .name("${name}Body")
-        .putProperty("boxed", isBoxed())
-        .putProperty("defaultValue", defaultValue())
-        .build()
-}
-
-fun Shape.capitalizedName(): String {
-    return StringUtils.capitalize(this.id.name)
-}
-
-fun Shape.defaultName(serviceShape: ServiceShape?): String {
-    return serviceShape?.let {
-        StringUtils.capitalize(id.getName(it))
-    } ?: run {
-        StringUtils.capitalize(this.id.name)
-    }
-}
-
-fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
 class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     SymbolProvider,
@@ -221,7 +155,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool").putProperty(DEFAULT_VALUE_KEY, "false").build()
+        return createSymbolBuilder(shape, "Bool").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
@@ -304,7 +238,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName).putProperty(DEFAULT_VALUE_KEY, defaultValue).build()
+        return createSymbolBuilder(shape, typeName).putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
     /**
@@ -314,7 +248,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
         val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
         if (explicitlyBoxed || boxed) {
-            builder.putProperty(BOXED_KEY, true)
+            builder.putProperty(SymbolProperty.BOXED_KEY, true)
         }
         return builder
     }

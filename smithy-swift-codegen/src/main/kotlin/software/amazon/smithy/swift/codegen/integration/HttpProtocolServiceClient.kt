@@ -79,11 +79,11 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
             configFields.forEach {
-                writer.write("public var ${it.name}: ${it.type}")
+                writer.write("public var ${it.memberName}: \$L", it.type)
             }
             writer.write("")
             otherConfigFields.forEach {
-                writer.write("public var ${it.name}: ${it.type}")
+                writer.write("public var ${it.memberName}: \$L", it.type)
             }
             writer.write("")
             serviceConfig.renderAllInitializers(serviceSymbol)

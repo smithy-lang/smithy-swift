@@ -13,6 +13,8 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.model.boxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
 import java.nio.file.Paths
 
 /**
@@ -98,7 +100,7 @@ class SwiftDelegator(
         val extensionSymbol = Symbol.builder()
             .name("${symbol.name}")
             .definitionFile("${symbol.definitionFile.replace(".swift", "+$extensionName.swift")}")
-            .putProperty("boxed", symbol.isBoxed())
+            .boxed()
             .putProperty("defaultValue", symbol.defaultValue())
             .build()
 

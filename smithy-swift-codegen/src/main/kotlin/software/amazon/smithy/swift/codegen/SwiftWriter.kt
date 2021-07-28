@@ -16,6 +16,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
+import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 

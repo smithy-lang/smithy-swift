@@ -1,12 +1,13 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.RuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val name: String?, val type: String, private val documentation: String? = null)
+data class ConfigField(val memberName: String?, val type: Symbol, private val documentation: String? = null)
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
@@ -18,14 +19,14 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
     open val typesToConformConfigTo: List<String> = mutableListOf("SDKRuntimeConfiguration")
 
     fun getRuntimeConfigFields(): List<ConfigField> = mutableListOf(
-        ConfigField("encoder", "RequestEncoder?"),
-        ConfigField("decoder", "ResponseDecoder?"),
-        ConfigField("httpClientEngine", "HttpClientEngine"),
-        ConfigField("httpClientConfiguration", "HttpClientConfiguration"),
-        ConfigField("idempotencyTokenGenerator", "IdempotencyTokenGenerator"),
-        ConfigField("retrier", "Retrier"),
-        ConfigField("clientLogMode", "ClientLogMode"),
-        ConfigField("logger", "LogAgent"))
+        ConfigField("encoder", RuntimeTypes.Serde.RequestEncoder),
+        ConfigField("decoder", RuntimeTypes.Serde.ResponseDecoder),
+        ConfigField("httpClientEngine", RuntimeTypes.Http.HttpClientEngine),
+        ConfigField("httpClientConfiguration", RuntimeTypes.Http.HttpClientConfiguration),
+        ConfigField("idempotencyTokenGenerator", RuntimeTypes.Core.IdempotencyTokenGenerator),
+        ConfigField("retrier", RuntimeTypes.Core.Retrier),
+        ConfigField("clientLogMode", RuntimeTypes.Core.ClientLogMode),
+        ConfigField("logger", RuntimeTypes.Core.Logger))
 
     open fun getOtherConfigFields(): List<ConfigField> = listOf()
 
@@ -35,9 +36,9 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open fun renderMainInitializer(serviceSymbol: Symbol) {
         writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
-            val configFields = getRuntimeConfigFields().sortedBy { it.name }
+            val configFields = getRuntimeConfigFields().sortedBy { it.memberName }
             configFields.forEach {
-                writer.write("self.${it.name} = runtimeConfig.${it.name}")
+                writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
             }
         }
     }

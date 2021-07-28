@@ -6,7 +6,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.bodySymbol
+import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 

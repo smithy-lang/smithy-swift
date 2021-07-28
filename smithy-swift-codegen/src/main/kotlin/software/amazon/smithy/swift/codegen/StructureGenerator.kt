@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 
 fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
     val shapeId = toShapeId()

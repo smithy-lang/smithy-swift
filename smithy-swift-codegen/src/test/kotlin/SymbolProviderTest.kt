@@ -19,8 +19,8 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SymbolVisitor
-import software.amazon.smithy.swift.codegen.defaultValue
-import software.amazon.smithy.swift.codegen.isBoxed
+import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.isBoxed
 
 class SymbolProviderTest {
     @Test fun `escapes reserved member names`() {
