@@ -1,5 +1,5 @@
 package software.amazon.smithy.kotlin.codegen.model
-//copied and modified from https://github.com/awslabs/smithy-kotlin/blob/b386392b1cd7cc73a9bc08bedcff0c109487b74f/smithy-kotlin-codegen/src/test/kotlin/software/amazon/smithy/kotlin/codegen/model/SymbolBuilderTest.kt
+// copied and modified from https://github.com/awslabs/smithy-kotlin/blob/b386392b1cd7cc73a9bc08bedcff0c109487b74f/smithy-kotlin-codegen/src/test/kotlin/software/amazon/smithy/kotlin/codegen/model/SymbolBuilderTest.kt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
