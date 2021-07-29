@@ -18,18 +18,21 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typesToConformConfigTo: List<String> = mutableListOf("SDKRuntimeConfiguration")
 
-    fun sdkRuntimeConfigFields(): List<ConfigField> = mutableListOf(
-        ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder),
-        ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder),
-        ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
-        ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
-        ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-        ConfigField("retrier", ClientRuntimeTypes.Core.Retrier),
-        ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
-        ConfigField("logger", ClientRuntimeTypes.Core.Logger)
-    )
+    fun sdkRuntimeConfigProperties(): List<ConfigField> {
+        val configFields = mutableListOf(
+            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder),
+            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder),
+            ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
+            ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
+            ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
+            ConfigField("retrier", ClientRuntimeTypes.Core.Retrier),
+            ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
+            ConfigField("logger", ClientRuntimeTypes.Core.Logger)
+        ).sortedBy { it.memberName }
+        return configFields
+    }
 
-    open fun getOtherConfigFields(): List<ConfigField> = listOf()
+    open fun otherRuntimeConfigProperties(): List<ConfigField> = listOf()
 
     fun getTypeInheritance(): String {
         return typesToConformConfigTo.joinToString(", ")
@@ -37,7 +40,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open fun renderInitializers(serviceSymbol: Symbol) {
         writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
-            val configFields = sdkRuntimeConfigFields().sortedBy { it.memberName }
+            val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
                 writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
             }

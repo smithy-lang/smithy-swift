@@ -74,8 +74,8 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderConfig(serviceSymbol: Symbol) {
-        val configFields = serviceConfig.sdkRuntimeConfigFields()
-        val otherConfigFields = serviceConfig.getOtherConfigFields()
+        val configFields = serviceConfig.sdkRuntimeConfigProperties()
+        val otherConfigFields = serviceConfig.otherRuntimeConfigProperties()
         val inheritance = serviceConfig.getTypeInheritance()
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
