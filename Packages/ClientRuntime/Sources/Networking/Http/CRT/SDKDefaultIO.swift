@@ -15,7 +15,6 @@ public final class SDKDefaultIO {
     public let hostResolver: DefaultHostResolver
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TlsContext
-    
 
     private init() {
         self.eventLoopGroup = EventLoopGroup(threadCount: 0)
