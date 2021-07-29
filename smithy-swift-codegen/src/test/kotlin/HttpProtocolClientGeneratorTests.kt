@@ -17,7 +17,7 @@ class HttpProtocolClientGeneratorTests {
             """
             public class RestJsonProtocolClient {
                 let client: SdkHttpClient
-                let config: RestJsonProtocolClientConfiguration
+                let config: SDKRuntimeConfiguration
                 let serviceName = "Rest Json Protocol"
                 let encoder: RequestEncoder
                 let decoder: ResponseDecoder
@@ -46,14 +46,14 @@ class HttpProtocolClientGeneratorTests {
             
                 public class RestJsonProtocolClientConfiguration: SDKRuntimeConfiguration {
             
-                    public var encoder: RequestEncoder?
-                    public var decoder: ResponseDecoder?
-                    public var httpClientEngine: HttpClientEngine
-                    public var httpClientConfiguration: HttpClientConfiguration
-                    public var idempotencyTokenGenerator: IdempotencyTokenGenerator
-                    public var retrier: Retrier
                     public var clientLogMode: ClientLogMode
+                    public var decoder: ResponseDecoder?
+                    public var encoder: RequestEncoder?
+                    public var httpClientConfiguration: HttpClientConfiguration
+                    public var httpClientEngine: HttpClientEngine
+                    public var idempotencyTokenGenerator: IdempotencyTokenGenerator
                     public var logger: LogAgent
+                    public var retrier: Retrier
             
                     public init(runtimeConfig: SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
