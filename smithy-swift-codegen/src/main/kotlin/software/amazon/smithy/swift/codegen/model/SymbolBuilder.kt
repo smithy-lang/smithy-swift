@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+//copied and modified from: https://github.com/awslabs/smithy-kotlin/blob/b386392b1cd7cc73a9bc08bedcff0c109487b74f/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/model/SymbolBuilder.kt
 package software.amazon.smithy.swift.codegen.model
 
 import software.amazon.smithy.codegen.core.Symbol

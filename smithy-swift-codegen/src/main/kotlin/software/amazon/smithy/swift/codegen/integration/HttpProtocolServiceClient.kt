@@ -1,7 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.RuntimeTypes
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 open class HttpProtocolServiceClient(
@@ -15,7 +15,7 @@ open class HttpProtocolServiceClient(
     fun render(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: SdkHttpClient")
-            writer.write("let config: ${serviceConfig.typeName}")
+            writer.write("let config: ${serviceConfig.typesToConformConfigTo.first()}")
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: RequestEncoder")
             writer.write("let decoder: ResponseDecoder")
@@ -23,7 +23,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: ${serviceConfig.typeName}) {", "}") {
+            writer.openBlock("public init(config: ${serviceConfig.typesToConformConfigTo.first()}) {", "}") {
                 writer.write("client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
@@ -51,7 +51,7 @@ open class HttpProtocolServiceClient(
 
     open fun renderConvenienceInit(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let config = try ${serviceSymbol.name}Configuration()")
+            writer.write("let config = try ${serviceConfig.typeName}()")
             writer.write("self.init(config: config)")
         }
     }
@@ -74,13 +74,13 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderConfig(serviceSymbol: Symbol) {
-        val configFields = serviceConfig.getRuntimeConfigFields()
+        val configFields = serviceConfig.sdkRuntimeConfigFields()
         val otherConfigFields = serviceConfig.getOtherConfigFields()
         val inheritance = serviceConfig.getTypeInheritance()
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
             configFields.forEach {
-                val optional = if (it.type == RuntimeTypes.Serde.RequestEncoder || it.type == RuntimeTypes.Serde.ResponseDecoder) "?" else ""
+                val optional = if (it.type == ClientRuntimeTypes.Serde.RequestEncoder || it.type == ClientRuntimeTypes.Serde.ResponseDecoder) "?" else ""
                 writer.write("public var ${it.memberName}: \$L$optional", it.type)
             }
             writer.write("")
@@ -88,7 +88,7 @@ open class HttpProtocolServiceClient(
                 writer.write("public var ${it.memberName}: \$L", it.type)
             }
             writer.write("")
-            serviceConfig.renderAllInitializers(serviceSymbol)
+            serviceConfig.renderInitializers(serviceSymbol)
         }
     }
 }

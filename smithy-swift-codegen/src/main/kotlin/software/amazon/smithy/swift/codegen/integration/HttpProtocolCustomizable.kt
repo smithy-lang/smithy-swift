@@ -39,7 +39,7 @@ interface HttpProtocolCustomizable {
         return emptyList()
     }
 
-    fun getServiceClient(
+    fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         serviceConfig: ServiceConfig

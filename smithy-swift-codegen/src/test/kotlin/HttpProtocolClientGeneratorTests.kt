@@ -22,7 +22,7 @@ class HttpProtocolClientGeneratorTests {
                 let encoder: RequestEncoder
                 let decoder: ResponseDecoder
             
-                public init(config: RestJsonProtocolClientConfiguration) {
+                public init(config: SDKRuntimeConfiguration) {
                     client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970

@@ -46,6 +46,7 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
+import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toPascalCase
@@ -246,9 +247,9 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
      */
     private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
-        val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
+        val explicitlyBoxed = shape?.hasTrait<BoxTrait>() ?: false
         if (explicitlyBoxed || boxed) {
-            builder.putProperty(SymbolProperty.BOXED_KEY, true)
+            builder.boxed()
         }
         return builder
     }

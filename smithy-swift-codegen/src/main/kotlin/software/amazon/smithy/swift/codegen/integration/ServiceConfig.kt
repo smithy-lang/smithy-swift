@@ -1,7 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.RuntimeTypes
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
@@ -18,15 +18,15 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typesToConformConfigTo: List<String> = mutableListOf("SDKRuntimeConfiguration")
 
-    fun getRuntimeConfigFields(): List<ConfigField> = mutableListOf(
-        ConfigField("encoder", RuntimeTypes.Serde.RequestEncoder),
-        ConfigField("decoder", RuntimeTypes.Serde.ResponseDecoder),
-        ConfigField("httpClientEngine", RuntimeTypes.Http.HttpClientEngine),
-        ConfigField("httpClientConfiguration", RuntimeTypes.Http.HttpClientConfiguration),
-        ConfigField("idempotencyTokenGenerator", RuntimeTypes.Core.IdempotencyTokenGenerator),
-        ConfigField("retrier", RuntimeTypes.Core.Retrier),
-        ConfigField("clientLogMode", RuntimeTypes.Core.ClientLogMode),
-        ConfigField("logger", RuntimeTypes.Core.Logger)
+    fun sdkRuntimeConfigFields(): List<ConfigField> = mutableListOf(
+        ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder),
+        ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder),
+        ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
+        ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
+        ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
+        ConfigField("retrier", ClientRuntimeTypes.Core.Retrier),
+        ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
+        ConfigField("logger", ClientRuntimeTypes.Core.Logger)
     )
 
     open fun getOtherConfigFields(): List<ConfigField> = listOf()
@@ -35,22 +35,14 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         return typesToConformConfigTo.joinToString(", ")
     }
 
-    open fun renderMainInitializer(serviceSymbol: Symbol) {
+    open fun renderInitializers(serviceSymbol: Symbol) {
         writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
-            val configFields = getRuntimeConfigFields().sortedBy { it.memberName }
+            val configFields = sdkRuntimeConfigFields().sortedBy { it.memberName }
             configFields.forEach {
                 writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
             }
         }
-    }
-
-    fun renderAllInitializers(serviceSymbol: Symbol) {
-        renderMainInitializer(serviceSymbol)
         writer.write("")
-        renderConvenienceInitializers(serviceSymbol)
-    }
-
-    open fun renderConvenienceInitializers(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
             writer.write("let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration(\"${serviceName}\")")
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
