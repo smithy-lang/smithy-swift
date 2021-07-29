@@ -8,7 +8,6 @@ import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
 class MockHttpClientEngine: HttpClientEngine {
-    
     let eventLoopGroup: EventLoopGroup
     
     convenience init() {

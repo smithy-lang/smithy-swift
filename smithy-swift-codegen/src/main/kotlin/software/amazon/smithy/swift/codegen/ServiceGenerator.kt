@@ -15,6 +15,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.camelCaseName
+import software.amazon.smithy.swift.codegen.model.capitalizedName
 
 /*
 * Generates a Swift protocol for the service

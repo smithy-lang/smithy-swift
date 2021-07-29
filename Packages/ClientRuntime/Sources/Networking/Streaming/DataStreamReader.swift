@@ -70,7 +70,7 @@ public class DataStreamReader: StreamReader {
     }
     
     public var contentLength: UInt? {
-        withLockingClosure() {
+        withLockingClosure {
             return byteBuffer.length
         }
     }

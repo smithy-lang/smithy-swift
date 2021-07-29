@@ -39,6 +39,12 @@ interface HttpProtocolCustomizable {
         return emptyList()
     }
 
+    fun serviceClient(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        serviceConfig: ServiceConfig
+    ): HttpProtocolServiceClient
+
     fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit)? {
         return null
     }

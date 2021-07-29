@@ -17,38 +17,58 @@ class HttpProtocolClientGeneratorTests {
             """
             public class RestJsonProtocolClient {
                 let client: SdkHttpClient
-                let config: RestJsonProtocolClientConfiguration
+                let config: SDKRuntimeConfiguration
                 let serviceName = "Rest Json Protocol"
                 let encoder: RequestEncoder
                 let decoder: ResponseDecoder
             
-                public init(config: RestJsonProtocolClientConfiguration) {
+                public init(config: SDKRuntimeConfiguration) {
                     client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
-                    self.encoder = config.encoder
-                    self.decoder = config.decoder
+                    let encoder = JSONEncoder()
+                    encoder.dateEncodingStrategy = .secondsSince1970
+                    encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+                    self.encoder = config.encoder ?? encoder
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .secondsSince1970
+                    decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+                    self.decoder = config.decoder ?? decoder
                     self.config = config
+                }
+            
+                public convenience init() throws {
+                    let config = try RestJsonProtocolClientConfiguration()
+                    self.init(config: config)
                 }
             
                 deinit {
                     client.close()
                 }
             
-                public class RestJsonProtocolClientConfiguration: ClientRuntime.Configuration {
+                public class RestJsonProtocolClientConfiguration: SDKRuntimeConfiguration {
             
-                    public let clientLogMode: ClientLogMode
-                    public let logger: LogAgent
+                    public var clientLogMode: ClientLogMode
+                    public var decoder: ResponseDecoder?
+                    public var encoder: RequestEncoder?
+                    public var httpClientConfiguration: HttpClientConfiguration
+                    public var httpClientEngine: HttpClientEngine
+                    public var idempotencyTokenGenerator: IdempotencyTokenGenerator
+                    public var logger: LogAgent
+                    public var retrier: Retrier
             
-                    public init (
-                        clientLogMode: ClientLogMode = .request,
-                        logger: LogAgent? = nil
-                    ) throws
-                    {
-                        self.clientLogMode = clientLogMode
-                        self.logger = logger ?? SwiftLogger(label: "RestJsonProtocolClient")
+                    public init(runtimeConfig: SDKRuntimeConfiguration) throws {
+                        self.clientLogMode = runtimeConfig.clientLogMode
+                        self.decoder = runtimeConfig.decoder
+                        self.encoder = runtimeConfig.encoder
+                        self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
+                        self.httpClientEngine = runtimeConfig.httpClientEngine
+                        self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
+                        self.logger = runtimeConfig.logger
+                        self.retrier = runtimeConfig.retrier
                     }
             
-                    public static func `default`() throws -> RestJsonProtocolClientConfiguration {
-                        return try RestJsonProtocolClientConfiguration()
+                    public convenience init() throws {
+                        let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
+                        try self.init(runtimeConfig: defaultRuntimeConfig)
                     }
                 }
             }

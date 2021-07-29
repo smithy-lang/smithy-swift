@@ -67,4 +67,3 @@ extension ByteStream: Codable {
         try container.encode(self.toBytes().toData())
     }
 }
-
