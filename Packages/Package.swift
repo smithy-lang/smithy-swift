@@ -7,8 +7,8 @@ let excludes = ["README.md"]
 let package = Package(
     name: "ClientRuntime",
     platforms: [
-    .macOS(.v10_15),
-    .iOS(.v13)
+        .macOS(.v10_15),
+        .iOS(.v13)
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
@@ -32,16 +32,15 @@ let package = Package(
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
-	        "ClientRuntime",
-	        "SmithyTestUtil"
-	    ],
-	    path: "./ClientRuntime/Tests"
+                "ClientRuntime",
+                "SmithyTestUtil"
+            ],
+            path: "./ClientRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"],
-            path: "./SmithyTestUtil/Sources",
-            exclude: excludes
+            path: "./SmithyTestUtil/Sources"
         ),
         .testTarget(
             name: "SmithyTestUtilTests",

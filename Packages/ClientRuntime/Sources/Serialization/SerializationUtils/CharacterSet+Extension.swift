@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation.NSCharacterSet
+import struct Foundation.CharacterSet
 
 extension CharacterSet {
     public static var singleUrlQueryAllowed: CharacterSet {
