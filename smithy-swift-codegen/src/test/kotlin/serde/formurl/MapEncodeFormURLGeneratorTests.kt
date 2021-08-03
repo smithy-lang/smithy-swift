@@ -116,8 +116,6 @@ class MapEncodeFormURLGeneratorTests {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        print("smithyFile: $smithyFile")
-        print("serviceShapeId: $serviceShapeId")
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpAWSQueryProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "aws query protocol")
         }
