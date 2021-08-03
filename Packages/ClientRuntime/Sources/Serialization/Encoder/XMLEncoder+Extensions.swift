@@ -7,4 +7,8 @@ import Foundation
 import XMLCoder
 
 public typealias XMLEncoder = XMLCoder.XMLEncoder
-extension XMLEncoder: RequestEncoder {}
+extension XMLEncoder: RequestEncoder {
+    open func encode<T>(_ value: T) throws -> Data where T: Encodable {
+        return try encode(value, withRootKey: nil, rootAttributes: nil, header: nil)
+    }
+}
