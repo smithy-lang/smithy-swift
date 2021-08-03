@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen
+package software.amazon.smithy.swift.codegen.customtraits
 
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId

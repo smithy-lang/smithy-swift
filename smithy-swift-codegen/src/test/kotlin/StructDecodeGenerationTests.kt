@@ -6,8 +6,8 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.AddOperationShapes
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
 class StructDecodeGenerationTests {
     var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()

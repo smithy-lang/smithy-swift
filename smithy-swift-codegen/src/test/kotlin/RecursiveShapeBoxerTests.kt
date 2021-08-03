@@ -3,8 +3,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import kotlin.streams.toList
 

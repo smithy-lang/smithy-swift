@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
@@ -15,20 +14,13 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
-
-fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
-    val shapeId = toShapeId()
-    // handle recursive types
-    val loop = index.getRecursiveClosure(shapeId)
-    // loop through set of paths and then array of paths to find if current member matches a member in that list
-    // if it does it is a recursive member that needs to be boxed as so
-    return loop.any { path -> path.endShape.id == shapeId }
-}
 
 class StructureGenerator(
     private val model: Model,
@@ -40,7 +32,6 @@ class StructureGenerator(
 
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
-    private val topologicalIndex = TopologicalIndex.of(model)
 
     init {
         for (member in membersSortedByName) {
@@ -233,15 +224,5 @@ class StructureGenerator(
             writer.writeAvailableAttribute(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
-    }
-
-    private fun checkMemberExists(name: String): Boolean {
-        membersSortedByName.forEach {
-            val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-            if (memberName == name) {
-                return true
-            }
-        }
-        return false
     }
 }

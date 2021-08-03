@@ -49,7 +49,7 @@ import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.utils.toPascalCase
+import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
 
@@ -140,12 +140,12 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         if (enumTrait.isPresent) {
             return createEnumSymbol(shape)
         }
-        return createSymbolBuilder(shape, "String", boxed = true).build()
+        return createSymbolBuilder(shape, "String", namespace = "Swift", boxed = true).build()
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace = "Swift", boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
@@ -156,7 +156,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
+        return createSymbolBuilder(shape, "Bool", namespace = "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
@@ -315,10 +315,3 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 }
 
-// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String = toPascalCase()
-
-fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
-    val escapedName = toMemberName(shape)
-    return Pair(escapedName, escapedName.removeSurroundingBackticks())
-}

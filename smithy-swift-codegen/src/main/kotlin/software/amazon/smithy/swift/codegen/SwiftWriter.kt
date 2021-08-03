@@ -121,7 +121,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
-                    var formatted = type.name
+                    var formatted = type.fullName
                     if (type.isBoxed()) {
                         formatted += "?"
                     }

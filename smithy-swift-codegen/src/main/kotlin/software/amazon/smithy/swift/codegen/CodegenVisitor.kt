@@ -21,6 +21,10 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.ServiceLoader
 import java.util.logging.Logger
 
@@ -48,11 +52,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
-        // Add operation input/output shapes if not provided for future evolution of sdk
-        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
-        resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
-        resolvedModel = HashableShapeTransformer.transform(resolvedModel)
-        model = resolvedModel
+        model = preprocessModel(resolvedModel)
 
         service = settings.getService(model)
 
@@ -64,6 +64,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
         writers = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
+    }
+
+    fun preprocessModel(model: Model): Model {
+        var resolvedModel = model
+        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
+        resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
+        resolvedModel = HashableShapeTransformer.transform(resolvedModel)
+        return resolvedModel
     }
 
     private fun resolveProtocolGenerator(
@@ -135,7 +143,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun stringShape(shape: StringShape): Void? {
-        if (shape.hasTrait(EnumTrait::class.java)) {
+        if (shape.hasTrait<EnumTrait>()) {
             writers.useShapeWriter(shape) { writer: SwiftWriter -> EnumGenerator(symbolProvider.toSymbol(shape), writer, shape).render() }
         }
         return null
@@ -150,6 +158,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.useShapeWriter(shape) {
             writer: SwiftWriter ->
             ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
+            ServiceNamespaceGenerator(settings, model, symbolProvider, writer).render()
         }
         return null
     }

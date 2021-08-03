@@ -6,6 +6,7 @@
 
 package software.amazon.smithy.swift.codegen.model
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -99,4 +100,12 @@ fun MemberShape.needsDefaultValueCheck(model: Model, symbolProvider: SymbolProvi
     val defaultValueNotNull = this.defaultValue(symbolProvider) != null
 
     return isPrimitiveShape && isNotBoxed && defaultValueNotNull
+}
+
+fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
+    val serviceSymbol = symbolProvider.toSymbol(this)
+    return Symbol
+        .builder()
+        .name("${serviceSymbol.name}Types")
+        .build()
 }
