@@ -17,6 +17,7 @@ public final class SDKDefaultIO {
     public let tlsContext: TlsContext
 
     private init() {
+        AwsCommonRuntimeKit.initialize()
         self.eventLoopGroup = EventLoopGroup(threadCount: 0)
         self.hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup,
                                                 maxHosts: 8,
@@ -45,5 +46,9 @@ public final class SDKDefaultIO {
                         Github issue with us at https://github.com/awslabs/aws-sdk-swift.
                         """)
         }
+    }
+    
+    deinit {
+        AwsCommonRuntimeKit.cleanup()
     }
 }
