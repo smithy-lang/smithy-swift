@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import AwsCommonRuntimeKit
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var retrier: Retrier
@@ -12,7 +11,6 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var logger: LogAgent
 
     public init(_ clientName: String) throws {
-        AwsCommonRuntimeKit.initialize()
         self.retrier = try SDKRetrier()
         self.logger = SwiftLogger(label: clientName)
     }
