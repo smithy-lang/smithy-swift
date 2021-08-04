@@ -49,6 +49,6 @@ public final class SDKDefaultIO {
     }
     
     deinit {
-        AwsCommonRuntimeKit.cleanup()
+        AwsCommonRuntimeKit.cleanUp()
     }
 }
