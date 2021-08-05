@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-//import Foundation
+// import Foundation
 import AwsCommonRuntimeKit
 
 extension StringProtocol where Self.Index == String.Index {

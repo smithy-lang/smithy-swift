@@ -11,8 +11,8 @@ public protocol StreamReader: AnyObject {
     var availableForRead: UInt { get }
     var hasFinishedWriting: Bool {get set}
 
-    ///Read up to a maximum number of bytes on a stream that is opened..
-    ///WARNING:  Be careful as this will read the entire byte stream into memory (up to limit).
+    /// Read up to a maximum number of bytes on a stream that is opened..
+    /// WARNING:  Be careful as this will read the entire byte stream into memory (up to limit).
     func read(maxBytes: UInt?) -> ByteBuffer
     func seek(offset: Int)
     func onError(error: ClientError)
