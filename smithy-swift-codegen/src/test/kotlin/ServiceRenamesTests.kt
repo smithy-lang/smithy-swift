@@ -17,10 +17,10 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             public struct MyTestOperationInput: Equatable {
-                public let bar: RenamedGreeting?
-
+                public let bar: ExampleClientTypes.RenamedGreeting?
+            
                 public init (
-                    bar: RenamedGreeting? = nil
+                    bar: ExampleClientTypes.RenamedGreeting? = nil
                 )
                 {
                     self.bar = bar
@@ -45,10 +45,10 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             public struct MyTestOperationOutputResponse: Equatable {
-                public let baz: GreetingStruct?
+                public let baz: ExampleClientTypes.GreetingStruct?
             
                 public init (
-                    baz: GreetingStruct? = nil
+                    baz: ExampleClientTypes.GreetingStruct? = nil
                 )
                 {
                     self.baz = baz
@@ -72,15 +72,18 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct GreetingStruct: Equatable {
-                public let hi: String?
+            extension ExampleClientTypes {
+                public struct GreetingStruct: Equatable {
+                    public let hi: Swift.String?
             
-                public init (
-                    hi: String? = nil
-                )
-                {
-                    self.hi = hi
+                    public init (
+                        hi: Swift.String? = nil
+                    )
+                    {
+                        self.hi = hi
+                    }
                 }
+            
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -101,15 +104,18 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct RenamedGreeting: Equatable {
-                public let salutation: String?
+            extension ExampleClientTypes {
+                public struct RenamedGreeting: Equatable {
+                    public let salutation: Swift.String?
             
-                public init (
-                    salutation: String? = nil
-                )
-                {
-                    self.salutation = salutation
+                    public init (
+                        salutation: Swift.String? = nil
+                    )
+                    {
+                        self.salutation = salutation
+                    }
                 }
+            
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

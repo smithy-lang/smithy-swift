@@ -45,10 +45,12 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
@@ -66,8 +68,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     // how deep in the model we have recursed
     private var depth = 0
 
-    // private val errorShapes: Set<StructureShape> = HashSet()
-
     init {
         // Load reserved words from a new-line delimited file.
         // val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
@@ -83,13 +83,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
             // prevent escaping intentional references to built-in types.
             .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
             .buildEscaper()
-
-        // TODO: Get each structure that's used an error.
-//        val operationIndex = model.getKnowledge(OperationIndex::class.java)
-//        model.shapes(OperationShape::class.java)
-//            .forEach { operationShape: OperationShape? ->
-//                errorShapes.plus(operationIndex.getErrors(operationShape))
-//            }
     }
 
     override fun toSymbol(shape: Shape): Symbol {
@@ -145,7 +138,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, namespace = "Swift", boxed = true)
+        val builder = createSymbolBuilder(shape, name, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
@@ -167,7 +160,11 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
 
-        if (shape.getTrait(ErrorTrait::class.java).isPresent) {
+        if (shape.hasTrait<NestedTrait>() && service != null) {
+            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        }
+
+        if (shape.hasTrait<ErrorTrait>()) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
             builder.namespace("ClientRuntime", ".")
         }
@@ -239,7 +236,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName).putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
+        return createSymbolBuilder(shape, typeName, "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
     /**

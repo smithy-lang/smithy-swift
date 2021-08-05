@@ -9,6 +9,10 @@ package software.amazon.smithy.swift.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.neighbor.RelationshipType
+import software.amazon.smithy.model.neighbor.Walker
+import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.NumberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -16,6 +20,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -108,4 +113,68 @@ fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
         .builder()
         .name("${serviceSymbol.name}Types")
         .build()
+}
+
+fun Model.getTopLevelShapes(serviceShape: ServiceShape): Set<Shape> {
+    val topDownIndex: TopDownIndex = TopDownIndex.of(this)
+    val containedOperations = topDownIndex.getContainedOperations(serviceShape)
+    val topLevelOutputMembers = containedOperations.flatMap {
+        val outputShape = this.expectShape(it.output.get())
+        outputShape.members()
+    }
+        .map { this.expectShape(it.target) }
+        .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+        .toSet()
+
+    val topLevelErrorMembers = containedOperations
+        .flatMap { it.errors }
+        .flatMap { this.expectShape(it).members() }
+        .map { this.expectShape(it.target) }
+        .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+        .toSet()
+
+    val topLevelInputMembers = containedOperations.flatMap {
+        val inputShape = this.expectShape(it.input.get())
+        inputShape.members()
+    }
+        .map { this.expectShape(it.target) }
+        .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+        .toSet()
+
+    return topLevelOutputMembers.union(topLevelErrorMembers).union(topLevelInputMembers)
+}
+
+fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
+    var nestedShapes = mutableSetOf<Shape>()
+    val walker = Walker(this)
+    val topLevelShapes = this.getTopLevelShapes(serviceShape)
+    // walk all the shapes in the set and find all other
+    // structs/unions (or collections thereof) in the graph from that shape
+    topLevelShapes.forEach { shape ->
+        walker.iterateShapes(shape) { relationship ->
+            when (relationship.relationshipType) {
+                RelationshipType.MEMBER_TARGET,
+                RelationshipType.STRUCTURE_MEMBER,
+                RelationshipType.LIST_MEMBER,
+                RelationshipType.SET_MEMBER,
+                RelationshipType.MAP_VALUE,
+                RelationshipType.UNION_MEMBER -> true
+                else -> false
+            }
+        }.forEach {
+            when (it) {
+                is UnionShape -> nestedShapes.add(it)
+                is StructureShape -> nestedShapes.add(it)
+            }
+        }
+    }
+//    return Selector
+//        .parse(":not(operation -[input, output]->)")
+//        .shapes(this)
+//        .filter { !Prelude.isPreludeShape(it) }
+//        .filter {
+//            it.type == ShapeType.UNION || it.type == ShapeType.STRUCTURE
+//        }
+//        .collect(Collectors.toSet())
+    return nestedShapes
 }

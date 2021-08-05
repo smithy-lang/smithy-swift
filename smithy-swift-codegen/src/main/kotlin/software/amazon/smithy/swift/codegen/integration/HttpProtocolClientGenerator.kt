@@ -25,7 +25,7 @@ import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import software.amazon.smithy.swift.codegen.toMemberNames
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 
 /**
  * Renders an implementation of a service interface for HTTP protocol

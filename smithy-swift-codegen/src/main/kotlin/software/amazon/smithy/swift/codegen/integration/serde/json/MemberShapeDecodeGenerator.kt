@@ -14,15 +14,15 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
-import software.amazon.smithy.swift.codegen.toMemberNames
 
 /*
 Includes functions to help render conformance to Decodable protocol for shapes

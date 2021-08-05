@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
-import software.amazon.smithy.swift.codegen.toMemberNames
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 
 class HttpQueryItemMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,

@@ -9,17 +9,21 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 
 class StructureGenerator(
@@ -27,6 +31,7 @@ class StructureGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: StructureShape,
+    private val settings: SwiftSettings,
     private val protocolGenerator: ProtocolGenerator? = null
 ) {
 
@@ -88,6 +93,18 @@ class StructureGenerator(
      * ```
      */
     private fun renderNonErrorStructure() {
+        val isNestedType = shape.hasTrait<NestedTrait>()
+        val service = model.expectShape<ServiceShape>(settings.service)
+        if(isNestedType) {
+            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                generateStruct()
+            }
+        } else {
+            generateStruct()
+        }
+    }
+
+    private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val needsHashable = if (shape.hasTrait<HashableTrait>()) ", Hashable" else ""

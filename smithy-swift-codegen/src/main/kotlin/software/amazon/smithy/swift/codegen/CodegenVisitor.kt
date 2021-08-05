@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
+import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.ServiceLoader
@@ -71,6 +72,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         resolvedModel = HashableShapeTransformer.transform(resolvedModel)
+        resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
 
@@ -135,7 +137,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun structureShape(shape: StructureShape): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape).render() }
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings).render() }
         writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
             CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
         }

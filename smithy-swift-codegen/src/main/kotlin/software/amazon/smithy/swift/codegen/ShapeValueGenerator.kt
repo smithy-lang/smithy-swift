@@ -28,6 +28,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.utils.StringUtils.lowerCase
 
 /**
@@ -285,7 +286,7 @@ class ShapeValueGenerator(
                         }
                         "-Infinity", "Infinity" -> {
                             val isNegative = if (node.value.toString() == "-Infinity") "-" else ""
-                            "$isNegative${symbol.name}.infinity"
+                            "$isNegative${symbol.fullName}.infinity"
                         }
                         else -> "${node.value}"
                     }

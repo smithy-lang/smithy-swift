@@ -23,9 +23,10 @@ class StructureGeneratorTests {
 
         val struct: StructureShape = createStructureWithoutErrorTrait()
         val model: Model = createModelWithStructureShape(struct)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val swiftSettings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
-        val generator = StructureGenerator(model, provider, writer, struct)
+        val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
 
         val contents = writer.toString()
@@ -65,71 +66,74 @@ class StructureGeneratorTests {
         val primitiveTypesInput = manifest
             .getFileString("example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
-        primitiveTypesInput.shouldContain(
-            "public struct PrimitiveTypesInput: Equatable {\n" +
-                "    public let booleanVal: Bool?\n" +
-                "    public let byteVal: Int8?\n" +
-                "    public let doubleVal: Double?\n" +
-                "    public let floatVal: Float?\n" +
-                "    public let intVal: Int?\n" +
-                "    public let longVal: Int?\n" +
-                "    public let primitiveBooleanVal: Bool\n" +
-                "    public let primitiveByteVal: Int8\n" +
-                "    public let primitiveDoubleVal: Double\n" +
-                "    public let primitiveFloatVal: Float\n" +
-                "    public let primitiveIntVal: Int\n" +
-                "    public let primitiveLongVal: Int\n" +
-                "    public let primitiveShortVal: Int16\n" +
-                "    public let shortVal: Int16?\n" +
-                "    public let str: String?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        booleanVal: Bool? = nil,\n" +
-                "        byteVal: Int8? = nil,\n" +
-                "        doubleVal: Double? = nil,\n" +
-                "        floatVal: Float? = nil,\n" +
-                "        intVal: Int? = nil,\n" +
-                "        longVal: Int? = nil,\n" +
-                "        primitiveBooleanVal: Bool = false,\n" +
-                "        primitiveByteVal: Int8 = 0,\n" +
-                "        primitiveDoubleVal: Double = 0.0,\n" +
-                "        primitiveFloatVal: Float = 0.0,\n" +
-                "        primitiveIntVal: Int = 0,\n" +
-                "        primitiveLongVal: Int = 0,\n" +
-                "        primitiveShortVal: Int16 = 0,\n" +
-                "        shortVal: Int16? = nil,\n" +
-                "        str: String? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.booleanVal = booleanVal\n" +
-                "        self.byteVal = byteVal\n" +
-                "        self.doubleVal = doubleVal\n" +
-                "        self.floatVal = floatVal\n" +
-                "        self.intVal = intVal\n" +
-                "        self.longVal = longVal\n" +
-                "        self.primitiveBooleanVal = primitiveBooleanVal\n" +
-                "        self.primitiveByteVal = primitiveByteVal\n" +
-                "        self.primitiveDoubleVal = primitiveDoubleVal\n" +
-                "        self.primitiveFloatVal = primitiveFloatVal\n" +
-                "        self.primitiveIntVal = primitiveIntVal\n" +
-                "        self.primitiveLongVal = primitiveLongVal\n" +
-                "        self.primitiveShortVal = primitiveShortVal\n" +
-                "        self.shortVal = shortVal\n" +
-                "        self.str = str\n" +
-                "    }\n" +
-                "}\n"
-        )
+        val expected =
+        """
+        public struct PrimitiveTypesInput: Equatable {
+            public let booleanVal: Swift.Bool?
+            public let byteVal: Swift.Int8?
+            public let doubleVal: Swift.Double?
+            public let floatVal: Swift.Float?
+            public let intVal: Swift.Int?
+            public let longVal: Swift.Int?
+            public let primitiveBooleanVal: Swift.Bool
+            public let primitiveByteVal: Swift.Int8
+            public let primitiveDoubleVal: Swift.Double
+            public let primitiveFloatVal: Swift.Float
+            public let primitiveIntVal: Swift.Int
+            public let primitiveLongVal: Swift.Int
+            public let primitiveShortVal: Swift.Int16
+            public let shortVal: Swift.Int16?
+            public let str: Swift.String?
+        
+            public init (
+                booleanVal: Swift.Bool? = nil,
+                byteVal: Swift.Int8? = nil,
+                doubleVal: Swift.Double? = nil,
+                floatVal: Swift.Float? = nil,
+                intVal: Swift.Int? = nil,
+                longVal: Swift.Int? = nil,
+                primitiveBooleanVal: Swift.Bool = false,
+                primitiveByteVal: Swift.Int8 = 0,
+                primitiveDoubleVal: Swift.Double = 0.0,
+                primitiveFloatVal: Swift.Float = 0.0,
+                primitiveIntVal: Swift.Int = 0,
+                primitiveLongVal: Swift.Int = 0,
+                primitiveShortVal: Swift.Int16 = 0,
+                shortVal: Swift.Int16? = nil,
+                str: Swift.String? = nil
+            )
+            {
+                self.booleanVal = booleanVal
+                self.byteVal = byteVal
+                self.doubleVal = doubleVal
+                self.floatVal = floatVal
+                self.intVal = intVal
+                self.longVal = longVal
+                self.primitiveBooleanVal = primitiveBooleanVal
+                self.primitiveByteVal = primitiveByteVal
+                self.primitiveDoubleVal = primitiveDoubleVal
+                self.primitiveFloatVal = primitiveFloatVal
+                self.primitiveIntVal = primitiveIntVal
+                self.primitiveLongVal = primitiveLongVal
+                self.primitiveShortVal = primitiveShortVal
+                self.shortVal = shortVal
+                self.str = str
+            }
+        }
+        """.trimIndent()
+        primitiveTypesInput.shouldContain(expected)
     }
 
     @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
         val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
-        val provider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val swiftSettings = model.defaultSettings()
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
 
         for (struct in structs) {
-            val generator = StructureGenerator(model, provider, writer, struct)
+            val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
             generator.render()
         }
         val contents = writer.toString()
@@ -182,11 +186,12 @@ public struct RecursiveShapesInputOutput: Equatable {
     fun `it renders recursive nested shapes in lists`() {
         val structs = createStructureContainingNestedRecursiveShapeList()
         val model = javaClass.getResource("recursive-shape-test.smithy").asSmithy()
-        val provider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val swiftSettings = model.defaultSettings()
+        val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
 
         for (struct in structs) {
-            val generator = StructureGenerator(model, provider, writer, struct)
+            val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
             generator.render()
         }
         val contents = writer.toString()
@@ -240,9 +245,10 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
         val struct: StructureShape = createStructureWithOptionalErrorMessage()
         val model: Model = createModelWithStructureShape(struct)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val swiftSettings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
-        val generator = StructureGenerator(model, provider, writer, struct)
+        val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
 
         val contents = writer.toString()
@@ -438,6 +444,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/StructWithDeprecatedTrait.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         var structContainsDeprecatedTrait = """
+        extension ExampleClientTypes {
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
             public struct StructWithDeprecatedTrait: Equatable {
         """.trimIndent()
@@ -447,6 +454,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/StructSincePropertySet.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
+        extension ExampleClientTypes {
             @available(*, deprecated, message: " API deprecated since 2019-03-21")
             public struct StructSincePropertySet: Equatable {
         """.trimIndent()
@@ -464,17 +472,17 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/OperationWithDeprecatedTraitInput.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
+        @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+        public struct OperationWithDeprecatedTraitInput: Equatable {
+            public let bool: Swift.Bool?
+            public let foo: ExampleClientTypes.Foo?
+            public let intVal: Swift.Int?
+            @available(*, deprecated)
+            public let string: Swift.String?
+            @available(*, deprecated, message: " API deprecated since 2019-03-21")
+            public let structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct OperationWithDeprecatedTraitInput: Equatable {
-                public let bool: Bool?
-                public let foo: Foo?
-                public let intVal: Int?
-                @available(*, deprecated)
-                public let string: String?
-                @available(*, deprecated, message: " API deprecated since 2019-03-21")
-                public let structSincePropertySet: StructSincePropertySet?
-                @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-                public let structWithDeprecatedTrait: StructWithDeprecatedTrait?
+            public let structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
         """.trimIndent()
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }
@@ -490,12 +498,13 @@ public struct RecursiveShapesInputOutputLists: Equatable {
             .getFileString("example/models/Foo.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
-        public struct Foo: Equatable {
-            /// Test documentation with deprecated
-            @available(*, deprecated)
-            public let baz: String?
-            /// Test documentation with deprecated
-            public let qux: String?
+        extension ExampleClientTypes {
+            public struct Foo: Equatable {
+                /// Test documentation with deprecated
+                @available(*, deprecated)
+                public let baz: Swift.String?
+                /// Test documentation with deprecated
+                public let qux: Swift.String?
         """.trimIndent()
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }

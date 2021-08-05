@@ -12,7 +12,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.toMemberNames
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 
 /**
  * Generates decode function for members bound to the payload.

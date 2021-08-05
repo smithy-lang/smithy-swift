@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen
+package software.amazon.smithy.swift.codegen.utils
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

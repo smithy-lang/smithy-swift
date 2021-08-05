@@ -45,18 +45,18 @@ class StructDecodeGenerationTests {
         val expectedContents =
             """
             struct SmokeTestOutputResponseBody: Equatable {
-                public let payload1: String?
+                public let payload1: Swift.String?
                 public let payload2: Int?
                 public let payload3: Nested?
             }
-
+            
             extension SmokeTestOutputResponseBody: Decodable {
                 enum CodingKeys: String, CodingKey {
                     case payload1
                     case payload2
                     case payload3
                 }
-
+            
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let payload1Decoded = try containerValues.decodeIfPresent(String.self, forKey: .payload1)
