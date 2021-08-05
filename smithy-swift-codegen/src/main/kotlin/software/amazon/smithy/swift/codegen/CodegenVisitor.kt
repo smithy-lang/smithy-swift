@@ -90,7 +90,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         println("Walking shapes from " + service.id + " to find shapes to generate")
         val serviceShapes: Set<Shape> = Walker(model).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
-        var generateTestTarget = false
+        var shouldGenerateTestTarget = false
         protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
@@ -107,9 +107,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             generateCodableConformanceForNestedTypes(ctx)
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
-            generateProtocolUnitTests(ctx)
-
-            generateTestTarget = ctx.settings.shouldGenerateUnitTestTarget
+            val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
+            shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
             generateProtocolClient(ctx)
@@ -120,7 +119,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         writers.flushWriters()
 
         println("Generating package manifest file")
-        writePackageManifest(settings, fileManifest, dependencies, generateTestTarget)
+        writePackageManifest(settings, fileManifest, dependencies, shouldGenerateTestTarget)
     }
 
     override fun getDefault(shape: Shape?): Void? {

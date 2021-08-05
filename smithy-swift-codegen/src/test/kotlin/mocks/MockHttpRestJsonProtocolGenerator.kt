@@ -85,12 +85,12 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         decodeGenerator.render()
     }
 
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
         val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
 
-        HttpProtocolTestGenerator(
+        return HttpProtocolTestGenerator(
             ctx,
             requestTestBuilder,
             responseTestBuilder,

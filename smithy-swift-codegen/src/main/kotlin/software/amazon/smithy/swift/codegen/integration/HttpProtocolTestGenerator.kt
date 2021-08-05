@@ -37,18 +37,19 @@ class HttpProtocolTestGenerator(
     /**
      * Generates the API HTTP protocol tests defined in the smithy model.
      */
-    fun generateProtocolTests() {
+    fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-
+        var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-            renderRequestTests(operation, serviceSymbol)
-            renderResponseTests(operation, serviceSymbol)
-            renderErrorTestCases(operation, serviceSymbol)
+            numTests += renderRequestTests(operation, serviceSymbol)
+            numTests += renderResponseTests(operation, serviceSymbol)
+            numTests += renderErrorTestCases(operation, serviceSymbol)
         }
+        return numTests
     }
 
-    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol) {
+    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol): Int {
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
@@ -78,9 +79,10 @@ class HttpProtocolTestGenerator(
                     .renderTestClass(testClassName)
             }
         }
+        return requestTestCases.count()
     }
 
-    private fun renderResponseTests(operation: OperationShape, serviceSymbol: Symbol) {
+    private fun renderResponseTests(operation: OperationShape, serviceSymbol: Symbol): Int {
         val tempResponseTests = operation.getTrait(HttpResponseTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
@@ -110,17 +112,19 @@ class HttpProtocolTestGenerator(
                     .renderTestClass(testClassName)
             }
         }
+        return responseTestCases.count()
     }
 
-    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol) {
+    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol): Int {
         val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
-
+        var numTestCases = 0
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
             val tempTestCases = error.getTrait(HttpResponseTestsTrait::class.java)
                 .getOrNull()
                 ?.getTestCasesFor(AppliesTo.CLIENT)
                 .orEmpty()
             val testCases = filterProtocolTestCases(tempTestCases)
+            numTestCases += testCases.count()
             if (testCases.isNotEmpty()) {
                 // multiple error (tests) may be associated with a single operation,
                 // use the operation name + error name as the class name
@@ -150,6 +154,7 @@ class HttpProtocolTestGenerator(
                 }
             }
         }
+        return numTestCases
     }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
