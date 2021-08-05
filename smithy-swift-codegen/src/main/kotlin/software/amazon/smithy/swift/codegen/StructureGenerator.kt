@@ -221,8 +221,8 @@ class StructureGenerator(
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
         if (hasErrorTrait) {
-            writer.write("public var _headers: \$L", ClientRuntimeTypes.Http.Headers)
-            writer.write("public var _statusCode: \$L", ClientRuntimeTypes.Http.HttpStatusCode)
+            writer.write("public var _headers: \$T", ClientRuntimeTypes.Http.Headers)
+            writer.write("public var _statusCode: \$T", ClientRuntimeTypes.Http.HttpStatusCode)
         }
         writer.write("public var _message: Swift.String?")
         writer.write("public var _requestID: Swift.String?")
@@ -233,7 +233,7 @@ class StructureGenerator(
         writer.write("public var _retryable: Swift.Bool = \$L", isRetryable)
         writer.write("public var _isThrottling: Swift.Bool = \$L", isThrottling)
 
-        writer.write("public var _type: \$L = .\$L",ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
+        writer.write("public var _type: \$T = .\$L",ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

@@ -38,5 +38,6 @@ object ClientRuntimeTypes {
 private fun runtimeSymbol(name: String, optional: Boolean = true): Symbol = buildSymbol {
     this.name = name
     this.nullable = optional
+    this.namespace = SwiftDependency.CLIENT_RUNTIME.target
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

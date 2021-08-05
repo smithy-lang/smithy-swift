@@ -180,7 +180,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.fullName}?" else "${reference.fullName}"
-        return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
+        return createSymbolBuilder(shape, "[Swift.String:$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {

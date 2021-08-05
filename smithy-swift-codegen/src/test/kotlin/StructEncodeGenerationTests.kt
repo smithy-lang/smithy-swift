@@ -110,10 +110,10 @@ class StructEncodeGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try containerValues.decodeIfPresent(Int.self, forKey: .member1)
                     member1 = member1Decoded
-                    let intListContainer = try containerValues.decodeIfPresent([Int?].self, forKey: .intList)
-                    var intListDecoded0:[Int]? = nil
+                    let intListContainer = try containerValues.decodeIfPresent([Swift.Int?].self, forKey: .intList)
+                    var intListDecoded0:[Swift.Int]? = nil
                     if let intListContainer = intListContainer {
-                        intListDecoded0 = [Int]()
+                        intListDecoded0 = [Swift.Int]()
                         for integer0 in intListContainer {
                             if let integer0 = integer0 {
                                 intListDecoded0?.append(integer0)
@@ -121,10 +121,10 @@ class StructEncodeGenerationTests {
                         }
                     }
                     intList = intListDecoded0
-                    let intMapContainer = try containerValues.decodeIfPresent([String: Int?].self, forKey: .intMap)
-                    var intMapDecoded0: [String:Int]? = nil
+                    let intMapContainer = try containerValues.decodeIfPresent([String: Swift.Int?].self, forKey: .intMap)
+                    var intMapDecoded0: [Swift.String:Swift.Int]? = nil
                     if let intMapContainer = intMapContainer {
-                        intMapDecoded0 = [String:Int]()
+                        intMapDecoded0 = [Swift.String:Swift.Int]()
                         for (key0, integer0) in intMapContainer {
                             if let integer0 = integer0 {
                                 intMapDecoded0?[key0] = integer0
@@ -132,14 +132,14 @@ class StructEncodeGenerationTests {
                         }
                     }
                     intMap = intMapDecoded0
-                    let stringMapContainer = try containerValues.decodeIfPresent([String: [String?]?].self, forKey: .stringMap)
-                    var stringMapDecoded0: [String:[String]]? = nil
+                    let stringMapContainer = try containerValues.decodeIfPresent([String: [Swift.String?]?].self, forKey: .stringMap)
+                    var stringMapDecoded0: [Swift.String:[Swift.String]]? = nil
                     if let stringMapContainer = stringMapContainer {
-                        stringMapDecoded0 = [String:[String]]()
+                        stringMapDecoded0 = [Swift.String:[Swift.String]]()
                         for (key0, stringlist0) in stringMapContainer {
-                            var stringlist0Decoded0: [String]? = nil
+                            var stringlist0Decoded0: [Swift.String]? = nil
                             if let stringlist0 = stringlist0 {
-                                stringlist0Decoded0 = [String]()
+                                stringlist0Decoded0 = [Swift.String]()
                                 for string1 in stringlist0 {
                                     if let string1 = string1 {
                                         stringlist0Decoded0?.append(string1)

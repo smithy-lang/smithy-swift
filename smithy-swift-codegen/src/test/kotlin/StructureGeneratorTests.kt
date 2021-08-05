@@ -261,19 +261,19 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                 /// This *is* documentation about the shape.
                 public struct MyError: ClientRuntime.ServiceError, Equatable {
                     public var _headers: ClientRuntime.Headers?
-                    public var _statusCode: HttpStatusCode?
-                    public var _message: String?
-                    public var _requestID: String?
-                    public var _retryable: Bool = true
-                    public var _isThrottling: Bool = false
-                    public var _type: ErrorType = .client
+                    public var _statusCode: ClientRuntime.HttpStatusCode?
+                    public var _message: Swift.String?
+                    public var _requestID: Swift.String?
+                    public var _retryable: Swift.Bool = true
+                    public var _isThrottling: Swift.Bool = false
+                    public var _type: ClientRuntime.ErrorType = .client
                     /// This *is* documentation about the member.
-                    public var baz: Int?
-                    public var message: String?
-
+                    public var baz: Swift.Int?
+                    public var message: Swift.String?
+                
                     public init (
-                        baz: Int? = nil,
-                        message: String? = nil
+                        baz: Swift.Int? = nil,
+                        message: Swift.String? = nil
                     )
                     {
                         self.baz = baz
@@ -310,32 +310,35 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
         val expectedContents =
             """
-            public struct JsonListsInput: Equatable {
-                public let booleanList: [Bool]?
-                public let integerList: [Int]?
-                public let nestedStringList: [[String]]?
-                public let sparseStringList: [String?]?
-                public let stringList: [String]?
-                public let stringSet: Set<String>?
-                public let timestampList: [Date]?
-
+            public struct JsonMapsInput: Equatable {
+                public let denseBooleanMap: [Swift.String:Swift.Bool]?
+                public let denseNumberMap: [Swift.String:Swift.Int]?
+                public let denseStringMap: [Swift.String:Swift.String]?
+                public let denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
+                public let sparseBooleanMap: [Swift.String:Swift.Bool?]?
+                public let sparseNumberMap: [Swift.String:Swift.Int?]?
+                public let sparseStringMap: [Swift.String:Swift.String?]?
+                public let sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
+            
                 public init (
-                    booleanList: [Bool]? = nil,
-                    integerList: [Int]? = nil,
-                    nestedStringList: [[String]]? = nil,
-                    sparseStringList: [String?]? = nil,
-                    stringList: [String]? = nil,
-                    stringSet: Set<String>? = nil,
-                    timestampList: [Date]? = nil
+                    denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
+                    denseNumberMap: [Swift.String:Swift.Int]? = nil,
+                    denseStringMap: [Swift.String:Swift.String]? = nil,
+                    denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]? = nil,
+                    sparseBooleanMap: [Swift.String:Swift.Bool?]? = nil,
+                    sparseNumberMap: [Swift.String:Swift.Int?]? = nil,
+                    sparseStringMap: [Swift.String:Swift.String?]? = nil,
+                    sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]? = nil
                 )
                 {
-                    self.booleanList = booleanList
-                    self.integerList = integerList
-                    self.nestedStringList = nestedStringList
-                    self.sparseStringList = sparseStringList
-                    self.stringList = stringList
-                    self.stringSet = stringSet
-                    self.timestampList = timestampList
+                    self.denseBooleanMap = denseBooleanMap
+                    self.denseNumberMap = denseNumberMap
+                    self.denseStringMap = denseStringMap
+                    self.denseStructMap = denseStructMap
+                    self.sparseBooleanMap = sparseBooleanMap
+                    self.sparseNumberMap = sparseNumberMap
+                    self.sparseStringMap = sparseStringMap
+                    self.sparseStructMap = sparseStructMap
                 }
             }
             """.trimIndent()
