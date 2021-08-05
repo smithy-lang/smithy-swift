@@ -33,6 +33,14 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 }
 
+tasks.compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 jacoco {
     toolVersion = "$jacocoVersion"
 }

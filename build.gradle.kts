@@ -1,12 +1,24 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    val kotlinVersion: String by project
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+
 plugins {
-    kotlin("jvm") version "1.5.0" apply false
-    id("org.jetbrains.dokka") version "1.4.20"
+    kotlin("jvm") apply false
+    id("org.jetbrains.dokka")
 }
 
 allprojects {
     repositories {
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
         jcenter()
     }
 }
