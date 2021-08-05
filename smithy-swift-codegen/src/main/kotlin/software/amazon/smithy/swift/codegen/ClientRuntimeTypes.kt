@@ -17,6 +17,8 @@ object ClientRuntimeTypes {
     object Http {
         val HttpClientEngine = runtimeSymbol("HttpClientEngine")
         val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
+        val Headers = runtimeSymbol("Headers")
+        val HttpStatusCode = runtimeSymbol("HttpStatusCode")
     }
 
     object Serde {
@@ -29,10 +31,12 @@ object ClientRuntimeTypes {
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
         val Retrier = runtimeSymbol("Retrier")
+        val ErrorType = runtimeSymbol("ErrorType", false)
     }
 }
 
-private fun runtimeSymbol(name: String): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String, optional: Boolean = true): Symbol = buildSymbol {
     this.name = name
+    this.nullable = optional
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

@@ -38,21 +38,21 @@ class SymbolProviderTest {
     @DisplayName("Creates primitives")
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @CsvSource(
-        "String, String, nil, true,",
-        "Integer, Int, nil, true,",
-        "PrimitiveInteger, Int, 0, false,",
-        "Short, Int16, nil, true,",
-        "PrimitiveShort, Int16, 0, false,",
-        "Long, Int, nil, true,",
-        "PrimitiveLong, Int, 0, false,",
-        "Byte, Int8, nil, true,",
-        "PrimitiveByte, Int8, 0, false,",
-        "Float, Float, nil, true,",
-        "PrimitiveFloat, Float, 0.0, false,",
-        "Double, Double, nil, true,",
-        "PrimitiveDouble, Double, 0.0, false,",
-        "Boolean, Bool, nil, true,",
-        "PrimitiveBoolean, Bool, false, false,",
+        "String, String, nil, true, Swift",
+        "Integer, Int, nil, true, Swift",
+        "PrimitiveInteger, Int, 0, false, Swift",
+        "Short, Int16, nil, true, Swift",
+        "PrimitiveShort, Int16, 0, false, Swift",
+        "Long, Int, nil, true, Swift",
+        "PrimitiveLong, Int, 0, false, Swift",
+        "Byte, Int8, nil, true, Swift",
+        "PrimitiveByte, Int8, 0, false, Swift",
+        "Float, Float, nil, true, Swift",
+        "PrimitiveFloat, Float, 0.0, false, Swift",
+        "Double, Double, nil, true, Swift",
+        "PrimitiveDouble, Double, 0.0, false, Swift",
+        "Boolean, Bool, nil, true, Swift",
+        "PrimitiveBoolean, Bool, false, false, Swift",
         "Document, Document, nil, true, ClientRuntime"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
@@ -149,6 +149,7 @@ class SymbolProviderTest {
         val setSymbol = provider.toSymbol(set)
 
         assertEquals("Set<Record>", setSymbol.name)
+        assertEquals("Swift", setSymbol.namespace)
         assertEquals(true, setSymbol.isBoxed())
         assertEquals("nil", setSymbol.defaultValue())
     }

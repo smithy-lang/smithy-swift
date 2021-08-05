@@ -173,19 +173,19 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.fullName}?" else "${reference.fullName}"
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.fullName}?" else "${reference.fullName}"
         return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
+        return createSymbolBuilder(shape, "Set<${reference.fullName}>", "Swift", true, ).addReference(reference)
             .build()
     }
 

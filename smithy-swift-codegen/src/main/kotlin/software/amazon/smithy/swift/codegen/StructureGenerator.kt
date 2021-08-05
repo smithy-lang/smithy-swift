@@ -221,19 +221,19 @@ class StructureGenerator(
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
         if (hasErrorTrait) {
-            writer.write("public var _headers: ClientRuntime.Headers?")
-            writer.write("public var _statusCode: HttpStatusCode?")
+            writer.write("public var _headers: \$L", ClientRuntimeTypes.Http.Headers)
+            writer.write("public var _statusCode: \$L", ClientRuntimeTypes.Http.HttpStatusCode)
         }
-        writer.write("public var _message: String?")
-        writer.write("public var _requestID: String?")
+        writer.write("public var _message: Swift.String?")
+        writer.write("public var _requestID: Swift.String?")
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
 
-        writer.write("public var _retryable: Bool = \$L", isRetryable)
-        writer.write("public var _isThrottling: Bool = \$L", isThrottling)
+        writer.write("public var _retryable: Swift.Bool = \$L", isRetryable)
+        writer.write("public var _isThrottling: Swift.Bool = \$L", isThrottling)
 
-        writer.write("public var _type: ErrorType = .\$L", errorTrait?.value)
+        writer.write("public var _type: \$L = .\$L",ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
