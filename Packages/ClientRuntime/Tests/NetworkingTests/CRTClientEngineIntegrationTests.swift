@@ -14,7 +14,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
-        let crtEngine = try! CRTClientEngine()
+        let crtEngine = CRTClientEngine()
         httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
     
@@ -44,7 +44,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         wait(for: [expectation], timeout: 10.0)
     }
     
-    func testMakeHttpPostRequest() {
+    func testMakeHttpPostRequest() throws {
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
@@ -52,7 +52,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Host", value: "httpbin.org")
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
-        let encodedData = try! encoder.encode(body)
+        let encodedData = try encoder.encode(body)
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
@@ -196,7 +196,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         wait(for: [expectation], timeout: 20.0)
     }
     
-    func testMakeHttpStreamRequestFromData() {
+    func testMakeHttpStreamRequestFromData() throws {
         //used https://httpbin.org
         let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
@@ -204,7 +204,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Host", value: "httpbin.org")
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
-        let encodedData = try! encoder.encode(body)
+        let encodedData = try encoder.encode(body)
         
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
