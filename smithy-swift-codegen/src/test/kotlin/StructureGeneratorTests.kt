@@ -34,24 +34,24 @@ class StructureGeneratorTests {
         contents.shouldContain(SwiftWriter.staticHeader)
         val expectedGeneratedStructure =
             """
-                /// This *is* documentation about the shape.
-                public struct MyStruct: Equatable {
-                    public let bar: Int
-                    /// This *is* documentation about the member.
-                    public let baz: Int?
-                    public let foo: String?
-
-                    public init (
-                        bar: Int = 0,
-                        baz: Int? = nil,
-                        foo: String? = nil
-                    )
-                    {
-                        self.bar = bar
-                        self.baz = baz
-                        self.foo = foo
-                    }
+            /// This *is* documentation about the shape.
+            public struct MyStruct: Swift.Equatable {
+                public let bar: Swift.Int
+                /// This *is* documentation about the member.
+                public let baz: Swift.Int?
+                public let foo: Swift.String?
+            
+                public init (
+                    bar: Swift.Int = 0,
+                    baz: Swift.Int? = nil,
+                    foo: Swift.String? = nil
+                )
+                {
+                    self.bar = bar
+                    self.baz = baz
+                    self.foo = foo
                 }
+            }
             """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)
     }
@@ -68,7 +68,7 @@ class StructureGeneratorTests {
         Assertions.assertNotNull(primitiveTypesInput)
         val expected =
         """
-        public struct PrimitiveTypesInput: Equatable {
+        public struct PrimitiveTypesInput: Swift.Equatable {
             public let booleanVal: Swift.Bool?
             public let byteVal: Swift.Int8?
             public let doubleVal: Swift.Double?
@@ -139,7 +139,7 @@ class StructureGeneratorTests {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNested1: Equatable {
+public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
     public let foo: String?
     public let nested: Box<RecursiveShapesInputOutputNested2>?
 
@@ -153,7 +153,7 @@ public struct RecursiveShapesInputOutputNested1: Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Equatable {
+public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     public let bar: String?
     public let recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -197,7 +197,7 @@ public struct RecursiveShapesInputOutput: Equatable {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNestedList1: Equatable {
+public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
     public let foo: String?
     public let recursiveList: [RecursiveShapesInputOutputNested2]?
 
@@ -259,7 +259,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                 import ClientRuntime
 
                 /// This *is* documentation about the shape.
-                public struct MyError: ClientRuntime.ServiceError, Equatable {
+                public struct MyError: ClientRuntime.ServiceError, Swift.Equatable {
                     public var _headers: ClientRuntime.Headers?
                     public var _statusCode: ClientRuntime.HttpStatusCode?
                     public var _message: Swift.String?
@@ -310,7 +310,55 @@ public struct RecursiveShapesInputOutputLists: Equatable {
 
         val expectedContents =
             """
-            public struct JsonMapsInput: Equatable {
+            public struct JsonListsInput: Swift.Equatable {
+                public let booleanList: [Swift.Bool]?
+                public let integerList: [Swift.Int]?
+                public let nestedStringList: [[Swift.String]]?
+                public let sparseStringList: [Swift.String?]?
+                public let stringList: [Swift.String]?
+                public let stringSet: Swift.Set<Swift.String>?
+                public let timestampList: [ClientRuntime.Date]?
+            
+                public init (
+                    booleanList: [Swift.Bool]? = nil,
+                    integerList: [Swift.Int]? = nil,
+                    nestedStringList: [[Swift.String]]? = nil,
+                    sparseStringList: [Swift.String?]? = nil,
+                    stringList: [Swift.String]? = nil,
+                    stringSet: Swift.Set<Swift.String>? = nil,
+                    timestampList: [ClientRuntime.Date]? = nil
+                )
+                {
+                    self.booleanList = booleanList
+                    self.integerList = integerList
+                    self.nestedStringList = nestedStringList
+                    self.sparseStringList = sparseStringList
+                    self.stringList = stringList
+                    self.stringSet = stringSet
+                    self.timestampList = timestampList
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `check for sparse and dense datatypes in maps`() {
+        /*  Also the integration test for model evolution: Struct JsonListsInputOutput is generating 2
+            separate structs for input and output with members given in smithy model, without creating
+            additional structs in the model
+         */
+        val model = javaClass.getResource("sparse-trait-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val jsonMapsInput = manifest
+            .getFileString("example/models/JsonMapsInput.swift").get()
+        Assertions.assertNotNull(jsonMapsInput)
+        val expectedJsonMapsInput =
+            """
+            public struct JsonMapsInput: Swift.Equatable {
                 public let denseBooleanMap: [Swift.String:Swift.Bool]?
                 public let denseNumberMap: [Swift.String:Swift.Int]?
                 public let denseStringMap: [Swift.String:Swift.String]?
@@ -342,57 +390,6 @@ public struct RecursiveShapesInputOutputLists: Equatable {
                 }
             }
             """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `check for sparse and dense datatypes in maps`() {
-        /*  Also the integration test for model evolution: Struct JsonListsInputOutput is generating 2
-            separate structs for input and output with members given in smithy model, without creating
-            additional structs in the model
-         */
-        val model = javaClass.getResource("sparse-trait-test.smithy").asSmithy()
-        val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
-        SwiftCodegenPlugin().execute(context)
-
-        val jsonMapsInput = manifest
-            .getFileString("example/models/JsonMapsInput.swift").get()
-        Assertions.assertNotNull(jsonMapsInput)
-        val expectedJsonMapsInput =
-            """
-                public struct JsonMapsInput: Equatable {
-                    public let denseBooleanMap: [String:Bool]?
-                    public let denseNumberMap: [String:Int]?
-                    public let denseStringMap: [String:String]?
-                    public let denseStructMap: [String:GreetingStruct]?
-                    public let sparseBooleanMap: [String:Bool?]?
-                    public let sparseNumberMap: [String:Int?]?
-                    public let sparseStringMap: [String:String?]?
-                    public let sparseStructMap: [String:GreetingStruct?]?
-
-                    public init (
-                        denseBooleanMap: [String:Bool]? = nil,
-                        denseNumberMap: [String:Int]? = nil,
-                        denseStringMap: [String:String]? = nil,
-                        denseStructMap: [String:GreetingStruct]? = nil,
-                        sparseBooleanMap: [String:Bool?]? = nil,
-                        sparseNumberMap: [String:Int?]? = nil,
-                        sparseStringMap: [String:String?]? = nil,
-                        sparseStructMap: [String:GreetingStruct?]? = nil
-                    )
-                    {
-                        self.denseBooleanMap = denseBooleanMap
-                        self.denseNumberMap = denseNumberMap
-                        self.denseStringMap = denseStringMap
-                        self.denseStructMap = denseStructMap
-                        self.sparseBooleanMap = sparseBooleanMap
-                        self.sparseNumberMap = sparseNumberMap
-                        self.sparseStringMap = sparseStringMap
-                        self.sparseStructMap = sparseStructMap
-                    }
-                }
-            """.trimIndent()
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
@@ -400,37 +397,37 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
             """
-                public struct JsonMapsOutputResponse: Equatable {
-                    public let denseBooleanMap: [String:Bool]?
-                    public let denseNumberMap: [String:Int]?
-                    public let denseStringMap: [String:String]?
-                    public let denseStructMap: [String:GreetingStruct]?
-                    public let sparseBooleanMap: [String:Bool?]?
-                    public let sparseNumberMap: [String:Int?]?
-                    public let sparseStringMap: [String:String?]?
-                    public let sparseStructMap: [String:GreetingStruct?]?
-
-                    public init (
-                        denseBooleanMap: [String:Bool]? = nil,
-                        denseNumberMap: [String:Int]? = nil,
-                        denseStringMap: [String:String]? = nil,
-                        denseStructMap: [String:GreetingStruct]? = nil,
-                        sparseBooleanMap: [String:Bool?]? = nil,
-                        sparseNumberMap: [String:Int?]? = nil,
-                        sparseStringMap: [String:String?]? = nil,
-                        sparseStructMap: [String:GreetingStruct?]? = nil
-                    )
-                    {
-                        self.denseBooleanMap = denseBooleanMap
-                        self.denseNumberMap = denseNumberMap
-                        self.denseStringMap = denseStringMap
-                        self.denseStructMap = denseStructMap
-                        self.sparseBooleanMap = sparseBooleanMap
-                        self.sparseNumberMap = sparseNumberMap
-                        self.sparseStringMap = sparseStringMap
-                        self.sparseStructMap = sparseStructMap
-                    }
+            public struct JsonMapsOutputResponse: Swift.Equatable {
+                public let denseBooleanMap: [Swift.String:Swift.Bool]?
+                public let denseNumberMap: [Swift.String:Swift.Int]?
+                public let denseStringMap: [Swift.String:Swift.String]?
+                public let denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
+                public let sparseBooleanMap: [Swift.String:Swift.Bool?]?
+                public let sparseNumberMap: [Swift.String:Swift.Int?]?
+                public let sparseStringMap: [Swift.String:Swift.String?]?
+                public let sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
+            
+                public init (
+                    denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
+                    denseNumberMap: [Swift.String:Swift.Int]? = nil,
+                    denseStringMap: [Swift.String:Swift.String]? = nil,
+                    denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]? = nil,
+                    sparseBooleanMap: [Swift.String:Swift.Bool?]? = nil,
+                    sparseNumberMap: [Swift.String:Swift.Int?]? = nil,
+                    sparseStringMap: [Swift.String:Swift.String?]? = nil,
+                    sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]? = nil
+                )
+                {
+                    self.denseBooleanMap = denseBooleanMap
+                    self.denseNumberMap = denseNumberMap
+                    self.denseStringMap = denseStringMap
+                    self.denseStructMap = denseStructMap
+                    self.sparseBooleanMap = sparseBooleanMap
+                    self.sparseNumberMap = sparseNumberMap
+                    self.sparseStringMap = sparseStringMap
+                    self.sparseStructMap = sparseStructMap
                 }
+            }
             """.trimIndent()
 
         jsonMapsOutput.shouldContain(expectedJsonMapsOutput)
@@ -449,7 +446,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         var structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct StructWithDeprecatedTrait: Equatable {
+            public struct StructWithDeprecatedTrait: Swift.Equatable {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
@@ -459,7 +456,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
             @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public struct StructSincePropertySet: Equatable {
+            public struct StructSincePropertySet: Swift.Equatable {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
     }
@@ -476,7 +473,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-        public struct OperationWithDeprecatedTraitInput: Equatable {
+        public struct OperationWithDeprecatedTraitInput: Swift.Equatable {
             public let bool: Swift.Bool?
             public let foo: ExampleClientTypes.Foo?
             public let intVal: Swift.Int?
@@ -502,7 +499,7 @@ public struct RecursiveShapesInputOutputLists: Equatable {
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         extension ExampleClientTypes {
-            public struct Foo: Equatable {
+            public struct Foo: Swift.Equatable {
                 /// Test documentation with deprecated
                 @available(*, deprecated)
                 public let baz: Swift.String?

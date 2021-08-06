@@ -94,8 +94,8 @@ class StructureGenerator(
      */
     private fun renderNonErrorStructure() {
         val isNestedType = shape.hasTrait<NestedTrait>()
-        val service = model.expectShape<ServiceShape>(settings.service)
         if(isNestedType) {
+            val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
                 generateStruct()
             }
@@ -107,8 +107,8 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", Hashable" else ""
-        writer.openBlock("public struct \$struct.name:L: Equatable$needsHashable {")
+        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable.fullName}" else ""
+        writer.openBlock("public struct \$struct.name:L: \$T$needsHashable {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -206,7 +206,7 @@ class StructureGenerator(
         writer.putContext("error.protocol", serviceErrorProtocolSymbol.fullName)
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, Equatable {")
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$T {", SwiftTypes.Protocols.Equatable)
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -224,14 +224,14 @@ class StructureGenerator(
             writer.write("public var _headers: \$T", ClientRuntimeTypes.Http.Headers)
             writer.write("public var _statusCode: \$T", ClientRuntimeTypes.Http.HttpStatusCode)
         }
-        writer.write("public var _message: Swift.String?")
-        writer.write("public var _requestID: Swift.String?")
+        writer.write("public var _message: \$T?", SwiftTypes.String)
+        writer.write("public var _requestID: \$T?", SwiftTypes.String)
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
 
-        writer.write("public var _retryable: Swift.Bool = \$L", isRetryable)
-        writer.write("public var _isThrottling: Swift.Bool = \$L", isThrottling)
+        writer.write("public var _retryable: \$T = \$L",SwiftTypes.Bool, isRetryable)
+        writer.write("public var _isThrottling: \$T = \$L", SwiftTypes.Bool, isThrottling)
 
         writer.write("public var _type: \$T = .\$L",ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
