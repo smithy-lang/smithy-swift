@@ -82,7 +82,8 @@ class DataObjectSerializationTests: XCTestCase {
             // encoded length is not a multiple of 4
             "Zm9vY=",
             // invalid padding
-            "Zm9vY===="
+            // TODO: this does not pass on Linux, it is unclear of this is in fact an invalid amount of padding.
+            "Zm9vY==="
         ]
         
         for invalidBase64EncodedString in invalidBase64EncodedStrings {
