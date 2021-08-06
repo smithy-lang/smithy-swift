@@ -121,7 +121,7 @@ interface ProtocolGenerator {
      *
      * Generate unit tests for the protocol
      */
-    fun generateProtocolUnitTests(ctx: GenerationContext)
+    fun generateProtocolUnitTests(ctx: GenerationContext): Int
 
     /**
      * Generate an actual client implementation of the service interface

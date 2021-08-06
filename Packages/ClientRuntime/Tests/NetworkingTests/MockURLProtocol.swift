@@ -4,6 +4,9 @@
  */
 
 import Foundation
+#if os(Linux)
+import FoundationNetworking
+#endif
 @testable import ClientRuntime
 
 class MockURLProtocol: URLProtocol {

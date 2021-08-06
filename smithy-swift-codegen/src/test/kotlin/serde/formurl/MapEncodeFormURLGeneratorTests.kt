@@ -11,7 +11,7 @@ import shouldSyntacticSanityCheck
 class MapEncodeFormURLGeneratorTests {
     @Test
     fun `001 encode different types of maps`() {
-        val context = setupTests("Isolated/FormUrl/query-maps.smithy", "aws.protocoltests.query#AwsQuery")
+        val context = setupTests("Isolated/formurl/query-maps.smithy", "aws.protocoltests.query#AwsQuery")
         val contents = getFileContents(context.manifest, "/Example/models/QueryMapsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
