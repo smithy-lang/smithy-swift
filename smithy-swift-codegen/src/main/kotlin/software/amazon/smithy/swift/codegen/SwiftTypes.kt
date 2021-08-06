@@ -21,10 +21,17 @@ object SwiftTypes {
     val Set: Symbol = builtInSymbol("Set")
     val Map: Symbol = builtInSymbol("Map")
     val Error: Symbol = builtInSymbol("Error")
+    val Result: Symbol = builtInSymbol("Result")
+    val Decoder: Symbol = builtInSymbol("Decoder")
+    val CodingKey: Symbol = builtInSymbol("CodingKey")
 
     object Protocols {
         val Equatable: Symbol = builtInSymbol("Equatable")
         val Hashable: Symbol = builtInSymbol("Hashable")
+        val RawRepresentable: Symbol = builtInSymbol("RawRepresentable")
+        val Codable: Symbol = builtInSymbol("Codable")
+        val CaseIterable: Symbol = builtInSymbol("CaseIterable")
+        val CustomDebugStringConvertible: Symbol = builtInSymbol("CustomDebugStringConvertible")
     }
 }
 

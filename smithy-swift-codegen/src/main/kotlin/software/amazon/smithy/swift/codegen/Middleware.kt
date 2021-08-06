@@ -14,16 +14,17 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
     open val contextType: Symbol = Symbol
         .builder()
         .name("HttpContext")
+        .namespace(SwiftDependency.CLIENT_RUNTIME.target, ".")
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
-    open val typesToConformMiddlewareTo: List<String> = mutableListOf("Middleware")
+    open val typesToConformMiddlewareTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.Middleware)
 
     open val properties: MutableMap<String, Symbol> = mutableMapOf()
 
     fun getTypeInheritance(): String {
         val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
-        return typesToConformMiddlewareTo.joinToString(separator)
+        return typesToConformMiddlewareTo.joinToString(separator) { it.fullName }
     }
 
     abstract fun generateInit()

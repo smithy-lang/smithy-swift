@@ -28,7 +28,7 @@ class MiddlewareGenerator(
     fun generate() {
 
         writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {
-            writer.write("public let id: String = \"${middleware.typeName}\"")
+            writer.write("public let id: \$T = \"${middleware.typeName}\"", SwiftTypes.String)
             writer.write("")
             middleware.properties.forEach {
                 val memberName = it.key
@@ -38,10 +38,10 @@ class MiddlewareGenerator(
             }
             middleware.generateInit()
             writer.write("")
-            writer.write("public func handle<H>(context: Context,")
+            writer.write("public func handle<H>(context: \$N,", ClientRuntimeTypes.Core.Context)
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: ${middleware.inputType.name},")
-                writer.write("  next: H) -> Swift.Result<${middleware.outputType.name}, MError>")
+                writer.write("  next: H) -> \$T<${middleware.outputType.name}, MError>", SwiftTypes.Result)
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")
@@ -54,7 +54,7 @@ class MiddlewareGenerator(
             writer.write("")
             writer.write("public typealias MInput = ${middleware.inputType.name}")
             writer.write("public typealias MOutput = ${middleware.outputType.name}")
-            writer.write("public typealias Context = ClientRuntime.${middleware.contextType.name}")
+            writer.write("public typealias Context = ${middleware.contextType.fullName}")
             writer.write("public typealias MError = ${middleware.errorType.name}")
         }
     }

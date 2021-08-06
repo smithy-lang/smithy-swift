@@ -28,6 +28,11 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val OperationOutput = runtimeSymbol("OperationOutput")
+        val SdkError = runtimeSymbol("SdkError")
+        val Middleware = runtimeSymbol("Middleware")
+        val Context = runtimeSymbol("Context")
+        val SdkResult = runtimeSymbol("SdkResult")
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", false)
         val SDKLogLevel = runtimeSymbol("SDKLogLevel", false)
