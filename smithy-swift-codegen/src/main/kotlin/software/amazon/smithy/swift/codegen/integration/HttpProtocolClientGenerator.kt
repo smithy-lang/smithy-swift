@@ -17,6 +17,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -96,7 +97,7 @@ open class HttpProtocolClientGenerator(
     private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
         val operationName = op.camelCaseName()
         val continuationName = "${operationName}Continuation"
-        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$T>", SwiftTypes.Error)
+        writer.write("typealias $continuationName = \$T<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$T>", SwiftTypes.CheckedContinuation, SwiftTypes.Error)
         writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
             writer.openBlock("$operationName(input: input) { result in", "}") {
                 writer.openBlock("switch result {", "}") {
@@ -138,7 +139,7 @@ open class HttpProtocolClientGenerator(
                 // unwrap the label members if boxed
                 if (isBoxed) {
                     writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                        writer.write("completion(.failure(.client(ClientError.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))")
+                        writer.write("completion(.failure(.client(\$T.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
                         writer.write("return")
                     }
                 } else {
@@ -212,7 +213,7 @@ open class HttpProtocolClientGenerator(
         val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-        writer.write("let context = HttpContextBuilder()")
+        writer.write("let context = \$T()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }

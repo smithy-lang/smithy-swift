@@ -30,9 +30,11 @@ import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
@@ -100,17 +102,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 
-    override val unknownServiceErrorSymbol: Symbol = Symbol.builder()
-        .name("UnknownHttpServiceError")
-        .namespace(SwiftDependency.CLIENT_RUNTIME.target, "")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
+    override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
-    override val serviceErrorProtocolSymbol: Symbol = Symbol.builder()
-        .name("HttpServiceError")
-        .namespace(SwiftDependency.CLIENT_RUNTIME.target, "")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
+    override val serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
 
     open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx)
@@ -144,7 +138,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: Encodable, Reflection {", "}") {
+                writer.openBlock("extension $symbolName: \$T, \$T {", "}", SwiftTypes.Protocols.Encodable, SwiftTypes.Protocols.Reflection) {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
@@ -198,7 +192,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension $symbolName: Codable, Reflection {", "}") {
+            writer.openBlock("extension $symbolName: \$T, \$T {", "}", SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Reflection) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
@@ -238,14 +232,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${decodeSymbol.name}: Equatable {", "}") {
+            writer.openBlock("struct ${decodeSymbol.name}: \$T {", "}", SwiftTypes.Protocols.Equatable) {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${decodeSymbol.name}: Decodable {", "}") {
+            writer.openBlock("extension ${decodeSymbol.name}: \$T {", "}", SwiftTypes.Protocols.Decodable) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")

@@ -4,8 +4,10 @@ import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 
@@ -30,7 +32,8 @@ class HttpResponseBindingErrorNarrowGenerator(
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
             writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(errorType: String?, httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
+                writer.openBlock("public init(errorType: \$T?, httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
+                    SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String) {
                     writer.write("switch errorType {")
                     for (errorShape in errorShapes) {
                         var errorShapeName = resolveErrorShapeName(errorShape)

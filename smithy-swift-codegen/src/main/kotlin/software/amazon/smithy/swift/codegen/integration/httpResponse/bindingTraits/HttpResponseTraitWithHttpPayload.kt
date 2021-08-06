@@ -3,6 +3,7 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -29,8 +30,8 @@ class HttpResponseTraitWithHttpPayload(
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: data)",
-                            symbol.name
+                            "let output: \$N = try responseDecoder.decode(responseBody: data)",
+                            symbol
                         )
                         writer.write("self.\$L = output", memberName)
                     }
@@ -38,7 +39,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let output = String(data: data, encoding: .utf8) {", "} else {") {
+                    writer.openBlock("if let output = \$T(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
                         if (target.isEnum) {
                             writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                         } else {
@@ -54,7 +55,7 @@ class HttpResponseTraitWithHttpPayload(
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
                         writer.write(
-                            "let output: \$L = try responseDecoder.decode(responseBody: data)",
+                            "let output: \$N = try responseDecoder.decode(responseBody: data)",
                             symbol
                         )
                         writer.write("self.\$L = output", memberName)

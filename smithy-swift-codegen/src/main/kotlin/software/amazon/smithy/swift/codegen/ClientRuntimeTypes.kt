@@ -23,11 +23,23 @@ object ClientRuntimeTypes {
         val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder", false)
         val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", false)
         val HttpBody = runtimeSymbol("HttpBody", false)
+        val HttpResponse = runtimeSymbol("HttpResponse", false)
+        val HttpResponseBinding = runtimeSymbol("HttpResponseBinding", false)
+        val HttpServiceError = runtimeSymbol("HttpServiceError", false)
+        val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError", false)
+        val HttpContextBuilder = runtimeSymbol("HttpContextBuilder", false)
     }
 
     object Serde {
         val RequestEncoder = runtimeSymbol("RequestEncoder")
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
+        val Key = runtimeSymbol("Key", false)
+        val TimestampWrapper = runtimeSymbol("TimestampWrapper")
+        val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
+        val DynamicNodeEncoding = runtimeSymbol("DynamicNodeEncoding")
+        val NodeDecoding = runtimeSymbol("NodeDecoding")
+        val NodeEncoding = runtimeSymbol("NodeEncoding")
+        val TimestampWrapperDecoder = runtimeSymbol("TimestampWrapperDecoder")
     }
 
     object Middleware {
@@ -37,9 +49,11 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val Date = runtimeSymbol("Date", false)
         val URLQueryItem = runtimeSymbol("URLQueryItem", false)
         val ClientError = runtimeSymbol("ClientError", false)
         val SdkError = runtimeSymbol("SdkError")
+        val ServiceError = runtimeSymbol("ServiceError", false)
         val SdkResult = runtimeSymbol("SdkResult")
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", false)
@@ -50,6 +64,7 @@ object ClientRuntimeTypes {
         val ErrorType = runtimeSymbol("ErrorType", false)
         val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration", false)
         val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration", false)
+        val DateFormatter = runtimeSymbol("DateFormatter")
     }
 }
 

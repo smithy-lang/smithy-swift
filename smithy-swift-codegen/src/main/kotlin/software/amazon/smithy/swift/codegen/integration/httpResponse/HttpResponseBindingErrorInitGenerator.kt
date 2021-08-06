@@ -4,7 +4,9 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -50,7 +52,11 @@ class HttpResponseBindingErrorInitGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(serviceErrorProtocolSymbol)
             writer.openBlock("extension \$L: \$L {", "}", errorShapeName, serviceErrorProtocolSymbol.name) {
-                writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, message: String? = nil, requestID: String? = nil) throws {", "}") {
+                writer.openBlock("public init (httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
+                    ClientRuntimeTypes.Http.HttpResponse,
+                    ClientRuntimeTypes.Serde.ResponseDecoder,
+                    SwiftTypes.String,
+                    SwiftTypes.String) {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
                     HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
                     httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)

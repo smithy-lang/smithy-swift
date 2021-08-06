@@ -5,6 +5,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -38,8 +39,8 @@ class HttpResponseBindingOutputGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.openBlock("extension $outputShapeName: HttpResponseBinding {", "}") {
-                writer.openBlock("public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
+            writer.openBlock("extension $outputShapeName: \$T {", "}", ClientRuntimeTypes.Http.HttpResponseBinding) {
+                writer.openBlock("public init (httpResponse: \$T, decoder: \$D) throws {", "}", ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder) {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
                     HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
                     HttpResponseTraitPayload(ctx, responseBindings, outputShapeName, writer).render()

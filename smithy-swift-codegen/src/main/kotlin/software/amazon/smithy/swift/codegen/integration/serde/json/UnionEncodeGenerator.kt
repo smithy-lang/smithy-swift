@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
@@ -19,7 +20,7 @@ class UnionEncodeGenerator(
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "container"
-        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
+        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
             writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
             writer.openBlock("switch self {", "}") {
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }

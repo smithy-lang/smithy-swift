@@ -6,6 +6,7 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
@@ -18,7 +19,7 @@ class UnionDecodeXMLGenerator(
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "containerValues"
-        writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
+        writer.openBlock("public init (from decoder: \$T) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val memberTarget = ctx.model.expectShape(member.target)

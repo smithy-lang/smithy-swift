@@ -5,6 +5,8 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeXMLGenerator
@@ -17,8 +19,8 @@ class UnionEncodeXMLGenerator(
 ) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "container"
-        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
-            writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
+            writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
             writer.openBlock("switch self {", "}") {
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
                 membersSortedByName.forEach { member ->
@@ -44,7 +46,7 @@ class UnionEncodeXMLGenerator(
                 }
                 writer.write("case let .sdkUnknown(sdkUnknown):")
                 writer.indent()
-                writer.write("try container.encode(sdkUnknown, forKey: Key(\"sdkUnknown\"))")
+                writer.write("try container.encode(sdkUnknown, forKey: \$N(\"sdkUnknown\"))", ClientRuntimeTypes.Serde.Key)
                 writer.dedent()
             }
         }

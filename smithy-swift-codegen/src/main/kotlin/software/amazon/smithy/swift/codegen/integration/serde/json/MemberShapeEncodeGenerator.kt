@@ -17,8 +17,9 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
@@ -102,7 +103,7 @@ abstract class MemberShapeEncodeGenerator(
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"
-                writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
+                writer.write("var \$L = $containerName.nestedContainer(keyedBy: \$N.self)", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
                 val isSparse = targetShape.hasTrait<SparseTrait>()
                 if (isSparse) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
@@ -138,7 +139,7 @@ abstract class MemberShapeEncodeGenerator(
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        "Key(stringValue: $dictKey)",
+                        "${ClientRuntimeTypes.Serde.Key.fullName}(stringValue: $dictKey)",
                         topLevelContainerName,
                         level + 1
                     )
@@ -163,14 +164,15 @@ abstract class MemberShapeEncodeGenerator(
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
-                writer.write("var \$L = $containerName.nestedContainer(keyedBy: Key.self)", topLevelContainerName)
+                writer.write("var \$L = $containerName.nestedContainer(keyedBy: \$N.self)", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
                 renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"
                 writer.write(
-                    "var \$L = $containerName.nestedContainer(keyedBy: Key.self, forKey: .\$L)",
+                    "var \$L = $containerName.nestedContainer(keyedBy: \$N.self, forKey: .\$L)",
                     topLevelContainerName,
+                    ClientRuntimeTypes.Serde.Key,
                     memberName
                 )
                 renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level)
@@ -178,7 +180,7 @@ abstract class MemberShapeEncodeGenerator(
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
-                val keyEnumName = if (level == 0) ".$memberName" else "Key(stringValue: $dictKey${level - 1})"
+                val keyEnumName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key.fullName}(stringValue: $dictKey${level - 1})"
                 if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)
@@ -225,7 +227,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val shapeExtension = getShapeExtension(valueTargetShape, valueIterator, valueTargetShape.hasTrait(BoxTrait::class.java))
-                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: Key(stringValue: $dictKey$level))")
+                    writer.write("try $topLevelContainerName.encode($shapeExtension, forKey: \$N(stringValue: $dictKey$level))", ClientRuntimeTypes.Serde.Key)
                 }
             }
         }

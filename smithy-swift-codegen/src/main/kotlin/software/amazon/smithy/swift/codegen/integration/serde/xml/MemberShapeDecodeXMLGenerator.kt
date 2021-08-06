@@ -13,8 +13,9 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
@@ -123,7 +124,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val wrappedNestedMemberBuffer = "TimestampWrapperDecoder.parseDateStringValue($nestedContainerName, format: .$format)"
+                    val wrappedNestedMemberBuffer = "${ClientRuntimeTypes.Serde.TimestampWrapperDecoder.fullName}.parseDateStringValue($nestedContainerName, format: .$format)"
                     writer.write("try $memberBuffer?.$insertMethod($wrappedNestedMemberBuffer)")
                 }
                 else -> {

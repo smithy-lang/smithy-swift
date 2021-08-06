@@ -3,7 +3,9 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlAttributeTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
@@ -23,7 +25,7 @@ class DynamicNodeEncodingXMLGenerator(
             .name(symbolName)
             .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension $symbolName: DynamicNodeEncoding {", "}") {
+            writer.openBlock("extension $symbolName: \$N {", "}", ClientRuntimeTypes.Serde.DynamicNodeEncoding) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 renderNodeEncodingConformance(writer)
             }
@@ -31,7 +33,7 @@ class DynamicNodeEncodingXMLGenerator(
     }
 
     private fun renderNodeEncodingConformance(writer: SwiftWriter) {
-        writer.openBlock("public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {", "}") {
+        writer.openBlock("public static func nodeEncoding(for key: \$T) -> \$N {", "}", SwiftTypes.CodingKey, ClientRuntimeTypes.Serde.NodeEncoding) {
             renderNamespaces(xmlNamespaces, writer)
             renderAttributes(writer)
             writer.write("return .element")
@@ -59,7 +61,7 @@ class DynamicNodeEncodingXMLGenerator(
             val itemIndividuallyQuoted = attributes.map { "\"${it}\"" }.sorted()
             writer.write(itemIndividuallyQuoted.joinToString(", \n"))
         }
-        writer.openBlock("if let key = key as? Key {", "}") {
+        writer.openBlock("if let key = key as? \$N {", "}", ClientRuntimeTypes.Serde.Key) {
             writer.openBlock("if $variableName.contains(key.stringValue) {", "}") {
                 writer.write("return .attribute")
             }

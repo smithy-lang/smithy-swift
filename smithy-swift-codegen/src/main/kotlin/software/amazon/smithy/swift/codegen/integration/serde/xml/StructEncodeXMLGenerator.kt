@@ -11,6 +11,8 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
@@ -25,7 +27,7 @@ class StructEncodeXMLGenerator(
 ) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
 
     override fun render() {
-        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
+        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
             if (members.isNotEmpty()) {
                 renderEncodeBody()
             }
@@ -34,7 +36,7 @@ class StructEncodeXMLGenerator(
 
     private fun renderEncodeBody() {
         val containerName = "container"
-        writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+        writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
         renderTopLevelNamespace(containerName)
 
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
