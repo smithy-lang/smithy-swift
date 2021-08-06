@@ -151,7 +151,7 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expected = """
         extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
-            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
+            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (ClientRuntime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
             {
                 let urlPath = "/input/AllocateWidget"
                 let context = HttpContextBuilder()
@@ -165,7 +165,7 @@ class HttpProtocolClientGeneratorTests {
                               .withLogger(value: config.logger)
                 var operation = OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
                 operation.addDefaultOperationMiddlewares()
-                operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Result<OperationOutput<AllocateWidgetOutputResponse>, SdkError<AllocateWidgetOutputError>> in
+                operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<AllocateWidgetOutputResponse>, ClientRuntime.SdkError<AllocateWidgetOutputError>> in
                     let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                     var copiedInput = input
                     if input.clientToken == nil {

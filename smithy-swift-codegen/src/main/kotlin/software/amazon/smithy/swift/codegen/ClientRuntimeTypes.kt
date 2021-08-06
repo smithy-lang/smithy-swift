@@ -20,6 +20,9 @@ object ClientRuntimeTypes {
         val Headers = runtimeSymbol("Headers")
         val HttpStatusCode = runtimeSymbol("HttpStatusCode")
         val SdkHttpClient = runtimeSymbol("SdkHttpClient")
+        val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder", false)
+        val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", false)
+        val HttpBody = runtimeSymbol("HttpBody", false)
     }
 
     object Serde {
@@ -27,11 +30,16 @@ object ClientRuntimeTypes {
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
     }
 
-    object Core {
+    object Middleware {
         val OperationOutput = runtimeSymbol("OperationOutput")
-        val SdkError = runtimeSymbol("SdkError")
         val Middleware = runtimeSymbol("Middleware")
         val Context = runtimeSymbol("Context")
+    }
+
+    object Core {
+        val URLQueryItem = runtimeSymbol("URLQueryItem", false)
+        val ClientError = runtimeSymbol("ClientError", false)
+        val SdkError = runtimeSymbol("SdkError")
         val SdkResult = runtimeSymbol("SdkResult")
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", false)

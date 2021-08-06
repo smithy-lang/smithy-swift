@@ -4,6 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.OperationStep
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class MiddlewareGeneratorTests {
@@ -17,16 +18,16 @@ class MiddlewareGeneratorTests {
         val contents = writer.toString()
         val expectedGeneratedStructure =
             """
-            public struct TestMiddleware: Middleware {
-                public let id: String = "TestMiddleware"
+            public struct TestMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "TestMiddleware"
             
-                let test: String
+                let test: Swift.String
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: String,
-                              next: H) -> Swift.Result<OperationOutput<String>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: Swift.String,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<Swift.String>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -37,10 +38,10 @@ class MiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = String
-                public typealias MOutput = OperationOutput<String>
+                public typealias MInput = Swift.String
+                public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = SdkError<Error>
+                public typealias MError = ClientRuntime.SdkError<Swift.Error>
             }
             """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)
@@ -48,12 +49,11 @@ class MiddlewareGeneratorTests {
 }
 
 class MockOperationStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : OperationStep(outputSymbol, outputErrorSymbol) {
-    override val inputType: Symbol = Symbol.builder().name("String").build()
+    override val inputType: Symbol = SwiftTypes.String
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockOperationStep(Symbol.builder().name("String").build(), Symbol.builder().name("Error").build())) {
-    val stringSymbol = Symbol.builder().name("String").build()
-    override val properties = mutableMapOf("test" to stringSymbol)
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockOperationStep(SwiftTypes.String, SwiftTypes.Error)) {
+    override val properties = mutableMapOf("test" to SwiftTypes.String)
     override fun generateMiddlewareClosure() {
         writer.write("print(\"this is a \\(test)\")")
     }

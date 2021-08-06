@@ -123,7 +123,7 @@ class EnumGenerator(
         writer.openBlock("public enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(String)")
+            writer.write("case sdkUnknown(\$T)", SwiftTypes.String)
         }
 
         writer.openBlock("extension \$enum.name:L : \$T, \$T, \$T, \$T, \$T { ", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {

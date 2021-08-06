@@ -18,7 +18,7 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
-    open val typesToConformMiddlewareTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.Middleware)
+    open val typesToConformMiddlewareTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Middleware.Middleware)
 
     open val properties: MutableMap<String, Symbol> = mutableMapOf()
 

@@ -13,14 +13,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct QueryIdempotencyTokenAutoFillInputQueryItemMiddleware: Middleware {
-                public let id: String = "QueryIdempotencyTokenAutoFillInputQueryItemMiddleware"
+            public struct QueryIdempotencyTokenAutoFillInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "QueryIdempotencyTokenAutoFillInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<QueryIdempotencyTokenAutoFillInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -28,16 +28,16 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let token = input.operationInput.token {
-                        let tokenQueryItem = URLQueryItem(name: "token".urlPercentEncoding(), value: String(token).urlPercentEncoding())
+                        let tokenQueryItem = ClientRuntime.URLQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
                         input.builder.withQueryItem(tokenQueryItem)
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
-                public typealias MOutput = OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>
+                public typealias MInput = ClientRuntime.SerializeStepInput<QueryIdempotencyTokenAutoFillInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<QueryIdempotencyTokenAutoFillOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = SdkError<QueryIdempotencyTokenAutoFillOutputError>
+                public typealias MError = ClientRuntime.SdkError<QueryIdempotencyTokenAutoFillOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -50,14 +50,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct TimestampInputInputQueryItemMiddleware: Middleware {
-                public let id: String = "TimestampInputInputQueryItemMiddleware"
+            public struct TimestampInputInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "TimestampInputInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<OperationOutput<TimestampInputOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<TimestampInputInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<TimestampInputOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -65,22 +65,22 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let queryTimestamp = input.operationInput.queryTimestamp {
-                        let queryTimestampQueryItem = URLQueryItem(name: "qtime".urlPercentEncoding(), value: String(queryTimestamp.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
+                        let queryTimestampQueryItem = ClientRuntime.URLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(queryTimestamp.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
                         input.builder.withQueryItem(queryTimestampQueryItem)
                     }
                     if let queryTimestampList = input.operationInput.queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: String(queryItemValue.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
+                            let queryItem = ClientRuntime.URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(queryItemValue.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
                             input.builder.withQueryItem(queryItem)
                         }
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = OperationOutput<TimestampInputOutputResponse>
+                public typealias MInput = ClientRuntime.SerializeStepInput<TimestampInputInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<TimestampInputOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = SdkError<TimestampInputOutputError>
+                public typealias MError = ClientRuntime.SdkError<TimestampInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -93,14 +93,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct SmokeTestInputQueryItemMiddleware: Middleware {
-                public let id: String = "SmokeTestInputQueryItemMiddleware"
+            public struct SmokeTestInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "SmokeTestInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<OperationOutput<SmokeTestOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<SmokeTestInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -108,16 +108,16 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let query1 = input.operationInput.query1 {
-                        let query1QueryItem = URLQueryItem(name: "Query1".urlPercentEncoding(), value: String(query1).urlPercentEncoding())
+                        let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
                         input.builder.withQueryItem(query1QueryItem)
                     }
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = OperationOutput<SmokeTestOutputResponse>
+                public typealias MInput = ClientRuntime.SerializeStepInput<SmokeTestInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<SmokeTestOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = SdkError<SmokeTestOutputError>
+                public typealias MError = ClientRuntime.SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -139,14 +139,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct AllQueryStringTypesInputQueryItemMiddleware: Middleware {
-                public let id: String = "AllQueryStringTypesInputQueryItemMiddleware"
+            public struct AllQueryStringTypesInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "AllQueryStringTypesInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<AllQueryStringTypesInput>,
-                              next: H) -> Swift.Result<OperationOutput<AllQueryStringTypesOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<AllQueryStringTypesInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<AllQueryStringTypesOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -155,25 +155,31 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 {
                     if let queryStringList = input.operationInput.queryStringList {
                         queryStringList.forEach { queryItemValue in
-                            let queryItem = URLQueryItem(name: "StringList".urlPercentEncoding(), value: String(queryItemValue).urlPercentEncoding())
+                            let queryItem = ClientRuntime.URLQueryItem(name: "StringList".urlPercentEncoding(), value: Swift.String(queryItemValue).urlPercentEncoding())
                             input.builder.withQueryItem(queryItem)
                         }
                     }
                     if let queryString = input.operationInput.queryString {
-                        let queryStringQueryItem = URLQueryItem(name: "String".urlPercentEncoding(), value: String(queryString).urlPercentEncoding())
+                        let queryStringQueryItem = ClientRuntime.URLQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
                         input.builder.withQueryItem(queryStringQueryItem)
                     }
                     if let queryParamsMapOfStrings = input.operationInput.queryParamsMapOfStrings {
                         let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         queryParamsMapOfStrings.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
-                                let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                                let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                                 input.builder.withQueryItem(queryItem)
                             }
                         }
                     }
                     return next.handle(context: context, input: input)
                 }
+            
+                public typealias MInput = ClientRuntime.SerializeStepInput<AllQueryStringTypesInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<AllQueryStringTypesOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
+                public typealias MError = ClientRuntime.SdkError<AllQueryStringTypesOutputError>
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -185,14 +191,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct QueryParamsAsStringListMapInputQueryItemMiddleware: Middleware {
-                public let id: String = "QueryParamsAsStringListMapInputQueryItemMiddleware"
+            public struct QueryParamsAsStringListMapInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "QueryParamsAsStringListMapInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<QueryParamsAsStringListMapInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryParamsAsStringListMapOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<QueryParamsAsStringListMapInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<QueryParamsAsStringListMapOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -200,7 +206,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let qux = input.operationInput.qux {
-                        let quxQueryItem = URLQueryItem(name: "corge".urlPercentEncoding(), value: String(qux).urlPercentEncoding())
+                        let quxQueryItem = ClientRuntime.URLQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
                         input.builder.withQueryItem(quxQueryItem)
                     }
                     if let foo = input.operationInput.foo {
@@ -208,7 +214,7 @@ class HttpQueryItemMiddlewareGeneratorTests {
                         foo.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
                                 value0.forEach { value1 in
-                                    let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
+                                    let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
                                     input.builder.withQueryItem(queryItem)
                                 }
                             }
@@ -217,10 +223,10 @@ class HttpQueryItemMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = SerializeStepInput<QueryParamsAsStringListMapInput>
-                public typealias MOutput = OperationOutput<QueryParamsAsStringListMapOutputResponse>
+                public typealias MInput = ClientRuntime.SerializeStepInput<QueryParamsAsStringListMapInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<QueryParamsAsStringListMapOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = SdkError<QueryParamsAsStringListMapOutputError>
+                public typealias MError = ClientRuntime.SdkError<QueryParamsAsStringListMapOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -233,14 +239,14 @@ class HttpQueryItemMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct QueryPrecedenceInputQueryItemMiddleware: Middleware {
-                public let id: String = "QueryPrecedenceInputQueryItemMiddleware"
+            public struct QueryPrecedenceInputQueryItemMiddleware: ClientRuntime.Middleware {
+                public let id: Swift.String = "QueryPrecedenceInputQueryItemMiddleware"
             
                 public init() {}
             
-                public func handle<H>(context: Context,
-                              input: SerializeStepInput<QueryPrecedenceInput>,
-                              next: H) -> Swift.Result<OperationOutput<QueryPrecedenceOutputResponse>, MError>
+                public func handle<H>(context: ClientRuntime.Context,
+                              input: ClientRuntime.SerializeStepInput<QueryPrecedenceInput>,
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<QueryPrecedenceOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -248,20 +254,26 @@ class HttpQueryItemMiddlewareGeneratorTests {
                 Self.MError == H.MiddlewareError
                 {
                     if let foo = input.operationInput.foo {
-                        let fooQueryItem = URLQueryItem(name: "bar".urlPercentEncoding(), value: String(foo).urlPercentEncoding())
+                        let fooQueryItem = ClientRuntime.URLQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
                         input.builder.withQueryItem(fooQueryItem)
                     }
                     if let baz = input.operationInput.baz {
                         let currentQueryItemNames = input.builder.currentQueryItems.map({${'$'}0.name})
                         baz.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
-                                let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                                let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                                 input.builder.withQueryItem(queryItem)
                             }
                         }
                     }
                     return next.handle(context: context, input: input)
                 }
+            
+                public typealias MInput = ClientRuntime.SerializeStepInput<QueryPrecedenceInput>
+                public typealias MOutput = ClientRuntime.OperationOutput<QueryPrecedenceOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
+                public typealias MError = ClientRuntime.SdkError<QueryPrecedenceOutputError>
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }

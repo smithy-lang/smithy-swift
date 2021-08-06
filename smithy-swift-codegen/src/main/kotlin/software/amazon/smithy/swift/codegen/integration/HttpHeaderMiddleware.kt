@@ -6,7 +6,9 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.defaultValue
@@ -75,10 +77,10 @@ class HttpHeaderMiddleware(
         } else {
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
-                    writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+                    writer.write("input.builder.withHeader(name: \"$paramName\", value: \$T($memberNameWithExtension))", SwiftTypes.String)
                 }
             } else {
-                writer.write("input.builder.withHeader(name: \"$paramName\", value: String($memberNameWithExtension))")
+                writer.write("input.builder.withHeader(name: \"$paramName\", value: \$T($memberNameWithExtension))", SwiftTypes.String)
             }
         }
     }
@@ -116,10 +118,10 @@ class HttpHeaderMiddleware(
     private fun renderDoCatch(headerValueWithExtension: String, headerName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $headerValueWithExtension")
-            writer.write("input.builder.withHeader(name: \"$headerName\", value: String(base64EncodedValue))")
+            writer.write("input.builder.withHeader(name: \"$headerName\", value: \$T(base64EncodedValue))", SwiftTypes.String)
         }
         writer.indent()
-        writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
+        writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
         writer.dedent()
         writer.write("}")
     }

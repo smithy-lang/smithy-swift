@@ -9,7 +9,9 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.defaultValue
@@ -43,7 +45,7 @@ class HttpQueryItemMiddleware(
 
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
             val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
-            writer.write("input.builder.withQueryItem(URLQueryItem(name: \$S, value: \$L))", queryItemKey, queryValue)
+            writer.write("input.builder.withQueryItem(\$T(name: \$S, value: \$L))", ClientRuntimeTypes.Core.URLQueryItem, queryItemKey, queryValue)
         }
 
         var httpQueryParamBinding: HttpBindingDescriptor? = null
@@ -80,13 +82,13 @@ class HttpQueryItemMiddleware(
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
                         writer.openBlock("value0$suffix.forEach { value1 in", "}") {
-                            writer.write("let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())")
+                            writer.write("let queryItem = \$T(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem)
                             writer.write("input.builder.withQueryItem(queryItem)")
                         }
                     }
                 } else {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        writer.write("let queryItem = URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())")
+                        writer.write("let queryItem = \$T(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem)
                         writer.write("input.builder.withQueryItem(queryItem)")
                     }
                 }
@@ -128,12 +130,12 @@ class HttpQueryItemMiddleware(
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                    writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                     writer.write("input.builder.withQueryItem($queryItemName)")
                 }
             } else {
                 val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write("let $queryItemName = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($memberName).urlPercentEncoding())")
+                writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                 writer.write("input.builder.withQueryItem($queryItemName)")
             }
         }
@@ -158,7 +160,7 @@ class HttpQueryItemMiddleware(
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
-                writer.write("let queryItem = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($queryItemValue).urlPercentEncoding())")
+                writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($queryItemValue).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                 writer.write("input.builder.withQueryItem(queryItem)")
             }
         }
@@ -167,11 +169,11 @@ class HttpQueryItemMiddleware(
     private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = URLQueryItem(name: \"$paramName\".urlPercentEncoding(), value: String($queryItemValueWithExtension).urlPercentEncoding())")
+            writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($queryItemValueWithExtension).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
             writer.write("input.builder.withQueryItem(queryItem)")
         }
         writer.indent()
-        writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
+        writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
         writer.dedent()
         writer.write("}")
     }
