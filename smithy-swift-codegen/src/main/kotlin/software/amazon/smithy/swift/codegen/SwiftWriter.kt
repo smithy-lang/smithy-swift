@@ -18,6 +18,7 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.model.isBuiltIn
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
@@ -66,6 +67,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 
     fun addImport(symbol: Symbol) {
 
+        if (symbol.isBuiltIn) return
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
@@ -86,7 +88,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
         symbol.references.forEach { reference ->
             for (option in options) {
-                if (reference.hasOption(option) && reference.symbol.namespace != "Swift") {
+                if (reference.hasOption(option)) {
                     addImport(reference.symbol)
                     break
                 }

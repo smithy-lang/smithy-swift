@@ -76,3 +76,6 @@ fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
     val escapedName = toMemberName(shape)
     return Pair(escapedName, escapedName.removeSurroundingBackticks())
 }
+
+val Symbol.isBuiltIn: Boolean
+    get() = namespace == "Swift"
