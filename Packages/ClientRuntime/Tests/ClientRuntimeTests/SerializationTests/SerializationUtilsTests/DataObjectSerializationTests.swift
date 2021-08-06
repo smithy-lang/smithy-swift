@@ -82,7 +82,7 @@ class DataObjectSerializationTests: XCTestCase {
             // encoded length is not a multiple of 4
             "Zm9vY=",
             // invalid padding
-            "Zm9vY==="
+            "Zm9vY===="
         ]
         
         for invalidBase64EncodedString in invalidBase64EncodedStrings {
