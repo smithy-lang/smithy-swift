@@ -23,7 +23,6 @@ public class CRTClientEngine: HttpClientEngine {
     private let maxConnectionsPerEndpoint: Int
     
     init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
-        AwsCommonRuntimeKit.initialize()
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
@@ -32,6 +31,12 @@ public class CRTClientEngine: HttpClientEngine {
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
         let tlsConnectionOptions = SDKDefaultIO.shared.tlsContext.newConnectionOptions()
+        do {
+            try tlsConnectionOptions.setServerName(endpoint.host)
+        } catch let err {
+            logger.debug("Server name was not able to be set in TLS Connection Options. TLS Negotiation will fail.")
+            logger.debug("Error: \(err.localizedDescription)")
+        }
         let socketOptions = SocketOptions(socketType: .stream)
         let options = HttpClientConnectionOptions(clientBootstrap: SDKDefaultIO.shared.clientBootstrap,
                                                   hostName: endpoint.host,
