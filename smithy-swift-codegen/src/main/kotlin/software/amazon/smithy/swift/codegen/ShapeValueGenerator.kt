@@ -221,7 +221,7 @@ class ShapeValueGenerator(
             // this is important because when a struct is generated in swift it is generated with its members sorted by name.
             // when you instantiate that struct you have to call params in order with their param names. if you don't it won't compile
             // so we sort here before we write any of the members with their values
-            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value })
+            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value.lowercase() })
             sortedMembers.forEach { (keyNode, valueNode) ->
                 val memberShape: Shape
                 when (currShape) {
