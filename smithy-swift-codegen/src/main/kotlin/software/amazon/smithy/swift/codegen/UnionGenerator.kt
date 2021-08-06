@@ -53,7 +53,7 @@ class UnionGenerator(
         writer.writeAvailableAttribute(model, shape)
         val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
         val hashable = hashableIfPossible()
-        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: Equatable$hashable {", "}\n") {
+        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: \$T$hashable {", "}\n", SwiftTypes.Protocols.Equatable) {
             shape.allMembers.values.forEach {
                 writer.writeMemberDocs(model, it)
                 val enumCaseName = symbolProvider.toMemberName(it)
@@ -61,7 +61,7 @@ class UnionGenerator(
                 writer.write("case \$L(\$L)", enumCaseName, enumCaseAssociatedType)
             }
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(String)")
+            writer.write("case sdkUnknown(\$T)", SwiftTypes.String)
         }
         writer.removeContext("union.name")
     }
@@ -73,7 +73,7 @@ class UnionGenerator(
                 return ""
             }
         }
-        return ", Hashable"
+        return ", ${SwiftTypes.Protocols.Hashable.fullName}"
     }
 
     private fun needsIndirectKeyword(unionSymbolName: String, shape: UnionShape): Boolean {

@@ -44,12 +44,12 @@ class UnionGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for MyUnion
-            public enum MyUnion: Equatable {
-                case foo(String)
-                case baz(Int)
+            public enum MyUnion: Swift.Equatable {
+                case foo(Swift.String)
+                case baz(Swift.Int)
                 /// Documentation for bar
-                case bar(Int)
-                case sdkUnknown(String)
+                case bar(Swift.Int)
+                case sdkUnknown(Swift.String)
             }
             """.trimIndent()
 
@@ -89,12 +89,12 @@ class UnionGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for MyUnion
-            public enum MyUnion: Equatable {
-                case foo(String)
+            public enum MyUnion: Swift.Equatable {
+                case foo(Swift.String)
                 /// Documentation for bar
-                case bar(Int)
+                case bar(Swift.Int)
                 case mystruct(MyStruct)
-                case sdkUnknown(String)
+                case sdkUnknown(Swift.String)
             }
             """.trimIndent()
 
