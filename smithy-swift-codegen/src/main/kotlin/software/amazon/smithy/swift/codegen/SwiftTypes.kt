@@ -20,6 +20,7 @@ object SwiftTypes {
     val List: Symbol = builtInSymbol("List")
     val Set: Symbol = builtInSymbol("Set")
     val Map: Symbol = builtInSymbol("Map")
+    val Error: Symbol = builtInSymbol("Error")
 
     object Protocols {
         val Equatable: Symbol = builtInSymbol("Equatable")

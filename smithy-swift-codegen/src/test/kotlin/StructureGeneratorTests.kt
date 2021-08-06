@@ -140,11 +140,11 @@ class StructureGeneratorTests {
         val expected =
             """
 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
-    public let foo: String?
+    public let foo: Swift.String?
     public let nested: Box<RecursiveShapesInputOutputNested2>?
 
     public init (
-        foo: String? = nil,
+        foo: Swift.String? = nil,
         nested: Box<RecursiveShapesInputOutputNested2>? = nil
     )
     {
@@ -154,11 +154,11 @@ public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
 }
 
 public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
-    public let bar: String?
+    public let bar: Swift.String?
     public let recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
-        bar: String? = nil,
+        bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
     {
@@ -168,7 +168,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 }
 
 /// This *is* documentation about the shape.
-public struct RecursiveShapesInputOutput: Equatable {
+public struct RecursiveShapesInputOutput: Swift.Equatable {
     public let nested: RecursiveShapesInputOutputNested1?
 
     public init (
@@ -198,11 +198,11 @@ public struct RecursiveShapesInputOutput: Equatable {
         val expected =
             """
 public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
-    public let foo: String?
+    public let foo: Swift.String?
     public let recursiveList: [RecursiveShapesInputOutputNested2]?
 
     public init (
-        foo: String? = nil,
+        foo: Swift.String? = nil,
         recursiveList: [RecursiveShapesInputOutputNested2]? = nil
     )
     {
@@ -211,12 +211,12 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Equatable {
-    public let bar: String?
+public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
+    public let bar: Swift.String?
     public let recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
-        bar: String? = nil,
+        bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
     {
@@ -226,7 +226,7 @@ public struct RecursiveShapesInputOutputNested2: Equatable {
 }
 
 /// This *is* documentation about the shape.
-public struct RecursiveShapesInputOutputLists: Equatable {
+public struct RecursiveShapesInputOutputLists: Swift.Equatable {
     public let nested: RecursiveShapesInputOutputNested1?
 
     public init (

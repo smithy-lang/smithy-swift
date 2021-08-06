@@ -16,7 +16,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationInput: Equatable {
+            public struct MyTestOperationInput: Swift.Equatable {
                 public let bar: ExampleClientTypes.RenamedGreeting?
             
                 public init (
@@ -44,7 +44,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationOutputResponse: Equatable {
+            public struct MyTestOperationOutputResponse: Swift.Equatable {
                 public let baz: ExampleClientTypes.GreetingStruct?
             
                 public init (
@@ -73,7 +73,7 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             extension ExampleClientTypes {
-                public struct GreetingStruct: Equatable {
+                public struct GreetingStruct: Swift.Equatable {
                     public let hi: Swift.String?
             
                     public init (
@@ -105,7 +105,7 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             extension ExampleClientTypes {
-                public struct RenamedGreeting: Equatable {
+                public struct RenamedGreeting: Swift.Equatable {
                     public let salutation: Swift.String?
             
                     public init (

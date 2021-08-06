@@ -54,6 +54,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         // type with default set
         putFormatter('D', SwiftSymbolFormatter(setDefault = true))
         putFormatter('T', SwiftSymbolFormatter())
+        putFormatter('N', SwiftSymbolFormatter(optional = false))
     }
 
     private val imports: ImportDeclarations = ImportDeclarations()
@@ -85,7 +86,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
         symbol.references.forEach { reference ->
             for (option in options) {
-                if (reference.hasOption(option)) {
+                if (reference.hasOption(option) && reference.symbol.namespace != "Swift") {
                     addImport(reference.symbol)
                     break
                 }
@@ -117,12 +118,12 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     /**
      * Implements Swift symbol formatting for the `$T` formatter
      */
-    private class SwiftSymbolFormatter(val setDefault: Boolean = false) : BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter(val setDefault: Boolean = false, val optional: Boolean = true) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
                     var formatted = type.fullName
-                    if (type.isBoxed()) {
+                    if (type.isBoxed() && optional) {
                         formatted += "?"
                     }
 

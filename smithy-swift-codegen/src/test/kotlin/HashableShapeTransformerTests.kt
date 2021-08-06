@@ -65,7 +65,7 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/HashableShapesInput.swift").get()
         Assertions.assertNotNull(hashableShapeInput)
         val expected = """
-            public struct HashableShapesInput: Equatable {
+            public struct HashableShapesInput: Swift.Equatable {
                 public let `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
                 public let bar: Swift.String?
             
@@ -85,7 +85,7 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/HashableShapesOutputResponse.swift").get()
         Assertions.assertNotNull(hashableShapeOutput)
         val expectedOutput = """
-            public struct HashableShapesOutputResponse: Equatable {
+            public struct HashableShapesOutputResponse: Swift.Equatable {
                 public let quz: Swift.String?
             
                 public init (
@@ -103,7 +103,7 @@ class HashableShapeTransformerTests {
         Assertions.assertNotNull(hashableSetShape)
         val expectedStructureShape = """
             extension ExampleClientTypes {
-                public struct HashableStructure: Equatable, Hashable {
+                public struct HashableStructure: Swift.Equatable, Swift.Hashable {
                     public let baz: ExampleClientTypes.NestedHashableStructure?
                     public let foo: Swift.String?
             
@@ -126,7 +126,7 @@ class HashableShapeTransformerTests {
         Assertions.assertNotNull(hashableNestedStructure)
         val expectedNestedStructureShape = """
         extension ExampleClientTypes {
-            public struct NestedHashableStructure: Equatable, Hashable {
+            public struct NestedHashableStructure: Swift.Equatable, Swift.Hashable {
                 public let bar: Swift.String?
                 public let quz: Swift.Int?
         

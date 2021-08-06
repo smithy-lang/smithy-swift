@@ -16,14 +16,14 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldContainOnlyOnce(
             """
             public class RestJsonProtocolClient {
-                let client: SdkHttpClient
-                let config: SDKRuntimeConfiguration
+                let client: ClientRuntime.SdkHttpClient
+                let config: ClientRuntime.SDKRuntimeConfiguration
                 let serviceName = "Rest Json Protocol"
-                let encoder: RequestEncoder
-                let decoder: ResponseDecoder
+                let encoder: ClientRuntime.RequestEncoder
+                let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: SDKRuntimeConfiguration) {
-                    client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+                public init(config: ClientRuntime.SDKRuntimeConfiguration) {
+                    client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
                     encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
@@ -44,18 +44,18 @@ class HttpProtocolClientGeneratorTests {
                     client.close()
                 }
             
-                public class RestJsonProtocolClientConfiguration: SDKRuntimeConfiguration {
+                public class RestJsonProtocolClientConfiguration: ClientRuntime.SDKRuntimeConfiguration {
             
-                    public var clientLogMode: ClientLogMode
-                    public var decoder: ResponseDecoder?
-                    public var encoder: RequestEncoder?
-                    public var httpClientConfiguration: HttpClientConfiguration
-                    public var httpClientEngine: HttpClientEngine
-                    public var idempotencyTokenGenerator: IdempotencyTokenGenerator
-                    public var logger: LogAgent
-                    public var retrier: Retrier
+                    public var clientLogMode: ClientRuntime.ClientLogMode
+                    public var decoder: ClientRuntime.ResponseDecoder?
+                    public var encoder: ClientRuntime.RequestEncoder?
+                    public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
+                    public var httpClientEngine: ClientRuntime.HttpClientEngine
+                    public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
+                    public var logger: ClientRuntime.LogAgent
+                    public var retrier: ClientRuntime.Retrier
             
-                    public init(runtimeConfig: SDKRuntimeConfiguration) throws {
+                    public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
                         self.decoder = runtimeConfig.decoder
                         self.encoder = runtimeConfig.encoder
@@ -67,21 +67,21 @@ class HttpProtocolClientGeneratorTests {
                     }
             
                     public convenience init() throws {
-                        let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
+                        let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
                         try self.init(runtimeConfig: defaultRuntimeConfig)
                     }
                 }
             }
             
-            public struct RestJsonProtocolClientLogHandlerFactory: SDKLogHandlerFactory {
+            public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {
                 public var label = "RestJsonProtocolClient"
-                let logLevel: SDKLogLevel
+                let logLevel: ClientRuntime.SDKLogLevel
                 public func construct(label: String) -> LogHandler {
                     var handler = StreamLogHandler.standardOutput(label: label)
                     handler.logLevel = logLevel.toLoggerType()
                     return handler
                 }
-                public init(logLevel: SDKLogLevel) {
+                public init(logLevel: ClientRuntime.SDKLogLevel) {
                     self.logLevel = logLevel
                 }
             }

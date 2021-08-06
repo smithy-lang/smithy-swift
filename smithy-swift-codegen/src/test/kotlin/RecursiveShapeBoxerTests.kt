@@ -46,9 +46,9 @@ internal class RecursiveShapeBoxerTests {
         Assertions.assertNotNull(recursiveShapesInput)
         val expected =
             """
-            public struct RecursiveShapesInput: Equatable {
+            public struct RecursiveShapesInput: Swift.Equatable {
                 public let nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
-    
+            
                 public init (
                     nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
                 )
@@ -64,7 +64,7 @@ internal class RecursiveShapeBoxerTests {
         Assertions.assertNotNull(recursiveShapesOutput)
         val expected2 =
             """
-            public struct RecursiveShapesOutputResponse: Equatable {
+            public struct RecursiveShapesOutputResponse: Swift.Equatable {
                 public let nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
                 public init (
@@ -83,7 +83,7 @@ internal class RecursiveShapeBoxerTests {
         val expected3 =
             """
             extension ExampleClientTypes {
-                public struct RecursiveShapesInputOutputNested1: Equatable {
+                public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
                     public let foo: Swift.String?
                     public let nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
             
@@ -107,7 +107,7 @@ internal class RecursiveShapeBoxerTests {
         val expected4 =
         """
         extension ExampleClientTypes {
-            public struct RecursiveShapesInputOutputNested2: Equatable {
+            public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
                 public let bar: Swift.String?
                 public let recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1?
         

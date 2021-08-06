@@ -16,7 +16,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typeName: String = "${serviceName}Configuration"
 
-    open val typesToConformConfigTo: List<String> = mutableListOf("SDKRuntimeConfiguration")
+    open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
 
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
@@ -35,11 +35,11 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
     open fun otherRuntimeConfigProperties(): List<ConfigField> = listOf()
 
     fun getTypeInheritance(): String {
-        return typesToConformConfigTo.joinToString(", ")
+        return typesToConformConfigTo.joinToString(", ") { it.fullName }
     }
 
     open fun renderInitializers(serviceSymbol: Symbol) {
-        writer.openBlock("public init(runtimeConfig: SDKRuntimeConfiguration) throws {", "}") {
+        writer.openBlock("public init(runtimeConfig: \$T) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
             val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
                 writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
@@ -47,7 +47,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         }
         writer.write("")
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let defaultRuntimeConfig = try DefaultSDKRuntimeConfiguration(\"${serviceName}\")")
+            writer.write("let defaultRuntimeConfig = try \$T(\"${serviceName}\")", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration)
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }

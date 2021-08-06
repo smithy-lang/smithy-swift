@@ -20,12 +20,13 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -95,7 +96,7 @@ open class HttpProtocolClientGenerator(
     private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
         val operationName = op.camelCaseName()
         val continuationName = "${operationName}Continuation"
-        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, Swift.Error>")
+        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$T>", SwiftTypes.Error)
         writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
             writer.openBlock("$operationName(input: input) { result in", "}") {
                 writer.openBlock("switch result {", "}") {

@@ -19,6 +19,7 @@ object ClientRuntimeTypes {
         val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
         val Headers = runtimeSymbol("Headers")
         val HttpStatusCode = runtimeSymbol("HttpStatusCode")
+        val SdkHttpClient = runtimeSymbol("SdkHttpClient")
     }
 
     object Serde {
@@ -28,10 +29,14 @@ object ClientRuntimeTypes {
 
     object Core {
         val Logger = runtimeSymbol("LogAgent")
+        val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", false)
+        val SDKLogLevel = runtimeSymbol("SDKLogLevel", false)
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
         val Retrier = runtimeSymbol("Retrier")
         val ErrorType = runtimeSymbol("ErrorType", false)
+        val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration", false)
+        val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration", false)
     }
 }
 

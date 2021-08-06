@@ -14,17 +14,17 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
-            writer.write("let client: SdkHttpClient")
-            writer.write("let config: ${serviceConfig.typesToConformConfigTo.first()}")
+            writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
+            writer.write("let config: ${serviceConfig.typesToConformConfigTo.first().fullName}")
             writer.write("let serviceName = \"${serviceName}\"")
-            writer.write("let encoder: RequestEncoder")
-            writer.write("let decoder: ResponseDecoder")
+            writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
+            writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
             properties.forEach { prop ->
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: ${serviceConfig.typesToConformConfigTo.first()}) {", "}") {
-                writer.write("client = SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)")
+            writer.openBlock("public init(config: ${serviceConfig.typesToConformConfigTo.first().fullName}) {", "}") {
+                writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
                     if (prop.needsConfigure) {
@@ -57,9 +57,9 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: SDKLogHandlerFactory {", "}") {
+        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: \$T {", "}", ClientRuntimeTypes.Core.SDKLogHandlerFactory) {
             writer.write("public var label = \"${serviceSymbol.name}\"")
-            writer.write("let logLevel: SDKLogLevel")
+            writer.write("let logLevel: \$T", ClientRuntimeTypes.Core.SDKLogLevel)
 
             writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {
                 writer.write("var handler = StreamLogHandler.standardOutput(label: label)")
@@ -67,7 +67,7 @@ open class HttpProtocolServiceClient(
                 writer.write("return handler")
             }
 
-            writer.openBlock("public init(logLevel: SDKLogLevel) {", "}") {
+            writer.openBlock("public init(logLevel: \$T) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
                 writer.write("self.logLevel = logLevel")
             }
         }

@@ -29,9 +29,9 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct EnumInputInput: Equatable {
+            public struct EnumInputInput: Swift.Equatable {
                 public let enumHeader: MyEnum?
-                public let nestedWithEnum: NestedEnum?
+                public let nestedWithEnum: ExampleClientTypes.NestedEnum?
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -49,18 +49,18 @@ class StructEncodeGenerationIsolatedTests {
             
                 public init (from decoder: Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String?]?]?].self, forKey: .nestedNestedStringList)
-                    var nestedNestedStringListDecoded0:[[[String]]]? = nil
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String?]?]?].self, forKey: .nestedNestedStringList)
+                    var nestedNestedStringListDecoded0:[[[Swift.String]]]? = nil
                     if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListDecoded0 = [[[String]]]()
+                        nestedNestedStringListDecoded0 = [[[Swift.String]]]()
                         for list0 in nestedNestedStringListContainer {
-                            var list0Decoded0: [[String]]? = nil
+                            var list0Decoded0: [[Swift.String]]? = nil
                             if let list0 = list0 {
-                                list0Decoded0 = [[String]]()
+                                list0Decoded0 = [[Swift.String]]()
                                 for list1 in list0 {
-                                    var list1Decoded1: [String]? = nil
+                                    var list1Decoded1: [Swift.String]? = nil
                                     if let list1 = list1 {
-                                        list1Decoded1 = [String]()
+                                        list1Decoded1 = [Swift.String]()
                                         for string2 in list1 {
                                             if let string2 = string2 {
                                                 list1Decoded1?.append(string2)
