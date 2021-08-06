@@ -113,6 +113,6 @@ fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
 
 fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
     return Selector
-        .parse("[service = ${serviceShape.id }] ~> :is(structure,union) :not(<-[input, output, error]- operation)")
+        .parse("service [id=${serviceShape.id }] ~> :is(structure,union) :not(<-[input, output, error]- operation)")
         .select(this)
 }

@@ -7,6 +7,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 
 class CustomDebugStringConvertibleGenerator(
@@ -26,8 +27,8 @@ class CustomDebugStringConvertibleGenerator(
 
     fun render() {
         writer.openBlock("extension ${structSymbol.name}: \$T {", "}", SwiftTypes.Protocols.CustomDebugStringConvertible) {
-            writer.openBlock("public var debugDescription: String {", "}") {
-                if (shape.hasTrait(SensitiveTrait::class.java)) {
+            writer.openBlock("public var debugDescription: \$T {", "}", SwiftTypes.String) {
+                if (shape.hasTrait<SensitiveTrait>()) {
                     writer.write("\"$REDACT_STRING\"")
                 } else {
                     renderDescription()

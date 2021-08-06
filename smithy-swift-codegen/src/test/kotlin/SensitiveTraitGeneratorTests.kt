@@ -16,9 +16,9 @@ class SensitiveTraitGeneratorTests {
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestInput: CustomDebugStringConvertible {
-                public var debugDescription: String {
-                    "SensitiveTraitInRequestInput(foo: \(String(describing: foo)), baz: \"CONTENT_REDACTED\")"}
+            extension SensitiveTraitInRequestInput: Swift.CustomDebugStringConvertible {
+                public var debugDescription: Swift.String {
+                    "SensitiveTraitInRequestInput(foo: \(Swift.String(describing: foo)), baz: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
         extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
@@ -32,8 +32,8 @@ class SensitiveTraitGeneratorTests {
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestOutputResponse: CustomDebugStringConvertible {
-                public var debugDescription: String {
+            extension SensitiveTraitInRequestOutputResponse: Swift.CustomDebugStringConvertible {
+                public var debugDescription: Swift.String {
                     "CONTENT_REDACTED"
                 }
             }
@@ -49,9 +49,9 @@ class SensitiveTraitGeneratorTests {
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestInput: CustomDebugStringConvertible {
-                public var debugDescription: String {
-                    "SensitiveTraitTestRequestInput(bar: \(String(describing: bar)), baz: \(String(describing: baz)), foo: \(String(describing: foo)))"}
+            extension SensitiveTraitTestRequestInput: Swift.CustomDebugStringConvertible {
+                public var debugDescription: Swift.String {
+                    "SensitiveTraitTestRequestInput(bar: \(Swift.String(describing: bar)), baz: \(Swift.String(describing: baz)), foo: \(Swift.String(describing: foo)))"}
             }
             """.trimIndent()
         extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
@@ -65,8 +65,8 @@ class SensitiveTraitGeneratorTests {
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestOutputResponse: CustomDebugStringConvertible {
-                public var debugDescription: String {
+            extension SensitiveTraitTestRequestOutputResponse: Swift.CustomDebugStringConvertible {
+                public var debugDescription: Swift.String {
                     "SensitiveTraitTestRequestOutputResponse(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
