@@ -8,7 +8,12 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.model.expectShape
+import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 
 /**
  * Generates an appropriate Swift type for a Smithy union shape
@@ -40,7 +45,8 @@ class UnionGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: UnionShape
+    private val shape: UnionShape,
+    private val settings: SwiftSettings
 ) {
 
     val unionSymbol: Symbol by lazy {
@@ -49,6 +55,19 @@ class UnionGenerator(
 
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
+        val isNestedType = shape.hasTrait<NestedTrait>()
+        if(isNestedType) {
+            val service = model.expectShape<ServiceShape>(settings.service)
+            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                renderUnion()
+            }
+        } else {
+            renderUnion()
+        }
+        writer.removeContext("union.name")
+    }
+
+    fun renderUnion() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
@@ -63,7 +82,6 @@ class UnionGenerator(
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$T)", SwiftTypes.String)
         }
-        writer.removeContext("union.name")
     }
 
     fun hashableIfPossible(): String {

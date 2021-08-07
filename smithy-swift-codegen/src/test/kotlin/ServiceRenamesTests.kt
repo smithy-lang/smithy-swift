@@ -136,21 +136,21 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RenamedGreeting: Codable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension RenamedGreeting: Swift.Codable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case salutation
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let salutation = salutation {
                         try encodeContainer.encode(salutation, forKey: .salutation)
                     }
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let salutationDecoded = try containerValues.decodeIfPresent(String.self, forKey: .salutation)
+                    let salutationDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .salutation)
                     salutation = salutationDecoded
                 }
             }

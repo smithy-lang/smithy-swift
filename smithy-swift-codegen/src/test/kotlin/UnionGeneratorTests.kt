@@ -29,11 +29,11 @@ class UnionGeneratorTests {
         )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = UnionGenerator(model, provider, writer, simpleUnionShape)
+        val generator = UnionGenerator(model, provider, writer, simpleUnionShape, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -74,11 +74,11 @@ class UnionGeneratorTests {
         unionShapeBuilder.addMember("myStruct", struct.id)
         val unionShapeWithStructMember = unionShapeBuilder.build()
         val model = createModelFromShapes(struct, unionShapeWithStructMember)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember)
+        val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember, settings)
         generator.render()
 
         val contents = writer.toString()

@@ -145,6 +145,10 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         if (shape is UnionShape) {
             addDeclareMemberReferences(builder, shape.allMembers.values)
         }
+
+        if (shape.hasTrait<NestedTrait>() && service != null) {
+            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        }
         return builder.build()
     }
 

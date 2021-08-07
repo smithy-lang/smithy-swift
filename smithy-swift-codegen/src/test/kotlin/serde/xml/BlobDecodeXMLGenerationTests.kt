@@ -14,12 +14,12 @@ class BlobDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlBlobsOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case data
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.data) {
                     do {
@@ -43,24 +43,24 @@ class BlobDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsNestedOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlBlobsNestedOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case nestedBlobList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedBlobList) {
                     struct KeyVal0{struct member{}}
                     let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
                     if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
-                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Data]].self, forKey: .member)
-                        var nestedBlobListBuffer:[[Data]]? = nil
+                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[ClientRuntime.Data]].self, forKey: .member)
+                        var nestedBlobListBuffer:[[ClientRuntime.Data]]? = nil
                         if let nestedBlobListContainer = nestedBlobListContainer {
-                            nestedBlobListBuffer = [[Data]]()
-                            var listBuffer0: [Data]? = nil
+                            nestedBlobListBuffer = [[ClientRuntime.Data]]()
+                            var listBuffer0: [ClientRuntime.Data]? = nil
                             for listContainer0 in nestedBlobListContainer {
-                                listBuffer0 = [Data]()
+                                listBuffer0 = [ClientRuntime.Data]()
                                 for blobContainer1 in listContainer0 {
                                     listBuffer0?.append(blobContainer1)
                                 }

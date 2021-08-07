@@ -14,15 +14,22 @@ class EnumDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlEnumsOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        struct XmlEnumsOutputResponseBody: Swift.Equatable {
+            public let fooEnum1: FooEnum?
+            public let fooEnum2: FooEnum?
+            public let fooEnum3: FooEnum?
+            public let fooEnumList: [FooEnum]?
+        }
+        
+        extension XmlEnumsOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case fooEnum1
                 case fooEnum2
                 case fooEnum3
                 case fooEnumList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 let fooEnum1Decoded = try containerValues.decodeIfPresent(FooEnum.self, forKey: .fooEnum1)
                 fooEnum1 = fooEnum1Decoded
@@ -61,12 +68,16 @@ class EnumDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsNestedOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            struct XmlEnumsNestedOutputResponseBody: Swift.Equatable {
+                public let nestedEnumsList: [[FooEnum]]?
+            }
+            
+            extension XmlEnumsNestedOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedEnumsList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedEnumsList) {
                         struct KeyVal0{struct member{}}

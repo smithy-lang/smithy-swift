@@ -14,18 +14,18 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespacesInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: Key("xmlns"))
+                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let nested = nested {
-                        try container.encode(nested, forKey: Key("nested"))
+                        try container.encode(nested, forKey: ClientRuntime.Key("nested"))
                     }
                 }
             }
@@ -39,12 +39,12 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespacesInput: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlNamespacesInput: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -62,45 +62,45 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+Codable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNested: Codable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespaceNested: Swift.Codable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case values
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("http://boo.com", forKey: Key("xmlns"))
+                        try container.encode("http://boo.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let foo = foo {
-                        var fooContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("foo"))
-                        try fooContainer.encode(foo, forKey: Key(""))
-                        try fooContainer.encode("http://baz.com", forKey: Key("xmlns:baz"))
+                        var fooContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("foo"))
+                        try fooContainer.encode(foo, forKey: ClientRuntime.Key(""))
+                        try fooContainer.encode("http://baz.com", forKey: ClientRuntime.Key("xmlns:baz"))
                     }
                     if let values = values {
-                        var valuesContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("values"))
-                        try valuesContainer.encode("http://qux.com", forKey: Key("xmlns"))
+                        var valuesContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("values"))
+                        try valuesContainer.encode("http://qux.com", forKey: ClientRuntime.Key("xmlns"))
                         for string0 in values {
-                            var valuesContainer0 = valuesContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                            try valuesContainer0.encode(string0, forKey: Key(""))
-                            try valuesContainer0.encode("http://bux.com", forKey: Key("xmlns"))
+                            var valuesContainer0 = valuesContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                            try valuesContainer0.encode(string0, forKey: ClientRuntime.Key(""))
+                            try valuesContainer0.encode("http://bux.com", forKey: ClientRuntime.Key("xmlns"))
                         }
                     }
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooDecoded = try containerValues.decodeIfPresent(String.self, forKey: .foo)
+                    let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded
                     if containerValues.contains(.values) {
                         struct KeyVal0{struct member{}}
                         let valuesWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .values)
                         if let valuesWrappedContainer = valuesWrappedContainer {
-                            let valuesContainer = try valuesWrappedContainer.decodeIfPresent([String].self, forKey: .member)
-                            var valuesBuffer:[String]? = nil
+                            let valuesContainer = try valuesWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
+                            var valuesBuffer:[Swift.String]? = nil
                             if let valuesContainer = valuesContainer {
-                                valuesBuffer = [String]()
+                                valuesBuffer = [Swift.String]()
                                 for stringContainer0 in valuesContainer {
                                     valuesBuffer?.append(stringContainer0)
                                 }
@@ -124,13 +124,13 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNested: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlNamespaceNested: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns",
                         "xmlns:baz"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -148,26 +148,26 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNestedListInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespaceNestedListInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: Key("xmlns"))
+                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
-                        try nestedContainer.encode("http://aux.com", forKey: Key("xmlns"))
+                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
+                        try nestedContainer.encode("http://aux.com", forKey: ClientRuntime.Key("xmlns"))
                         for xmlnestednamespacedlist0 in nested {
-                            var xmlnestednamespacedlist0Container0 = nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                            try xmlnestednamespacedlist0Container0.encode("http://bux.com", forKey: Key("xmlns:baz"))
+                            var xmlnestednamespacedlist0Container0 = nestedContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                            try xmlnestednamespacedlist0Container0.encode("http://bux.com", forKey: ClientRuntime.Key("xmlns:baz"))
                             for string1 in xmlnestednamespacedlist0 {
-                                var xmlnestednamespacedlist0Container1 = xmlnestednamespacedlist0Container0.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
-                                try xmlnestednamespacedlist0Container1.encode(string1, forKey: Key(""))
-                                try xmlnestednamespacedlist0Container1.encode("http://bar.com", forKey: Key("xmlns:bzzzz"))
+                                var xmlnestednamespacedlist0Container1 = xmlnestednamespacedlist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                                try xmlnestednamespacedlist0Container1.encode(string1, forKey: ClientRuntime.Key(""))
+                                try xmlnestednamespacedlist0Container1.encode("http://bar.com", forKey: ClientRuntime.Key("xmlns:bzzzz"))
                             }
                         }
                     }
@@ -183,14 +183,14 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNestedListInput: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlNamespaceNestedListInput: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns",
                         "xmlns:baz",
                         "xmlns:bzzzz"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -208,25 +208,25 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceFlattenedListInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespaceFlattenedListInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: Key("xmlns"))
+                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let nested = nested {
                         if nested.isEmpty {
-                            var nestedContainer = container.nestedUnkeyedContainer(forKey: Key("nested"))
+                            var nestedContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("nested"))
                             try nestedContainer.encodeNil()
                         } else {
                             for string0 in nested {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
-                                try nestedContainer0.encode("http://aux.com", forKey: Key("xmlns:baz"))
-                                try nestedContainer0.encode(string0, forKey: Key(""))
+                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
+                                try nestedContainer0.encode("http://aux.com", forKey: ClientRuntime.Key("xmlns:baz"))
+                                try nestedContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
                         }
                     }
@@ -242,13 +242,13 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespaceFlattenedListInput: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlNamespaceFlattenedListInput: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns",
                         "xmlns:baz"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -266,13 +266,13 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespacesOnServiceInput: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlNamespacesOnServiceInput: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns",
                         "xmlns:xsi"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -290,24 +290,24 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesOnServiceInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespacesOnServiceInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("https://example.com", forKey: Key("xmlns"))
+                        try container.encode("https://example.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let foo = foo {
-                        try container.encode(foo, forKey: Key("foo"))
+                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
                     }
                     if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
-                        try nestedContainer.encode(nested, forKey: Key(""))
-                        try nestedContainer.encode("https://example.com", forKey: Key("xmlns:xsi"))
+                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
+                        try nestedContainer.encode(nested, forKey: ClientRuntime.Key(""))
+                        try nestedContainer.encode("https://example.com", forKey: ClientRuntime.Key("xmlns:xsi"))
                     }
                 }
             }
@@ -321,24 +321,24 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesOnServiceOverridableInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNamespacesOnServiceOverridableInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if encoder.codingPath.isEmpty {
-                        try container.encode("https://overridable.com", forKey: Key("xmlns"))
+                        try container.encode("https://overridable.com", forKey: ClientRuntime.Key("xmlns"))
                     }
                     if let foo = foo {
-                        try container.encode(foo, forKey: Key("foo"))
+                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
                     }
                     if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nested"))
-                        try nestedContainer.encode(nested, forKey: Key(""))
-                        try nestedContainer.encode("https://example.com", forKey: Key("xmlns:xsi"))
+                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
+                        try nestedContainer.encode(nested, forKey: ClientRuntime.Key(""))
+                        try nestedContainer.encode("https://example.com", forKey: ClientRuntime.Key("xmlns:xsi"))
                     }
                 }
             }

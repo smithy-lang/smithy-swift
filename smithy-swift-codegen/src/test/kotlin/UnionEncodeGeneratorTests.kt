@@ -38,12 +38,12 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension JsonUnionsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension JsonUnionsInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case contents
                 }
-
-                public func encode(to encoder: Encoder) throws {
+            
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let contents = contents {
                         try encodeContainer.encode(contents, forKey: .contents)
@@ -60,8 +60,8 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MyUnion: Codable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension MyUnion: Swift.Codable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"
                     case enumvalue = "enumValue"
@@ -74,7 +74,7 @@ class UnionEncodeGeneratorTests {
                     case timestampvalue = "timestampValue"
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     switch self {
                         case let .blobvalue(blobvalue):
@@ -89,9 +89,9 @@ class UnionEncodeGeneratorTests {
                                 try listvalueContainer.encode(stringlist0)
                             }
                         case let .mapvalue(mapvalue):
-                            var mapvalueContainer = container.nestedContainer(keyedBy: Key.self, forKey: .mapvalue)
+                            var mapvalueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .mapvalue)
                             for (dictKey0, stringmap0) in mapvalue {
-                                try mapvalueContainer.encode(stringmap0, forKey: Key(stringValue: dictKey0))
+                                try mapvalueContainer.encode(stringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                             }
                         case let .numbervalue(numbervalue):
                             try container.encode(numbervalue, forKey: .numbervalue)
@@ -106,32 +106,32 @@ class UnionEncodeGeneratorTests {
                     }
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let stringvalueDecoded = try values.decodeIfPresent(String.self, forKey: .stringvalue)
+                    let stringvalueDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .stringvalue)
                     if let stringvalue = stringvalueDecoded {
                         self = .stringvalue(stringvalue)
                         return
                     }
-                    let booleanvalueDecoded = try values.decodeIfPresent(Bool.self, forKey: .booleanvalue)
+                    let booleanvalueDecoded = try values.decodeIfPresent(Swift.Bool.self, forKey: .booleanvalue)
                     if let booleanvalue = booleanvalueDecoded {
                         self = .booleanvalue(booleanvalue)
                         return
                     }
-                    let numbervalueDecoded = try values.decodeIfPresent(Int.self, forKey: .numbervalue)
+                    let numbervalueDecoded = try values.decodeIfPresent(Swift.Int.self, forKey: .numbervalue)
                     if let numbervalue = numbervalueDecoded {
                         self = .numbervalue(numbervalue)
                         return
                     }
-                    let blobvalueDecoded = try values.decodeIfPresent(Data.self, forKey: .blobvalue)
+                    let blobvalueDecoded = try values.decodeIfPresent(ClientRuntime.Data.self, forKey: .blobvalue)
                     if let blobvalue = blobvalueDecoded {
                         self = .blobvalue(blobvalue)
                         return
                     }
-                    let timestampvalueDateString = try values.decodeIfPresent(String.self, forKey: .timestampvalue)
-                    var timestampvalueDecoded: Date? = nil
+                    let timestampvalueDateString = try values.decodeIfPresent(Swift.String.self, forKey: .timestampvalue)
+                    var timestampvalueDecoded: ClientRuntime.Date? = nil
                     if let timestampvalueDateString = timestampvalueDateString {
-                        let timestampvalueFormatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                        let timestampvalueFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         timestampvalueDecoded = timestampvalueFormatter.date(from: timestampvalueDateString)
                     }
                     if let timestampvalue = timestampvalueDecoded {
@@ -143,10 +143,10 @@ class UnionEncodeGeneratorTests {
                         self = .enumvalue(enumvalue)
                         return
                     }
-                    let listvalueContainer = try values.decodeIfPresent([String?].self, forKey: .listvalue)
-                    var listvalueDecoded0:[String]? = nil
+                    let listvalueContainer = try values.decodeIfPresent([Swift.String?].self, forKey: .listvalue)
+                    var listvalueDecoded0:[Swift.String]? = nil
                     if let listvalueContainer = listvalueContainer {
-                        listvalueDecoded0 = [String]()
+                        listvalueDecoded0 = [Swift.String]()
                         for string0 in listvalueContainer {
                             if let string0 = string0 {
                                 listvalueDecoded0?.append(string0)
@@ -157,10 +157,10 @@ class UnionEncodeGeneratorTests {
                         self = .listvalue(listvalue)
                         return
                     }
-                    let mapvalueContainer = try values.decodeIfPresent([String: String?].self, forKey: .mapvalue)
-                    var mapvalueDecoded0: [String:String]? = nil
+                    let mapvalueContainer = try values.decodeIfPresent([Swift.String: Swift.String?].self, forKey: .mapvalue)
+                    var mapvalueDecoded0: [Swift.String:Swift.String]? = nil
                     if let mapvalueContainer = mapvalueContainer {
-                        mapvalueDecoded0 = [String:String]()
+                        mapvalueDecoded0 = [Swift.String:Swift.String]()
                         for (key0, string0) in mapvalueContainer {
                             if let string0 = string0 {
                                 mapvalueDecoded0?[key0] = string0

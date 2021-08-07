@@ -16,20 +16,20 @@ class TimestampGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension QueryTimestampsInput: Encodable, Reflection {
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+            extension QueryTimestampsInput: Swift.Encodable, Swift.Reflection {
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let epochMember = epochMember {
-                        try container.encode(TimestampWrapper(epochMember, format: .epochSeconds), forKey: Key("epochMember"))
+                        try container.encode(ClientRuntime.TimestampWrapper(epochMember, format: .epochSeconds), forKey: ClientRuntime.Key("epochMember"))
                     }
                     if let epochTarget = epochTarget {
-                        try container.encode(TimestampWrapper(epochTarget, format: .epochSeconds), forKey: Key("epochTarget"))
+                        try container.encode(ClientRuntime.TimestampWrapper(epochTarget, format: .epochSeconds), forKey: ClientRuntime.Key("epochTarget"))
                     }
                     if let normalFormat = normalFormat {
-                        try container.encode(TimestampWrapper(normalFormat, format: .dateTime), forKey: Key("normalFormat"))
+                        try container.encode(ClientRuntime.TimestampWrapper(normalFormat, format: .dateTime), forKey: ClientRuntime.Key("normalFormat"))
                     }
-                    try container.encode("QueryTimestamps", forKey:Key("Action"))
-                    try container.encode("2020-01-08", forKey:Key("Version"))
+                    try container.encode("QueryTimestamps", forKey:ClientRuntime.Key("Action"))
+                    try container.encode("2020-01-08", forKey:ClientRuntime.Key("Version"))
                 }
             }
             """.trimIndent()

@@ -40,6 +40,9 @@ object ClientRuntimeTypes {
         val NodeDecoding = runtimeSymbol("NodeDecoding")
         val NodeEncoding = runtimeSymbol("NodeEncoding")
         val TimestampWrapperDecoder = runtimeSymbol("TimestampWrapperDecoder")
+        val MapEntry = runtimeSymbol("MapEntry")
+        val CollectionMember = runtimeSymbol("CollectionMember")
+        val MapKeyValue = runtimeSymbol("MapKeyValue")
     }
 
     object Middleware {
@@ -49,6 +52,7 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date", false)
         val URLQueryItem = runtimeSymbol("URLQueryItem", false)
         val ClientError = runtimeSymbol("ClientError", false)

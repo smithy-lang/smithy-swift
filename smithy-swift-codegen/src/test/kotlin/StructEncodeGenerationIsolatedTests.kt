@@ -42,12 +42,12 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension NestedNestedJsonListInputBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension NestedNestedJsonListInputBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String?]?]?].self, forKey: .nestedNestedStringList)
                     var nestedNestedStringListDecoded0:[[[Swift.String]]]? = nil
@@ -93,14 +93,14 @@ class StructEncodeGenerationIsolatedTests {
 
         val expectedContents =
             """
-            extension JsonListsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension JsonListsInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
                     case stringList
                     case stringSet
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedStringList = nestedStringList {
                         var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)

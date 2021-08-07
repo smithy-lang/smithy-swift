@@ -14,14 +14,14 @@ class RecursiveShapesDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlRecursiveShapesOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlRecursiveShapesOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .nested)
+                    let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.self, forKey: .nested)
                     nested = nestedDecoded
                 }
             }
@@ -35,24 +35,24 @@ class RecursiveShapesDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlNestedRecursiveShapesOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNestedRecursiveShapesOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedRecursiveList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedRecursiveList) {
                         struct KeyVal0{struct member{}}
                         let nestedRecursiveListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedRecursiveList)
                         if let nestedRecursiveListWrappedContainer = nestedRecursiveListWrappedContainer {
-                            let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RecursiveShapesInputOutputNested1]].self, forKey: .member)
-                            var nestedRecursiveListBuffer:[[RecursiveShapesInputOutputNested1]]? = nil
+                            let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]].self, forKey: .member)
+                            var nestedRecursiveListBuffer:[[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]]? = nil
                             if let nestedRecursiveListContainer = nestedRecursiveListContainer {
-                                nestedRecursiveListBuffer = [[RecursiveShapesInputOutputNested1]]()
-                                var listBuffer0: [RecursiveShapesInputOutputNested1]? = nil
+                                nestedRecursiveListBuffer = [[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]]()
+                                var listBuffer0: [RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]? = nil
                                 for listContainer0 in nestedRecursiveListContainer {
-                                    listBuffer0 = [RecursiveShapesInputOutputNested1]()
+                                    listBuffer0 = [RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]()
                                     for structureContainer1 in listContainer0 {
                                         listBuffer0?.append(structureContainer1)
                                     }

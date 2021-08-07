@@ -24,11 +24,11 @@ class EnumGeneratorTests {
             EnumDefinition.builder().value("BAR").documentation("Documentation for BAR").build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -92,11 +92,11 @@ class EnumGeneratorTests {
                 .build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
 
         val contents = writer.toString()

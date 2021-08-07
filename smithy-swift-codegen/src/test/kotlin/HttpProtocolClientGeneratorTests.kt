@@ -95,7 +95,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
-        let context = HttpContextBuilder()
+        let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
                       .withMethod(value: .post)
@@ -128,7 +128,7 @@ class HttpProtocolClientGeneratorTests {
         public extension RestJsonProtocolClient {
             func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
-                typealias allocateWidgetContinuation = CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
+                typealias allocateWidgetContinuation = Swift.CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
                 return try await withCheckedThrowingContinuation { (continuation: allocateWidgetContinuation) in
                     allocateWidget(input: input) { result in
                         switch result {
@@ -154,7 +154,7 @@ class HttpProtocolClientGeneratorTests {
             public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (ClientRuntime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
             {
                 let urlPath = "/input/AllocateWidget"
-                let context = HttpContextBuilder()
+                let context = ClientRuntime.HttpContextBuilder()
                               .withEncoder(value: encoder)
                               .withDecoder(value: decoder)
                               .withMethod(value: .post)
