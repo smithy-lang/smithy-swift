@@ -14,8 +14,8 @@ class StructEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Encodable.swift")
         val expectedContents =
             """
-            extension SimpleScalarPropertiesInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension SimpleScalarPropertiesInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case byteValue
                     case doubleValue = "DoubleDribble"
                     case falseBooleanValue
@@ -28,37 +28,37 @@ class StructEncodeXMLGenerationTests {
                     case trueBooleanValue
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let byteValue = byteValue {
-                        try container.encode(byteValue, forKey: Key("byteValue"))
+                        try container.encode(byteValue, forKey: ClientRuntime.Key("byteValue"))
                     }
                     if let doubleValue = doubleValue {
-                        try container.encode(String(doubleValue), forKey: Key("DoubleDribble"))
+                        try container.encode(Swift.String(doubleValue), forKey: ClientRuntime.Key("DoubleDribble"))
                     }
                     if let falseBooleanValue = falseBooleanValue {
-                        try container.encode(falseBooleanValue, forKey: Key("falseBooleanValue"))
+                        try container.encode(falseBooleanValue, forKey: ClientRuntime.Key("falseBooleanValue"))
                     }
                     if let floatValue = floatValue {
-                        try container.encode(String(floatValue), forKey: Key("floatValue"))
+                        try container.encode(Swift.String(floatValue), forKey: ClientRuntime.Key("floatValue"))
                     }
                     if let integerValue = integerValue {
-                        try container.encode(integerValue, forKey: Key("integerValue"))
+                        try container.encode(integerValue, forKey: ClientRuntime.Key("integerValue"))
                     }
                     if let longValue = longValue {
-                        try container.encode(longValue, forKey: Key("longValue"))
+                        try container.encode(longValue, forKey: ClientRuntime.Key("longValue"))
                     }
                     if let `protocol` = `protocol` {
-                        try container.encode(`protocol`, forKey: Key("protocol"))
+                        try container.encode(`protocol`, forKey: ClientRuntime.Key("protocol"))
                     }
                     if let shortValue = shortValue {
-                        try container.encode(shortValue, forKey: Key("shortValue"))
+                        try container.encode(shortValue, forKey: ClientRuntime.Key("shortValue"))
                     }
                     if let stringValue = stringValue {
-                        try container.encode(stringValue, forKey: Key("stringValue"))
+                        try container.encode(stringValue, forKey: ClientRuntime.Key("stringValue"))
                     }
                     if let trueBooleanValue = trueBooleanValue {
-                        try container.encode(trueBooleanValue, forKey: Key("trueBooleanValue"))
+                        try container.encode(trueBooleanValue, forKey: ClientRuntime.Key("trueBooleanValue"))
                     }
                 }
             }
@@ -72,27 +72,27 @@ class StructEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+Codable.swift")
         val expectedContents =
             """
-            extension StructureListMember: Codable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension StructureListMember: Swift.Codable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case a = "value"
                     case b = "other"
                 }
-
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+            
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let a = a {
-                        try container.encode(a, forKey: Key("value"))
+                        try container.encode(a, forKey: ClientRuntime.Key("value"))
                     }
                     if let b = b {
-                        try container.encode(b, forKey: Key("other"))
+                        try container.encode(b, forKey: ClientRuntime.Key("other"))
                     }
                 }
-
-                public init (from decoder: Decoder) throws {
+            
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let aDecoded = try containerValues.decodeIfPresent(String.self, forKey: .a)
+                    let aDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .a)
                     a = aDecoded
-                    let bDecoded = try containerValues.decodeIfPresent(String.self, forKey: .b)
+                    let bDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .b)
                     b = bDecoded
                 }
             }

@@ -14,27 +14,27 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlTimestampsInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case epochSeconds
                     case httpDate
                     case normal
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let dateTime = dateTime {
-                        try container.encode(TimestampWrapper(dateTime, format: .dateTime), forKey: Key("dateTime"))
+                        try container.encode(ClientRuntime.TimestampWrapper(dateTime, format: .dateTime), forKey: ClientRuntime.Key("dateTime"))
                     }
                     if let epochSeconds = epochSeconds {
-                        try container.encode(TimestampWrapper(epochSeconds, format: .epochSeconds), forKey: Key("epochSeconds"))
+                        try container.encode(ClientRuntime.TimestampWrapper(epochSeconds, format: .epochSeconds), forKey: ClientRuntime.Key("epochSeconds"))
                     }
                     if let httpDate = httpDate {
-                        try container.encode(TimestampWrapper(httpDate, format: .httpDate), forKey: Key("httpDate"))
+                        try container.encode(ClientRuntime.TimestampWrapper(httpDate, format: .httpDate), forKey: ClientRuntime.Key("httpDate"))
                     }
                     if let normal = normal {
-                        try container.encode(TimestampWrapper(normal, format: .dateTime), forKey: Key("normal"))
+                        try container.encode(ClientRuntime.TimestampWrapper(normal, format: .dateTime), forKey: ClientRuntime.Key("normal"))
                     }
                 }
             }
@@ -49,19 +49,19 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlTimestampsNestedInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
-                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("member"))
+                                try nestedtimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
@@ -78,19 +78,19 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedHTTPDateInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlTimestampsNestedHTTPDateInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
                         for nestedhttpdatetimestamplist0 in nestedTimestampList {
-                            var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for timestamp1 in nestedhttpdatetimestamplist0 {
-                                try nestedhttpdatetimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .httpDate), forKey: Key("member"))
+                                try nestedhttpdatetimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .httpDate), forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
@@ -107,19 +107,19 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedXmlNameInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlTimestampsNestedXmlNameInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTimestampList"))
+                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
                         for nestedtimestamplist0 in nestedTimestampList {
-                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("nestedTag1"))
+                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTag1"))
                             for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encode(TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key("nestedTag2"))
+                                try nestedtimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: ClientRuntime.Key("nestedTag2"))
                             }
                         }
                     }
@@ -136,19 +136,19 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsXmlNameInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlTimestampsXmlNameInput: Swift.Encodable, Swift.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case normal = "notNormalName"
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let dateTime = dateTime {
-                        try container.encode(TimestampWrapper(dateTime, format: .dateTime), forKey: Key("dateTime"))
+                        try container.encode(ClientRuntime.TimestampWrapper(dateTime, format: .dateTime), forKey: ClientRuntime.Key("dateTime"))
                     }
                     if let normal = normal {
-                        try container.encode(TimestampWrapper(normal, format: .dateTime), forKey: Key("notNormalName"))
+                        try container.encode(ClientRuntime.TimestampWrapper(normal, format: .dateTime), forKey: ClientRuntime.Key("notNormalName"))
                     }
                 }
             }

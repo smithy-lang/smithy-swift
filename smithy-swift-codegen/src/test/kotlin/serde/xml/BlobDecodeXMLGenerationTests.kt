@@ -23,7 +23,7 @@ class BlobDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.data) {
                     do {
-                        let dataDecoded = try containerValues.decodeIfPresent(Data.self, forKey: .data)
+                        let dataDecoded = try containerValues.decodeIfPresent(ClientRuntime.Data.self, forKey: .data)
                         data = dataDecoded
                     } catch {
                         data = "".data(using: .utf8)

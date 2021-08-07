@@ -225,7 +225,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     val format = determineTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = try TimestampWrapperDecoder.parseDateStringValue($itemInContainerName.value, format: .$format)")
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = try \$N.parseDateStringValue($itemInContainerName.value, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
                 }
                 else -> {
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
@@ -249,13 +249,13 @@ abstract class MemberShapeDecodeXMLGenerator(
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(String.self, forKey: .$memberName)")
+        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$T.self, forKey: .$memberName)", SwiftTypes.String)
 
         val memberBuffer = "${memberName}Buffer"
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
         writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
-            writer.write("$memberBuffer = try TimestampWrapperDecoder.parseDateStringValue($decodedMemberName, format: .$format)")
+            writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
         }
         renderAssigningDecodedMember(memberName, memberBuffer)
     }
@@ -270,7 +270,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val decodedMemberName = "${memberName}Decoded"
         writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
             writer.openBlock("do {", "} catch {") {
-                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(${memberTargetSymbol.name}.self, forKey: .$memberNameUnquoted)")
+                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
                 renderAssigningDecodedMember(memberName, decodedMemberName)
             }
             writer.indent()
@@ -298,7 +298,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-        renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
+        renderAssigningDecodedMember(memberName, decodedMemberName, memberTargetSymbol.isBoxed())
     }
 
     private fun nestedMemberTargetSymbolMapper(collectionShape: CollectionShape): Pair<Symbol, String> {
