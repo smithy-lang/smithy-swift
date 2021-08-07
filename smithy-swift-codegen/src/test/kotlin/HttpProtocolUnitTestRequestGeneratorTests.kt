@@ -54,7 +54,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -70,7 +70,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             ),
             query1: "Query 1"
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -148,14 +148,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = ExplicitStringInput(
             payload1: "explicit string"
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -220,13 +220,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = EmptyInputAndEmptyOutputInput(
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -280,14 +280,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SimpleScalarPropertiesInput(
             stringValue: nil
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -347,7 +347,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -355,7 +355,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             blob: ByteStream.from(data: "blobby blob blob".data(using: .utf8)!),
             foo: "Foo"
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -415,7 +415,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -424,7 +424,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             fooMap: [:]
 
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -484,7 +484,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -492,7 +492,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             contents: MyUnion.stringvalue("foo")
 
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -573,7 +573,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -595,7 +595,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 )
             )
         )
-        let encoder = JSONEncoder()
+        let encoder = ClientRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -667,7 +667,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -681,7 +681,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 ,
                 stringValue: "string"
             )
-            let encoder = JSONEncoder()
+            let encoder = ClientRuntime.JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()
@@ -752,7 +752,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -765,7 +765,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 ""${'"'}.data(using: .utf8)!)
 
             )
-            let encoder = JSONEncoder()
+            let encoder = ClientRuntime.JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()

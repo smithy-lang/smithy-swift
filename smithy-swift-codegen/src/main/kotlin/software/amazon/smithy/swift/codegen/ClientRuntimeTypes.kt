@@ -43,6 +43,10 @@ object ClientRuntimeTypes {
         val MapEntry = runtimeSymbol("MapEntry")
         val CollectionMember = runtimeSymbol("CollectionMember")
         val MapKeyValue = runtimeSymbol("MapKeyValue")
+        val FormURLEncoder = runtimeSymbol("FormURLEncoder")
+        val JSONDecoder = runtimeSymbol("JSONDecoder")
+        val JSONEncoder = runtimeSymbol("JSONEncoder")
+        val XMLEncoder = runtimeSymbol("XMLEncoder")
     }
 
     object Middleware {

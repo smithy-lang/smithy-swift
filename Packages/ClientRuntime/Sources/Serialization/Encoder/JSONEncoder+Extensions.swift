@@ -5,4 +5,5 @@
 
 import Foundation
 
+public typealias JSONEncoder = Foundation.JSONEncoder
 extension JSONEncoder: RequestEncoder {}

@@ -1,5 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
@@ -58,10 +60,10 @@ interface ClientProperty {
  * @property requestEncoderName The name of the request encoder (e.g. JSONEncoder)
  * @property requestEncoderOptions Map of options to set on the request encoder instance
  */
-abstract class HttpRequestEncoder(private val requestEncoderName: String, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
+abstract class HttpRequestEncoder(private val requestEncoder: Symbol, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
     override val name: String = "encoder"
     override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let \$L = $requestEncoderName()", name)
+        writer.write("let \$L = \$N()", name, requestEncoder)
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {
@@ -81,10 +83,10 @@ abstract class HttpRequestEncoder(private val requestEncoderName: String, privat
  * @property requestDecoderName The name of the request decoder (e.g. JSONDecoder)
  * @property requestDecoderOptions Map of options to set on the request decoder instance
  */
-abstract class HttpResponseDecoder(private val requestDecoderName: String, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
+abstract class HttpResponseDecoder(private val requestDecoder: Symbol, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
     override val name: String = "decoder"
     override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let \$L = $requestDecoderName()", name)
+        writer.write("let \$L = \$N()", name, requestDecoder)
     }
 
     override fun renderConfiguration(writer: SwiftWriter) {
@@ -99,7 +101,7 @@ abstract class HttpResponseDecoder(private val requestDecoderName: String, priva
     }
 }
 
-class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpRequestEncoder("encoder", requestEncoderOptions) {
+class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpRequestEncoder(ClientRuntimeTypes.Serde.RequestEncoder, requestEncoderOptions) {
     override fun renderInstantiation(writer: SwiftWriter) {
         // render nothing as we are relying on an encoder passed via the config object
     }
@@ -107,7 +109,7 @@ class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String
         writer.write("self.encoder = \$L.encoder", nameOfConfigObject)
     }
 }
-class DefaultResponseDecoder(private val responseDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpResponseDecoder("decoder", responseDecoderOptions) {
+class DefaultResponseDecoder(private val responseDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpResponseDecoder(ClientRuntimeTypes.Serde.ResponseDecoder, responseDecoderOptions) {
     override fun renderInstantiation(writer: SwiftWriter) {
         // render nothing as we are relying on an encoder passed via the config object
     }

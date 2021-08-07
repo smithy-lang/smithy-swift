@@ -5,6 +5,7 @@
 
 import Foundation
 
+public typealias JSONDecoder = Foundation.JSONDecoder
 extension JSONDecoder: ResponseDecoder {
     public func decode<T>(responseBody: Data) throws -> T where T: Decodable {
         return try decode(T.self, from: responseBody)

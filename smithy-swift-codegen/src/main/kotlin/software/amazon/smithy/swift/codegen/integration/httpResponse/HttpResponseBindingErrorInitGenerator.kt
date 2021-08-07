@@ -51,7 +51,7 @@ class HttpResponseBindingErrorInitGenerator(
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(serviceErrorProtocolSymbol)
-            writer.openBlock("extension \$L: \$L {", "}", errorShapeName, serviceErrorProtocolSymbol.name) {
+            writer.openBlock("extension \$L: \$N {", "}", errorShapeName, serviceErrorProtocolSymbol) {
                 writer.openBlock("public init (httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
                     ClientRuntimeTypes.Http.HttpResponse,
                     ClientRuntimeTypes.Serde.ResponseDecoder,

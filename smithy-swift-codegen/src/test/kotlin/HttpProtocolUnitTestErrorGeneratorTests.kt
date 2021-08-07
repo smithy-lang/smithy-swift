@@ -41,7 +41,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 return
             }
 
-            let decoder = JSONDecoder()
+            let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
@@ -105,7 +105,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 return
             }
 
-            let decoder = JSONDecoder()
+            let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
