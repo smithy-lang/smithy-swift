@@ -144,7 +144,7 @@ abstract class MemberShapeDecodeGenerator(
             val listContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
-                "let \$L = try $containerName.$decodeVerb(\$N.self, forKey: .\$L)",
+                "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
                 listContainerName,
                 symbolName,
                 memberName
@@ -160,7 +160,7 @@ abstract class MemberShapeDecodeGenerator(
             writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                 val previousDecodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded${level - 1}"
                 val symbolName = determineSymbolForShape(shape, isSparse)
-                writer.write("\$L = \$N()", previousDecodedMemberName, symbolName)
+                writer.write("\$L = \$L()", previousDecodedMemberName, symbolName)
                 renderDecodeListTarget(nestedTarget, containerName, memberName, insertMethod, topLevelMember, shape.isSetShape, level)
             }
         }
@@ -251,7 +251,7 @@ abstract class MemberShapeDecodeGenerator(
             val topLevelContainerName = "${memberName}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
-                "let \$L = try $containerName.$decodeVerb(\$N.self, forKey: .\$L)",
+                "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
                 topLevelContainerName,
                 symbolName,
                 memberName
@@ -266,7 +266,7 @@ abstract class MemberShapeDecodeGenerator(
             writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                 val previousDecodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded${level - 1}"
                 val symbolName = determineSymbolForShape(shape, false)
-                writer.write("\$L = \$N()", containerName, symbolName)
+                writer.write("\$L = \$L()", containerName, symbolName)
                 renderDecodeMapTarget(memberName, containerName, nestedTarget, topLevelMember, level)
             }
         }
@@ -288,13 +288,13 @@ abstract class MemberShapeDecodeGenerator(
             when (valueTargetShape) {
                 is CollectionShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
-                    writer.write("var \$L: \$N? = nil", nestedDecodedMemberName, symbolName)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
-                    writer.write("var \$L: \$N? = nil", nestedDecodedMemberName, symbolName)
+                    writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
                     renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
