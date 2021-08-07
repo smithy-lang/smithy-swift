@@ -38,7 +38,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension JsonUnionsInput: Swift.Encodable, Swift.Reflection {
+            extension JsonUnionsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case contents
                 }
@@ -60,7 +60,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MyUnion: Swift.Codable, Swift.Reflection {
+            extension MyUnion: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"

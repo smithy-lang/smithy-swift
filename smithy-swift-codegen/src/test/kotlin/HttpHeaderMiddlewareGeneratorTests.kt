@@ -25,7 +25,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<SmokeTestInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
@@ -63,7 +63,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<EnumInputInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<EnumInputOutputResponse>, MError>
                 where H: Handler,
@@ -102,7 +102,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputResponse>, MError>
                 where H: Handler,
@@ -138,7 +138,7 @@ class HttpHeaderMiddlewareGeneratorTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<TimestampInputInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<TimestampInputOutputResponse>, MError>
                 where H: Handler,

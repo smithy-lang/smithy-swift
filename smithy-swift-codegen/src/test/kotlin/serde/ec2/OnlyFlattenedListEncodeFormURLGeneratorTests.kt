@@ -17,7 +17,7 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Ec2QueryListsInput: Swift.Encodable, Swift.Reflection {
+            extension Ec2QueryListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let complexListArg = complexListArg {

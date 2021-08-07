@@ -16,7 +16,7 @@ class Ec2QueryNameTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Ec2SimpleInputParamsInput: Swift.Encodable, Swift.Reflection {
+            extension Ec2SimpleInputParamsInput: Swift.Encodable, ClientRuntime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let bamInt = bamInt {

@@ -14,7 +14,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListXmlNameInput: Swift.Encodable, Swift.Reflection {
+            extension XmlListXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case renamedListMembers = "renamed"
                 }
@@ -39,7 +39,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListXmlNameNestedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlListXmlNameNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case renamedListMembers = "renamed"
                 }
@@ -68,7 +68,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedWrappedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNestedWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
                 }
@@ -96,7 +96,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedNestedWrappedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNestedNestedWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
@@ -127,7 +127,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedNestedFlattenedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNestedNestedFlattenedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
@@ -167,7 +167,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEmptyListsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlEmptyListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case booleanList
                     case integerList
@@ -213,7 +213,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlWrappedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myGroceryList
                 }
@@ -239,7 +239,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlFlattenedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlFlattenedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myGroceryList
                 }
@@ -294,7 +294,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedFlattenedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedFlattenedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlTimestampsNestedFlattenedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
@@ -330,7 +330,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEmptyFlattenedListsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlEmptyFlattenedListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case booleanList
                     case integerList
@@ -387,7 +387,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListNestedFlattenedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListNestedFlattenedXmlNameInput: Swift.Encodable, Swift.Reflection {
+            extension XmlListNestedFlattenedXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedList = "listOfNestedStrings"
                 }
@@ -423,7 +423,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListContainMapInput: Swift.Encodable, Swift.Reflection {
+            extension XmlListContainMapInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }
@@ -457,7 +457,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListFlattenedContainMapInput: Swift.Encodable, Swift.Reflection {
+            extension XmlListFlattenedContainMapInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }

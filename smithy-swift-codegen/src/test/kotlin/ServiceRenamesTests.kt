@@ -136,7 +136,7 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RenamedGreeting: Swift.Codable, Swift.Reflection {
+            extension RestJsonProtocolClientTypes.RenamedGreeting: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case salutation
                 }

@@ -16,7 +16,7 @@ class TimestampGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension QueryTimestampsInput: Swift.Encodable, Swift.Reflection {
+            extension QueryTimestampsInput: Swift.Encodable, ClientRuntime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let epochMember = epochMember {

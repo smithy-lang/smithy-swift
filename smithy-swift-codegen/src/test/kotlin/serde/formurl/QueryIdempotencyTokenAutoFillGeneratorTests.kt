@@ -16,7 +16,7 @@ class QueryIdempotencyTokenAutoFillGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension QueryIdempotencyTokenAutoFillInput: Swift.Encodable, Swift.Reflection {
+            extension QueryIdempotencyTokenAutoFillInput: Swift.Encodable, ClientRuntime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let token = token {

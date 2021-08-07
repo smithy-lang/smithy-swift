@@ -249,7 +249,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$T.self, forKey: .$memberName)", SwiftTypes.String)
+        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberName)", SwiftTypes.String)
 
         val memberBuffer = "${memberName}Buffer"
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)

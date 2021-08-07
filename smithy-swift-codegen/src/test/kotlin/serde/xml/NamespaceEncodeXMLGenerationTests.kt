@@ -14,7 +14,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNamespacesInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
@@ -62,7 +62,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+Codable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNested: Swift.Codable, Swift.Reflection {
+            extension RestXmlProtocolClientTypes.XmlNamespaceNested: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case values
@@ -148,7 +148,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNestedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNamespaceNestedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
@@ -208,7 +208,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespaceFlattenedListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNamespaceFlattenedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
@@ -290,7 +290,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesOnServiceInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNamespacesOnServiceInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -321,7 +321,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNamespacesOnServiceOverridableInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNamespacesOnServiceOverridableInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested

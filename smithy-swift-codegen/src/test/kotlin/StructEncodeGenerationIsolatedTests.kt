@@ -93,7 +93,7 @@ class StructEncodeGenerationIsolatedTests {
 
         val expectedContents =
             """
-            extension JsonListsInput: Swift.Encodable, Swift.Reflection {
+            extension JsonListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
                     case stringList

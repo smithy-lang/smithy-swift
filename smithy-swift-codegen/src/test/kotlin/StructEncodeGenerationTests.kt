@@ -43,7 +43,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SmokeTestInput: Swift.Encodable, Swift.Reflection {
+            extension SmokeTestInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case payload1
                     case payload2
@@ -73,7 +73,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Nested4: Swift.Codable, Swift.Reflection {
+            extension Nested4: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case intList
                     case intMap
@@ -162,7 +162,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension TimestampInputInput: Swift.Encodable, Swift.Reflection {
+            extension TimestampInputInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case epochSeconds
@@ -203,7 +203,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MapInputInput: Swift.Encodable, Swift.Reflection {
+            extension MapInputInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobMap
                     case dateMap
@@ -256,7 +256,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension EnumInputInput: Swift.Encodable, Swift.Reflection {
+            extension EnumInputInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedWithEnum
                 }
@@ -275,7 +275,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents2 =
             """
-            extension NestedEnum: Swift.Codable, Swift.Reflection {
+            extension NestedEnum: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myEnum
                 }
@@ -307,7 +307,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested1: Swift.Codable, Swift.Reflection {
+            extension RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -345,7 +345,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested2: Swift.Codable, Swift.Reflection {
+            extension RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember
@@ -379,7 +379,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonListsInput: Swift.Encodable, Swift.Reflection {
+extension JsonListsInput: Swift.Encodable, ClientRuntime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case booleanList
         case integerList
@@ -449,7 +449,7 @@ extension JsonListsInput: Swift.Encodable, Swift.Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonMapsInput: Swift.Encodable, Swift.Reflection {
+extension JsonMapsInput: Swift.Encodable, ClientRuntime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case denseBooleanMap
         case denseNumberMap
@@ -523,7 +523,7 @@ extension JsonMapsInput: Swift.Encodable, Swift.Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension PrimitiveTypesInput: Swift.Encodable, Swift.Reflection {
+extension PrimitiveTypesInput: Swift.Encodable, ClientRuntime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case booleanVal
         case byteVal

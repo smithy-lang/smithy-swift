@@ -14,7 +14,7 @@ class UnionEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
         val expectedContents =
             """
-            extension XmlUnionShape: Swift.Codable, Swift.Reflection {
+            extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case datavalue = "dataValue"
                     case doublevalue = "doubleValue"

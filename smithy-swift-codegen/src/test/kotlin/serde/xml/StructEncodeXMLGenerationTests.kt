@@ -14,7 +14,7 @@ class StructEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Encodable.swift")
         val expectedContents =
             """
-            extension SimpleScalarPropertiesInput: Swift.Encodable, Swift.Reflection {
+            extension SimpleScalarPropertiesInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case byteValue
                     case doubleValue = "DoubleDribble"
@@ -72,7 +72,7 @@ class StructEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+Codable.swift")
         val expectedContents =
             """
-            extension StructureListMember: Swift.Codable, Swift.Reflection {
+            extension RestXmlProtocolClientTypes.StructureListMember: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case a = "value"
                     case b = "other"

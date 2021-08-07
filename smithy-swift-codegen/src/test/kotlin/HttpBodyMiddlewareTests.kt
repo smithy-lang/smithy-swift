@@ -30,7 +30,7 @@ class HttpBodyMiddlewareTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<SmokeTestInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
@@ -72,7 +72,7 @@ class HttpBodyMiddlewareTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStringInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStringOutputResponse>, MError>
                 where H: Handler,
@@ -109,7 +109,7 @@ class HttpBodyMiddlewareTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>, MError>
                 where H: Handler,
@@ -146,7 +146,7 @@ class HttpBodyMiddlewareTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobStreamInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>, MError>
                 where H: Handler,
@@ -183,7 +183,7 @@ class HttpBodyMiddlewareTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStructInput>,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStructOutputResponse>, MError>
                 where H: Handler,

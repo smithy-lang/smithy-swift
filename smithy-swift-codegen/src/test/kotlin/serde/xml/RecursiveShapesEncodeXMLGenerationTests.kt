@@ -14,7 +14,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested1+Codable.swift")
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested1: Swift.Codable, Swift.Reflection {
+            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -48,7 +48,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested2+Codable.swift")
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested2: Swift.Codable, Swift.Reflection {
+            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember
@@ -82,7 +82,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedRecursiveShapesInput: Swift.Encodable, Swift.Reflection {
+            extension XmlNestedRecursiveShapesInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedRecursiveList
                 }

@@ -128,7 +128,7 @@ class HttpProtocolClientGeneratorTests {
         public extension RestJsonProtocolClient {
             func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
-                typealias allocateWidgetContinuation = Swift.CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
+                typealias allocateWidgetContinuation = CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
                 return try await withCheckedThrowingContinuation { (continuation: allocateWidgetContinuation) in
                     allocateWidget(input: input) { result in
                         switch result {

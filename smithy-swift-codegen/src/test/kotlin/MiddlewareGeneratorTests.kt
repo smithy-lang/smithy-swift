@@ -25,7 +25,7 @@ class MiddlewareGeneratorTests {
             
                 public init() {}
             
-                public func handle<H>(context: ClientRuntime.Context,
+                public func handle<H>(context: Context,
                               input: Swift.String,
                               next: H) -> Swift.Result<ClientRuntime.OperationOutput<Swift.String>, MError>
                 where H: Handler,

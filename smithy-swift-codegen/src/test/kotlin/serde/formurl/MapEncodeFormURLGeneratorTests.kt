@@ -16,7 +16,7 @@ class MapEncodeFormURLGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension QueryMapsInput: Swift.Encodable, Swift.Reflection {
+            extension QueryMapsInput: Swift.Encodable, ClientRuntime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let complexMapArg = complexMapArg {

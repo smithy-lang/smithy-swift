@@ -14,7 +14,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -43,7 +43,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsWithNameProtocolInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsWithNameProtocolInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsWithNameProtocolInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case `protocol` = "protocol"
                 }
@@ -72,7 +72,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsNestedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -107,7 +107,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsNestedNestedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsNestedNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -148,7 +148,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedMapsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlFlattenedMapsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlFlattenedMapsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -180,7 +180,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedNestedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -218,7 +218,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsXmlNameInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -247,7 +247,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameFlattenedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsXmlNameFlattenedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsXmlNameFlattenedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -279,7 +279,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsXmlNameNestedInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsXmlNameNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -314,7 +314,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedNestedXmlNameInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedNestedXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -352,7 +352,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsXmlNamespaceInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsXmlNamespaceInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -386,7 +386,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedXmlNamespaceInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedXmlNamespaceInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -424,7 +424,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsNestedXmlNamespaceInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsNestedXmlNamespaceInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -466,7 +466,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedNestedXmlNamespaceInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedNestedXmlNamespaceInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -510,7 +510,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsContainListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsContainListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsContainListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -540,7 +540,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedContainListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedContainListInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedContainListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myMap
                 }
@@ -573,7 +573,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTimestampsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsTimestampsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsTimestampsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case timestampMap
                 }
@@ -602,7 +602,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedTimestampsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlMapsFlattenedTimestampsInput: Swift.Encodable, Swift.Reflection {
+            extension XmlMapsFlattenedTimestampsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case timestampMap
                 }
@@ -634,7 +634,7 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/NestedXmlMapsInput+Encodable.swift")
         val expectedContents =
             """
-        extension NestedXmlMapsInput: Swift.Encodable, Swift.Reflection {
+        extension NestedXmlMapsInput: Swift.Encodable, ClientRuntime.Reflection {
             enum CodingKeys: Swift.String, Swift.CodingKey {
                 case flatNestedMap
                 case nestedMap
