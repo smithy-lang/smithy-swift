@@ -57,7 +57,7 @@ internal class RecursiveShapeBoxerTests {
                 }
             }
             """.trimIndent()
-        recursiveShapesInput.shouldContain(expected )
+        recursiveShapesInput.shouldContain(expected)
 
         val recursiveShapesOutput = manifest
             .getFileString("example/models/RecursiveShapesOutputResponse.swift").get()
@@ -105,7 +105,7 @@ internal class RecursiveShapeBoxerTests {
             .getFileString("example/models/RecursiveShapesInputOutputNested2.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
         val expected4 =
-        """
+            """
         extension ExampleClientTypes {
             public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
                 public let bar: Swift.String?
@@ -122,7 +122,7 @@ internal class RecursiveShapeBoxerTests {
             }
         
         }
-        """.trimIndent()
+            """.trimIndent()
         recursiveShapesInputOutputNested2.shouldContain(expected4)
     }
 }

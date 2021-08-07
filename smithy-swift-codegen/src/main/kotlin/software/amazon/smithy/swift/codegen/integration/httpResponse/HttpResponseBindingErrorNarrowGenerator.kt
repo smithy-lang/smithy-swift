@@ -32,8 +32,10 @@ class HttpResponseBindingErrorNarrowGenerator(
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
             writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(errorType: \$T?, httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
-                    SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String) {
+                writer.openBlock(
+                    "public init(errorType: \$T?, httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
+                    SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String
+                ) {
                     writer.write("switch errorType {")
                     for (errorShape in errorShapes) {
                         var errorShapeName = resolveErrorShapeName(errorShape)

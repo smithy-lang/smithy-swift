@@ -26,12 +26,11 @@ object NestedShapeTransformer {
 
         return ModelTransformer.create().mapShapes(model) { shape ->
             if (allShapesNeedingNested.contains(shape)) {
-                when(shape.type) {
-                    ShapeType.STRUCTURE ->  shape.asStructureShape().get().toBuilder().addTrait(NestedTrait()).build()
+                when (shape.type) {
+                    ShapeType.STRUCTURE -> shape.asStructureShape().get().toBuilder().addTrait(NestedTrait()).build()
                     ShapeType.UNION -> shape.asUnionShape().get().toBuilder().addTrait(NestedTrait()).build()
                     else -> shape
                 }
-
             } else {
                 shape
             }

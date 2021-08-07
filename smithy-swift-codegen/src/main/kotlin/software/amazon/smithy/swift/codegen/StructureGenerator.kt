@@ -94,7 +94,7 @@ class StructureGenerator(
      */
     private fun renderNonErrorStructure() {
         val isNestedType = shape.hasTrait<NestedTrait>()
-        if(isNestedType) {
+        if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
                 generateStruct()
@@ -230,10 +230,10 @@ class StructureGenerator(
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
 
-        writer.write("public var _retryable: \$T = \$L",SwiftTypes.Bool, isRetryable)
+        writer.write("public var _retryable: \$T = \$L", SwiftTypes.Bool, isRetryable)
         writer.write("public var _isThrottling: \$T = \$L", SwiftTypes.Bool, isThrottling)
 
-        writer.write("public var _type: \$T = .\$L",ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
+        writer.write("public var _type: \$T = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

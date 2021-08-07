@@ -67,7 +67,7 @@ class StructureGeneratorTests {
             .getFileString("example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
         val expected =
-        """
+            """
         public struct PrimitiveTypesInput: Swift.Equatable {
             public let booleanVal: Swift.Bool?
             public let byteVal: Swift.Int8?
@@ -120,7 +120,7 @@ class StructureGeneratorTests {
                 self.str = str
             }
         }
-        """.trimIndent()
+            """.trimIndent()
         primitiveTypesInput.shouldContain(expected)
     }
 

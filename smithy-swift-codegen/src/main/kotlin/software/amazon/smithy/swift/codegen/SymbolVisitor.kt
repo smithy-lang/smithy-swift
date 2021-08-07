@@ -189,7 +189,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.fullName}>", "Swift", true, ).addReference(reference)
+        return createSymbolBuilder(shape, "Set<${reference.fullName}>", "Swift", true,).addReference(reference)
             .build()
     }
 
@@ -315,4 +315,3 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         fun escapeReservedWords(word: String): String = "`$word`"
     }
 }
-

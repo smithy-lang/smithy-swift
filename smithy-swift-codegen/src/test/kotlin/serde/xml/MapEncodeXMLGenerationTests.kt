@@ -7,7 +7,7 @@ import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 
-class   MapEncodeXMLGenerationTests {
+class MapEncodeXMLGenerationTests {
     @Test
     fun `001 encode map`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")

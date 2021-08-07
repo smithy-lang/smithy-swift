@@ -368,8 +368,10 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
                     if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
-                        writer.write("try $containerName.encode(\$T($memberName), forKey: \$N(\"$resolvedMemberName\"))",
-                            SwiftTypes.String,  ClientRuntimeTypes.Serde.Key)
+                        writer.write(
+                            "try $containerName.encode(\$T($memberName), forKey: \$N(\"$resolvedMemberName\"))",
+                            SwiftTypes.String, ClientRuntimeTypes.Serde.Key
+                        )
                     } else {
                         writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
                     }

@@ -52,11 +52,13 @@ class HttpResponseBindingErrorInitGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(serviceErrorProtocolSymbol)
             writer.openBlock("extension \$L: \$N {", "}", errorShapeName, serviceErrorProtocolSymbol) {
-                writer.openBlock("public init (httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
+                writer.openBlock(
+                    "public init (httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
                     ClientRuntimeTypes.Http.HttpResponse,
                     ClientRuntimeTypes.Serde.ResponseDecoder,
                     SwiftTypes.String,
-                    SwiftTypes.String) {
+                    SwiftTypes.String
+                ) {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
                     HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
                     httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)

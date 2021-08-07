@@ -128,7 +128,7 @@ class EnumGenerator(
         val symbol = symbolProvider.toSymbol(shape)
         writer.putContext("enum.name", symbol.name)
         val isNestedType = shape.hasTrait<NestedTrait>()
-        if(isNestedType) {
+        if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
                 renderEnumAndExtension()
