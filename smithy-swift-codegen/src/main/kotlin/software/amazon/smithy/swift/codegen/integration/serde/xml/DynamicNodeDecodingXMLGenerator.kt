@@ -36,7 +36,7 @@ class DynamicNodeDecodingXMLGenerator(
         val httpBodyMembers = shape.members()
             .filter { it.isInHttpBody() }
             .toList()
-        writer.openBlock("public static func nodeDecoding(for key: \$T) -> \$N {", "}", SwiftTypes.CodingKey, ClientRuntimeTypes.Serde.NodeDecoding) {
+        writer.openBlock("public static func nodeDecoding(for key: \$N) -> \$N {", "}", SwiftTypes.CodingKey, ClientRuntimeTypes.Serde.NodeDecoding) {
             writer.openBlock("switch(key) {", "}") {
                 for (bodyMember in httpBodyMembers) {
                     renderBodyMember(symbolName, bodyMember, writer)

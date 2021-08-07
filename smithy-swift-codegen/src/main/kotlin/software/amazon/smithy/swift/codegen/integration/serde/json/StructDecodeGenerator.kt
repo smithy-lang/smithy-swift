@@ -50,7 +50,7 @@ class StructDecodeGenerator(
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "containerValues"
-        writer.openBlock("public init (from decoder: \$T) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             if (members.isNotEmpty()) {
                 writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
                 members.forEach { member ->

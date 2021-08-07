@@ -130,12 +130,12 @@ class HttpQueryItemMiddleware(
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                    writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$N($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                     writer.write("input.builder.withQueryItem($queryItemName)")
                 }
             } else {
                 val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                writer.write("let $queryItemName = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$N($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                 writer.write("input.builder.withQueryItem($queryItemName)")
             }
         }
@@ -160,7 +160,7 @@ class HttpQueryItemMiddleware(
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
-                writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($queryItemValue).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
                 writer.write("input.builder.withQueryItem(queryItem)")
             }
         }
@@ -169,7 +169,7 @@ class HttpQueryItemMiddleware(
     private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$T($queryItemValueWithExtension).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+            writer.write("let queryItem = \$T(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
             writer.write("input.builder.withQueryItem(queryItem)")
         }
         writer.indent()

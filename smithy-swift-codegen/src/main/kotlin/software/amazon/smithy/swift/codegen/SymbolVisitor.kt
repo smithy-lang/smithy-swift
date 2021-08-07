@@ -170,7 +170,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
         if (shape.hasTrait<ErrorTrait>()) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
-            builder.namespace("ClientRuntime", ".")
         }
         return builder.build()
     }

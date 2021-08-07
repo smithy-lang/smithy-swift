@@ -21,7 +21,7 @@ class UnionDecodeGenerator(
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "values"
-        writer.openBlock("public init (from decoder: \$T) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             members.forEach { member ->
                 val target = ctx.model.expectShape(member.target)

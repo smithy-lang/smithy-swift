@@ -53,7 +53,7 @@ class HttpResponseBindingErrorInitGenerator(
             writer.addImport(serviceErrorProtocolSymbol)
             writer.openBlock("extension \$L: \$N {", "}", errorShapeName, serviceErrorProtocolSymbol) {
                 writer.openBlock(
-                    "public init (httpResponse: \$T, decoder: \$D, message: \$T? = nil, requestID: \$T? = nil) throws {", "}",
+                    "public init (httpResponse: \$T, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
                     ClientRuntimeTypes.Http.HttpResponse,
                     ClientRuntimeTypes.Serde.ResponseDecoder,
                     SwiftTypes.String,

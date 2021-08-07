@@ -97,7 +97,7 @@ open class HttpProtocolClientGenerator(
     private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
         val operationName = op.camelCaseName()
         val continuationName = "${operationName}Continuation"
-        writer.write("typealias $continuationName = \$T<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$T>", SwiftTypes.CheckedContinuation, SwiftTypes.Error)
+        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$N>", SwiftTypes.Error)
         writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
             writer.openBlock("$operationName(input: input) { result in", "}") {
                 writer.openBlock("switch result {", "}") {

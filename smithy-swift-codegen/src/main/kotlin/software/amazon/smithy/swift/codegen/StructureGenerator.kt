@@ -108,7 +108,7 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable.fullName}" else ""
-        writer.openBlock("public struct \$struct.name:L: \$T$needsHashable {", SwiftTypes.Protocols.Equatable)
+        writer.openBlock("public struct \$struct.name:L: \$N$needsHashable {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -200,13 +200,12 @@ class StructureGenerator(
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
-        writer.addImport(structSymbol)
-
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
         writer.putContext("error.protocol", serviceErrorProtocolSymbol.fullName)
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$T {", SwiftTypes.Protocols.Equatable)
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -224,16 +223,16 @@ class StructureGenerator(
             writer.write("public var _headers: \$T", ClientRuntimeTypes.Http.Headers)
             writer.write("public var _statusCode: \$T", ClientRuntimeTypes.Http.HttpStatusCode)
         }
-        writer.write("public var _message: \$T?", SwiftTypes.String)
-        writer.write("public var _requestID: \$T?", SwiftTypes.String)
+        writer.write("public var _message: \$T", SwiftTypes.String)
+        writer.write("public var _requestID: \$T", SwiftTypes.String)
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
 
-        writer.write("public var _retryable: \$T = \$L", SwiftTypes.Bool, isRetryable)
-        writer.write("public var _isThrottling: \$T = \$L", SwiftTypes.Bool, isThrottling)
+        writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
+        writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
 
-        writer.write("public var _type: \$T = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
+        writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }

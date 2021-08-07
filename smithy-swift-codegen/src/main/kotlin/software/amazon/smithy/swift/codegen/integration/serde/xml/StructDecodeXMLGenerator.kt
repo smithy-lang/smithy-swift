@@ -22,7 +22,7 @@ class StructDecodeXMLGenerator(
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
 
     override fun render() {
-        writer.openBlock("public init (from decoder: \$T) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             if (members.isNotEmpty()) {
                 renderDecodeBody()
             }

@@ -369,7 +369,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
                     if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
                         writer.write(
-                            "try $containerName.encode(\$T($memberName), forKey: \$N(\"$resolvedMemberName\"))",
+                            "try $containerName.encode(\$N($memberName), forKey: \$N(\"$resolvedMemberName\"))",
                             SwiftTypes.String, ClientRuntimeTypes.Serde.Key
                         )
                     } else {

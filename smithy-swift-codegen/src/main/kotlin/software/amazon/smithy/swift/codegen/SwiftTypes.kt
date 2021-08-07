@@ -26,7 +26,6 @@ object SwiftTypes {
     val Decoder: Symbol = builtInSymbol("Decoder")
     val Encoder: Symbol = builtInSymbol("Encoder")
     val CodingKey: Symbol = builtInSymbol("CodingKey")
-    val CheckedContinuation: Symbol = builtInSymbol("CheckedContinuation")
     val DecodingError: Symbol = builtInSymbol("DecodingError")
 
     object Protocols {
@@ -36,7 +35,6 @@ object SwiftTypes {
         val Codable: Symbol = builtInSymbol("Codable")
         val Encodable: Symbol = builtInSymbol("Encodable")
         val Decodable: Symbol = builtInSymbol("Decodable")
-        val Reflection: Symbol = builtInSymbol("Reflection")
         val CaseIterable: Symbol = builtInSymbol("CaseIterable")
         val CustomDebugStringConvertible: Symbol = builtInSymbol("CustomDebugStringConvertible")
     }
@@ -45,5 +43,5 @@ object SwiftTypes {
 private fun builtInSymbol(symbol: String): Symbol = buildSymbol {
     name = symbol
     namespace = "Swift"
-    nullable = false
+    nullable = true
 }

@@ -28,7 +28,7 @@ class MiddlewareGenerator(
     fun generate() {
 
         writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {
-            writer.write("public let id: \$T = \"${middleware.typeName}\"", SwiftTypes.String)
+            writer.write("public let id: \$N = \"${middleware.typeName}\"", SwiftTypes.String)
             writer.write("")
             middleware.properties.forEach {
                 val memberName = it.key
@@ -38,10 +38,10 @@ class MiddlewareGenerator(
             }
             middleware.generateInit()
             writer.write("")
-            writer.write("public func handle<H>(context: \$N,", ClientRuntimeTypes.Middleware.Context)
+            writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: ${middleware.inputType.fullName},")
-                writer.write("  next: H) -> \$T<${middleware.outputType.name}, MError>", SwiftTypes.Result)
+                writer.write("  next: H) -> \$N<${middleware.outputType.name}, MError>", SwiftTypes.Result)
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")

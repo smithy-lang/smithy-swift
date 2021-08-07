@@ -19,6 +19,7 @@ import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
+import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
@@ -67,7 +68,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 
     fun addImport(symbol: Symbol) {
 
-        if (symbol.isBuiltIn) return
+        if (symbol.isBuiltIn || symbol.isServiceNestedNamespace) return
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 

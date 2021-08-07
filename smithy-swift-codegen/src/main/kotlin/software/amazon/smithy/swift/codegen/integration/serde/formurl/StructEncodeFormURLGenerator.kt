@@ -24,7 +24,7 @@ class StructEncodeFormURLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeFormURLGenerator(ctx, customizations, writer, defaultTimestampFormat) {
     override fun render() {
-        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
+        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             val containerName = "container"
             renderEncodeBody(containerName)
             addConstantMembers(containerName)

@@ -27,7 +27,7 @@ class StructEncodeXMLGenerator(
 ) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
 
     override fun render() {
-        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
+        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             if (members.isNotEmpty()) {
                 renderEncodeBody()
             }

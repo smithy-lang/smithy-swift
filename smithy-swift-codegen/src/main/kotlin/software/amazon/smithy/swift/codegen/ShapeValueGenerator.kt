@@ -98,7 +98,7 @@ class ShapeValueGenerator(
         )
         */
         if (recursiveMemberWithTrait) {
-            writer.writeInline("\$L(", symbol.name)
+            writer.writeInline("\$N(", symbol)
                 .indent()
                 .writeInline("\nvalue: ")
 
@@ -108,7 +108,7 @@ class ShapeValueGenerator(
             The only change with recursive member is that "Box<T>( value: " appended
             and the rest of the logic is same as non-recursive members. So, there is no "else" here.
          */
-        writer.writeInline("\$L(", symbol.name)
+        writer.writeInline("\$N(", symbol)
             .indent()
             .call { block() }
             .dedent()
@@ -123,7 +123,7 @@ class ShapeValueGenerator(
 
     private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
-        writer.writeInline("\$L.", symbol.name).call { block() }.write(")")
+        writer.writeInline("\$N.", symbol).call { block() }.write(")")
     }
 
     private fun documentDecl(writer: SwiftWriter, node: Node) {
@@ -170,13 +170,13 @@ class ShapeValueGenerator(
         val targetMemberShape = model.expectShape(shape.member.target)
         val memberSymbol = symbolProvider.toSymbol(targetMemberShape)
         if (!isEmpty) {
-            writer.writeInline("Set<\$L>(arrayLiteral: ", memberSymbol.name)
+            writer.writeInline("Set<\$N>(arrayLiteral: ", memberSymbol)
                 .indent()
                 .call { block() }
                 .dedent()
                 .writeInline("\n)")
         } else {
-            writer.writeInline("Set<\$L>()", memberSymbol.name)
+            writer.writeInline("Set<\$N>()", memberSymbol)
         }
         writer.popState()
     }
@@ -186,7 +186,7 @@ class ShapeValueGenerator(
             ShapeType.STRING -> {
                 if (shape.hasTrait(EnumTrait::class.java)) {
                     val symbol = symbolProvider.toSymbol(shape)
-                    writer.writeInline("\$L(rawValue: ", symbol.name)
+                    writer.writeInline("\$N(rawValue: ", symbol)
                     ")!"
                 } else { "" }
             }

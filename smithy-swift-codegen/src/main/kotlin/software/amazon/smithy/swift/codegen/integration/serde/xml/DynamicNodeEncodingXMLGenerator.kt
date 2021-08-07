@@ -33,7 +33,7 @@ class DynamicNodeEncodingXMLGenerator(
     }
 
     private fun renderNodeEncodingConformance(writer: SwiftWriter) {
-        writer.openBlock("public static func nodeEncoding(for key: \$T) -> \$N {", "}", SwiftTypes.CodingKey, ClientRuntimeTypes.Serde.NodeEncoding) {
+        writer.openBlock("public static func nodeEncoding(for key: \$N) -> \$N {", "}", SwiftTypes.CodingKey, ClientRuntimeTypes.Serde.NodeEncoding) {
             renderNamespaces(xmlNamespaces, writer)
             renderAttributes(writer)
             writer.write("return .element")

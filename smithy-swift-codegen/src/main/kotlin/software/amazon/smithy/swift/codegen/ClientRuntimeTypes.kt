@@ -52,7 +52,6 @@ object ClientRuntimeTypes {
     object Middleware {
         val OperationOutput = runtimeSymbol("OperationOutput")
         val Middleware = runtimeSymbol("Middleware")
-        val Context = runtimeSymbol("Context")
     }
 
     object Core {
@@ -73,6 +72,7 @@ object ClientRuntimeTypes {
         val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration", false)
         val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration", false)
         val DateFormatter = runtimeSymbol("DateFormatter")
+        val Reflection: Symbol = runtimeSymbol("Reflection")
     }
 }
 

@@ -145,10 +145,10 @@ class EnumGenerator(
         writer.openBlock("public enum \$enum.name:L {", "}\n") {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(\$T)", SwiftTypes.String)
+            writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
         }
 
-        writer.openBlock("extension \$enum.name:L : \$T, \$T, \$T, \$T, \$T { ", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
+        writer.openBlock("extension \$enum.name:L : \$N, \$N, \$N, \$N, \$N { ", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
 
             // Generate allCases static array
             generateAllCasesBlock()
@@ -199,7 +199,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromRawValueBlock() {
-        writer.openBlock("public init?(rawValue: \$T) {", "}", SwiftTypes.String) {
+        writer.openBlock("public init?(rawValue: \$N) {", "}", SwiftTypes.String) {
             writer.write("let value = Self.allCases.first(where: { \$\$0.rawValue == rawValue })")
             writer.write("self = value ?? Self.sdkUnknown(rawValue)")
         }
@@ -207,7 +207,7 @@ class EnumGenerator(
 
     fun generateRawValueEnumBlock() {
         rawValuesBuilder.add("case let .sdkUnknown(s): return s")
-        writer.openBlock("public var rawValue: \$T {", "}", SwiftTypes.String) {
+        writer.openBlock("public var rawValue: \$N {", "}", SwiftTypes.String) {
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
             writer.write("}")
@@ -215,7 +215,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromDecoderBlock() {
-        writer.openBlock("public init(from decoder: \$T) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let container = try decoder.singleValueContainer()")
             writer.write("let rawValue = try container.decode(RawValue.self)")
             writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")

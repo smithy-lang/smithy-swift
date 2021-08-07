@@ -50,7 +50,7 @@ class StructEncodeGenerator(
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "encodeContainer"
-        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
+        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             if (members.isNotEmpty()) {
                 writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }

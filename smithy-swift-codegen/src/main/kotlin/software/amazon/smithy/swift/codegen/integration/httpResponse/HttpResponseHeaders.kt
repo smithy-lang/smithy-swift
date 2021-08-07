@@ -74,7 +74,7 @@ class HttpResponseHeaders(
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                         memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
-                        writer.write("if let ${headerDeclaration}Double = \$T(\$LHeaderValue) {", SwiftTypes.Double, memberName)
+                        writer.write("if let ${headerDeclaration}Double = \$N(\$LHeaderValue) {", SwiftTypes.Double, memberName)
                         writer.indent()
                         writer.write("self.\$L = $memberValue", memberName)
                         writer.dedent()

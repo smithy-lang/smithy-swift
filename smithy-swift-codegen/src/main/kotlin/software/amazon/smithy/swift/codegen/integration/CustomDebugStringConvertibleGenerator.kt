@@ -26,8 +26,8 @@ class CustomDebugStringConvertibleGenerator(
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
 
     fun render() {
-        writer.openBlock("extension ${structSymbol.name}: \$T {", "}", SwiftTypes.Protocols.CustomDebugStringConvertible) {
-            writer.openBlock("public var debugDescription: \$T {", "}", SwiftTypes.String) {
+        writer.openBlock("extension \$N: \$N {", "}", structSymbol, SwiftTypes.Protocols.CustomDebugStringConvertible) {
+            writer.openBlock("public var debugDescription: \$N {", "}", SwiftTypes.String) {
                 if (shape.hasTrait<SensitiveTrait>()) {
                     writer.write("\"$REDACT_STRING\"")
                 } else {

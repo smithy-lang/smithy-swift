@@ -77,10 +77,10 @@ class HttpHeaderMiddleware(
         } else {
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
-                    writer.write("input.builder.withHeader(name: \"$paramName\", value: \$T($memberNameWithExtension))", SwiftTypes.String)
+                    writer.write("input.builder.withHeader(name: \"$paramName\", value: \$N($memberNameWithExtension))", SwiftTypes.String)
                 }
             } else {
-                writer.write("input.builder.withHeader(name: \"$paramName\", value: \$T($memberNameWithExtension))", SwiftTypes.String)
+                writer.write("input.builder.withHeader(name: \"$paramName\", value: \$N($memberNameWithExtension))", SwiftTypes.String)
             }
         }
     }
@@ -118,7 +118,7 @@ class HttpHeaderMiddleware(
     private fun renderDoCatch(headerValueWithExtension: String, headerName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $headerValueWithExtension")
-            writer.write("input.builder.withHeader(name: \"$headerName\", value: \$T(base64EncodedValue))", SwiftTypes.String)
+            writer.write("input.builder.withHeader(name: \"$headerName\", value: \$N(base64EncodedValue))", SwiftTypes.String)
         }
         writer.indent()
         writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)

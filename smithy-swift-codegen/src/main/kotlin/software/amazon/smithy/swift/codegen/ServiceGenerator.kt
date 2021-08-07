@@ -183,7 +183,7 @@ class ServiceGenerator(
 
         delegator.useShapeWriter(operationErrorSymbol) { writer ->
             writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName: \$T, \$T {", "}", SwiftTypes.Error, SwiftTypes.Protocols.Equatable) {
+            writer.openBlock("public enum $operationErrorName: \$N, \$N {", "}", SwiftTypes.Error, SwiftTypes.Protocols.Equatable) {
                 for (errorShape in errorShapes) {
                     val errorShapeName = symbolProvider.toSymbol(errorShape).name
                     writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)

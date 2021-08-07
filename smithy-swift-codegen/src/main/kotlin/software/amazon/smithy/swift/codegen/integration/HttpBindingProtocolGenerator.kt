@@ -138,7 +138,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .build()
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: \$T, \$T {", "}", SwiftTypes.Protocols.Encodable, SwiftTypes.Protocols.Reflection) {
+                writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
@@ -192,7 +192,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension $symbolName: \$T, \$T {", "}", SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Reflection) {
+            writer.openBlock("extension \$N: \$N, \$N {", "}", symbol, SwiftTypes.Protocols.Codable, ClientRuntimeTypes.Core.Reflection) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
@@ -232,14 +232,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${decodeSymbol.name}: \$T {", "}", SwiftTypes.Protocols.Equatable) {
+            writer.openBlock("struct ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Equatable) {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("public let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${decodeSymbol.name}: \$T {", "}", SwiftTypes.Protocols.Decodable) {
+            writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Decodable) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")

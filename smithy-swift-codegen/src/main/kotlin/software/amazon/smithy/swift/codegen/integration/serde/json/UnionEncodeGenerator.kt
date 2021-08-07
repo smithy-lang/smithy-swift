@@ -20,7 +20,7 @@ class UnionEncodeGenerator(
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "container"
-        writer.openBlock("public func encode(to encoder: \$T) throws {", "}", SwiftTypes.Encoder) {
+        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             writer.write("var \$L = encoder.container(keyedBy: CodingKeys.self)", containerName)
             writer.openBlock("switch self {", "}") {
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }

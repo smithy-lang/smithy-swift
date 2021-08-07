@@ -12,7 +12,7 @@ class DefaultCodingKeysGenerator(private val codingKeysCustomizations: CodingKey
             return
         }
 
-        writer.openBlock("enum CodingKeys: \$T, \$T {", "}", SwiftTypes.String, SwiftTypes.CodingKey) {
+        writer.openBlock("enum CodingKeys: \$N, \$N {", "}", SwiftTypes.String, SwiftTypes.CodingKey) {
             for (member in membersSortedByName) {
                 val originalMemberName = member.memberName
                 val modifiedMemberName = ctx.symbolProvider.toMemberName(member)

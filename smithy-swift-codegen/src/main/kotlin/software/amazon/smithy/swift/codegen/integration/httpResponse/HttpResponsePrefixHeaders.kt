@@ -37,7 +37,7 @@ class HttpResponsePrefixHeaders(
 
         writer.write("let $keyCollName = httpResponse.headers.dictionary.keys\$L", filter)
         writer.openBlock("if (!$keyCollName.isEmpty) {")
-            .write("var mapMember = [\$T: ${targetValueSymbol.name}]()", SwiftTypes.String)
+            .write("var mapMember = [\$N: ${targetValueSymbol.name}]()", SwiftTypes.String)
             .openBlock("for headerKey in $keyCollName {")
             .call {
                 val mapMemberValue = when (targetValueShape) {

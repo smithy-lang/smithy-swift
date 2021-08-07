@@ -46,7 +46,7 @@ abstract class MemberShapeDecodeGenerator(
             val originalSymbol = ctx.symbolProvider.toSymbol(target)
             val dateString = "${memberName}DateString"
             val decodedMemberName = "${memberName}Decoded"
-            writer.write("let \$L = try $containerName.decodeIfPresent(\$T.self, forKey: .\$L)", dateString, SwiftTypes.String, memberName)
+            writer.write("let \$L = try $containerName.decodeIfPresent(\$N.self, forKey: .\$L)", dateString, SwiftTypes.String, memberName)
             writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
                 val formatterName = "${memberName}Formatter"

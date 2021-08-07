@@ -79,3 +79,6 @@ fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
 
 val Symbol.isBuiltIn: Boolean
     get() = namespace == "Swift"
+
+val Symbol.isServiceNestedNamespace: Boolean
+    get() = namespace.endsWith("Types")

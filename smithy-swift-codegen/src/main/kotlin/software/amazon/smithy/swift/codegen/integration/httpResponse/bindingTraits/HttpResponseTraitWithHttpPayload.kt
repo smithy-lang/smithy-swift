@@ -39,7 +39,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.STRING -> {
-                    writer.openBlock("if let output = \$T(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
+                    writer.openBlock("if let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
                         if (target.isEnum) {
                             writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                         } else {
