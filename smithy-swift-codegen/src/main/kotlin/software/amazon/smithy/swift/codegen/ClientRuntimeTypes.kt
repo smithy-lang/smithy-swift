@@ -47,6 +47,7 @@ object ClientRuntimeTypes {
         val JSONDecoder = runtimeSymbol("JSONDecoder")
         val JSONEncoder = runtimeSymbol("JSONEncoder")
         val XMLEncoder = runtimeSymbol("XMLEncoder")
+        val XMLDecoder = runtimeSymbol("XMLDecoder")
     }
 
     object Middleware {

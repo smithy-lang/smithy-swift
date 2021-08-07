@@ -62,7 +62,7 @@ class UnionEncodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let doublevalueDecoded = try containerValues.decodeIfPresent(Swift.Double.self, forKey: .doublevalue)
                     if let doublevalue = doublevalueDecoded {
-                        self = .doublevalue(doublevalue.value)
+                        self = .doublevalue(doublevalue)
                         return
                     }
                     if containerValues.contains(.datavalue) {
@@ -88,7 +88,7 @@ class UnionEncodeXMLGenerationTests {
                     }
                     let structvalueDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
                     if let structvalue = structvalueDecoded {
-                        self = .structvalue(structvalue.value)
+                        self = .structvalue(structvalue)
                         return
                     }
                     if containerValues.contains(.mapvalue) {

@@ -182,7 +182,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.openBlock(ifNilOrIfLetStatement, "} else {") {
                 val memberBuffer = "${memberNameUnquoted}Buffer"
                 val memberContainerName = "${memberNameUnquoted}Container"
-                val memberTargetSymbol = "[${SwiftTypes.String}:${memberTargetValue.fullName}]"
+                val memberTargetSymbol = "[${SwiftTypes.String.fullName}:${memberTargetValue.fullName}]"
 
                 val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapKeyValue, false)
                 writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
@@ -298,13 +298,13 @@ abstract class MemberShapeDecodeXMLGenerator(
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-        renderAssigningDecodedMember(memberName, decodedMemberName, memberTargetSymbol.isBoxed())
+        renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
     }
 
     private fun nestedMemberTargetSymbolMapper(collectionShape: CollectionShape): Pair<Symbol, String> {
         val symbol = ctx.symbolProvider.toSymbol(collectionShape)
-        if (symbol.name.contains("[${ClientRuntimeTypes.Core.Date.name}]")) {
-            val updatedName = symbol.name.replace("[${ClientRuntimeTypes.Core.Date.name}]", "[${SwiftTypes.String}]")
+        if (symbol.name.contains("[${ClientRuntimeTypes.Core.Date.fullName}]")) {
+            val updatedName = symbol.name.replace("[${ClientRuntimeTypes.Core.Date.fullName}]", "[${SwiftTypes.String.fullName}]")
             return Pair(symbol, updatedName)
         }
         val nestedMemberTarget = ctx.model.expectShape(collectionShape.member.target)
@@ -341,7 +341,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 }
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShapeInMap(targetShape, ClientRuntimeTypes.Serde.MapEntry, shouldRenderStructs, level + 1)
-                "${containingSymbol.fullName}<${SwiftTypes.String}, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
+                "${containingSymbol.fullName}<${SwiftTypes.String.fullName}, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
                 val collectionName = CollectionMemberCodingKey.construct(currShape.member, level)

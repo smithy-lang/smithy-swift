@@ -124,7 +124,7 @@ class NamespaceEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlNamespaceNested: ClientRuntime.DynamicNodeEncoding {
+            extension RestXmlProtocolClientTypes.XmlNamespaceNested: ClientRuntime.DynamicNodeEncoding {
                 public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let xmlNamespaceValues = [
                         "xmlns",
