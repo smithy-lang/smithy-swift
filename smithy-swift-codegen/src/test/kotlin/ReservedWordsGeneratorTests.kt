@@ -10,15 +10,13 @@ class ReservedWordsGeneratorTests {
         val expectedContents =
             """
         extension ExampleClientTypes {
-            public enum ReservedWordsEnum {
+            public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 case any
                 case `open`
                 case `self`
                 case `protocol`
                 case sdkUnknown(Swift.String)
-            }
         
-            extension ReservedWordsEnum : Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 public static var allCases: [ReservedWordsEnum] {
                     return [
                         .any,

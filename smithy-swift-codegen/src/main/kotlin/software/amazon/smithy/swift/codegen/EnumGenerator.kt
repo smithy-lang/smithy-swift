@@ -131,24 +131,23 @@ class EnumGenerator(
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
-                renderEnumAndExtension()
+                renderEnum()
             }
         } else {
-            renderEnumAndExtension()
+            renderEnum()
         }
         writer.removeContext("enum.name")
     }
 
-    private fun renderEnumAndExtension() {
+    private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock("public enum \$enum.name:L {", "}\n") {
+        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
-        }
 
-        writer.openBlock("extension \$enum.name:L : \$N, \$N, \$N, \$N, \$N { ", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
+            writer.write("")
 
             // Generate allCases static array
             generateAllCasesBlock()

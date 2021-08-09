@@ -39,14 +39,12 @@ class EnumGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for the enum
-            public enum MyEnum {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// Documentation for BAR
                 case bar
                 case fooBazXap
                 case sdkUnknown(Swift.String)
-            }
             
-            extension MyEnum : Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 public static var allCases: [MyEnum] {
                     return [
                         .bar,
@@ -107,7 +105,7 @@ class EnumGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for the enum
-            public enum MyEnum {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// ""${'"'}
                 /// T2 instances are Burstable Performance
                 /// Instances that provide a baseline level of CPU
@@ -116,9 +114,7 @@ class EnumGeneratorTests {
                 case t2Micro
                 case t2Nano
                 case sdkUnknown(Swift.String)
-            }
             
-            extension MyEnum : Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 public static var allCases: [MyEnum] {
                     return [
                         .t2Micro,
