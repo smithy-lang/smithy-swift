@@ -11,8 +11,9 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.lang.reservedWords
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
@@ -236,7 +237,7 @@ class EnumGenerator(
             enumCaseName = "_$enumCaseName"
         }
 
-        if (shouldBeEscaped && reservedKeywords.contains(enumCaseName)) {
+        if (shouldBeEscaped && reservedWords.contains(enumCaseName)) {
             enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
         }
 

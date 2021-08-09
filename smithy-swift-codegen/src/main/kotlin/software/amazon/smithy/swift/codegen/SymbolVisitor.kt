@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider
 import software.amazon.smithy.codegen.core.ReservedWordSymbolProvider.Escaper
-import software.amazon.smithy.codegen.core.ReservedWordsBuilder
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -44,8 +43,8 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultName
@@ -69,14 +68,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     private var depth = 0
 
     init {
-        // Load reserved words from a new-line delimited file.
-        // val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
-        // TODO:: fix java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)
-
-        val reservedWords = ReservedWordsBuilder().apply {
-            reservedKeywords.forEach { put(it, escapeReservedWords(it)) }
-        }.build()
-
+        val reservedWords = swiftReservedWords()
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
             .memberReservedWords(reservedWords)
