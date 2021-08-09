@@ -25,10 +25,10 @@ class SetDecodeXMLGenerationTests {
                         struct KeyVal0{struct member{}}
                         let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
-                            var fooEnumSetBuffer:Swift.Set<FooEnum>? = nil
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([RestXmlProtocolClientTypes.FooEnum].self, forKey: .member)
+                            var fooEnumSetBuffer:Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
                             if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Swift.Set<FooEnum>()
+                                fooEnumSetBuffer = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
                                 for stringContainer0 in fooEnumSetContainer {
                                     fooEnumSetBuffer?.insert(stringContainer0)
                                 }
@@ -64,13 +64,13 @@ class SetDecodeXMLGenerationTests {
                         struct KeyVal0{struct member{}}
                         let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
-                            var fooEnumSetBuffer:Swift.Set<Swift.Set<FooEnum>>? = nil
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.FooEnum]].self, forKey: .member)
+                            var fooEnumSetBuffer:Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>? = nil
                             if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Swift.Set<Swift.Set<FooEnum>>()
-                                var setBuffer0: Swift.Set<FooEnum>? = nil
+                                fooEnumSetBuffer = Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>()
+                                var setBuffer0: Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
                                 for setContainer0 in fooEnumSetContainer {
-                                    setBuffer0 = Swift.Set<FooEnum>()
+                                    setBuffer0 = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
                                     for stringContainer1 in setContainer0 {
                                         setBuffer0?.insert(stringContainer1)
                                     }

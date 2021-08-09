@@ -263,7 +263,7 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
 struct MapInputOutputResponseBody: Swift.Equatable {
     public let intMap: [Swift.String:Swift.Int]?
     public let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
-    public let enumMap: [Swift.String:MyEnum]?
+    public let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
     public let blobMap: [Swift.String:ClientRuntime.Data]?
     public let nestedMap: [Swift.String:[Swift.String:Swift.Int]]?
     public let dateMap: [Swift.String:ClientRuntime.Date]?
@@ -303,10 +303,10 @@ extension MapInputOutputResponseBody: Swift.Decodable {
             }
         }
         structMap = structMapDecoded0
-        let enumMapContainer = try containerValues.decodeIfPresent([Swift.String: MyEnum?].self, forKey: .enumMap)
-        var enumMapDecoded0: [Swift.String:MyEnum]? = nil
+        let enumMapContainer = try containerValues.decodeIfPresent([Swift.String: ExampleClientTypes.MyEnum?].self, forKey: .enumMap)
+        var enumMapDecoded0: [Swift.String:ExampleClientTypes.MyEnum]? = nil
         if let enumMapContainer = enumMapContainer {
-            enumMapDecoded0 = [Swift.String:MyEnum]()
+            enumMapDecoded0 = [Swift.String:ExampleClientTypes.MyEnum]()
             for (key0, myenum0) in enumMapContainer {
                 if let myenum0 = myenum0 {
                     enumMapDecoded0?[key0] = myenum0

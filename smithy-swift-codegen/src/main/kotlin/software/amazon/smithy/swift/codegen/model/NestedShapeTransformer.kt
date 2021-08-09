@@ -29,6 +29,7 @@ object NestedShapeTransformer {
                 when (shape.type) {
                     ShapeType.STRUCTURE -> shape.asStructureShape().get().toBuilder().addTrait(NestedTrait()).build()
                     ShapeType.UNION -> shape.asUnionShape().get().toBuilder().addTrait(NestedTrait()).build()
+                    ShapeType.STRING -> shape.asStringShape().get().toBuilder().addTrait(NestedTrait()).build()
                     else -> shape
                 }
             } else {

@@ -9,6 +9,7 @@ class ReservedWordsGeneratorTests {
         val contents = getFileContents(context.manifest, "/example/models/ReservedWordsEnum.swift")
         val expectedContents =
             """
+        extension ExampleClientTypes {
             public enum ReservedWordsEnum {
                 case any
                 case `open`
@@ -16,7 +17,7 @@ class ReservedWordsGeneratorTests {
                 case `protocol`
                 case sdkUnknown(Swift.String)
             }
-            
+        
             extension ReservedWordsEnum : Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 public static var allCases: [ReservedWordsEnum] {
                     return [
@@ -46,6 +47,7 @@ class ReservedWordsGeneratorTests {
                     self = ReservedWordsEnum(rawValue: rawValue) ?? ReservedWordsEnum.sdkUnknown(rawValue)
                 }
             }
+        }
             """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)

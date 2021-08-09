@@ -144,7 +144,7 @@ class UnionDecodeGeneratorTests {
                         self = .timestampvalue(timestampvalue)
                         return
                     }
-                    let enumvalueDecoded = try values.decodeIfPresent(FooEnum.self, forKey: .enumvalue)
+                    let enumvalueDecoded = try values.decodeIfPresent(ExampleClientTypes.FooEnum.self, forKey: .enumvalue)
                     if let enumvalue = enumvalueDecoded {
                         self = .enumvalue(enumvalue)
                         return
