@@ -5,7 +5,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 
 class NestedTrait : Trait {
-    val ID = ShapeId.from("software.amazon.smithy.swift.codegen.swift.synthetic#nested")
+    val ID = ShapeId.from("software.amazon.smithy.swift.codegen.synthetic#nested")
     override fun toNode(): Node = Node.objectNode()
 
     override fun toShapeId(): ShapeId = ID
