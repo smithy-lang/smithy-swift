@@ -16,7 +16,6 @@ fun swiftReservedWords(): ReservedWords = ReservedWordsBuilder().apply {
     }
 }.build()
 
-
 val reservedWords = listOf(
     "Any",
     "#available",

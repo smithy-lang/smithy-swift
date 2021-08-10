@@ -97,13 +97,13 @@ class SwiftSettings(
                 services.isEmpty() -> {
                     throw CodegenException(
                         "Cannot infer a service to generate because the model does not " +
-                                "contain any service shapes"
+                            "contain any service shapes"
                     )
                 }
                 services.size > 1 -> {
                     throw CodegenException(
                         "Cannot infer service to generate because the model contains " +
-                                "multiple service shapes: " + services
+                            "multiple service shapes: " + services
                     )
                 }
                 else -> {
@@ -113,7 +113,6 @@ class SwiftSettings(
                 }
             }
         }
-
     }
 
     /**
