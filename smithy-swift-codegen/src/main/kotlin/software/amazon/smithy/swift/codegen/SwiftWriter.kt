@@ -54,9 +54,9 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         trimTrailingSpaces()
         setIndentText("    ")
         // type with default set
-        putFormatter('D', SwiftSymbolFormatter(setDefault = true))
+        putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true))
         putFormatter('T', SwiftSymbolFormatter())
-        putFormatter('N', SwiftSymbolFormatter(optional = false))
+        putFormatter('N', SwiftSymbolFormatter(shouldRenderOptional = false))
     }
 
     private val imports: ImportDeclarations = ImportDeclarations()
@@ -118,19 +118,21 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         return staticHeader + imports + contents
     }
 
-    private class SwiftSymbolFormatter(val setDefault: Boolean = false, val optional: Boolean = true) : BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter(val shouldSetDefault: Boolean = false, val shouldRenderOptional: Boolean = true) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
                     var formatted = type.fullName
-                    if (type.isBoxed() && optional) {
+                    if (type.isBoxed() && shouldRenderOptional) {
                         formatted += "?"
                     }
 
-                    val defaultValue = type.defaultValue()
-                    if (defaultValue != null && setDefault) {
-                        formatted += " = $defaultValue"
+                    if(shouldSetDefault) {
+                        type.defaultValue()?.let {
+                            formatted += " = $it"
+                        }
                     }
+
                     return formatted
                 }
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
