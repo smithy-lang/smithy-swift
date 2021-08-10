@@ -24,7 +24,7 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
 
     fun getTypeInheritance(): String {
         val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
-        return typesToConformMiddlewareTo.joinToString(separator) { it.fullName }
+        return typesToConformMiddlewareTo.joinToString(separator) { it.toString() }
     }
 
     abstract fun generateInit()

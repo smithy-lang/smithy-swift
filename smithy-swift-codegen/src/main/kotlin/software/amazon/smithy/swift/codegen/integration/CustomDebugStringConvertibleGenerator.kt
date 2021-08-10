@@ -68,7 +68,7 @@ class CustomDebugStringConvertibleGenerator(
         isRedacted: Boolean
     ) {
         val memberNames = symbolProvider.toMemberNames(member)
-        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String.fullName}(describing: ${memberNames.first}))"
+        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: ${memberNames.first}))"
         writer.writeInline("${memberNames.second}: $description")
     }
 

@@ -139,7 +139,7 @@ abstract class MemberShapeEncodeGenerator(
                     val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                     renderEncodeMapMember(
                         nestedTarget,
-                        "${ClientRuntimeTypes.Serde.Key.fullName}(stringValue: $dictKey)",
+                        "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey)",
                         topLevelContainerName,
                         level + 1
                     )
@@ -180,7 +180,7 @@ abstract class MemberShapeEncodeGenerator(
             else -> {
                 val extension = getShapeExtension(targetShape, memberName, false)
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
-                val keyEnumName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key.fullName}(stringValue: $dictKey${level - 1})"
+                val keyEnumName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey${level - 1})"
                 if (isBoxed && level == 0) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
                         writer.write("try $containerName.encode($extension, forKey: \$L)", keyEnumName)

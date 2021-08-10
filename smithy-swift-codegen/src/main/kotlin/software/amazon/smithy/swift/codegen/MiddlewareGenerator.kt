@@ -40,8 +40,8 @@ class MiddlewareGenerator(
             writer.write("")
             writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
-                writer.write("  input: ${middleware.inputType.fullName},")
-                writer.write("  next: H) -> \$N<${middleware.outputType.name}, MError>", SwiftTypes.Result)
+                writer.write("  input: \$N,", middleware.inputType)
+                writer.write("  next: H) -> \$N<\$L, MError>", SwiftTypes.Result, middleware.outputType)
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")
@@ -52,10 +52,10 @@ class MiddlewareGenerator(
                 middleware.renderReturn()
             }
             writer.write("")
-            writer.write("public typealias MInput = ${middleware.inputType.fullName}")
-            writer.write("public typealias MOutput = ${middleware.outputType.name}")
-            writer.write("public typealias Context = ${middleware.contextType.fullName}")
-            writer.write("public typealias MError = ${middleware.errorType.name}")
+            writer.write("public typealias MInput = \$N", middleware.inputType)
+            writer.write("public typealias MOutput = \$L", middleware.outputType)
+            writer.write("public typealias Context = \$N", middleware.contextType)
+            writer.write("public typealias MError = \$L", middleware.errorType)
         }
     }
 }

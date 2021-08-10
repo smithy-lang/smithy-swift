@@ -35,7 +35,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
     open fun otherRuntimeConfigProperties(): List<ConfigField> = listOf()
 
     fun getTypeInheritance(): String {
-        return typesToConformConfigTo.joinToString(", ") { it.fullName }
+        return typesToConformConfigTo.joinToString(", ") { it.toString() }
     }
 
     open fun renderInitializers(serviceSymbol: Symbol) {

@@ -78,7 +78,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 }
                 is TimestampShape -> {
                     val format = TimeStampFormat.determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key.fullName}(\"${nestedMemberResolvedName}\")"
+                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
                     writer.write("try $containerName.encode($encodeValue)")
                 }
                 is BlobShape -> {
@@ -132,7 +132,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 is TimestampShape -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     val format = TimeStampFormat.determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key.fullName}(\"\")"
+                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key}(\"\")"
                     writer.write("try $nestedContainerName.encode($encodeValue)")
                 }
                 is BlobShape -> {
@@ -325,7 +325,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val resolvedMemberName = customizations.customNameTraitGenerator(member, memberName)
         val format = TimeStampFormat.determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
         val isBoxed = symbol.isBoxed()
-        val encodeLine = "try $containerName.encode(${ClientRuntimeTypes.Serde.TimestampWrapper.fullName}($memberName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key.fullName}(\"$resolvedMemberName\"))"
+        val encodeLine = "try $containerName.encode(${ClientRuntimeTypes.Serde.TimestampWrapper}($memberName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\"))"
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 writer.write(encodeLine)
@@ -344,7 +344,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     }
 
     private fun renderBlobMemberName(memberName: String, resolvedMemberName: String, containerName: String, isBoxed: Boolean) {
-        val encodeLine = "try $containerName.encode($memberName.base64EncodedString(), forKey: ${ClientRuntimeTypes.Serde.Key.fullName}(\"$resolvedMemberName\"))"
+        val encodeLine = "try $containerName.encode($memberName.base64EncodedString(), forKey: ${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\"))"
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 writer.write(encodeLine)

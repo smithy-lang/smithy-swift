@@ -118,9 +118,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         return staticHeader + imports + contents
     }
 
-    /**
-     * Implements Swift symbol formatting for the `$T` formatter
-     */
     private class SwiftSymbolFormatter(val setDefault: Boolean = false, val optional: Boolean = true) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {

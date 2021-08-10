@@ -94,7 +94,7 @@ class ServiceGenerator(
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
             val errorTypeName = getOperationErrorShapeName(op)
 
-            return "${ClientRuntimeTypes.Core.SdkResult.fullName}<$outputShapeName, $errorTypeName>"
+            return "${ClientRuntimeTypes.Core.SdkResult}<$outputShapeName, $errorTypeName>"
         }
 
         fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {

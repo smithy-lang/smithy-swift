@@ -15,7 +15,7 @@ open class HttpProtocolServiceClient(
     fun render(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: ${serviceConfig.typesToConformConfigTo.first().fullName}")
+            writer.write("let config: \$N", serviceConfig.typesToConformConfigTo.first())
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
             writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
@@ -23,7 +23,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: ${serviceConfig.typesToConformConfigTo.first().fullName}) {", "}") {
+            writer.openBlock("public init(config: \$N) {", "}", serviceConfig.typesToConformConfigTo.first()) {
                 writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)

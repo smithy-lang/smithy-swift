@@ -107,7 +107,7 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable.fullName}" else ""
+        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable}" else ""
         writer.openBlock("public struct \$struct.name:L: \$N$needsHashable {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
@@ -202,7 +202,7 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
-        writer.putContext("error.protocol", serviceErrorProtocolSymbol.fullName)
+        writer.putContext("error.protocol", serviceErrorProtocolSymbol)
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)

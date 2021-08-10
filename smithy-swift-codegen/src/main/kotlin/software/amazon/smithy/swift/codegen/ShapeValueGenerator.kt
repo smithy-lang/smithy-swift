@@ -286,7 +286,7 @@ class ShapeValueGenerator(
                         }
                         "-Infinity", "Infinity" -> {
                             val isNegative = if (node.value.toString() == "-Infinity") "-" else ""
-                            "$isNegative${symbol.fullName}.infinity"
+                            "$isNegative$symbol.infinity"
                         }
                         else -> "${node.value}"
                     }

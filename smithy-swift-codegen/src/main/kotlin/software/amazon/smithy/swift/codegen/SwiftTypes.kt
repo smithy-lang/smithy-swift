@@ -1,46 +1,45 @@
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 object SwiftTypes {
-    val String: Symbol = builtInSymbol("String")
-    val Int: Symbol = builtInSymbol("Int")
-    val Int8: Symbol = builtInSymbol("Int8")
-    val Int16: Symbol = builtInSymbol("Int16")
-    val Int32: Symbol = builtInSymbol("Int32")
-    val Int64: Symbol = builtInSymbol("Int64")
-    val UInt: Symbol = builtInSymbol("UInt")
-    val UInt8: Symbol = builtInSymbol("UInt8")
-    val UInt32: Symbol = builtInSymbol("UInt32")
-    val UInt64: Symbol = builtInSymbol("UInt64")
-    val Float: Symbol = builtInSymbol("Float")
-    val Double: Symbol = builtInSymbol("Double")
-    val Bool: Symbol = builtInSymbol("Bool")
+    val String = builtInSymbol("String")
+    val Int = builtInSymbol("Int")
+    val Int8 = builtInSymbol("Int8")
+    val Int16 = builtInSymbol("Int16")
+    val Int32 = builtInSymbol("Int32")
+    val Int64 = builtInSymbol("Int64")
+    val UInt = builtInSymbol("UInt")
+    val UInt8 = builtInSymbol("UInt8")
+    val UInt32 = builtInSymbol("UInt32")
+    val UInt64 = builtInSymbol("UInt64")
+    val Float = builtInSymbol("Float")
+    val Double = builtInSymbol("Double")
+    val Bool = builtInSymbol("Bool")
 
-    val List: Symbol = builtInSymbol("List")
-    val Set: Symbol = builtInSymbol("Set")
-    val Map: Symbol = builtInSymbol("Map")
-    val Error: Symbol = builtInSymbol("Error")
-    val Result: Symbol = builtInSymbol("Result")
-    val Decoder: Symbol = builtInSymbol("Decoder")
-    val Encoder: Symbol = builtInSymbol("Encoder")
-    val CodingKey: Symbol = builtInSymbol("CodingKey")
-    val DecodingError: Symbol = builtInSymbol("DecodingError")
+    val List = builtInSymbol("List")
+    val Set = builtInSymbol("Set")
+    val Map = builtInSymbol("Map")
+    val Error = builtInSymbol("Error")
+    val Result = builtInSymbol("Result")
+    val Decoder = builtInSymbol("Decoder")
+    val Encoder = builtInSymbol("Encoder")
+    val CodingKey = builtInSymbol("CodingKey")
+    val DecodingError = builtInSymbol("DecodingError")
 
     object Protocols {
-        val Equatable: Symbol = builtInSymbol("Equatable")
-        val Hashable: Symbol = builtInSymbol("Hashable")
-        val RawRepresentable: Symbol = builtInSymbol("RawRepresentable")
-        val Codable: Symbol = builtInSymbol("Codable")
-        val Encodable: Symbol = builtInSymbol("Encodable")
-        val Decodable: Symbol = builtInSymbol("Decodable")
-        val CaseIterable: Symbol = builtInSymbol("CaseIterable")
-        val CustomDebugStringConvertible: Symbol = builtInSymbol("CustomDebugStringConvertible")
+        val Equatable = builtInSymbol("Equatable")
+        val Hashable = builtInSymbol("Hashable")
+        val RawRepresentable = builtInSymbol("RawRepresentable")
+        val Codable = builtInSymbol("Codable")
+        val Encodable = builtInSymbol("Encodable")
+        val Decodable = builtInSymbol("Decodable")
+        val CaseIterable = builtInSymbol("CaseIterable")
+        val CustomDebugStringConvertible = builtInSymbol("CustomDebugStringConvertible")
     }
 }
 
-private fun builtInSymbol(symbol: String): Symbol = buildSymbol {
+private fun builtInSymbol(symbol: String) = buildSymbol {
     name = symbol
     namespace = "Swift"
     nullable = true

@@ -46,14 +46,14 @@ class HttpResponseHeaders(
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val memberValue = "${SwiftTypes.Bool.fullName}($headerDeclaration) ?? false"
+                    val memberValue = "${SwiftTypes.Bool}($headerDeclaration) ?? false"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
                     val memberValue = when {
                         memberTarget.hasTrait<EnumTrait>() -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            "${enumSymbol.fullName}(rawValue: $headerDeclaration)"
+                            "${enumSymbol}(rawValue: $headerDeclaration)"
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
                             "try $headerDeclaration.base64DecodedString()"
@@ -99,7 +99,7 @@ class HttpResponseHeaders(
                     val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                         is BooleanShape -> {
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
-                            "${SwiftTypes.Bool.fullName}(\$0)"
+                            "${SwiftTypes.Bool}(\$0)"
                         }
                         is NumberShape -> "(${stringToNumber(collectionMemberTarget, "\$0")} ?? 0)"
                         is TimestampShape -> {
@@ -114,14 +114,14 @@ class HttpResponseHeaders(
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            "(${stringToDate("\$0", tsFormat)} ?? ${ClientRuntimeTypes.Core.Date.fullName}())"
+                            "(${stringToDate("\$0", tsFormat)} ?? ${ClientRuntimeTypes.Core.Date}())"
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"
                             when {
                                 collectionMemberTarget.hasTrait<EnumTrait>() -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "(${enumSymbol.fullName}(rawValue: \$0) ?? ${enumSymbol.fullName}(rawValue: \"Bar\")!)"
+                                    "(${enumSymbol}(rawValue: \$0) ?? ${enumSymbol}(rawValue: \"Bar\")!)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
                                     "try \$0.base64EncodedString()"
@@ -134,7 +134,7 @@ class HttpResponseHeaders(
                     val mapFn = if (conversion.isNotEmpty()) ".map { $conversion }" else ""
                     var memberValue = "${memberName}HeaderValues$mapFn"
                     if (memberTarget.isSetShape) {
-                        memberValue = "${SwiftTypes.Set.fullName}(${memberName}HeaderValues)"
+                        memberValue = "${SwiftTypes.Set}(${memberName}HeaderValues)"
                     }
                     writer.write("if let ${memberName}HeaderValues = $splitFnPrefix$splitFn(${memberName}HeaderValue) {")
                     writer.indent()
@@ -180,17 +180,17 @@ class HttpResponseHeaders(
     }
 
     private fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "${SwiftTypes.Int8.fullName}($stringValue) ?? 0"
-        ShapeType.SHORT -> "${SwiftTypes.Int16.fullName}($stringValue) ?? 0"
-        ShapeType.INTEGER -> "${SwiftTypes.Int.fullName}($stringValue) ?? 0"
-        ShapeType.LONG -> "${SwiftTypes.Int.fullName}($stringValue) ?? 0"
-        ShapeType.FLOAT -> "${SwiftTypes.Float.fullName}($stringValue) ?? 0"
-        ShapeType.DOUBLE -> "${SwiftTypes.Double.fullName}($stringValue) ?? 0"
+        ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue) ?? 0"
+        ShapeType.SHORT -> "${SwiftTypes.Int16}($stringValue) ?? 0"
+        ShapeType.INTEGER -> "${SwiftTypes.Int}($stringValue) ?? 0"
+        ShapeType.LONG -> "${SwiftTypes.Int}($stringValue) ?? 0"
+        ShapeType.FLOAT -> "${SwiftTypes.Float}($stringValue) ?? 0"
+        ShapeType.DOUBLE -> "${SwiftTypes.Double}($stringValue) ?? 0"
         else -> throw CodegenException("unknown number shape: $shape")
     }
 
     private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-        TimestampFormatTrait.Format.EPOCH_SECONDS -> "${ClientRuntimeTypes.Core.Date.fullName}(timeIntervalSince1970: $stringValue)"
+        TimestampFormatTrait.Format.EPOCH_SECONDS -> "${ClientRuntimeTypes.Core.Date}(timeIntervalSince1970: $stringValue)"
         TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: $stringValue)"
         TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
         else -> throw CodegenException("unknown timestamp format: $tsFmt")

@@ -91,7 +91,7 @@ class UnionGenerator(
                 return ""
             }
         }
-        return ", ${SwiftTypes.Protocols.Hashable.fullName}"
+        return ", ${SwiftTypes.Protocols.Hashable}"
     }
 
     private fun needsIndirectKeyword(unionSymbolName: String, shape: UnionShape): Boolean {

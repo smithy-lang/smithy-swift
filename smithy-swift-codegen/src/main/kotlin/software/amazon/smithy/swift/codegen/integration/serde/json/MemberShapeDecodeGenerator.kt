@@ -75,7 +75,7 @@ abstract class MemberShapeDecodeGenerator(
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShape(targetShape, topLevel)
                 val terminator = if (topLevel) "?" else ""
-                "[${SwiftTypes.String.fullName}: $valueEvaluated$terminator]"
+                "[${SwiftTypes.String}: $valueEvaluated$terminator]"
             }
             is ListShape -> {
                 val targetShape = ctx.model.expectShape(currShape.member.target)
@@ -86,14 +86,14 @@ abstract class MemberShapeDecodeGenerator(
             is SetShape -> {
                 val targetShape = ctx.model.expectShape(currShape.member.target)
                 val nestedShape = determineSymbolForShape(targetShape, topLevel)
-                "${SwiftTypes.Set.fullName}<$nestedShape>"
+                "${SwiftTypes.Set}<$nestedShape>"
             }
             is TimestampShape -> {
                 val tsFormat = currShape
                     .getTrait(TimestampFormatTrait::class.java)
                     .map { it.format }
                     .orElse(defaultTimestampFormat)
-                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "${ClientRuntimeTypes.Core.Date.fullName}" else "${SwiftTypes.String.fullName}"
+                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "${ClientRuntimeTypes.Core.Date}" else "${SwiftTypes.String}"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"
