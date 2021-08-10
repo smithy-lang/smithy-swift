@@ -58,6 +58,8 @@ object ClientRuntimeTypes {
     object Core {
         val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date", false)
+        val Data = runtimeSymbol("Data")
+        val Document = runtimeSymbol("Document")
         val URLQueryItem = runtimeSymbol("URLQueryItem", false)
         val ClientError = runtimeSymbol("ClientError", false)
         val SdkError = runtimeSymbol("SdkError")
