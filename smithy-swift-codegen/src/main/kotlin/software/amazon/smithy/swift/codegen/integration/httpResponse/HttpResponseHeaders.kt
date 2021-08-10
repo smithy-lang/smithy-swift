@@ -53,7 +53,7 @@ class HttpResponseHeaders(
                     val memberValue = when {
                         memberTarget.hasTrait<EnumTrait>() -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            "${enumSymbol}(rawValue: $headerDeclaration)"
+                            "$enumSymbol(rawValue: $headerDeclaration)"
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
                             "try $headerDeclaration.base64DecodedString()"
@@ -121,7 +121,7 @@ class HttpResponseHeaders(
                             when {
                                 collectionMemberTarget.hasTrait<EnumTrait>() -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "(${enumSymbol}(rawValue: \$0) ?? ${enumSymbol}(rawValue: \"Bar\")!)"
+                                    "($enumSymbol(rawValue: \$0) ?? $enumSymbol(rawValue: \"Bar\")!)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
                                     "try \$0.base64EncodedString()"

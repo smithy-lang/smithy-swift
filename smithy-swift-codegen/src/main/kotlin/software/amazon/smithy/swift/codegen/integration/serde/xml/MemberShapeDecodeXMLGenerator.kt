@@ -182,7 +182,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.openBlock(ifNilOrIfLetStatement, "} else {") {
                 val memberBuffer = "${memberNameUnquoted}Buffer"
                 val memberContainerName = "${memberNameUnquoted}Container"
-                val memberTargetSymbol = "[${SwiftTypes.String}:${memberTargetValue}]"
+                val memberTargetSymbol = "[${SwiftTypes.String}:$memberTargetValue]"
 
                 val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapKeyValue, false)
                 writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
@@ -341,7 +341,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 }
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShapeInMap(targetShape, ClientRuntimeTypes.Serde.MapEntry, shouldRenderStructs, level + 1)
-                "${containingSymbol}<${SwiftTypes.String}, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
+                "$containingSymbol<${SwiftTypes.String}, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
             }
             is CollectionShape -> {
                 val collectionName = CollectionMemberCodingKey.construct(currShape.member, level)

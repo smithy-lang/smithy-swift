@@ -127,7 +127,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
                         formatted += "?"
                     }
 
-                    if(shouldSetDefault) {
+                    if (shouldSetDefault) {
                         type.defaultValue()?.let {
                             formatted += " = $it"
                         }
