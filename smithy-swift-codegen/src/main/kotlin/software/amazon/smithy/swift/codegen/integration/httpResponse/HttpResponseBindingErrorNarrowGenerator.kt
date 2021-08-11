@@ -33,7 +33,7 @@ class HttpResponseBindingErrorNarrowGenerator(
 
             writer.openBlock("extension \$L {", "}", operationErrorName) {
                 writer.openBlock(
-                    "public init(errorType: \$T, httpResponse: \$T, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
+                    "public init(errorType: \$T, httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
                     SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String
                 ) {
                     writer.write("switch errorType {")
