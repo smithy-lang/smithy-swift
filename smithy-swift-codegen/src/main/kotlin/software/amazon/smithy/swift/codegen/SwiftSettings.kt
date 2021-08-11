@@ -42,7 +42,6 @@ class SwiftSettings(
     companion object {
 
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
-        val reservedKeywords: List<String> = getSwiftReservedKeywords()
 
         /**
          * Create settings from a configuration object node.
@@ -53,7 +52,19 @@ class SwiftSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): SwiftSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, AUTHOR, SDK_ID, HOMEPAGE, GIT_REPO, SWIFT_VERSION))
+            config.warnIfAdditionalProperties(
+                listOf(
+                    SERVICE,
+                    MODULE_NAME,
+                    MODULE_DESCRIPTION,
+                    MODULE_VERSION,
+                    AUTHOR,
+                    SDK_ID,
+                    HOMEPAGE,
+                    GIT_REPO,
+                    SWIFT_VERSION
+                )
+            )
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
@@ -101,109 +112,6 @@ class SwiftSettings(
                     return service
                 }
             }
-        }
-
-        /**
-         * Get Reserved Keywords in Swift as a list
-         */
-        private fun getSwiftReservedKeywords(): List<String> {
-            val reservedWords = listOf<String>(
-                "Any",
-                "#available",
-                "associatedtype",
-                "associativity",
-                "as",
-                "break",
-                "case",
-                "catch",
-                "class",
-                "#colorLiteral",
-                "#column",
-                "continue",
-                "convenience",
-                "deinit",
-                "default",
-                "defer",
-                "didSet",
-                "do",
-                "dynamic",
-                "enum",
-                "extension",
-                "else",
-                "#else",
-                "#elseif",
-                "#endif",
-                "#error",
-                "fallthrough",
-                "false",
-                "#file",
-                "#fileLiteral",
-                "fileprivate",
-                "final",
-                "for",
-                "func",
-                "#function",
-                "get",
-                "guard",
-                "indirect",
-                "infix",
-                "if",
-                "#if",
-                "#imageLiteral",
-                "in",
-                "is",
-                "import",
-                "init",
-                "inout",
-                "internal",
-                "lazy",
-                "left",
-                "let",
-                "#line",
-                "mutating",
-                "none",
-                "nonmutating",
-                "nil",
-                "open",
-                "operator",
-                "optional",
-                "override",
-                "postfix",
-                "private",
-                "protocol",
-                "Protocol",
-                "public",
-                "repeat",
-                "rethrows",
-                "return",
-                "required",
-                "right",
-                "#selector",
-                "self",
-                "Self",
-                "set",
-                "#sourceLocation",
-                "super",
-                "static",
-                "struct",
-                "subscript",
-                "switch",
-                "this",
-                "throw",
-                "throws",
-                "true",
-                "try",
-                "Type",
-                "typealias",
-                "unowned",
-                "var",
-                "#warning",
-                "weak",
-                "willSet",
-                "where",
-                "while"
-            )
-            return reservedWords
         }
     }
 
