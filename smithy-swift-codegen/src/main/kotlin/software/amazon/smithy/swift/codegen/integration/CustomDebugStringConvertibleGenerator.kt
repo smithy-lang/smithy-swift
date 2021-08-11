@@ -5,8 +5,10 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.SensitiveTrait
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.toMemberNames
+import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 
 class CustomDebugStringConvertibleGenerator(
     private val symbolProvider: SymbolProvider,
@@ -24,9 +26,9 @@ class CustomDebugStringConvertibleGenerator(
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
 
     fun render() {
-        writer.openBlock("extension ${structSymbol.name}: CustomDebugStringConvertible {", "}") {
-            writer.openBlock("public var debugDescription: String {", "}") {
-                if (shape.hasTrait(SensitiveTrait::class.java)) {
+        writer.openBlock("extension \$N: \$N {", "}", structSymbol, SwiftTypes.Protocols.CustomDebugStringConvertible) {
+            writer.openBlock("public var debugDescription: \$N {", "}", SwiftTypes.String) {
+                if (shape.hasTrait<SensitiveTrait>()) {
                     writer.write("\"$REDACT_STRING\"")
                 } else {
                     renderDescription()
@@ -66,7 +68,7 @@ class CustomDebugStringConvertibleGenerator(
         isRedacted: Boolean
     ) {
         val memberNames = symbolProvider.toMemberNames(member)
-        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(String(describing: ${memberNames.first}))"
+        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: ${memberNames.first}))"
         writer.writeInline("${memberNames.second}: $description")
     }
 

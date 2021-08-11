@@ -14,21 +14,21 @@ class ListDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlListXmlNameOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlListXmlNameOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.renamedListMembers) {
                         struct KeyVal0{struct item{}}
                         let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                         if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
-                            let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([String].self, forKey: .member)
-                            var renamedListMembersBuffer:[String]? = nil
+                            let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
+                            var renamedListMembersBuffer:[Swift.String]? = nil
                             if let renamedListMembersContainer = renamedListMembersContainer {
-                                renamedListMembersBuffer = [String]()
+                                renamedListMembersBuffer = [Swift.String]()
                                 for stringContainer0 in renamedListMembersContainer {
                                     renamedListMembersBuffer?.append(stringContainer0)
                                 }
@@ -51,24 +51,24 @@ class ListDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-lists-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlListXmlNameNestedOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlListXmlNameNestedOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case renamedListMembers = "renamed"
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.renamedListMembers) {
                     struct KeyVal0{struct item{}}
                     let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                     if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
-                        let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[String]].self, forKey: .member)
-                        var renamedListMembersBuffer:[[String]]? = nil
+                        let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
+                        var renamedListMembersBuffer:[[Swift.String]]? = nil
                         if let renamedListMembersContainer = renamedListMembersContainer {
-                            renamedListMembersBuffer = [[String]]()
-                            var listBuffer0: [String]? = nil
+                            renamedListMembersBuffer = [[Swift.String]]()
+                            var listBuffer0: [Swift.String]? = nil
                             for listContainer0 in renamedListMembersContainer {
-                                listBuffer0 = [String]()
+                                listBuffer0 = [Swift.String]()
                                 for stringContainer1 in listContainer0 {
                                     listBuffer0?.append(stringContainer1)
                                 }
@@ -96,20 +96,20 @@ class ListDecodeXMLGenerationTests {
 
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlFlattenedListOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlFlattenedListOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case myGroceryList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myGroceryList) {
                     let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myGroceryList)
                     if myGroceryListWrappedContainer != nil {
-                        let myGroceryListContainer = try containerValues.decodeIfPresent([String].self, forKey: .myGroceryList)
-                        var myGroceryListBuffer:[String]? = nil
+                        let myGroceryListContainer = try containerValues.decodeIfPresent([Swift.String].self, forKey: .myGroceryList)
+                        var myGroceryListBuffer:[Swift.String]? = nil
                         if let myGroceryListContainer = myGroceryListContainer {
-                            myGroceryListBuffer = [String]()
+                            myGroceryListBuffer = [Swift.String]()
                             for stringContainer0 in myGroceryListContainer {
                                 myGroceryListBuffer?.append(stringContainer0)
                             }
@@ -133,23 +133,23 @@ class ListDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-lists-emptyFlattened.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlEmptyFlattenedListsOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlEmptyFlattenedListsOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case booleanList
                 case integerList
                 case stringList
                 case stringSet
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.stringList) {
                     let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .stringList)
                     if stringListWrappedContainer != nil {
-                        let stringListContainer = try containerValues.decodeIfPresent([String].self, forKey: .stringList)
-                        var stringListBuffer:[String]? = nil
+                        let stringListContainer = try containerValues.decodeIfPresent([Swift.String].self, forKey: .stringList)
+                        var stringListBuffer:[Swift.String]? = nil
                         if let stringListContainer = stringListContainer {
-                            stringListBuffer = [String]()
+                            stringListBuffer = [Swift.String]()
                             for stringContainer0 in stringListContainer {
                                 stringListBuffer?.append(stringContainer0)
                             }
@@ -164,10 +164,10 @@ class ListDecodeXMLGenerationTests {
                 if containerValues.contains(.stringSet) {
                     let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .stringSet)
                     if stringSetWrappedContainer != nil {
-                        let stringSetContainer = try containerValues.decodeIfPresent([String].self, forKey: .stringSet)
-                        var stringSetBuffer:Set<String>? = nil
+                        let stringSetContainer = try containerValues.decodeIfPresent([Swift.String].self, forKey: .stringSet)
+                        var stringSetBuffer:Swift.Set<Swift.String>? = nil
                         if let stringSetContainer = stringSetContainer {
-                            stringSetBuffer = Set<String>()
+                            stringSetBuffer = Swift.Set<Swift.String>()
                             for stringContainer0 in stringSetContainer {
                                 stringSetBuffer?.insert(stringContainer0)
                             }
@@ -183,10 +183,10 @@ class ListDecodeXMLGenerationTests {
                     struct KeyVal0{struct member{}}
                     let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
                     if let integerListWrappedContainer = integerListWrappedContainer {
-                        let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Int].self, forKey: .member)
-                        var integerListBuffer:[Int]? = nil
+                        let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Swift.Int].self, forKey: .member)
+                        var integerListBuffer:[Swift.Int]? = nil
                         if let integerListContainer = integerListContainer {
-                            integerListBuffer = [Int]()
+                            integerListBuffer = [Swift.Int]()
                             for integerContainer0 in integerListContainer {
                                 integerListBuffer?.append(integerContainer0)
                             }
@@ -202,10 +202,10 @@ class ListDecodeXMLGenerationTests {
                     struct KeyVal0{struct member{}}
                     let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
                     if let booleanListWrappedContainer = booleanListWrappedContainer {
-                        let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Bool].self, forKey: .member)
-                        var booleanListBuffer:[Bool]? = nil
+                        let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Swift.Bool].self, forKey: .member)
+                        var booleanListBuffer:[Swift.Bool]? = nil
                         if let booleanListContainer = booleanListContainer {
-                            booleanListBuffer = [Bool]()
+                            booleanListBuffer = [Swift.Bool]()
                             for booleanContainer0 in booleanListContainer {
                                 booleanListBuffer?.append(booleanContainer0)
                             }
@@ -229,26 +229,26 @@ class ListDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlNestedNestedFlattenedListOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlNestedNestedFlattenedListOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedNestedStringList) {
                         let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .nestedNestedStringList)
                         if nestedNestedStringListWrappedContainer != nil {
-                            let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String]]].self, forKey: .nestedNestedStringList)
-                            var nestedNestedStringListBuffer:[[[String]]]? = nil
+                            let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String]]].self, forKey: .nestedNestedStringList)
+                            var nestedNestedStringListBuffer:[[[Swift.String]]]? = nil
                             if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                                nestedNestedStringListBuffer = [[[String]]]()
-                                var listBuffer0: [[String]]? = nil
+                                nestedNestedStringListBuffer = [[[Swift.String]]]()
+                                var listBuffer0: [[Swift.String]]? = nil
                                 for listContainer0 in nestedNestedStringListContainer {
-                                    listBuffer0 = [[String]]()
-                                    var listBuffer1: [String]? = nil
+                                    listBuffer0 = [[Swift.String]]()
+                                    var listBuffer1: [Swift.String]? = nil
                                     for listContainer1 in listContainer0 {
-                                        listBuffer1 = [String]()
+                                        listBuffer1 = [Swift.String]()
                                         for stringContainer2 in listContainer1 {
                                             listBuffer1?.append(stringContainer2)
                                         }
@@ -280,25 +280,25 @@ class ListDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlListContainMapOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlListContainMapOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         struct KeyVal0{struct member{}}
                         let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .myList)
                         if let myListWrappedContainer = myListWrappedContainer {
                             struct KeyVal0{struct key{}; struct value{}}
-                            let myListContainer = try myListWrappedContainer.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
-                            var myListBuffer:[[String:String]]? = nil
+                            let myListContainer = try myListWrappedContainer.decodeIfPresent([ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
+                            var myListBuffer:[[Swift.String:Swift.String]]? = nil
                             if let myListContainer = myListContainer {
-                                myListBuffer = [[String:String]]()
-                                var mapBuffer0: [String:String]? = nil
+                                myListBuffer = [[Swift.String:Swift.String]]()
+                                var mapBuffer0: [Swift.String:Swift.String]? = nil
                                 for mapContainer0 in myListContainer {
-                                    mapBuffer0 = [String:String]()
+                                    mapBuffer0 = [Swift.String:Swift.String]()
                                     if let mapContainer0NestedEntry1 = mapContainer0.entry {
                                         for stringContainer2 in mapContainer0NestedEntry1 {
                                             mapBuffer0?[stringContainer2.key] = stringContainer2.value
@@ -329,24 +329,24 @@ class ListDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlListFlattenedContainMapOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlListFlattenedContainMapOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myList)
                         if myListWrappedContainer != nil {
                             struct KeyVal0{struct key{}; struct value{}}
-                            let myListContainer = try containerValues.decodeIfPresent([MapEntry<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)
-                            var myListBuffer:[[String:String]]? = nil
+                            let myListContainer = try containerValues.decodeIfPresent([ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)
+                            var myListBuffer:[[Swift.String:Swift.String]]? = nil
                             if let myListContainer = myListContainer {
-                                myListBuffer = [[String:String]]()
-                                var mapBuffer0: [String:String]? = nil
+                                myListBuffer = [[Swift.String:Swift.String]]()
+                                var mapBuffer0: [Swift.String:Swift.String]? = nil
                                 for mapContainer0 in myListContainer {
-                                    mapBuffer0 = [String:String]()
+                                    mapBuffer0 = [Swift.String:Swift.String]()
                                     if let mapContainer0NestedEntry1 = mapContainer0.entry {
                                         for stringContainer2 in mapContainer0NestedEntry1 {
                                             mapBuffer0?[stringContainer2.key] = stringContainer2.value

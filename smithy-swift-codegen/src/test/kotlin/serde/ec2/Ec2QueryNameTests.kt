@@ -16,38 +16,38 @@ class Ec2QueryNameTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Ec2SimpleInputParamsInput: Encodable, Reflection {
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+            extension Ec2SimpleInputParamsInput: Swift.Encodable, ClientRuntime.Reflection {
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let bamInt = bamInt {
-                        try container.encode(bamInt, forKey: Key("BamInt"))
+                        try container.encode(bamInt, forKey: ClientRuntime.Key("BamInt"))
                     }
                     if let barString = barString {
-                        try container.encode(barString, forKey: Key("BarString"))
+                        try container.encode(barString, forKey: ClientRuntime.Key("BarString"))
                     }
                     if let bazBoolean = bazBoolean {
-                        try container.encode(bazBoolean, forKey: Key("BazBoolean"))
+                        try container.encode(bazBoolean, forKey: ClientRuntime.Key("BazBoolean"))
                     }
                     if let booDouble = booDouble {
-                        try container.encode(booDouble, forKey: Key("BooDouble"))
+                        try container.encode(booDouble, forKey: ClientRuntime.Key("BooDouble"))
                     }
                     if let fzzEnum = fzzEnum {
-                        try container.encode(fzzEnum, forKey: Key("FzzEnum"))
+                        try container.encode(fzzEnum, forKey: ClientRuntime.Key("FzzEnum"))
                     }
                     if let hasQueryAndXmlNameString = hasQueryAndXmlNameString {
-                        try container.encode(hasQueryAndXmlNameString, forKey: Key("B"))
+                        try container.encode(hasQueryAndXmlNameString, forKey: ClientRuntime.Key("B"))
                     }
                     if let hasQueryNameString = hasQueryNameString {
-                        try container.encode(hasQueryNameString, forKey: Key("A"))
+                        try container.encode(hasQueryNameString, forKey: ClientRuntime.Key("A"))
                     }
                     if let quxBlob = quxBlob {
-                        try container.encode(quxBlob.base64EncodedString(), forKey: Key("QuxBlob"))
+                        try container.encode(quxBlob.base64EncodedString(), forKey: ClientRuntime.Key("QuxBlob"))
                     }
                     if let usesXmlNameString = usesXmlNameString {
-                        try container.encode(usesXmlNameString, forKey: Key("C"))
+                        try container.encode(usesXmlNameString, forKey: ClientRuntime.Key("C"))
                     }
-                    try container.encode("Ec2SimpleInputParams", forKey:Key("Action"))
-                    try container.encode("2020-01-08", forKey:Key("Version"))
+                    try container.encode("Ec2SimpleInputParams", forKey:ClientRuntime.Key("Action"))
+                    try container.encode("2020-01-08", forKey:ClientRuntime.Key("Version"))
                 }
             }
             """.trimIndent()

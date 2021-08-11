@@ -24,11 +24,11 @@ class EnumGeneratorTests {
             EnumDefinition.builder().value("BAR").documentation("Documentation for BAR").build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -39,14 +39,12 @@ class EnumGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for the enum
-            public enum MyEnum {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// Documentation for BAR
                 case bar
                 case fooBazXap
-                case sdkUnknown(String)
-            }
+                case sdkUnknown(Swift.String)
             
-            extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
                 public static var allCases: [MyEnum] {
                     return [
                         .bar,
@@ -54,18 +52,18 @@ class EnumGeneratorTests {
                         .sdkUnknown("")
                     ]
                 }
-                public init?(rawValue: String) {
+                public init?(rawValue: Swift.String) {
                     let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
                     self = value ?? Self.sdkUnknown(rawValue)
                 }
-                public var rawValue: String {
+                public var rawValue: Swift.String {
                     switch self {
                     case .bar: return "BAR"
                     case .fooBazXap: return "FOO_BAZ@-. XAP - . "
                     case let .sdkUnknown(s): return s
                     }
                 }
-                public init(from decoder: Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let container = try decoder.singleValueContainer()
                     let rawValue = try container.decode(RawValue.self)
                     self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)
@@ -92,11 +90,11 @@ class EnumGeneratorTests {
                 .build()
         )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = EnumGenerator(provider.toSymbol(stringShapeWithEnumTrait), writer, stringShapeWithEnumTrait)
+        val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -107,7 +105,7 @@ class EnumGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for the enum
-            public enum MyEnum {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// ""${'"'}
                 /// T2 instances are Burstable Performance
                 /// Instances that provide a baseline level of CPU
@@ -115,10 +113,8 @@ class EnumGeneratorTests {
                 /// baseline.""${'"'}
                 case t2Micro
                 case t2Nano
-                case sdkUnknown(String)
-            }
+                case sdkUnknown(Swift.String)
             
-            extension MyEnum : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
                 public static var allCases: [MyEnum] {
                     return [
                         .t2Micro,
@@ -126,18 +122,18 @@ class EnumGeneratorTests {
                         .sdkUnknown("")
                     ]
                 }
-                public init?(rawValue: String) {
+                public init?(rawValue: Swift.String) {
                     let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
                     self = value ?? Self.sdkUnknown(rawValue)
                 }
-                public var rawValue: String {
+                public var rawValue: Swift.String {
                     switch self {
                     case .t2Micro: return "t2.micro"
                     case .t2Nano: return "t2.nano"
                     case let .sdkUnknown(s): return s
                     }
                 }
-                public init(from decoder: Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let container = try decoder.singleValueContainer()
                     let rawValue = try container.decode(RawValue.self)
                     self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)

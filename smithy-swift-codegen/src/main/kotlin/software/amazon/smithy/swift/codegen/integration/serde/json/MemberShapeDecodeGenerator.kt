@@ -14,15 +14,17 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
-import software.amazon.smithy.swift.codegen.toMemberNames
 
 /*
 Includes functions to help render conformance to Decodable protocol for shapes
@@ -41,11 +43,10 @@ abstract class MemberShapeDecodeGenerator(
         if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
             writeDecodeForPrimitive(target, member, containerName)
         } else {
-            val dateSymbol = "String"
             val originalSymbol = ctx.symbolProvider.toSymbol(target)
             val dateString = "${memberName}DateString"
             val decodedMemberName = "${memberName}Decoded"
-            writer.write("let \$L = try $containerName.decodeIfPresent(\$L.self, forKey: .\$L)", dateString, dateSymbol, memberName)
+            writer.write("let \$L = try $containerName.decodeIfPresent(\$N.self, forKey: .\$L)", dateString, SwiftTypes.String, memberName)
             writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
                 val formatterName = "${memberName}Formatter"
@@ -64,19 +65,17 @@ abstract class MemberShapeDecodeGenerator(
         }
         val decodeVerb = if (symbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let \$L = try \$L.$decodeVerb(\$L.self, forKey: .\$L)", decodedMemberName, containerName, symbol.name, memberName)
+        writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L)", decodedMemberName, containerName, symbol, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
     private fun determineSymbolForShape(currShape: Shape, topLevel: Boolean): String {
         var mappedSymbol = when (currShape) {
             is MapShape -> {
-                val currShapeKey = "String"
-
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShape(targetShape, topLevel)
                 val terminator = if (topLevel) "?" else ""
-                "[$currShapeKey: $valueEvaluated$terminator]"
+                "[${SwiftTypes.String}: $valueEvaluated$terminator]"
             }
             is ListShape -> {
                 val targetShape = ctx.model.expectShape(currShape.member.target)
@@ -87,14 +86,14 @@ abstract class MemberShapeDecodeGenerator(
             is SetShape -> {
                 val targetShape = ctx.model.expectShape(currShape.member.target)
                 val nestedShape = determineSymbolForShape(targetShape, topLevel)
-                "Set<$nestedShape>"
+                "${SwiftTypes.Set}<$nestedShape>"
             }
             is TimestampShape -> {
                 val tsFormat = currShape
                     .getTrait(TimestampFormatTrait::class.java)
                     .map { it.format }
                     .orElse(defaultTimestampFormat)
-                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "Date" else "String"
+                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "${ClientRuntimeTypes.Core.Date}" else "${SwiftTypes.String}"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"
@@ -105,18 +104,18 @@ abstract class MemberShapeDecodeGenerator(
 
     private fun writeDateFormatter(formatterName: String, tsFormat: TimestampFormatTrait.Format, writer: SwiftWriter) {
         when (tsFormat) {
-            TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = DateFormatter()", formatterName)
+            TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = \$N()", formatterName, ClientRuntimeTypes.Core.DateFormatter)
             // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
             // to custom date type
-            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds", formatterName)
-            TimestampFormatTrait.Format.HTTP_DATE -> writer.write("let \$L = DateFormatter.rfc5322DateFormatter", formatterName)
+            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = \$N.iso8601DateFormatterWithoutFractionalSeconds", formatterName, ClientRuntimeTypes.Core.DateFormatter)
+            TimestampFormatTrait.Format.HTTP_DATE -> writer.write("let \$L = \$N.rfc5322DateFormatter", formatterName, ClientRuntimeTypes.Core.DateFormatter)
             else -> throw CodegenException("unknown timestamp format: $tsFormat")
         }
     }
 
     private fun renderDecodingDateError(member: MemberShape) {
         val memberName = member.memberName
-        writer.write("throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))")
+        writer.write("throw \$N.dataCorrupted(\$N.Context(codingPath: containerValues.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))", SwiftTypes.DecodingError, SwiftTypes.DecodingError)
     }
 
     fun renderDecodeListMember(
@@ -153,7 +152,7 @@ abstract class MemberShapeDecodeGenerator(
 
             writer.write("var \$L:\$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", listContainerName, listContainerName) {
-                writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
+                writer.write("\$L = \$N()", decodedMemberName, originalSymbol)
                 renderDecodeListTarget(nestedTarget, decodedMemberName, listContainerName, insertMethod, topLevelMember, shape.isSetShape, level)
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)
@@ -259,7 +258,7 @@ abstract class MemberShapeDecodeGenerator(
             )
             writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
             writer.openBlock("if let \$L = \$L {", "}", topLevelContainerName, topLevelContainerName) {
-                writer.write("\$L = \$L()", decodedMemberName, originalSymbol)
+                writer.write("\$L = \$N()", decodedMemberName, originalSymbol)
                 renderDecodeMapTarget(topLevelContainerName, decodedMemberName, nestedTarget, topLevelMember, level)
             }
             renderAssigningDecodedMember(topLevelMember, decodedMemberName)

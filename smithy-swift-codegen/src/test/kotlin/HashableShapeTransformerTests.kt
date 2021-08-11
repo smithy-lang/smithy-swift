@@ -1,11 +1,12 @@
+
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.HashableShapeTransformer
-import software.amazon.smithy.swift.codegen.HashableTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
+import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import kotlin.streams.toList
 
@@ -64,13 +65,13 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/HashableShapesInput.swift").get()
         Assertions.assertNotNull(hashableShapeInput)
         val expected = """
-            public struct HashableShapesInput: Equatable {
-                public let `set`: Set<HashableStructure>?
-                public let bar: String?
+            public struct HashableShapesInput: Swift.Equatable {
+                public let `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
+                public let bar: Swift.String?
             
                 public init (
-                    `set`: Set<HashableStructure>? = nil,
-                    bar: String? = nil
+                    `set`: Swift.Set<ExampleClientTypes.HashableStructure>? = nil,
+                    bar: Swift.String? = nil
                 )
                 {
                     self.`set` = `set`
@@ -84,11 +85,11 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/HashableShapesOutputResponse.swift").get()
         Assertions.assertNotNull(hashableShapeOutput)
         val expectedOutput = """
-            public struct HashableShapesOutputResponse: Equatable {
-                public let quz: String?
+            public struct HashableShapesOutputResponse: Swift.Equatable {
+                public let quz: Swift.String?
             
                 public init (
-                    quz: String? = nil
+                    quz: Swift.String? = nil
                 )
                 {
                     self.quz = quz
@@ -101,18 +102,21 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/HashableStructure.swift").get()
         Assertions.assertNotNull(hashableSetShape)
         val expectedStructureShape = """
-            public struct HashableStructure: Equatable, Hashable {
-                public let baz: NestedHashableStructure?
-                public let foo: String?
+            extension ExampleClientTypes {
+                public struct HashableStructure: Swift.Equatable, Swift.Hashable {
+                    public let baz: ExampleClientTypes.NestedHashableStructure?
+                    public let foo: Swift.String?
             
-                public init (
-                    baz: NestedHashableStructure? = nil,
-                    foo: String? = nil
-                )
-                {
-                    self.baz = baz
-                    self.foo = foo
+                    public init (
+                        baz: ExampleClientTypes.NestedHashableStructure? = nil,
+                        foo: Swift.String? = nil
+                    )
+                    {
+                        self.baz = baz
+                        self.foo = foo
+                    }
                 }
+            
             }
         """.trimIndent()
         hashableSetShape.shouldContain(expectedStructureShape)
@@ -121,19 +125,22 @@ class HashableShapeTransformerTests {
             .getFileString("example/models/NestedHashableStructure.swift").get()
         Assertions.assertNotNull(hashableNestedStructure)
         val expectedNestedStructureShape = """
-            public struct NestedHashableStructure: Equatable, Hashable {
-                public let bar: String?
-                public let quz: Int?
-            
+        extension ExampleClientTypes {
+            public struct NestedHashableStructure: Swift.Equatable, Swift.Hashable {
+                public let bar: Swift.String?
+                public let quz: Swift.Int?
+        
                 public init (
-                    bar: String? = nil,
-                    quz: Int? = nil
+                    bar: Swift.String? = nil,
+                    quz: Swift.Int? = nil
                 )
                 {
                     self.bar = bar
                     self.quz = quz
                 }
             }
+        
+        }
         """.trimIndent()
         hashableNestedStructure.shouldContain(expectedNestedStructureShape)
     }

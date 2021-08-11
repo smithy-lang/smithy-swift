@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen
+package software.amazon.smithy.swift.codegen.model
 
 import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.transform.ModelTransformer
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 
 object RecursiveShapeBoxer {
     /**

@@ -45,11 +45,13 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.utils.toPascalCase
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
 
@@ -66,8 +68,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     // how deep in the model we have recursed
     private var depth = 0
 
-    // private val errorShapes: Set<StructureShape> = HashSet()
-
     init {
         // Load reserved words from a new-line delimited file.
         // val resource = SwiftCodegenPlugin::class.java.classLoader.getResource("software.amazon.smithy.swift.codegen/reserved-words.txt")
@@ -83,13 +83,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
             // prevent escaping intentional references to built-in types.
             .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
             .buildEscaper()
-
-        // TODO: Get each structure that's used an error.
-//        val operationIndex = model.getKnowledge(OperationIndex::class.java)
-//        model.shapes(OperationShape::class.java)
-//            .forEach { operationShape: OperationShape? ->
-//                errorShapes.plus(operationIndex.getErrors(operationShape))
-//            }
     }
 
     override fun toSymbol(shape: Shape): Symbol {
@@ -140,7 +133,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         if (enumTrait.isPresent) {
             return createEnumSymbol(shape)
         }
-        return createSymbolBuilder(shape, "String", boxed = true).build()
+        return createSymbolBuilder(shape, "String", namespace = "Swift", boxed = true).build()
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
@@ -152,11 +145,15 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         if (shape is UnionShape) {
             addDeclareMemberReferences(builder, shape.allMembers.values)
         }
+
+        if (shape.hasTrait<NestedTrait>() && service != null) {
+            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        }
         return builder.build()
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
+        return createSymbolBuilder(shape, "Bool", namespace = "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
@@ -167,28 +164,31 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
 
-        if (shape.getTrait(ErrorTrait::class.java).isPresent) {
+        if (shape.hasTrait<NestedTrait>() && service != null) {
+            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        }
+
+        if (shape.hasTrait<ErrorTrait>()) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
-            builder.namespace("ClientRuntime", ".")
         }
         return builder.build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
         return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else "${reference.name}"
-        return createSymbolBuilder(shape, "[String:$referenceTypeName]", true).addReference(reference).build()
+        val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
+        return createSymbolBuilder(shape, "[${SwiftTypes.String}:$referenceTypeName]", true).addReference(reference).build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", true).addReference(reference)
+        return createSymbolBuilder(shape, "Set<$reference>", "Swift", true,).addReference(reference)
             .build()
     }
 
@@ -239,7 +239,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName).putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
+        return createSymbolBuilder(shape, typeName, "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
     /**
@@ -313,12 +313,4 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
         fun escapeReservedWords(word: String): String = "`$word`"
     }
-}
-
-// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String = toPascalCase()
-
-fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
-    val escapedName = toMemberName(shape)
-    return Pair(escapedName, escapedName.removeSurroundingBackticks())
 }

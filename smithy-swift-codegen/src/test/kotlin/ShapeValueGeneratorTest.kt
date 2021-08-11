@@ -18,10 +18,10 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
 class ShapeValueGeneratorTest {
 
@@ -117,7 +117,7 @@ class ShapeValueGeneratorTest {
         val contents = writer.toString()
 
         val expected = """
-Set<String>(arrayLiteral: 
+Set<Swift.String>(arrayLiteral: 
     "v1",
     "v2",
     "v3"
@@ -149,7 +149,7 @@ Set<String>(arrayLiteral:
         ShapeValueGenerator(model, provider).writeShapeValueInline(writer, setShape, params)
         val contents = writer.toString()
 
-        val expected = "Set<String>()".trimIndent()
+        val expected = "Set<Swift.String>()".trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
 

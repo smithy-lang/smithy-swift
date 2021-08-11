@@ -29,11 +29,11 @@ class UnionGeneratorTests {
         )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = UnionGenerator(model, provider, writer, simpleUnionShape)
+        val generator = UnionGenerator(model, provider, writer, simpleUnionShape, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -44,12 +44,12 @@ class UnionGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for MyUnion
-            public enum MyUnion: Equatable {
-                case foo(String)
-                case baz(Int)
+            public enum MyUnion: Swift.Equatable {
+                case foo(Swift.String)
+                case baz(Swift.Int)
                 /// Documentation for bar
-                case bar(Int)
-                case sdkUnknown(String)
+                case bar(Swift.Int)
+                case sdkUnknown(Swift.String)
             }
             """.trimIndent()
 
@@ -74,11 +74,11 @@ class UnionGeneratorTests {
         unionShapeBuilder.addMember("myStruct", struct.id)
         val unionShapeWithStructMember = unionShapeBuilder.build()
         val model = createModelFromShapes(struct, unionShapeWithStructMember)
-
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
         val writer = SwiftWriter("MockPackage")
 
-        val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember)
+        val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember, settings)
         generator.render()
 
         val contents = writer.toString()
@@ -89,12 +89,12 @@ class UnionGeneratorTests {
             """
             /// Really long multi-line
             /// Documentation for MyUnion
-            public enum MyUnion: Equatable {
-                case foo(String)
+            public enum MyUnion: Swift.Equatable {
+                case foo(Swift.String)
                 /// Documentation for bar
-                case bar(Int)
+                case bar(Swift.Int)
                 case mystruct(MyStruct)
-                case sdkUnknown(String)
+                case sdkUnknown(Swift.String)
             }
             """.trimIndent()
 

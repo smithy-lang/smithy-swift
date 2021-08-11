@@ -13,38 +13,38 @@ class TimeStampDecodeGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlTimestampsOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case dateTime
                 case epochSeconds
                 case httpDate
                 case normal
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let normalDecoded = try containerValues.decodeIfPresent(String.self, forKey: .normal)
-                var normalBuffer:Date? = nil
+                let normalDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .normal)
+                var normalBuffer:ClientRuntime.Date? = nil
                 if let normalDecoded = normalDecoded {
-                    normalBuffer = try TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
+                    normalBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
                 }
                 normal = normalBuffer
-                let dateTimeDecoded = try containerValues.decodeIfPresent(String.self, forKey: .dateTime)
-                var dateTimeBuffer:Date? = nil
+                let dateTimeDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .dateTime)
+                var dateTimeBuffer:ClientRuntime.Date? = nil
                 if let dateTimeDecoded = dateTimeDecoded {
-                    dateTimeBuffer = try TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
+                    dateTimeBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
                 }
                 dateTime = dateTimeBuffer
-                let epochSecondsDecoded = try containerValues.decodeIfPresent(String.self, forKey: .epochSeconds)
-                var epochSecondsBuffer:Date? = nil
+                let epochSecondsDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .epochSeconds)
+                var epochSecondsBuffer:ClientRuntime.Date? = nil
                 if let epochSecondsDecoded = epochSecondsDecoded {
-                    epochSecondsBuffer = try TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
+                    epochSecondsBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
                 }
                 epochSeconds = epochSecondsBuffer
-                let httpDateDecoded = try containerValues.decodeIfPresent(String.self, forKey: .httpDate)
-                var httpDateBuffer:Date? = nil
+                let httpDateDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .httpDate)
+                var httpDateBuffer:ClientRuntime.Date? = nil
                 if let httpDateDecoded = httpDateDecoded {
-                    httpDateBuffer = try TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
+                    httpDateBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
                 }
                 httpDate = httpDateBuffer
             }
@@ -59,26 +59,26 @@ class TimeStampDecodeGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlTimestampsNestedOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
                     let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
-                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[Date]]? = nil
+                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
+                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[Date]]()
-                            var listBuffer0: [Date]? = nil
+                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
+                            var listBuffer0: [ClientRuntime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [Date]()
+                                listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -104,26 +104,26 @@ class TimeStampDecodeGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedHTTPDateOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlTimestampsNestedHTTPDateOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
                     let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
-                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[Date]]? = nil
+                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
+                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[Date]]()
-                            var listBuffer0: [Date]? = nil
+                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
+                            var listBuffer0: [ClientRuntime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [Date]()
+                                listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
+                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -148,26 +148,26 @@ class TimeStampDecodeGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlTimestampsNestedXmlNameOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        extension XmlTimestampsNestedXmlNameOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct nestedTag1{}}
                     let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
-                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[Date]]? = nil
+                        let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
+                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[Date]]()
-                            var listBuffer0: [Date]? = nil
+                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
+                            var listBuffer0: [ClientRuntime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [Date]()
+                                listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)

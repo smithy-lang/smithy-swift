@@ -7,6 +7,8 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -20,7 +22,7 @@ class StructDecodeXMLGenerator(
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
 
     override fun render() {
-        writer.openBlock("public init (from decoder: Decoder) throws {", "}") {
+        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             if (members.isNotEmpty()) {
                 renderDecodeBody()
             }
@@ -31,11 +33,11 @@ class StructDecodeXMLGenerator(
         val containerName = "containerValues"
         if (metadata.containsKey(ShapeMetadata.OPERATION_SHAPE)) {
             val topLevelContainerName = "topLevelContainer"
-            writer.write("let $topLevelContainerName = try decoder.container(keyedBy: Key.self)")
+            writer.write("let $topLevelContainerName = try decoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
 
             val operationShape = metadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
             val wrappedKeyValue = operationShape.id.name + "Result"
-            writer.write("let $containerName = try $topLevelContainerName.nestedContainer(keyedBy: CodingKeys.self, forKey: Key(\"$wrappedKeyValue\"))")
+            writer.write("let $containerName = try $topLevelContainerName.nestedContainer(keyedBy: CodingKeys.self, forKey: \$N(\"$wrappedKeyValue\"))", ClientRuntimeTypes.Serde.Key)
         } else {
             writer.write("let $containerName = try decoder.container(keyedBy: CodingKeys.self)")
         }

@@ -12,6 +12,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
@@ -41,7 +43,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedContainer = "${memberName}Container"
         if (member.hasTrait(XmlFlattenedTrait::class.java)) {
             writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: Key(\"$resolvedMemberName\"))")
+                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
                 writer.write("try $nestedContainer.encodeNil()")
             }
             writer.indent()
@@ -49,7 +51,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             writer.dedent()
             writer.write("}")
         } else {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
             XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
             renderListMemberItems(memberName, memberTarget, nestedContainer)
         }
@@ -73,14 +75,14 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is MapShape -> {
                     val nestedContainerName = "${memberName}Container$level"
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${nestedMemberResolvedName}\"))")
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
                     }
                 }
                 is TimestampShape -> {
                     val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"${nestedMemberResolvedName}\")"
+                    val encodeValue = "${ClientRuntimeTypes.Serde.TimestampWrapper}($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
                     writer.write("try $containerName.encode($encodeValue)")
                 }
                 else -> {
@@ -94,7 +96,7 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
         var nestedContainerName = "${nestedMemberTargetName}Container$level"
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${nestedMemberResolvedName}\"))")
+        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
     }
@@ -126,22 +128,22 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is MapShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedMemberName}\"))")
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
                     }
                 }
                 is TimestampShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    val encodeValue = "TimestampWrapper($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
+                    val encodeValue = "${ClientRuntimeTypes.Serde.TimestampWrapper}($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
                     writer.write("try $nestedContainerName.encode($encodeValue)")
                 }
                 else -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: Key(\"\"))")
+                    writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
                 }
             }
         }
@@ -150,7 +152,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         var nestedContainerName = "${nestedMemberTargetName}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${memberResolvedName}\"))")
+        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderFlattenedListMemberItems(nestedMemberTargetName, nestedMember, nestedMemberTarget, nestedContainerName, level + 1)
     }
@@ -162,14 +164,14 @@ abstract class MemberShapeEncodeXMLGenerator(
 
         if (member.hasTrait(XmlFlattenedTrait::class.java)) {
             writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("let _ =  $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+                writer.write("let _ =  $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
             }
             writer.indent()
             renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
             writer.dedent().write("}")
         } else {
             val nestedContainer = "${resolvedMemberName}Container"
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
             XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
             renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
         }
@@ -187,7 +189,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val entryContainerName = "entryContainer$level"
         writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"entry\"))")
+            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"entry\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
             renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
             when (valueTargetShape) {
                 is MapShape -> {
@@ -203,7 +205,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
                         val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                        writer.write("try $valueContainer.encode(\$N(${nestedKeyValueName.second}, format: .$format), forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
                     }
                 }
                 else -> {
@@ -227,7 +229,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val nestedContainer = "nestedContainer$level"
         writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"$resolvedMemberName\"))")
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
             when (valueTargetShape) {
                 is MapShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
@@ -245,7 +247,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
                         val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        writer.write("try $valueContainer.encode(TimestampWrapper(${nestedKeyValueName.second}, format: .$format), forKey: Key(\"\"))")
+                        writer.write("try $valueContainer.encode(\$N(${nestedKeyValueName.second}, format: .$format), forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
                     }
                 }
                 else -> {
@@ -268,9 +270,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int
     ) {
         val nestedKeyContainer = "keyContainer$level"
-        writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.first}\"))")
+        writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.first}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
-        writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: Key(\"\"))")
+        writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
     }
 
     private fun renderMapValue(
@@ -282,12 +284,12 @@ abstract class MemberShapeEncodeXMLGenerator(
         customValueRenderer: ((String) -> Unit)? = null
     ) {
         val valueContainerName = "valueContainer$level"
-        writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
+        writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, valueContainerName)?.appendKey(xmlNamespaces)
         if (customValueRenderer != null) {
             customValueRenderer(valueContainerName)
         } else {
-            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: Key(\"\"))")
+            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
         }
     }
 
@@ -301,7 +303,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         nextRenderer: (String) -> Unit
     ) {
         val nextContainer = "valueContainer${level + 1}"
-        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedCodingKeys.second}\"))")
+        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
         nextRenderer(nextContainer)
     }
@@ -311,8 +313,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val originalMemberName = member.memberName
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        val encodeLine = "try $containerName.encode(TimestampWrapper($memberName, format: .$format), forKey: Key(\"$resolvedMemberName\"))"
-        writer.write(encodeLine)
+        writer.write("try $containerName.encode(\$N($memberName, format: .$format), forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
@@ -331,10 +332,10 @@ abstract class MemberShapeEncodeXMLGenerator(
             if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
+                    writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
                 }
             } else {
-                writer.write("try $containerName.encode($memberName, forKey: Key(\"$resolvedMemberName\"))")
+                writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
             }
         }
     }
@@ -350,15 +351,15 @@ abstract class MemberShapeEncodeXMLGenerator(
     private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
         var renderableMemberName = memberName
         if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
-            renderableMemberName = "String($memberName)"
+            renderableMemberName = "${SwiftTypes.String}($memberName)"
         }
         XMLNamespaceTraitGenerator?.let {
-            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: Key.self, forKey: Key(\"${resolvedMemberName}\"))")
-            writer.write("try $nestedContainerName.encode($renderableMemberName, forKey: Key(\"\"))")
+            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+            writer.write("try $nestedContainerName.encode($renderableMemberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
             it.render(writer, nestedContainerName)
             it.appendKey(xmlNamespaces)
         } ?: run {
-            writer.write("try $containerName.encode($renderableMemberName, forKey: Key(\"${resolvedMemberName}\"))")
+            writer.write("try $containerName.encode($renderableMemberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
         }
     }
 }

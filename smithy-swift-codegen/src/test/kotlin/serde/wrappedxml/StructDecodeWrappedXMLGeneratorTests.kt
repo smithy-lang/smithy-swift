@@ -14,22 +14,26 @@ class StructDecodeWrappedXMLGeneratorTests {
         val context = setupTests("Isolated/wrappedxml/flattened-map.smithy", "aws.protocoltests.query#AwsQuery")
         val contents = getFileContents(context.manifest, "/Example/models/FlattenedXmlMapOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension FlattenedXmlMapOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        struct FlattenedXmlMapOutputResponseBody: Swift.Equatable {
+            public let myMap: [Swift.String:Swift.String]?
+        }
+        
+        extension FlattenedXmlMapOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case myMap
             }
         
-            public init (from decoder: Decoder) throws {
-                let topLevelContainer = try decoder.container(keyedBy: Key.self)
-                let containerValues = try topLevelContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: Key("FlattenedXmlMapResult"))
+            public init (from decoder: Swift.Decoder) throws {
+                let topLevelContainer = try decoder.container(keyedBy: ClientRuntime.Key.self)
+                let containerValues = try topLevelContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: ClientRuntime.Key("FlattenedXmlMapResult"))
                 if containerValues.contains(.myMap) {
                     struct KeyVal0{struct key{}; struct value{}}
-                    let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: MapEntry<String, String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                    let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                     if myMapWrappedContainer != nil {
-                        let myMapContainer = try containerValues.decodeIfPresent([MapKeyValue<String, String, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
-                        var myMapBuffer: [String:String]? = nil
+                        let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                        var myMapBuffer: [Swift.String:Swift.String]? = nil
                         if let myMapContainer = myMapContainer {
-                            myMapBuffer = [String:String]()
+                            myMapBuffer = [Swift.String:Swift.String]()
                             for stringContainer0 in myMapContainer {
                                 myMapBuffer?[stringContainer0.key] = stringContainer0.value
                             }

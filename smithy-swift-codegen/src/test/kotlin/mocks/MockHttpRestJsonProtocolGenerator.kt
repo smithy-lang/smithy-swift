@@ -4,6 +4,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
@@ -27,11 +28,11 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockHttpRequestJsonEncoder(
     requestEncoderOptions: MutableMap<String, String> = mutableMapOf()
-) : HttpRequestEncoder("JSONEncoder", requestEncoderOptions)
+) : HttpRequestEncoder(ClientRuntimeTypes.Serde.JSONEncoder, requestEncoderOptions)
 
 class MockHttpRequestJsonDecoder(
     requestDecoderOptions: MutableMap<String, String> = mutableMapOf()
-) : HttpResponseDecoder("JSONDecoder", requestDecoderOptions)
+) : HttpResponseDecoder(ClientRuntimeTypes.Serde.JSONDecoder, requestDecoderOptions)
 
 class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations() {
     override fun getClientProperties(): List<ClientProperty> {

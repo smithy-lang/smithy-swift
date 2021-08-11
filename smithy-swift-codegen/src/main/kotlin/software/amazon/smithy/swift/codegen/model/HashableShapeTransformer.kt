@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen
+package software.amazon.smithy.swift.codegen.model
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.loader.Prelude
@@ -7,7 +7,7 @@ import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.transform.ModelTransformer
-import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
 
 object HashableShapeTransformer {
 

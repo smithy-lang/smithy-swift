@@ -1,11 +1,12 @@
+
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.swift.codegen.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import kotlin.streams.toList
 
 internal class RecursiveShapeBoxerTests {
@@ -43,71 +44,85 @@ internal class RecursiveShapeBoxerTests {
         val recursiveShapesInput = manifest
             .getFileString("example/models/RecursiveShapesInput.swift").get()
         Assertions.assertNotNull(recursiveShapesInput)
-        recursiveShapesInput.shouldContain(
-            "public struct RecursiveShapesInput: Equatable {\n" +
-                "    public let nested: RecursiveShapesInputOutputNested1?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        nested: RecursiveShapesInputOutputNested1? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.nested = nested\n" +
-                "    }\n" +
-                "}"
-        )
+        val expected =
+            """
+            public struct RecursiveShapesInput: Swift.Equatable {
+                public let nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+            
+                public init (
+                    nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
+                )
+                {
+                    self.nested = nested
+                }
+            }
+            """.trimIndent()
+        recursiveShapesInput.shouldContain(expected)
 
         val recursiveShapesOutput = manifest
             .getFileString("example/models/RecursiveShapesOutputResponse.swift").get()
         Assertions.assertNotNull(recursiveShapesOutput)
-        recursiveShapesOutput.shouldContain(
-            "public struct RecursiveShapesOutputResponse: Equatable {\n" +
-                "    public let nested: RecursiveShapesInputOutputNested1?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        nested: RecursiveShapesInputOutputNested1? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.nested = nested\n" +
-                "    }\n" +
-                "}"
-        )
+        val expected2 =
+            """
+            public struct RecursiveShapesOutputResponse: Swift.Equatable {
+                public let nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+            
+                public init (
+                    nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
+                )
+                {
+                    self.nested = nested
+                }
+            }
+            """.trimIndent()
+        recursiveShapesOutput.shouldContain(expected2)
 
         val recursiveShapesInputOutputNested1 = manifest
             .getFileString("example/models/RecursiveShapesInputOutputNested1.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested1)
-        recursiveShapesInputOutputNested1.shouldContain(
-            "public struct RecursiveShapesInputOutputNested1: Equatable {\n" +
-                "    public let foo: String?\n" +
-                "    public let nested: Box<RecursiveShapesInputOutputNested2>?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        foo: String? = nil,\n" +
-                "        nested: Box<RecursiveShapesInputOutputNested2>? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.foo = foo\n" +
-                "        self.nested = nested\n" +
-                "    }\n" +
-                "}"
-        )
+        val expected3 =
+            """
+            extension ExampleClientTypes {
+                public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
+                    public let foo: Swift.String?
+                    public let nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
+            
+                    public init (
+                        foo: Swift.String? = nil,
+                        nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>? = nil
+                    )
+                    {
+                        self.foo = foo
+                        self.nested = nested
+                    }
+                }
+            
+            }
+            """.trimIndent()
+        recursiveShapesInputOutputNested1.shouldContain(expected3)
 
         val recursiveShapesInputOutputNested2 = manifest
             .getFileString("example/models/RecursiveShapesInputOutputNested2.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
-        recursiveShapesInputOutputNested2.shouldContain(
-            "public struct RecursiveShapesInputOutputNested2: Equatable {\n" +
-                "    public let bar: String?\n" +
-                "    public let recursiveMember: RecursiveShapesInputOutputNested1?\n" +
-                "\n" +
-                "    public init (\n" +
-                "        bar: String? = nil,\n" +
-                "        recursiveMember: RecursiveShapesInputOutputNested1? = nil\n" +
-                "    )\n" +
-                "    {\n" +
-                "        self.bar = bar\n" +
-                "        self.recursiveMember = recursiveMember\n" +
-                "    }\n" +
-                "}"
-        )
+        val expected4 =
+            """
+        extension ExampleClientTypes {
+            public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
+                public let bar: Swift.String?
+                public let recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+        
+                public init (
+                    bar: Swift.String? = nil,
+                    recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
+                )
+                {
+                    self.bar = bar
+                    self.recursiveMember = recursiveMember
+                }
+            }
+        
+        }
+            """.trimIndent()
+        recursiveShapesInputOutputNested2.shouldContain(expected4)
     }
 }

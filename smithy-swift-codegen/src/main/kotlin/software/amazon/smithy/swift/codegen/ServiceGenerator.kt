@@ -94,7 +94,7 @@ class ServiceGenerator(
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
             val errorTypeName = getOperationErrorShapeName(op)
 
-            return "SdkResult<$outputShapeName, $errorTypeName>"
+            return "${ClientRuntimeTypes.Core.SdkResult}<$outputShapeName, $errorTypeName>"
         }
 
         fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
@@ -183,7 +183,7 @@ class ServiceGenerator(
 
         delegator.useShapeWriter(operationErrorSymbol) { writer ->
             writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName: Swift.Error, Equatable {", "}") {
+            writer.openBlock("public enum $operationErrorName: \$N, \$N {", "}", SwiftTypes.Error, SwiftTypes.Protocols.Equatable) {
                 for (errorShape in errorShapes) {
                     val errorShapeName = symbolProvider.toSymbol(errorShape).name
                     writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)

@@ -14,30 +14,37 @@ class EnumDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputResponseBody+Decodable.swift")
         val expectedContents = """
-        extension XmlEnumsOutputResponseBody: Decodable {
-            enum CodingKeys: String, CodingKey {
+        struct XmlEnumsOutputResponseBody: Swift.Equatable {
+            public let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
+            public let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
+            public let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
+            public let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
+        }
+        
+        extension XmlEnumsOutputResponseBody: Swift.Decodable {
+            enum CodingKeys: Swift.String, Swift.CodingKey {
                 case fooEnum1
                 case fooEnum2
                 case fooEnum3
                 case fooEnumList
             }
         
-            public init (from decoder: Decoder) throws {
+            public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let fooEnum1Decoded = try containerValues.decodeIfPresent(FooEnum.self, forKey: .fooEnum1)
+                let fooEnum1Decoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.FooEnum.self, forKey: .fooEnum1)
                 fooEnum1 = fooEnum1Decoded
-                let fooEnum2Decoded = try containerValues.decodeIfPresent(FooEnum.self, forKey: .fooEnum2)
+                let fooEnum2Decoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.FooEnum.self, forKey: .fooEnum2)
                 fooEnum2 = fooEnum2Decoded
-                let fooEnum3Decoded = try containerValues.decodeIfPresent(FooEnum.self, forKey: .fooEnum3)
+                let fooEnum3Decoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.FooEnum.self, forKey: .fooEnum3)
                 fooEnum3 = fooEnum3Decoded
                 if containerValues.contains(.fooEnumList) {
                     struct KeyVal0{struct member{}}
                     let fooEnumListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumList)
                     if let fooEnumListWrappedContainer = fooEnumListWrappedContainer {
-                        let fooEnumListContainer = try fooEnumListWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
-                        var fooEnumListBuffer:[FooEnum]? = nil
+                        let fooEnumListContainer = try fooEnumListWrappedContainer.decodeIfPresent([RestXmlProtocolClientTypes.FooEnum].self, forKey: .member)
+                        var fooEnumListBuffer:[RestXmlProtocolClientTypes.FooEnum]? = nil
                         if let fooEnumListContainer = fooEnumListContainer {
-                            fooEnumListBuffer = [FooEnum]()
+                            fooEnumListBuffer = [RestXmlProtocolClientTypes.FooEnum]()
                             for stringContainer0 in fooEnumListContainer {
                                 fooEnumListBuffer?.append(stringContainer0)
                             }
@@ -61,24 +68,28 @@ class EnumDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsNestedOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            struct XmlEnumsNestedOutputResponseBody: Swift.Equatable {
+                public let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
+            }
+            
+            extension XmlEnumsNestedOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedEnumsList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedEnumsList) {
                         struct KeyVal0{struct member{}}
                         let nestedEnumsListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedEnumsList)
                         if let nestedEnumsListWrappedContainer = nestedEnumsListWrappedContainer {
-                            let nestedEnumsListContainer = try nestedEnumsListWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
-                            var nestedEnumsListBuffer:[[FooEnum]]? = nil
+                            let nestedEnumsListContainer = try nestedEnumsListWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.FooEnum]].self, forKey: .member)
+                            var nestedEnumsListBuffer:[[RestXmlProtocolClientTypes.FooEnum]]? = nil
                             if let nestedEnumsListContainer = nestedEnumsListContainer {
-                                nestedEnumsListBuffer = [[FooEnum]]()
-                                var listBuffer0: [FooEnum]? = nil
+                                nestedEnumsListBuffer = [[RestXmlProtocolClientTypes.FooEnum]]()
+                                var listBuffer0: [RestXmlProtocolClientTypes.FooEnum]? = nil
                                 for listContainer0 in nestedEnumsListContainer {
-                                    listBuffer0 = [FooEnum]()
+                                    listBuffer0 = [RestXmlProtocolClientTypes.FooEnum]()
                                     for stringContainer1 in listContainer0 {
                                         listBuffer0?.append(stringContainer1)
                                     }

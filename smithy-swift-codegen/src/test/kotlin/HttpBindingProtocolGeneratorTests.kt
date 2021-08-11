@@ -6,7 +6,6 @@
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.AddOperationShapes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultConfig
@@ -18,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenera
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
+import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
     override fun createHttpProtocolClientGenerator(
@@ -68,8 +68,8 @@ class HttpBindingProtocolGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructOutputResponse: HttpResponseBinding {
-    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         if case .stream(let reader) = httpResponse.body {
             let data = reader.toBytes().toData()
             if let responseDecoder = decoder {
@@ -100,8 +100,8 @@ extension ExplicitStructOutputResponse: HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension HttpResponseCodeOutputResponse: HttpResponseBinding {
-    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         self.status = httpResponse.statusCode.rawValue
     }
 }
@@ -115,12 +115,12 @@ extension HttpResponseCodeOutputResponse: HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
-    public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         if case .stream(let reader) = httpResponse.body {
             let data = reader.toBytes().toData()
             if let responseDecoder = decoder {
-                let output: Document = try responseDecoder.decode(responseBody: data)
+                let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
                 self.documentValue = output
             } else {
                 self.documentValue = nil
@@ -138,8 +138,8 @@ extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
         val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents =
             """
-            extension HttpPrefixHeadersOutputResponse: HttpResponseBinding {
-                public init (httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+            extension HttpPrefixHeadersOutputResponse: ClientRuntime.HttpResponseBinding {
+                public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
                     if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue
                     } else {
@@ -147,7 +147,7 @@ extension InlineDocumentAsPayloadOutputResponse: HttpResponseBinding {
                     }
                     let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
                     if (!keysForFooMap.isEmpty) {
-                        var mapMember = [String: String]()
+                        var mapMember = [Swift.String: String]()
                         for headerKey in keysForFooMap {
                             let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
                             let mapMemberKey = headerKey.removePrefix("X-Foo-")

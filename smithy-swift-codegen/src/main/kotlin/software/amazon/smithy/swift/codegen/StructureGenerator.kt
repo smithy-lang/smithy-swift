@@ -7,40 +7,36 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.TopologicalIndex
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
-
-fun MemberShape.isRecursiveMember(index: TopologicalIndex): Boolean {
-    val shapeId = toShapeId()
-    // handle recursive types
-    val loop = index.getRecursiveClosure(shapeId)
-    // loop through set of paths and then array of paths to find if current member matches a member in that list
-    // if it does it is a recursive member that needs to be boxed as so
-    return loop.any { path -> path.endShape.id == shapeId }
-}
 
 class StructureGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: StructureShape,
+    private val settings: SwiftSettings,
     private val protocolGenerator: ProtocolGenerator? = null
 ) {
 
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
-    private val topologicalIndex = TopologicalIndex.of(model)
 
     init {
         for (member in membersSortedByName) {
@@ -97,10 +93,22 @@ class StructureGenerator(
      * ```
      */
     private fun renderNonErrorStructure() {
+        val isNestedType = shape.hasTrait<NestedTrait>()
+        if (isNestedType) {
+            val service = model.expectShape<ServiceShape>(settings.service)
+            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                generateStruct()
+            }
+        } else {
+            generateStruct()
+        }
+    }
+
+    private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", Hashable" else ""
-        writer.openBlock("public struct \$struct.name:L: Equatable$needsHashable {")
+        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable}" else ""
+        writer.openBlock("public struct \$struct.name:L: \$N$needsHashable {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -192,13 +200,12 @@ class StructureGenerator(
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
-        writer.addImport(structSymbol)
-
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
-        writer.putContext("error.protocol", serviceErrorProtocolSymbol.fullName)
+        writer.putContext("error.protocol", serviceErrorProtocolSymbol)
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, Equatable {")
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -213,19 +220,19 @@ class StructureGenerator(
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
         if (hasErrorTrait) {
-            writer.write("public var _headers: ClientRuntime.Headers?")
-            writer.write("public var _statusCode: HttpStatusCode?")
+            writer.write("public var _headers: \$T", ClientRuntimeTypes.Http.Headers)
+            writer.write("public var _statusCode: \$T", ClientRuntimeTypes.Http.HttpStatusCode)
         }
-        writer.write("public var _message: String?")
-        writer.write("public var _requestID: String?")
+        writer.write("public var _message: \$T", SwiftTypes.String)
+        writer.write("public var _requestID: \$T", SwiftTypes.String)
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
 
-        writer.write("public var _retryable: Bool = \$L", isRetryable)
-        writer.write("public var _isThrottling: Bool = \$L", isThrottling)
+        writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
+        writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
 
-        writer.write("public var _type: ErrorType = .\$L", errorTrait?.value)
+        writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
 
         membersSortedByName.forEach {
             val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
@@ -233,15 +240,5 @@ class StructureGenerator(
             writer.writeAvailableAttribute(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
-    }
-
-    private fun checkMemberExists(name: String): Boolean {
-        membersSortedByName.forEach {
-            val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-            if (memberName == name) {
-                return true
-            }
-        }
-        return false
     }
 }

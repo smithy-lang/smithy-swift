@@ -13,9 +13,12 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
 class HttpResponseHeaders(
@@ -43,16 +46,16 @@ class HttpResponseHeaders(
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
-                    val memberValue = "Bool($headerDeclaration) ?? false"
+                    val memberValue = "${SwiftTypes.Bool}($headerDeclaration) ?? false"
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
                     val memberValue = when {
-                        memberTarget.hasTrait(EnumTrait::class.java) -> {
+                        memberTarget.hasTrait<EnumTrait>() -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            "${enumSymbol.name}(rawValue: $headerDeclaration)"
+                            "$enumSymbol(rawValue: $headerDeclaration)"
                         }
-                        memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
+                        memberTarget.hasTrait<MediaTypeTrait>() -> {
                             "try $headerDeclaration.base64DecodedString()"
                         }
                         else -> {
@@ -71,13 +74,13 @@ class HttpResponseHeaders(
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
                     if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                         memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
-                        writer.write("if let ${headerDeclaration}Double = Double(\$LHeaderValue) {", memberName)
+                        writer.write("if let ${headerDeclaration}Double = \$N(\$LHeaderValue) {", SwiftTypes.Double, memberName)
                         writer.indent()
                         writer.write("self.\$L = $memberValue", memberName)
                         writer.dedent()
                         writer.write("} else {")
                         writer.indent()
-                        writer.write("throw ClientError.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", memberName)
+                        writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, memberName)
                         writer.dedent()
                         writer.write("}")
                     } else {
@@ -96,7 +99,7 @@ class HttpResponseHeaders(
                     val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                         is BooleanShape -> {
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
-                            "Bool(\$0)"
+                            "${SwiftTypes.Bool}(\$0)"
                         }
                         is NumberShape -> "(${stringToNumber(collectionMemberTarget, "\$0")} ?? 0)"
                         is TimestampShape -> {
@@ -111,16 +114,16 @@ class HttpResponseHeaders(
                                 splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                            "(${stringToDate("\$0", tsFormat)} ?? Date())"
+                            "(${stringToDate("\$0", tsFormat)} ?? ${ClientRuntimeTypes.Core.Date}())"
                         }
                         is StringShape -> {
                             invalidHeaderListErrorName = "invalidStringHeaderList"
                             when {
-                                collectionMemberTarget.hasTrait(EnumTrait::class.java) -> {
+                                collectionMemberTarget.hasTrait<EnumTrait>() -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "(${enumSymbol.name}(rawValue: \$0) ?? ${enumSymbol.name}(rawValue: \"Bar\")!)"
+                                    "($enumSymbol(rawValue: \$0) ?? $enumSymbol(rawValue: \"Bar\")!)"
                                 }
-                                collectionMemberTarget.hasTrait(MediaTypeTrait::class.java) -> {
+                                collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
                                     "try \$0.base64EncodedString()"
                                 }
                                 else -> ""
@@ -131,7 +134,7 @@ class HttpResponseHeaders(
                     val mapFn = if (conversion.isNotEmpty()) ".map { $conversion }" else ""
                     var memberValue = "${memberName}HeaderValues$mapFn"
                     if (memberTarget.isSetShape) {
-                        memberValue = "Set(${memberName}HeaderValues)"
+                        memberValue = "${SwiftTypes.Set}(${memberName}HeaderValues)"
                     }
                     writer.write("if let ${memberName}HeaderValues = $splitFnPrefix$splitFn(${memberName}HeaderValue) {")
                     writer.indent()
@@ -142,7 +145,7 @@ class HttpResponseHeaders(
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                             val transformedHeaderDeclaration = "${memberName}Transformed"
                             writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
-                                writer.write("throw ClientError.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", invalidHeaderListErrorName, memberName)
+                                writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, invalidHeaderListErrorName, memberName)
                             }
                             writer.write("return \$L", transformedHeaderDeclaration)
                         }
@@ -177,17 +180,17 @@ class HttpResponseHeaders(
     }
 
     private fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "Int8($stringValue) ?? 0"
-        ShapeType.SHORT -> "Int16($stringValue) ?? 0"
-        ShapeType.INTEGER -> "Int($stringValue) ?? 0"
-        ShapeType.LONG -> "Int($stringValue) ?? 0"
-        ShapeType.FLOAT -> "Float($stringValue) ?? 0"
-        ShapeType.DOUBLE -> "Double($stringValue) ?? 0"
+        ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue) ?? 0"
+        ShapeType.SHORT -> "${SwiftTypes.Int16}($stringValue) ?? 0"
+        ShapeType.INTEGER -> "${SwiftTypes.Int}($stringValue) ?? 0"
+        ShapeType.LONG -> "${SwiftTypes.Int}($stringValue) ?? 0"
+        ShapeType.FLOAT -> "${SwiftTypes.Float}($stringValue) ?? 0"
+        ShapeType.DOUBLE -> "${SwiftTypes.Double}($stringValue) ?? 0"
         else -> throw CodegenException("unknown number shape: $shape")
     }
 
     private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-        TimestampFormatTrait.Format.EPOCH_SECONDS -> "Date(timeIntervalSince1970: $stringValue)"
+        TimestampFormatTrait.Format.EPOCH_SECONDS -> "${ClientRuntimeTypes.Core.Date}(timeIntervalSince1970: $stringValue)"
         TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: $stringValue)"
         TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
         else -> throw CodegenException("unknown timestamp format: $tsFmt")

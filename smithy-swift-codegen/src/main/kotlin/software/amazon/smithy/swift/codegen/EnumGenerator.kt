@@ -5,11 +5,17 @@
 
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings.Companion.reservedKeywords
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.model.expectShape
+import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.utils.CaseUtils
 
 /**
@@ -100,9 +106,11 @@ import software.amazon.smithy.utils.CaseUtils
  * ```
  */
 class EnumGenerator(
-    private val symbol: Symbol,
+    private val model: Model,
+    private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: StringShape
+    private val shape: StringShape,
+    private val settings: SwiftSettings
 ) {
 
     init {
@@ -113,20 +121,33 @@ class EnumGenerator(
         shape.getTrait(EnumTrait::class.java).get()
     }
 
-    var allCasesBuilder: MutableList<String> = mutableListOf<String>()
-    var rawValuesBuilder: MutableList<String> = mutableListOf<String>()
+    private var allCasesBuilder: MutableList<String> = mutableListOf()
+    private var rawValuesBuilder: MutableList<String> = mutableListOf()
 
     fun render() {
+        val symbol = symbolProvider.toSymbol(shape)
         writer.putContext("enum.name", symbol.name)
+        val isNestedType = shape.hasTrait<NestedTrait>()
+        if (isNestedType) {
+            val service = model.expectShape<ServiceShape>(settings.service)
+            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                renderEnum()
+            }
+        } else {
+            renderEnum()
+        }
+        writer.removeContext("enum.name")
+    }
+
+    private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock("public enum \$enum.name:L {", "}\n") {
+        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
-            writer.write("case sdkUnknown(String)")
-        }
+            writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
 
-        writer.openBlock("extension \$enum.name:L : Equatable, RawRepresentable, Codable, CaseIterable, Hashable { ", "}") {
+            writer.write("")
 
             // Generate allCases static array
             generateAllCasesBlock()
@@ -140,7 +161,6 @@ class EnumGenerator(
             // Generate deserializer
             generateInitFromDecoderBlock()
         }
-        writer.removeContext("enum.name")
     }
 
     fun addEnumCaseToEnum(definition: EnumDefinition) {
@@ -178,7 +198,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromRawValueBlock() {
-        writer.openBlock("public init?(rawValue: String) {", "}") {
+        writer.openBlock("public init?(rawValue: \$N) {", "}", SwiftTypes.String) {
             writer.write("let value = Self.allCases.first(where: { \$\$0.rawValue == rawValue })")
             writer.write("self = value ?? Self.sdkUnknown(rawValue)")
         }
@@ -186,7 +206,7 @@ class EnumGenerator(
 
     fun generateRawValueEnumBlock() {
         rawValuesBuilder.add("case let .sdkUnknown(s): return s")
-        writer.openBlock("public var rawValue: String {", "}") {
+        writer.openBlock("public var rawValue: \$N {", "}", SwiftTypes.String) {
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
             writer.write("}")
@@ -194,7 +214,7 @@ class EnumGenerator(
     }
 
     fun generateInitFromDecoderBlock() {
-        writer.openBlock("public init(from decoder: Decoder) throws {", "}") {
+        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let container = try decoder.singleValueContainer()")
             writer.write("let rawValue = try container.decode(RawValue.self)")
             writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")

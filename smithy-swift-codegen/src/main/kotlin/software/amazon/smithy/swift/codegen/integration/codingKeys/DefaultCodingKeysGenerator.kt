@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration.codingKeys
 
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
@@ -11,7 +12,7 @@ class DefaultCodingKeysGenerator(private val codingKeysCustomizations: CodingKey
             return
         }
 
-        writer.openBlock("enum CodingKeys: String, CodingKey {", "}") {
+        writer.openBlock("enum CodingKeys: \$N, \$N {", "}", SwiftTypes.String, SwiftTypes.CodingKey) {
             for (member in membersSortedByName) {
                 val originalMemberName = member.memberName
                 val modifiedMemberName = ctx.symbolProvider.toMemberName(member)

@@ -11,8 +11,8 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.utils.CaseUtils
 
@@ -56,17 +56,9 @@ interface ProtocolGenerator {
             }
         }
 
-        val DefaultServiceErrorProtocolSymbol: Symbol = Symbol.builder()
-            .name("ServiceError")
-            .namespace(SwiftDependency.CLIENT_RUNTIME.target, ".")
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
-            .build()
+        val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
 
-        val DefaultUnknownServiceErrorSymbol: Symbol = Symbol.builder()
-            .name("UnknownServiceError")
-            .namespace(SwiftDependency.CLIENT_RUNTIME.target, ".")
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
-            .build()
+        val DefaultUnknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
     }
 
     /**

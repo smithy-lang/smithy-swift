@@ -13,8 +13,8 @@ class AttributeDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesOutputResponseBody+DynamicNodeDecoding.swift")
         val expectedContents = """
-        extension XmlAttributesOutputResponseBody: DynamicNodeDecoding {
-            public static func nodeDecoding(for key: CodingKey) -> NodeDecoding {
+        extension XmlAttributesOutputResponseBody: ClientRuntime.DynamicNodeDecoding {
+            public static func nodeDecoding(for key: Swift.CodingKey) -> ClientRuntime.NodeDecoding {
                 switch(key) {
                     case XmlAttributesOutputResponseBody.CodingKeys.foo: return .element
                     case XmlAttributesOutputResponseBody.CodingKeys.attr: return .attribute

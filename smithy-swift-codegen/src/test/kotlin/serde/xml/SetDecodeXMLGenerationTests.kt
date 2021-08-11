@@ -14,21 +14,21 @@ class SetDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumSetOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlEnumSetOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnumSet
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}
                         let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([FooEnum].self, forKey: .member)
-                            var fooEnumSetBuffer:Set<FooEnum>? = nil
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([RestXmlProtocolClientTypes.FooEnum].self, forKey: .member)
+                            var fooEnumSetBuffer:Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
                             if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Set<FooEnum>()
+                                fooEnumSetBuffer = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
                                 for stringContainer0 in fooEnumSetContainer {
                                     fooEnumSetBuffer?.insert(stringContainer0)
                                 }
@@ -53,24 +53,24 @@ class SetDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutputResponseBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlEnumNestedSetOutputResponseBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension XmlEnumNestedSetOutputResponseBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnumSet
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}
                         let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
                         if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[FooEnum]].self, forKey: .member)
-                            var fooEnumSetBuffer:Set<Set<FooEnum>>? = nil
+                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.FooEnum]].self, forKey: .member)
+                            var fooEnumSetBuffer:Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>? = nil
                             if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Set<Set<FooEnum>>()
-                                var setBuffer0: Set<FooEnum>? = nil
+                                fooEnumSetBuffer = Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>()
+                                var setBuffer0: Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
                                 for setContainer0 in fooEnumSetContainer {
-                                    setBuffer0 = Set<FooEnum>()
+                                    setBuffer0 = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
                                     for stringContainer1 in setContainer0 {
                                         setBuffer0?.insert(stringContainer1)
                                     }

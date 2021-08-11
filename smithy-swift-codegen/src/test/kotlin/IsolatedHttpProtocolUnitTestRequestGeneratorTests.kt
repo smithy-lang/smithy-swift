@@ -23,13 +23,13 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = HttpRequestWithFloatLabelsInput(
-            double: Double.nan,
-            float: Float.nan
+            double: Swift.Double.nan,
+            float: Swift.Float.nan
         )
         """.trimIndent()
 
@@ -55,13 +55,13 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-            let decoder = JSONDecoder()
+            let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
             let input = HttpRequestWithFloatLabelsInput(
-                double: Double.infinity,
-                float: Float.infinity
+                double: Swift.Double.infinity,
+                float: Swift.Float.infinity
             )
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -86,13 +86,13 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
     
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
     
-            let decoder = JSONDecoder()
+            let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
     
             let input = HttpRequestWithFloatLabelsInput(
-                double: -Double.infinity,
-                float: -Float.infinity
+                double: -Swift.Double.infinity,
+                float: -Swift.Float.infinity
             )
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -124,8 +124,8 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
         let actual = try InputAndOutputWithHeadersOutputResponse(httpResponse: httpResponse)
 
         let expected = InputAndOutputWithHeadersOutputResponse(
-            headerDouble: Double.nan,
-            headerFloat: Float.nan
+            headerDouble: Swift.Double.nan,
+            headerFloat: Swift.Float.nan
         )
 
         XCTAssertEqual(expected.headerFloat?.isNaN, actual.headerFloat?.isNaN)
@@ -180,7 +180,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = JSONDecoder()
+        let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 

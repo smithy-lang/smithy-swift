@@ -14,12 +14,12 @@ class AttributeEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+DynamicNodeEncoding.swift")
         val expectedContents =
             """
-            extension XmlAttributesInput: DynamicNodeEncoding {
-                public static func nodeEncoding(for key: CodingKey) -> NodeEncoding {
+            extension XmlAttributesInput: ClientRuntime.DynamicNodeEncoding {
+                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
                     let codingKeys = [
                         "test"
                     ]
-                    if let key = key as? Key {
+                    if let key = key as? ClientRuntime.Key {
                         if codingKeys.contains(key.stringValue) {
                             return .attribute
                         }
@@ -37,19 +37,19 @@ class AttributeEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlAttributesInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlAttributesInput: Swift.Encodable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case attr = "test"
                     case foo
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let attr = attr {
-                        try container.encode(attr, forKey: Key("test"))
+                        try container.encode(attr, forKey: ClientRuntime.Key("test"))
                     }
                     if let foo = foo {
-                        try container.encode(foo, forKey: Key("foo"))
+                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
                     }
                 }
             }

@@ -31,7 +31,7 @@ class IdempotencyTokenMiddlewareGenerator(
      * */
     fun renderIdempotencyMiddleware() {
         // TODO: Need to write a unit test for this
-        writer.openBlock("$operationMiddlewareStackName.initializeStep.intercept(position: .before, id: \"IdempotencyTokenMiddleware\") { (context, input, next) -> Result<OperationOutput<$outputShapeName>, SdkError<$outputErrorShapeName>> in", "}") {
+        writer.openBlock("$operationMiddlewareStackName.initializeStep.intercept(position: .before, id: \"IdempotencyTokenMiddleware\") { (context, input, next) -> \$N<\$N<$outputShapeName>, \$N<$outputErrorShapeName>> in", "}", SwiftTypes.Result, ClientRuntimeTypes.Middleware.OperationOutput, ClientRuntimeTypes.Core.SdkError) {
             writer.write("let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()")
             writer.write("var copiedInput = input")
             writer.openBlock("if input.$idempotentMemberName == nil {", "}") {

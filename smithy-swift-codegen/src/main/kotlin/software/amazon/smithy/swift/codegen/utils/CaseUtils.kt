@@ -35,3 +35,6 @@ fun String.splitOnWordBoundaries(): List<String> {
 fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.lowercase().replaceFirstChar { c -> c.uppercaseChar() } }
 
 fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowercaseChar() }
+
+// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
+fun String.clientName(): String = toPascalCase()

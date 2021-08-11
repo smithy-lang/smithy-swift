@@ -1,7 +1,10 @@
 package software.amazon.smithy.swift.codegen.model
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 /**
  * Property bag keys used by symbol provider implementation
@@ -32,7 +35,7 @@ fun Symbol.isBoxed(): Boolean {
 fun Symbol.recursiveSymbol(): Symbol {
     return Symbol.builder()
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .name("Box<$name>")
+        .name("Box<$fullName>")
         .putProperty("boxed", isBoxed())
         .putProperty("defaultValue", defaultValue())
         .build()
@@ -68,3 +71,14 @@ fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(SymbolProperty.
  * Set the default value used when formatting the symbol
  */
 fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
+
+fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
+    val escapedName = toMemberName(shape)
+    return Pair(escapedName, escapedName.removeSurroundingBackticks())
+}
+
+val Symbol.isBuiltIn: Boolean
+    get() = namespace == "Swift"
+
+val Symbol.isServiceNestedNamespace: Boolean
+    get() = namespace.endsWith("Types")

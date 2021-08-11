@@ -18,6 +18,8 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.model.isBuiltIn
+import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
@@ -52,8 +54,9 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         trimTrailingSpaces()
         setIndentText("    ")
         // type with default set
-        putFormatter('D', SwiftSymbolFormatter(setDefault = true))
-        putFormatter('T', SwiftSymbolFormatter())
+        putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true, shouldRenderOptional = true))
+        putFormatter('T', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = true))
+        putFormatter('N', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = false))
     }
 
     private val imports: ImportDeclarations = ImportDeclarations()
@@ -65,6 +68,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
 
     fun addImport(symbol: Symbol) {
 
+        if (symbol.isBuiltIn || symbol.isServiceNestedNamespace) return
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
@@ -114,22 +118,21 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         return staticHeader + imports + contents
     }
 
-    /**
-     * Implements Swift symbol formatting for the `$T` formatter
-     */
-    private class SwiftSymbolFormatter(val setDefault: Boolean = false) : BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter(val shouldSetDefault: Boolean, val shouldRenderOptional: Boolean) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
-                    var formatted = type.name
-                    if (type.isBoxed()) {
+                    var formatted = type.fullName
+                    if (type.isBoxed() && shouldRenderOptional) {
                         formatted += "?"
                     }
 
-                    val defaultValue = type.defaultValue()
-                    if (defaultValue != null && setDefault) {
-                        formatted += " = $defaultValue"
+                    if (shouldSetDefault) {
+                        type.defaultValue()?.let {
+                            formatted += " = $it"
+                        }
                     }
+
                     return formatted
                 }
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")

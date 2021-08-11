@@ -16,11 +16,11 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationInput: Equatable {
-                public let bar: RenamedGreeting?
-
+            public struct MyTestOperationInput: Swift.Equatable {
+                public let bar: ExampleClientTypes.RenamedGreeting?
+            
                 public init (
-                    bar: RenamedGreeting? = nil
+                    bar: ExampleClientTypes.RenamedGreeting? = nil
                 )
                 {
                     self.bar = bar
@@ -44,11 +44,11 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationOutputResponse: Equatable {
-                public let baz: GreetingStruct?
+            public struct MyTestOperationOutputResponse: Swift.Equatable {
+                public let baz: ExampleClientTypes.GreetingStruct?
             
                 public init (
-                    baz: GreetingStruct? = nil
+                    baz: ExampleClientTypes.GreetingStruct? = nil
                 )
                 {
                     self.baz = baz
@@ -72,15 +72,18 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct GreetingStruct: Equatable {
-                public let hi: String?
+            extension ExampleClientTypes {
+                public struct GreetingStruct: Swift.Equatable {
+                    public let hi: Swift.String?
             
-                public init (
-                    hi: String? = nil
-                )
-                {
-                    self.hi = hi
+                    public init (
+                        hi: Swift.String? = nil
+                    )
+                    {
+                        self.hi = hi
+                    }
                 }
+            
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -101,15 +104,18 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct RenamedGreeting: Equatable {
-                public let salutation: String?
+            extension ExampleClientTypes {
+                public struct RenamedGreeting: Swift.Equatable {
+                    public let salutation: Swift.String?
             
-                public init (
-                    salutation: String? = nil
-                )
-                {
-                    self.salutation = salutation
+                    public init (
+                        salutation: Swift.String? = nil
+                    )
+                    {
+                        self.salutation = salutation
+                    }
                 }
+            
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -130,21 +136,21 @@ class ServiceRenamesTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RenamedGreeting: Codable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension RestJsonProtocolClientTypes.RenamedGreeting: Swift.Codable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case salutation
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let salutation = salutation {
                         try encodeContainer.encode(salutation, forKey: .salutation)
                     }
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let salutationDecoded = try containerValues.decodeIfPresent(String.self, forKey: .salutation)
+                    let salutationDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .salutation)
                     salutation = salutationDecoded
                 }
             }

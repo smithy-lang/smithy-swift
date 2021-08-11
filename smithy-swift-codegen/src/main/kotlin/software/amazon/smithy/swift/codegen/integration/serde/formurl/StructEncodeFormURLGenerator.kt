@@ -8,6 +8,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -22,7 +24,7 @@ class StructEncodeFormURLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeFormURLGenerator(ctx, customizations, writer, defaultTimestampFormat) {
     override fun render() {
-        writer.openBlock("public func encode(to encoder: Encoder) throws {", "}") {
+        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             val containerName = "container"
             renderEncodeBody(containerName)
             addConstantMembers(containerName)
@@ -30,7 +32,7 @@ class StructEncodeFormURLGenerator(
     }
 
     private fun renderEncodeBody(containerName: String) {
-        writer.write("var $containerName = encoder.container(keyedBy: Key.self)")
+        writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
 
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
         membersSortedByName.forEach { member ->
@@ -65,8 +67,8 @@ class StructEncodeFormURLGenerator(
         if (shapeMetadata.containsKey(ShapeMetadata.OPERATION_SHAPE) && shapeMetadata.containsKey(ShapeMetadata.SERVICE_VERSION)) {
             val operationShape = shapeMetadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
             val version = shapeMetadata[ShapeMetadata.SERVICE_VERSION] as String
-            writer.write("try $containerName.encode(\"${operationShape.id.name}\", forKey:Key(\"Action\"))")
-            writer.write("try $containerName.encode(\"${version}\", forKey:Key(\"Version\"))")
+            writer.write("try $containerName.encode(\"${operationShape.id.name}\", forKey:\$N(\"Action\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $containerName.encode(\"${version}\", forKey:\$N(\"Version\"))", ClientRuntimeTypes.Serde.Key)
         }
     }
 }

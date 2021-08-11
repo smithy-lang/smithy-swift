@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml.trait
 
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlNamespaceTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class XMLNamespaceTraitGenerator(val key: String, val value: String) {
@@ -18,7 +19,7 @@ class XMLNamespaceTraitGenerator(val key: String, val value: String) {
     }
 
     fun render(writer: SwiftWriter, container: String): XMLNamespaceTraitGenerator {
-        writer.write("try $container.encode(\"$value\", forKey: Key(\"${key}\"))")
+        writer.write("try $container.encode(\"$value\", forKey: \$N(\"${key}\"))", ClientRuntimeTypes.Serde.Key)
         return this
     }
 

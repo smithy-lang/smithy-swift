@@ -29,9 +29,9 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct EnumInputInput: Equatable {
-                public let enumHeader: MyEnum?
-                public let nestedWithEnum: NestedEnum?
+            public struct EnumInputInput: Swift.Equatable {
+                public let enumHeader: ExampleClientTypes.MyEnum?
+                public let nestedWithEnum: ExampleClientTypes.NestedEnum?
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -42,25 +42,25 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension NestedNestedJsonListInputBody: Decodable {
-                enum CodingKeys: String, CodingKey {
+            extension NestedNestedJsonListInputBody: Swift.Decodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
             
-                public init (from decoder: Decoder) throws {
+                public init (from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[String?]?]?].self, forKey: .nestedNestedStringList)
-                    var nestedNestedStringListDecoded0:[[[String]]]? = nil
+                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String?]?]?].self, forKey: .nestedNestedStringList)
+                    var nestedNestedStringListDecoded0:[[[Swift.String]]]? = nil
                     if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListDecoded0 = [[[String]]]()
+                        nestedNestedStringListDecoded0 = [[[Swift.String]]]()
                         for list0 in nestedNestedStringListContainer {
-                            var list0Decoded0: [[String]]? = nil
+                            var list0Decoded0: [[Swift.String]]? = nil
                             if let list0 = list0 {
-                                list0Decoded0 = [[String]]()
+                                list0Decoded0 = [[Swift.String]]()
                                 for list1 in list0 {
-                                    var list1Decoded1: [String]? = nil
+                                    var list1Decoded1: [Swift.String]? = nil
                                     if let list1 = list1 {
-                                        list1Decoded1 = [String]()
+                                        list1Decoded1 = [Swift.String]()
                                         for string2 in list1 {
                                             if let string2 = string2 {
                                                 list1Decoded1?.append(string2)
@@ -93,14 +93,14 @@ class StructEncodeGenerationIsolatedTests {
 
         val expectedContents =
             """
-            extension JsonListsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension JsonListsInput: Swift.Encodable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
                     case stringList
                     case stringSet
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedStringList = nestedStringList {
                         var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)

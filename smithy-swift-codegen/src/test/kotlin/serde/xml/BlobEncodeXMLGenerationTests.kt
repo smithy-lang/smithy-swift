@@ -14,15 +14,15 @@ class BlobEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlBlobsInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlBlobsInput: Swift.Encodable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case data
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let data = data {
-                        try container.encode(data, forKey: Key("data"))
+                        try container.encode(data, forKey: ClientRuntime.Key("data"))
                     }
                 }
             }
@@ -37,19 +37,19 @@ class BlobEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlBlobsNestedInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension XmlBlobsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedBlobList
                 }
             
-                public func encode(to encoder: Encoder) throws {
-                    var container = encoder.container(keyedBy: Key.self)
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedBlobList = nestedBlobList {
-                        var nestedBlobListContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("nestedBlobList"))
+                        var nestedBlobListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedBlobList"))
                         for nestedbloblist0 in nestedBlobList {
-                            var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: Key.self, forKey: Key("member"))
+                            var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for blob1 in nestedbloblist0 {
-                                try nestedbloblist0Container0.encode(blob1, forKey: Key("member"))
+                                try nestedbloblist0Container0.encode(blob1, forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
