@@ -56,7 +56,7 @@ class ReservedWordsGeneratorTests {
         val context = setupTests("reserved-name-enum-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/Type.swift")
         val expectedContents =
-        """
+            """
         extension ExampleClientTypes {
             public enum ModelType: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 case foo
@@ -88,7 +88,7 @@ class ReservedWordsGeneratorTests {
                 }
             }
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
