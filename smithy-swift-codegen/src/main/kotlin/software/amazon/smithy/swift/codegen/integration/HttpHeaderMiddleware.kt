@@ -121,7 +121,7 @@ class HttpHeaderMiddleware(
             writer.write("input.builder.withHeader(name: \"$headerName\", value: \$N(base64EncodedValue))", SwiftTypes.String)
         }
         writer.indent()
-        writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
+        writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
         writer.dedent()
         writer.write("}")
     }

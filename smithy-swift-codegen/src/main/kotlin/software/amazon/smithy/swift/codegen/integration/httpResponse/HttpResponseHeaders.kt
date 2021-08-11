@@ -80,7 +80,7 @@ class HttpResponseHeaders(
                         writer.dedent()
                         writer.write("} else {")
                         writer.indent()
-                        writer.write("throw \$T.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, memberName)
+                        writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, memberName)
                         writer.dedent()
                         writer.write("}")
                     } else {
@@ -145,7 +145,7 @@ class HttpResponseHeaders(
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                             val transformedHeaderDeclaration = "${memberName}Transformed"
                             writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
-                                writer.write("throw \$T.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, invalidHeaderListErrorName, memberName)
+                                writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, invalidHeaderListErrorName, memberName)
                             }
                             writer.write("return \$L", transformedHeaderDeclaration)
                         }

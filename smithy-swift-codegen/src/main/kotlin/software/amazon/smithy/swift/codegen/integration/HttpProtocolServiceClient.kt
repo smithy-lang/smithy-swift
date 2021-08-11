@@ -57,9 +57,9 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: \$T {", "}", ClientRuntimeTypes.Core.SDKLogHandlerFactory) {
+        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: \$N {", "}", ClientRuntimeTypes.Core.SDKLogHandlerFactory) {
             writer.write("public var label = \"${serviceSymbol.name}\"")
-            writer.write("let logLevel: \$T", ClientRuntimeTypes.Core.SDKLogLevel)
+            writer.write("let logLevel: \$N", ClientRuntimeTypes.Core.SDKLogLevel)
 
             writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {
                 writer.write("var handler = StreamLogHandler.standardOutput(label: label)")
@@ -67,7 +67,7 @@ open class HttpProtocolServiceClient(
                 writer.write("return handler")
             }
 
-            writer.openBlock("public init(logLevel: \$T) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
+            writer.openBlock("public init(logLevel: \$N) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
                 writer.write("self.logLevel = logLevel")
             }
         }

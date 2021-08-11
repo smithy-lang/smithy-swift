@@ -28,19 +28,18 @@ object SwiftTypes {
     val DecodingError = builtInSymbol("DecodingError")
 
     object Protocols {
-        val Equatable = builtInSymbol("Equatable", false)
-        val Hashable = builtInSymbol("Hashable", false)
-        val RawRepresentable = builtInSymbol("RawRepresentable", false)
-        val Codable = builtInSymbol("Codable", false)
-        val Encodable = builtInSymbol("Encodable", false)
-        val Decodable = builtInSymbol("Decodable", false)
-        val CaseIterable = builtInSymbol("CaseIterable", false)
-        val CustomDebugStringConvertible = builtInSymbol("CustomDebugStringConvertible", false)
+        val Equatable = builtInSymbol("Equatable")
+        val Hashable = builtInSymbol("Hashable")
+        val RawRepresentable = builtInSymbol("RawRepresentable")
+        val Codable = builtInSymbol("Codable")
+        val Encodable = builtInSymbol("Encodable")
+        val Decodable = builtInSymbol("Decodable")
+        val CaseIterable = builtInSymbol("CaseIterable")
+        val CustomDebugStringConvertible = builtInSymbol("CustomDebugStringConvertible")
     }
 }
 
-private fun builtInSymbol(symbol: String, canBeOptional: Boolean = true) = buildSymbol {
+private fun builtInSymbol(symbol: String) = buildSymbol {
     name = symbol
     namespace = "Swift"
-    nullable = canBeOptional
 }

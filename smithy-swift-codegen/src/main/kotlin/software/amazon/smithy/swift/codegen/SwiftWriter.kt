@@ -54,9 +54,9 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         trimTrailingSpaces()
         setIndentText("    ")
         // type with default set
-        putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true))
-        putFormatter('T', SwiftSymbolFormatter())
-        putFormatter('N', SwiftSymbolFormatter(shouldRenderOptional = false))
+        putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true, shouldRenderOptional = true))
+        putFormatter('T', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = true))
+        putFormatter('N', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = false))
     }
 
     private val imports: ImportDeclarations = ImportDeclarations()
@@ -118,7 +118,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         return staticHeader + imports + contents
     }
 
-    private class SwiftSymbolFormatter(val shouldSetDefault: Boolean = false, val shouldRenderOptional: Boolean = true) : BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter(val shouldSetDefault: Boolean, val shouldRenderOptional: Boolean) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {

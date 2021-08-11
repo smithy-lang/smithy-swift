@@ -139,7 +139,7 @@ open class HttpProtocolClientGenerator(
                 // unwrap the label members if boxed
                 if (isBoxed) {
                     writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                        writer.write("completion(.failure(.client(\$T.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
+                        writer.write("completion(.failure(.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
                         writer.write("return")
                     }
                 } else {
@@ -213,7 +213,7 @@ open class HttpProtocolClientGenerator(
         val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-        writer.write("let context = \$T()", ClientRuntimeTypes.Http.HttpContextBuilder)
+        writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }

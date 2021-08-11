@@ -45,12 +45,12 @@ class HttpBodyMiddleware(
             writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
                 writer.write("let encoder = context.getEncoder()")
                 writer.write("let data = try encoder.encode(input.operationInput)")
-                writer.write("let body = \$T.data(data)", ClientRuntimeTypes.Http.HttpBody)
+                writer.write("let body = \$N.data(data)", ClientRuntimeTypes.Http.HttpBody)
                 writer.write("input.builder.withBody(body)")
             }
         }
         writer.indent()
-        writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
+        writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
         writer.dedent()
         writer.write("}")
     }
@@ -67,13 +67,13 @@ class HttpBodyMiddleware(
                         ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
                     val bodyType = if (isBinaryStream) ".stream" else ".data"
                     writer.write("let $dataDeclaration = \$L", memberName)
-                    writer.write("let $bodyDeclaration = \$T$bodyType($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+                    writer.write("let $bodyDeclaration = \$N$bodyType($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
                     writer.write("input.builder.withBody($bodyDeclaration)")
                 }
                 ShapeType.STRING -> {
                     val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
                     writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
-                    writer.write("let $bodyDeclaration = \$T.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+                    writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
                     writer.write("input.builder.withBody($bodyDeclaration)")
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -81,7 +81,7 @@ class HttpBodyMiddleware(
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let encoder = context.getEncoder()")
                         writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                        writer.write("let $bodyDeclaration = \$T.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+                        writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
@@ -93,11 +93,11 @@ class HttpBodyMiddleware(
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let encoder = context.getEncoder()")
                         writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                        writer.write("let $bodyDeclaration = \$T.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+                        writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
-                    writer.write("return .failure(.client(\$T.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
+                    writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
                     writer.dedent()
                     writer.write("}")
                 }

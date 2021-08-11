@@ -39,7 +39,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
     }
 
     open fun renderInitializers(serviceSymbol: Symbol) {
-        writer.openBlock("public init(runtimeConfig: \$T) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
+        writer.openBlock("public init(runtimeConfig: \$N) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
             val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
                 writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
@@ -47,7 +47,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         }
         writer.write("")
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let defaultRuntimeConfig = try \$T(\"${serviceName}\")", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration)
+            writer.write("let defaultRuntimeConfig = try \$N(\"${serviceName}\")", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration)
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }

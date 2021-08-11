@@ -20,20 +20,20 @@ object ClientRuntimeTypes {
         val Headers = runtimeSymbol("Headers")
         val HttpStatusCode = runtimeSymbol("HttpStatusCode")
         val SdkHttpClient = runtimeSymbol("SdkHttpClient")
-        val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder", false)
-        val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", false)
-        val HttpBody = runtimeSymbol("HttpBody", false)
-        val HttpResponse = runtimeSymbol("HttpResponse", false)
-        val HttpResponseBinding = runtimeSymbol("HttpResponseBinding", false)
-        val HttpServiceError = runtimeSymbol("HttpServiceError", false)
-        val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError", false)
-        val HttpContextBuilder = runtimeSymbol("HttpContextBuilder", false)
+        val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder")
+        val SdkHttpRequest = runtimeSymbol("SdkHttpRequest")
+        val HttpBody = runtimeSymbol("HttpBody")
+        val HttpResponse = runtimeSymbol("HttpResponse")
+        val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
+        val HttpServiceError = runtimeSymbol("HttpServiceError")
+        val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
+        val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
     }
 
     object Serde {
         val RequestEncoder = runtimeSymbol("RequestEncoder")
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
-        val Key = runtimeSymbol("Key", false)
+        val Key = runtimeSymbol("Key")
         val TimestampWrapper = runtimeSymbol("TimestampWrapper")
         val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
         val DynamicNodeEncoding = runtimeSymbol("DynamicNodeEncoding")
@@ -57,31 +57,30 @@ object ClientRuntimeTypes {
 
     object Core {
         val ByteStream = runtimeSymbol("ByteStream")
-        val Date = runtimeSymbol("Date", false)
+        val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
         val Document = runtimeSymbol("Document")
-        val URLQueryItem = runtimeSymbol("URLQueryItem", false)
-        val ClientError = runtimeSymbol("ClientError", false)
+        val URLQueryItem = runtimeSymbol("URLQueryItem")
+        val ClientError = runtimeSymbol("ClientError")
         val SdkError = runtimeSymbol("SdkError")
-        val ServiceError = runtimeSymbol("ServiceError", false)
+        val ServiceError = runtimeSymbol("ServiceError")
         val SdkResult = runtimeSymbol("SdkResult")
         val Logger = runtimeSymbol("LogAgent")
-        val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", false)
-        val SDKLogLevel = runtimeSymbol("SDKLogLevel", false)
+        val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
+        val SDKLogLevel = runtimeSymbol("SDKLogLevel")
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
         val Retrier = runtimeSymbol("Retrier")
-        val ErrorType = runtimeSymbol("ErrorType", false)
-        val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration", false)
-        val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration", false)
+        val ErrorType = runtimeSymbol("ErrorType")
+        val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration")
+        val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration")
         val DateFormatter = runtimeSymbol("DateFormatter")
         val Reflection: Symbol = runtimeSymbol("Reflection")
     }
 }
 
-private fun runtimeSymbol(name: String, optional: Boolean = true): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
-    this.nullable = optional
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }
