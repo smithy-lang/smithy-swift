@@ -3,18 +3,18 @@ package software.amazon.smithy.swift.codegen.lang
 import software.amazon.smithy.codegen.core.ReservedWords
 import software.amazon.smithy.codegen.core.ReservedWordsBuilder
 
-/**
- * Get the Swift language reserved words
- */
-fun swiftReservedWords(): ReservedWords = ReservedWordsBuilder().apply {
-    reservedWords.forEach {
-        if (metaTypes.contains(it)) {
-            put(it, "Model$it")
-        } else {
-            put(it, "`$it`")
-        }
-    }
-}.build()
+val swiftReservedWords: ReservedWords by lazy {
+    ReservedWordsBuilder()
+        .apply {
+            reservedWords.forEach {
+                if (metaTypes.contains(it)) {
+                    put(it, "Model$it")
+                } else {
+                    put(it, "`$it`")
+                }
+            }
+        }.build()
+}
 
 val reservedWords = listOf(
     "Any",

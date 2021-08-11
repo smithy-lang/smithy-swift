@@ -68,7 +68,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     private var depth = 0
 
     init {
-        val reservedWords = swiftReservedWords()
+        val reservedWords = swiftReservedWords
         escaper = ReservedWordSymbolProvider
             .builder()
             .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to

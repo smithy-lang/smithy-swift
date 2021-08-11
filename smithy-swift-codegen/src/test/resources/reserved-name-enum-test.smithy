@@ -24,7 +24,9 @@ structure EnumInputRequest {
     @httpHeader("X-EnumHeader")
     enumHeader: ReservedWordsEnum,
 
-    metaTypeEnum: Type
+    metaTypeEnum: Type,
+
+    protocolEnum: Protocol
 }
 
 structure NestedEnum {
@@ -62,3 +64,15 @@ string ReservedWordsEnum
     }
 ])
 string Type
+
+@enum([
+    {
+        value: "bar",
+        name: "bar"
+    },
+    {
+        value: "foo",
+        name: "foo"
+    }
+])
+string Protocol
