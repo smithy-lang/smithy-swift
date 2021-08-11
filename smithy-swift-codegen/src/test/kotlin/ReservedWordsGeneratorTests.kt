@@ -132,7 +132,7 @@ class ReservedWordsGeneratorTests {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)
