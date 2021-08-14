@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 open class HttpProtocolServiceClient(
@@ -90,7 +91,8 @@ open class HttpProtocolServiceClient(
             }
             writer.write("")
             otherConfigFields.forEach {
-                writer.write("public var ${it.memberName}: \$L", it.type)
+                val formatter = if(it.type == SwiftTypes.String) "\$T" else "\$N"
+                writer.write("public var ${it.memberName}: $formatter", it.type)
             }
             writer.write("")
             serviceConfig.renderInitializers(serviceSymbol)
