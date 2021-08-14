@@ -27,7 +27,7 @@ public struct Attributes {
         return attributes[key.hashValue] != nil && (attributes[key.hashValue] as? T) != nil
     }
     
-    public mutating func set<T: Any>(key: AttributeKey<T>, value: T) {
+    public mutating func set<T: Any>(key: AttributeKey<T>, value: T?) {
         attributes[key.hashValue] = value
     }
     
