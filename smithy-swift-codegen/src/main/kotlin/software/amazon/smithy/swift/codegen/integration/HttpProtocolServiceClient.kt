@@ -91,7 +91,7 @@ open class HttpProtocolServiceClient(
             }
             writer.write("")
             otherConfigFields.forEach {
-                val formatter = if(it.type == SwiftTypes.String) "\$T" else "\$N"
+                val formatter = if (it.type == SwiftTypes.String) "\$T" else "\$N"
                 writer.write("public var ${it.memberName}: $formatter", it.type)
             }
             writer.write("")
