@@ -12,7 +12,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val memberName: String?, val type: Symbol, private val documentation: String? = null)
+data class ConfigField(val memberName: String?, val type: Symbol, val formatter: String = "\$N", private val documentation: String? = null)
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
@@ -25,8 +25,8 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
-            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder),
-            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder),
+            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder, formatter = "\$T"),
+            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder, formatter = "\$T"),
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
