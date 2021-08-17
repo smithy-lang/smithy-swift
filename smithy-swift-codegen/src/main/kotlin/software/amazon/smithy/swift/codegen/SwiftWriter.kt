@@ -16,6 +16,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
+import software.amazon.smithy.swift.codegen.integration.SectionId
+import software.amazon.smithy.swift.codegen.integration.SectionWriter
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
@@ -36,6 +38,25 @@ fun <T : CodeWriter> T.swiftFunctionParameterIndent(block: T.() -> Unit): T {
     this.indent(3)
     block(this)
     this.dedent(3)
+    return this
+}
+
+fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> = emptyMap(), block: T.() -> Unit = {}): T {
+    putContext(context)
+    pushState(id.javaClass.canonicalName)
+    block(this)
+    popState()
+    removeContext(context)
+    return this
+}
+private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
+    context.keys.forEach { key -> removeContext(key) }
+
+fun SwiftWriter.customizeSection(id: SectionId, writer: SectionWriter): SwiftWriter {
+    onSection(id.javaClass.canonicalName) { default ->
+        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
+        writer.write(this, default)
+    }
     return this
 }
 
