@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package software.amazon.smithy.kotlin.codegen.model
 // copied and modified from https://github.com/awslabs/smithy-kotlin/blob/b386392b1cd7cc73a9bc08bedcff0c109487b74f/smithy-kotlin-codegen/src/test/kotlin/software/amazon/smithy/kotlin/codegen/model/SymbolBuilderTest.kt
 import org.junit.jupiter.api.Assertions.assertEquals

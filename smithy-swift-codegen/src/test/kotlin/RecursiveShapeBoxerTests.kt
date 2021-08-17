@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions
