@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.SectionId
-import software.amazon.smithy.swift.codegen.registerSectionWriter
+import software.amazon.smithy.swift.codegen.customizeSection
 
 class SwiftWriterTests {
 
@@ -45,7 +45,7 @@ class SwiftWriterTests {
     fun `it handles overriding stateful sections`() {
         val unit = SwiftWriter("MockPackage")
 
-        unit.registerSectionWriter(TestSectionId) { writer, previousValue ->
+        unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
             writer.write(previousValue)
             writer.write("// section with state $state")
@@ -72,13 +72,13 @@ class SwiftWriterTests {
     fun `it handles nested stateful sections`() {
         val unit = SwiftWriter("MockPackage")
 
-        unit.registerSectionWriter(TestSectionId) { writer, previousValue ->
+        unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
             writer.write("// section with state $state")
             writer.write(previousValue)
         }
 
-        unit.registerSectionWriter(NestedTestSectionId) { writer, _ ->
+        unit.customizeSection(NestedTestSectionId) { writer, _ ->
             val state = writer.getContext(NestedTestSectionId.a)
             writer.write("// nested section with state $state")
         }

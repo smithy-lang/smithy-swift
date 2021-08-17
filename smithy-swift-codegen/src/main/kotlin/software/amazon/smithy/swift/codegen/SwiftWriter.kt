@@ -52,7 +52,7 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> 
 private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
     context.keys.forEach { key -> removeContext(key) }
 
-fun SwiftWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): SwiftWriter {
+fun SwiftWriter.customizeSection(id: SectionId, writer: SectionWriter): SwiftWriter {
     onSection(id.javaClass.canonicalName) { default ->
         require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
         writer.write(this, default)
