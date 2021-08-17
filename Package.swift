@@ -1,5 +1,6 @@
 // swift-tools-version:5.4
 import PackageDescription
+let excludes = ["README.md"]
 
 let package = Package(
     name: "ClientRuntime",
@@ -24,7 +25,8 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
-            path: "./Packages/ClientRuntime/Sources"
+            path: "./Packages/ClientRuntime/Sources",
+            exclude: excludes
         ),
         .testTarget(
             name: "ClientRuntimeTests",
