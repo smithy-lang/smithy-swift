@@ -7,9 +7,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customizeSection
 import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.SectionId
-import software.amazon.smithy.swift.codegen.customizeSection
 
 class SwiftWriterTests {
 
