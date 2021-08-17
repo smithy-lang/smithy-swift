@@ -91,9 +91,7 @@ class SwiftDelegator(
                 integration.onShapeWriterUse(settings, model, symbolProvider, writer, shape.get())
             }
         }
-
         block(writer)
-
         writer.popState()
     }
 
