@@ -15,6 +15,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
 /**
@@ -92,6 +93,7 @@ class SwiftDelegator(
         }
 
         block(writer)
+
         writer.popState()
     }
 
@@ -134,8 +136,17 @@ class SwiftDelegator(
     private fun checkoutWriter(filename: String): SwiftWriter {
         val formattedFilename = Paths.get(filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
-        val writer = writers.getOrPut(formattedFilename) { SwiftWriter(settings.moduleName) }
-
+        val writer = writers.getOrPut(formattedFilename) {
+            val swiftWriter = SwiftWriter(settings.moduleName)
+            integrations.forEach { integration ->
+                integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
+                    swiftWriter.registerSectionWriter(sectionId) { codeWriter: CodeWriter, previousValue: String? ->
+                        sectionWriter.write(codeWriter, previousValue)
+                    }
+                }
+            }
+            swiftWriter
+        }
         if (needsNewline) {
             writer.write("\n")
         }

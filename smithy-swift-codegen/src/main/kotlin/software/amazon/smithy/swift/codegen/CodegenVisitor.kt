@@ -44,9 +44,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     init {
         LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
         integrations = ServiceLoader.load(SwiftIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
-            .also { integration ->
-                LOGGER.info("Adding SwiftIntegration: ${integration.javaClass.name}")
-            }.sortedBy(SwiftIntegration::order).toList()
+            .also { integration -> LOGGER.info("Loaded SwiftIntegration: ${integration.javaClass.name}") }
+            .filter { integration -> integration.enabledForService(context.model, settings) }
+            .also { integration -> LOGGER.info("Enabled SwiftIntegration: ${integration.javaClass.name}") }
+            .sortedBy(SwiftIntegration::order)
+            .toList()
 
         LOGGER.info("Preprocessing model")
         var resolvedModel = context.model
