@@ -85,12 +85,11 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
             writer.write("")
             configFields.forEach {
-                val optional = if (it.type == ClientRuntimeTypes.Serde.RequestEncoder || it.type == ClientRuntimeTypes.Serde.ResponseDecoder) "?" else ""
-                writer.write("public var ${it.memberName}: \$L$optional", it.type)
+                writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
             }
             writer.write("")
             otherConfigFields.forEach {
-                writer.write("public var ${it.memberName}: \$L", it.type)
+                writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
             }
             writer.write("")
             serviceConfig.renderInitializers(serviceSymbol)
