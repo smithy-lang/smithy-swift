@@ -7,21 +7,7 @@ import Foundation
 import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
-class MockHttpClientEngine: HttpClientEngine {
-    let eventLoopGroup: EventLoopGroup
-    
-    convenience init() {
-        let shutDownOptions = ShutDownCallbackOptions { semaphore in
-            semaphore.signal()
-        }
-        let eventLoopGroup = EventLoopGroup(threadCount: 1, shutDownOptions: shutDownOptions)
-        try! self.init(eventLoopGroup: eventLoopGroup)
-    }
-    
-    required init(eventLoopGroup: EventLoopGroup) throws {
-        self.eventLoopGroup = eventLoopGroup
-    }
-    
+class MockHttpClientEngine: HttpClientEngine {    
     func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {
         let future = SdkFuture<HttpResponse>()
         future.fulfill(successHttpResponse(request: request))
@@ -33,7 +19,7 @@ class MockHttpClientEngine: HttpClientEngine {
     }
     
     func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
-        return HttpResponse(body: HttpBody.empty, statusCode: HttpStatusCode.ok)
+        return HttpResponse(headers: request.headers, body: HttpBody.empty, statusCode: HttpStatusCode.ok)
     }
     
     func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
