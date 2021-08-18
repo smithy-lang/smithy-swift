@@ -28,7 +28,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             input.withHeader(name: "baz", value: "qux")
             return next.handle(context: context, input: input)
         }
-        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"]))
+        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"], conditionallySet: []))
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,
