@@ -177,7 +177,7 @@ class HttpProtocolClientGeneratorTests {
                 operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputBodyMiddleware())
-                operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
+                operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggingMiddleware(clientLogMode: config.clientLogMode))
                 let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
                 completion(result)
             }
