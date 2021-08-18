@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.integration.MiddlewareStep
@@ -28,7 +29,7 @@ class LoggingMiddleware : OperationMiddlewareRenderable {
         op: OperationShape,
         operationStackName: String
     ) {
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: LoggerMiddleware(${middlewareParamsString(ctx, serviceShape, op)}))")
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N(${middlewareParamsString(ctx, serviceShape, op)}))", ClientRuntimeTypes.Middleware.LoggerMiddleware)
     }
 
     override fun middlewareParamsString(
