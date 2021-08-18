@@ -53,6 +53,7 @@ object ClientRuntimeTypes {
     object Middleware {
         val OperationOutput = runtimeSymbol("OperationOutput")
         val Middleware = runtimeSymbol("Middleware")
+        val LoggingMiddleware = runtimeSymbol("LoggingMiddleware")
     }
 
     object Core {
