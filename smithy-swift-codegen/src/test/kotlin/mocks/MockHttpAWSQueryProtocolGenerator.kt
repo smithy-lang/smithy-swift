@@ -68,8 +68,8 @@ class MockHttpAWSQueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolCustomizable = MockAWSQueryHttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
+        serviceErrorProtocolSymbol(),
         unknownServiceErrorSymbol,
-        serviceErrorProtocolSymbol,
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )

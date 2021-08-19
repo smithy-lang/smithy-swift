@@ -84,8 +84,9 @@ interface ProtocolGenerator {
      * Symbol that should be used as the base class for generated service errors.
      * It defaults to the ServiceError available in smithy-swift's client-runtime.
      */
-    val serviceErrorProtocolSymbol: Symbol
-        get() = DefaultServiceErrorProtocolSymbol
+    fun serviceErrorProtocolSymbol(): Symbol? {
+        return DefaultServiceErrorProtocolSymbol
+    }
 
     /**
      * Symbol that should be used when the deserialized service error type cannot be determined

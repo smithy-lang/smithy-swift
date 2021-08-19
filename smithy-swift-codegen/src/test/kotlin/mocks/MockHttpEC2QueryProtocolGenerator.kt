@@ -68,8 +68,8 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
+        serviceErrorProtocolSymbol(),
         unknownServiceErrorSymbol,
-        serviceErrorProtocolSymbol,
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()
     )

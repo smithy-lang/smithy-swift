@@ -13,7 +13,9 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.model.getTrait
 
 class HttpResponseBindingErrorNarrowGenerator(
@@ -21,6 +23,7 @@ class HttpResponseBindingErrorNarrowGenerator(
     val op: OperationShape,
     val unknownServiceErrorSymbol: Symbol
 ) {
+    object HttpResponseBindingErrorNarrowGeneratorSectionId : SectionId
 
     fun render() {
         val errorShapes = op.errors.map { ctx.model.expectShape(it) as StructureShape }.toSet().sorted()
@@ -36,20 +39,28 @@ class HttpResponseBindingErrorNarrowGenerator(
             writer.addImport(unknownServiceErrorSymbol)
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
-            writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock(
-                    "public init(errorType: \$T, httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
-                    SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String
-                ) {
-                    writer.write("switch errorType {")
-                    for (errorShape in errorShapes) {
-                        var errorShapeName = resolveErrorShapeName(errorShape)
-                        var errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
-                        var errorShapeEnumCase = errorShapeType.decapitalize()
-                        writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeEnumCase, errorShapeType)
+            val context = mapOf(
+                "ctx" to ctx,
+                "unknownServiceErrorType" to unknownServiceErrorType,
+                "operationErrorName" to operationErrorName,
+                "errorShapes" to errorShapes
+            )
+            writer.declareSection(HttpResponseBindingErrorNarrowGeneratorSectionId, context) {
+                writer.openBlock("extension \$L {", "}", operationErrorName) {
+                    writer.openBlock(
+                        "public init(errorType: \$T, httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
+                        SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String
+                    ) {
+                        writer.write("switch errorType {")
+                        for (errorShape in errorShapes) {
+                            var errorShapeName = resolveErrorShapeName(errorShape)
+                            var errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
+                            var errorShapeEnumCase = errorShapeType.decapitalize()
+                            writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeEnumCase, errorShapeType)
+                        }
+                        writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID))")
+                        writer.write("}")
                     }
-                    writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID))")
-                    writer.write("}")
                 }
             }
         }
