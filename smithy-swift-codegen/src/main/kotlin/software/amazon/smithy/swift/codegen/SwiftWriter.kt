@@ -26,7 +26,6 @@ import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
-
 /**
  * Handles indenting follow on params to a function that takes several params or a builder object
  * i.e.
@@ -281,8 +280,8 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     fun writeMemberDocs(model: Model, member: MemberShape) {
         member.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { writeDocs(it.value) }
         member.getMemberTrait(
-                model,
-                RequiredTrait::class.java
+            model,
+            RequiredTrait::class.java
         ).getOrNull()?.let { writeDocs("This member is required.") }
     }
 
