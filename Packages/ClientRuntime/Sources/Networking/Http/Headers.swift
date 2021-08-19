@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-//TODO: assess which apis we actually want to expose and make sure this struct is correct per http spec. APIs may be unstable
+// TODO: assess which apis we actually want to expose and make sure this struct is correct per http spec. APIs may be unstable
 public struct Headers: Equatable {
     public var headers: [Header] = []
 
@@ -95,7 +95,7 @@ public struct Headers: Equatable {
     /// - Returns:        The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
         guard let indices = headers.indices(of: name) else { return nil }
-        var values = [String] ()
+        var values = [String]()
         for index in indices {
             values.append(headers[index].value)
         }
