@@ -8,22 +8,16 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
     
     public let id: String = "MutateHeaders"
     
-    private var overrides: Headers? = nil
-    private var additional: Headers? = nil
-    private var conditionallySet: Headers? = nil
+    private var overrides: Headers
+    private var additional: Headers
+    private var conditionallySet: Headers
     
     public init(overrides: [String: String]? = nil,
                 additional: [String: String]? = nil,
                 conditionallySet: [String: String]? = nil) {
-        if let overrides = overrides {
-            self.overrides = Headers(overrides)
-        }
-        if let additional = additional {
-            self.additional = Headers(additional)
-        }
-        if let conditionallySet = conditionallySet {
-            self.conditionallySet = Headers(conditionallySet)
-        }
+        self.overrides = Headers(overrides ?? [:])
+        self.additional = Headers(additional ?? [:])
+        self.conditionallySet = Headers(conditionallySet ?? [:])
     }
     
     public func handle<H>(context: Context,
@@ -34,17 +28,17 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
     Self.MError == H.MiddlewareError {
-        if let additional = additional {
+        if !additional.dictionary.isEmpty {
             input.withHeaders(additional)
         }
         
-        if let overrides = overrides {
+        if !overrides.dictionary.isEmpty {
             for header in overrides.headers {
                 input.updateHeader(name: header.name, value: header.value)
             }
         }
         
-        if let conditionallySet = conditionallySet {
+        if !conditionallySet.dictionary.isEmpty {
             for header in conditionallySet.headers {
                 if !input.headers.exists(name: header.name) {
                     input.headers.add(name: header.name, value: header.value)
