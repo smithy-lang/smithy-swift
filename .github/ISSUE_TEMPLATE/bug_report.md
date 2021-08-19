@@ -14,7 +14,6 @@ labels: bug, needs-triage
 <!--- Tell us what happens instead of the expected behavior -->
 
 <!--- Include full errors, uncaught exceptions, stack traces, and relevant logs -->
-<!--- To turn on SDK logging, follow instructions here: http://github.com/aws-sdk-kotlin/tree/main/docs/debugging.md -->
 <!--- If service responses are relevant, please include wirelogs (after removing any sensitive content!) -->
 
 ## Steps to Reproduce
@@ -32,4 +31,4 @@ labels: bug, needs-triage
 ## Your Environment
 <!--- Include as many relevant details about the environment where the bug was discovered -->
 * Smithy Swift version used:
-* Operating System and version (iOS/macOS/Linux):
+* Operating System and version(iOS/macOS/Linux):
