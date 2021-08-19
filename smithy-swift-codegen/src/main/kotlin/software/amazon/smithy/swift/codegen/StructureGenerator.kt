@@ -200,12 +200,12 @@ class StructureGenerator(
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
         protocolGenerator?.serviceErrorProtocolSymbol?.let {
             writer.addImport(it)
             writer.putContext("error.protocol", it)
         } ?: run {
-            writer.addImport(ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
             writer.putContext("error.protocol", ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
         }
 
