@@ -99,13 +99,19 @@ public class SdkHttpRequestBuilder {
     // don't end up doing any chaining.
     @discardableResult
     public func withHeaders(_ value: Headers) -> SdkHttpRequestBuilder {
-        self.headers = value
+        self.headers.addAll(headers: value)
         return self
     }
     
     @discardableResult
     public func withHeader(name: String, value: String) -> SdkHttpRequestBuilder {
         self.headers.add(name: name, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func updateHeader(name: String, value: String) -> SdkHttpRequestBuilder {
+        self.headers.update(name: name, value: value)
         return self
     }
     

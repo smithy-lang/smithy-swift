@@ -5,6 +5,7 @@
 
 import AwsCommonRuntimeKit
 
+//TODO: assess which apis we actually want to expose and make sure this struct is correct per http spec. APIs may be unstable
 public struct Headers: Equatable {
     public var headers: [Header] = []
 
@@ -33,6 +34,14 @@ public struct Headers: Equatable {
     ///   - value: The `HTTPHeader value.
     public mutating func add(name: String, value: String) {
         headers.append(Header(name: name, value: value))
+    }
+    
+    /// Case-insensitively adds all `Headers` into the instance using the provided `[Headers]` array.
+    ///
+    /// - Parameters:
+    ///   - headers:  The `Headers` object.
+    public mutating func addAll(headers: Headers) {
+        self.headers.append(contentsOf: headers.headers)
     }
 
     /// Case-insensitively updates or appends the provided `HTTPHeader` into the instance.
@@ -78,6 +87,25 @@ public struct Headers: Equatable {
 
         return headers[index].value
     }
+    
+    /// Case-insensitively find a header's values by name.
+    ///
+    /// - Parameter name: The name of the header to search for, case-insensitively.
+    ///
+    /// - Returns:        The values of the header, if they exist.
+    public func values(for name: String) -> [String]? {
+        guard let indices = headers.indices(of: name) else { return nil }
+        var values = [String] ()
+        for index in indices {
+            values.append(headers[index].value)
+        }
+        
+        return values
+    }
+    
+    public func exists(name: String) -> Bool {
+        return headers.index(of: name) != nil
+    }
 
     /// The dictionary representation of all headers.
     ///
@@ -96,6 +124,12 @@ extension Array where Element == Header {
     func index(of name: String) -> Int? {
         let lowercasedName = name.lowercased()
         return firstIndex { $0.name.lowercased() == lowercasedName }
+    }
+    
+    /// Case-insensitively finds the indexes of an `Header` with the provided name, if it exists.
+    func indices(of name: String) -> [Int]? {
+        let lowercasedName = name.lowercased()
+        return enumerated().compactMap { $0.element.name.lowercased() == lowercasedName ? $0.offset : nil }
     }
 }
 
