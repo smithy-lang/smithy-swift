@@ -201,6 +201,9 @@ class StructureGenerator(
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+        protocolGenerator?.serviceErrorProtocolSymbol?.let {
+            writer.addImport(it)
+        }
         val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
         writer.putContext("error.protocol", serviceErrorProtocolSymbol)
 
