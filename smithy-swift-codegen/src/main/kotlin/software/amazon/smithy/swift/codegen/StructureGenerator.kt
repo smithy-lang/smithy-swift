@@ -201,8 +201,13 @@ class StructureGenerator(
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-        val serviceErrorProtocolSymbol = protocolGenerator?.serviceErrorProtocolSymbol ?: ProtocolGenerator.DefaultServiceErrorProtocolSymbol
-        writer.putContext("error.protocol", serviceErrorProtocolSymbol)
+
+        protocolGenerator?.serviceErrorProtocolSymbol?.let {
+            writer.addImport(it)
+            writer.putContext("error.protocol", it)
+        } ?: run {
+            writer.putContext("error.protocol", ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
+        }
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)

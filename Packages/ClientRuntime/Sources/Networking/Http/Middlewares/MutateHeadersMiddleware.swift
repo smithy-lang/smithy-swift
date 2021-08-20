@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
-                                      OperationStackError: HttpResponseBinding>: Middleware  {
+                                      OperationStackError: HttpResponseBinding>: Middleware {
     
     public let id: String = "MutateHeaders"
     

@@ -139,7 +139,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun structureShape(shape: StructureShape): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings).render() }
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator).render() }
         writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
             CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
         }

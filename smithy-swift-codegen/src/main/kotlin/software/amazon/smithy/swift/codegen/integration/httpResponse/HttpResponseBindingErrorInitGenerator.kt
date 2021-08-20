@@ -26,7 +26,6 @@ interface HttpResponseBindingErrorInitGeneratorFactory {
         ctx: ProtocolGenerator.GenerationContext,
         structureShape: StructureShape,
         httpBindingResolver: HttpBindingResolver,
-        serviceErrorProtocolSymbol: Symbol,
         defaultTimestampFormat: TimestampFormatTrait.Format
     ): HttpResponseBindingRenderable
 }
@@ -35,7 +34,6 @@ class HttpResponseBindingErrorInitGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val shape: StructureShape,
     val httpBindingResolver: HttpBindingResolver,
-    val serviceErrorProtocolSymbol: Symbol,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
     val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
 ) : HttpResponseBindingRenderable {
@@ -55,8 +53,7 @@ class HttpResponseBindingErrorInitGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(serviceErrorProtocolSymbol)
-            writer.openBlock("extension \$L: \$N {", "}", errorShapeName, serviceErrorProtocolSymbol) {
+            writer.openBlock("extension \$L {", "}", errorShapeName) {
                 writer.openBlock(
                     "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
                     ClientRuntimeTypes.Http.HttpResponse,
