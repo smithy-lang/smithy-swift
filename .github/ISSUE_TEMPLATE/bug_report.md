@@ -19,9 +19,7 @@ labels: bug, needs-triage
 <!--- Include as many relevant details about the environment where the bug was discovered -->
 * Smithy Swift version used:
 * Operating System and version (iOS/macOS/Linux):
-* Xcode version (if applicable):
-* Swift compiler version (if applicable):
-* Swift Tools version (if applicable):
+* aws-crt-swift version used:
 
 ## Reproduction Steps
 <!--- If possible, provide a self-contained, concise snippet of code that can be used to reproduce the issue -->

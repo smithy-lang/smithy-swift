@@ -3,6 +3,10 @@ name: 💡 Feature Request
 about: Suggest an idea for this project
 labels: enhancement, needs-triage
 ---
+## Warning ##
+* You should only be opening a feature request in this repository if it pertains to **non-AWS specific features pertaining to code generation of an SDK.**
+* **If you have feature request pertaining to the AWS SDK for Swift**, please open it in:
+    * https://github.com/awslabs/aws-sdk-swift/blob/main/.github/ISSUE_TEMPLATE/feature_request.md
 
 <!--- Provide a general summary of the issue in the Title above -->
 
