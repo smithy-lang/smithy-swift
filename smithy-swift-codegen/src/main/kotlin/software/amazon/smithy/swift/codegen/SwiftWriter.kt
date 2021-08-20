@@ -222,9 +222,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         return doc
             .stripAll(commonHtmlTags)
             .replace("\$", "\$\$")
-            // Services may have comment string literals embedded in documentation.
-            .replace("/*", "&\$\$47;*")
-            .replace("*/", "*&\$\$47;")
     }
 
     // Remove all strings from source string and return the result
