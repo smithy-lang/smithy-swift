@@ -5,6 +5,7 @@ labels: bug, needs-triage
 ---
 
 ## Describe the bug
+<!--- Please note: if this is an AWS SDK bug please open it in https://github.com/awslabs/aws-sdk-swift-->
 <!--- A clear and concise description of what the bug is -->
 
 ## Expected Behavior
