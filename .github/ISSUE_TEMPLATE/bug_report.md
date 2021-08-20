@@ -28,8 +28,6 @@ labels: bug, needs-triage
 <!--- For more complex issues provide a repo with the smallest sample that reproduces the bug -->
 <!--- Avoid including business logic or unrelated code, it makes diagnosis more difficult -->
 <!--- Include full errors, uncaught exceptions, stack traces, and relevant logs -->
-<!--- To turn on SDK logging, follow instructions here: https://github.com/awslabs/aws-sdk-swift#logging -->
-<!--- If service responses are relevant, please include wirelogs (after removing any sensitive content!) -->
 
 ## Observed Behavior
 <!--- Tell us what happens instead of the expected behavior -->
