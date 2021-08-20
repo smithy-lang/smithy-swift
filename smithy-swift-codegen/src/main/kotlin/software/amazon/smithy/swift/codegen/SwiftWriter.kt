@@ -16,6 +16,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
+import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.SectionWriter
 import software.amazon.smithy.swift.codegen.model.defaultValue
@@ -186,9 +187,28 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         popState()
     }
 
-    /**
-     * Writes documentation comments from a doc string.
-     */
+    // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
+    private val commonHtmlTags = setOf(
+        "a",
+        "b",
+        "code",
+        "dd",
+        "dl",
+        "dt",
+        "i",
+        "important",
+        "li",
+        "note",
+        "p",
+        "strong",
+        "ul"
+    ).map { listOf("<$it>", "</$it>") }.flatten()
+
+    // Replace characters in the input documentation to prevent issues in codegen or rendering.
+    // NOTE: Currently we look for specific strings of Html tags commonly found in docs
+    //       and remove them.  A better solution would be to generally convert from HTML to "pure"
+    //       markdown such that formatting is preserved.
+    // TODO: https://github.com/awslabs/aws-sdk-swift/issues/329
     fun writeDocs(docs: String) {
         writeSingleLineDocs {
             write(sanitizeDocumentation(docs))
@@ -199,7 +219,17 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      * This function escapes "$" characters so formatters are not run.
      */
     private fun sanitizeDocumentation(doc: String): String {
-        return doc.replace("\$", "\$\$")
+        return doc
+            .stripAll(commonHtmlTags)
+            .replace("\$", "\$\$")
+    }
+
+    // Remove all strings from source string and return the result
+    private fun String.stripAll(stripList: List<String>): String {
+        var newStr = this
+        for (item in stripList) newStr = newStr.replace(item, "")
+
+        return newStr
     }
 
     /**
@@ -245,11 +275,11 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      * Writes member shape documentation comments if docs are present.
      */
     fun writeMemberDocs(model: Model, member: MemberShape) {
-        if (member.getTrait(DocumentationTrait::class.java).isPresent) {
-            writeDocs(member.getTrait(DocumentationTrait::class.java).get().value)
-        } else if (member.getMemberTrait(model, DocumentationTrait::class.java).isPresent) {
-            writeDocs(member.getMemberTrait(model, DocumentationTrait::class.java).get().value)
-        }
+        member.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { writeDocs(it.value) }
+        member.getMemberTrait(
+            model,
+            RequiredTrait::class.java
+        ).getOrNull()?.let { writeDocs("This member is required.") }
     }
 
     /**
