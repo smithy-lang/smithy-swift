@@ -104,7 +104,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
-    override val serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
+    override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
 
     open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx)

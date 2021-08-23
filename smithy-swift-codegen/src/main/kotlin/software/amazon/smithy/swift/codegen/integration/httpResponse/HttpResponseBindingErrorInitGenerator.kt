@@ -13,9 +13,11 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayload
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayloadFactory
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitQueryParams
@@ -38,6 +40,9 @@ class HttpResponseBindingErrorInitGenerator(
     val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
 ) : HttpResponseBindingRenderable {
 
+    object HttpResponseBindingErrorInit : SectionId
+    object HttpResponseBindingErrorInitMemberAssignment : SectionId
+
     override fun render() {
         val responseBindings = httpBindingResolver.responseBindings(shape)
         val headerBindings = responseBindings
@@ -54,23 +59,29 @@ class HttpResponseBindingErrorInitGenerator(
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension \$L {", "}", errorShapeName) {
-                writer.openBlock(
-                    "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
-                    ClientRuntimeTypes.Http.HttpResponse,
-                    ClientRuntimeTypes.Serde.ResponseDecoder,
-                    SwiftTypes.String,
-                    SwiftTypes.String
-                ) {
-                    HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
-                    HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                    httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
-                    HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                    HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                    writer.write("self._headers = httpResponse.headers")
-                    writer.write("self._statusCode = httpResponse.statusCode")
-                    writer.write("self._requestID = requestID")
-                    writer.write("self._message = message")
+                writer.declareSection(HttpResponseBindingErrorInit) {
+                    writer.write(
+                        "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
+                        ClientRuntimeTypes.Http.HttpResponse,
+                        ClientRuntimeTypes.Serde.ResponseDecoder,
+                        SwiftTypes.String,
+                        SwiftTypes.String
+                    )
                 }
+
+                writer.indent()
+                HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+                HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                writer.write("self._headers = httpResponse.headers")
+                writer.write("self._statusCode = httpResponse.statusCode")
+                writer.write("self._requestID = requestID")
+                writer.write("self._message = message")
+                writer.declareSection(HttpResponseBindingErrorInitMemberAssignment)
+                writer.dedent()
+                writer.write("}")
             }
             writer.write("")
         }

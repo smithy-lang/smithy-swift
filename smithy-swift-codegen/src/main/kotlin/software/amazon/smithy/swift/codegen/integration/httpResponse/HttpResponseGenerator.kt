@@ -14,7 +14,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpResponseGenerator(
-    val serviceErrorProtocolSymbol: Symbol,
     val unknownServiceErrorSymbol: Symbol,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
     val httpResponseBindingErrorGenerator: HttpResponseBindingErrorGeneratable,
