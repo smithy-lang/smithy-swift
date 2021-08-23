@@ -86,7 +86,6 @@ interface ProtocolGenerator {
      */
     var serviceErrorProtocolSymbol: Symbol
 
-
     /**
      * Symbol that should be used when the deserialized service error type cannot be determined
      * It defaults to the UnknownServiceError available in smithy-swift's client-runtime.

@@ -39,8 +39,10 @@ class HttpResponseBindingErrorInitGenerator(
     val defaultTimestampFormat: TimestampFormatTrait.Format,
     val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
 ) : HttpResponseBindingRenderable {
-    object ErrorMembersAssignment : SectionId
+
     object ErrorMembersParams : SectionId
+    object ErrorMembersAssignment : SectionId
+
     override fun render() {
         val responseBindings = httpBindingResolver.responseBindings(shape)
         val headerBindings = responseBindings
@@ -58,25 +60,28 @@ class HttpResponseBindingErrorInitGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension \$L {", "}", errorShapeName) {
                 writer.declareSection(ErrorMembersParams) {
-                    writer.openBlock(
-                        "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
+                    writer.write(
+                        "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
                         ClientRuntimeTypes.Http.HttpResponse,
                         ClientRuntimeTypes.Serde.ResponseDecoder,
                         SwiftTypes.String,
                         SwiftTypes.String
-                    ) {
-                        HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
-                        HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                        httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
-                        HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                        HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                        writer.write("self._headers = httpResponse.headers")
-                        writer.write("self._statusCode = httpResponse.statusCode")
-                        writer.write("self._requestID = requestID")
-                        writer.write("self._message = message")
-                        writer.declareSection(ErrorMembersAssignment)
-                    }
+                    )
                 }
+
+                writer.indent()
+                HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+                HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                writer.write("self._headers = httpResponse.headers")
+                writer.write("self._statusCode = httpResponse.statusCode")
+                writer.write("self._requestID = requestID")
+                writer.write("self._message = message")
+                writer.declareSection(ErrorMembersAssignment)
+                writer.dedent()
+                writer.write("}")
             }
             writer.write("")
         }
