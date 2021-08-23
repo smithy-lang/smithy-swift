@@ -5,9 +5,11 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
@@ -145,4 +147,11 @@ interface SwiftIntegration {
      * @return true if the Integration should be applied to the current codegen context, false otherwise.
      */
     fun enabledForService(model: Model, settings: SwiftSettings): Boolean = true
+
+    /**
+     * Overrides a serviceErrorProtocolSymbol for a service
+     */
+    fun serviceErrorProtocolSymbol(): Symbol? {
+        return null
+    }
 }

@@ -38,7 +38,6 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpProtocolCustomizable = MockRestXMLHttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        serviceErrorProtocolSymbol(),
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
         MockHttpResponseBindingErrorGenerator()

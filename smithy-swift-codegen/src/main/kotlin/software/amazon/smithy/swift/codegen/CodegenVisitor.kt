@@ -67,6 +67,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
         writers = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
+
+        for (integration in integrations) {
+            integration.serviceErrorProtocolSymbol()?.let {
+                protocolGenerator?.serviceErrorProtocolSymbol = it
+            }
+        }
     }
 
     fun preprocessModel(model: Model): Model {
@@ -139,7 +145,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun structureShape(shape: StructureShape): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator).render() }
+        writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render() }
         writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
             CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
         }

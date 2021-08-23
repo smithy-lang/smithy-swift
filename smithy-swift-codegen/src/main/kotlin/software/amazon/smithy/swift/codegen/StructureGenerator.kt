@@ -33,7 +33,7 @@ class StructureGenerator(
     private val writer: SwiftWriter,
     private val shape: StructureShape,
     private val settings: SwiftSettings,
-    private val protocolGenerator: ProtocolGenerator? = null
+    private val serviceErrorProtocolSymbol: Symbol? = null
 ) {
 
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
@@ -203,9 +203,9 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
-        protocolGenerator?.serviceErrorProtocolSymbol()?.let {
-            writer.addImport(it)
-            writer.putContext("error.protocol", it)
+        serviceErrorProtocolSymbol?.let {
+            writer.addImport(serviceErrorProtocolSymbol)
+            writer.putContext("error.protocol", serviceErrorProtocolSymbol)
         } ?: run {
             writer.putContext("error.protocol", ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
         }
