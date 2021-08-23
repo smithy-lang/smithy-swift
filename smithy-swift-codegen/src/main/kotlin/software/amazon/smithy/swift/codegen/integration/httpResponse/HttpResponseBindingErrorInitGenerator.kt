@@ -40,8 +40,8 @@ class HttpResponseBindingErrorInitGenerator(
     val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
 ) : HttpResponseBindingRenderable {
 
-    object ErrorMembersParams : SectionId
-    object ErrorMembersAssignment : SectionId
+    object HttpResponseBindingErrorInit : SectionId
+    object HttpResponseBindingErrorInitMemberAssignment : SectionId
 
     override fun render() {
         val responseBindings = httpBindingResolver.responseBindings(shape)
@@ -59,7 +59,7 @@ class HttpResponseBindingErrorInitGenerator(
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension \$L {", "}", errorShapeName) {
-                writer.declareSection(ErrorMembersParams) {
+                writer.declareSection(HttpResponseBindingErrorInit) {
                     writer.write(
                         "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
                         ClientRuntimeTypes.Http.HttpResponse,
@@ -79,7 +79,7 @@ class HttpResponseBindingErrorInitGenerator(
                 writer.write("self._statusCode = httpResponse.statusCode")
                 writer.write("self._requestID = requestID")
                 writer.write("self._message = message")
-                writer.declareSection(ErrorMembersAssignment)
+                writer.declareSection(HttpResponseBindingErrorInitMemberAssignment)
                 writer.dedent()
                 writer.write("}")
             }
