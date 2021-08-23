@@ -204,8 +204,8 @@ class StructureGenerator(
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
         serviceErrorProtocolSymbol?.let {
-            writer.addImport(serviceErrorProtocolSymbol)
-            writer.putContext("error.protocol", serviceErrorProtocolSymbol)
+            writer.addImport(it)
+            writer.putContext("error.protocol", it)
         } ?: run {
             writer.putContext("error.protocol", ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
         }
