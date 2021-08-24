@@ -16,6 +16,7 @@ public protocol SDKRuntimeConfiguration {
     var idempotencyTokenGenerator: IdempotencyTokenGenerator {get}
     var logger: LogAgent {get}
     var clientLogMode: ClientLogMode {get}
+    var retryer: SDKRetryer{get}
 }
 
 public extension SDKRuntimeConfiguration {

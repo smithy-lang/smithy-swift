@@ -6,7 +6,7 @@
 //
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
-    let retryer: Retryer
+    public let retryer: SDKRetryer
 
     public var logger: LogAgent
 
