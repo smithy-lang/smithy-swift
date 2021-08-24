@@ -14,7 +14,6 @@ public protocol SDKRuntimeConfiguration {
     var httpClientEngine: HttpClientEngine {get}
     var httpClientConfiguration: HttpClientConfiguration {get}
     var idempotencyTokenGenerator: IdempotencyTokenGenerator {get}
-    var retrier: Retrier {get}
     var logger: LogAgent {get}
     var clientLogMode: ClientLogMode {get}
 }
