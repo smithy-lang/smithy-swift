@@ -6,11 +6,14 @@
 //
 import AwsCommonRuntimeKit
 
-public class SDKRetrier: Retrier {
+public class SDKRetryer: Retryer {
+ 
     let crtRetryStrategy: CRTAWSRetryStrategy
+    let logger: SwiftLogger
     
     public init(options: RetryOptions) throws {
         self.crtRetryStrategy = try CRTAWSRetryStrategy(options: options.toCRTType())
+        self.logger = SwiftLogger(label: "SDKRetryer")
     }
     
     public convenience init() throws {
@@ -19,23 +22,47 @@ public class SDKRetrier: Retrier {
         try self.init(options: retryOptions)
     }
     
-    public func acquireToken(partitionId: String) throws -> RetryToken {
+    public func acquireToken(partitionId: String, onTokenAcquired: @escaping RetryToken<Token>) {
         let result = crtRetryStrategy.acquireToken(partitionId: partitionId)
-        let token = try result.get()
-        return RetryToken(crtToken: token)
+        result.then { result in
+            switch result {
+            case .success(let token):
+                onTokenAcquired(RetryTokenAdapter(crtToken: token), nil)
+            case .failure(let err):
+                onTokenAcquired(nil, err)
+            }
+        }
     }
     
-    public func scheduleRetry(token: RetryToken, error: RetryError) throws -> RetryToken {
+    public func scheduleRetry(token: Token, error: RetryError, onScheduled: @escaping RetryToken<Token>) {
+        guard let token = token as? RetryTokenAdapter else {
+            logger.error("The type of token was incorrect and the token cannot be released.")
+            return
+        }
         let result = crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
-        let token = try result.get()
-        return RetryToken(crtToken: token)
+        result.then { result in
+            switch result {
+            case .success(let token):
+                onScheduled(RetryTokenAdapter(crtToken: token), nil)
+            case .failure(let err):
+                onScheduled(nil, err)
+            }
+        }
     }
     
-    public func recordSuccess(token: RetryToken) {
+    public func recordSuccess(token: Token) {
+        guard let token = token as? RetryTokenAdapter else {
+            logger.error("The type of token was incorrect and success cannot be recorded.")
+            return
+        }
         crtRetryStrategy.recordSuccess(token: token.crtToken)
     }
     
-    public func releaseToken(token: RetryToken) {
+    public func releaseToken(token: Token) {
+        guard let token = token as? RetryTokenAdapter else {
+            logger.error("The type of token was incorrect and the token cannot be released.")
+            return
+        }
         crtRetryStrategy.releaseToken(token: token.crtToken)
     }
     

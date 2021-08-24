@@ -6,12 +6,12 @@
 //
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
-    public var retrier: Retrier
+    public var retryer: Retryer
 
     public var logger: LogAgent
 
     public init(_ clientName: String) throws {
-        self.retrier = try SDKRetrier()
+        self.retryer = try SDKRetryer()
         self.logger = SwiftLogger(label: clientName)
     }
 }
