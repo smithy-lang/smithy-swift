@@ -6,6 +6,7 @@
 import AwsCommonRuntimeKit
 
 // TODO: assess which apis we actually want to expose and make sure this struct is correct per http spec. APIs may be unstable
+//       https://github.com/awslabs/aws-sdk-swift/issues/368
 public struct Headers: Equatable {
     public var headers: [Header] = []
 
