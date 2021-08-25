@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 
-public class SDKRetrier: Retrier {
+public class SDKRetryer: Retryer {
     let crtRetryStrategy: CRTAWSRetryStrategy
     
     public init(options: RetryOptions) throws {
