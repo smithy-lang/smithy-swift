@@ -103,7 +103,7 @@ open class HttpRequestTestBase: XCTestCase {
         assertEqualHttpHeaders(expected.headers, actual.headers)
         
         // assert Endpoints match
-        assertEqualQueryItems(expected.queryItems, actual.queryItems)
+        assertQueryItems(expected.queryItems, actual.queryItems)
         
         // assert the contents of HttpBody match
         assertEqualHttpBody(expected.body, actual.body)
@@ -195,38 +195,20 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
     
-    public func assertEqualQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+    public func assertQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
         guard let expectedQueryItems = expected else {
-            XCTAssertNil(actual, "expected query items is nil but actual are not")
             return
         }
         guard let actualQueryItems = actual else {
             XCTFail("actual query items in Endpoint is nil but expected are not")
             return
         }
-
-        let expectedKVCount = generateKeyValueDictionaryCount(expectedQueryItems)
-        let actualKVCount = generateKeyValueDictionaryCount(actualQueryItems)
-
-        XCTAssert(expectedQueryItems.count == actualQueryItems.count, "Number of query params does not match")
-        for (keyValue, expectedCount) in expectedKVCount {
-            XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Actual: \(actualKVCount[keyValue] ?? 0)")
+        
+        for expectedQueryItem in expectedQueryItems {
+            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map{ $0.value}
+            XCTAssertNotNil(values, "expected query parameter \(expectedQueryItem.name); no values found")
+            XCTAssertTrue(values.contains(expectedQueryItem.value), "expected query name value pair not found: \(expectedQueryItem.name): \(String(describing: expectedQueryItem.value))")
         }
-    }
-
-    private func generateKeyValueDictionaryCount(_ urlQueryItems: [URLQueryItem]) -> [String: Int] {
-        var dict: [String: Int] = [:]
-        for urlQueryItem in urlQueryItems {
-            let name = urlQueryItem.name
-            let value = urlQueryItem.value ?? "nil"
-            let key = "\(name)=\(value)"
-            if let value = dict[key] {
-                dict[key] = value + 1
-            } else {
-                dict[key] = 1
-            }
-        }
-        return dict
     }
     
     struct InternalHttpRequestTestBaseError: Error {
