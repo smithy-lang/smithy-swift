@@ -19,8 +19,7 @@ class FormURLEncoderTests: XCTestCase {
         let actualDataString = String(data: actualData, encoding: .utf8)!
 
         let expectedString = """
-        FlattenedListArg.1=listArgFlat1
-        &FlattenedListArg.2=listArgFlat2
+        FlattenedListArg.1=listArgFlat1&FlattenedListArg.2=listArgFlat2
         """
         XCTAssertEqual(expectedString, actualDataString)
     }
@@ -34,8 +33,7 @@ class FormURLEncoderTests: XCTestCase {
         let actualDataString = String(data: actualData, encoding: .utf8)!
 
         let expectedString = """
-        ListArg.member.1=listArg1
-        &ListArg.member.2=listArg2
+        ListArg.member.1=listArg1&ListArg.member.2=listArg2
         """
         XCTAssertEqual(expectedString, actualDataString)
     }
@@ -50,16 +48,10 @@ class FormURLEncoderTests: XCTestCase {
         let actualDataString = String(data: actualData, encoding: .utf8)!
 
         let expectedStrings = ["""
-        FlattenedMap.1.key=first
-        &FlattenedMap.1.value=hello
-        &FlattenedMap.2.key=second
-        &FlattenedMap.2.value=konnichiwa
+        FlattenedMap.1.key=first&FlattenedMap.1.value=hello&FlattenedMap.2.key=second&FlattenedMap.2.value=konnichiwa
         """,
         """
-        FlattenedMap.1.key=second
-        &FlattenedMap.1.value=konnichiwa
-        &FlattenedMap.2.key=first
-        &FlattenedMap.2.value=hello
+        FlattenedMap.1.key=second&FlattenedMap.1.value=konnichiwa&FlattenedMap.2.key=first&FlattenedMap.2.value=hello
         """                              ]
         XCTAssert(expectedStrings.contains(actualDataString))
     }
@@ -74,16 +66,10 @@ class FormURLEncoderTests: XCTestCase {
         let actualDataString = String(data: actualData, encoding: .utf8)!
 
         let expectedStrings = ["""
-        MapArg.entry.1.key=first
-        &MapArg.entry.1.value=hello
-        &MapArg.entry.2.key=second
-        &MapArg.entry.2.value=konnichiwa
+        MapArg.entry.1.key=first&MapArg.entry.1.value=hello&MapArg.entry.2.key=second&MapArg.entry.2.value=konnichiwa
         """,
         """
-        MapArg.entry.1.key=second
-        &MapArg.entry.1.value=konnichiwa
-        &MapArg.entry.2.key=first
-        &MapArg.entry.2.value=hello
+        MapArg.entry.1.key=second&MapArg.entry.1.value=konnichiwa&MapArg.entry.2.key=first&MapArg.entry.2.value=hello
         """                         ]
         XCTAssert(expectedStrings.contains(actualDataString))
     }
