@@ -164,7 +164,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("return .success(output)")
         }
     }
-    
+
     private fun renderHeaderAsserts(test: HttpRequestTestCase) {
         // assert that forbidden headers do not exist
         if (test.forbidHeaders.isNotEmpty()) {
@@ -292,7 +292,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 .closeBlock("],")
         }
 
-        if(test.requireQueryParams.isNotEmpty()) {
+        if (test.requireQueryParams.isNotEmpty()) {
             val queryParams = test.requireQueryParams
             writer.openBlock("requiredQueryParams: [")
                 .call {
