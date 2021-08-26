@@ -155,7 +155,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-           // renderQueryAsserts(test)
             renderHeaderAsserts(test)
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
@@ -165,33 +164,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("return .success(output)")
         }
     }
-
-    private fun renderQueryAsserts(test: HttpRequestTestCase) {
-        // assert that forbidden Query Items do not exist
-        if (test.forbidQueryParams.isNotEmpty()) {
-            writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
-            writer.write("// assert forbidden query params do not exist")
-            writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
-                writer.openBlock("XCTAssertFalse(", ")") {
-                    writer.write("self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
-                    writer.write("\"Forbidden Query:\\(forbiddenQueryParam) exists in query items\"")
-                }
-            }
-        }
-
-        // assert that required Query Items do exist
-        if (test.requireQueryParams.isNotEmpty()) {
-            writer.write("let requiredQueryParams = [\"${test.requireQueryParams.joinToString(separator = ", ")}\"]")
-            writer.write("// assert required query params do exist")
-            writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
-                writer.openBlock("XCTAssertTrue(", ")") {
-                    writer.write("self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
-                    writer.write("\"Required Query:\\(requiredQueryParam) does not exist in query items\"")
-                }
-            }
-        }
-    }
-
+    
     private fun renderHeaderAsserts(test: HttpRequestTestCase) {
         // assert that forbidden headers do not exist
         if (test.forbidHeaders.isNotEmpty()) {
