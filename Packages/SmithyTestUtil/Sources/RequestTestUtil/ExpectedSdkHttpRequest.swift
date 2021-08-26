@@ -130,9 +130,9 @@ public class ExpectedSdkHttpRequestBuilder {
                                 port: port,
                                 queryItems: queryItems,
                                 protocolType: protocolType)
-        let queryItems = queryItems.count > 0 ? queryItems : nil
-        let forbiddenQueryItems = forbiddenQueryItems.count > 0 ? forbiddenQueryItems : nil
-        let requiredQueryItems = requiredQueryItems.count > 0 ? requiredQueryItems : nil
+        let queryItems = queryItems.isEmpty ? queryItems : nil
+        let forbiddenQueryItems = forbiddenQueryItems.isEmpty ? forbiddenQueryItems : nil
+        let requiredQueryItems = requiredQueryItems.isEmpty ? requiredQueryItems : nil
         return ExpectedSdkHttpRequest(method: methodType,
                               endpoint: endpoint,
                               headers: headers,

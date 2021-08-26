@@ -254,7 +254,9 @@ open class HttpRequestTestBase: XCTestCase {
         for expectedQueryItem in expectedQueryItems {
             let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
             XCTAssertNotNil(values, "expected query parameter \(expectedQueryItem.name); no values found")
-            XCTAssertTrue(values.contains(expectedQueryItem.value), "expected query name value pair not found: \(expectedQueryItem.name): \(String(describing: expectedQueryItem.value))")
+            XCTAssertTrue(values.contains(expectedQueryItem.value),
+                          "expected query name value pair not found: \(expectedQueryItem.name):
+                          \(String(describing: expectedQueryItem.value))")
         }
     }
     
@@ -267,7 +269,9 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for forbiddenQueryItem in forbiddenQueryItems {
-            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name && $0.value == forbiddenQueryItem.value}), "forbidden query parameter item found:\(forbiddenQueryItem)")
+            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name &&
+                $0.value == forbiddenQueryItem.value}),
+                           "forbidden query parameter item found:\(forbiddenQueryItem)")
         }
     }
     
@@ -281,7 +285,9 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for requiredQueryItem in requiredQueryItems {
-            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name && $0.value == requiredQueryItem.value}), "expected required query parameter not found:\(requiredQueryItem)")
+            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name &&
+                $0.value == requiredQueryItem.value}),
+                          "expected required query parameter not found:\(requiredQueryItem)")
         }
     }
     
