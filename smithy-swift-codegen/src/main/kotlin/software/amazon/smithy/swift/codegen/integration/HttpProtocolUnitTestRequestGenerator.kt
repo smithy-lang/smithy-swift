@@ -295,12 +295,33 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
-        if (test.queryParams.isEmpty()) {
-            writer.write("queryParams: [String](),") // pass empty array if no query params
-        } else {
+        if (test.queryParams.isNotEmpty()) {
             val queryParams = test.queryParams
-
             writer.openBlock("queryParams: [")
+                .call {
+                    queryParams.forEachIndexed { idx, value ->
+                        val suffix = if (idx < queryParams.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if (test.forbidQueryParams.isNotEmpty()) {
+            val queryParams = test.forbidQueryParams
+            writer.openBlock("forbiddenQueryParams: [")
+                .call {
+                    queryParams.forEachIndexed { idx, value ->
+                        val suffix = if (idx < queryParams.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if(test.requireQueryParams.isNotEmpty()) {
+            val queryParams = test.requireQueryParams
+            writer.openBlock("requiredQueryParams: [")
                 .call {
                     queryParams.forEachIndexed { idx, value ->
                         val suffix = if (idx < queryParams.size - 1) "," else ""
