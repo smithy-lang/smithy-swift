@@ -25,6 +25,6 @@ public class FormURLEncoder: RequestEncoder {
         let keyValues = strings.map { key, value in
             "\(key.urlPercentEncoding())=\(value.urlPercentEncoding())"
         }
-        return keyValues.joined(separator: "\n&")
+        return keyValues.joined(separator: "&")
     }
 }
