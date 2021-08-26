@@ -155,7 +155,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-            renderQueryAsserts(test)
+           // renderQueryAsserts(test)
             renderHeaderAsserts(test)
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")

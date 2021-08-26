@@ -32,11 +32,11 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         if let forbiddenQueryParams = forbiddenQueryParams {
-            addQueryItems(queryParams: forbiddenQueryParams, builder: builder)
+            addForbiddenQueryItems(queryParams: forbiddenQueryParams, builder: builder)
         }
         
         if let requiredQueryParams = requiredQueryParams {
-            addQueryItems(queryParams: requiredQueryParams, builder: builder)
+            addRequiredQueryItems(queryParams: requiredQueryParams, builder: builder)
         }
         
         for (headerName, headerValue) in headers {
@@ -68,6 +68,34 @@ open class HttpRequestTestBase: XCTestCase {
                                                    value: value))
             } else {
                 builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
+        }
+    }
+    
+    func addForbiddenQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
+        for queryParam in queryParams {
+            let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
+                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0],
+                                                   value: value))
+            } else {
+                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
+        }
+    }
+    
+    func addRequiredQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
+        for queryParam in queryParams {
+            let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
+                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0],
+                                                   value: value))
+            } else {
+                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
     }
@@ -239,7 +267,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for forbiddenQueryItem in forbiddenQueryItems {
-            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name}), "forbidden query parameter item found:\(forbiddenQueryItem)")
+            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name && $0.value == forbiddenQueryItem.value}), "forbidden query parameter item found:\(forbiddenQueryItem)")
         }
     }
     
@@ -253,7 +281,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         for requiredQueryItem in requiredQueryItems {
-            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name}), "expected required query parameter not found:\(requiredQueryItem)")
+            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name && $0.value == requiredQueryItem.value}), "expected required query parameter not found:\(requiredQueryItem)")
         }
     }
     
