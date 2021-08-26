@@ -121,7 +121,10 @@ public struct Headers: Equatable {
     }
     
     public func value(for name: String) -> String? {
-        return values(for: name)?.joined(separator: ",")
+        guard let values = values(for: name) else {
+            return nil
+        }
+        return values.joined(separator: ",")
     }
     
     public func exists(name: String) -> Bool {

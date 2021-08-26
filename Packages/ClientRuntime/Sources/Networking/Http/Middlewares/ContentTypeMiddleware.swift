@@ -17,13 +17,15 @@ public struct ContentTypeMiddleware<OperationStackInput: Encodable & Reflection,
                           input: SerializeStepInput<OperationStackInput>,
                           next: H) -> Result<OperationOutput<OperationStackOutput>, MError>
     where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
-
-        input.builder.withHeader(name: "Content-Type", value: contentType)
-
+    Self.MInput == H.Input,
+    Self.MOutput == H.Output,
+    Self.Context == H.Context,
+    Self.MError == H.MiddlewareError {
+        
+        if !input.builder.headers.exists(name: "Content-Type") {
+            input.builder.withHeader(name: "Content-Type", value: contentType)
+        }
+        
         return next.handle(context: context, input: input)
     }
 
