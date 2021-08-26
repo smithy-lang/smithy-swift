@@ -36,7 +36,6 @@ class HttpHeadersTests: XCTestCase {
         var httpHeaders = Headers(headersAsDictionaryWithArray)
         let updatedHttpHeader = Header(name: "header-item-1", value: "header-1-value")
 
-        //TODO:: add update header using name, value pair
         httpHeaders.update(updatedHttpHeader)
 
         headersAsDictionaryWithArray["header-item-1"] = ["header-1-value"]

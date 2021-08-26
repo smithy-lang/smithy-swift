@@ -49,7 +49,7 @@ public class SDKRetryer: Retryer {
                 return false
             }
         case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.value(for: "x-amz-retry-after") != nil {
+            if httpResponse.headers.values(for: "x-amz-retry-after") != nil {
                 return true
             }
             
@@ -75,7 +75,7 @@ public class SDKRetryer: Retryer {
             return .clientError
 
         case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.value(for: "x-amz-retry-after") != nil {
+            if httpResponse.headers.values(for: "x-amz-retry-after") != nil {
                 return .serverError
             }
             

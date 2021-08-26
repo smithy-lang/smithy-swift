@@ -5,8 +5,6 @@
 
 import AwsCommonRuntimeKit
 
-// TODO: assess which apis we actually want to expose and make sure this struct is correct per http spec. APIs may be unstable
-//       https://github.com/awslabs/aws-sdk-swift/issues/368
 public struct Headers: Equatable {
     public var headers: [Header] = []
 
@@ -25,16 +23,69 @@ public struct Headers: Equatable {
     public init(_ dictionary: [String: [String]]) {
         self.init()
 
-        dictionary.forEach { key, value in value.forEach {add(name: key, value: $0) }}
+        dictionary.forEach { key, values in add(name: key, values: values) }
     }
 
-    /// Case-insensitively updates or appends an `HTTPHeader` into the instance using the provided `name` and `value`.
+    /// Case-insensitively updates or appends a `Header` into the instance using the provided `name` and `value`.
     ///
     /// - Parameters:
-    ///   - name:  The `HTTPHeader` name.
-    ///   - value: The `HTTPHeader value.
+    ///   - name:  The `String` name.
+    ///   - value: The `String` value.
     public mutating func add(name: String, value: String) {
-        headers.append(Header(name: name, value: value))
+        let header = Header(name: name, value: value)
+        add(header)
+    }
+    
+    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header` into the instance using the provided `name` and `values`.
+    ///
+    /// - Parameters:
+    ///   - name:  The `String` name.
+    ///   - values: The `[String]` values.
+    public mutating func add(name: String, values: [String]) {
+        let header = Header(name: name, values: values)
+        add(header)
+    }
+    
+    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header` into the instance using the provided `Header`.
+    ///
+    /// - Parameters:
+    ///   - header:  The `Header` to be added or updated.
+    public mutating func add(_ header: Header) {
+        guard let index = headers.index(of: header.name) else {
+            headers.append(header)
+            return
+        }
+        headers[index].value.append(contentsOf: header.value)
+    }
+    
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    ///
+    /// - Parameters:
+    ///   - header:  The `Header` to be added or updated.
+    public mutating func update(_ header: Header) {
+        guard let index = headers.index(of: header.name) else {
+            headers.append(header)
+            return
+        }
+        headers.replaceSubrange(index...index, with: [header])
+    }
+    
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    ///
+    /// - Parameters:
+    ///   - header:  The `Header` to be added or updated.
+    public mutating func update(name: String, value: [String]) {
+        let header = Header(name: name, values: value)
+        update(header)
+    }
+    
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    ///
+    /// - Parameters:
+    ///   - header:  The `Header` to be added or updated.
+    public mutating func update(name: String, value: String) {
+        let header = Header(name: name, value: value)
+        update(header)
     }
     
     /// Case-insensitively adds all `Headers` into the instance using the provided `[Headers]` array.
@@ -45,48 +96,13 @@ public struct Headers: Equatable {
         self.headers.append(contentsOf: headers.headers)
     }
 
-    /// Case-insensitively updates or appends the provided `HTTPHeader` into the instance.
-    ///
-    /// - Parameter header: The `HTTPHeader` to update or append.
-    public mutating func update(_ header: Header) {
-        guard let index = headers.index(of: header.name) else {
-            headers.append(header)
-            return
-        }
-
-        headers.replaceSubrange(index...index, with: [header])
-    }
-    
-    /// Case-insensitively updates or appends the provided `name` and `value` into the headers instance.
-    ///
-    /// - Parameter header: The `HTTPHeader` to update or append.
-    public mutating func update(name: String, value: String) {
-        guard let index = headers.index(of: name) else {
-            add(name: name, value: value)
-            return
-        }
-        let header = Header(name: name, value: value)
-        headers.replaceSubrange(index...index, with: [header])
-    }
-
-    /// Case-insensitively removes an `HTTPHeader`, if it exists, from the instance.
+    /// Case-insensitively removes a `Header`, if it exists, from the instance.
     ///
     /// - Parameter name: The name of the `HTTPHeader` to remove.
     public mutating func remove(name: String) {
         guard let index = headers.index(of: name) else { return }
 
         headers.remove(at: index)
-    }
-
-    /// Case-insensitively find a header's value by name.
-    ///
-    /// - Parameter name: The name of the header to search for, case-insensitively.
-    ///
-    /// - Returns:        The value of header, if it exists.
-    public func value(for name: String) -> String? {
-        guard let index = headers.index(of: name) else { return nil }
-
-        return headers[index].value
     }
     
     /// Case-insensitively find a header's values by name.
@@ -98,10 +114,14 @@ public struct Headers: Equatable {
         guard let indices = headers.indices(of: name) else { return nil }
         var values = [String]()
         for index in indices {
-            values.append(headers[index].value)
+            values.append(contentsOf: headers[index].value)
         }
         
         return values
+    }
+    
+    public func value(for name: String) -> String? {
+        return values(for: name)?.joined(separator: ",")
     }
     
     public func exists(name: String) -> Bool {
@@ -112,7 +132,7 @@ public struct Headers: Equatable {
     ///
     /// This representation does not preserve the current order of the instance.
     public var dictionary: [String: [String]] {
-        let namesAndValues = headers.map { ($0.name, [$0.value]) }
+        let namesAndValues = headers.map { ($0.name, $0.value) }
 
         return Dictionary(namesAndValues) { (first, last) -> [String] in
             return first + last
@@ -121,7 +141,7 @@ public struct Headers: Equatable {
 }
 
 extension Array where Element == Header {
-    /// Case-insensitively finds the index of an `HTTPHeader` with the provided name, if it exists.
+    /// Case-insensitively finds the index of an `Header` with the provided name, if it exists.
     func index(of name: String) -> Int? {
         let lowercasedName = name.lowercased()
         return firstIndex { $0.name.lowercased() == lowercasedName }
@@ -135,12 +155,17 @@ extension Array where Element == Header {
 }
 
 public struct Header: Equatable {
-    public let name: String
-    public let value: String
+    public var name: String
+    public var value: [String]
 
+    public init(name: String, values: [String]) {
+        self.name = name
+        self.value = values
+    }
+    
     public init(name: String, value: String) {
         self.name = name
-        self.value = value
+        self.value = [value]
     }
 }
 
@@ -149,7 +174,7 @@ extension Headers {
         let httpHeaders = HttpHeaders()
         
         for header in headers {
-            _ = httpHeaders.add(name: header.name, value: header.value)
+            _ = httpHeaders.add(name: header.name, value: header.value.joined(separator: ","))
         }
         return httpHeaders
     }

@@ -110,7 +110,7 @@ public class SdkHttpRequestBuilder {
     }
     
     @discardableResult
-    public func updateHeader(name: String, value: String) -> SdkHttpRequestBuilder {
+    public func updateHeader(name: String, value: [String]) -> SdkHttpRequestBuilder {
         self.headers.update(name: name, value: value)
         return self
     }

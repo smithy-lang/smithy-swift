@@ -65,12 +65,6 @@ public class ExpectedSdkHttpRequestBuilder {
     }
     
     @discardableResult
-    public func updateHeader(name: String, value: String) -> ExpectedSdkHttpRequestBuilder {
-        self.headers.update(name: name, value: value)
-        return self
-    }
-    
-    @discardableResult
     public func withMethod(_ value: HttpMethodType) -> ExpectedSdkHttpRequestBuilder {
         self.methodType = value
         return self

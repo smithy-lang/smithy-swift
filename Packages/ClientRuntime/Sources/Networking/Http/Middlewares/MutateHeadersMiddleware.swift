@@ -39,7 +39,7 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
         if !conditionallySet.dictionary.isEmpty {
             for header in conditionallySet.headers {
                 if !input.headers.exists(name: header.name) {
-                    input.headers.add(name: header.name, value: header.value)
+                    input.headers.add(name: header.name, values: header.value)
                 }
             }
         }
