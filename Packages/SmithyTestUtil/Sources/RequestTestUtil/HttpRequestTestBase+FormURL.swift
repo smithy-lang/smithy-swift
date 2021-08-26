@@ -11,7 +11,7 @@ extension HttpRequestTestBase {
     public func assertEqualFormURLBody(_ expected: Data, _ actual: Data) {
         let expectedQueryItems = convertToQueryItems(data: expected)
         let actualQueryItems = convertToQueryItems(data: actual)
-        assertEqualQueryItems(expectedQueryItems, actualQueryItems)
+        assertQueryItems(expectedQueryItems, actualQueryItems)
     }
 
     private func convertToQueryItems(data: Data) -> [URLQueryItem] {

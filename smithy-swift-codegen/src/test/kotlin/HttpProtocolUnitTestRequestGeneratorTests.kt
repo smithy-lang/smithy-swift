@@ -137,7 +137,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             method: .post,
             path: "/explicit/string",
             headers: [String: String](),
-            queryParams: [String](),
             body: ""${'"'}
             {
             "payload1": "explicit string"
@@ -213,7 +212,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
             headers: [String: String](),
-            queryParams: [String](),
             body: nil,
             host: host
         )
@@ -273,7 +271,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: nil,
             host: host
         )
@@ -338,7 +335,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "Content-Type": "application/octet-stream",
                 "X-Foo": "Foo"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             blobby blob blob
             ""${'"'},
@@ -408,7 +404,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "X-Foo": "Foo"
             ],
-            queryParams: [String](),
             body: nil,
             host: host
         )
@@ -471,7 +466,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             {
                 "contents": {
@@ -551,7 +545,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             {
                 "nested": {
@@ -653,7 +646,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             {
                 "stringValue": "string",
@@ -741,7 +733,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             {
                 "foo": "bar"

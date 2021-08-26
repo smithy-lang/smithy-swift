@@ -146,7 +146,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
                                                           "RequiredHeader": "required header"],
-                                                queryParams: ["RequiredQuery=required%20query"],
+                                                requiredQueryParams: ["RequiredQuery=required%20query"],
                                                 body: "{\"greeting\": \"Hello There\"}",
                                                 host: HttpRequestTestBaseTests.host)
         

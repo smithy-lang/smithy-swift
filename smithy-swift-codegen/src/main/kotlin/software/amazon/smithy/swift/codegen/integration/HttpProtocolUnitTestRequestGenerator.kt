@@ -155,7 +155,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-            renderQueryAsserts(test)
             renderHeaderAsserts(test)
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
@@ -163,32 +162,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("deserializeMiddleware.fulfill()")
             writer.write("return .success(output)")
-        }
-    }
-
-    private fun renderQueryAsserts(test: HttpRequestTestCase) {
-        // assert that forbidden Query Items do not exist
-        if (test.forbidQueryParams.isNotEmpty()) {
-            writer.write("let forbiddenQueryParams = [\"${test.forbidQueryParams.joinToString(separator = ", ")}\"]")
-            writer.write("// assert forbidden query params do not exist")
-            writer.openBlock("for forbiddenQueryParam in forbiddenQueryParams {", "}") {
-                writer.openBlock("XCTAssertFalse(", ")") {
-                    writer.write("self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),")
-                    writer.write("\"Forbidden Query:\\(forbiddenQueryParam) exists in query items\"")
-                }
-            }
-        }
-
-        // assert that required Query Items do exist
-        if (test.requireQueryParams.isNotEmpty()) {
-            writer.write("let requiredQueryParams = [\"${test.requireQueryParams.joinToString(separator = ", ")}\"]")
-            writer.write("// assert required query params do exist")
-            writer.openBlock("for requiredQueryParam in requiredQueryParams {", "}") {
-                writer.openBlock("XCTAssertTrue(", ")") {
-                    writer.write("self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),")
-                    writer.write("\"Required Query:\\(requiredQueryParam) does not exist in query items\"")
-                }
-            }
         }
     }
 
@@ -295,12 +268,33 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
-        if (test.queryParams.isEmpty()) {
-            writer.write("queryParams: [String](),") // pass empty array if no query params
-        } else {
+        if (test.queryParams.isNotEmpty()) {
             val queryParams = test.queryParams
-
             writer.openBlock("queryParams: [")
+                .call {
+                    queryParams.forEachIndexed { idx, value ->
+                        val suffix = if (idx < queryParams.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if (test.forbidQueryParams.isNotEmpty()) {
+            val queryParams = test.forbidQueryParams
+            writer.openBlock("forbiddenQueryParams: [")
+                .call {
+                    queryParams.forEachIndexed { idx, value ->
+                        val suffix = if (idx < queryParams.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if (test.requireQueryParams.isNotEmpty()) {
+            val queryParams = test.requireQueryParams
+            writer.openBlock("requiredQueryParams: [")
                 .call {
                     queryParams.forEachIndexed { idx, value ->
                         val suffix = if (idx < queryParams.size - 1) "," else ""

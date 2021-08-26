@@ -20,21 +20,23 @@ open class HttpRequestTestBase: XCTestCase {
     public func buildExpectedHttpRequest(method: HttpMethodType,
                                          path: String,
                                          headers: [String: String],
-                                         queryParams: [String],
+                                         queryParams: [String]? = nil,
+                                         forbiddenQueryParams: [String]? = nil,
+                                         requiredQueryParams: [String]? = nil,
                                          body: String?,
-                                         host: String) -> SdkHttpRequest {
-        let builder = SdkHttpRequestBuilder()
+                                         host: String) -> ExpectedSdkHttpRequest {
+        let builder = ExpectedSdkHttpRequestBuilder()
         
-        for queryParam in queryParams {
-            let queryParamComponents = queryParam.components(separatedBy: "=")
-            if queryParamComponents.count > 1 {
-                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
-
-                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
-                                                   value: value))
-            } else {
-                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
-            }
+        if let queryParams = queryParams {
+            addQueryItems(queryParams: queryParams, builder: builder)
+        }
+        
+        if let forbiddenQueryParams = forbiddenQueryParams {
+            addForbiddenQueryItems(queryParams: forbiddenQueryParams, builder: builder)
+        }
+        
+        if let requiredQueryParams = requiredQueryParams {
+            addRequiredQueryItems(queryParams: requiredQueryParams, builder: builder)
         }
         
         for (headerName, headerValue) in headers {
@@ -54,6 +56,48 @@ open class HttpRequestTestBase: XCTestCase {
     
         return builder.build()
         
+    }
+    
+    func addQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
+        for queryParam in queryParams {
+            let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
+                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
+                                                   value: value))
+            } else {
+                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
+        }
+    }
+    
+    func addForbiddenQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
+        for queryParam in queryParams {
+            let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
+                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0],
+                                                   value: value))
+            } else {
+                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
+        }
+    }
+    
+    func addRequiredQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
+        for queryParam in queryParams {
+            let queryParamComponents = queryParam.components(separatedBy: "=")
+            if queryParamComponents.count > 1 {
+                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+
+                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0],
+                                                   value: value))
+            } else {
+                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+            }
+        }
     }
     
     func sanitizeStringForNonConformingValues(_ input: String) -> String {
@@ -96,14 +140,17 @@ open class HttpRequestTestBase: XCTestCase {
      /// - Parameter actual: Actual `HttpRequest` to compare against
      /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
      */
-    public func assertEqual(_ expected: SdkHttpRequest,
+    public func assertEqual(_ expected: ExpectedSdkHttpRequest,
                             _ actual: SdkHttpRequest,
                             _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
         // assert headers match
         assertEqualHttpHeaders(expected.headers, actual.headers)
         
-        // assert Endpoints match
-        assertEqualQueryItems(expected.queryItems, actual.queryItems)
+        assertQueryItems(expected.queryItems, actual.queryItems)
+        
+        assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems)
+        
+        assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems)
         
         // assert the contents of HttpBody match
         assertEqualHttpBody(expected.body, actual.body)
@@ -195,38 +242,55 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
     
-    public func assertEqualQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+    public func assertQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
         guard let expectedQueryItems = expected else {
-            XCTAssertNil(actual, "expected query items is nil but actual are not")
             return
         }
         guard let actualQueryItems = actual else {
             XCTFail("actual query items in Endpoint is nil but expected are not")
             return
         }
-
-        let expectedKVCount = generateKeyValueDictionaryCount(expectedQueryItems)
-        let actualKVCount = generateKeyValueDictionaryCount(actualQueryItems)
-
-        XCTAssert(expectedQueryItems.count == actualQueryItems.count, "Number of query params does not match")
-        for (keyValue, expectedCount) in expectedKVCount {
-            XCTAssert(actualKVCount[keyValue] == expectedCount, "Expected \(keyValue) to appear \(expectedCount) times.  Actual: \(actualKVCount[keyValue] ?? 0)")
+        
+        for expectedQueryItem in expectedQueryItems {
+            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
+            XCTAssertNotNil(values, "expected query parameter \(expectedQueryItem.name); no values found")
+            XCTAssertTrue(values.contains(expectedQueryItem.value),
+                          """
+                          expected query name value pair not found: \(expectedQueryItem.name):
+                          \(String(describing: expectedQueryItem.value))
+                          """)
         }
     }
-
-    private func generateKeyValueDictionaryCount(_ urlQueryItems: [URLQueryItem]) -> [String: Int] {
-        var dict: [String: Int] = [:]
-        for urlQueryItem in urlQueryItems {
-            let name = urlQueryItem.name
-            let value = urlQueryItem.value ?? "nil"
-            let key = "\(name)=\(value)"
-            if let value = dict[key] {
-                dict[key] = value + 1
-            } else {
-                dict[key] = 1
-            }
+    
+    public func assertForbiddenQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+        guard let forbiddenQueryItems = expected else {
+            return
         }
-        return dict
+        guard let actualQueryItems = actual else {
+            return
+        }
+        
+        for forbiddenQueryItem in forbiddenQueryItems {
+            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name &&
+                $0.value == forbiddenQueryItem.value}),
+                           "forbidden query parameter item found:\(forbiddenQueryItem)")
+        }
+    }
+    
+    public func assertRequiredQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+        guard let requiredQueryItems = expected else {
+            return
+        }
+        guard let actualQueryItems = actual else {
+            XCTFail("actual query items in Endpoint is nil but required are not")
+            return
+        }
+        
+        for requiredQueryItem in requiredQueryItems {
+            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name &&
+                $0.value == requiredQueryItem.value}),
+                          "expected required query parameter not found:\(requiredQueryItem)")
+        }
     }
     
     struct InternalHttpRequestTestBaseError: Error {

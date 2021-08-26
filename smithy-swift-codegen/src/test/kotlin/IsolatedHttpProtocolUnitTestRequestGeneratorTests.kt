@@ -21,7 +21,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
             headers: [String: String](),
-            queryParams: [String](),
             body: nil,
             host: host
         )
@@ -53,7 +52,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
                 headers: [String: String](),
-                queryParams: [String](),
                 body: nil,
                 host: host
             )
@@ -84,7 +82,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
                 headers: [String: String](),
-                queryParams: [String](),
                 body: nil,
                 host: host
             )
@@ -158,7 +155,6 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             headers: [
                 "Content-Type": "application/json"
             ],
-            queryParams: [String](),
             body: ""${'"'}
             {
                 "stringValue": "string",
