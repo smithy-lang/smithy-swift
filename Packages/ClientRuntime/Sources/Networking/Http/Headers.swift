@@ -114,7 +114,7 @@ public struct Headers: Equatable {
     ///
     /// - Parameter name: The name of the header to search for, case-insensitively.
     ///
-    /// - Returns:        The values of the header, if they exist.
+    /// - Returns: The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
         guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
         var values = [String]()
@@ -125,6 +125,11 @@ public struct Headers: Equatable {
         return values
     }
     
+    /// Case-insensitively find a header's value by name.
+    ///
+    /// - Parameter name: The name of the header to search for, case-insensitively.
+    ///
+    /// - Returns: The value of header as a comma delimited string, if it exists.
     public func value(for name: String) -> String? {
         guard let values = values(for: name) else {
             return nil
