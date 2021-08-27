@@ -237,7 +237,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         
         guard let actual = actual else {
-            XCTFail("There are expected headers and no actual headers.forbiddenHeaderName")
+            XCTFail("There are expected headers and no actual headers.")
             return
         }
 
