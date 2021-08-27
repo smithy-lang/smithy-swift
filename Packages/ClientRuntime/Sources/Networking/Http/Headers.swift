@@ -111,7 +111,7 @@ public struct Headers: Equatable {
     ///
     /// - Returns:        The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
-        guard let indices = headers.indices(of: name) else { return nil }
+        guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
         var values = [String]()
         for index in indices {
             values.append(contentsOf: headers[index].value)
@@ -128,7 +128,15 @@ public struct Headers: Equatable {
     }
     
     public func exists(name: String) -> Bool {
-        return headers.index(of: name) != nil
+        guard headers.index(of: name) != nil else {
+            return false
+        }
+        
+        guard let value = value(for: name) else {
+            return false
+        }
+        
+        return !value.isEmpty
     }
 
     /// The dictionary representation of all headers.

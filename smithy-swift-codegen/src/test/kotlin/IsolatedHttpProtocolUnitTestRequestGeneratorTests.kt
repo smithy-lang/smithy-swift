@@ -20,7 +20,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
-            headers: [String: String](),
             body: nil,
             host: host
         )
@@ -51,7 +50,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
-                headers: [String: String](),
                 body: nil,
                 host: host
             )
@@ -81,7 +79,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
-                headers: [String: String](),
                 body: nil,
                 host: host
             )

@@ -20,7 +20,7 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
     if totalSeparators <= 1 {
         return [value]
     } else if totalSeparators % 2 == 0 {
-        throw ClientError.deserializationFailed(HeaderDeserializationError.invalidTimestampHeaderList(value: value))
+        return splitHeaderListValues(value)
     }
     
     var cnt = 0

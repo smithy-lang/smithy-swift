@@ -36,6 +36,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "X-Header1": "Foo",
                 "X-Header2": "Bar"
             ],
+            requiredHeaders: [
+                "Content-Length"
+            ],
             queryParams: [
                 "Query1=Query 1"
             ],
@@ -84,14 +87,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            let requiredHeaders = ["Content-Length"]
-            // assert required headers do exist
-            for requiredHeader in requiredHeaders {
-                XCTAssertTrue(
-                    self.headerExists(requiredHeader, in: actual.headers.headers),
-                    "Required Header:\(requiredHeader) does not exist in headers"
-                )
-            }
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -136,7 +131,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/explicit/string",
-            headers: [String: String](),
+            requiredHeaders: [
+                "Content-Length"
+            ],
             body: ""${'"'}
             {
             "payload1": "explicit string"
@@ -168,14 +165,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            let requiredHeaders = ["Content-Length"]
-            // assert required headers do exist
-            for requiredHeader in requiredHeaders {
-                XCTAssertTrue(
-                    self.headerExists(requiredHeader, in: actual.headers.headers),
-                    "Required Header:\(requiredHeader) does not exist in headers"
-                )
-            }
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -211,7 +200,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
-            headers: [String: String](),
             body: nil,
             host: host
         )
