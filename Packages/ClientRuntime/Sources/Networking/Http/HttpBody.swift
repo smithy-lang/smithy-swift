@@ -27,7 +27,7 @@ extension HttpBody {
         case .stream(let stream):
             switch stream {
             case .reader(let reader):
-                return AwsInputStream(reader.read(maxBytes: nil))
+                return AwsInputStream(reader.read(maxBytes: nil, rewind: false))
             case .buffer(let byteBuffer):
                 return AwsInputStream(byteBuffer)
             }
