@@ -291,7 +291,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 .closeBlock("],")
         }
 
-        if(test.forbidHeaders.isNotEmpty()) {
+        if (test.forbidHeaders.isNotEmpty()) {
             val forbiddenHeaders = test.forbidHeaders
             writer.openBlock("forbiddenHeaders: [")
                 .call {
@@ -303,7 +303,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 .closeBlock("],")
         }
 
-        if(test.requireHeaders.isNotEmpty()) {
+        if (test.requireHeaders.isNotEmpty()) {
             val requiredHeaders = test.requireHeaders
             writer.openBlock("requiredHeaders: [")
                 .call {

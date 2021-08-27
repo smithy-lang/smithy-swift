@@ -241,7 +241,6 @@ open class HttpRequestTestBase: XCTestCase {
             return
         }
 
-
         for expectedHeader in expected.headers {
             XCTAssertTrue(actual.exists(name: expectedHeader.name), "expected header \(expectedHeader.name) has no actual values")
             guard let values = actual.values(for: expectedHeader.name) else {
