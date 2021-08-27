@@ -133,7 +133,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
         if (test.headers.keys.contains("Content-Type")) {
             val contentType = test.headers["Content-Type"]
-            writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
+            writer.write("$operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
         }
     }
 
@@ -155,38 +155,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("$operationStack.deserializeStep.intercept(position: .after,")
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-            renderHeaderAsserts(test)
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
             writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("deserializeMiddleware.fulfill()")
             writer.write("return .success(output)")
-        }
-    }
-
-    private fun renderHeaderAsserts(test: HttpRequestTestCase) {
-        // assert that forbidden headers do not exist
-        if (test.forbidHeaders.isNotEmpty()) {
-            writer.write("let forbiddenHeaders = [\"${test.forbidHeaders.joinToString(separator = ", ")}\"]")
-            writer.write("// assert forbidden headers do not exist")
-            writer.openBlock("for forbiddenHeader in forbiddenHeaders {", "}") {
-                writer.openBlock("XCTAssertFalse(", ")") {
-                    writer.write("self.headerExists(forbiddenHeader, in: actual.headers.headers),")
-                    writer.write("\"Forbidden Header:\\(forbiddenHeader) exists in headers\"")
-                }
-            }
-        }
-        // assert that required Headers do exist
-        if (test.requireHeaders.isNotEmpty()) {
-            writer.write("let requiredHeaders = [\"${test.requireHeaders.joinToString(separator = ", ")}\"]")
-            writer.write("// assert required headers do exist")
-            writer.openBlock("for requiredHeader in requiredHeaders {", "}") {
-                writer.openBlock("XCTAssertTrue(", ")") {
-                    writer.write("self.headerExists(requiredHeader, in: actual.headers.headers),")
-                    writer.write("\"Required Header:\\(requiredHeader) does not exist in headers\"")
-                }
-            }
         }
     }
 
@@ -306,14 +280,36 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedHeaders(test: HttpRequestTestCase) {
-        if (test.headers.isEmpty()) {
-            writer.write("headers: [String: String](),") // pass empty dictionary if no headers
-        } else {
+        if (test.headers.isNotEmpty()) {
             writer.openBlock("headers: [")
                 .call {
                     for ((idx, hdr) in test.headers.entries.withIndex()) {
                         val suffix = if (idx < test.headers.size - 1) "," else ""
                         writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if (test.forbidHeaders.isNotEmpty()) {
+            val forbiddenHeaders = test.forbidHeaders
+            writer.openBlock("forbiddenHeaders: [")
+                .call {
+                    forbiddenHeaders.forEachIndexed { idx, value ->
+                        val suffix = if (idx < forbiddenHeaders.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
+                    }
+                }
+                .closeBlock("],")
+        }
+
+        if (test.requireHeaders.isNotEmpty()) {
+            val requiredHeaders = test.requireHeaders
+            writer.openBlock("requiredHeaders: [")
+                .call {
+                    requiredHeaders.forEachIndexed { idx, value ->
+                        val suffix = if (idx < requiredHeaders.size - 1) "," else ""
+                        writer.write("\$S$suffix", value)
                     }
                 }
                 .closeBlock("],")

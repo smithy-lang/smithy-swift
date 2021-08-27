@@ -19,7 +19,9 @@ open class HttpRequestTestBase: XCTestCase {
      */
     public func buildExpectedHttpRequest(method: HttpMethodType,
                                          path: String,
-                                         headers: [String: String],
+                                         headers: [String: String]? = nil,
+                                         forbiddenHeaders: [String]? = nil,
+                                         requiredHeaders: [String]? = nil,
                                          queryParams: [String]? = nil,
                                          forbiddenQueryParams: [String]? = nil,
                                          requiredQueryParams: [String]? = nil,
@@ -39,11 +41,31 @@ open class HttpRequestTestBase: XCTestCase {
             addRequiredQueryItems(queryParams: requiredQueryParams, builder: builder)
         }
         
-        for (headerName, headerValue) in headers {
-            let value = sanitizeStringForNonConformingValues(headerValue)
-            builder.withHeader(name: headerName, value: value)
+        if let headers = headers {
+            for (headerName, headerValue) in headers {
+                let value = sanitizeStringForNonConformingValues(headerValue)
+                do {
+                    if let values = try splitHttpDateHeaderListValues(value) {
+                        builder.withHeader(name: headerName, values: values)
+                    }
+                } catch let err {
+                    XCTFail(err.localizedDescription)
+                }
+            }
         }
         
+        if let forbiddenHeaders = forbiddenHeaders {
+            for headerName in forbiddenHeaders {
+                builder.withForbiddenHeader(name: headerName)
+            }
+        }
+        
+        if let requiredHeaders = requiredHeaders {
+            for headerName in requiredHeaders {
+                builder.withRequiredHeader(name: headerName)
+            }
+        }
+
         guard let body = body else {
             return builder.build()
         }
@@ -144,7 +166,11 @@ open class HttpRequestTestBase: XCTestCase {
                             _ actual: SdkHttpRequest,
                             _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
         // assert headers match
-        assertEqualHttpHeaders(expected.headers, actual.headers)
+        assertHttpHeaders(expected.headers, actual.headers)
+        
+        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers)
+        
+        assertRequiredHeaders(expected.requiredHeaders, actual.headers)
         
         assertQueryItems(expected.queryItems, actual.queryItems)
         
@@ -205,40 +231,57 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpHeaders`
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
-    public func assertEqualHttpHeaders(_ expected: Headers, _ actual: Headers) {
-        // in order to properly compare header values where actual is an array and expected comes in
-        // as a comma separated string take actual and join them with a comma and then separate them
-        // by comma (to in effect get the same separated list as expected) take expected and separate them
-        // by comma then throw both actual and expected comma separated arrays in a set and compare sets
-        let sortedActualHeaders = actual.dictionary.mapValues({ (values) -> Set<String> in
-            let joinedValues = values.joined(separator: ", ")
-            let splitValues = joinedValues.components(separatedBy: ", ")
-            var set = Set<String>()
-            splitValues.forEach { (value) in
-                set.insert(value)
-            }
-            return set
-        })
-        let sortedExpectedHeaders = expected.dictionary.mapValues { (values) -> Set<String> in
-            var set = Set<String>()
-            values.forEach { (value) in
-                let components = value.components(separatedBy: ", ")
-                components.forEach { (arrayValue) in
-                    set.insert(arrayValue)
-                }
-            }
-            return set
+    public func assertHttpHeaders(_ expected: Headers?, _ actual: Headers?) {
+        guard let expected = expected else {
+            return
         }
-        for (expectedHeaderName, expectedHeaderValue) in sortedExpectedHeaders {
-            guard let actualHeaderValue = sortedActualHeaders[expectedHeaderName] else {
-                XCTFail("Expected Header \(expectedHeaderName) is not found in actual headers")
+        
+        guard let actual = actual else {
+            XCTFail("There are expected headers and no actual headers.")
+            return
+        }
+
+        for expectedHeader in expected.headers {
+            XCTAssertTrue(actual.exists(name: expectedHeader.name),
+                          "expected header \(expectedHeader.name) has no actual values")
+            guard let values = actual.values(for: expectedHeader.name) else {
+                XCTFail("actual values expected to not be null")
                 return
             }
             
-            XCTAssertEqual(expectedHeaderValue, actualHeaderValue,
-                           "Expected Value of header \(expectedHeaderName) = \(expectedHeaderValue)]" +
-                            " does not match actual header value" +
-                            "\(String(describing: actual.dictionary[expectedHeaderName]))]")
+            XCTAssert(expectedHeader.value.containsSameElements(as: values),
+                      """
+                      expected header name value pair not equal: \(expectedHeader.name):
+                      \(expectedHeader.value); found: \(expectedHeader.name):\(values)
+                      """)
+        }
+    }
+    
+    public func assertForbiddenHeaders(_ expected: [String]?, _ actual: Headers) {
+        guard let expected = expected else {
+            return
+        }
+
+        for forbiddenHeaderName in expected {
+            XCTAssertFalse(actual.exists(name: forbiddenHeaderName),
+                           """
+                           forbidden header found: \(forbiddenHeaderName):
+                           \(String(describing: actual.value(for: forbiddenHeaderName)))
+                           """)
+        }
+    }
+    
+    public func assertRequiredHeaders(_ expected: [String]?, _ actual: Headers) {
+        guard let expected = expected else {
+            return
+        }
+
+        for requiredHeaderName in expected {
+            XCTAssertTrue(actual.exists(name: requiredHeaderName),
+                          """
+                          expected required header not found: \(requiredHeaderName):
+                          \(String(describing: actual.value(for: requiredHeaderName)))
+                          """)
         }
     }
     
@@ -298,5 +341,11 @@ open class HttpRequestTestBase: XCTestCase {
         public init(_ description: String) {
             self.localizedDescription = description
         }
+    }
+}
+
+extension Array where Element: Comparable {
+    func containsSameElements(as other: [Element]) -> Bool {
+        return self.count == other.count && self.sorted() == other.sorted()
     }
 }

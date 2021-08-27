@@ -36,6 +36,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "X-Header1": "Foo",
                 "X-Header2": "Bar"
             ],
+            requiredHeaders: [
+                "Content-Length"
+            ],
             queryParams: [
                 "Query1=Query 1"
             ],
@@ -84,14 +87,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            let requiredHeaders = ["Content-Length"]
-            // assert required headers do exist
-            for requiredHeader in requiredHeaders {
-                XCTAssertTrue(
-                    self.headerExists(requiredHeader, in: actual.headers.headers),
-                    "Required Header:\(requiredHeader) does not exist in headers"
-                )
-            }
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -136,7 +131,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/explicit/string",
-            headers: [String: String](),
+            requiredHeaders: [
+                "Content-Length"
+            ],
             body: ""${'"'}
             {
             "payload1": "explicit string"
@@ -168,14 +165,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            let requiredHeaders = ["Content-Length"]
-            // assert required headers do exist
-            for requiredHeader in requiredHeaders {
-                XCTAssertTrue(
-                    self.headerExists(requiredHeader, in: actual.headers.headers),
-                    "Required Header:\(requiredHeader) does not exist in headers"
-                )
-            }
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -211,7 +200,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
-            headers: [String: String](),
             body: nil,
             host: host
         )
@@ -294,7 +282,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
         operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
@@ -361,7 +349,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
         operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>(
@@ -496,7 +484,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
         operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>(
@@ -598,7 +586,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
         operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>(
@@ -683,7 +671,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputBodyMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
+            operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
             operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
@@ -766,7 +754,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
+            operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
             operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(

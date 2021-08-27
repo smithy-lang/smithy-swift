@@ -33,12 +33,5 @@ class HeaderUtilsTests: XCTestCase {
         for (headerListString, headerList) in dateHeaderTransformations {
             XCTAssertEqual(headerList, try? splitHttpDateHeaderListValues(headerListString))
         }
-        
-        let invalidTimestampHeaderListString = "Mon, 16 Dec 2019 23:48:18 GMT, , Tue, 17 Dec 2019 23:48:18 GMT"
-        XCTAssertThrowsError(try splitHttpDateHeaderListValues(invalidTimestampHeaderListString)) { error in
-            XCTAssertEqual(ClientError.deserializationFailed(HeaderDeserializationError.invalidTimestampHeaderList(value: invalidTimestampHeaderListString)),
-                           error as? ClientError)
-        }
     }
-
 }

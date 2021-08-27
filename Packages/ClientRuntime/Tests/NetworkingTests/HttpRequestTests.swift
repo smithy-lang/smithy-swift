@@ -32,7 +32,7 @@ class HttpRequestTests: NetworkingTestUtils {
             let header1 = headersFromRequest![index]
             let header2 = mockHttpRequest.headers.headers[index]
             XCTAssertEqual(header1.name, header2.name)
-            XCTAssertEqual(header1.value, header2.value)
+            XCTAssertEqual(header1.value, header2.value.joined(separator: ","))
         }
         
         XCTAssertEqual(httpRequest.method, "GET")
