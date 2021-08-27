@@ -242,13 +242,18 @@ open class HttpRequestTestBase: XCTestCase {
         }
 
         for expectedHeader in expected.headers {
-            XCTAssertTrue(actual.exists(name: expectedHeader.name), "expected header \(expectedHeader.name) has no actual values")
+            XCTAssertTrue(actual.exists(name: expectedHeader.name),
+                          "expected header \(expectedHeader.name) has no actual values")
             guard let values = actual.values(for: expectedHeader.name) else {
                 XCTFail("actual values expected to not be null")
                 return
             }
             
-            XCTAssert(expectedHeader.value.containsSameElements(as: values), "expected header name value pair not equal: \(expectedHeader.name):\(expectedHeader.value); found: \(expectedHeader.name):\(values)")
+            XCTAssert(expectedHeader.value.containsSameElements(as: values),
+                      """
+                      expected header name value pair not equal: \(expectedHeader.name):
+                      \(expectedHeader.value); found: \(expectedHeader.name):\(values)
+                      """)
         }
     }
     
@@ -259,7 +264,10 @@ open class HttpRequestTestBase: XCTestCase {
 
         for forbiddenHeaderName in expected {
             XCTAssertFalse(actual.exists(name: forbiddenHeaderName),
-                           "forbidden header found: \(forbiddenHeaderName):\(String(describing: actual.value(for: forbiddenHeaderName)))")
+                           """
+                           forbidden header found: \(forbiddenHeaderName):
+                           \(String(describing: actual.value(for: forbiddenHeaderName)))
+                           """)
         }
     }
     
@@ -270,7 +278,10 @@ open class HttpRequestTestBase: XCTestCase {
 
         for requiredHeaderName in expected {
             XCTAssertTrue(actual.exists(name: requiredHeaderName),
-                          "expected required header not found: \(requiredHeaderName): \(String(describing: actual.value(for: requiredHeaderName)))")
+                          """
+                          expected required header not found: \(requiredHeaderName):
+                          \(String(describing: actual.value(for: requiredHeaderName)))
+                          """)
         }
     }
     

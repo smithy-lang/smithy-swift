@@ -36,7 +36,8 @@ public struct Headers: Equatable {
         add(header)
     }
     
-    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header` into the instance using the provided `name` and `values`.
+    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header`
+    /// into the instance using the provided `name` and `values`.
     ///
     /// - Parameters:
     ///   - name:  The `String` name.
@@ -46,7 +47,8 @@ public struct Headers: Equatable {
         add(header)
     }
     
-    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header` into the instance using the provided `Header`.
+    /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header`
+    /// into the instance using the provided `Header`.
     ///
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
@@ -58,7 +60,8 @@ public struct Headers: Equatable {
         headers[index].value.append(contentsOf: header.value)
     }
     
-    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
+    /// into the instance if it does not exist using the provided `Header`.
     ///
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
@@ -70,7 +73,8 @@ public struct Headers: Equatable {
         headers.replaceSubrange(index...index, with: [header])
     }
     
-    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
+    /// into the instance if it does not exist using the provided `Header`.
     ///
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
@@ -79,7 +83,8 @@ public struct Headers: Equatable {
         update(header)
     }
     
-    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header` into the instance if it does not exist using the provided `Header`.
+    /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
+    /// into the instance if it does not exist using the provided `Header`.
     ///
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
