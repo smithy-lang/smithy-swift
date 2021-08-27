@@ -32,7 +32,7 @@ extension ByteStream {
         case .buffer(let buffer):
             return buffer
         case .reader(let reader):
-            let bytes = reader.read(maxBytes: nil)
+            let bytes = reader.read(maxBytes: nil, rewind: true)
             return bytes
         }
     }

@@ -41,12 +41,14 @@ public class DataStreamReader: StreamReader {
         self._hasFinishedWriting = false
     }
     
-    public func read(maxBytes: UInt? = nil) -> ByteBuffer {
+    public func read(maxBytes: UInt? = nil, rewind: Bool = false) -> ByteBuffer {
         let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
         withLockingClosure {
             buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
-            _availableForRead -= UInt(buffer.length)
-            offset += UInt(buffer.length)
+            if !rewind {
+                _availableForRead -= UInt(buffer.length)
+                offset += UInt(buffer.length)
+            }
         }
         return buffer
     }
