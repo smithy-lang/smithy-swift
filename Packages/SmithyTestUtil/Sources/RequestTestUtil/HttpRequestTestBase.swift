@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
 import ClientRuntime
 import XCTest
 
@@ -14,6 +15,11 @@ import XCTest
 public typealias ValidateCallback = (Data, Data) -> Void
 
 open class HttpRequestTestBase: XCTestCase {
+
+    open override func setUp() {
+        AwsCommonRuntimeKit.initialize()
+    }
+
     /**
      Create `HttpRequest` from its components
      */
