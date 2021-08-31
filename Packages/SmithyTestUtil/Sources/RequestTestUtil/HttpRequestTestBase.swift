@@ -16,7 +16,7 @@ public typealias ValidateCallback = (Data, Data) -> Void
 
 open class HttpRequestTestBase: XCTestCase {
 
-    override func setUp() {
+    open override func setUp() {
         AwsCommonRuntimeKit.initialize()
     }
 
