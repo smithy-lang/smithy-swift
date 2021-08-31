@@ -14,6 +14,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -23,8 +24,10 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -201,6 +204,9 @@ open class HttpProtocolClientGenerator(
         val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
         if (hasHttpBody) {
             writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
+        }
+        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            ContentMD5Middleware().render(op, writer, outputShapeName, operationStackName)
         }
         httpProtocolCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
     }

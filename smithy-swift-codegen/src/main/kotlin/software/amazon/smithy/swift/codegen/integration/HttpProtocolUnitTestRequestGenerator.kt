@@ -5,8 +5,10 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -15,8 +17,10 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import java.util.Locale
 
@@ -96,7 +100,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val operationStack = "operationStack"
             writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
             renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
-            renderBuildMiddleware(test, operationStack, outputSymbol, outputErrorName, hasHttpBody)
+            renderBuildMiddleware(test, operation, operationStack, outputSymbol, outputErrorName, hasHttpBody)
             httpProtocolCustomizable.renderMiddlewareForGeneratedRequestTests(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
             if (hasIdempotencyTokenTrait) {
@@ -137,9 +141,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun renderBuildMiddleware(test: HttpRequestTestCase, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {
+    private fun renderBuildMiddleware(test: HttpRequestTestCase, op: OperationShape, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {
         if (hasHttpBody) {
             writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<$outputSymbol, $outputErrorName>())")
+        }
+        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            ContentMD5Middleware().render(op, writer, outputSymbol.name, operationStack)
         }
     }
 
