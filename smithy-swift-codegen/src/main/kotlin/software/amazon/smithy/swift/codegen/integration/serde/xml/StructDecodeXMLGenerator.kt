@@ -9,16 +9,14 @@ import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class StructDecodeXMLGenerator(
+open class StructDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val metadata: Map<ShapeMetadata, Any>,
@@ -36,22 +34,13 @@ class StructDecodeXMLGenerator(
 
     private fun renderDecodeBody() {
         val containerName = "containerValues"
-        if (metadata.containsKey(ShapeMetadata.OPERATION_SHAPE)) {
-            val topLevelContainerName = "topLevelContainer"
-            writer.write("let $topLevelContainerName = try decoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
-
-            val operationShape = metadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
-            val wrappedKeyValue = operationShape.id.name + "Result"
-            writer.write("let $containerName = try $topLevelContainerName.nestedContainer(keyedBy: CodingKeys.self, forKey: \$N(\"$wrappedKeyValue\"))", ClientRuntimeTypes.Serde.Key)
-        } else {
-            writer.write("let $containerName = try decoder.container(keyedBy: CodingKeys.self)")
-        }
+        writer.write("let $containerName = try decoder.container(keyedBy: CodingKeys.self)")
         members.forEach { member ->
             renderSingleMember(member, containerName)
         }
     }
 
-    private fun renderSingleMember(member: MemberShape, containerName: String) {
+    fun renderSingleMember(member: MemberShape, containerName: String) {
         val memberTarget = ctx.model.expectShape(member.target)
         when (memberTarget) {
             is CollectionShape -> {
