@@ -42,7 +42,7 @@ class UnionDecodeXMLGenerator(
                         renderBlobMember(member, memberTarget, containerName)
                     }
                     else -> {
-                        renderScalarMember(member, memberTarget, containerName, false)
+                        renderScalarMember(member, memberTarget, containerName)
                     }
                 }
             }
