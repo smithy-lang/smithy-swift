@@ -68,9 +68,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
-        if (test.id == "GetBucketLocationUnwrappedOutput") {
-            print("hm")
-        }
         var needsDecoder = false
         test.body.ifPresent { body ->
             if (body.isNotBlank() && body.isNotEmpty()) {
