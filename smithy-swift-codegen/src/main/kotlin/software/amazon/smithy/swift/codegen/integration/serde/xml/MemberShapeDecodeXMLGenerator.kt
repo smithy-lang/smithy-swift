@@ -293,7 +293,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         renderAssigningDecodedMember(memberName, "$value")
     }
 
-    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean) {
+    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean = false) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
