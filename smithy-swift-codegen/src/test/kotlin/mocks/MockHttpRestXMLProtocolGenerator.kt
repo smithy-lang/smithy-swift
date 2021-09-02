@@ -65,7 +65,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, mapOf(), writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, shapeMetadata, writer, defaultTimestampFormat)
         decodeGenerator.render()
     }
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
