@@ -60,6 +60,22 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
         }
     }
     
+    mutating public func presignedRequest<H: Handler>(context: HttpContext,
+                                                      input: OperationStackInput,
+                                                      next: H) -> SdkHttpRequestBuilder?
+    where H.Input == SdkHttpRequest,
+          H.Output == OperationOutput<OperationStackOutput>,
+          H.Context == HttpContext,
+          H.MiddlewareError == SdkError<OperationStackError> {
+        var builder: SdkHttpRequestBuilder?
+        self.finalizeStep.intercept(position: .after,
+                                    middleware: PresignerShim(handler: { buildInMiddleware in
+                                        builder = buildInMiddleware
+                                    }))
+        _ = handleMiddleware(context: context, input: input, next: next)
+        return builder
+    }
+
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
     private func compose<H: Handler, M: Middleware>(next handler: H,
                                                     with middlewares: M...) -> AnyHandler<H.Input,
