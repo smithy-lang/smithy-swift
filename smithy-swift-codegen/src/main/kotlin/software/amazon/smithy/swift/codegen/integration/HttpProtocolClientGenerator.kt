@@ -74,7 +74,11 @@ open class HttpProtocolClientGenerator(
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
-                    renderMiddlewareExecutionBlock(operationsIndex, it)
+                    val operationStackName = "operationStack"
+                    val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationStackName)
+                    generator.render(operationsIndex, it)
+                    writer.write("let result = $operationStackName.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
+                    writer.write("completion(result)")
                 }
                 writer.write("")
             }
@@ -113,120 +117,4 @@ open class HttpProtocolClientGenerator(
         }
     }
 
-    // replace labels with any path bindings
-    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBindingDescriptor>, writer: SwiftWriter) {
-        val resolvedURIComponents = mutableListOf<String>()
-        httpTrait.uri.segments.forEach {
-            if (it.isLabel) {
-                // spec dictates member name and label name MUST be the same
-                val binding = pathBindings.find { binding ->
-                    binding.memberName == it.content
-                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${it.content}")
-
-                // shape must be string, number, boolean, or timestamp
-                val targetShape = model.expectShape(binding.member.target)
-                val labelMemberName = ctx.symbolProvider.toMemberNames(binding.member).first.decapitalize()
-                val formattedLabel: String
-                if (targetShape.isTimestampShape) {
-                    val bindingIndex = HttpBindingIndex.of(model)
-                    val timestampFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.LABEL, TimestampFormatTrait.Format.DATE_TIME)
-                    formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
-                } else if (targetShape.isStringShape) {
-                    val enumRawValueSuffix = targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
-                    formattedLabel = "$labelMemberName$enumRawValueSuffix"
-                } else {
-                    formattedLabel = labelMemberName
-                }
-                val isBoxed = symbolProvider.toSymbol(targetShape).isBoxed()
-
-                // unwrap the label members if boxed
-                if (isBoxed) {
-                    writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                        writer.write("completion(.failure(.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
-                        writer.write("return")
-                    }
-                } else {
-                    writer.write("let $labelMemberName = input.$labelMemberName")
-                }
-                resolvedURIComponents.add("\\($formattedLabel)")
-            } else {
-                resolvedURIComponents.add(it.content)
-            }
-        }
-
-        val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("let urlPath = \"\$L\"", uri)
-    }
-
-    private fun renderContextAttributes(op: OperationShape) {
-        val httpTrait = httpBindingResolver.httpTrait(op)
-        val httpMethod = httpTrait.method.toLowerCase()
-        // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
-        writer.write("  .withEncoder(value: encoder)")
-        writer.write("  .withDecoder(value: decoder)")
-        writer.write("  .withMethod(value: .$httpMethod)")
-        writer.write("  .withPath(value: urlPath)")
-        writer.write("  .withServiceName(value: serviceName)")
-        writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
-        writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
-        writer.write("  .withLogger(value: config.logger)")
-
-        op.getTrait(EndpointTrait::class.java).ifPresent {
-            val inputShape = model.expectShape(op.input.get())
-            val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
-            writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
-        }
-        val serviceShape = ctx.service
-        httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
-    }
-
-    private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        writer.write("$operationStackName.addDefaultOperationMiddlewares()")
-        val inputShape = model.expectShape(op.input.get())
-        val inputShapeName = symbolProvider.toSymbol(inputShape).name
-        val outputShape = model.expectShape(op.output.get())
-        val outputShapeName = symbolProvider.toSymbol(outputShape).name
-        val outputErrorName = "${op.capitalizedName()}OutputError"
-        val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
-        val hasIdempotencyTokenTrait = idempotentMember != null
-        if (hasIdempotencyTokenTrait) {
-            IdempotencyTokenMiddlewareGenerator(
-                writer,
-                idempotentMember!!.memberName.decapitalize(),
-                operationStackName,
-                outputShapeName,
-                outputErrorName
-            ).renderIdempotencyMiddleware()
-        }
-        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
-        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
-        writer.write("$operationStackName.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        if (hasHttpBody) {
-            writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
-        }
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            ContentMD5Middleware().render(op, writer, outputShapeName, operationStackName)
-        }
-        httpProtocolCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
-    }
-
-    private fun renderMiddlewareExecutionBlock(opIndex: OperationIndex, op: OperationShape) {
-        val httpTrait = httpBindingResolver.httpTrait(op)
-        val requestBindings = httpBindingResolver.requestBindings(op)
-        val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
-        renderUriPath(httpTrait, pathBindings, writer)
-        val operationErrorName = "${op.capitalizedName()}OutputError"
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
-        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
-        writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
-        writer.swiftFunctionParameterIndent {
-            renderContextAttributes(op)
-        }
-        val operationStackName = "operation"
-        writer.write("var $operationStackName = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
-        renderMiddlewares(op, operationStackName)
-        writer.write("let result = $operationStackName.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
-        writer.write("completion(result)")
-    }
 }

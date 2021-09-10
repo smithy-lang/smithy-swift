@@ -119,6 +119,9 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
+    //Ugh, this is bad.
+    val httpProtocolCustomizable: HttpProtocolCustomizable
+
     /**
      * Context object used for service serialization and deserialization
      */

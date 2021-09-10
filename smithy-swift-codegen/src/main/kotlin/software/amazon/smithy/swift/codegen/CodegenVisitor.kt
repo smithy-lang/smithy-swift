@@ -18,6 +18,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
@@ -40,6 +41,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val writers: SwiftDelegator
     private val integrations: List<SwiftIntegration>
     private val protocolGenerator: ProtocolGenerator?
+    private val baseGenerationContext: GenerationContext
+
 
     init {
         LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
@@ -73,6 +76,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
                 protocolGenerator?.serviceErrorProtocolSymbol = it
             }
         }
+
+        baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
     }
 
     fun preprocessModel(model: Model): Model {
@@ -131,6 +136,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
             generateProtocolClient(ctx)
         }
+        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
 
         println("Flushing swift writers")
         val dependencies = writers.dependencies

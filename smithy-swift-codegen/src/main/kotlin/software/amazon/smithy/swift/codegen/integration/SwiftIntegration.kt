@@ -9,8 +9,11 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.GenerationContext
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering
@@ -146,6 +149,18 @@ interface SwiftIntegration {
      * @return true if the Integration should be applied to the current codegen context, false otherwise.
      */
     fun enabledForService(model: Model, settings: SwiftSettings): Boolean = true
+
+    /**
+     * Write additional files defined by this integration
+     * @param ctx The codegen generation context
+     * @param delegator File writer(s)
+     */
+    fun writeAdditionalFiles(
+        ctx: CodegenContext,
+        delegator: SwiftDelegator
+    ) {
+        // pass
+    }
 
     /**
      * Overrides a serviceErrorProtocolSymbol for a service
