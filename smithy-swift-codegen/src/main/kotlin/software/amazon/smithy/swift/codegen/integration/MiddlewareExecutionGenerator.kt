@@ -30,12 +30,12 @@ class MiddlewareExecutionGenerator(
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
-    private val operationStackName: String)
-{
+    private val operationStackName: String
+) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
 
-    fun render(opIndex: OperationIndex, op: OperationShape, onError: (SwiftWriter, String)->Unit) {
+    fun render(opIndex: OperationIndex, op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val requestBindings = httpBindingResolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }

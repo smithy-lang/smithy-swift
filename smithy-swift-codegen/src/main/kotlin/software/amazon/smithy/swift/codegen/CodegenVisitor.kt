@@ -43,7 +43,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val protocolGenerator: ProtocolGenerator?
     private val baseGenerationContext: GenerationContext
 
-
     init {
         LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
         integrations = ServiceLoader.load(SwiftIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))

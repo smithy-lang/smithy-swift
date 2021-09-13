@@ -34,11 +34,13 @@ fun CodegenContext.toProtocolGenerationContext(serviceShape: ServiceShape, swift
     val protocol = protocolGenerator?.let { it.protocol } ?: run {
         return null
     }
-    return ProtocolGenerator.GenerationContext(settings,
+    return ProtocolGenerator.GenerationContext(
+        settings,
         model,
         serviceShape,
         symbolProvider,
         integrations,
         protocol,
-        swiftDelegator)
+        swiftDelegator
+    )
 }
