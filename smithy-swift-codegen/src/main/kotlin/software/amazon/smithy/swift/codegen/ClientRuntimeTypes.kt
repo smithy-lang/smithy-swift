@@ -56,6 +56,8 @@ object ClientRuntimeTypes {
         val LoggerMiddleware = runtimeSymbol("LoggerMiddleware")
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware")
+
+        val NoopHandler = runtimeSymbol("NoopHandler")
     }
 
     object Core {
