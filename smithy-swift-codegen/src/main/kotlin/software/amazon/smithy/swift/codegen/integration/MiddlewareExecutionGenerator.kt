@@ -16,7 +16,6 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -31,17 +30,17 @@ class MiddlewareExecutionGenerator(
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
-    private val operationStackName: String,
-    private val shouldReturnNilOnError: Boolean = false)
+    private val operationStackName: String)
 {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
 
-    fun render(opIndex: OperationIndex, op: OperationShape) {
+    fun render(opIndex: OperationIndex, op: OperationShape, onError: (SwiftWriter, String)->Unit) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val requestBindings = httpBindingResolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
-        renderUriPath(httpTrait, pathBindings, writer)
+        renderUriPath(httpTrait, pathBindings, writer, onError)
+
         val operationErrorName = "${op.capitalizedName()}OutputError"
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
         val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
@@ -54,7 +53,7 @@ class MiddlewareExecutionGenerator(
     }
 
     // replace labels with any path bindings
-    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBindingDescriptor>, writer: SwiftWriter) {
+    private fun renderUriPath(httpTrait: HttpTrait, pathBindings: List<HttpBindingDescriptor>, writer: SwiftWriter, onError: (SwiftWriter, String) -> Unit) {
         val resolvedURIComponents = mutableListOf<String>()
         httpTrait.uri.segments.forEach {
             if (it.isLabel) {
@@ -82,12 +81,7 @@ class MiddlewareExecutionGenerator(
                 // unwrap the label members if boxed
                 if (isBoxed) {
                     writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                        if (shouldReturnNilOnError) {
-                            writer.write("return nil")
-                        } else {
-                            writer.write("completion(.failure(.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
-                            writer.write("return")
-                        }
+                        onError(writer, labelMemberName)
                     }
                 } else {
                     writer.write("let $labelMemberName = input.$labelMemberName")

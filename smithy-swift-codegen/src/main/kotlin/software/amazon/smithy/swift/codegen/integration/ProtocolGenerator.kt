@@ -119,7 +119,6 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
-    //Ugh, this is bad.
     val httpProtocolCustomizable: HttpProtocolCustomizable
 
     /**

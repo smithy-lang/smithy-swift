@@ -19,7 +19,6 @@ interface CodegenContext {
     val integrations: List<SwiftIntegration>
 }
 
-
 /**
  * Base generation context
  */
