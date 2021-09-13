@@ -32,7 +32,11 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
     Self.MError == H.MiddlewareError {
         handler(input)
         let httpResponse = HttpResponse(body: .none, statusCode: .ok)
-        let output: OperationStackOutput? = try! OperationStackOutput(httpResponse: httpResponse, decoder: nil)
-        return .success(.init(httpResponse: httpResponse, output: output))
+        do {
+            let output: OperationStackOutput? = try OperationStackOutput(httpResponse: httpResponse, decoder: nil)
+            return .success(.init(httpResponse: httpResponse, output: output))
+        } catch {
+            return .failure(.unknown(ClientError.unknownError("PresignerShimHandler: This code should not execute")))
+        }
     }
 }
