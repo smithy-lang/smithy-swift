@@ -106,9 +106,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
 
-    open fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
-        HttpTraitResolver(ctx)
-
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
@@ -449,11 +446,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    protected abstract val defaultContentType: String
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
-    protected abstract val httpProtocolCustomizable: HttpProtocolCustomizable
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
     protected abstract val shouldRenderCodingKeysForEncodable: Boolean

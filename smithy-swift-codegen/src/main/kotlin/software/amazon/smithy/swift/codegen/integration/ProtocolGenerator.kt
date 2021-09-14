@@ -119,6 +119,11 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
+    fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
+        HttpTraitResolver(ctx)
+
+    val httpProtocolCustomizable: HttpProtocolCustomizable
+    val defaultContentType: String
     /**
      * Context object used for service serialization and deserialization
      */
