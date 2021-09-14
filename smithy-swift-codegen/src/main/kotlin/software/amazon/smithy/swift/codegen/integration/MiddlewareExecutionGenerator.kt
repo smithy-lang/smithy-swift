@@ -13,6 +13,7 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -48,7 +49,7 @@ class MiddlewareExecutionGenerator(
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }
-        writer.write("var $operationStackName = OperationStack<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")")
+        writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")", OperationStack)
         renderMiddlewares(op, operationStackName)
     }
 

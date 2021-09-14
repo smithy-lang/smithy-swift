@@ -446,7 +446,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    protected abstract val defaultContentType: String
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory

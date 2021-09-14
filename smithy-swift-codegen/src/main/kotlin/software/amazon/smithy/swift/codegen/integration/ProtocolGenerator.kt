@@ -123,6 +123,7 @@ interface ProtocolGenerator {
         HttpTraitResolver(ctx)
 
     val httpProtocolCustomizable: HttpProtocolCustomizable
+    val defaultContentType: String
     /**
      * Context object used for service serialization and deserialization
      */
