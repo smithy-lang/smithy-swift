@@ -59,7 +59,7 @@ open class HttpProtocolClientGenerator(
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
-                    val operationStackName = "operationStack"
+                    val operationStackName = "operation"
                     val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationStackName)
                     generator.render(operationsIndex, it) { writer, labelMemberName ->
                         writer.write("completion(.failure(.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
