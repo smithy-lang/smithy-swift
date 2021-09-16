@@ -6,6 +6,7 @@
 import mocks.MockHttpResponseBindingErrorGenerator
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -88,6 +89,10 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     ) {
         val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
         decodeGenerator.render()
+    }
+
+    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+        // Intentionally empty
     }
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {

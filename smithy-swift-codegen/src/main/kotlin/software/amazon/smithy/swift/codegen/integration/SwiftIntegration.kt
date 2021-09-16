@@ -8,12 +8,14 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering
@@ -111,20 +113,19 @@ interface SwiftIntegration {
     }
 
     /**
-     * Customize the middleware to use when generating a protocol client/service implementation. By default
-     * the [resolved] is returned unmodified. Integrations are allowed to add/remove/re-order the middleware.
-     *
-     * NOTE: Protocol generators should only allow integrations to customize AFTER they have resolved the default set
-     * of middleware for the protocol (if any).
+     * Customize the middleware to use when generating a protocol client/service implementation.
+     * Integrations are allowed to add/remove/re-order the middleware.
      *
      * @param ctx The codegen generation context
-     * @param resolved The middleware resolved by the protocol generator
+     * @param operationShape The corresponding operation
+     * @param operationMiddleware OperationMiddleware object holding all of the middlewares
      */
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
-        resolved: List<OperationMiddlewareRenderable>
-    ): List<OperationMiddlewareRenderable> {
-        return resolved
+        operationShape: OperationShape,
+        operationMiddleware: OperationMiddleware
+    ) {
+        // pass
     }
 
     /**

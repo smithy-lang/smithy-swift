@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen.integration
+package software.amazon.smithy.swift.codegen.middleware
 
 enum class MiddlewareStep {
     INITIALIZESTEP {

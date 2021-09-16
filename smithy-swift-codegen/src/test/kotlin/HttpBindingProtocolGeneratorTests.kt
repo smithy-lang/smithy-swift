@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenera
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
@@ -26,11 +27,12 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         writer: SwiftWriter,
         serviceName: String,
         defaultContentType: String,
-        httpProtocolCustomizable: HttpProtocolCustomizable
+        httpProtocolCustomizable: HttpProtocolCustomizable,
+        operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable)
+        return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
     }
 
     private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {

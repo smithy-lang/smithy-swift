@@ -14,6 +14,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.utils.CaseUtils
 
 /**
@@ -119,9 +120,12 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
+    fun initializeMiddleware(ctx: GenerationContext)
+
     fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx)
 
+    val operationMiddleware: OperationMiddleware
     val httpProtocolCustomizable: HttpProtocolCustomizable
     val defaultContentType: String
     /**

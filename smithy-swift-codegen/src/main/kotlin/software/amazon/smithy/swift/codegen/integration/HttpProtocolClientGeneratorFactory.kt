@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 interface HttpProtocolClientGeneratorFactory {
     fun createHttpProtocolClientGenerator(
@@ -14,6 +15,7 @@ interface HttpProtocolClientGeneratorFactory {
         writer: SwiftWriter,
         serviceName: String,
         defaultContentType: String,
-        httpProtocolCustomizable: HttpProtocolCustomizable
+        httpProtocolCustomizable: HttpProtocolCustomizable,
+        operationMiddleware: OperationMiddleware
     ): HttpProtocolClientGenerator
 }
