@@ -164,7 +164,6 @@ class HttpProtocolClientGeneratorTests {
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
-                operation.addDefaultOperationMiddlewares()
                 operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<AllocateWidgetOutputResponse>, ClientRuntime.SdkError<AllocateWidgetOutputError>> in
                     let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                     var copiedInput = input
@@ -177,7 +176,9 @@ class HttpProtocolClientGeneratorTests {
                 operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputBodyMiddleware())
+                operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                 operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
+                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())
                 let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
                 completion(result)
             }

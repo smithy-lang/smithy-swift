@@ -5,7 +5,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                                     OutputError: HttpResponseBinding>: Middleware {
     
     public var id: String = "Deserialize"
-    
+    public init() {}
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
                           next: H) -> Result<OperationOutput<Output>, SdkError<OutputError>>

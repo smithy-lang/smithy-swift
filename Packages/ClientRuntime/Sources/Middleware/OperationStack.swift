@@ -30,15 +30,6 @@ public struct OperationStack<OperationStackInput: Encodable & Reflection,
         
     }
     
-    /// This function if called adds all default middlewares to a typical sdk operation,
-    ///  can optionally call from the service client inside an operation
-    public mutating func addDefaultOperationMiddlewares() {
-        finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware<OperationStackOutput,
-                                                                                   OperationStackError>())
-        deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<OperationStackOutput,
-                                                                                       OperationStackError>())
-    }
-    
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: OperationStackInput,

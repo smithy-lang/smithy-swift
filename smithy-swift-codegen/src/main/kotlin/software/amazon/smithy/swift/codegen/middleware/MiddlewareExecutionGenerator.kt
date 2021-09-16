@@ -127,7 +127,6 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        writer.write("$operationStackName.addDefaultOperationMiddlewares()")
         val inputShape = model.expectShape(op.input.get())
         val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val outputShape = model.expectShape(op.output.get())
