@@ -3,20 +3,19 @@ package software.amazon.smithy.swift.codegen.middleware
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.OperationMiddlewareRenderable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 open class OperationMiddlewareGenerator : OperationMiddleware {
 
     private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
 
-    override fun appendMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable) {
+    override fun appendMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable) {
         val step = renderableMiddleware.middlewareStep
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(renderableMiddleware)
     }
 
-    override fun prependMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable) {
+    override fun prependMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable) {
         val step = renderableMiddleware.middlewareStep
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(0, renderableMiddleware)
@@ -52,7 +51,7 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
         }
     }
 
-    private fun resolveStep(stack: MiddlewareStack, step: MiddlewareStep): MutableList<OperationMiddlewareRenderable> {
+    private fun resolveStep(stack: MiddlewareStack, step: MiddlewareStep): MutableList<MiddlewareRenderable> {
         return when (step) {
             MiddlewareStep.INITIALIZESTEP -> stack.initializeMiddlewares
             MiddlewareStep.BUILDSTEP -> stack.buildMiddlewares
