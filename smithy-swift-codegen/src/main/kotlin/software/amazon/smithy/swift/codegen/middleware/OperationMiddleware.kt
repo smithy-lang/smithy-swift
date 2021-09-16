@@ -18,8 +18,8 @@ fun defaultToTrue(codeWriter: CodeWriter, operationMiddlewareRenderable: Operati
 }
 
 interface OperationMiddleware {
-    fun appendMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable)
-    fun prependMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable)
+    fun appendMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable)
+    fun prependMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable)
     fun removeMiddleware(operation: OperationShape, step: MiddlewareStep, middlewareName: String)
 
     fun renderMiddleware(

@@ -451,8 +451,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         for (operation in getHttpBindingOperations(ctx)) {
-            val loggingMiddleware = LoggingMiddleware()
-            operationMiddleware.appendMiddleware(operation, loggingMiddleware.middlewareStep, loggingMiddleware)
+            operationMiddleware.appendMiddleware(operation, LoggingMiddleware())
             addProtocolSpecificMiddleware(ctx, operation)
 
             for (integration in ctx.integrations) {

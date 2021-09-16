@@ -10,12 +10,14 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
 
     private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
 
-    override fun appendMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable) {
+    override fun appendMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable) {
+        val step = renderableMiddleware.middlewareStep
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(renderableMiddleware)
     }
 
-    override fun prependMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable) {
+    override fun prependMiddleware(operation: OperationShape, renderableMiddleware: OperationMiddlewareRenderable) {
+        val step = renderableMiddleware.middlewareStep
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(0, renderableMiddleware)
     }
