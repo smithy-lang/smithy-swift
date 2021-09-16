@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen.integration
+package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
@@ -17,8 +17,13 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.Operat
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.EndpointTraitConstructor
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
-import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait

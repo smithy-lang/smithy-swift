@@ -3,19 +3,14 @@ package software.amazon.smithy.swift.codegen.middleware
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.MiddlewareStep
 import software.amazon.smithy.swift.codegen.integration.OperationMiddlewareRenderable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.utils.CodeWriter
 
-//enum class MiddlewareStep {
-//    INITIALIZE,
-//    SERIALIZE,
-//    BUILD,
-//    FINALIZE,
-//    DESERIALIZE
-//}
-
+/*
+ * TODO: We need to solidify an interface to allow rendable middleware to be overridden
+ *       This is a placeholder while we figure out how to expose this
+ */
 typealias RenderMiddlewareCallback = (CodeWriter, OperationMiddlewareRenderable) -> Boolean
 
 fun defaultToTrue(codeWriter: CodeWriter, operationMiddlewareRenderable: OperationMiddlewareRenderable): Boolean {

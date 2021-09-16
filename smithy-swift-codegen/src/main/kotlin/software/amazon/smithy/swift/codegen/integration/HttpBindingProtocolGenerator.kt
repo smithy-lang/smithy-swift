@@ -42,7 +42,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddl
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
-import software.amazon.smithy.swift.codegen.middleware.DefaultOperationMiddleware
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -458,14 +458,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
             }
-
         }
-//        ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
-//            integration.customizeMiddleware(ctx, middleware)
-//        }
     }
 
-    override val operationMiddleware = DefaultOperationMiddleware()
+    override val operationMiddleware = OperationMiddlewareGenerator()
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator

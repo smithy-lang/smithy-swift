@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import jdk.dynalink.Operation
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -15,8 +14,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.core.GenerationContext
-import software.amazon.smithy.swift.codegen.middleware.DefaultOperationMiddleware
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.utils.CaseUtils
 
@@ -128,11 +125,10 @@ interface ProtocolGenerator {
     fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx)
 
-    //fun createOperationMiddleware(ctx: GenerationContext, httpBindingResolver: HttpBindingResolver): OperationMiddleware
     val operationMiddleware: OperationMiddleware
     val httpProtocolCustomizable: HttpProtocolCustomizable
     val defaultContentType: String
-                                  /**
+    /**
      * Context object used for service serialization and deserialization
      */
     data class GenerationContext(

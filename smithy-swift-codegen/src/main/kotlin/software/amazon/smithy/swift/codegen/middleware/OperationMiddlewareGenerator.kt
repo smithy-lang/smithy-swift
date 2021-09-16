@@ -3,31 +3,23 @@ package software.amazon.smithy.swift.codegen.middleware
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.MiddlewareStep
 import software.amazon.smithy.swift.codegen.integration.OperationMiddlewareRenderable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
+open class OperationMiddlewareGenerator: OperationMiddleware {
 
-data class MiddlewareStack(
-    var initializeMiddlewares: MutableList<OperationMiddlewareRenderable> = mutableListOf(),
-    var serializeMiddlewares: MutableList<OperationMiddlewareRenderable> = mutableListOf(),
-    var buildMiddlewares: MutableList<OperationMiddlewareRenderable> = mutableListOf(),
-    var finalizeMiddlewares: MutableList<OperationMiddlewareRenderable> = mutableListOf(),
-    var deserializeMiddlewares: MutableList<OperationMiddlewareRenderable> = mutableListOf(),
-)
-
-open class DefaultOperationMiddleware(): OperationMiddleware {
-
-    var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
+    private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
 
     override fun appendMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(renderableMiddleware)
     }
+
     override fun prependMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).add(0, renderableMiddleware)
     }
+
     override fun removeMiddleware(operation: OperationShape, step: MiddlewareStep, middlewareName: String) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         resolveStep(stack, step).removeIf {
