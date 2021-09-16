@@ -22,12 +22,13 @@ interface OperationMiddleware {
     fun prependMiddleware(operation: OperationShape, step: MiddlewareStep, renderableMiddleware: OperationMiddlewareRenderable)
     fun removeMiddleware(operation: OperationShape, step: MiddlewareStep, middlewareName: String)
 
-    fun renderMiddleware(ctx: ProtocolGenerator.GenerationContext,
-                         writer: SwiftWriter,
-                         serviceShape: ServiceShape,
-                         operation: OperationShape,
-                         operationStackName: String,
-                         step: MiddlewareStep,
-                         callback: RenderMiddlewareCallback = ::defaultToTrue)
+    fun renderMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        serviceShape: ServiceShape,
+        operation: OperationShape,
+        operationStackName: String,
+        step: MiddlewareStep,
+        callback: RenderMiddlewareCallback = ::defaultToTrue
+    )
 }
-

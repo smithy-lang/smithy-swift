@@ -29,7 +29,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         defaultContentType: String,
         httpProtocolCustomizable: HttpProtocolCustomizable,
         operationMiddleware: OperationMiddleware,
-        ): HttpProtocolClientGenerator {
+    ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
         return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)

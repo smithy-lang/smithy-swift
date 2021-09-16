@@ -6,7 +6,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.OperationMiddlewareRenderable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-open class OperationMiddlewareGenerator: OperationMiddleware {
+open class OperationMiddlewareGenerator : OperationMiddleware {
 
     private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
 
@@ -50,9 +50,8 @@ open class OperationMiddlewareGenerator: OperationMiddleware {
         }
     }
 
-
     private fun resolveStep(stack: MiddlewareStack, step: MiddlewareStep): MutableList<OperationMiddlewareRenderable> {
-        return when(step) {
+        return when (step) {
             MiddlewareStep.INITIALIZESTEP -> stack.initializeMiddlewares
             MiddlewareStep.BUILDSTEP -> stack.buildMiddlewares
             MiddlewareStep.SERIALIZESTEP -> stack.serializeMiddlewares
