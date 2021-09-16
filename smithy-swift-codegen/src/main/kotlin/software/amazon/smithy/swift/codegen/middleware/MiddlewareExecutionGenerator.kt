@@ -8,7 +8,6 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -22,8 +21,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.isInHttpBody
-import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -128,7 +125,6 @@ class MiddlewareExecutionGenerator(
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
         val inputShape = model.expectShape(op.input.get())
-        val inputShapeName = symbolProvider.toSymbol(inputShape).name
         val outputShape = model.expectShape(op.output.get())
         val outputShapeName = symbolProvider.toSymbol(outputShape).name
         val outputErrorName = "${op.capitalizedName()}OutputError"
@@ -143,17 +139,6 @@ class MiddlewareExecutionGenerator(
                 outputErrorName
             ).renderIdempotencyMiddleware()
         }
-        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}HeadersMiddleware())")
-        writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}QueryItemMiddleware())")
-        writer.write("$operationStackName.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
-        if (hasHttpBody) {
-            writer.write("$operationStackName.serializeStep.intercept(position: .before, middleware: ${inputShapeName}BodyMiddleware())")
-        }
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            ContentMD5Middleware().render(op, writer, outputShapeName, operationStackName)
-        }
-
         operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
         operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.BUILDSTEP)
         operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.SERIALIZESTEP)

@@ -39,8 +39,13 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.DeserializeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputHeadersMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputQueryItemMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
@@ -453,8 +458,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         for (operation in getHttpBindingOperations(ctx)) {
-            operationMiddleware.appendMiddleware(operation, LoggingMiddleware())
+            operationMiddleware.appendMiddleware(operation, ContentMD5Middleware())
+
+            operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware())
+            operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware())
+            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(defaultContentType))
+            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware())
+
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware())
+
+            operationMiddleware.appendMiddleware(operation, LoggingMiddleware())
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware())
 
             addProtocolSpecificMiddleware(ctx, operation)
