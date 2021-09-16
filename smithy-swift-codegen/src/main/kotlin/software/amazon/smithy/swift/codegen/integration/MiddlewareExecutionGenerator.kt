@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -31,6 +32,7 @@ class MiddlewareExecutionGenerator(
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
+    private val operationMiddleware: OperationMiddleware,
     private val operationStackName: String
 ) {
     private val model: Model = ctx.model
@@ -147,6 +149,11 @@ class MiddlewareExecutionGenerator(
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
             ContentMD5Middleware().render(op, writer, outputShapeName, operationStackName)
         }
-        httpProtocolCustomizable.renderMiddlewares(ctx, writer, op, operationStackName)
+
+        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.BUILDSTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.FINALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
     }
 }

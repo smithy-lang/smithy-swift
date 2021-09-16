@@ -133,6 +133,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
+
+            initializeMiddleware(ctx)
+
             generateProtocolClient(ctx)
         }
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }

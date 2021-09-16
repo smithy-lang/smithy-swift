@@ -38,9 +38,11 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
+import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
+import software.amazon.smithy.swift.codegen.middleware.DefaultOperationMiddleware
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -440,11 +442,30 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer,
                 serviceSymbol.name,
                 defaultContentType,
-                httpProtocolCustomizable
+                httpProtocolCustomizable,
+                operationMiddleware
             )
             clientGenerator.render()
         }
     }
+
+    override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
+        for (operation in getHttpBindingOperations(ctx)) {
+            val loggingMiddleware = LoggingMiddleware()
+            operationMiddleware.appendMiddleware(operation, loggingMiddleware.middlewareStep, loggingMiddleware)
+            addProtocolSpecificMiddleware(ctx, operation)
+
+            for (integration in ctx.integrations) {
+                integration.customizeMiddleware(ctx, operation, operationMiddleware)
+            }
+
+        }
+//        ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
+//            integration.customizeMiddleware(ctx, middleware)
+//        }
+    }
+
+    override val operationMiddleware = DefaultOperationMiddleware()
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
@@ -467,6 +488,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format
     )
+    protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
     open fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
         return shape.members().filter { it.isInHttpBody() }.count() > 0

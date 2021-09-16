@@ -189,7 +189,7 @@ class HttpProtocolClientGeneratorTests {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
         }
-
+        context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
         context.generationCtx.delegator.flushWriters()
         return context
