@@ -45,7 +45,6 @@ class MiddlewareStackTests: XCTestCase {
             .withOperation(value: "Test Operation")
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
-        stack.addDefaultOperationMiddlewares()
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
             
             return next.handle(context: context, input: input)
@@ -61,7 +60,8 @@ class MiddlewareStackTests: XCTestCase {
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
             return next.handle(context: context, input: requestBuilder)
         }
-        
+        stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware())
+        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware())
         let result = stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
