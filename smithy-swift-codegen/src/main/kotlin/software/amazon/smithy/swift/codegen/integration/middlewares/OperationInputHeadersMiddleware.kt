@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
@@ -23,8 +24,7 @@ class OperationInputHeadersMiddleware : MiddlewareRenderable {
         op: OperationShape,
         operationStackName: String
     ) {
-        val inputShape = ctx.model.expectShape(op.input.get())
-        val inputShapeName = ctx.symbolProvider.toSymbol(inputShape).name
+        val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, ctx.model, op)
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}HeadersMiddleware())")
     }
 }
