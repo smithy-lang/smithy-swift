@@ -51,8 +51,6 @@ class IdempotencyTokenTraitTests {
         }
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
-//        context.generator.generateDeserializers(context.generationCtx)
-
         context.generationCtx.delegator.flushWriters()
         return context
     }
