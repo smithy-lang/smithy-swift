@@ -24,21 +24,21 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
     writer.write("import PackageDescription")
     writer.write("import class Foundation.ProcessInfo")
     writer.write("import class Foundation.FileManager")
-
+    val prefixedTargetName = "AWS${settings.moduleName}"
     writer.openBlock("let package = Package(", ")") {
-        writer.write("name: \"${settings.moduleName}\",")
+        writer.write("name: \"${prefixedTargetName}\",")
 
         writer.openBlock("platforms: [", "],") {
             writer.write(".macOS(.v10_15), .iOS(.v13)")
         }
 
         writer.openBlock("products: [", "],") {
-            writer.write(".library(name: \"${settings.moduleName}\", targets: [\"${settings.moduleName}\"])")
+            writer.write(".library(name: \"${prefixedTargetName}\", targets: [\"${prefixedTargetName}\"])")
         }
 
         writer.openBlock("targets: [", "]") {
             writer.openBlock(".target(", "),") {
-                writer.write("name: \"${settings.moduleName}\",")
+                writer.write("name: \"${prefixedTargetName}\",")
                 writer.openBlock("dependencies: [", "],") {
                     for (dependency in distinctDependencies) {
                         writer.openBlock(".product(", "),") {
@@ -52,9 +52,9 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             }
             if (generateTestTarget) {
                 writer.openBlock(".testTarget(", ")") {
-                    writer.write("name: \"${settings.moduleName}Tests\",")
+                    writer.write("name: \"${prefixedTargetName}Tests\",")
                     writer.openBlock("dependencies: [", "],") {
-                        writer.write("\$S,", settings.moduleName)
+                        writer.write("\$S,", prefixedTargetName)
                         writer.write(".product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")")
                     }
                     writer.write("path: \"./${settings.moduleName}Tests\"")
