@@ -22,7 +22,7 @@ interface MiddlewareRenderable {
 
     val position: MiddlewarePosition
 
-    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape, operationStackName: String) {}
+    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, serviceShape: ServiceShape, op: OperationShape, operationStackName: String)
 
     fun middlewareParamsString(ctx: ProtocolGenerator.GenerationContext, serviceShape: ServiceShape, op: OperationShape): String { return "" }
 }
