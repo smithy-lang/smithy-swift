@@ -1,18 +1,21 @@
 package software.amazon.smithy.swift.codegen.integration.middlewares
 
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
-import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
-class ContentMD5Middleware {
-    val name = "ContentMD5Middleware"
+class ContentMD5Middleware : MiddlewareRenderable {
+    override val name = "ContentMD5Middleware"
 
-    val middlewareStep = MiddlewareStep.BUILDSTEP
+    override val middlewareStep = MiddlewareStep.BUILDSTEP
 
-    val position = MiddlewarePosition.BEFORE
+    override val position = MiddlewarePosition.BEFORE
 
     fun render(
         op: OperationShape,
@@ -20,7 +23,9 @@ class ContentMD5Middleware {
         outputShapeName: String,
         operationStackName: String
     ) {
-        val outputErrorName = "${op.capitalizedName()}OutputError"
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
+        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
+        }
     }
 }

@@ -172,10 +172,10 @@ class HttpProtocolClientGeneratorTests {
                     }
                     return next.handle(context: context, input: copiedInput)
                 }
-                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputHeadersMiddleware())
-                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputQueryItemMiddleware())
+                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
+                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
-                operation.serializeStep.intercept(position: .before, middleware: AllocateWidgetInputBodyMiddleware())
+                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputBodyMiddleware())
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                 operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())
