@@ -127,7 +127,6 @@ interface ProtocolGenerator {
 
     val operationMiddleware: OperationMiddleware
     val httpProtocolCustomizable: HttpProtocolCustomizable
-    val defaultContentType: String
     /**
      * Context object used for service serialization and deserialization
      */

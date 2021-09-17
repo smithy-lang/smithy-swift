@@ -3,11 +3,11 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
-import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class ContentMD5Middleware : MiddlewareRenderable {
@@ -24,7 +24,7 @@ class ContentMD5Middleware : MiddlewareRenderable {
         operationStackName: String
     ) {
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            val outputErrorName = "${op.capitalizedName()}OutputError"
+            val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }

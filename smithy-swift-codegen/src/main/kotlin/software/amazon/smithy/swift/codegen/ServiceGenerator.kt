@@ -101,9 +101,18 @@ class ServiceGenerator(
             val inputShape = opIndex.getInput(op).get()
             return symbolProvider.toSymbol(inputShape).name
         }
+        fun getOperationInputShapeName(symbolProvider: SymbolProvider, model: Model, op: OperationShape): String {
+            val inputShape = model.expectShape(op.input.get())
+            return symbolProvider.toSymbol(inputShape).name
+        }
 
         fun getOperationOutputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
             val outputShape = opIndex.getOutput(op).get()
+            return symbolProvider.toSymbol(outputShape).name
+        }
+
+        fun getOperationOutputShapeName(symbolProvider: SymbolProvider, model: Model, op: OperationShape): String {
+            val outputShape = model.expectShape(op.output.get())
             return symbolProvider.toSymbol(outputShape).name
         }
 

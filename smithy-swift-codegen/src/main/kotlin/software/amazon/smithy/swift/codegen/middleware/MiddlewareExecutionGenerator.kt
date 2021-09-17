@@ -4,7 +4,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.EnumTrait
@@ -32,7 +31,6 @@ class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val httpBindingResolver: HttpBindingResolver,
-    private val defaultContentType: String,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val operationStackName: String
@@ -40,15 +38,15 @@ class MiddlewareExecutionGenerator(
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
 
-    fun render(opIndex: OperationIndex, op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
+    fun render(op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
         val httpTrait = httpBindingResolver.httpTrait(op)
         val requestBindings = httpBindingResolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         renderUriPath(httpTrait, pathBindings, writer, onError)
 
         val operationErrorName = "${op.capitalizedName()}OutputError"
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, opIndex, op)
-        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, opIndex, op)
+        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, ctx.model, op)
+        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, ctx.model, op)
         writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)

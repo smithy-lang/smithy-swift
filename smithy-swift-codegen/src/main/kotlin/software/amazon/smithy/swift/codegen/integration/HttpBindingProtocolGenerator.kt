@@ -482,6 +482,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
+    protected abstract val defaultContentType: String
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean

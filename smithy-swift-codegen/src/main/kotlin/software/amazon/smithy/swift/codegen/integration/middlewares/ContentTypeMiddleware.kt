@@ -2,12 +2,12 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
-import software.amazon.smithy.swift.codegen.model.capitalizedName
 
 class ContentTypeMiddleware(val defaultContentType: String) : MiddlewareRenderable {
 
@@ -24,12 +24,9 @@ class ContentTypeMiddleware(val defaultContentType: String) : MiddlewareRenderab
         op: OperationShape,
         operationStackName: String
     ) {
-        val inputShape = ctx.model.expectShape(op.input.get())
-        val inputShapeName = ctx.symbolProvider.toSymbol(inputShape).name
-        val outputShape = ctx.model.expectShape(op.output.get())
-        val outputShapeName = ctx.symbolProvider.toSymbol(outputShape).name
-        val outputErrorName = "${op.capitalizedName()}OutputError"
-
+        val inputShapeName = ServiceGenerator.getOperationInputShapeName(ctx.symbolProvider, ctx.model, op)
+        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, ctx.model, op)
+        val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
     }
 }
