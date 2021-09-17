@@ -38,6 +38,8 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.DeserializeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
@@ -452,6 +454,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         for (operation in getHttpBindingOperations(ctx)) {
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware())
+            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware())
+            operationMiddleware.appendMiddleware(operation, DeserializeMiddleware())
+
             addProtocolSpecificMiddleware(ctx, operation)
 
             for (integration in ctx.integrations) {

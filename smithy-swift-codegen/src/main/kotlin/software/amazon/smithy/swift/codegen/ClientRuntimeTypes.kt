@@ -54,7 +54,9 @@ object ClientRuntimeTypes {
         val OperationOutput = runtimeSymbol("OperationOutput")
         val Middleware = runtimeSymbol("Middleware")
         val LoggerMiddleware = runtimeSymbol("LoggerMiddleware")
+        val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware")
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware")
+        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware")
         val OperationStack = runtimeSymbol("OperationStack")
 
