@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -99,10 +100,21 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
             val operationStack = "operationStack"
             writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
-            renderSerializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
-            renderBuildMiddleware(test, operation, operationStack, outputSymbol, outputErrorName, hasHttpBody)
-            httpProtocolCustomizable.renderMiddlewareForGeneratedRequestTests(writer, test, operationStack, inputSymbol, outputSymbol, outputErrorName, hasHttpBody)
+
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
+
+            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
+            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
+            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP)
+            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
+            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
+
             if (hasIdempotencyTokenTrait) {
 
                 IdempotencyTokenMiddlewareGenerator(
@@ -146,7 +158,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<$outputSymbol, $outputErrorName>())")
         }
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            ContentMD5Middleware().render(op, writer, outputSymbol.name, operationStack)
+            ContentMD5Middleware().render(model, symbolProvider, writer, op, operationStack)
         }
     }
 

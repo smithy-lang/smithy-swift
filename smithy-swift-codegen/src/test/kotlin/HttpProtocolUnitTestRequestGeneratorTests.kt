@@ -17,6 +17,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     val ctx = newTestContext()
     init {
+        ctx.generator.initializeMiddleware(ctx.generationCtx)
         ctx.generator.generateProtocolUnitTests(ctx.generationCtx)
         ctx.generationCtx.delegator.flushWriters()
     }

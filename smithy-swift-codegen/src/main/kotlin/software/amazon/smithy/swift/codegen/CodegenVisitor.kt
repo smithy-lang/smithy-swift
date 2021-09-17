@@ -128,13 +128,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             generateDeserializers(ctx)
             generateCodableConformanceForNestedTypes(ctx)
 
+            initializeMiddleware(ctx)
+
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
             val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
             shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
-
-            initializeMiddleware(ctx)
 
             generateProtocolClient(ctx)
         }

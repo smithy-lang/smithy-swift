@@ -137,10 +137,10 @@ class MiddlewareExecutionGenerator(
                 outputErrorName
             ).renderIdempotencyMiddleware()
         }
-        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.BUILDSTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.FINALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, ctx.service, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
     }
 }
