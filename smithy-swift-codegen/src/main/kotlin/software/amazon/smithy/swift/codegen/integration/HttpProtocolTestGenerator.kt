@@ -15,6 +15,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import java.util.TreeSet
 import java.util.logging.Logger
@@ -28,6 +29,7 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
+    private val operationMiddleware: OperationMiddleware,
     private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
@@ -74,6 +76,7 @@ class HttpProtocolTestGenerator(
                     .serviceName(serviceSymbol.name)
                     .testCases(requestTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
+                    .operationMiddleware(operationMiddleware)
                     .serdeContext(serdeContext)
                     .build()
                     .renderTestClass(testClassName)
@@ -107,6 +110,7 @@ class HttpProtocolTestGenerator(
                     .serviceName(serviceSymbol.name)
                     .testCases(responseTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
+                    .operationMiddleware(operationMiddleware)
                     .serdeContext(serdeContext)
                     .build()
                     .renderTestClass(testClassName)
@@ -148,6 +152,7 @@ class HttpProtocolTestGenerator(
                         .serviceName(serviceSymbol.name)
                         .testCases(testCases)
                         .httpProtocolCustomizable(httpProtocolCustomizable)
+                        .operationMiddleware(operationMiddleware)
                         .serdeContext(serdeContext)
                         .build()
                         .renderTestClass(testClassName)

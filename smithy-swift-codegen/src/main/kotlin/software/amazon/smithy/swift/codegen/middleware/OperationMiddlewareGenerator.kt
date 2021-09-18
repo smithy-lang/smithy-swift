@@ -1,9 +1,9 @@
 package software.amazon.smithy.swift.codegen.middleware
 
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 open class OperationMiddlewareGenerator : OperationMiddleware {
 
@@ -29,9 +29,9 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
     }
 
     override fun renderMiddleware(
-        ctx: ProtocolGenerator.GenerationContext,
+        model: Model,
+        symbolProvider: SymbolProvider,
         writer: SwiftWriter,
-        serviceShape: ServiceShape,
         operation: OperationShape,
         operationStackName: String,
         step: MiddlewareStep,
@@ -40,13 +40,9 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         val step = resolveStep(stack, step)
         for (renderableMiddlware in step) {
-            writer.putContext("ctx", ctx)
-            writer.putContext("serviceShape", serviceShape)
-            writer.putContext("operation", operation)
-            writer.putContext("operationStackName", operationStackName)
             val shouldRender = callback(writer, renderableMiddlware)
             if (shouldRender) {
-                renderableMiddlware.render(ctx, writer, serviceShape, operation, operationStackName)
+                renderableMiddlware.render(model, symbolProvider, writer, operation, operationStackName)
             }
         }
     }

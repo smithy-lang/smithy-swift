@@ -106,6 +106,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
             responseTestBuilder,
             errorTestBuilder,
             httpProtocolCustomizable,
+            operationMiddleware,
             HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }
