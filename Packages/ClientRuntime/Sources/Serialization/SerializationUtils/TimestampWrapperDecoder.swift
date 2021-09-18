@@ -11,14 +11,21 @@ public struct TimestampWrapperDecoder {
     static public func parseDateStringValue(_ dateStringValue: String,
                                             format: TimestampFormat,
                                             codingPath: [CodingKey]? = nil) throws -> Date {
-        let formatter: DateFormatter?
+        var formatter: DateFormatter?
         switch format {
         case .epochSeconds:
             return Date(timeIntervalSince1970: TimeInterval(dateStringValue)!)
         case .dateTime:
-            formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+            if let formattedDate = formatter!.date(from: dateStringValue) {
+                return formattedDate
+            } else {
+                formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+            }
+
         case .httpDate:
             formatter = DateFormatter.rfc5322DateFormatter
+
         }
         
         guard let formattedDate = formatter!.date(from: dateStringValue) else {
@@ -27,5 +34,6 @@ public struct TimestampWrapperDecoder {
             throw DecodingError.dataCorrupted(context)
         }
         return formattedDate
+
     }
 }
