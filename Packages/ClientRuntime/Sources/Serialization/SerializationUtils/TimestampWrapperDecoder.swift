@@ -16,7 +16,7 @@ public struct TimestampWrapperDecoder {
         case .epochSeconds:
             return Date(timeIntervalSince1970: TimeInterval(dateStringValue)!)
         case .dateTime:
-            formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+            formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
         case .httpDate:
             formatter = DateFormatter.rfc5322DateFormatter
         }
