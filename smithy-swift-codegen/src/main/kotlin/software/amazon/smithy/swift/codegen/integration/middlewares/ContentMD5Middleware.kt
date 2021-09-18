@@ -26,17 +26,4 @@ class ContentMD5Middleware : MiddlewareRenderable {
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }
-/*
-    // TODO: Remove this so that there is only one render function
-    fun render(
-        op: OperationShape,
-        writer: SwiftWriter,
-        outputShapeName: String,
-        operationStackName: String
-    ) {
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
-        }
-    }*/
 }

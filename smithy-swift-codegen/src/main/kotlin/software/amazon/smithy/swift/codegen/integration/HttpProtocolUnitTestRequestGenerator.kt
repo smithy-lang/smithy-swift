@@ -5,10 +5,8 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -17,7 +15,6 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -86,7 +83,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
             val outputErrorName = "${operation.capitalizedName()}OutputError"
-            val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0 || httpProtocolCustomizable.alwaysHasHttpBody()
 
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
@@ -130,35 +126,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("return .failure(.service(serviceError, httpResponse))")
             }
             writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
-        }
-    }
-
-    private fun renderSerializeMiddleware(
-        test: HttpRequestTestCase,
-        operationStack: String,
-        inputSymbol: Symbol,
-        outputSymbol: Symbol,
-        outputErrorName: String,
-        hasHttpBody: Boolean
-    ) {
-        writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}HeadersMiddleware())")
-        writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}QueryItemMiddleware())")
-        if (hasHttpBody) {
-            writer.write("$operationStack.serializeStep.intercept(position: .before, middleware: ${inputSymbol.name}BodyMiddleware())")
-        }
-
-        if (test.headers.keys.contains("Content-Type")) {
-            val contentType = test.headers["Content-Type"]
-            writer.write("$operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<${inputSymbol.name}, $outputSymbol, $outputErrorName>(contentType: \"${contentType}\"))")
-        }
-    }
-
-    private fun renderBuildMiddleware(test: HttpRequestTestCase, op: OperationShape, operationStack: String, outputSymbol: Symbol, outputErrorName: String, hasHttpBody: Boolean) {
-        if (hasHttpBody) {
-            writer.write("$operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<$outputSymbol, $outputErrorName>())")
-        }
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            ContentMD5Middleware().render(model, symbolProvider, writer, op, operationStack)
         }
     }
 
