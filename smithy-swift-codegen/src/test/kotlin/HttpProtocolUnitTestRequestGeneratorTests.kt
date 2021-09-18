@@ -81,10 +81,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(id: "SmokeTest")
-        operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SmokeTestInputBodyMiddleware())
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -159,10 +160,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
-        operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: ExplicitStringInputBodyMiddleware())
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -220,8 +222,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
-        operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(contentType: "application/json"))
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -280,11 +284,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
-        operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SimpleScalarPropertiesInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -347,11 +351,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
-        operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: StreamingTraitsInputBodyMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -415,8 +419,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
-        operationStack.serializeStep.intercept(position: .before, middleware: HttpPrefixHeadersInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: HttpPrefixHeadersInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(contentType: "application/json"))
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -482,11 +488,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
-        operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: JsonUnionsInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -584,11 +590,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .withEncoder(value: encoder)
                       .build()
         var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
-        operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: RecursiveShapesInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
-        operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>())
+        operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputBodyMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -669,11 +675,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                           .withEncoder(value: encoder)
                           .build()
             var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputHeadersMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputQueryItemMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputHeadersMiddleware())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
-            operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputBodyMiddleware())
+            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
@@ -752,11 +758,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                           .withEncoder(value: encoder)
                           .build()
             var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
-            operationStack.serializeStep.intercept(position: .before, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
-            operationStack.buildStep.intercept(position: .before, middleware: ContentLengthMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>())
+            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
+            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
