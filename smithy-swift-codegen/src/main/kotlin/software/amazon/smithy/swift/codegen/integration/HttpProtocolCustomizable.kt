@@ -17,18 +17,6 @@ interface HttpProtocolCustomizable {
         // Default implementation is no-op
     }
 
-    fun renderMiddlewareForGeneratedRequestTests(
-        writer: SwiftWriter,
-        test: HttpRequestTestCase,
-        operationStack: String,
-        inputSymbol: Symbol,
-        outputSymbol: Symbol,
-        outputErrorName: String,
-        hasHttpBody: Boolean
-    ) {
-        // Default implementation is no-op
-    }
-
     fun renderContextAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
