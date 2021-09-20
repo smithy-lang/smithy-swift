@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
+import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class IdempotencyTokenMiddleware : MiddlewareRenderable {
     override val name = "IdempotencyTokenMiddleware"
@@ -24,7 +25,7 @@ class IdempotencyTokenMiddleware : MiddlewareRenderable {
     override fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
 
         val inputShape = model.expectShape(op.input.get())
-        val idempotentMember = inputShape.members().firstOrNull { it.hasTrait(IdempotencyTokenTrait::class.java) }
+        val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
         idempotentMember?.let {
             val idempotentMemberName = it.memberName.decapitalize()
             val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
