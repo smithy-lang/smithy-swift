@@ -122,11 +122,13 @@ interface ProtocolGenerator {
 
     fun initializeMiddleware(ctx: GenerationContext)
 
-    fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
-        HttpTraitResolver(ctx)
+    fun getProtocolHttpBindingResolver(ctx: GenerationContext, defaultContentType: String): HttpBindingResolver =
+        HttpTraitResolver(ctx, defaultContentType)
 
     val operationMiddleware: OperationMiddleware
     val httpProtocolCustomizable: HttpProtocolCustomizable
+    val defaultContentType: String
+
     /**
      * Context object used for service serialization and deserialization
      */

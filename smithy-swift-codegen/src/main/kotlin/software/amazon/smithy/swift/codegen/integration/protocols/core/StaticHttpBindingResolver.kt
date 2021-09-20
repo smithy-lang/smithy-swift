@@ -25,7 +25,8 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 
 open class StaticHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
-    private val httpTrait: HttpTrait
+    private val httpTrait: HttpTrait,
+    private val defaultContentType: String
 ) : HttpBindingResolver {
     override fun httpTrait(operationShape: OperationShape): HttpTrait {
         return httpTrait
@@ -40,6 +41,8 @@ open class StaticHttpBindingResolver(
             HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT, "")
         }.toList()
     }
+
+    override fun determineRequestContentType(operationShape: OperationShape): String = defaultContentType
 
     override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
         is OperationShape ->
