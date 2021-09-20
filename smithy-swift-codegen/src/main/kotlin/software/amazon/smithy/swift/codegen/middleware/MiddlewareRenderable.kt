@@ -23,5 +23,4 @@ interface MiddlewareRenderable {
     val position: MiddlewarePosition
 
     fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String)
-
 }
