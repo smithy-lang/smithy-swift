@@ -8,11 +8,9 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
-import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.EndpointTraitConstructor
@@ -22,7 +20,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -122,21 +119,6 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        val inputShape = model.expectShape(op.input.get())
-        val outputShape = model.expectShape(op.output.get())
-        val outputShapeName = symbolProvider.toSymbol(outputShape).name
-        val outputErrorName = "${op.capitalizedName()}OutputError"
-        val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
-        val hasIdempotencyTokenTrait = idempotentMember != null
-        if (hasIdempotencyTokenTrait) {
-            IdempotencyTokenMiddlewareGenerator(
-                writer,
-                idempotentMember!!.memberName.decapitalize(),
-                operationStackName,
-                outputShapeName,
-                outputErrorName
-            ).renderIdempotencyMiddleware()
-        }
         operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
         operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
         operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
