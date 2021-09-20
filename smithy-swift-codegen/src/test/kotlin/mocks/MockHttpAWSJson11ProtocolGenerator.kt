@@ -35,7 +35,8 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockJsonHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
-) : StaticHttpBindingResolver(context, awsJsonHttpTrait) {
+    private val defaultContentType: String
+) : StaticHttpBindingResolver(context, awsJsonHttpTrait, defaultContentType) {
 
     companion object {
         private val awsJsonHttpTrait: HttpTrait = HttpTrait
@@ -104,6 +105,6 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         // Intentionally empty
     }
 
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext):
-        HttpBindingResolver = MockJsonHttpBindingResolver(ctx)
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
+        HttpBindingResolver = MockJsonHttpBindingResolver(ctx, defaultContentType)
 }
