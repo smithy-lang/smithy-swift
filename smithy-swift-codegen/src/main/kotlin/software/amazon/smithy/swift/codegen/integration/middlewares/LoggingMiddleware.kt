@@ -29,14 +29,10 @@ class LoggingMiddleware : MiddlewareRenderable {
         op: OperationShape,
         operationStackName: String
     ) {
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N(${middlewareParamsString(model, symbolProvider, op)}))", ClientRuntimeTypes.Middleware.LoggerMiddleware)
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N(${middlewareParamsString()}))", ClientRuntimeTypes.Middleware.LoggerMiddleware)
     }
 
-    override fun middlewareParamsString(
-        model: Model,
-        symbolProvider: SymbolProvider,
-        op: OperationShape
-    ): String {
+    private fun middlewareParamsString(): String {
         return "clientLogMode: config.clientLogMode"
     }
 }

@@ -24,5 +24,4 @@ interface MiddlewareRenderable {
 
     fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String)
 
-    fun middlewareParamsString(model: Model, symbolProvider: SymbolProvider, op: OperationShape): String { return "" }
 }
