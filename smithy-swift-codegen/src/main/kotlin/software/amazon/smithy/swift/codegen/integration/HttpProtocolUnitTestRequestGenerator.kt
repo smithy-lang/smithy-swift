@@ -12,15 +12,12 @@ import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
-import software.amazon.smithy.swift.codegen.IdempotencyTokenMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import java.util.Locale
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -110,14 +107,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
             operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
-
-            if (hasIdempotencyTokenTrait) {
-
-                IdempotencyTokenMiddlewareGenerator(
-                    writer,
-                    idempotentMember!!.memberName.replaceFirstChar { it.lowercase(Locale.getDefault()) }, operationStack, outputSymbol.name, outputErrorName
-                ).renderIdempotencyMiddleware()
-            }
 
             writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")

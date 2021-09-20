@@ -42,6 +42,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengt
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.DeserializeMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.IdempotencyTokenMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputHeadersMiddleware
@@ -458,6 +459,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         for (operation in getHttpBindingOperations(ctx)) {
+            operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware())
+
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware())
 
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware())

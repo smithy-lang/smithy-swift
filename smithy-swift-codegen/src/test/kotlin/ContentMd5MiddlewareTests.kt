@@ -22,7 +22,7 @@ class ContentMd5MiddlewareTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
-                    operation.initializeStep.intercept(position: .before, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse>, ClientRuntime.SdkError<IdempotencyTokenWithStructureOutputError>> in
+                    operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse>, ClientRuntime.SdkError<IdempotencyTokenWithStructureOutputError>> in
                         let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                         var copiedInput = input
                         if input.token == nil {
