@@ -51,6 +51,22 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = AwsJson1_1Trait.ID
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
+        val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
+        val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
+        val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
+
+        return HttpProtocolTestGenerator(
+            ctx,
+            requestTestBuilder,
+            responseTestBuilder,
+            errorTestBuilder,
+            httpProtocolCustomizable,
+            operationMiddleware,
+            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
+        ).generateProtocolTests()
+    }
+
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockAWSJson11HttpProtocolCustomizations()
     override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationJsonName())

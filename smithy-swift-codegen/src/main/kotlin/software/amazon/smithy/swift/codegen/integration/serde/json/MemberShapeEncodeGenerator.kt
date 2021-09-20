@@ -164,8 +164,8 @@ abstract class MemberShapeEncodeGenerator(
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
-                writer.write("var \$L = $containerName.nestedContainer(keyedBy: \$N.self)", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
-                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
+                writer.write("var \$L = $containerName.nestedUnkeyedContainer(forKey: \$N($dictKey${level - 1}))", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
+                renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"

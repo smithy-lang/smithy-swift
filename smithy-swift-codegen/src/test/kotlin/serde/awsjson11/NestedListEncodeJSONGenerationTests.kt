@@ -12,15 +12,16 @@ class NestedListEncodeJSONGenerationTests {
 
     @Test
     fun `list of maps of lists`() {
-        val context = setupTests("Isolated/json11/list-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
+        val context = setupTests("Isolated/json11/lists-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
         val contents = getFileContents(context.manifest, "/Example/models/ListOfMapsOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct ListOfMapsOperationInput: Equatable {
-                public let targetMaps: [[String:[String]?]?]?
+            public struct ListOfMapsOperationInput: Swift.Equatable {
+                public let targetMaps: [[Swift.String:[Swift.String]]]?
+            
                 public init (
-                    targetMaps: [[String:[String]?]?]? = nil
+                    targetMaps: [[Swift.String:[Swift.String]]]? = nil
                 )
                 {
                     self.targetMaps = targetMaps
@@ -32,30 +33,26 @@ class NestedListEncodeJSONGenerationTests {
 
     @Test
     fun `encode list of maps of lists`() {
-        val context = setupTests("Isolated/json11/list-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
+        val context = setupTests("Isolated/json11/lists-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
         val contents = getFileContents(context.manifest, "/Example/models/ListOfMapsOperationInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ListOfMapsOperationInput: Encodable, Reflection {
-                enum CodingKeys: String, CodingKey {
+            extension ListOfMapsOperationInput: Swift.Encodable, ClientRuntime.Reflection {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
                     case targetMaps
                 }
             
-                public func encode(to encoder: Encoder) throws {
+                public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let targetMaps = targetMaps {
                         var targetMapsContainer = encodeContainer.nestedUnkeyedContainer(forKey: .targetMaps)
                         for targetmaps0 in targetMaps {
-                            var targetmaps0Container = targetMapsContainer.nestedContainer(keyedBy: Key.self)
-                            if let targetmaps0 = targetmaps0 {
-                                for (dictKey1, targetmap1) in targetmaps0 {
-                                    var targetmap1Container = targetmaps0Container.nestedUnkeyedContainer(forKey: Key(dictKey1))
-                                    if let targetmap1 = targetmap1 {
-                                        for item in targetmap1 {
-                                            try targetmap1Container.encode(item)
-                                        }
-                                    }
+                            var targetmaps0Container = targetMapsContainer.nestedContainer(keyedBy: ClientRuntime.Key.self)
+                            for (dictKey1, targetmap1) in targetmaps0 {
+                                var targetmap1Container = targetmaps0Container.nestedUnkeyedContainer(forKey: ClientRuntime.Key(dictKey1))
+                                for targetmapvaluelist2 in targetmap1 {
+                                    try targetmap1Container.encode(targetmapvaluelist2)
                                 }
                             }
                         }
