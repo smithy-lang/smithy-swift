@@ -40,7 +40,8 @@ class MockEC2QueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizatio
 
 class MockEC2QueryHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
-) : StaticHttpBindingResolver(context, awsQueryHttpTrait) {
+    private val contentType: String
+) : StaticHttpBindingResolver(context, awsQueryHttpTrait, contentType) {
 
     companion object {
         private val awsQueryHttpTrait: HttpTrait = HttpTrait
@@ -102,8 +103,8 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         // Intentionally empty
     }
 
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext):
-        HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx)
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
+        HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx, defaultContentType)
 
     override fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
         return true

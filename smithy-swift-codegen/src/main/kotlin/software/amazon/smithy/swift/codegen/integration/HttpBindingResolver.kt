@@ -33,10 +33,13 @@ interface HttpBindingResolver {
     fun responseBindings(shape: Shape): List<HttpBindingDescriptor>
 
     fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor>
+
+    fun determineRequestContentType(operationShape: OperationShape): String
 }
 
 class HttpTraitResolver(
     private val generationContext: ProtocolGenerator.GenerationContext,
+    private val defaultContentType: String,
     private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(generationContext.model),
     private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
 ) : HttpBindingResolver {
@@ -54,4 +57,8 @@ class HttpTraitResolver(
     override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
         return bindingIndex.getRequestBindings(operationShape).values.map { HttpBindingDescriptor(it) }
     }
+
+    override fun determineRequestContentType(operationShape: OperationShape): String = bindingIndex
+        .determineRequestContentType(operationShape, defaultContentType)
+        .orElse(defaultContentType)
 }

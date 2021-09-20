@@ -166,7 +166,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         val httpOperations = getHttpBindingOperations(ctx)
-        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
 
         val outputShapesWithMetadata = resolveOutputShapes(ctx)
@@ -361,7 +361,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         op: OperationShape
     ) {
         val opIndex = OperationIndex.of(ctx.model)
-        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
@@ -390,7 +390,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
         val opIndex = OperationIndex.of(ctx.model)
-        val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         val httpTrait = httpBindingResolver.httpTrait(op)
         val requestBindings = httpBindingResolver.requestBindings(op)
         val inputShape = opIndex.getInput(op).get()
@@ -431,7 +431,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
                 val operationErrorName = "${op.capitalizedName()}OutputError"
                 val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
-                val httpBindingResolver = getProtocolHttpBindingResolver(ctx)
+                val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
                 val requestBindings = httpBindingResolver.requestBindings(op)
                 val bodyMiddleware = httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
 
@@ -446,7 +446,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
             val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
                 ctx,
-                getProtocolHttpBindingResolver(ctx),
+                getProtocolHttpBindingResolver(ctx, defaultContentType),
                 writer,
                 serviceSymbol.name,
                 defaultContentType,
@@ -458,6 +458,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
+        val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
+
         for (operation in getHttpBindingOperations(ctx)) {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware())
 
@@ -465,7 +467,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware())
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware())
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(defaultContentType))
+            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware())
 
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware())
@@ -485,7 +487,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
-    protected abstract val defaultContentType: String
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
@@ -533,7 +534,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val containedOperations: MutableList<OperationShape> = mutableListOf()
         for (operation in topDownIndex.getContainedOperations(ctx.service)) {
             OptionalUtils.ifPresentOrElse(
-                Optional.of(getProtocolHttpBindingResolver(ctx).httpTrait(operation)::class.java),
+                Optional.of(getProtocolHttpBindingResolver(ctx, defaultContentType).httpTrait(operation)::class.java),
                 { containedOperations.add(operation) }
             ) {
                 LOGGER.warning(

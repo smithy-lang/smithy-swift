@@ -162,7 +162,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(contentType: "text/plain"))
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputBodyMiddleware())
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
@@ -353,7 +353,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputBodyMiddleware())
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
