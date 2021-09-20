@@ -105,5 +105,5 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext):
-            HttpBindingResolver = MockJsonHttpBindingResolver(ctx)
+        HttpBindingResolver = MockJsonHttpBindingResolver(ctx)
 }
