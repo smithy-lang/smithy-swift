@@ -30,7 +30,8 @@ class MiddlewareExecutionGenerator(
     private val httpBindingResolver: HttpBindingResolver,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
-    private val operationStackName: String
+    private val operationStackName: String,
+    private val executionContext: MiddlewareRenderableExecutionContext
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
@@ -119,10 +120,10 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
-        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP, executionContext)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.BUILDSTEP, executionContext)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP, executionContext)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP, executionContext)
+        operationMiddleware.renderMiddleware(ctx.model, ctx.symbolProvider, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP, executionContext)
     }
 }

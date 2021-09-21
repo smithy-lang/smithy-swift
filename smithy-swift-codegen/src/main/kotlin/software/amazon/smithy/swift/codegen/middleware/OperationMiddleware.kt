@@ -4,17 +4,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.utils.CodeWriter
-
-/*
- * TODO: We need to solidify an interface to allow rendable middleware to be overridden
- *       This is a placeholder while we figure out how to expose this
- */
-typealias RenderMiddlewareCallback = (CodeWriter, MiddlewareRenderable) -> Boolean
-
-fun defaultToTrue(codeWriter: CodeWriter, middlewareRenderable: MiddlewareRenderable): Boolean {
-    return true
-}
 
 interface OperationMiddleware {
     fun appendMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable)
@@ -28,6 +17,6 @@ interface OperationMiddleware {
         operation: OperationShape,
         operationStackName: String,
         step: MiddlewareStep,
-        callback: RenderMiddlewareCallback = ::defaultToTrue
+        executionContext: MiddlewareRenderableExecutionContext
     )
 }

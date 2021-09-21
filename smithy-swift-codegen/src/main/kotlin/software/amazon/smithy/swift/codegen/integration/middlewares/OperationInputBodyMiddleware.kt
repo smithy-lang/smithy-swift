@@ -8,6 +8,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class OperationInputBodyMiddleware(val shouldRender: Boolean = false) : MiddlewareRenderable {
@@ -23,7 +24,8 @@ class OperationInputBodyMiddleware(val shouldRender: Boolean = false) : Middlewa
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        executionContext: MiddlewareRenderableExecutionContext
     ) {
         val inputShape = model.expectShape(op.input.get())
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, model, op)

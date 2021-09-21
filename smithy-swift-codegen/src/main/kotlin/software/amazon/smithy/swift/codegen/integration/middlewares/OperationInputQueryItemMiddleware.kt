@@ -7,6 +7,7 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class OperationInputQueryItemMiddleware : MiddlewareRenderable {
@@ -22,7 +23,8 @@ class OperationInputQueryItemMiddleware : MiddlewareRenderable {
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        executionContext: MiddlewareRenderableExecutionContext
     ) {
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, model, op)
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}QueryItemMiddleware())")

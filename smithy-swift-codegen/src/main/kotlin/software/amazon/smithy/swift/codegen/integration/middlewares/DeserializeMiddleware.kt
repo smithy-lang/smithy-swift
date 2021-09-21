@@ -7,6 +7,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class DeserializeMiddleware : MiddlewareRenderable {
@@ -22,7 +23,8 @@ class DeserializeMiddleware : MiddlewareRenderable {
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        executionContext: MiddlewareRenderableExecutionContext
     ) {
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N())", ClientRuntimeTypes.Middleware.DeserializeMiddleware)
     }
