@@ -157,7 +157,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
 
-        if (shape.hasTrait<NestedTrait>() && service != null) {
+        if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
             builder.namespace(service.nestedNamespaceType(this).name, ".")
         }
 
