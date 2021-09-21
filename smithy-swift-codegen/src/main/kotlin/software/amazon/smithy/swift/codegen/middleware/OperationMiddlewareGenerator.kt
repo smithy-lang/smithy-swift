@@ -35,15 +35,12 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
         operation: OperationShape,
         operationStackName: String,
         step: MiddlewareStep,
-        callback: RenderMiddlewareCallback
+        executionContext: MiddlewareRenderableExecutionContext
     ) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         val step = resolveStep(stack, step)
         for (renderableMiddlware in step) {
-            val shouldRender = callback(writer, renderableMiddlware)
-            if (shouldRender) {
-                renderableMiddlware.render(model, symbolProvider, writer, operation, operationStackName)
-            }
+            renderableMiddlware.render(model, symbolProvider, writer, operation, operationStackName, executionContext)
         }
     }
 

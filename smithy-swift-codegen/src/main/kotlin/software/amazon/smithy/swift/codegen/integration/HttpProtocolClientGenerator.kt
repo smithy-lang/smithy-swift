@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -63,7 +64,7 @@ open class HttpProtocolClientGenerator(
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
                     val operationStackName = "operation"
-                    val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
+                    val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName, MiddlewareRenderableExecutionContext.CLIENT)
                     generator.render(it) { writer, labelMemberName ->
                         writer.write("completion(.failure(.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))))", ClientRuntimeTypes.Core.ClientError)
                         writer.write("return")

@@ -9,6 +9,7 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
@@ -19,7 +20,7 @@ class ContentMD5Middleware : MiddlewareRenderable {
 
     override val position = MiddlewarePosition.BEFORE
 
-    override fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String, executionContext: MiddlewareRenderableExecutionContext) {
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
             val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
             val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
