@@ -96,14 +96,4 @@ class StringExtensionsTests: XCTestCase {
             XCTAssertEqual(string.substringBefore(":"), match)
         }
     }
-    
-    func testNilOrEmptyExtension() {
-        let emptyString: String? = ""
-        let nilString: String? = nil
-        let stringWithValue: String? = "something"
-        
-        XCTAssertFalse(stringWithValue.isNilOrEmpty)
-        XCTAssertTrue(nilString.isNilOrEmpty)
-        XCTAssertTrue(emptyString.isNilOrEmpty)
-    }
 }
