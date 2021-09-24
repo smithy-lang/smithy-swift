@@ -7,7 +7,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class varStructEncodeGenerationIsolatedTests {
+class StructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
