@@ -40,8 +40,8 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderContextAttributes(op: OperationShape) {
-        val httpTrait = httpBindingResolver.httpTrait(op)
-        val httpMethod = httpTrait.method.toLowerCase()
+        val httpMethod = resolveHttpMethod(op)
+
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
         writer.write("  .withEncoder(value: encoder)")
         writer.write("  .withDecoder(value: decoder)")
@@ -58,6 +58,19 @@ class MiddlewareExecutionGenerator(
         }
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
+    }
+
+    private fun resolveHttpMethod(op: OperationShape): String {
+        val httpMethod = when (executionContext) {
+            MiddlewareRenderableExecutionContext.PRESIGNER_POLLY_GET_REQUEST -> {
+                "get"
+            }
+            else -> {
+                val httpTrait = httpBindingResolver.httpTrait(op)
+                httpTrait.method.toLowerCase()
+            }
+        }
+        return httpMethod
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {

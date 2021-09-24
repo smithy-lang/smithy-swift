@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 enum class MiddlewareRenderableExecutionContext {
     CLIENT,
     PRESIGNER,
+    PRESIGNER_POLLY_GET_REQUEST,
     UNIT_TEST_REQUEST,
 }
 /**

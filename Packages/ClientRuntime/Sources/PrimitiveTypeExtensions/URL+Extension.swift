@@ -4,6 +4,7 @@
  */
 
 import Foundation
+public typealias URL = Foundation.URL
 extension URL {
     func toQueryItems() -> [URLQueryItem]? { return URLComponents(url: self,
                                                                   resolvingAgainstBaseURL: false)?.queryItems }

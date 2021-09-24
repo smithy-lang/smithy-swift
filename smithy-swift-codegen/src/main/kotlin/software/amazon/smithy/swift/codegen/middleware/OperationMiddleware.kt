@@ -10,6 +10,8 @@ interface OperationMiddleware {
     fun prependMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable)
     fun removeMiddleware(operation: OperationShape, step: MiddlewareStep, middlewareName: String)
 
+    fun clone(): OperationMiddleware
+
     fun renderMiddleware(
         model: Model,
         symbolProvider: SymbolProvider,
