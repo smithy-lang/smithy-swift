@@ -113,3 +113,10 @@ extension String {
         return ByteBuffer(data: self.data(using: .utf8) ?? Data())
     }
 }
+
+public extension Optional where Wrapped: Collection {
+  var isEmptyOrNil: Bool {
+    guard let value = self else { return true }
+    return value.isEmpty
+  }
+}
