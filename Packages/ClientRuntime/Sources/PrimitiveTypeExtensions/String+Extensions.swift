@@ -115,7 +115,7 @@ extension String {
 }
 
 public extension Optional where Wrapped: Collection {
-  var isEmptyOrNil: Bool {
+  var isNilOrEmpty: Bool {
     guard let value = self else { return true }
     return value.isEmpty
   }
