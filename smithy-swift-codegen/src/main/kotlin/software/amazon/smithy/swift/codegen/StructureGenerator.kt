@@ -124,7 +124,7 @@ class StructureGenerator(
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 memberSymbol = memberSymbol.recursiveSymbol()
             }
-            
+
             writer.writeAvailableAttribute(model, it)
             writer.write("public var \$L: \$T", memberName, memberSymbol)
         }

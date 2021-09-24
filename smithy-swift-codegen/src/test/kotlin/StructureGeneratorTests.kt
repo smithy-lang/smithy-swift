@@ -36,10 +36,10 @@ class StructureGeneratorTests {
             """
             /// This *is* documentation about the shape.
             public struct MyStruct: Swift.Equatable {
-                public let bar: Swift.Int
+                public var bar: Swift.Int
                 /// This *is* documentation about the member.
-                public let baz: Swift.Int?
-                public let foo: Swift.String?
+                public var baz: Swift.Int?
+                public var foo: Swift.String?
             
                 public init (
                     bar: Swift.Int = 0,
@@ -69,21 +69,21 @@ class StructureGeneratorTests {
         val expected =
             """
         public struct PrimitiveTypesInput: Swift.Equatable {
-            public let booleanVal: Swift.Bool?
-            public let byteVal: Swift.Int8?
-            public let doubleVal: Swift.Double?
-            public let floatVal: Swift.Float?
-            public let intVal: Swift.Int?
-            public let longVal: Swift.Int?
-            public let primitiveBooleanVal: Swift.Bool
-            public let primitiveByteVal: Swift.Int8
-            public let primitiveDoubleVal: Swift.Double
-            public let primitiveFloatVal: Swift.Float
-            public let primitiveIntVal: Swift.Int
-            public let primitiveLongVal: Swift.Int
-            public let primitiveShortVal: Swift.Int16
-            public let shortVal: Swift.Int16?
-            public let str: Swift.String?
+            public var booleanVal: Swift.Bool?
+            public var byteVal: Swift.Int8?
+            public var doubleVal: Swift.Double?
+            public var floatVal: Swift.Float?
+            public var intVal: Swift.Int?
+            public var longVal: Swift.Int?
+            public var primitiveBooleanVal: Swift.Bool
+            public var primitiveByteVal: Swift.Int8
+            public var primitiveDoubleVal: Swift.Double
+            public var primitiveFloatVal: Swift.Float
+            public var primitiveIntVal: Swift.Int
+            public var primitiveLongVal: Swift.Int
+            public var primitiveShortVal: Swift.Int16
+            public var shortVal: Swift.Int16?
+            public var str: Swift.String?
         
             public init (
                 booleanVal: Swift.Bool? = nil,
@@ -140,8 +140,8 @@ class StructureGeneratorTests {
         val expected =
             """
 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
-    public let foo: Swift.String?
-    public let nested: Box<RecursiveShapesInputOutputNested2>?
+    public var foo: Swift.String?
+    public var nested: Box<RecursiveShapesInputOutputNested2>?
 
     public init (
         foo: Swift.String? = nil,
@@ -154,8 +154,8 @@ public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
 }
 
 public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
-    public let bar: Swift.String?
-    public let recursiveMember: RecursiveShapesInputOutputNested1?
+    public var bar: Swift.String?
+    public var recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
         bar: Swift.String? = nil,
@@ -169,7 +169,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 
 /// This *is* documentation about the shape.
 public struct RecursiveShapesInputOutput: Swift.Equatable {
-    public let nested: RecursiveShapesInputOutputNested1?
+    public var nested: RecursiveShapesInputOutputNested1?
 
     public init (
         nested: RecursiveShapesInputOutputNested1? = nil
@@ -198,8 +198,8 @@ public struct RecursiveShapesInputOutput: Swift.Equatable {
         val expected =
             """
 public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
-    public let foo: Swift.String?
-    public let recursiveList: [RecursiveShapesInputOutputNested2]?
+    public var foo: Swift.String?
+    public var recursiveList: [RecursiveShapesInputOutputNested2]?
 
     public init (
         foo: Swift.String? = nil,
@@ -212,8 +212,8 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
 }
 
 public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
-    public let bar: Swift.String?
-    public let recursiveMember: RecursiveShapesInputOutputNested1?
+    public var bar: Swift.String?
+    public var recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init (
         bar: Swift.String? = nil,
@@ -227,7 +227,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 
 /// This *is* documentation about the shape.
 public struct RecursiveShapesInputOutputLists: Swift.Equatable {
-    public let nested: RecursiveShapesInputOutputNested1?
+    public var nested: RecursiveShapesInputOutputNested1?
 
     public init (
         nested: RecursiveShapesInputOutputNested1? = nil
@@ -311,13 +311,13 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val expectedContents =
             """
             public struct JsonListsInput: Swift.Equatable {
-                public let booleanList: [Swift.Bool]?
-                public let integerList: [Swift.Int]?
-                public let nestedStringList: [[Swift.String]]?
-                public let sparseStringList: [Swift.String?]?
-                public let stringList: [Swift.String]?
-                public let stringSet: Swift.Set<Swift.String>?
-                public let timestampList: [ClientRuntime.Date]?
+                public var booleanList: [Swift.Bool]?
+                public var integerList: [Swift.Int]?
+                public var nestedStringList: [[Swift.String]]?
+                public var sparseStringList: [Swift.String?]?
+                public var stringList: [Swift.String]?
+                public var stringSet: Swift.Set<Swift.String>?
+                public var timestampList: [ClientRuntime.Date]?
             
                 public init (
                     booleanList: [Swift.Bool]? = nil,
@@ -359,14 +359,14 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val expectedJsonMapsInput =
             """
             public struct JsonMapsInput: Swift.Equatable {
-                public let denseBooleanMap: [Swift.String:Swift.Bool]?
-                public let denseNumberMap: [Swift.String:Swift.Int]?
-                public let denseStringMap: [Swift.String:Swift.String]?
-                public let denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
-                public let sparseBooleanMap: [Swift.String:Swift.Bool?]?
-                public let sparseNumberMap: [Swift.String:Swift.Int?]?
-                public let sparseStringMap: [Swift.String:Swift.String?]?
-                public let sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
+                public var denseBooleanMap: [Swift.String:Swift.Bool]?
+                public var denseNumberMap: [Swift.String:Swift.Int]?
+                public var denseStringMap: [Swift.String:Swift.String]?
+                public var denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
+                public var sparseBooleanMap: [Swift.String:Swift.Bool?]?
+                public var sparseNumberMap: [Swift.String:Swift.Int?]?
+                public var sparseStringMap: [Swift.String:Swift.String?]?
+                public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
             
                 public init (
                     denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
@@ -398,14 +398,14 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val expectedJsonMapsOutput =
             """
             public struct JsonMapsOutputResponse: Swift.Equatable {
-                public let denseBooleanMap: [Swift.String:Swift.Bool]?
-                public let denseNumberMap: [Swift.String:Swift.Int]?
-                public let denseStringMap: [Swift.String:Swift.String]?
-                public let denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
-                public let sparseBooleanMap: [Swift.String:Swift.Bool?]?
-                public let sparseNumberMap: [Swift.String:Swift.Int?]?
-                public let sparseStringMap: [Swift.String:Swift.String?]?
-                public let sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
+                public var denseBooleanMap: [Swift.String:Swift.Bool]?
+                public var denseNumberMap: [Swift.String:Swift.Int]?
+                public var denseStringMap: [Swift.String:Swift.String]?
+                public var denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
+                public var sparseBooleanMap: [Swift.String:Swift.Bool?]?
+                public var sparseNumberMap: [Swift.String:Swift.Int?]?
+                public var sparseStringMap: [Swift.String:Swift.String?]?
+                public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
             
                 public init (
                     denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
@@ -474,15 +474,15 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val structContainsDeprecatedMember = """
         @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
         public struct OperationWithDeprecatedTraitInput: Swift.Equatable {
-            public let bool: Swift.Bool?
-            public let foo: ExampleClientTypes.Foo?
-            public let intVal: Swift.Int?
+            public var bool: Swift.Bool?
+            public var foo: ExampleClientTypes.Foo?
+            public var intVal: Swift.Int?
             @available(*, deprecated)
-            public let string: Swift.String?
+            public var string: Swift.String?
             @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public let structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
+            public var structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public let structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
+            public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
         """.trimIndent()
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }
@@ -502,9 +502,9 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
             public struct Foo: Swift.Equatable {
                 /// Test documentation with deprecated
                 @available(*, deprecated)
-                public let baz: Swift.String?
+                public var baz: Swift.String?
                 /// Test documentation with deprecated
-                public let qux: Swift.String?
+                public var qux: Swift.String?
         """.trimIndent()
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }

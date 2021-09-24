@@ -7,7 +7,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class StructEncodeGenerationIsolatedTests {
+class varStructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
@@ -35,8 +35,8 @@ class StructEncodeGenerationIsolatedTests {
         val expectedContents =
             """
             public struct EnumInputInput: Swift.Equatable {
-                public let enumHeader: ExampleClientTypes.MyEnum?
-                public let nestedWithEnum: ExampleClientTypes.NestedEnum?
+                public var enumHeader: ExampleClientTypes.MyEnum?
+                public var nestedWithEnum: ExampleClientTypes.NestedEnum?
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
