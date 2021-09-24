@@ -70,8 +70,8 @@ class HashableShapeTransformerTests {
         Assertions.assertNotNull(hashableShapeInput)
         val expected = """
             public struct HashableShapesInput: Swift.Equatable {
-                public let `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
-                public let bar: Swift.String?
+                public var `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
+                public var bar: Swift.String?
             
                 public init (
                     `set`: Swift.Set<ExampleClientTypes.HashableStructure>? = nil,
@@ -90,7 +90,7 @@ class HashableShapeTransformerTests {
         Assertions.assertNotNull(hashableShapeOutput)
         val expectedOutput = """
             public struct HashableShapesOutputResponse: Swift.Equatable {
-                public let quz: Swift.String?
+                public var quz: Swift.String?
             
                 public init (
                     quz: Swift.String? = nil
@@ -108,8 +108,8 @@ class HashableShapeTransformerTests {
         val expectedStructureShape = """
             extension ExampleClientTypes {
                 public struct HashableStructure: Swift.Equatable, Swift.Hashable {
-                    public let baz: ExampleClientTypes.NestedHashableStructure?
-                    public let foo: Swift.String?
+                    public var baz: ExampleClientTypes.NestedHashableStructure?
+                    public var foo: Swift.String?
             
                     public init (
                         baz: ExampleClientTypes.NestedHashableStructure? = nil,
@@ -131,8 +131,8 @@ class HashableShapeTransformerTests {
         val expectedNestedStructureShape = """
         extension ExampleClientTypes {
             public struct NestedHashableStructure: Swift.Equatable, Swift.Hashable {
-                public let bar: Swift.String?
-                public let quz: Swift.Int?
+                public var bar: Swift.String?
+                public var quz: Swift.Int?
         
                 public init (
                     bar: Swift.String? = nil,

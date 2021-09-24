@@ -35,8 +35,8 @@ class StructEncodeGenerationIsolatedTests {
         val expectedContents =
             """
             public struct EnumInputInput: Swift.Equatable {
-                public let enumHeader: ExampleClientTypes.MyEnum?
-                public let nestedWithEnum: ExampleClientTypes.NestedEnum?
+                public var enumHeader: ExampleClientTypes.MyEnum?
+                public var nestedWithEnum: ExampleClientTypes.NestedEnum?
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
