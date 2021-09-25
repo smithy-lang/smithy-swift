@@ -11,12 +11,10 @@ class IdempotencyTokenTraitTests {
             extension RestXmlProtocolClient: RestXmlProtocolClientProtocol {
                 public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput, completion: @escaping (ClientRuntime.SdkResult<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>) -> Void)
                 {
-                    let urlPath = "/IdempotencyTokenWithStructure"
                     let context = ClientRuntime.HttpContextBuilder()
                                   .withEncoder(value: encoder)
                                   .withDecoder(value: decoder)
                                   .withMethod(value: .put)
-                                  .withPath(value: urlPath)
                                   .withServiceName(value: serviceName)
                                   .withOperation(value: "idempotencyTokenWithStructure")
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
@@ -30,6 +28,7 @@ class IdempotencyTokenTraitTests {
                         }
                         return next.handle(context: context, input: copiedInput)
                     }
+                    operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLPathMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputHeadersMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputQueryItemMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(contentType: "application/xml"))

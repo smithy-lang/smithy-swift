@@ -8,6 +8,7 @@ import AwsCommonRuntimeKit
 public enum ClientError: Error, Equatable {
     case networkError(Error)
     case crtError(CRTError)
+    case pathCreationFailed(String)
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
@@ -20,6 +21,9 @@ public enum ClientError: Error, Equatable {
         case (let .networkError(lhsNetworkError),
               let .networkError(rhsNetworkError)):
             return String(reflecting: lhsNetworkError) == String(reflecting: rhsNetworkError)
+        case (let .pathCreationFailed(lhsPathError),
+              let .pathCreationFailed(rhsPathError)):
+            return lhsPathError == rhsPathError
         case (let .serializationFailed(lhsSerializationFailedString),
               let .serializationFailed(rhsSerializationFailedString)):
             return lhsSerializationFailedString == rhsSerializationFailedString

@@ -11,12 +11,10 @@ class ContentMd5MiddlewareTests {
             extension RestXmlProtocolClient: RestXmlProtocolClientProtocol {
                 public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput, completion: @escaping (ClientRuntime.SdkResult<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>) -> Void)
                 {
-                    let urlPath = "/IdempotencyTokenWithStructure"
                     let context = ClientRuntime.HttpContextBuilder()
                                   .withEncoder(value: encoder)
                                   .withDecoder(value: decoder)
                                   .withMethod(value: .put)
-                                  .withPath(value: urlPath)
                                   .withServiceName(value: serviceName)
                                   .withOperation(value: "idempotencyTokenWithStructure")
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
@@ -30,6 +28,7 @@ class ContentMd5MiddlewareTests {
                         }
                         return next.handle(context: context, input: copiedInput)
                     }
+                    operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLPathMiddleware())
                     operation.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputHeadersMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputQueryItemMiddleware())
