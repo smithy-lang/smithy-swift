@@ -22,7 +22,7 @@ class HttpUrlPathMiddleware(
     private val httpTrait: HttpTrait,
     private val pathBindings: List<HttpBindingDescriptor>,
     private val writer: SwiftWriter
-    ) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}URLPathMiddleware"
 
@@ -85,5 +85,4 @@ class HttpUrlPathMiddleware(
         writer.write("var copiedContext = context")
         writer.write("copiedContext.attributes.set(key: AttributeKey<String>(name: \"Path\"), value: urlPath)")
     }
-
 }
