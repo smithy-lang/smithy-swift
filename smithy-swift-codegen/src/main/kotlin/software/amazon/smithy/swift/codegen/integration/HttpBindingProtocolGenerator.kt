@@ -33,6 +33,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -424,7 +425,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
         val inputShape = opIndex.getInput(op).get()
         val outputShape = opIndex.getOutput(op).get()
-        val operationErrorName = "${op.capitalizedName()}OutputError"
+        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()

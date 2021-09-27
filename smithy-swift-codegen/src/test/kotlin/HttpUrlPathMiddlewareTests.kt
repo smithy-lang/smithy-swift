@@ -1,27 +1,13 @@
+
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 class HttpUrlPathMiddlewareTests {
-    private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
-    var newTestContext: TestContext
-    init {
-        newTestContext = newTestContext()
-        newTestContext.generator.generateSerializers(newTestContext.generationCtx)
-        newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
-        newTestContext.generator.generateDeserializers(newTestContext.generationCtx)
-        newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
-        newTestContext.generationCtx.delegator.flushWriters()
-    }
-    private fun newTestContext(): TestContext {
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
-        return model.newTestContext()
-    }
-
     @Test
     fun `it builds url path middleware smoke test`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+UrlPathMiddleware.swift", newTestContext.manifest)
+        val context = setupTests("http-binding-protocol-generator-test.smithy")
+        val contents = getModelFileContents("example", "SmokeTestInput+UrlPathMiddleware.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -55,5 +41,18 @@ class HttpUrlPathMiddlewareTests {
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    private fun setupTests(smithyFile: String): TestContext {
+        var model = javaClass.getResource(smithyFile).asSmithy()
+        val settings = model.defaultSettings()
+        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        val context = model.newTestContext()
+        context.generator.generateSerializers(context.generationCtx)
+        context.generator.generateProtocolClient(context.generationCtx)
+        context.generator.generateDeserializers(context.generationCtx)
+        context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        return context
     }
 }
