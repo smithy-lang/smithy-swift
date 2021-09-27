@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
+typealias HttpMethodCallback = () -> String
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
@@ -22,7 +23,8 @@ class MiddlewareExecutionGenerator(
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val operationStackName: String,
-    private val executionContext: MiddlewareRenderableExecutionContext
+    private val executionContext: MiddlewareRenderableExecutionContext,
+    private val httpMethodCallback: HttpMethodCallback? = null
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
@@ -61,16 +63,12 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun resolveHttpMethod(op: OperationShape): String {
-        val httpMethod = when (executionContext) {
-            MiddlewareRenderableExecutionContext.PRESIGNER_POLLY_GET_REQUEST -> {
-                "get"
-            }
-            else -> {
-                val httpTrait = httpBindingResolver.httpTrait(op)
-                httpTrait.method.toLowerCase()
-            }
+        return httpMethodCallback?.let {
+            it()
+        } ?: run {
+            val httpTrait = httpBindingResolver.httpTrait(op)
+            httpTrait.method.toLowerCase()
         }
-        return httpMethod
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
