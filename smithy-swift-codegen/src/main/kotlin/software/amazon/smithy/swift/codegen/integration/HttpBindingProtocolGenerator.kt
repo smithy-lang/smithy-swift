@@ -33,6 +33,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -47,6 +48,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddl
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputHeadersMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputQueryItemMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
@@ -126,6 +128,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // The input shape is referenced by more than one operation
                     continue
                 }
+                renderUrlPathMiddleware(ctx, operation)
                 renderHeaderMiddleware(ctx, operation)
                 renderQueryMiddleware(ctx, operation)
                 renderBodyMiddleware(ctx, operation)
@@ -414,6 +417,31 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    private fun renderUrlPathMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
+        val opIndex = OperationIndex.of(ctx.model)
+        val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
+        val httpTrait = httpBindingResolver.httpTrait(op)
+        val requestBindings = httpBindingResolver.requestBindings(op)
+        val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
+        val inputShape = opIndex.getInput(op).get()
+        val outputShape = opIndex.getOutput(op).get()
+        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+        val outputErrorSymbol = Symbol.builder().name(operationErrorName).build()
+
+        val rootNamespace = ctx.settings.moduleName
+        val urlPathMiddlewareSymbol = Symbol.builder()
+            .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathMiddleware.swift")
+            .name(inputSymbol.name)
+            .build()
+        ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            val urlPathMiddleware = HttpUrlPathMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, httpTrait, pathBindings, writer)
+            MiddlewareGenerator(writer, urlPathMiddleware).generate()
+        }
+    }
+
     private fun renderBodyMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape) {
         val opIndex = OperationIndex.of(ctx.model)
         val inputShape = opIndex.getInput(op).get()
@@ -464,7 +492,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware())
 
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware())
-
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware())
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware())
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware())
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(resolver.determineRequestContentType(operation)))

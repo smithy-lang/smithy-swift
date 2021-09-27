@@ -99,7 +99,6 @@ class HttpProtocolClientGeneratorTests {
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
                       .withMethod(value: .post)
-                      .withPath(value: urlPath)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
@@ -153,12 +152,10 @@ class HttpProtocolClientGeneratorTests {
         extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
             public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (ClientRuntime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
             {
-                let urlPath = "/input/AllocateWidget"
                 let context = ClientRuntime.HttpContextBuilder()
                               .withEncoder(value: encoder)
                               .withDecoder(value: decoder)
                               .withMethod(value: .post)
-                              .withPath(value: urlPath)
                               .withServiceName(value: serviceName)
                               .withOperation(value: "allocateWidget")
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
@@ -172,6 +169,7 @@ class HttpProtocolClientGeneratorTests {
                     }
                     return next.handle(context: context, input: copiedInput)
                 }
+                operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLPathMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
