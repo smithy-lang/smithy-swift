@@ -35,6 +35,8 @@ open class HttpRequestTestBase: XCTestCase {
                                          host: String) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
         
+        builder.withPath(path)
+        
         if let queryParams = queryParams {
             addQueryItems(queryParams: queryParams, builder: builder)
         }
@@ -179,6 +181,8 @@ open class HttpRequestTestBase: XCTestCase {
         assertRequiredHeaders(expected.requiredHeaders, actual.headers)
         
         assertQueryItems(expected.queryItems, actual.queryItems)
+        
+        XCTAssertEqual(expected.endpoint.path, actual.endpoint.path)
         
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems)
         
