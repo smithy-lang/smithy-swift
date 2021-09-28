@@ -15,8 +15,11 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.TreeSet
 import java.util.logging.Logger
 
@@ -42,6 +45,7 @@ class HttpProtocolTestGenerator(
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+        updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
             numTests += renderRequestTests(operation, serviceSymbol)
@@ -49,6 +53,25 @@ class HttpProtocolTestGenerator(
             numTests += renderErrorTestCases(operation, serviceSymbol)
         }
         return numTests
+    }
+
+    private fun updateRequestTestMiddleware(): OperationMiddleware {
+        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
+        val requestTestOperations = TreeSet(topDownIndex.getContainedOperations(ctx.service)
+            .filter { it.hasTrait<HttpRequestTestsTrait>() }
+            .filterNot(::serverOnly))
+        val cloned = operationMiddleware.clone()
+
+        for (operation in requestTestOperations) {
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
+            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
+
+            operationMiddleware.appendMiddleware(operation, RequestTestEndpointResolverMiddleware())
+        }
     }
 
     private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol): Int {
