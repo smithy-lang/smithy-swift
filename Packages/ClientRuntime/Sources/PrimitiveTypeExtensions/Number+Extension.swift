@@ -5,10 +5,10 @@
 
 public extension Float {
     func encoded() -> String {
-        let signed = self.sign == .minus ? "-" : ""
         if self.isNaN {
-            return "\(signed)NaN"
+            return "NaN"
         } else if self.isInfinite {
+            let signed = self < 0 ? "-" : ""
             return "\(signed)Infinity"
         } else {
             return "\(self)"
@@ -18,10 +18,10 @@ public extension Float {
 
 public extension Double {
     func encoded() -> String {
-        let signed = self.sign == .minus ? "-" : ""
         if self.isNaN {
-            return "\(signed)NaN"
+            return "NaN"
         } else if self.isInfinite {
+            let signed = self < 0 ? "-" : ""
             return "\(signed)Infinity"
         } else {
             return "\(self)"
