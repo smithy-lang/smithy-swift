@@ -48,17 +48,17 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected fun renderBuildHttpResponse(test: HttpResponseTestCase) {
         writer.openBlock("guard let httpResponse = buildHttpResponse(", ") else {") {
-            writer.write("code: ${test.code},")
+            val terminator = if (test.headers.isNotEmpty()) "," else ""
+            writer.write("code: ${test.code}$terminator")
             renderHeadersInHttpResponse(test)
             test.body.ifPresent { body ->
                 if (body.isNotBlank() && body.isNotEmpty()) {
                     writer.write(
-                        "content: HttpBody.stream(ByteStream.from(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)),",
+                        "content: HttpBody.stream(ByteStream.from(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!))",
                         body.replace(".000", "")
                     )
                 }
             }
-            writer.write("host: host")
         }
         writer.indent()
         writer.write("XCTFail(\"Something is wrong with the created http response\")")
@@ -109,6 +109,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     private fun renderHeadersInHttpResponse(test: HttpResponseTestCase) {
         if (test.headers.isNotEmpty()) {
+            val terminator = if(test.body.isPresent && test.body.get().isNotEmpty() && test.body.get().isNotBlank()) "," else ""
             writer.openBlock("headers: [")
                 .call {
                     for ((idx, hdr) in test.headers.entries.withIndex()) {
@@ -116,7 +117,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                         writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
                     }
                 }
-                .closeBlock("],")
+                .closeBlock("]$terminator")
         }
     }
 

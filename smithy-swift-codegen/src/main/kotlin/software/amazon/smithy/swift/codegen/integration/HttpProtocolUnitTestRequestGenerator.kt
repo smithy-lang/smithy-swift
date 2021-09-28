@@ -14,7 +14,6 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -31,6 +30,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
+        writer.write("let host = \$S", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
             .write("path: \$S,", test.uri)
@@ -87,6 +87,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val hasIdempotencyTokenTrait = idempotentMember != null
             writer.swiftFunctionParameterIndent {
                 writer.write("  .withEncoder(value: encoder)")
+                writer.write("  .withHost(value: host)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
                 }
@@ -95,27 +96,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val operationStack = "operationStack"
             writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
 
-<<<<<<< HEAD
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
-            operationMiddleware.appendMiddleware(operation, RequestTestEndpointResolverMiddleware())
-
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP)
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
-=======
-            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP, MiddlewareRenderableExecutionContext.UNIT_TEST_REQUEST)
-            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.BUILDSTEP, MiddlewareRenderableExecutionContext.UNIT_TEST_REQUEST)
-            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP, MiddlewareRenderableExecutionContext.UNIT_TEST_REQUEST)
-            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP, MiddlewareRenderableExecutionContext.UNIT_TEST_REQUEST)
-            operationMiddleware.renderMiddleware(model, symbolProvider, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP, MiddlewareRenderableExecutionContext.UNIT_TEST_REQUEST)
->>>>>>> 0fc96eb2 (save work)
+
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
 
             writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {

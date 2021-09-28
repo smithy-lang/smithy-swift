@@ -45,10 +45,10 @@ class HttpProtocolTestGenerator(
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        updateRequestTestMiddleware()
+        val operationMiddleware = updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-            numTests += renderRequestTests(operation, serviceSymbol)
+            numTests += renderRequestTests(operation, serviceSymbol, operationMiddleware)
             numTests += renderResponseTests(operation, serviceSymbol)
             numTests += renderErrorTestCases(operation, serviceSymbol)
         }
@@ -63,18 +63,19 @@ class HttpProtocolTestGenerator(
         val cloned = operationMiddleware.clone()
 
         for (operation in requestTestOperations) {
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
-            operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
+            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
 
-            operationMiddleware.appendMiddleware(operation, RequestTestEndpointResolverMiddleware())
+            cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
         }
+        return cloned
     }
 
-    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol): Int {
+    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol, operationMiddleware: OperationMiddleware): Int {
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)

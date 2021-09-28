@@ -4,6 +4,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -50,20 +51,29 @@ class HttpUrlPathMiddleware(
                 // shape must be string, number, boolean, or timestamp
                 val targetShape = ctx.model.expectShape(binding.member.target)
                 val labelMemberName = ctx.symbolProvider.toMemberNames(binding.member).first.decapitalize()
-                val formattedLabel: String
-                if (targetShape.isTimestampShape) {
-                    val bindingIndex = HttpBindingIndex.of(ctx.model)
-                    val timestampFormat = bindingIndex.determineTimestampFormat(
-                        targetShape,
-                        HttpBinding.Location.LABEL,
-                        TimestampFormatTrait.Format.DATE_TIME
-                    )
-                    formattedLabel = ProtocolGenerator.getFormattedDateString(timestampFormat, labelMemberName)
-                } else if (targetShape.isStringShape) {
-                    val enumRawValueSuffix = targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
-                    formattedLabel = "$labelMemberName$enumRawValueSuffix"
-                } else {
-                    formattedLabel = labelMemberName
+                val formattedLabel: String = when(targetShape.type) {
+                    ShapeType.TIMESTAMP -> {
+                        val bindingIndex = HttpBindingIndex.of(ctx.model)
+                        val timestampFormat = bindingIndex.determineTimestampFormat(
+                            binding.member,
+                            HttpBinding.Location.LABEL,
+                            TimestampFormatTrait.Format.DATE_TIME
+                        )
+                        ProtocolGenerator.getFormattedDateString(
+                            timestampFormat,
+                            labelMemberName,
+                            roundEpoch = true,
+                            urlEncode = true
+                        )
+                    }
+                    ShapeType.STRING -> {
+                        val percentEncoded = if (!it.isGreedyLabel) ".urlPercentEncoding()" else ""
+                        val enumRawValueSuffix =
+                            targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+                        "$labelMemberName$enumRawValueSuffix$percentEncoded"
+                    }
+                    ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
+                    else -> labelMemberName
                 }
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
 
@@ -80,8 +90,9 @@ class HttpUrlPathMiddleware(
                 resolvedURIComponents.add(it.content)
             }
         }
+        writer.write("let hostCustomPath = URL(string: context.getHost())?.lastPathComponent ?? \"\"")
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("let urlPath = \"\$L\"", uri)
+        writer.write("let urlPath = \"/\\(hostCustomPath)\$L\"", uri)
         writer.write("var copiedContext = context")
         writer.write("copiedContext.attributes.set(key: AttributeKey<String>(name: \"Path\"), value: urlPath)")
     }

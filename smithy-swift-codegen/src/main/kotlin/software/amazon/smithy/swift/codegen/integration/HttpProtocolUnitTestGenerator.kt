@@ -37,8 +37,6 @@ protected constructor(builder: Builder<T>) {
     fun renderTestClass(testClassName: String) {
         writer.write("")
             .openBlock("class $testClassName: $baseTestClassName {")
-            // TODO:: Replace host appropriately
-            .write("let host = \"my-api.us-east-2.amazonaws.com\"")
             .call {
                 for (test in testCases) {
                     renderTestFunction(test)
