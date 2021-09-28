@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
+typealias HttpMethodCallback = () -> String
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
@@ -22,7 +23,8 @@ class MiddlewareExecutionGenerator(
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val operationStackName: String,
-    private val executionContext: MiddlewareRenderableExecutionContext
+    private val executionContext: MiddlewareRenderableExecutionContext,
+    private val httpMethodCallback: HttpMethodCallback? = null
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
@@ -40,8 +42,8 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderContextAttributes(op: OperationShape) {
-        val httpTrait = httpBindingResolver.httpTrait(op)
-        val httpMethod = httpTrait.method.toLowerCase()
+        val httpMethod = resolveHttpMethod(op)
+
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
         writer.write("  .withEncoder(value: encoder)")
         writer.write("  .withDecoder(value: decoder)")
@@ -58,6 +60,15 @@ class MiddlewareExecutionGenerator(
         }
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
+    }
+
+    private fun resolveHttpMethod(op: OperationShape): String {
+        return httpMethodCallback?.let {
+            it()
+        } ?: run {
+            val httpTrait = httpBindingResolver.httpTrait(op)
+            httpTrait.method.toLowerCase()
+        }
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {

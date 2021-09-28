@@ -5,9 +5,9 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-open class OperationMiddlewareGenerator : OperationMiddleware {
+open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()) : OperationMiddleware {
 
-    private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
+    private var middlewareMap: MutableMap<OperationShape, MiddlewareStack> = mutableHashMap
 
     override fun appendMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable) {
         val step = renderableMiddleware.middlewareStep
@@ -26,6 +26,20 @@ open class OperationMiddlewareGenerator : OperationMiddleware {
         resolveStep(stack, step).removeIf {
             it.name == middlewareName
         }
+    }
+
+    override fun clone(): OperationMiddleware {
+        val copy: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
+        middlewareMap.forEach { (shape, stack) ->
+            copy[shape] = MiddlewareStack(
+                stack.initializeMiddlewares.toMutableList(),
+                stack.serializeMiddlewares.toMutableList(),
+                stack.buildMiddlewares.toMutableList(),
+                stack.finalizeMiddlewares.toMutableList(),
+                stack.deserializeMiddlewares.toMutableList()
+            )
+        }
+        return OperationMiddlewareGenerator(copy)
     }
 
     override fun renderMiddleware(

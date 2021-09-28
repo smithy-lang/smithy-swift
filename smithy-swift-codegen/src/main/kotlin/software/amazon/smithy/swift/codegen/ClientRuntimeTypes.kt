@@ -69,6 +69,7 @@ object ClientRuntimeTypes {
         val Data = runtimeSymbol("Data")
         val Document = runtimeSymbol("Document")
         val URLQueryItem = runtimeSymbol("URLQueryItem")
+        val URL = runtimeSymbol("URL")
         val ClientError = runtimeSymbol("ClientError")
         val SdkError = runtimeSymbol("SdkError")
         val ServiceError = runtimeSymbol("ServiceError")
