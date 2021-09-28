@@ -47,8 +47,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.data(using: .utf8)!)),
-            host: host
+            ""${'"'}.data(using: .utf8)!))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -96,8 +95,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Foo": "Foo",
                 "X-Foo-abc": "ABC",
                 "X-Foo-xyz": "XYZ"
-            ],
-            host: host
+            ]
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -132,8 +130,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             code: 200,
             headers: [
                 "X-Foo": "Foo"
-            ],
-            host: host
+            ]
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -171,8 +168,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.data(using: .utf8)!)),
-            host: host
+            ""${'"'}.data(using: .utf8)!))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -223,8 +219,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.data(using: .utf8)!)),
-            host: host
+            ""${'"'}.data(using: .utf8)!))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -268,7 +263,6 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val expectedContents =
             """
             class InlineDocumentResponseTest: HttpResponseTestBase {
-                let host = "my-api.us-east-2.amazonaws.com"
                 /// Serializes inline documents as part of the JSON response payload with no escaping.
                 func testInlineDocumentOutput() throws {
                     guard let httpResponse = buildHttpResponse(
@@ -283,8 +277,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                                 "foo": "bar"
                             }
                         }
-                        ""${'"'}.data(using: .utf8)!)),
-                        host: host
+                        ""${'"'}.data(using: .utf8)!))
                     ) else {
                         XCTFail("Something is wrong with the created http response")
                         return
@@ -322,7 +315,6 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val expectedContents =
             """
             class InlineDocumentAsPayloadResponseTest: HttpResponseTestBase {
-                let host = "my-api.us-east-2.amazonaws.com"
                 /// Serializes an inline document as the target of the httpPayload trait.
                 func testInlineDocumentAsPayloadInputOutput() throws {
                     guard let httpResponse = buildHttpResponse(
@@ -334,8 +326,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         {
                             "foo": "bar"
                         }
-                        ""${'"'}.data(using: .utf8)!)),
-                        host: host
+                        ""${'"'}.data(using: .utf8)!))
                     ) else {
                         XCTFail("Something is wrong with the created http response")
                         return

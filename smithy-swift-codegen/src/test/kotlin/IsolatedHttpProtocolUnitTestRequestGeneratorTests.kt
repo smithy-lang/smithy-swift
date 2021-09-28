@@ -14,9 +14,9 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
 
         val expectedContents = """
 class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
     /// Supports handling NaN float label values.
     func testRestJsonSupportsNaNFloatLabels() throws {
+        let host = ""
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
@@ -47,6 +47,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val expectedContents =
             """
     func testRestJsonSupportsInfinityFloatLabels() throws {
+            let host = ""
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
@@ -76,6 +77,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val expectedContents =
             """
     func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
+            let host = ""
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
@@ -105,7 +107,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val expectedContents =
             """
 class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
     /// Supports handling NaN float header values.
     func testRestJsonSupportsNaNFloatHeaderOutputs() throws {
         guard let httpResponse = buildHttpResponse(
@@ -113,8 +114,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             headers: [
                 "X-Double": "NaN",
                 "X-Float": "NaN"
-            ],
-            host: host
+            ]
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -143,9 +143,9 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
 
         val expectedContents = """
 class DocumentTypeRequestTest: HttpRequestTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
     /// Serializes document types using a list.
     func testDocumentInputWithList() throws {
+        let host = ""
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/DocumentType",
