@@ -1,0 +1,34 @@
+package software.amazon.smithy.swift.codegen.integration.middlewares
+
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.ServiceGenerator
+import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderableExecutionContext
+import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
+
+class RequestTestEndpointResolverMiddleware: MiddlewareRenderable {
+    override val name = "RequestTestEndpointResolver"
+    override val middlewareStep = MiddlewareStep.BUILDSTEP
+    override val position = MiddlewarePosition.AFTER
+    override fun render(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, op: OperationShape, operationStackName: String, executionContext: MiddlewareRenderableExecutionContext) {
+
+        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
+        val outputErrorShapeName = ServiceGenerator.getOperationErrorShapeName(op)
+        writer.openBlock(
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<\$N<$outputShapeName>, \$N<$outputErrorShapeName>> in", "}",
+            SwiftTypes.Result,
+            ClientRuntimeTypes.Middleware.OperationOutput,
+            ClientRuntimeTypes.Core.SdkError
+        ) {
+            writer.write("input.withPath(context.getPath())")
+            writer.write("return next.handle(context: context, input: input)")
+
+        }
+    }
+}

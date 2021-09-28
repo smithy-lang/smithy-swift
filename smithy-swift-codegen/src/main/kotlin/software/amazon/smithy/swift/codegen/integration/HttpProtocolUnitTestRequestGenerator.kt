@@ -14,6 +14,7 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.capitalizedName
@@ -100,6 +101,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             operationMiddleware.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "AWSSigningMiddleware") // causes tests to halt :(
             operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
             operationMiddleware.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
+            operationMiddleware.appendMiddleware(operation, RequestTestEndpointResolverMiddleware())
 
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
             operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
