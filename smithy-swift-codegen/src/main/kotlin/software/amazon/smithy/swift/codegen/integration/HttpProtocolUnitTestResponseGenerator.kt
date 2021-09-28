@@ -48,7 +48,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected fun renderBuildHttpResponse(test: HttpResponseTestCase) {
         writer.openBlock("guard let httpResponse = buildHttpResponse(", ") else {") {
-            val terminator = if (test.headers.isNotEmpty()) "," else ""
+            val terminator = if (test.headers.isNotEmpty() || (test.body.isPresent && test.body.get().isNotEmpty())) "," else ""
             writer.write("code: ${test.code}$terminator")
             renderHeadersInHttpResponse(test)
             test.body.ifPresent { body ->
