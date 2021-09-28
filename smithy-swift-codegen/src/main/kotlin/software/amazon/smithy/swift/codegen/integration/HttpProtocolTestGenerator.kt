@@ -57,9 +57,11 @@ class HttpProtocolTestGenerator(
 
     private fun updateRequestTestMiddleware(): OperationMiddleware {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val requestTestOperations = TreeSet(topDownIndex.getContainedOperations(ctx.service)
-            .filter { it.hasTrait<HttpRequestTestsTrait>() }
-            .filterNot(::serverOnly))
+        val requestTestOperations = TreeSet(
+            topDownIndex.getContainedOperations(ctx.service)
+                .filter { it.hasTrait<HttpRequestTestsTrait>() }
+                .filterNot(::serverOnly)
+        )
         val cloned = operationMiddleware.clone()
 
         for (operation in requestTestOperations) {

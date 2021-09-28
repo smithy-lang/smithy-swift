@@ -51,7 +51,7 @@ class HttpUrlPathMiddleware(
                 // shape must be string, number, boolean, or timestamp
                 val targetShape = ctx.model.expectShape(binding.member.target)
                 val labelMemberName = ctx.symbolProvider.toMemberNames(binding.member).first.decapitalize()
-                val formattedLabel: String = when(targetShape.type) {
+                val formattedLabel: String = when (targetShape.type) {
                     ShapeType.TIMESTAMP -> {
                         val bindingIndex = HttpBindingIndex.of(ctx.model)
                         val timestampFormat = bindingIndex.determineTimestampFormat(

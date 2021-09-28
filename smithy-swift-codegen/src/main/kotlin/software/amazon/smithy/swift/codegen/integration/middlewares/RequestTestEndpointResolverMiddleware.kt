@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class RequestTestEndpointResolverMiddleware(private val model: Model, private val symbolProvider: SymbolProvider): MiddlewareRenderable {
+class RequestTestEndpointResolverMiddleware(private val model: Model, private val symbolProvider: SymbolProvider) : MiddlewareRenderable {
     override val name = "RequestTestEndpointResolver"
     override val middlewareStep = MiddlewareStep.BUILDSTEP
     override val position = MiddlewarePosition.AFTER
@@ -27,7 +27,6 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
         ) {
             writer.write("input.withPath(context.getPath()).withHost(host)")
             writer.write("return next.handle(context: context, input: input)")
-
         }
     }
 }

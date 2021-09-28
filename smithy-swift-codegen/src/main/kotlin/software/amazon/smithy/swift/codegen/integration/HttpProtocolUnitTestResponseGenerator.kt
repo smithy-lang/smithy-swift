@@ -109,7 +109,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     private fun renderHeadersInHttpResponse(test: HttpResponseTestCase) {
         if (test.headers.isNotEmpty()) {
-            val terminator = if(test.body.isPresent && test.body.get().isNotEmpty() && test.body.get().isNotBlank()) "," else ""
+            val terminator = if (test.body.isPresent && test.body.get().isNotEmpty() && test.body.get().isNotBlank()) "," else ""
             writer.openBlock("headers: [")
                 .call {
                     for ((idx, hdr) in test.headers.entries.withIndex()) {

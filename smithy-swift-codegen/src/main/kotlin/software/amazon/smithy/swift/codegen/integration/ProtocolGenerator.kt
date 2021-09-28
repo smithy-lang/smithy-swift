@@ -48,7 +48,7 @@ interface ProtocolGenerator {
         ): String {
             val terminator = if (isUnwrapped) "" else "?"
             val epochTerminator = if (roundEpoch) ".clean" else ""
-            val stringDateTerminator = if(urlEncode) ".urlPercentEncoding()" else ""
+            val stringDateTerminator = if (urlEncode) ".urlPercentEncoding()" else ""
             return when (tsFormat) {
                 TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}$terminator.timeIntervalSince1970$epochTerminator"
                 // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
