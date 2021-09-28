@@ -489,14 +489,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
 
         for (operation in getHttpBindingOperations(ctx)) {
-            operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware())
+            operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
 
-            operationMiddleware.appendMiddleware(operation, ContentMD5Middleware())
-            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware())
-            operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware())
-            operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware())
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(resolver.determineRequestContentType(operation)))
-            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware())
+            operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
+            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
 
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware())
 
