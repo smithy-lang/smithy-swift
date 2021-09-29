@@ -61,20 +61,22 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         val params = mutableListOf<String>()
         params.add("code: ${test.code}")
         if (test.headers.isNotEmpty()) {
-            var headers = mutableListOf<String>()
-            for (hdr in test.headers.entries) {
-                headers.add("    \"${hdr.key}\": \"${hdr.value}\"")
-            }
-            val headersString = "headers: [\n${headers.joinToString(",\n")}\n]"
-            params.add(headersString)
+            params.add(renderBuildHttpResponseHeaderParams(test))
         }
         test.body.ifPresent { body ->
             if (body.isNotBlank() && body.isNotEmpty()) {
                 params.add("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
             }
         }
-        val paramsWithDelimiter = params.joinToString(",\n")
-        writer.write(paramsWithDelimiter)
+        writer.write(params.joinToString(",\n"))
+    }
+
+    private fun renderBuildHttpResponseHeaderParams(test: HttpResponseTestCase): String {
+        var headers = mutableListOf<String>()
+        for (hdr in test.headers.entries) {
+            headers.add("    \"${hdr.key}\": \"${hdr.value}\"")
+        }
+        return "headers: [\n${headers.joinToString(",\n")}\n]"
     }
 
     protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
