@@ -48,23 +48,35 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected fun renderBuildHttpResponse(test: HttpResponseTestCase) {
         writer.openBlock("guard let httpResponse = buildHttpResponse(", ") else {") {
-            writer.write("code: ${test.code},")
-            renderHeadersInHttpResponse(test)
-            test.body.ifPresent { body ->
-                if (body.isNotBlank() && body.isNotEmpty()) {
-                    writer.write(
-                        "content: HttpBody.stream(ByteStream.from(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)),",
-                        body.replace(".000", "")
-                    )
-                }
-            }
-            writer.write("host: host")
+            renderBuildHttpResponseParams(test)
         }
         writer.indent()
         writer.write("XCTFail(\"Something is wrong with the created http response\")")
         writer.write("return")
         writer.dedent()
         writer.write("}")
+    }
+
+    private fun renderBuildHttpResponseParams(test: HttpResponseTestCase) {
+        val params = mutableListOf<String>()
+        params.add("code: ${test.code}")
+        if (test.headers.isNotEmpty()) {
+            params.add(renderBuildHttpResponseHeaderParams(test))
+        }
+        test.body.ifPresent { body ->
+            if (body.isNotBlank() && body.isNotEmpty()) {
+                params.add("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
+            }
+        }
+        writer.write(params.joinToString(",\n"))
+    }
+
+    private fun renderBuildHttpResponseHeaderParams(test: HttpResponseTestCase): String {
+        var headers = mutableListOf<String>()
+        for (hdr in test.headers.entries) {
+            headers.add("    \"${hdr.key}\": \"${hdr.value}\"")
+        }
+        return "headers: [\n${headers.joinToString(",\n")}\n]"
     }
 
     protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
@@ -105,19 +117,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
         renderMemberAssertions(writer, test, members, model, symbolProvider, "expected", "actual")
-    }
-
-    private fun renderHeadersInHttpResponse(test: HttpResponseTestCase) {
-        if (test.headers.isNotEmpty()) {
-            writer.openBlock("headers: [")
-                .call {
-                    for ((idx, hdr) in test.headers.entries.withIndex()) {
-                        val suffix = if (idx < test.headers.size - 1) "," else ""
-                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
-                    }
-                }
-                .closeBlock("],")
-        }
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {

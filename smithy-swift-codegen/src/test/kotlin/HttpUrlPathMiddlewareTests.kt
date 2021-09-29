@@ -28,7 +28,11 @@ class HttpUrlPathMiddlewareTests {
                     guard let label1 = input.label1 else {
                         return .failure(.client(ClientRuntime.ClientError.pathCreationFailed(("label1 is nil and needs a value for the path of this operation"))))
                     }
-                    let urlPath = "/smoketest/\(label1)/foo"
+                    let hostCustomPath = URL(string: "http://\(context.getHost())")?.path
+                    var urlPath = "/smoketest/\(label1.urlPercentEncoding())/foo"
+                    if let hostCustomPath = hostCustomPath, !hostCustomPath.isEmpty {
+                        urlPath = "\(hostCustomPath)\(urlPath)"
+                    }
                     var copiedContext = context
                     copiedContext.attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
                     return next.handle(context: copiedContext, input: input)

@@ -9,7 +9,6 @@ import XCTest
 import AwsCommonRuntimeKit
 
 class HttpResponseTestBaseTests: HttpResponseTestBase {
-    let host = "myapi.host.com"
     
     func testBuildHttpResponse() {
         let statusCode = 200
@@ -17,7 +16,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
         let bodyData = "{\"greeting\": \"Hello There\"}".data(using: .utf8)!
         let content = HttpBody.data(bodyData)
         
-        guard let httpResponse = buildHttpResponse(code: statusCode, headers: headers, content: content, host: host) else {
+        guard let httpResponse = buildHttpResponse(code: statusCode, headers: headers, content: content) else {
             XCTFail("Failed to build Http Response")
             return
         }

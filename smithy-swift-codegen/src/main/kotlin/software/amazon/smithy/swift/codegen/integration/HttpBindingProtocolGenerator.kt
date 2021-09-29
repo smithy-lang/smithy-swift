@@ -88,7 +88,7 @@ fun formatHeaderOrQueryValue(
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, isInHeaderOrQuery = true), false)
+            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, roundEpoch = true), false)
         }
         is BlobShape -> {
             Pair("try $memberName.base64EncodedString()", true)

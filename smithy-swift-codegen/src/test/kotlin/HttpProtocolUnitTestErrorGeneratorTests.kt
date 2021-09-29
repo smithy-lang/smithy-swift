@@ -16,7 +16,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val expectedContents =
 """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
     /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() throws {
         do {
@@ -34,8 +33,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!)),
-                host: host
+                ""${'"'}.data(using: .utf8)!))
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return
@@ -80,7 +78,6 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
         val expectedContents =
 """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
-    let host = "my-api.us-east-2.amazonaws.com"
     /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() throws {
         do {
@@ -98,8 +95,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!)),
-                host: host
+                ""${'"'}.data(using: .utf8)!))
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return
