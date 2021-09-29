@@ -96,7 +96,7 @@ extension String {
         }
         let substring = self[..<range.lowerBound]
         return String(substring)
-    }    
+    }
 }
 
 extension String {
