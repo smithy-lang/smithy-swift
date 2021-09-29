@@ -96,14 +96,4 @@ class StringExtensionsTests: XCTestCase {
             XCTAssertEqual(string.substringBefore(":"), match)
         }
     }
-    
-    func testSubstringAfterEmptyWithPath() {
-        let stringWithSlash = "example.com/path/to/heaven"
-        XCTAssertEqual(stringWithSlash.substringAfterEmpty("/"), "path/to/heaven")
-    }
-    
-    func testSubstringAfterEmptyWithNothing() {
-        let stringWithoutSlash = "example.com"
-        XCTAssertEqual(stringWithoutSlash.substringAfterEmpty("/"), "")
-    }
 }

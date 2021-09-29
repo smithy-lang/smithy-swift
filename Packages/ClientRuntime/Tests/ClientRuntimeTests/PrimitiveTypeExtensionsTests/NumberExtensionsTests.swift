@@ -8,8 +8,13 @@ import XCTest
 
 class NumberExtensionsTests: XCTestCase {
     func testEncodeDouble() {
-        let regularDouble = 6.0
+        let regularDouble: Double = 6.0
         XCTAssertEqual(regularDouble.encoded(), "6.0")
+    }
+    
+    func testEncodeDoubleInteger() {
+        let regularIntAsDouble: Double = 6
+        XCTAssertEqual(regularIntAsDouble.encoded(), "6.0")
     }
     
     func testEncodeDoubleNan() {
@@ -30,6 +35,11 @@ class NumberExtensionsTests: XCTestCase {
     func testEncodeFloat() {
         let regularFloat: Float = 6.0
         XCTAssertEqual(regularFloat.encoded(), "6.0")
+    }
+    
+    func testEncodeFloatInteger() {
+        let regularFloatAsInt: Float = 6
+        XCTAssertEqual(regularFloatAsInt.encoded(), "6.0")
     }
     
     func testEncodeFloatNan() {

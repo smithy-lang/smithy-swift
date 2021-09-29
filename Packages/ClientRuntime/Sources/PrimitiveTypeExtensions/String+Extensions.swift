@@ -96,17 +96,7 @@ extension String {
         }
         let substring = self[..<range.lowerBound]
         return String(substring)
-    }
-    
-    /// Returns a substring after the first occurrence of `separator` or empty string if `separator` is absent
-    public func substringAfterEmpty(_ separator: String) -> String {
-        guard let range = self.range(of: separator) else {
-            return ""
-        }
-        let substring = self[range.upperBound...]
-        return String(substring)
-    }
-    
+    }    
 }
 
 extension String {
