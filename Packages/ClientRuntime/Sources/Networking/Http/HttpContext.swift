@@ -26,8 +26,8 @@ public struct HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))!
     }
     
-    public func getHost() -> String {
-        return attributes.get(key: AttributeKey<String>(name: "Host"))!
+    public func getHost() -> String? {
+        return attributes.get(key: AttributeKey<String>(name: "Host"))
     }
     
     public func getServiceName() -> String {
