@@ -90,10 +90,10 @@ class HttpUrlPathMiddleware(
                 resolvedURIComponents.add(it.content)
             }
         }
-        writer.write("let hostCustomPath = URL(string: \"http://\\(context.getHost())\")?.path")
+
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
         writer.write("var urlPath = \"\$L\"", uri)
-        writer.openBlock("if let hostCustomPath = hostCustomPath, !hostCustomPath.isEmpty {", "}") {
+        writer.openBlock("if let host = context.getHost(), let hostCustomPath = URL(string: \"http://\\(host)\")?.path, !hostCustomPath.isEmpty {", "}") {
             writer.write("urlPath = \"\\(hostCustomPath)\\(urlPath)\"")
         }
         writer.write("var copiedContext = context")
