@@ -89,7 +89,7 @@ class HttpProtocolTestGenerator(
             val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
-                for( import in imports) {
+                for (import in imports) {
                     writer.addImport(import)
                 }
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
