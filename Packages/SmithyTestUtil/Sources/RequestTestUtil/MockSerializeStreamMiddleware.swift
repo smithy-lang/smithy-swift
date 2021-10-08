@@ -8,7 +8,13 @@
 import ClientRuntime
 
 public struct MockSerializeStreamMiddleware: Middleware {
-    public func handle<H>(context: HttpContext, input: SerializeStepInput<MockStreamInput>, next: H) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> where H: Handler, HttpContext == H.Context, SdkError<MockMiddlewareError> == H.MiddlewareError, SerializeStepInput<MockStreamInput> == H.Input, OperationOutput<MockOutput> == H.Output {
+    public func handle<H>(context: HttpContext,
+                          input: SerializeStepInput<MockStreamInput>,
+                          next: H) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>>
+    where H: Handler, HttpContext == H.Context,
+          SdkError<MockMiddlewareError> == H.MiddlewareError,
+          SerializeStepInput<MockStreamInput> == H.Input,
+          OperationOutput<MockOutput> == H.Output {
         input.builder.withBody(HttpBody.stream(input.operationInput.body))
         return next.handle(context: context, input: input)
     }
