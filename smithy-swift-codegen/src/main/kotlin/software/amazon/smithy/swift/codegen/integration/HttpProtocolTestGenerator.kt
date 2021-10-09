@@ -34,6 +34,7 @@ class HttpProtocolTestGenerator(
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
+    private val imports: List<String> = listOf(),
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -88,7 +89,9 @@ class HttpProtocolTestGenerator(
             val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
-
+                for (import in imports) {
+                    writer.addImport(import)
+                }
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(ctx.settings.moduleName, true)
                 writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
