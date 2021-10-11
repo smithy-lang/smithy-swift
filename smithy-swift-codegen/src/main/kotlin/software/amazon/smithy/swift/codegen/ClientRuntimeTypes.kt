@@ -77,7 +77,7 @@ object ClientRuntimeTypes {
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
-        val ClientLogMode = runtimeSymbol("ClientLogMode", ".request")
+        val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
         val SDKRetryer = runtimeSymbol("SDKRetryer")
         val ErrorType = runtimeSymbol("ErrorType")
@@ -88,9 +88,8 @@ object ClientRuntimeTypes {
     }
 }
 
-private fun runtimeSymbol(name: String, defaultValue: String? = null): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
-    this.defaultValue = defaultValue
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

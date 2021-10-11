@@ -19,6 +19,7 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
+            writer.write("public static let clientName = \"${serviceSymbol.name}\"")
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$N", serviceConfig.typesToConformConfigTo.first())
             writer.write("let serviceName = \"${serviceName}\"")

@@ -79,7 +79,6 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true, shouldRenderOptional = true))
         putFormatter('T', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = true))
         putFormatter('N', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = false))
-        putFormatter('X', SwiftSymbolFormatter(shouldSetDefault = true, shouldRenderOptional = false))
     }
 
     private val imports: ImportDeclarations = ImportDeclarations()
@@ -151,7 +150,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
                     }
 
                     if (shouldSetDefault) {
-                        type.defaultValue(shouldRenderOptional)?.let {
+                        type.defaultValue()?.let {
                             formatted += " = $it"
                         }
                     }

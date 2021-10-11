@@ -10,7 +10,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var clientLogMode: ClientLogMode
     public var logger: LogAgent
 
-    public init(_ clientName: String, clientLogMode: ClientLogMode) throws {
+    public init(_ clientName: String, clientLogMode: ClientLogMode = .request) throws {
         self.retryer = try SDKRetryer()
         self.logger = SwiftLogger(label: clientName)
         self.clientLogMode = clientLogMode
