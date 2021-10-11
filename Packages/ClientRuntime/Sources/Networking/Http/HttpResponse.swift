@@ -27,9 +27,9 @@ public class HttpResponse: HttpUrlResponse {
 
 extension HttpResponse: CustomDebugStringConvertible {
     public var debugDescriptionWithBody: String {
-        return debugDescription + "\n \(body)"
+        return debugDescription + "\nResponseBody: \(body.debugDescription)"
     }
     public var debugDescription: String {
-        return "\(statusCode) \n \(headers)"
+        return "\nStatus Code: \(statusCode.description) \n \(headers)"
     }
 }

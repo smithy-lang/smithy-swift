@@ -44,7 +44,7 @@ extension SdkHttpRequest {
 extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible {
     
     public var debugDescriptionWithBody: String {
-        return debugDescription + "\n \(body)"
+        return debugDescription + "\nRequestBody: \(body.debugDescription)"
     }
     
     public var debugDescription: String {
