@@ -16,6 +16,7 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldContainOnlyOnce(
             """
             public class RestJsonProtocolClient {
+                public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
                 let config: ClientRuntime.SDKRuntimeConfiguration
                 let serviceName = "Rest Json Protocol"
