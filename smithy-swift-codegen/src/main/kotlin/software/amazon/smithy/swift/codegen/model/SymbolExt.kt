@@ -49,9 +49,9 @@ fun Symbol.recursiveSymbol(): Symbol {
 /**
  * Gets the default value for the symbol if present, else null
  */
-fun Symbol.defaultValue(): String? {
+fun Symbol.defaultValue(shouldRenderOptional: Boolean = true): String? {
     // boxed types should always be defaulted to null
-    if (isBoxed()) {
+    if (isBoxed() && shouldRenderOptional) {
         return "nil"
     }
 
