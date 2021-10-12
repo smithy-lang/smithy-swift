@@ -85,7 +85,7 @@ public class CRTClientEngine: HttpClientEngine {
                     // map status code once call comes back
                     future.then { (responseResult) in
                         _ = responseResult.map { (response) -> HttpResponse in
-                            self.logger.debug("Future of response came back with success: \(response)")
+                            self.logger.debug("Future of response came back with success")
                             let statusCode = Int(stream.getResponseStatusCode())
                             response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
                             return response
