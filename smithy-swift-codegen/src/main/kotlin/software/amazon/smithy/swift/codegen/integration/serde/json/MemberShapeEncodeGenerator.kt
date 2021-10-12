@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeG
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
@@ -79,7 +80,7 @@ abstract class MemberShapeEncodeGenerator(
     ) {
         when (targetShape) {
             is CollectionShape -> {
-                val topLevelContainerName = "${memberName}Container"
+                val topLevelContainerName = "${memberName.removeSurroundingBackticks()}Container"
 
                 if (level == 0) {
                     writer.write(
