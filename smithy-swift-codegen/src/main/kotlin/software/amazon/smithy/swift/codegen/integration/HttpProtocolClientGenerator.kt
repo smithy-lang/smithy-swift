@@ -46,7 +46,7 @@ open class HttpProtocolClientGenerator(
         renderOperationsInExtension(serviceSymbol)
         val rootNamespace = ctx.settings.moduleName
         ctx.delegator.useFileWriter("./$rootNamespace/${serviceSymbol.name}+Async.swift") {
-            it.write("#if swift(>=5.5)")
+            it.write("#if swift(>=5.5) && canImport(_Concurrency)")
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             renderAsyncOperationsInExtension(serviceSymbol, it)
             it.write("#endif")
