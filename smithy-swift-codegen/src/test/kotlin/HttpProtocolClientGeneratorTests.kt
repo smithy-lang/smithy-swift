@@ -123,7 +123,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+Async.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-        #if swift(>=5.5)
+        #if swift(>=5.5) && canImport(_Concurrency)
         @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, macCatalyst 15.0, *)
         public extension RestJsonProtocolClient {
             func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
