@@ -32,9 +32,13 @@ open class HttpRequestTestBase: XCTestCase {
                                          forbiddenQueryParams: [String]? = nil,
                                          requiredQueryParams: [String]? = nil,
                                          body: String?,
-                                         host: String) -> ExpectedSdkHttpRequest {
+                                         host: String,
+                                         resolvedHost: String?) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
-        
+
+        if let deconflictedHost = deconflictHost(host: host, resolvedHost: resolvedHost) {
+            builder.withHost(deconflictedHost)
+        }
         builder.withPath(path)
         
         if let queryParams = queryParams {
@@ -86,6 +90,19 @@ open class HttpRequestTestBase: XCTestCase {
     
         return builder.build()
         
+    }
+
+    func deconflictHost(host: String, resolvedHost: String?) -> String? {
+        var deconflictedHost: String?
+        if !host.isEmpty,
+           let urlFromHost = ClientRuntime.URL(string: "http://\(host)"),
+           let parsedHost = urlFromHost.host {
+            deconflictedHost = parsedHost
+        }
+        if let resolvedHost = resolvedHost {
+            deconflictedHost = resolvedHost
+        }
+        return deconflictedHost
     }
     
     func addQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
