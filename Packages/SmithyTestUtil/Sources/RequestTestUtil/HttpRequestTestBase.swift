@@ -83,6 +83,9 @@ open class HttpRequestTestBase: XCTestCase {
             let httpBody = HttpBody.data(body.data(using: .utf8))
             builder.withBody(httpBody)
         }
+        if !host.isEmpty {
+            builder.withHost(host)
+        }
     
         return builder.build()
         

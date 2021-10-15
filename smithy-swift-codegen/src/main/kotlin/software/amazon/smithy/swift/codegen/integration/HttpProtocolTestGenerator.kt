@@ -73,7 +73,7 @@ class HttpProtocolTestGenerator(
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
 
-            cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
+            //cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
         }
         return cloned
     }
