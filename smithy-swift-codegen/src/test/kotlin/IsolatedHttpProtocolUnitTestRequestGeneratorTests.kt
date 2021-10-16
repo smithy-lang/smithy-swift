@@ -21,7 +21,8 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
             body: nil,
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -52,7 +53,8 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
                 body: nil,
-                host: host
+                host: host,
+                resolvedHost: ""
             )
 
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -82,7 +84,8 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
                 body: nil,
-                host: host
+                host: host,
+                resolvedHost: ""
             )
     
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -173,7 +176,8 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                 ]
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")

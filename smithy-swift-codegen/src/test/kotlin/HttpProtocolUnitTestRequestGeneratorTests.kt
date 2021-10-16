@@ -54,7 +54,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -149,7 +150,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             "payload1": "explicit string"
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -219,7 +221,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
             body: nil,
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -287,7 +290,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "Content-Type": "application/json"
             ],
             body: nil,
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -360,7 +364,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             body: ""${'"'}
             blobby blob blob
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -434,7 +439,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "X-Foo": "Foo"
             ],
             body: nil,
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -511,7 +517,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -606,7 +613,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -706,7 +714,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
@@ -797,7 +806,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "foo": "bar"
             }
             ""${'"'},
-            host: host
+            host: host,
+            resolvedHost: ""
         )
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")

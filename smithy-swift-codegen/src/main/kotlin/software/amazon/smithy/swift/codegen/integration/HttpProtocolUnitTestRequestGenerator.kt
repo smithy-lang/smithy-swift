@@ -30,6 +30,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
+        var resolvedHostValue = test.resolvedHost?.let { it } ?: run { "nil" }
         writer.write("let host = \$S", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
@@ -37,7 +38,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .call { renderExpectedHeaders(test) }
             .call { renderExpectedQueryParams(test) }
             .call { renderExpectedBody(test) }
-            .write("host: host")
+            .write("host: host,")
+            .write("resolvedHost: \$S", resolvedHostValue)
             .closeBlock(")")
     }
 
