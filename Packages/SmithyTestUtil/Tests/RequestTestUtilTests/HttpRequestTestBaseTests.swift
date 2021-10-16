@@ -148,7 +148,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                           "RequiredHeader": "required header"],
                                                 requiredQueryParams: ["RequiredQuery=required%20query"],
                                                 body: "{\"greeting\": \"Hello There\"}",
-                                                host: HttpRequestTestBaseTests.host)
+                                                host: HttpRequestTestBaseTests.host,
+                                                resolvedHost: nil)
         
         let input = SayHelloInput(greeting: "Hello There",
                                   forbiddenQuery: "forbidden query",
