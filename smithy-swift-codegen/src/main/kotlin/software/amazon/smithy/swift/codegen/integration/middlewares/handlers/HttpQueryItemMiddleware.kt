@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen.integration
+package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -11,13 +11,20 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.formatHeaderOrQueryValue
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -35,7 +42,29 @@ class HttpQueryItemMiddleware(
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
     private val writer: SwiftWriter
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+    companion object {
+        fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver, defaultTimestampFormat: TimestampFormatTrait.Format) {
+            val httpTrait = httpBindingResolver.httpTrait(op)
+            val requestBindings = httpBindingResolver.requestBindings(op)
+            val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
+            val queryLiterals = httpTrait.uri.queryLiterals
 
+            val inputSymbol = MiddlewareHandlerUtils.inputSymbol(ctx, op)
+            val outputSymbol = MiddlewareHandlerUtils.outputSymbol(ctx, op)
+            val outputErrorSymbol = MiddlewareHandlerUtils.outputErrorSymbol(op)
+            val rootNamespace = MiddlewareHandlerUtils.rootNamespace(ctx)
+
+            val headerMiddlewareSymbol = Symbol.builder()
+                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemMiddleware.swift")
+                .name(inputSymbol.name)
+                .build()
+            ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
+                MiddlewareGenerator(writer, queryItemMiddleware).generate()
+            }
+        }
+    }
     override val typeName = "${inputSymbol.name}QueryItemMiddleware"
 
     override fun generateMiddlewareClosure() {
