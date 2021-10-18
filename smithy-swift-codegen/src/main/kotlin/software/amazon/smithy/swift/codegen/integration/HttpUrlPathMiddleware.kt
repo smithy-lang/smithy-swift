@@ -10,6 +10,7 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Core.ClientError
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.steps.OperationInitializeStep
 import software.amazon.smithy.swift.codegen.model.isBoxed
@@ -26,13 +27,16 @@ class HttpUrlPathMiddleware(
 ) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}URLPathMiddleware"
+    override val properties: MutableMap<String, Symbol> = mutableMapOf("urlPrefix" to SwiftTypes.String)
 
     override fun generateMiddlewareClosure() {
         renderUriPath()
     }
 
     override fun generateInit() {
-        writer.write("public init() {}")
+        writer.openBlock("public init(urlPrefix: String = \"\") {", "}") {
+            writer.write("self.urlPrefix = urlPrefix")
+        }
     }
 
     override fun renderReturn() {
@@ -93,8 +97,8 @@ class HttpUrlPathMiddleware(
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
         writer.write("var urlPath = \"\$L\"", uri)
-        writer.openBlock("if let host = context.getHost(), let hostCustomPath = URL(string: \"http://\\(host)\")?.path, !hostCustomPath.isEmpty {", "}") {
-            writer.write("urlPath = \"\\(hostCustomPath)\\(urlPath)\"")
+        writer.openBlock("if !urlPrefix.isEmpty {", "}") {
+            writer.write("urlPath = \"\\(urlPrefix)\\(urlPath)\"")
         }
         writer.write("var copiedContext = context")
         writer.write("copiedContext.attributes.set(key: AttributeKey<String>(name: \"Path\"), value: urlPath)")
