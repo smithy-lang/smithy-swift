@@ -26,6 +26,9 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
             ClientRuntimeTypes.Core.SdkError
         ) {
             writer.write("input.withPath(context.getPath())")
+            writer.openBlock("if let host = context.getHost() {", "}") {
+                writer.write("input.withHost(host)")
+            }
             writer.write("return next.handle(context: context, input: input)")
         }
     }
