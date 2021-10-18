@@ -30,7 +30,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testSmokeTest() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/smoketest/{label1}/foo",
@@ -54,7 +54,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -81,12 +81,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(id: "SmokeTest")
-        operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, ClientRuntime.SdkError<SmokeTestOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputHeadersMiddleware())
@@ -138,7 +137,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testExplicitString() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/explicit/string",
@@ -150,7 +149,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             "payload1": "explicit string"
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -168,12 +167,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
-        operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStringOutputResponse>, ClientRuntime.SdkError<ExplicitStringOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputHeadersMiddleware())
@@ -216,12 +214,12 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonEmptyInputAndEmptyOutput() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/EmptyInputAndEmptyOutput",
             body: nil,
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -238,12 +236,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
-        operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<EmptyInputAndEmptyOutputOutputResponse>, ClientRuntime.SdkError<EmptyInputAndEmptyOutputOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
@@ -282,7 +279,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonDoesntSerializeNullStructureValues() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/SimpleScalarProperties",
@@ -290,7 +287,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "Content-Type": "application/json"
             ],
             body: nil,
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -308,12 +305,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
-        operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SimpleScalarPropertiesOutputResponse>, ClientRuntime.SdkError<SimpleScalarPropertiesOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
@@ -353,7 +349,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonStreamingTraitsWithBlob() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .post,
             path: "/StreamingTraits",
@@ -364,7 +360,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             body: ""${'"'}
             blobby blob blob
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -383,12 +379,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
-        operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<StreamingTraitsOutputResponse>, ClientRuntime.SdkError<StreamingTraitsOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputHeadersMiddleware())
@@ -431,7 +426,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonHttpPrefixHeadersAreNotPresent() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/HttpPrefixHeaders",
@@ -439,7 +434,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "X-Foo": "Foo"
             ],
             body: nil,
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -459,12 +454,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
-        operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<HttpPrefixHeadersOutputResponse>, ClientRuntime.SdkError<HttpPrefixHeadersOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputHeadersMiddleware())
@@ -503,7 +497,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonSerializeStringUnionValue() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/JsonUnions",
@@ -517,7 +511,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -536,12 +530,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
-        operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<JsonUnionsOutputResponse>, ClientRuntime.SdkError<JsonUnionsOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputHeadersMiddleware())
@@ -590,7 +583,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testRestJsonRecursiveShapes() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/RecursiveShapes",
@@ -613,7 +606,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -646,12 +639,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
                       .withEncoder(value: encoder)
-                      .withHost(value: host)
                       .build()
         var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
-        operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<RecursiveShapesOutputResponse>, ClientRuntime.SdkError<RecursiveShapesOutputError>> in
-            input.withPath(context.getPath()).withHost(host)
+            input.withPath(context.getPath())
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputHeadersMiddleware())
@@ -699,7 +691,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testInlineDocumentInput() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/InlineDocument",
@@ -714,7 +706,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -739,12 +731,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()
                           .withEncoder(value: encoder)
-                          .withHost(value: host)
                           .build()
             var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
-            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLPathMiddleware())
+            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLPathMiddleware(urlPrefix: urlPrefix))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentOutputResponse>, ClientRuntime.SdkError<InlineDocumentOutputError>> in
-                input.withPath(context.getPath()).withHost(host)
+                input.withPath(context.getPath())
                 return next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputHeadersMiddleware())
@@ -794,7 +785,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents =
             """
     func testInlineDocumentAsPayloadInput() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/InlineDocumentAsPayload",
@@ -806,7 +797,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "foo": "bar"
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -830,12 +821,11 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()
                           .withEncoder(value: encoder)
-                          .withHost(value: host)
                           .build()
             var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
-            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLPathMiddleware())
+            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLPathMiddleware(urlPrefix: urlPrefix))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentAsPayloadOutputResponse>, ClientRuntime.SdkError<InlineDocumentAsPayloadOutputError>> in
-                input.withPath(context.getPath()).withHost(host)
+                input.withPath(context.getPath())
                 return next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())

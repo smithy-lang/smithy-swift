@@ -27,6 +27,6 @@ class OperationInputUrlPathMiddleware(
         operationStackName: String
     ) {
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, model, op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}URLPathMiddleware(${inputParameters}))")
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}URLPathMiddleware($inputParameters))")
     }
 }
