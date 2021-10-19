@@ -27,14 +27,15 @@ class HttpUrlPathMiddleware(
 ) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}URLPathMiddleware"
-    override val properties: MutableMap<String, Symbol> = mutableMapOf("urlPrefix" to SwiftTypes.String)
 
     override fun generateMiddlewareClosure() {
         renderUriPath()
     }
 
     override fun generateInit() {
-        writer.openBlock("public init(urlPrefix: String = \"\") {", "}") {
+        writer.write("let urlPrefix: \$T", SwiftTypes.String)
+        writer.write("")
+        writer.openBlock("public init(urlPrefix: \$T = nil) {", "}", SwiftTypes.String) {
             writer.write("self.urlPrefix = urlPrefix")
         }
     }
@@ -97,7 +98,7 @@ class HttpUrlPathMiddleware(
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
         writer.write("var urlPath = \"\$L\"", uri)
-        writer.openBlock("if !urlPrefix.isEmpty {", "}") {
+        writer.openBlock("if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {", "}") {
             writer.write("urlPath = \"\\(urlPrefix)\\(urlPath)\"")
         }
         writer.write("var copiedContext = context")

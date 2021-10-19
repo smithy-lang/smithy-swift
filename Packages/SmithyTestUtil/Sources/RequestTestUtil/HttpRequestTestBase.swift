@@ -105,9 +105,9 @@ open class HttpRequestTestBase: XCTestCase {
         return deconflictedHost
     }
 
-    public func urlPrefixFromHost(host: String) -> String {
+    public func urlPrefixFromHost(host: String) -> String? {
         guard !host.isEmpty, let hostCustomPath = URL(string: "http://\(host)")?.path else {
-            return ""
+            return nil
         }
         return hostCustomPath
     }

@@ -14,9 +14,9 @@ class HttpUrlPathMiddlewareTests {
             public struct SmokeTestInputURLPathMiddleware: ClientRuntime.Middleware {
                 public let id: Swift.String = "SmokeTestInputURLPathMiddleware"
             
-                let urlPrefix: Swift.String
+                let urlPrefix: Swift.String?
             
-                public init(urlPrefix: String = "") {
+                public init(urlPrefix: Swift.String? = nil) {
                     self.urlPrefix = urlPrefix
                 }
             
@@ -33,7 +33,7 @@ class HttpUrlPathMiddlewareTests {
                         return .failure(.client(ClientRuntime.ClientError.pathCreationFailed(("label1 is nil and needs a value for the path of this operation"))))
                     }
                     var urlPath = "/smoketest/\(label1.urlPercentEncoding())/foo"
-                    if !urlPrefix.isEmpty {
+                    if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
                         urlPath = "\(urlPrefix)\(urlPath)"
                     }
                     var copiedContext = context
