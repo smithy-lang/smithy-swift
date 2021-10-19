@@ -15,6 +15,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -66,6 +67,7 @@ class HttpProtocolTestGenerator(
         val cloned = operationMiddleware.clone()
 
         for (operation in requestTestOperations) {
+            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlPathMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
@@ -74,6 +76,7 @@ class HttpProtocolTestGenerator(
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
 
             cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
+            cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, "urlPrefix: urlPrefix"))
         }
         return cloned
     }

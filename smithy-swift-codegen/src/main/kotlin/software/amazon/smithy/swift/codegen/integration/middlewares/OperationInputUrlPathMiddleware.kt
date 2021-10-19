@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 class OperationInputUrlPathMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
+    val inputParameters: String
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputUrlPathMiddleware"
@@ -26,6 +27,6 @@ class OperationInputUrlPathMiddleware(
         operationStackName: String
     ) {
         val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, model, op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}URLPathMiddleware())")
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}URLPathMiddleware($inputParameters))")
     }
 }

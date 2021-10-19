@@ -492,7 +492,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
 
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))

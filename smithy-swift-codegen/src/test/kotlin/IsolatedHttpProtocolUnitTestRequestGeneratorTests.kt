@@ -16,12 +16,12 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
 class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
     /// Supports handling NaN float label values.
     func testRestJsonSupportsNaNFloatLabels() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
             body: nil,
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 
@@ -48,12 +48,12 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val expectedContents =
             """
     func testRestJsonSupportsInfinityFloatLabels() throws {
-            let host = ""
+            let urlPrefix = urlPrefixFromHost(host: "")
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
                 body: nil,
-                host: host,
+                host: "",
                 resolvedHost: ""
             )
 
@@ -79,12 +79,12 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val expectedContents =
             """
     func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
-            let host = ""
+            let urlPrefix = urlPrefixFromHost(host: "")
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
                 body: nil,
-                host: host,
+                host: "",
                 resolvedHost: ""
             )
     
@@ -148,7 +148,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
 class DocumentTypeRequestTest: HttpRequestTestBase {
     /// Serializes document types using a list.
     func testDocumentInputWithList() throws {
-        let host = ""
+        let urlPrefix = urlPrefixFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/DocumentType",
@@ -176,7 +176,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                 ]
             }
             ""${'"'},
-            host: host,
+            host: "",
             resolvedHost: ""
         )
 

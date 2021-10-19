@@ -31,14 +31,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
         var resolvedHostValue = test.resolvedHost?.let { it } ?: run { "nil" }
-        writer.write("let host = \$S", test.host)
+        writer.write("let urlPrefix = urlPrefixFromHost(host: \$S)", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
             .write("path: \$S,", test.uri)
             .call { renderExpectedHeaders(test) }
             .call { renderExpectedQueryParams(test) }
             .call { renderExpectedBody(test) }
-            .write("host: host,")
+            .write("host: \$S,", test.host)
             .write("resolvedHost: \$S", resolvedHostValue)
             .closeBlock(")")
     }
@@ -89,7 +89,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val hasIdempotencyTokenTrait = idempotentMember != null
             writer.swiftFunctionParameterIndent {
                 writer.write("  .withEncoder(value: encoder)")
-                writer.write("  .withHost(value: host)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
                 }
