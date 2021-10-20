@@ -18,16 +18,16 @@ public struct RetryOptions {
     }
 }
 
-extension RetryOptions {
+public extension RetryOptions {
     func toCRTType() -> TransformRetryOptions {
         return TransformRetryOptions(initialBucketCapacity: initialBucketCapacity,
                             backOffRetryOptions: backOffRetryOptions.toCRTType())
     }
 }
 
-struct TransformRetryOptions: CRTRetryOptions {
-    var initialBucketCapacity: Int
-    var backOffRetryOptions: CRTExponentialBackoffRetryOptions
+public struct TransformRetryOptions: CRTRetryOptions {
+    public var initialBucketCapacity: Int
+    public var backOffRetryOptions: CRTExponentialBackoffRetryOptions
     
     init(initialBucketCapacity: Int, backOffRetryOptions: CRTExponentialBackoffRetryOptions) {
         self.initialBucketCapacity = initialBucketCapacity
