@@ -106,10 +106,6 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
         HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx, defaultContentType)
 
-    override fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
-        return true
-    }
-
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
