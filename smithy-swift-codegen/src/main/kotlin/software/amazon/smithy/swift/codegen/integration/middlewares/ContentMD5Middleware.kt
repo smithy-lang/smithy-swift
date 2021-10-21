@@ -5,8 +5,8 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -24,8 +24,8 @@ class ContentMD5Middleware(
 
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
-            val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+            val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+            val outputErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName, $outputErrorName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }

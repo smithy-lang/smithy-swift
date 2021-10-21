@@ -3,8 +3,8 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -26,9 +26,9 @@ class ContentTypeMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        val inputShapeName = ServiceGenerator.getOperationInputShapeName(symbolProvider, model, op)
-        val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
-        val outputErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+        val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
+        val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+        val outputErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
     }
 }

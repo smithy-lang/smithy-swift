@@ -15,8 +15,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.camelCaseName
-import software.amazon.smithy.swift.codegen.model.capitalizedName
 
 /*
 * Generates a Swift protocol for the service
@@ -76,48 +76,23 @@ class ServiceGenerator(
         fun renderAsyncOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
             if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
 
-            val operationName = op.camelCaseName()
-            val inputShape = opIndex.getInput(op).get()
-            val inputSymbolName = symbolProvider.toSymbol(inputShape).name
+            val inputSymbolName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val inputParam = "input: $inputSymbolName"
-
-            val outputType = getOperationOutputShapeName(symbolProvider, opIndex, op)
+            val outputType = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
 
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
+            val operationName = op.camelCaseName()
             writer.write("func \$L(\$L) async throws -> \$L", operationName, inputParam, outputType)
         }
 
         fun createOutputType(opIndex: OperationIndex, op: OperationShape, symbolProvider: SymbolProvider): String {
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
-            val errorTypeName = getOperationErrorShapeName(op)
+            val errorTypeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
 
             return "${ClientRuntimeTypes.Core.SdkResult}<$outputShapeName, $errorTypeName>"
-        }
-
-        fun getOperationInputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
-            val inputShape = opIndex.getInput(op).get()
-            return symbolProvider.toSymbol(inputShape).name
-        }
-        fun getOperationInputShapeName(symbolProvider: SymbolProvider, model: Model, op: OperationShape): String {
-            val inputShape = model.expectShape(op.input.get())
-            return symbolProvider.toSymbol(inputShape).name
-        }
-
-        fun getOperationOutputShapeName(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): String {
-            val outputShape = opIndex.getOutput(op).get()
-            return symbolProvider.toSymbol(outputShape).name
-        }
-
-        fun getOperationOutputShapeName(symbolProvider: SymbolProvider, model: Model, op: OperationShape): String {
-            val outputShape = model.expectShape(op.output.get())
-            return symbolProvider.toSymbol(outputShape).name
-        }
-
-        fun getOperationErrorShapeName(op: OperationShape): String {
-            return "${op.capitalizedName()}OutputError"
         }
     }
 
@@ -183,7 +158,7 @@ class ServiceGenerator(
         op: OperationShape
     ) {
         val errorShapes = op.errors.map { model.expectShape(it) as StructureShape }.toSet().sorted()
-        val operationErrorName = getOperationErrorShapeName(op)
+        val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         val operationErrorSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
             .name(operationErrorName)

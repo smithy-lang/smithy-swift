@@ -1,17 +1,23 @@
-package software.amazon.smithy.swift.codegen.integration
+package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Core.ClientError
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationInitializeStep
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
@@ -25,6 +31,29 @@ class HttpUrlPathMiddleware(
     private val pathBindings: List<HttpBindingDescriptor>,
     private val writer: SwiftWriter
 ) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
+
+    companion object {
+        fun renderUrlPathMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver) {
+            val httpTrait = httpBindingResolver.httpTrait(op)
+            val requestBindings = httpBindingResolver.requestBindings(op)
+            val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
+
+            val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
+
+            val urlPathMiddlewareSymbol = Symbol.builder()
+                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathMiddleware.swift")
+                .name(inputSymbol.name)
+                .build()
+            ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                val urlPathMiddleware = HttpUrlPathMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, httpTrait, pathBindings, writer)
+                MiddlewareGenerator(writer, urlPathMiddleware).generate()
+            }
+        }
+    }
 
     override val typeName = "${inputSymbol.name}URLPathMiddleware"
 

@@ -3,17 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen.integration
+package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.knowledge.OperationIndex
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
+import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolBodyMiddlewareGeneratorFactory
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
@@ -27,7 +35,35 @@ class HttpBodyMiddleware(
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
     override val typeName = "${inputSymbol.name}BodyMiddleware"
+    companion object {
+        fun renderBodyMiddleware(
+            ctx: ProtocolGenerator.GenerationContext,
+            op: OperationShape,
+            httpBindingResolver: HttpBindingResolver,
+            httpProtocolBodyMiddleware: HttpProtocolBodyMiddlewareGeneratorFactory
+        ) {
+            val opIndex = OperationIndex.of(ctx.model)
+            val inputShape = opIndex.getInput(op).get()
 
+            if (httpProtocolBodyMiddleware.shouldRenderHttpBodyMiddleware(inputShape)) {
+                val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+                val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
+
+                val headerMiddlewareSymbol = Symbol.builder()
+                    .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")
+                    .name(inputSymbol.name)
+                    .build()
+                ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    val requestBindings = httpBindingResolver.requestBindings(op)
+                    val bodyMiddleware = httpProtocolBodyMiddleware.httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
+                    MiddlewareGenerator(writer, bodyMiddleware).generate()
+                }
+            }
+        }
+    }
     override fun generateMiddlewareClosure() {
         renderEncodedBody()
     }
