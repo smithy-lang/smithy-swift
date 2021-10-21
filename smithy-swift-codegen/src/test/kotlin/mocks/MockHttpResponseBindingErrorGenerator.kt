@@ -7,17 +7,17 @@ package mocks
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingErrorGeneratable
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 
 class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape
     ) {
-        val operationErrorName = ServiceGenerator.getOperationErrorShapeName(op)
+        val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseBinding.swift")

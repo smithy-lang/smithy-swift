@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.camelCaseName
@@ -95,7 +96,7 @@ open class HttpProtocolClientGenerator(
     private fun renderContinuation(opIndex: OperationIndex, op: OperationShape, writer: SwiftWriter) {
         val operationName = op.camelCaseName()
         val continuationName = "${operationName}Continuation"
-        writer.write("typealias $continuationName = CheckedContinuation<${ServiceGenerator.getOperationOutputShapeName(ctx.symbolProvider, opIndex, op)}, \$N>", SwiftTypes.Error)
+        writer.write("typealias $continuationName = CheckedContinuation<${MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, opIndex, op).name}, \$N>", SwiftTypes.Error)
         writer.openBlock("return try await withCheckedThrowingContinuation { (continuation: $continuationName) in", "}") {
             writer.openBlock("$operationName(input: input) { result in", "}") {
                 writer.openBlock("switch result {", "}") {

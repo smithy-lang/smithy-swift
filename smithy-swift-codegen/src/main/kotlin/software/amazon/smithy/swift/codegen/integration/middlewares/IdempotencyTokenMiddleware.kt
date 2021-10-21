@@ -10,9 +10,9 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -31,8 +31,8 @@ class IdempotencyTokenMiddleware(
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
         idempotentMember?.let {
             val idempotentMemberName = it.memberName.decapitalize()
-            val outputShapeName = ServiceGenerator.getOperationOutputShapeName(symbolProvider, model, op)
-            val outputErrorShapeName = ServiceGenerator.getOperationErrorShapeName(op)
+            val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+            val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
             writer.openBlock(
                 "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<\$N<$outputShapeName>, \$N<$outputErrorShapeName>> in", "}",
                 SwiftTypes.Result,

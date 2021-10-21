@@ -38,10 +38,10 @@ class HttpUrlPathMiddleware(
             val requestBindings = httpBindingResolver.requestBindings(op)
             val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
 
-            val inputSymbol = MiddlewareHandlerUtils.inputSymbol(ctx, op)
-            val outputSymbol = MiddlewareHandlerUtils.outputSymbol(ctx, op)
-            val outputErrorSymbol = MiddlewareHandlerUtils.outputErrorSymbol(op)
-            val rootNamespace = MiddlewareHandlerUtils.rootNamespace(ctx)
+            val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
 
             val urlPathMiddlewareSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathMiddleware.swift")

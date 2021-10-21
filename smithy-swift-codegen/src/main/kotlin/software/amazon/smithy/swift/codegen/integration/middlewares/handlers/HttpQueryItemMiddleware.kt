@@ -49,10 +49,10 @@ class HttpQueryItemMiddleware(
             val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
             val queryLiterals = httpTrait.uri.queryLiterals
 
-            val inputSymbol = MiddlewareHandlerUtils.inputSymbol(ctx, op)
-            val outputSymbol = MiddlewareHandlerUtils.outputSymbol(ctx, op)
-            val outputErrorSymbol = MiddlewareHandlerUtils.outputErrorSymbol(op)
-            val rootNamespace = MiddlewareHandlerUtils.rootNamespace(ctx)
+            val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
 
             val headerMiddlewareSymbol = Symbol.builder()
                 .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemMiddleware.swift")
