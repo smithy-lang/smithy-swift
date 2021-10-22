@@ -29,7 +29,7 @@ class HttpUrlHostMiddleware(
             val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
 
             val headerMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlHostMiddleware.swift")
+                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathMiddleware.swift")
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
