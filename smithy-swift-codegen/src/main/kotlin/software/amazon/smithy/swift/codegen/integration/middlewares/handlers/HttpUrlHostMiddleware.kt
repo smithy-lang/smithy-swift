@@ -57,7 +57,7 @@ class HttpUrlHostMiddleware(
     override fun generateInit() {
         writer.write("let host: \$T", SwiftTypes.String)
         writer.write("")
-        writer.openBlock("public init(host: \$T = nil) {", "}", SwiftTypes.String) {
+        writer.openBlock("public init(host: \$D) {", "}", SwiftTypes.String) {
             writer.write("self.host = host")
         }
     }
