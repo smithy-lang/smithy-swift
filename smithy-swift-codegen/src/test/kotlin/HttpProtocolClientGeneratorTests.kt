@@ -111,7 +111,7 @@ class HttpProtocolClientGeneratorTests {
     @Test
     fun `it renders host prefix middleware with label correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/RestJson/models/GetStatusInput+UrlHostMiddleware.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/models/GetStatusInput+UrlPathMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         public struct GetStatusInputURLHostMiddleware: ClientRuntime.Middleware {
