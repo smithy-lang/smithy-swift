@@ -41,7 +41,7 @@ class EndpointTraitConstructorTests {
             val inputShape = ctx.generationCtx.model.expectShape(operation.input.get())
             val endpointTrait = operation.getTrait(EndpointTrait::class.java).get()
             val endpointPrefix = EndpointTraitConstructor(endpointTrait, inputShape).construct()
-            assert(endpointPrefix == "\\(input.foo).data.")
+            assert(endpointPrefix == "\\(input.foo!).data.")
         }
     }
 }
