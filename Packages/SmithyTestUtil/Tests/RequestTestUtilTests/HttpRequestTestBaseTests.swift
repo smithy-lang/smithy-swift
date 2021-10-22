@@ -9,6 +9,37 @@ import XCTest
 
 class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
+
+    public struct SayHelloInputURLHostMiddleware: ClientRuntime.Middleware {
+        public let id: Swift.String = "SayHelloInputURLHostMiddleware"
+
+        let host: Swift.String?
+
+        public init(host: Swift.String? = nil) {
+            self.host = host
+        }
+
+        public func handle<H>(context: Context,
+                      input: SayHelloInput,
+                      next: H) -> Swift.Result<ClientRuntime.OperationOutput<MockOutput>, MError>
+        where H: Handler,
+        Self.MInput == H.Input,
+        Self.MOutput == H.Output,
+        Self.Context == H.Context,
+        Self.MError == H.MiddlewareError
+        {
+            var copiedContext = context
+            if let host = host {
+                copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+            }
+            return next.handle(context: copiedContext, input: input)
+        }
+
+        public typealias MInput = SayHelloInput
+        public typealias MOutput = ClientRuntime.OperationOutput<MockOutput>
+        public typealias Context = ClientRuntime.HttpContext
+        public typealias MError = ClientRuntime.SdkError<MockMiddlewareError>
+    }
     
     struct SayHelloInputQueryItemMiddleware<StackOutput: HttpResponseBinding,
                                             StackError: HttpResponseBinding>: Middleware {
@@ -158,6 +189,12 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   requiredHeader: "required header")
 
         var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
+        operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<MockOutput>, ClientRuntime.SdkError<MockMiddlewareError>> in
+            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withHost(host)
+            return next.handle(context: context, input: input)
+        }
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())

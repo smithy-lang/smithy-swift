@@ -15,6 +15,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -68,6 +69,7 @@ class HttpProtocolTestGenerator(
 
         for (operation in requestTestOperations) {
             cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlPathMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlHostMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
@@ -77,6 +79,7 @@ class HttpProtocolTestGenerator(
 
             cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
             cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, "urlPrefix: urlPrefix"))
+            cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, "host: hostOnly"))
         }
         return cloned
     }

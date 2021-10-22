@@ -17,6 +17,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
     /// Supports handling NaN float label values.
     func testRestJsonSupportsNaNFloatLabels() throws {
         let urlPrefix = urlPrefixFromHost(host: "")
+        let hostOnly = hostOnlyFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .get,
             path: "/FloatHttpLabels/NaN/NaN",
@@ -49,6 +50,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             """
     func testRestJsonSupportsInfinityFloatLabels() throws {
             let urlPrefix = urlPrefixFromHost(host: "")
+            let hostOnly = hostOnlyFromHost(host: "")
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/Infinity/Infinity",
@@ -80,6 +82,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             """
     func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
             let urlPrefix = urlPrefixFromHost(host: "")
+            let hostOnly = hostOnlyFromHost(host: "")
             let expected = buildExpectedHttpRequest(
                 method: .get,
                 path: "/FloatHttpLabels/-Infinity/-Infinity",
@@ -149,6 +152,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
     /// Serializes document types using a list.
     func testDocumentInputWithList() throws {
         let urlPrefix = urlPrefixFromHost(host: "")
+        let hostOnly = hostOnlyFromHost(host: "")
         let expected = buildExpectedHttpRequest(
             method: .put,
             path: "/DocumentType",

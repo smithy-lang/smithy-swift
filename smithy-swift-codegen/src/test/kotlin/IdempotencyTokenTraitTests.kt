@@ -29,6 +29,7 @@ class IdempotencyTokenTraitTests {
                         return next.handle(context: context, input: copiedInput)
                     }
                     operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLPathMiddleware())
+                    operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLHostMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputHeadersMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputQueryItemMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(contentType: "application/xml"))

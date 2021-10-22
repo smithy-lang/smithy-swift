@@ -104,8 +104,42 @@ class HttpProtocolClientGeneratorTests {
                       .withOperation(value: "getStatus")
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withLogger(value: config.logger)
-                      .withHostPrefix(value: "\(input.foo).data.")
         """
+        contents.shouldContainOnlyOnce(expectedFragment)
+    }
+
+    @Test
+    fun `it renders host prefix middleware with label correctly`() {
+        val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/models/GetStatusInput+UrlPathMiddleware.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expectedFragment = """
+        public struct GetStatusInputURLHostMiddleware: ClientRuntime.Middleware {
+            public let id: Swift.String = "GetStatusInputURLHostMiddleware"
+        
+            let host: Swift.String?
+        
+            public init(host: Swift.String? = nil) {
+                self.host = host
+            }
+        
+            public func handle<H>(context: Context,
+                          input: GetStatusInput,
+                          next: H) -> Swift.Result<ClientRuntime.OperationOutput<GetStatusOutputResponse>, MError>
+            where H: Handler,
+            Self.MInput == H.Input,
+            Self.MOutput == H.Output,
+            Self.Context == H.Context,
+            Self.MError == H.MiddlewareError
+            {
+                var copiedContext = context
+                if let host = host {
+                    copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+                }
+                copiedContext.attributes.set(key: AttributeKey<String>(name: "HostPrefix"), value: "\(input.foo!).data.")
+                return next.handle(context: copiedContext, input: input)
+            }
+        """.trimIndent()
         contents.shouldContainOnlyOnce(expectedFragment)
     }
 
@@ -171,6 +205,7 @@ class HttpProtocolClientGeneratorTests {
                     return next.handle(context: context, input: copiedInput)
                 }
                 operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLPathMiddleware())
+                operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLHostMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
@@ -191,6 +226,7 @@ class HttpProtocolClientGeneratorTests {
         }
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
+        context.generator.generateSerializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()
         return context
     }
