@@ -2,11 +2,9 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.EndpointTraitConstructor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -52,11 +50,6 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
 
-        op.getTrait(EndpointTrait::class.java).ifPresent {
-            val inputShape = model.expectShape(op.input.get())
-            val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
-            writer.write("  .withHostPrefix(value: \"\$L\")", hostPrefix)
-        }
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
     }

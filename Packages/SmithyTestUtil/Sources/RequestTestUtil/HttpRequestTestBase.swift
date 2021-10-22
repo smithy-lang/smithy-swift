@@ -99,7 +99,7 @@ open class HttpRequestTestBase: XCTestCase {
            let parsedHost = urlFromHost.host {
             deconflictedHost = parsedHost
         }
-        if let resolvedHost = resolvedHost {
+        if let resolvedHost = resolvedHost, !resolvedHost.isEmpty {
             deconflictedHost = resolvedHost
         }
         return deconflictedHost
@@ -110,6 +110,15 @@ open class HttpRequestTestBase: XCTestCase {
             return nil
         }
         return hostCustomPath
+    }
+
+    // Per spec, host can contain a path prefix, so this function is used to get only the host
+    // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
+    public func hostOnlyFromHost(host: String) -> String? {
+        guard !host.isEmpty, let hostOnly = URL(string: "http://\(host)")?.host else {
+            return nil
+        }
+        return hostOnly
     }
     
     func addQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
@@ -207,7 +216,8 @@ open class HttpRequestTestBase: XCTestCase {
         assertQueryItems(expected.queryItems, actual.queryItems)
         
         XCTAssertEqual(expected.endpoint.path, actual.endpoint.path)
-        
+        XCTAssertEqual(expected.endpoint.host, actual.endpoint.host)
+
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems)
         
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems)

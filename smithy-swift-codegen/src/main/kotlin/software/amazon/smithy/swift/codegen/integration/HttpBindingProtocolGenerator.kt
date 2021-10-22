@@ -44,10 +44,12 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.LoggingMiddl
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputHeadersMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputQueryItemMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpHeaderMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpQueryItemMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
@@ -128,6 +130,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
+                HttpUrlHostMiddleware.renderMiddleware(ctx, operation, httpBindingResolver)
                 HttpUrlPathMiddleware.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
@@ -383,6 +386,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))

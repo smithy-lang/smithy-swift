@@ -32,6 +32,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
         var resolvedHostValue = test.resolvedHost?.let { it } ?: run { "nil" }
         writer.write("let urlPrefix = urlPrefixFromHost(host: \$S)", test.host)
+        writer.write("let hostOnly = hostOnlyFromHost(host: \$S)", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
             .write("path: \$S,", test.uri)
