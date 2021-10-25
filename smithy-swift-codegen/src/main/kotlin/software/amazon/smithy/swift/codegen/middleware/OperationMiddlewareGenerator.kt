@@ -26,6 +26,11 @@ open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<Operation
         }
     }
 
+    override fun middlewares(operation: OperationShape, step: MiddlewareStep): List<MiddlewareRenderable> {
+        val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
+        return resolveStep(stack, step).map { it }
+    }
+
     override fun clone(): OperationMiddleware {
         val copy: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()
         middlewareMap.forEach { (shape, stack) ->
