@@ -56,7 +56,6 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
         val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
-
         return HttpProtocolTestGenerator(
             ctx,
             requestTestBuilder,
@@ -64,6 +63,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
             errorTestBuilder,
             httpProtocolCustomizable,
             operationMiddleware,
+            getProtocolHttpBindingResolver(ctx, defaultContentType),
             HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }

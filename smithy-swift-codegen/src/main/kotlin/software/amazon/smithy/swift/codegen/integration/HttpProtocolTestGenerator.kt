@@ -35,6 +35,7 @@ class HttpProtocolTestGenerator(
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     private val httpProtocolCustomizable: HttpProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
+    private val httpBindingResolver: HttpBindingResolver,
     private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
     private val imports: List<String> = listOf(),
     // list of test IDs to ignore/skip
@@ -116,6 +117,7 @@ class HttpProtocolTestGenerator(
                     .testCases(requestTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
                     .operationMiddleware(operationMiddleware)
+                    .httpBindingResolver(httpBindingResolver)
                     .serdeContext(serdeContext)
                     .build()
                     .renderTestClass(testClassName)
@@ -150,6 +152,7 @@ class HttpProtocolTestGenerator(
                     .testCases(responseTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
                     .operationMiddleware(operationMiddleware)
+                    .httpBindingResolver(httpBindingResolver)
                     .serdeContext(serdeContext)
                     .build()
                     .renderTestClass(testClassName)
@@ -192,6 +195,7 @@ class HttpProtocolTestGenerator(
                         .testCases(testCases)
                         .httpProtocolCustomizable(httpProtocolCustomizable)
                         .operationMiddleware(operationMiddleware)
+                        .httpBindingResolver(httpBindingResolver)
                         .serdeContext(serdeContext)
                         .build()
                         .renderTestClass(testClassName)

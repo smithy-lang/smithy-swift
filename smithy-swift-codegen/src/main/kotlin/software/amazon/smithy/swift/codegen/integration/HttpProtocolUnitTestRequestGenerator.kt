@@ -5,6 +5,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpHeaderTrait
@@ -88,8 +89,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
             val hasIdempotencyTokenTrait = idempotentMember != null
+            val httpMethod = resolveHttpMethod(operation)
             writer.swiftFunctionParameterIndent {
                 writer.write("  .withEncoder(value: encoder)")
+                writer.write("  .withMethod(value: .$httpMethod)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
                 }
@@ -114,6 +117,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
             writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
         }
+    }
+
+    private fun resolveHttpMethod(op: OperationShape): String {
+        val httpTrait = httpBindingResolver.httpTrait(op)
+        return httpTrait.method.toLowerCase()
     }
 
     private fun renderMockDeserializeMiddleware(

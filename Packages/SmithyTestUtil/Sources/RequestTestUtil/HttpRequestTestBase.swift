@@ -35,6 +35,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          host: String,
                                          resolvedHost: String?) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
+        builder.withMethod(method)
 
         if let deconflictedHost = deconflictHost(host: host, resolvedHost: resolvedHost) {
             builder.withHost(deconflictedHost)
