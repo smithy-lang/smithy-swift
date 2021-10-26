@@ -118,6 +118,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
             errorTestBuilder,
             httpProtocolCustomizable,
             operationMiddleware,
+            getProtocolHttpBindingResolver(ctx, defaultContentType),
             HttpProtocolUnitTestGenerator.SerdeContext("FormURLEncoder()", "XMLDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }

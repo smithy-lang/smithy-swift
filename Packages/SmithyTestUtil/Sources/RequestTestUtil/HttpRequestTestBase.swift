@@ -35,6 +35,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          host: String,
                                          resolvedHost: String?) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
+        builder.withMethod(method)
 
         if let deconflictedHost = deconflictHost(host: host, resolvedHost: resolvedHost) {
             builder.withHost(deconflictedHost)
@@ -217,7 +218,7 @@ open class HttpRequestTestBase: XCTestCase {
         
         XCTAssertEqual(expected.endpoint.path, actual.endpoint.path)
         XCTAssertEqual(expected.endpoint.host, actual.endpoint.host)
-
+        XCTAssertEqual(expected.method, actual.method)
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems)
         
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems)
