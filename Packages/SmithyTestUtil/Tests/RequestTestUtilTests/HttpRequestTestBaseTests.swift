@@ -191,6 +191,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
         operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<MockOutput>, ClientRuntime.SdkError<MockMiddlewareError>> in
+            input.withMethod(context.getMethod())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
             input.withHost(host)
             return next.handle(context: context, input: input)
@@ -248,7 +249,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             return .success(output)
            })
         
-        let context = HttpContextBuilder().withEncoder(value: JSONEncoder()).build()
+        let context = HttpContextBuilder()
+            .withEncoder(value: JSONEncoder())
+            .withMethod(value: .post)
+            .build()
         _ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
             let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
