@@ -18,6 +18,8 @@ group = "software.amazon.smithy"
 version = "0.1.0"
 
 val smithyVersion: String by project
+val commonMarkParserVersion: String by project
+val jsoupVersion: String by project
 val kotestVersion: String by project
 val junitVersion: String by project
 val jacocoVersion: String by project
@@ -26,6 +28,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
     api("software.amazon.smithy:smithy-waiters:$smithyVersion")
+    api("com.atlassian.commonmark:commonmark:$commonMarkParserVersion")
+    api("org.jsoup:jsoup:$jsoupVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
