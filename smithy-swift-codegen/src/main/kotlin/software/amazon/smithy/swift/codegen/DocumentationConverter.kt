@@ -42,7 +42,7 @@ class DocumentationConverter {
             val formatter = FormattingVisitor()
             val body: Node = Jsoup.parse(cleanedHtmlDocs).body()
             NodeTraversor.traverse(formatter, body)
-            return formatter.toString()
+            return formatter.toString().replace("\$", "\$\$")
         }
     }
 
