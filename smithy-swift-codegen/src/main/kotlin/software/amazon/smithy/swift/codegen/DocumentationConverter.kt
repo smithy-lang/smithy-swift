@@ -18,19 +18,20 @@ import software.amazon.smithy.utils.CodeWriter
 import software.amazon.smithy.utils.SetUtils
 import software.amazon.smithy.utils.StringUtils
 
-
 // Inspired from Go's implementation:
 // https://github.com/aws/smithy-go/blob/main/codegen/smithy-go-codegen/src/main/java/software/amazon/smithy/go/codegen/DocumentationConverter.java
 class DocumentationConverter {
     companion object {
         val MARKDOWN_PARSER = Parser.builder()
-            .enabledBlockTypes(SetUtils.of(
-                Heading::class.java,
-                HtmlBlock::class.java,
-                ThematicBreak::class.java,
-                FencedCodeBlock::class.java,
-                BlockQuote::class.java,
-                ListBlock::class.java)
+            .enabledBlockTypes(
+                SetUtils.of(
+                    Heading::class.java,
+                    HtmlBlock::class.java,
+                    ThematicBreak::class.java,
+                    FencedCodeBlock::class.java,
+                    BlockQuote::class.java,
+                    ListBlock::class.java
+                )
             ).build()
         val SWIFTDOC_ALLOWLIST = Safelist()
             .addTags("code", "pre", "ul", "ol", "li", "a", "br", "h1", "h2", "h3", "h4", "h5", "h6")
@@ -51,7 +52,7 @@ class DocumentationConverter {
         var needsListPrefix: Boolean = false,
         var needsBracketsForLink: Boolean = false,
         var shouldStripPrefixWhitespace: Boolean = false,
-    ): NodeVisitor {
+    ) : NodeVisitor {
         private val TEXT_BLOCK_NODES = SetUtils.of("br", "p", "h1", "h2", "h3", "h4", "h5", "h6")
         private val LIST_BLOCK_NODES = SetUtils.of("ul", "ol")
         private val CODE_BLOCK_NODES = SetUtils.of("pre", "code")
@@ -172,8 +173,10 @@ class DocumentationConverter {
         }
         private fun isBlockNode(node: Node): Boolean {
             val name = node.nodeName()
-            return (TEXT_BLOCK_NODES.contains(name) || LIST_BLOCK_NODES.contains(name)
-                    || CODE_BLOCK_NODES.contains(name))
+            return (
+                TEXT_BLOCK_NODES.contains(name) || LIST_BLOCK_NODES.contains(name) ||
+                    CODE_BLOCK_NODES.contains(name)
+                )
         }
 
         override fun tail(node: Node, depth: Int) {
@@ -182,8 +185,8 @@ class DocumentationConverter {
                 writer.dedent()
             }
 
-            if (TEXT_BLOCK_NODES.contains(name) || isTopLevelCodeBlock(node, depth)
-                || LIST_BLOCK_NODES.contains(name)
+            if (TEXT_BLOCK_NODES.contains(name) || isTopLevelCodeBlock(node, depth) ||
+                LIST_BLOCK_NODES.contains(name)
             ) {
                 writeNewline()
                 writeNewline()

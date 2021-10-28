@@ -49,7 +49,7 @@ class DocumentationConverterTests {
             * [PutObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
             
             * [DeleteBucket](https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html)
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
