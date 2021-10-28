@@ -20,8 +20,7 @@ class SwiftWriterTests {
         val result = writer.toString()
         val expectedResult =
             """
-            /// This is a big doc string.
-            /// More.
+            /// This is a big doc string. More.
             """.trimIndent()
         result.shouldContain(expectedResult)
     }

@@ -34,10 +34,10 @@ class StructureGeneratorTests {
         contents.shouldContain(SwiftWriter.staticHeader)
         val expectedGeneratedStructure =
             """
-            /// This *is* documentation about the shape.
+            /// This is documentation about the shape.
             public struct MyStruct: Swift.Equatable {
                 public var bar: Swift.Int
-                /// This *is* documentation about the member.
+                /// This is documentation about the member.
                 public var baz: Swift.Int?
                 public var foo: Swift.String?
             
@@ -167,7 +167,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     }
 }
 
-/// This *is* documentation about the shape.
+/// This is documentation about the shape.
 public struct RecursiveShapesInputOutput: Swift.Equatable {
     public var nested: RecursiveShapesInputOutputNested1?
 
@@ -225,7 +225,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     }
 }
 
-/// This *is* documentation about the shape.
+/// This is documentation about the shape.
 public struct RecursiveShapesInputOutputLists: Swift.Equatable {
     public var nested: RecursiveShapesInputOutputNested1?
 
@@ -258,7 +258,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
             """
                 import ClientRuntime
 
-                /// This *is* documentation about the shape.
+                /// This is documentation about the shape.
                 public struct MyError: ClientRuntime.ServiceError, Swift.Equatable {
                     public var _headers: ClientRuntime.Headers?
                     public var _statusCode: ClientRuntime.HttpStatusCode?
@@ -267,7 +267,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                     public var _retryable: Swift.Bool = true
                     public var _isThrottling: Swift.Bool = false
                     public var _type: ClientRuntime.ErrorType = .client
-                    /// This *is* documentation about the member.
+                    /// This is documentation about the member.
                     public var baz: Swift.Int?
                     public var message: Swift.String?
                 
