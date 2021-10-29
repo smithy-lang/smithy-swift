@@ -114,6 +114,7 @@ class DocumentationConverter {
         fun writeIndent() {
             writer.setNewline("").write("").setNewline("\n")
         }
+
         private fun isTopLevelCodeBlock(node: Node, depth: Int): Boolean {
             // The node must be a code block node
             if (!CODE_BLOCK_NODES.contains(node.nodeName())) {
@@ -171,6 +172,7 @@ class DocumentationConverter {
             }
             return (previous == null || isBlockNode(previous)) && (next == null || isBlockNode(next))
         }
+
         private fun isBlockNode(node: Node): Boolean {
             val name = node.nodeName()
             return (
@@ -193,8 +195,6 @@ class DocumentationConverter {
             } else if (name == "a") {
                 val url = node.absUrl("href")
                 if (!url.isEmpty()) {
-                    // godoc can't render links with text bodies, so we simply append the link.
-                    // Full links do get rendered.
                     writer.writeInline("(\$L)", url)
                 }
             } else if (name == "li") {
