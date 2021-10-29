@@ -37,8 +37,7 @@ class EnumGeneratorTests {
 
         val expectedGeneratedEnum =
             """
-            /// Really long multi-line
-            /// Documentation for the enum
+            /// Really long multi-line Documentation for the enum
             public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// Documentation for BAR
                 case bar
@@ -103,14 +102,9 @@ class EnumGeneratorTests {
 
         val expectedGeneratedEnum =
             """
-            /// Really long multi-line
-            /// Documentation for the enum
+            /// Really long multi-line Documentation for the enum
             public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
-                /// ""${'"'}
-                /// T2 instances are Burstable Performance
-                /// Instances that provide a baseline level of CPU
-                /// performance with the ability to burst above the
-                /// baseline.""${'"'}
+                /// ""${'"'} T2 instances are Burstable Performance Instances that provide a baseline level of CPU performance with the ability to burst above the baseline.""${'"'}
                 case t2Micro
                 case t2Nano
                 case sdkUnknown(Swift.String)

@@ -59,7 +59,9 @@ class ServiceGenerator(
             val outputParam = "completion: @escaping ($outputType) -> Void"
 
             val paramTerminator = ", "
-
+            if (op.id.name == "createBucket") {
+                print("we are here")
+            }
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
