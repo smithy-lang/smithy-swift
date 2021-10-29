@@ -37,7 +37,10 @@ public class CRTClientEngine: HttpClientEngine {
             logger.error("Server name was not able to be set in TLS Connection Options. TLS Negotiation will fail.")
             logger.error("Error: \(err.localizedDescription)")
         }
-        let socketOptions = SocketOptions(socketType: .stream)
+        var socketOptions = SocketOptions(socketType: .stream)
+#if os(iOS) || os(watchOS)
+        socketOptions.connectTimeoutMs = 30_000
+#endif
         let options = HttpClientConnectionOptions(clientBootstrap: SDKDefaultIO.shared.clientBootstrap,
                                                   hostName: endpoint.host,
                                                   initialWindowSize: windowSize,
