@@ -27,8 +27,7 @@ class ContentTypeMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        val inputShape = MiddlewareShapeUtils.inputShape(model, op)
-        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(inputShape)
+        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || shouldRender) {
             val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name

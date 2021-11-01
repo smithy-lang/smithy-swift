@@ -4,7 +4,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -27,9 +26,8 @@ class OperationInputBodyMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        val inputShape = model.expectShape(op.input.get())
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-        val hasHttpBody = inputShape.members().filter { it.isInHttpBody() }.count() > 0
+        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || shouldRender) {
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}BodyMiddleware())")
         }

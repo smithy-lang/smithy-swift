@@ -22,8 +22,7 @@ class ContentLengthMiddleware(val model: Model) : MiddlewareRenderable {
         op: OperationShape,
         operationStackName: String
     ) {
-        val inputShape = MiddlewareShapeUtils.inputShape(model, op)
-        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(inputShape)
+        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody) {
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N())", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
         }

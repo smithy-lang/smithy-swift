@@ -42,7 +42,8 @@ class MiddlewareShapeUtils {
             return settings.moduleName
         }
 
-        fun hasHttpBody(inputShape: Shape): Boolean {
+        fun hasHttpBody(model: Model, op: OperationShape): Boolean {
+            val inputShape = inputShape(model, op)
             return inputShape.members().filter { it.isInHttpBody() }.count() > 0
         }
     }
