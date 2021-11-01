@@ -1,13 +1,16 @@
 package software.amazon.smithy.swift.codegen.integration.middlewares
 
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.isInHttpBody
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class ContentLengthMiddleware : MiddlewareRenderable {
+class ContentLengthMiddleware(val model: Model) : MiddlewareRenderable {
 
     override val name = "ContentLengthMiddleware"
 
@@ -20,6 +23,10 @@ class ContentLengthMiddleware : MiddlewareRenderable {
         op: OperationShape,
         operationStackName: String
     ) {
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N())", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
+        val inputShape = MiddlewareShapeUtils.inputShape(model, op)
+        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(inputShape)
+        if (hasHttpBody) {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N())", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
+        }
     }
 }
