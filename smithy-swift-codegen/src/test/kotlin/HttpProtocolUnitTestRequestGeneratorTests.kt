@@ -263,8 +263,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(contentType: "application/json"))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -499,8 +497,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(contentType: "application/json"))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in

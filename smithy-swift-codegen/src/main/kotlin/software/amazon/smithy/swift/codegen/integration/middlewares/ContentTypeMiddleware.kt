@@ -12,7 +12,8 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 class ContentTypeMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    val defaultContentType: String
+    val defaultContentType: String,
+    val shouldRender: Boolean = false
 ) : MiddlewareRenderable {
 
     override val name = "ContentTypeMiddleware"
@@ -26,9 +27,12 @@ class ContentTypeMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-        val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val outputErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
+        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
+        if (hasHttpBody || shouldRender) {
+            val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
+            val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+            val outputErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
+        }
     }
 }
