@@ -28,7 +28,7 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding,
                 return next.handle(context: context, input: input)
             }
             input.headers.update(name: "Content-MD5", value: base64Encoded)
-        case .stream(let stream):
+        case .stream:
             guard let logger = context.getLogger() else {
                 return next.handle(context: context, input: input)
             }
