@@ -7,21 +7,20 @@
 
 import ClientRuntime
 
-public struct MockHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
+public struct MockHandler<Output: HttpResponseBinding>: Handler {
     
     public typealias Context = HttpContext
-    public typealias MockHandlerCallback = (Context, SdkHttpRequest) -> Result<OperationOutput<Output>, MiddlewareError>
+    public typealias MockHandlerCallback = (Context, SdkHttpRequest) async throws -> OperationOutput<Output>
     let handleCallback: MockHandlerCallback
     public init(handleCallback: @escaping MockHandlerCallback) {
         self.handleCallback = handleCallback
     }
-    public func handle(context: Context, input: SdkHttpRequest) -> Result<OperationOutput<Output>, MiddlewareError> {
-        return self.handleCallback(context, input)
+    public func handle(context: Context, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
+        return try await self.handleCallback(context, input)
 
     }
     
     public typealias Input = SdkHttpRequest
     
     public typealias Output = OperationOutput<Output>
-    public typealias MiddlewareError = SdkError<OutputError>
 }

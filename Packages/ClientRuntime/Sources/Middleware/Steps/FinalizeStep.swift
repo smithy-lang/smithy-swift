@@ -9,26 +9,20 @@
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public typealias FinalizeStep<O: HttpResponseBinding,
-                              E: HttpResponseBinding> = MiddlewareStep<HttpContext,
+public typealias FinalizeStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                        SdkHttpRequestBuilder,
-                                                                       OperationOutput<O>,
-                                                                       SdkError<E>>
+                                                                       OperationOutput<O>>
 
 public let FinalizeStepId = "Finalize"
 
 public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
-                                  OperationStackError: HttpResponseBinding,
                                   H: Handler>: Handler where H.Context == HttpContext,
                                                              H.Input == SdkHttpRequest,
-                                                             H.Output == OperationOutput<OperationStackOutput>,
-                                                             H.MiddlewareError == SdkError<OperationStackError> {
+                                                             H.Output == OperationOutput<OperationStackOutput>{
     
     public typealias Input = SdkHttpRequestBuilder
     
     public typealias Output = OperationOutput<OperationStackOutput>
-    
-    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -36,7 +30,7 @@ public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
-        return handler.handle(context: context, input: input.build())
+    public func handle(context: HttpContext, input: Input) async throws -> Output {
+        return try await handler.handle(context: context, input: input.build())
     }
 }

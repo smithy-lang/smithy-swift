@@ -5,19 +5,19 @@
 
 import AwsCommonRuntimeKit
 #if os(Linux)
-     import Glibc
- #else
-     import Darwin
- #endif
+import Glibc
+#else
+import Darwin
+#endif
 
 public class CRTClientEngine: HttpClientEngine {
-    
+    public typealias StreamContinuation = CheckedContinuation<HttpResponse, Error>
     private var logger: LogAgent
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
-
+    
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     private let sharedDefaultIO: SDKDefaultIO = SDKDefaultIO.shared
@@ -51,7 +51,7 @@ public class CRTClientEngine: HttpClientEngine {
                                                   maxConnections: maxConnectionsPerEndpoint,
                                                   enableManualWindowManagement: false) // not using backpressure yet
         logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
-                        "with max connections: \(maxConnectionsPerEndpoint)")
+                     "with max connections: \(maxConnectionsPerEndpoint)")
         return HttpClientConnectionManager(options: options)
     }
     
@@ -66,38 +66,16 @@ public class CRTClientEngine: HttpClientEngine {
         return connectionPool
     }
     
-    public func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult) {
-        execute(request: request).then { (result) in
-            completion(result)
-        }
-    }
-    
-    public func execute(request: SdkHttpRequest) -> Future<HttpResponse> {
+    public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
-        let httpResponseFuture: Future<HttpResponse> = connectionMgr.acquireConnection()
-            .chained { (connectionResult) -> Future<HttpResponse> in
-                self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
-                let (requestOptions, future) = self.makeHttpRequestStreamOptions(request)
-                switch connectionResult {
-                case .failure(let error):
-                    future.fail(error)
-                case .success(let connection):
-                    let stream = connection.makeRequest(requestOptions: requestOptions)
-                    stream.activate()
-                    // map status code once call comes back
-                    future.then { (responseResult) in
-                        _ = responseResult.map { (response) -> HttpResponse in
-                            self.logger.debug("Future of response came back with success")
-                            let statusCode = Int(stream.getResponseStatusCode())
-                            response.statusCode = HttpStatusCode(rawValue: statusCode) ?? HttpStatusCode.notFound
-                            return response
-                        }
-                    }
-                }
-                
-                return future
-            }
-        return httpResponseFuture
+        let connection = try await connectionMgr.acquireConnection()
+        self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+        return try await withCheckedThrowingContinuation({ (continuation:StreamContinuation) in
+            let requestOptions = makeHttpRequestStreamOptions(request, continuation)
+            let stream = connection.makeRequest(requestOptions: requestOptions)
+            stream.activate()
+        })
+
     }
     
     public func close() {
@@ -107,43 +85,43 @@ public class CRTClientEngine: HttpClientEngine {
         }
     }
     
-    public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest) -> (HttpRequestOptions, Future<HttpResponse>) {
-        let future = Future<HttpResponse>()
-        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
+    public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest, _ continuation: StreamContinuation) -> HttpRequestOptions {
         let response = HttpResponse()
-        
+        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
         let streamReader: StreamReader = DataStreamReader()
         
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
-                ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode))
+            ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { [self] (stream, _) in
             logger.debug("header block is done")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.getResponseStatusCode()))
-                ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode))
+            ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             
             let byteBuffer = ByteBuffer(data: data)
             streamReader.write(buffer: byteBuffer)
-        } onStreamComplete: { [self] (_, error) in
+        } onStreamComplete: { [self] (stream, error) in
             logger.debug("stream completed")
             streamReader.hasFinishedWriting = true
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
                     logger.error("Response encountered an error: \(error)")
                     streamReader.onError(error: ClientError.crtError(error))
-                    future.fail(error)
-                    return
+                    continuation.resume(throwing: error)
                 }
             }
-
+            
             response.body = .stream(.reader(streamReader))
-            future.fulfill(response)
+            self.logger.debug("response came back with success")
+            if let stream = stream {
+                response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            }
+            continuation.resume(returning: response)
         }
-        
-        return (requestOptions, future)
+        return requestOptions
     }
 }

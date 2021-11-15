@@ -46,15 +46,15 @@ struct RelativeOrder {
     }
 }
 
-public struct OrderedGroup<Input, Output, Context: MiddlewareContext, MError: Error> {
+public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
     // order of the keys
     var order = RelativeOrder()
     // key here is name of the middleware aka the id property of the middleware
-    private var _items: [String: AnyMiddleware<Input, Output, Context, MError>] = [:]
+    private var _items: [String: AnyMiddleware<Input, Output, Context>] = [:]
     
-    var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context, MError>)] {
+    var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context>)] {
         
-        var sorted = [(key: String, value: AnyMiddleware<Input, Output, Context, MError>)]()
+        var sorted = [(key: String, value: AnyMiddleware<Input, Output, Context>)]()
         for key in order.order {
             guard let value = _items[key] else {
                 continue
@@ -67,7 +67,7 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext, MError: Er
     
     public init() {}
     
-    mutating func add(middleware: AnyMiddleware<Input, Output, Context, MError>,
+    mutating func add(middleware: AnyMiddleware<Input, Output, Context>,
                       position: Position) {
         if !middleware.id.isEmpty {
             _items[middleware.id] = middleware
@@ -75,14 +75,14 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext, MError: Er
         }
     }
     
-    mutating func insert(middleware: AnyMiddleware<Input, Output, Context, MError>,
+    mutating func insert(middleware: AnyMiddleware<Input, Output, Context>,
                          relativeTo: String,
                          position: Position) {
         _items[middleware.id] = middleware
         order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
     
-    func get(id: String)-> AnyMiddleware<Input, Output, Context, MError>? {
+    func get(id: String)-> AnyMiddleware<Input, Output, Context>? {
         return _items[id]
     }
 }

@@ -20,15 +20,13 @@ public class SDKRetryer: Retryer {
         try self.init(options: retryOptions)
     }
     
-    public func acquireToken(partitionId: String) throws -> RetryToken {
-        let result = crtRetryStrategy.acquireToken(partitionId: partitionId)
-        let token = try result.get()
+    public func acquireToken(partitionId: String) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.acquireToken(partitionId: partitionId)
         return RetryToken(crtToken: token)
     }
     
-    public func scheduleRetry(token: RetryToken, error: RetryError) throws -> RetryToken {
-        let result = crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
-        let token = try result.get()
+    public func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
         return RetryToken(crtToken: token)
     }
     

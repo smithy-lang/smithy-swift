@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// type erase the Middleware protocol
-public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext, MError: Error>: Middleware {
+public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {
     
-    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context, MError>) -> Result<MOutput, MError>
+    private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context>) async throws -> MOutput
 
     public var id: String
 
     public init<M: Middleware>(_ realMiddleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context, M.MError == MError {
-        if let alreadyErased = realMiddleware as? AnyMiddleware<MInput, MOutput, Context, MError> {
+    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
+        if let alreadyErased = realMiddleware as? AnyMiddleware<MInput, MOutput, Context> {
             self = alreadyErased
             return
         }
@@ -21,20 +21,18 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext, MError:
     
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput,
                                                           H.Output == MOutput,
-                                                          H.Context == Context,
-                                                          H.MiddlewareError == MError {
+                                                          H.Context == Context {
         
         self._handle = { context, input, handler in
-            handler.handle(context: context, input: input)
+            try await handler.handle(context: context, input: input)
         }
         self.id = id
     }
 
-    public func handle<H: Handler>(context: Context, input: MInput, next: H) -> Result<MOutput, MError>
+    public func handle<H: Handler>(context: Context, input: MInput, next: H) async throws -> MOutput
     where H.Input == MInput,
           H.Output == MOutput,
-          H.Context == Context,
-          H.MiddlewareError == MError {
-        return _handle(context, input, next.eraseToAnyHandler())
+          H.Context == Context {
+        return try await _handle(context, input, next.eraseToAnyHandler())
     }
 }

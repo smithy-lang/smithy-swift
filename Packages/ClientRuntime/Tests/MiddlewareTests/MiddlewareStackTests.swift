@@ -6,7 +6,7 @@ import SmithyTestUtil
 @testable import ClientRuntime
 
 class MiddlewareStackTests: XCTestCase {
-    func testMiddlewareStackSuccessInterceptAfter() {
+    func testMiddlewareStackSuccessInterceptAfter() async throws {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
@@ -20,23 +20,17 @@ class MiddlewareStackTests: XCTestCase {
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(),
+        let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-                                                return .success(output)
+                                                return output
                                             }))
-        
-        switch result {
-        case .success(let output):
-            XCTAssert(output.value == 200)
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+        XCTAssert(result.value == 200)
     }
     
-    func testMiddlewareStackConvenienceFunction() {
+    func testMiddlewareStackConvenienceFunction() async throws {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
@@ -45,40 +39,36 @@ class MiddlewareStackTests: XCTestCase {
             .withOperation(value: "Test Operation")
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
-        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
+        stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> OperationOutput<MockOutput> in
             
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
-        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
-            return next.handle(context: context, input: input)
+        stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> OperationOutput<MockOutput> in
+            return try await next.handle(context: context, input: input)
         }
 
-        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
+        stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> OperationOutput<MockOutput> in
             input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
-        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
-            return next.handle(context: context, input: requestBuilder)
+        stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> OperationOutput<MockOutput> in
+            return try await next.handle(context: context, input: requestBuilder)
         }
         stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware())
-        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware())
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(),
+        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput, MockMiddlewareError>())
+        let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-                                                return .success(output)
+                                                return output
                                             }))
         
-        switch result {
-        case .success(let output):
-            XCTAssert(output.value == 200)
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+
+        XCTAssert(result.value == 200)
     }
     
-    func testFullBlownOperationRequestWithClientHandler() {
+    func testFullBlownOperationRequestWithClientHandler() async throws {
         let httpClientConfiguration = HttpClientConfiguration()
         let clientEngine = CRTClientEngine()
         let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
@@ -96,17 +86,11 @@ class MiddlewareStackTests: XCTestCase {
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
+        let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
         
-        switch result {
-        case .success(let output):
-            XCTAssert(output.value == 200)
-            XCTAssert(output.headers.headers.contains(where: { (header) -> Bool in
-                header.name == "Content-Length"
-            }))
-            
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+        XCTAssert(result.value == 200)
+        XCTAssert(result.headers.headers.contains(where: { (header) -> Bool in
+            header.name == "Content-Length"
+        }))
     }
 }

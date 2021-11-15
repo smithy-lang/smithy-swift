@@ -21,16 +21,9 @@ class HttpClientTests: NetworkingTestUtils {
         super.tearDown()
     }
     
-    func testExecuteRequest() {
-        httpClient.execute(request: mockHttpDataRequest) { (result) in
-            switch result {
-            case .success(let resp):
-                XCTAssertNotNil(resp)
-                XCTAssert(resp.statusCode == HttpStatusCode.ok)
-            case .failure(let error):
-                XCTFail(error.localizedDescription)
-            }
-        }
+    func testExecuteRequest() async throws {
+        let resp = try await httpClient.execute(request: mockHttpDataRequest)
+        XCTAssertNotNil(resp)
+        XCTAssert(resp.statusCode == HttpStatusCode.ok)
     }
-
 }

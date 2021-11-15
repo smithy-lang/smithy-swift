@@ -3,10 +3,8 @@
 
 public typealias MiddlewareFunction<MInput,
                                     MOutput,
-                                    Context: MiddlewareContext,
-                                    MError: Error> = (Context,
+                                    Context: MiddlewareContext> = (Context,
                                                       MInput,
                                                       AnyHandler<MInput,
                                                                  MOutput,
-                                                                 Context,
-                                                                 MError>) -> Result<MOutput, MError>
+                                                                 Context>) async throws -> MOutput

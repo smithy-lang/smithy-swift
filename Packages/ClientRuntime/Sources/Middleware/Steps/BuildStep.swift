@@ -8,26 +8,20 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public typealias BuildStep<O: HttpResponseBinding,
-                           E: HttpResponseBinding> = MiddlewareStep<HttpContext,
+public typealias BuildStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                     SdkHttpRequestBuilder,
-                                                                    OperationOutput<O>,
-                                                                    SdkError<E>>
+                                                                    OperationOutput<O>>
 
 public let BuildStepId = "Build"
 
 public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
-                               OperationStackError: HttpResponseBinding,
                                H: Handler>: Handler where H.Context == HttpContext,
                                                           H.Input == SdkHttpRequestBuilder,
-                                                          H.Output == OperationOutput<OperationStackOutput>,
-                                                          H.MiddlewareError == SdkError<OperationStackError> {
+                                                          H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SdkHttpRequestBuilder
     
     public typealias Output = OperationOutput<OperationStackOutput>
-    
-    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -35,7 +29,7 @@ public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
-        return handler.handle(context: context, input: input)
+    public func handle(context: HttpContext, input: Input) async throws -> Output {
+        return try await handler.handle(context: context, input: input)
     }
 }

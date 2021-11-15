@@ -5,19 +5,18 @@ public protocol Middleware {
     associatedtype MInput
     associatedtype MOutput
     associatedtype Context: MiddlewareContext
-    associatedtype MError: Error
     
     /// The middleware ID
     var id: String { get }
     
     func handle<H: Handler>(context: Context,
                             input: MInput,
-                            next: H) -> Result<MOutput, MError>
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context, H.MiddlewareError == MError
+                            next: H) async throws -> MOutput
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context
 }
 
 extension Middleware {
-    public func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context, MError> {
+    public func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context> {
         return AnyMiddleware(self)
     }
 }

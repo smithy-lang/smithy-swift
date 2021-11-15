@@ -11,8 +11,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
                                  OperationStackError: HttpResponseBinding>: Middleware {
     // swiftlint:disable line_length
     public typealias MockDeserializeMiddlewareCallback = (Context,
-                                                          SdkHttpRequest) -> Result<OperationOutput<OperationStackOutput>,
-                                                                                    MError>?
+                                                          SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
     public var id: String
     let callback: MockDeserializeMiddlewareCallback?
 
@@ -23,36 +22,30 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<OperationOutput<OperationStackOutput>, MError>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
         
         if let callback = self.callback,
-           let callbackReturnValue = callback(context, input) {
+           let callbackReturnValue = try await callback(context, input) {
             return callbackReturnValue
         }
 
-        let response = next.handle(context: context, input: input)
-        do {
-            let successResponse = try response.get()
-            var copiedResponse = successResponse
-        
-            let decoder = context.getDecoder()
-            let output = try OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
-            copiedResponse.output = output
-            
-            return .success(copiedResponse)
+        let response = try await next.handle(context: context, input: input)
 
-        } catch let err {
-            return .failure(.client(ClientError.deserializationFailed(err)))
-        }
+        var copiedResponse = response
+    
+        let decoder = context.getDecoder()
+        let output = try OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+        copiedResponse.output = output
+        
+        return copiedResponse
+
     }
     
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }

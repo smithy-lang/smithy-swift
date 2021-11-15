@@ -10,26 +10,20 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public typealias DeserializeStep<O: HttpResponseBinding,
-                                 E: HttpResponseBinding> = MiddlewareStep<HttpContext,
+public typealias DeserializeStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                           SdkHttpRequest,
-                                                                          OperationOutput<O>,
-                                                                          SdkError<E>>
+                                                                          OperationOutput<O>>
 
 public let DeserializeStepId = "Deserialize"
 
 public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
-                                     OperationStackError: HttpResponseBinding,
                                      H: Handler>: Handler where H.Context == HttpContext,
                                                                 H.Input == SdkHttpRequest,
-                                                                H.Output == OperationOutput<OperationStackOutput>,
-                                                                H.MiddlewareError == SdkError<OperationStackError> {
+                                                                H.Output == OperationOutput<OperationStackOutput> {
     
     public typealias Input = SdkHttpRequest
     
     public typealias Output = OperationOutput<OperationStackOutput>
-    
-    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -37,8 +31,8 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
-       return handler.handle(context: context, input: input)
+    public func handle(context: HttpContext, input: Input) async throws -> Output {
+       return try await handler.handle(context: context, input: input)
     }
 }
 

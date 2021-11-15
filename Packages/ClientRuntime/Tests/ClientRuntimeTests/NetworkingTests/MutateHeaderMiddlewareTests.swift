@@ -32,65 +32,49 @@ class MutateHeaderMiddlewareTests: XCTestCase {
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
     }
-    func testOverridesHeaders() {
-        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
+    
+    func testOverridesHeaders() async throws {
+        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
             input.withHeader(name: "baz", value: "qux")
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"]))
         
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
+        let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
         
-        switch result {
-        case .success(let output):
-            XCTAssertEqual(output.headers.value(for: "foo"), "override")
-            XCTAssertEqual(output.headers.value(for: "z"), "zebra")
-            XCTAssertEqual(output.headers.value(for: "baz"), "qux")
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+        XCTAssertEqual(output.headers.value(for: "foo"), "override")
+        XCTAssertEqual(output.headers.value(for: "z"), "zebra")
+        XCTAssertEqual(output.headers.value(for: "baz"), "qux")
     }
     
-    func testAppendsHeaders() {
-        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
+    func testAppendsHeaders() async throws {
+        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
             input.withHeader(name: "baz", value: "qux")
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .before, middleware: MutateHeadersMiddleware(additional: ["foo": "appended", "z": "zebra"]))
 
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
+        let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
         
-        switch result {
-        case .success(let output):
-            XCTAssertEqual(output.headers.values(for: "foo"), ["appended", "bar"])
-            XCTAssertEqual(output.headers.value(for: "z"), "zebra")
-            XCTAssertEqual(output.headers.value(for: "baz"), "qux")
-            
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+        XCTAssertEqual(output.headers.values(for: "foo"), ["appended", "bar"])
+        XCTAssertEqual(output.headers.value(for: "z"), "zebra")
+        XCTAssertEqual(output.headers.value(for: "baz"), "qux")
     }
     
-    func testConditionallySetHeaders() {
-        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> Result<OperationOutput<MockOutput>, SdkError<MockMiddlewareError>> in
+    func testConditionallySetHeaders() async throws {
+        stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
             input.withHeader(name: "baz", value: "qux")
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(conditionallySet: ["foo": "nope", "z": "zebra"]))
 
-        let result = stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
+        let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
         
-        switch result {
-        case .success(let output):
-            XCTAssertEqual(output.headers.value(for: "foo"), "bar")
-            XCTAssertEqual(output.headers.value(for: "z"), "zebra")
-            XCTAssertEqual(output.headers.value(for: "baz"), "qux")
-            
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+        XCTAssertEqual(output.headers.value(for: "foo"), "bar")
+        XCTAssertEqual(output.headers.value(for: "z"), "zebra")
+        XCTAssertEqual(output.headers.value(for: "baz"), "qux")
     }
 }
