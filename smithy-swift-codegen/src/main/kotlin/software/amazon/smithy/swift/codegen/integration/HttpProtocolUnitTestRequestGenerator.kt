@@ -109,11 +109,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
 
-            writer.openBlock("_ = operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
+            writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
                 writer.write("let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)")
                 writer.write("let serviceError = try! $outputErrorName(httpResponse: httpResponse)")
-                writer.write("return .failure(.service(serviceError, httpResponse))")
+                writer.write("throw SdkError<$outputErrorName>.service(serviceError, httpResponse)")
             }
             writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
         }
@@ -141,7 +141,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("deserializeMiddleware.fulfill()")
-            writer.write("return .success(output)")
+            writer.write("return output")
         }
     }
 

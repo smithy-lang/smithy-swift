@@ -31,8 +31,7 @@ class ContentTypeMiddleware(
         if (hasHttpBody || shouldRender) {
             val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-            val outputErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName, $outputErrorName>(contentType: \"${defaultContentType}\"))")
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ContentTypeMiddleware<$inputShapeName, $outputShapeName>(contentType: \"${defaultContentType}\"))")
         }
     }
 }

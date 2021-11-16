@@ -54,7 +54,7 @@ protected constructor(builder: Builder<T>) {
             writer.writeDocs(it)
         }
 
-        writer.openBlock("func test${test.id}() throws {", "}") {
+        writer.openBlock("func test${test.id}() async throws {", "}") {
             renderTestBody(test)
         }
     }

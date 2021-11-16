@@ -3,8 +3,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding,
-                                      OperationStackError: HttpResponseBinding>: Middleware {
+public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "ContentMD5"
     
     private let contentMD5HeaderName = "Content-MD5"
@@ -45,5 +44,4 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding,
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }
