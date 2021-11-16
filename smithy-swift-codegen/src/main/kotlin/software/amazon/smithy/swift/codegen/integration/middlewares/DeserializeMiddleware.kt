@@ -12,7 +12,8 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class DeserializeMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider) : MiddlewareRenderable {
+    val symbolProvider: SymbolProvider
+) : MiddlewareRenderable {
 
     override val name = "DeserializeMiddleware"
 
