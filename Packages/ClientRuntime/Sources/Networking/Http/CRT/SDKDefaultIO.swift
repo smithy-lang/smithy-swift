@@ -9,12 +9,22 @@ import AwsCommonRuntimeKit
 import class Foundation.ProcessInfo
 
 public final class SDKDefaultIO {
-    public static let shared = SDKDefaultIO()
+    static weak var privateShared: SDKDefaultIO? = nil
     
-    public let eventLoopGroup: EventLoopGroup
-    public let hostResolver: DefaultHostResolver
-    public let clientBootstrap: ClientBootstrap
-    public let tlsContext: TlsContext
+    public static var shared: SDKDefaultIO {
+        if let shared = privateShared {
+            return shared
+        } else {
+            let shared = SDKDefaultIO()
+            privateShared = shared
+            return shared
+        }
+    }
+    
+    public var eventLoopGroup: EventLoopGroup
+    public var hostResolver: DefaultHostResolver
+    public var clientBootstrap: ClientBootstrap
+    public var tlsContext: TlsContext
 
     private init() {
         AwsCommonRuntimeKit.initialize()
@@ -52,3 +62,4 @@ public final class SDKDefaultIO {
         AwsCommonRuntimeKit.cleanUp()
     }
 }
+
