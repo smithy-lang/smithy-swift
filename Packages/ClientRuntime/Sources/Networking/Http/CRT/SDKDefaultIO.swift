@@ -62,4 +62,3 @@ public final class SDKDefaultIO {
         AwsCommonRuntimeKit.cleanUp()
     }
 }
-
