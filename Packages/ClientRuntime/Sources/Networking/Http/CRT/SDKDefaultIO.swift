@@ -11,7 +11,7 @@ import class Foundation.ProcessInfo
 public final class SDKDefaultIO {
     static weak var privateShared: SDKDefaultIO? = nil
     
-    //TODO: revisit this and verify that it is thread safe.
+    // TODO: revisit this and verify that it is thread safe.
     public static var shared: SDKDefaultIO {
         if let shared = privateShared {
             return shared
