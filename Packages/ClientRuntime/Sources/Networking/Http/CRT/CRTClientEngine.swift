@@ -21,6 +21,7 @@ public class CRTClientEngine: HttpClientEngine {
 
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
+    private let sharedDefaultIO: SDKDefaultIO = SDKDefaultIO.shared
     
     init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
@@ -146,9 +147,5 @@ public class CRTClientEngine: HttpClientEngine {
         }
         
         return (requestOptions, future)
-    }
-    
-    deinit {
-        AwsCommonRuntimeKit.cleanUp()
     }
 }
