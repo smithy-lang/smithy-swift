@@ -6,8 +6,14 @@
 plugins {
     `kotlin-dsl`
 }
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
 
 repositories {
     mavenLocal()
     mavenCentral()
+    gradlePluginPortal()
 }
