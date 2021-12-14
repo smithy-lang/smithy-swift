@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.0.14"),
+        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.1.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.13.0")
     ],
