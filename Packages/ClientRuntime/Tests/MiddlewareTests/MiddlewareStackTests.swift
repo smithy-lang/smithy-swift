@@ -24,7 +24,9 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
+                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+                                                let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
+                                                                                         output: mockOutput)
                                                 return output
                                             }))
         XCTAssert(result.value == 200)
@@ -60,11 +62,13 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
+                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+                                                let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
+                                                                                         output: mockOutput)
                                                 return output
                                             }))
         
-
+        //wait(for: [deserializeMiddleware], timeout: 0.3)
         XCTAssert(result.value == 200)
     }
     

@@ -15,9 +15,9 @@ public struct MockHandler<Output: HttpResponseBinding>: Handler {
     public init(handleCallback: @escaping MockHandlerCallback) {
         self.handleCallback = handleCallback
     }
+    
     public func handle(context: Context, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
         return try await self.handleCallback(context, input)
-
     }
     
     public typealias Input = SdkHttpRequest
