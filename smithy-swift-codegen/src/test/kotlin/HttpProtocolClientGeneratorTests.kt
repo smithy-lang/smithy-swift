@@ -117,40 +117,13 @@ class HttpProtocolClientGeneratorTests {
     }
 
     @Test
-    fun `it renders async operation implementations in extension`() {
-        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient+Async.swift")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-        #if swift(>=5.5) && canImport(_Concurrency)
-        @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, macCatalyst 15.0, *)
-        public extension RestJsonProtocolClient {
-            func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
-            {
-                typealias allocateWidgetContinuation = CheckedContinuation<AllocateWidgetOutputResponse, Swift.Error>
-                return try await withCheckedThrowingContinuation { (continuation: allocateWidgetContinuation) in
-                    allocateWidget(input: input) { result in
-                        switch result {
-                            case .success(let output):
-                                continuation.resume(returning: output)
-                            case .failure(let error):
-                                continuation.resume(throwing: error)
-                        }
-                    }
-                }
-            }
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
         extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
-            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (ClientRuntime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
+            public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
                 let context = ClientRuntime.HttpContextBuilder()
                               .withEncoder(value: encoder)
@@ -169,15 +142,15 @@ class HttpProtocolClientGeneratorTests {
                     }
                     return next.handle(context: context, input: copiedInput)
                 }
-                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
-                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
-                operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
-                operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
+                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>())
+                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>())
+                operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>(contentType: "application/json"))
+                operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>())
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
-                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())
-                let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
-                completion(result)
+                operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
+                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
+                let result = try await operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
+                return result
             }
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)

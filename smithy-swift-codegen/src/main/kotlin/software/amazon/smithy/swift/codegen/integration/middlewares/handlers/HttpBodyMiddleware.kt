@@ -22,7 +22,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import javax.swing.text.html.HTML.Attribute.N
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
@@ -104,7 +103,7 @@ class HttpBodyMiddleware(
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
-                    writer.write("throw SdkError<\$N>.client(ClientError.serializationFailed(err.localizedDescription))", outputErrorSymbol)
+                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
                     writer.dedent()
                     writer.write("}")
                 }
@@ -116,7 +115,7 @@ class HttpBodyMiddleware(
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
-                    writer.write("throw SdkError<$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
+                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
                     writer.dedent()
                     writer.write("}")
                 }

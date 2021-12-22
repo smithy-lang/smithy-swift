@@ -17,7 +17,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     /// Serializes a complex error with no message member
-    func testRestJsonComplexErrorWithNoMessage() throws {
+    func testRestJsonComplexErrorWithNoMessage() async throws {
         do {
             guard let httpResponse = buildHttpResponse(
                 code: 403,
@@ -79,7 +79,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
 """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     /// Serializes a complex error with no message member
-    func testRestJsonComplexErrorWithNoMessage() throws {
+    func testRestJsonComplexErrorWithNoMessage() async throws {
         do {
             guard let httpResponse = buildHttpResponse(
                 code: 403,

@@ -5,21 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
-                                  OperationStackOutput: HttpResponseBinding,
-                                  OperationStackError: HttpResponseBinding>: Middleware {
+public struct QueryItemMiddleware<OperationStackInputQueryItemProvider,
+                                  OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))QueryItemMiddleware"
     
     public init() {}
     
     public func handle<H>(context: Context,
                           input: MInput,
-                          next: H) -> Result<MOutput, MError>
+                          next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
               for queryItem in input.operationInput.queryItems {
                   input.builder.withQueryItem(queryItem)
               }
@@ -30,5 +28,4 @@ public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }
