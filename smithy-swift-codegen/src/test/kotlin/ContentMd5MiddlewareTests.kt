@@ -20,13 +20,13 @@ class ContentMd5MiddlewareTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
-                    operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse>, ClientRuntime.SdkError<IdempotencyTokenWithStructureOutputError>> in
+                    operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse> in
                         let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                         var copiedInput = input
                         if input.token == nil {
                             copiedInput.token = idempotencyTokenGenerator.generateToken()
                         }
-                        return next.handle(context: context, input: copiedInput)
+                        return try await next.handle(context: context, input: copiedInput)
                     }
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse>())
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse>())
@@ -39,6 +39,8 @@ class ContentMd5MiddlewareTests {
                     let result = try await operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
                     return result
                 }
+            
+            }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
