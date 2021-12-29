@@ -18,7 +18,7 @@ public let FinalizeStepId = "Finalize"
 public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
                                   H: Handler>: Handler where H.Context == HttpContext,
                                                              H.Input == SdkHttpRequest,
-                                                             H.Output == OperationOutput<OperationStackOutput>{
+                                                             H.Output == OperationOutput<OperationStackOutput> {
     
     public typealias Input = SdkHttpRequestBuilder
     

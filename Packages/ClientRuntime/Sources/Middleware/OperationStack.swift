@@ -32,16 +32,19 @@ public struct OperationStack<OperationStackInput,
     where H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput>,
           H.Context == HttpContext {
-        
-        let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
-        let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
-        let build = compose(next: BuildStepHandler(handler: finalize), with: buildStep)
-        let serialize = compose(next: SerializeStepHandler(handler: build), with: serializeStep)
-        let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
-        
-        let result = try await initialize.handle(context: context, input: input)
-        return result.output!
-    }
+              
+              let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
+              let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
+              let build = compose(next: BuildStepHandler(handler: finalize), with: buildStep)
+              let serialize = compose(next: SerializeStepHandler(handler: build), with: serializeStep)
+              let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
+              
+              let result = try await initialize.handle(context: context, input: input)
+              guard let output = result.output else {
+                  throw ClientError.unknownError("Something went terribly wrong where the output was not set on the response. Please open a ticket with us at https://github.com/awslabs/aws-sdk-swift")
+              }
+              return output
+          }
     
     mutating public func presignedRequest<H: Handler>(context: HttpContext,
                                                       input: OperationStackInput,

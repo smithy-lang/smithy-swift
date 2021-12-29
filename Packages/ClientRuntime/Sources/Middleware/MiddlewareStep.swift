@@ -27,7 +27,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     public func handle<H: Handler>(context: Context,
                                    input: MInput,
                                    next: H) async throws -> MOutput
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context{
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
         
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems

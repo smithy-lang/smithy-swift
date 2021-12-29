@@ -4,4 +4,3 @@
  */
 
 public typealias SdkResult<R, E> = Result<R, SdkError<E>>
-

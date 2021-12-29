@@ -70,7 +70,7 @@ public class CRTClientEngine: HttpClientEngine {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
-        return try await withCheckedThrowingContinuation({ (continuation:StreamContinuation) in
+        return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
             let requestOptions = makeHttpRequestStreamOptions(request, continuation)
             let stream = connection.makeRequest(requestOptions: requestOptions)
             stream.activate()
@@ -92,13 +92,11 @@ public class CRTClientEngine: HttpClientEngine {
         
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode))
-            ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { [self] (stream, _) in
             logger.debug("header block is done")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode))
-            ?? HttpStatusCode.notFound
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (_, data) in
             logger.debug("incoming data")
             
@@ -112,11 +110,11 @@ public class CRTClientEngine: HttpClientEngine {
                     logger.error("Response encountered an error: \(error)")
                     streamReader.onError(error: ClientError.crtError(error))
                     continuation.resume(throwing: error)
+                    return
                 }
             }
             
             response.body = .stream(.reader(streamReader))
-            self.logger.debug("response came back with success")
             if let stream = stream {
                 response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
             }

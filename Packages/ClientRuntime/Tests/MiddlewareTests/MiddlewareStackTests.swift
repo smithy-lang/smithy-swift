@@ -68,7 +68,6 @@ class MiddlewareStackTests: XCTestCase {
                                                 return output
                                             }))
         
-        //wait(for: [deserializeMiddleware], timeout: 0.3)
         XCTAssert(result.value == 200)
     }
     
