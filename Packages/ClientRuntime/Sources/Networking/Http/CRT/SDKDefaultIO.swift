@@ -7,6 +7,11 @@
 	
 import AwsCommonRuntimeKit
 import class Foundation.ProcessInfo
+#if os(Linux)
+import Glibc
+#else
+import Darwin
+#endif
 
 public final class SDKDefaultIO {
     static weak var privateShared: SDKDefaultIO? = nil
@@ -26,9 +31,11 @@ public final class SDKDefaultIO {
     public var hostResolver: DefaultHostResolver
     public var clientBootstrap: ClientBootstrap
     public var tlsContext: TlsContext
+    public var logger: Logger
 
     private init() {
         AwsCommonRuntimeKit.initialize()
+        self.logger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
         self.eventLoopGroup = EventLoopGroup(threadCount: 0)
         self.hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup,
                                                 maxHosts: 8,
