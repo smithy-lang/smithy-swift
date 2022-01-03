@@ -14,7 +14,7 @@ import Darwin
 #endif
 
 public final class SDKDefaultIO {
-    static weak var privateShared: SDKDefaultIO? = nil
+    static weak var privateShared: SDKDefaultIO?
     
     // TODO: revisit this and verify that it is thread safe.
     public static var shared: SDKDefaultIO {
