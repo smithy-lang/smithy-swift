@@ -20,7 +20,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
           if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
               let output = try Output(httpResponse: copiedResponse.httpResponse, decoder: decoder)
               copiedResponse.output = output
-              return response
+              return copiedResponse
           } else {
               let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
               throw SdkError.service(error, copiedResponse.httpResponse)
