@@ -13,7 +13,6 @@ import AwsCommonRuntimeKit
 public class CRTClientEngine: HttpClientEngine {
     
     private var logger: LogAgent
-    private var crtLogger: Logger
     private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
@@ -27,7 +26,6 @@ public class CRTClientEngine: HttpClientEngine {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
-        self.crtLogger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
     }
     
     private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
