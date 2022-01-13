@@ -26,45 +26,53 @@ class UnionDecodeXMLGenerator(
         val containerName = "containerValues"
         writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
-            members.forEach { member ->
-                val memberTarget = ctx.model.expectShape(member.target)
-                when (memberTarget) {
-                    is CollectionShape -> {
-                        renderListMember(member, memberTarget, containerName)
+            writer.write("let key = \$L.allKeys.first", containerName)
+            writer.openBlock("switch key {", "}") {
+                members.forEach { member ->
+                    val memberTarget = ctx.model.expectShape(member.target)
+                    val memberName = ctx.symbolProvider.toMemberName(member)
+                    writer.write("case .\$L:", memberName)
+                    writer.indent()
+                    when (memberTarget) {
+                        is CollectionShape -> {
+                            renderListMember(member, memberTarget, containerName)
+                        }
+                        is MapShape -> {
+                            renderMapMember(member, memberTarget, containerName)
+                        }
+                        is TimestampShape -> {
+                            renderTimestampMember(member, memberTarget, containerName)
+                        }
+                        is BlobShape -> {
+                            renderBlobMember(member, memberTarget, containerName)
+                        }
+                        else -> {
+                            renderScalarMember(member, memberTarget, containerName, isUnion = true)
+                        }
                     }
-                    is MapShape -> {
-                        renderMapMember(member, memberTarget, containerName)
-                    }
-                    is TimestampShape -> {
-                        renderTimestampMember(member, memberTarget, containerName)
-                    }
-                    is BlobShape -> {
-                        renderBlobMember(member, memberTarget, containerName)
-                    }
-                    else -> {
-                        renderScalarMember(member, memberTarget, containerName)
-                    }
+                    writer.dedent()
                 }
+                writer.write("default:")
+                writer.indent()
+                writer.write("self = .sdkUnknown(\"\")")
+                writer.dedent()
             }
-            writer.write("self = .sdkUnknown(\"\")")
         }
     }
 
     override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {
         val member = memberName.removeSurroundingBackticks()
-        writer.openBlock("if let $memberName = $decodedMemberName {", "}") {
-            if (isBoxed) {
-                writer.write("self = .$member($memberName.value)")
-            } else {
-                writer.write("self = .$member($memberName)")
-            }
-            writer.write("return")
+        if (isBoxed) {
+            writer.write("self = .$member($decodedMemberName.value)")
+        } else {
+            writer.write("self = .$member($decodedMemberName)")
         }
     }
+
     override fun renderAssigningSymbol(memberName: String, symbol: String) {
         val member = memberName.removeSurroundingBackticks()
         writer.write("self = .$member($symbol)")
-        writer.write("return")
+       // writer.write("return")
     }
 
     override fun renderAssigningNil(memberName: String) {

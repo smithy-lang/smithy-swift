@@ -293,14 +293,14 @@ abstract class MemberShapeDecodeXMLGenerator(
         renderAssigningDecodedMember(memberName, "$value")
     }
 
-    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean = false) {
+    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean = false, isUnion: Boolean = false) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
-        val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
+        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
