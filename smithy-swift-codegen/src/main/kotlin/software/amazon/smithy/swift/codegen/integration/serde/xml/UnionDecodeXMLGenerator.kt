@@ -72,7 +72,6 @@ class UnionDecodeXMLGenerator(
     override fun renderAssigningSymbol(memberName: String, symbol: String) {
         val member = memberName.removeSurroundingBackticks()
         writer.write("self = .$member($symbol)")
-       // writer.write("return")
     }
 
     override fun renderAssigningNil(memberName: String) {
