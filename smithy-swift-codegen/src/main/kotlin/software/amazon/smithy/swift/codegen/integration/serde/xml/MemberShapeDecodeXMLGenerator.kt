@@ -43,51 +43,60 @@ abstract class MemberShapeDecodeXMLGenerator(
     fun renderListMember(
         member: MemberShape,
         memberTarget: CollectionShape,
-        containerName: String
+        containerName: String,
+        isUnion: Boolean = false
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+
+        if (isUnion) {
+            renderListMember(memberName, containerName, member, memberTarget)
+        } else {
+            writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+                renderListMember(memberName, containerName, member, memberTarget)
+            }
+            writer.indent()
+            renderAssigningNil(memberName)
+            writer.dedent().write("}")
+        }
+    }
+
+    private fun renderListMember(memberName: String, containerName: String, member: MemberShape, memberTarget: CollectionShape) {
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
+        var containerUsedForDecoding: String
+        var ifNilOrIfLetStatement: String
+        val nextContainerName = "${memberName}WrappedContainer"
+        if (!memberIsFlattened) {
+            val memberCodingKey = CollectionMemberCodingKey.construct(memberTarget.member)
+            memberCodingKey.renderStructs(writer)
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)")
+            currContainerKey = ".member"
+            currContainerName = nextContainerName
+            containerUsedForDecoding = currContainerName
+            ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
+        } else {
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: $currContainerKey)")
+            // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
+            currContainerName = nextContainerName
+            containerUsedForDecoding = containerName
+            ifNilOrIfLetStatement = "if $currContainerName != nil {"
+        }
 
-        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
-            var containerUsedForDecoding: String
-            var ifNilOrIfLetStatement: String
-            val nextContainerName = "${memberName}WrappedContainer"
-            if (!memberIsFlattened) {
-                val memberCodingKey = CollectionMemberCodingKey.construct(memberTarget.member)
-                memberCodingKey.renderStructs(writer)
-                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)")
-                currContainerKey = ".member"
-                currContainerName = nextContainerName
-                containerUsedForDecoding = currContainerName
-                ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
-            } else {
-                writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: $currContainerKey)")
-                // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
-                currContainerName = nextContainerName
-                containerUsedForDecoding = containerName
-                ifNilOrIfLetStatement = "if $currContainerName != nil {"
+        writer.openBlock(ifNilOrIfLetStatement, "} else {") {
+            val memberBuffer = "${memberName}Buffer"
+            val memberContainerName = "${memberName}Container"
+            val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
+            writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
+            writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
+            writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+                writer.write("$memberBuffer = \$N()", memberTargetSymbol)
+                renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
             }
-
-            writer.openBlock(ifNilOrIfLetStatement, "} else {") {
-                val memberBuffer = "${memberName}Buffer"
-                val memberContainerName = "${memberName}Container"
-                val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
-                writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
-                writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-                writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-                    writer.write("$memberBuffer = \$N()", memberTargetSymbol)
-                    renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
-                }
-                renderAssigningDecodedMember(memberName, memberBuffer)
-            }
-            writer.indent()
-            renderAssigningSymbol(memberName, "[]")
-            writer.dedent().write("}")
+            renderAssigningDecodedMember(memberName, memberBuffer)
         }
         writer.indent()
-        renderAssigningNil(memberName)
+        renderAssigningSymbol(memberName, "[]")
         writer.dedent().write("}")
     }
 
@@ -157,53 +166,61 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
+    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, isUnion: Boolean = false) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        if (isUnion) {
+            renderMapMember(member, memberTarget, containerName, memberName)
+        } else {
+            writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+                renderMapMember(member, memberTarget, containerName, memberName)
+            }
+            writer.indent()
+            renderAssigningNil(memberName)
+            writer.dedent().write("}")
+        }
+    }
+
+    private fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, memberName: String) {
         val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
         val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
 
-        val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var currContainerName = containerName
         var currContainerKey = ".$memberNameUnquoted"
         val memberIsFlattened = member.hasTrait<XmlFlattenedTrait>()
-        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
-            val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapEntry, true)
-            var containerUsedForDecoding: String
-            var ifNilOrIfLetStatement: String
-            val nextContainerName = "${memberNameUnquoted}WrappedContainer"
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
-            if (!memberIsFlattened) {
-                currContainerKey = ".entry"
-                currContainerName = nextContainerName
-                containerUsedForDecoding = currContainerName
-                ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
-            } else {
-                // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
-                currContainerName = nextContainerName
-                containerUsedForDecoding = containerName
-                ifNilOrIfLetStatement = "if $currContainerName != nil {"
-            }
+        val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapEntry, true)
+        var containerUsedForDecoding: String
+        var ifNilOrIfLetStatement: String
+        val nextContainerName = "${memberNameUnquoted}WrappedContainer"
+        writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
+        if (!memberIsFlattened) {
+            currContainerKey = ".entry"
+            currContainerName = nextContainerName
+            containerUsedForDecoding = currContainerName
+            ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
+        } else {
+            // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
+            currContainerName = nextContainerName
+            containerUsedForDecoding = containerName
+            ifNilOrIfLetStatement = "if $currContainerName != nil {"
+        }
 
-            writer.openBlock(ifNilOrIfLetStatement, "} else {") {
-                val memberBuffer = "${memberNameUnquoted}Buffer"
-                val memberContainerName = "${memberNameUnquoted}Container"
-                val memberTargetSymbol = "[${SwiftTypes.String}:$memberTargetValue]"
+        writer.openBlock(ifNilOrIfLetStatement, "} else {") {
+            val memberBuffer = "${memberNameUnquoted}Buffer"
+            val memberContainerName = "${memberNameUnquoted}Container"
+            val memberTargetSymbol = "[${SwiftTypes.String}:$memberTargetValue]"
 
-                val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapKeyValue, false)
-                writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
-                writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil")
-                writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-                    writer.write("$memberBuffer = $memberTargetSymbol()")
-                    renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer)
-                }
-                renderAssigningDecodedMember(memberName, memberBuffer)
+            val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapKeyValue, false)
+            writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
+            writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil")
+            writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
+                writer.write("$memberBuffer = $memberTargetSymbol()")
+                renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer)
             }
-            writer.indent()
-            renderAssigningSymbol(memberName, "[:]")
-            writer.dedent().write("}")
+            renderAssigningDecodedMember(memberName, memberBuffer)
         }
         writer.indent()
-        renderAssigningNil(memberName)
+        renderAssigningSymbol(memberName, "[:]")
         writer.dedent().write("}")
     }
 
@@ -249,23 +266,27 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
+    fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String, isUnion: Boolean = false) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
+        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberName)", SwiftTypes.String)
 
         val memberBuffer = "${memberName}Buffer"
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-        writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
-            writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
+        if (isUnion) {
+            writer.write("let $memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
+        } else {
+            writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
+            writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
+                writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
+            }
         }
         renderAssigningDecodedMember(memberName, memberBuffer)
     }
 
-    fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
+    fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String, isUnion: Boolean = false) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
@@ -273,18 +294,23 @@ abstract class MemberShapeDecodeXMLGenerator(
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
         val decodedMemberName = "${memberName}Decoded"
-        writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
-            writer.openBlock("do {", "} catch {") {
-                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-                renderAssigningDecodedMember(memberName, decodedMemberName)
+        if (isUnion) {
+            writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+            renderAssigningDecodedMember(memberName, decodedMemberName)
+        } else {
+            writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
+                writer.openBlock("do {", "} catch {") {
+                    writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+                    renderAssigningDecodedMember(memberName, decodedMemberName)
+                }
+                writer.indent()
+                renderEmptyDataForBlobTarget(memberTarget, memberName)
+                writer.dedent().write("}")
             }
             writer.indent()
-            renderEmptyDataForBlobTarget(memberTarget, memberName)
+            renderAssigningNil(memberName)
             writer.dedent().write("}")
         }
-        writer.indent()
-        renderAssigningNil(memberName)
-        writer.dedent().write("}")
     }
 
     private fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {

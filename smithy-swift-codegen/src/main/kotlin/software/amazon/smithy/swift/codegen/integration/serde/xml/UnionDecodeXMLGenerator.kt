@@ -35,16 +35,16 @@ class UnionDecodeXMLGenerator(
                     writer.indent()
                     when (memberTarget) {
                         is CollectionShape -> {
-                            renderListMember(member, memberTarget, containerName)
+                            renderListMember(member, memberTarget, containerName, true)
                         }
                         is MapShape -> {
-                            renderMapMember(member, memberTarget, containerName)
+                            renderMapMember(member, memberTarget, containerName, true)
                         }
                         is TimestampShape -> {
-                            renderTimestampMember(member, memberTarget, containerName)
+                            renderTimestampMember(member, memberTarget, containerName, true)
                         }
                         is BlobShape -> {
-                            renderBlobMember(member, memberTarget, containerName)
+                            renderBlobMember(member, memberTarget, containerName, true)
                         }
                         else -> {
                             renderScalarMember(member, memberTarget, containerName, isUnion = true)

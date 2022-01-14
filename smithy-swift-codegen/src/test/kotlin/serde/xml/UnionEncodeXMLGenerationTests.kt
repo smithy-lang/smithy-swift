@@ -71,16 +71,8 @@ class UnionEncodeXMLGenerationTests {
                             let doublevalueDecoded = try containerValues.decode(Swift.Double.self, forKey: .doublevalue)
                             self = .doublevalue(doublevalueDecoded)
                         case .datavalue:
-                            if containerValues.contains(.datavalue) {
-                                do {
-                                    let datavalueDecoded = try containerValues.decodeIfPresent(ClientRuntime.Data.self, forKey: .datavalue)
-                                    self = .datavalue(datavalueDecoded)
-                                } catch {
-                                    self = .datavalue("".data(using: .utf8))
-                                }
-                            } else {
-                                //No-op
-                            }
+                            let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
+                            self = .datavalue(datavalueDecoded)
                         case .unionvalue:
                             let unionvalueDecoded = try containerValues.decode(Box<RestXmlProtocolClientTypes.XmlUnionShape>.self, forKey: .unionvalue)
                             self = .unionvalue(unionvalueDecoded.value)
@@ -88,51 +80,40 @@ class UnionEncodeXMLGenerationTests {
                             let structvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
                             self = .structvalue(structvalueDecoded)
                         case .mapvalue:
-                            if containerValues.contains(.mapvalue) {
-                                struct KeyVal0{struct K{}; struct V{}}
-                                let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
-                                if let mapvalueWrappedContainer = mapvalueWrappedContainer {
-                                    let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
-                                    var mapvalueBuffer: [Swift.String:Swift.String]? = nil
-                                    if let mapvalueContainer = mapvalueContainer {
-                                        mapvalueBuffer = [Swift.String:Swift.String]()
-                                        for stringContainer0 in mapvalueContainer {
-                                            mapvalueBuffer?[stringContainer0.key] = stringContainer0.value
-                                        }
+                            struct KeyVal0{struct K{}; struct V{}}
+                            let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
+                            if let mapvalueWrappedContainer = mapvalueWrappedContainer {
+                                let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
+                                var mapvalueBuffer: [Swift.String:Swift.String]? = nil
+                                if let mapvalueContainer = mapvalueContainer {
+                                    mapvalueBuffer = [Swift.String:Swift.String]()
+                                    for stringContainer0 in mapvalueContainer {
+                                        mapvalueBuffer?[stringContainer0.key] = stringContainer0.value
                                     }
-                                    self = .mapvalue(mapvalueBuffer)
-                                } else {
-                                    self = .mapvalue([:])
                                 }
+                                self = .mapvalue(mapvalueBuffer)
                             } else {
-                                //No-op
+                                self = .mapvalue([:])
                             }
                         case .stringlist:
-                            if containerValues.contains(.stringlist) {
-                                struct KeyVal0{struct member{}}
-                                let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
-                                if let stringlistWrappedContainer = stringlistWrappedContainer {
-                                    let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                                    var stringlistBuffer:[Swift.String]? = nil
-                                    if let stringlistContainer = stringlistContainer {
-                                        stringlistBuffer = [Swift.String]()
-                                        for stringContainer0 in stringlistContainer {
-                                            stringlistBuffer?.append(stringContainer0)
-                                        }
+                            struct KeyVal0{struct member{}}
+                            let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
+                            if let stringlistWrappedContainer = stringlistWrappedContainer {
+                                let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
+                                var stringlistBuffer:[Swift.String]? = nil
+                                if let stringlistContainer = stringlistContainer {
+                                    stringlistBuffer = [Swift.String]()
+                                    for stringContainer0 in stringlistContainer {
+                                        stringlistBuffer?.append(stringContainer0)
                                     }
-                                    self = .stringlist(stringlistBuffer)
-                                } else {
-                                    self = .stringlist([])
                                 }
+                                self = .stringlist(stringlistBuffer)
                             } else {
-                                //No-op
+                                self = .stringlist([])
                             }
                         case .timestampvalue:
-                            let timestampvalueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .timestampvalue)
-                            var timestampvalueBuffer:ClientRuntime.Date? = nil
-                            if let timestampvalueDecoded = timestampvalueDecoded {
-                                timestampvalueBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
-                            }
+                            let timestampvalueDecoded = try containerValues.decode(Swift.String.self, forKey: .timestampvalue)
+                            let timestampvalueBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
                             self = .timestampvalue(timestampvalueBuffer)
                         default:
                             self = .sdkUnknown("")
