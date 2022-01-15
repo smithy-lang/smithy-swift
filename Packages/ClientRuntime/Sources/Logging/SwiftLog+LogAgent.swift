@@ -6,21 +6,28 @@
 import Logging
 import enum AwsCommonRuntimeKit.LogLevel
 
-public typealias SwiftLogger = Logger
+public struct SwiftLogger: LogAgent {
+    private let logger: Logger
+    private let label: String
+    private var logLevel: Logger.Level
 
-extension SwiftLogger: LogAgent {
-    
-    public var level: LogLevel {
+    public init(label: String) {
+        self.label = label
+        self.logger = Logger(label: label)
+        self.logLevel = Logger.Level.info
+    }
+
+    public var level: AwsCommonRuntimeKit.LogLevel {
         get {
-            return LogLevel.fromString(string: logLevel.rawValue)
+            return AwsCommonRuntimeKit.LogLevel.fromString(string: logLevel.rawValue)
         }
         set(value) {
-            logLevel = Level.init(rawValue: value.stringValue) ?? Level.info
+            logLevel = Logger.Level.init(rawValue: value.stringValue) ?? Logger.Level.info
         }
     }
-    
+
     public var name: String {
-            return label
+        return label
     }
     
     public func log(level: LogLevel,
@@ -30,36 +37,36 @@ extension SwiftLogger: LogAgent {
              file: String,
              function: String,
              line: UInt) {
-        let mappedDict = metadata?.mapValues { (value) -> MetadataValue in
-            return MetadataValue.string(value)
+        let mappedDict = metadata?.mapValues { (value) -> Logger.MetadataValue in
+            return Logger.MetadataValue.string(value)
         }
-        self.log(level: Level.init(rawValue: level.stringValue) ?? Level.info,
-                 Message(stringLiteral: message),
-                 metadata: mappedDict,
-                 source: source)
+        self.logger.log(level: Logger.Level.init(rawValue: level.stringValue) ?? Logger.Level.info,
+                        Logger.Message(stringLiteral: message),
+                        metadata: mappedDict,
+                        source: source)
     }
     
     func info(_ message: String) {
-        info(Message(stringLiteral: message))
+        self.logger.info(Logger.Message(stringLiteral: message))
     }
     
     func debug(_ message: String) {
-        debug(Message(stringLiteral: message))
+        self.logger.debug(Logger.Message(stringLiteral: message))
     }
     
     func warn(_ message: String) {
-        warning(Message(stringLiteral: message))
+        self.logger.warning(Logger.Message(stringLiteral: message))
     }
     
     func error(_ message: String) {
-        error(Message(stringLiteral: message))
+        self.logger.error(Logger.Message(stringLiteral: message))
     }
     
     func trace(_ message: String) {
-        trace(Message(stringLiteral: message))
+        self.logger.trace(Logger.Message(stringLiteral: message))
     }
     
     func fatal(_ message: String) {
-        critical(Message(stringLiteral: message))
+        self.logger.critical(Logger.Message(stringLiteral: message))
     }
 }
