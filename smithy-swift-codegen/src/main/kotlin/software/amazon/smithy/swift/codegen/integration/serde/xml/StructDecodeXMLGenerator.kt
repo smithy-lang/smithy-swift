@@ -61,6 +61,26 @@ open class StructDecodeXMLGenerator(
         }
     }
 
+    override fun renderListMember(member: MemberShape, memberTarget: CollectionShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+            renderListMember(memberName, containerName, member, memberTarget)
+        }
+        writer.indent()
+        renderAssigningNil(memberName)
+        writer.dedent().write("}")
+    }
+
+    override fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
+            renderMapMember(member, memberTarget, containerName, memberName)
+        }
+        writer.indent()
+        renderAssigningNil(memberName)
+        writer.dedent().write("}")
+    }
+
     override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {
         writer.write("$memberName = $decodedMemberName")
     }

@@ -83,6 +83,7 @@ val reservedWords = listOf(
     "optional",
     "override",
     "postfix",
+    "prefix",
     "private",
     "protocol",
     "Protocol",
