@@ -11,13 +11,10 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
-import software.amazon.smithy.swift.codegen.model.isBoxed
 
 open class StructDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -83,8 +80,6 @@ open class StructDecodeXMLGenerator(
         renderAssigningNil(memberName)
         writer.dedent().write("}")
     }
-
-
 
     override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {
         writer.write("$memberName = $decodedMemberName")
