@@ -11,9 +11,13 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
+import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 class UnionDecodeXMLGenerator(
@@ -35,16 +39,16 @@ class UnionDecodeXMLGenerator(
                     writer.indent()
                     when (memberTarget) {
                         is CollectionShape -> {
-                            renderListMember(member, memberTarget, containerName, true)
+                            renderListMember(member, memberTarget, containerName)
                         }
                         is MapShape -> {
-                            renderMapMember(member, memberTarget, containerName, true)
+                            renderMapMember(member, memberTarget, containerName)
                         }
                         is TimestampShape -> {
-                            renderTimestampMember(member, memberTarget, containerName, true)
+                            renderTimestampMember(member, memberTarget, containerName)
                         }
                         is BlobShape -> {
-                            renderBlobMember(member, memberTarget, containerName, true)
+                            renderBlobMember(member, memberTarget, containerName)
                         }
                         else -> {
                             renderScalarMember(member, memberTarget, containerName, isUnion = true)
@@ -58,6 +62,39 @@ class UnionDecodeXMLGenerator(
                 writer.dedent()
             }
         }
+    }
+
+    override fun renderListMember(member: MemberShape, memberTarget: CollectionShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        renderListMember(memberName, containerName, member, memberTarget)
+    }
+
+    override fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        renderMapMember(member, memberTarget, containerName, memberName)
+    }
+
+    override fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
+        val decodedMemberName = "${memberName}Decoded"
+        writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberName)", SwiftTypes.String)
+
+        val memberBuffer = "${memberName}Buffer"
+        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
+        writer.write("let $memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
+        renderAssigningDecodedMember(memberName, memberBuffer)
+    }
+
+    override fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
+        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        if (member.hasTrait(SwiftBoxTrait::class.java)) {
+            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
+        }
+        val decodedMemberName = "${memberName}Decoded"
+        writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+        renderAssigningDecodedMember(memberName, decodedMemberName)
     }
 
     override fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean) {

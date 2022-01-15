@@ -39,28 +39,10 @@ abstract class MemberShapeDecodeXMLGenerator(
     abstract fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean = false)
     abstract fun renderAssigningSymbol(memberName: String, symbol: String)
     abstract fun renderAssigningNil(memberName: String)
+    abstract fun renderListMember(member: MemberShape, memberTarget: CollectionShape, containerName: String)
+    abstract fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String)
 
-    fun renderListMember(
-        member: MemberShape,
-        memberTarget: CollectionShape,
-        containerName: String,
-        isUnion: Boolean = false
-    ) {
-        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-
-        if (isUnion) {
-            renderListMember(memberName, containerName, member, memberTarget)
-        } else {
-            writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
-                renderListMember(memberName, containerName, member, memberTarget)
-            }
-            writer.indent()
-            renderAssigningNil(memberName)
-            writer.dedent().write("}")
-        }
-    }
-
-    private fun renderListMember(memberName: String, containerName: String, member: MemberShape, memberTarget: CollectionShape) {
+    fun renderListMember(memberName: String, containerName: String, member: MemberShape, memberTarget: CollectionShape) {
         val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
         var currContainerName = containerName
         var currContainerKey = ".$memberName"
@@ -166,21 +148,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, isUnion: Boolean = false) {
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        if (isUnion) {
-            renderMapMember(member, memberTarget, containerName, memberName)
-        } else {
-            writer.openBlock("if $containerName.contains(.$memberName) {", "} else {") {
-                renderMapMember(member, memberTarget, containerName, memberName)
-            }
-            writer.indent()
-            renderAssigningNil(memberName)
-            writer.dedent().write("}")
-        }
-    }
-
-    private fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, memberName: String) {
+    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, memberName: String) {
         val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
         val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
 
@@ -266,27 +234,23 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String, isUnion: Boolean = false) {
+    open fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion) "decodeIfPresent" else "decode"
+        val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberName)", SwiftTypes.String)
 
         val memberBuffer = "${memberName}Buffer"
         val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        if (isUnion) {
-            writer.write("let $memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
-        } else {
-            writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-            writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
-                writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
-            }
+        writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
+        writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
+            writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
         }
         renderAssigningDecodedMember(memberName, memberBuffer)
     }
 
-    fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String, isUnion: Boolean = false) {
+    open fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
@@ -294,23 +258,19 @@ abstract class MemberShapeDecodeXMLGenerator(
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
         val decodedMemberName = "${memberName}Decoded"
-        if (isUnion) {
-            writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-            renderAssigningDecodedMember(memberName, decodedMemberName)
-        } else {
-            writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
-                writer.openBlock("do {", "} catch {") {
-                    writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-                    renderAssigningDecodedMember(memberName, decodedMemberName)
-                }
-                writer.indent()
-                renderEmptyDataForBlobTarget(memberTarget, memberName)
-                writer.dedent().write("}")
+
+        writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
+            writer.openBlock("do {", "} catch {") {
+                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+                renderAssigningDecodedMember(memberName, decodedMemberName)
             }
             writer.indent()
-            renderAssigningNil(memberName)
+            renderEmptyDataForBlobTarget(memberTarget, memberName)
             writer.dedent().write("}")
         }
+        writer.indent()
+        renderAssigningNil(memberName)
+        writer.dedent().write("}")
     }
 
     private fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
