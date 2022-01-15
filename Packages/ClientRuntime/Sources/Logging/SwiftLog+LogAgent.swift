@@ -43,30 +43,9 @@ public struct SwiftLogger: LogAgent {
         self.logger.log(level: Logger.Level.init(rawValue: level.stringValue) ?? Logger.Level.info,
                         Logger.Message(stringLiteral: message),
                         metadata: mappedDict,
-                        source: source)
-    }
-    
-    func info(_ message: String) {
-        self.logger.info(Logger.Message(stringLiteral: message))
-    }
-    
-    func debug(_ message: String) {
-        self.logger.debug(Logger.Message(stringLiteral: message))
-    }
-    
-    func warn(_ message: String) {
-        self.logger.warning(Logger.Message(stringLiteral: message))
-    }
-    
-    func error(_ message: String) {
-        self.logger.error(Logger.Message(stringLiteral: message))
-    }
-    
-    func trace(_ message: String) {
-        self.logger.trace(Logger.Message(stringLiteral: message))
-    }
-    
-    func fatal(_ message: String) {
-        self.logger.critical(Logger.Message(stringLiteral: message))
+                        source: source,
+                        file: file,
+                        function: function,
+                        line: line)
     }
 }
