@@ -30,12 +30,12 @@ public struct SwiftLogger: LogAgent {
     }
     
     public func log(level: LogAgentLevel,
-             message: String,
-             metadata: [String: String]?,
-             source: String,
-             file: String,
-             function: String,
-             line: UInt) {
+                    message: String,
+                    metadata: [String: String]?,
+                    source: String,
+                    file: String,
+                    function: String,
+                    line: UInt) {
         let mappedDict = metadata?.mapValues { (value) -> Logger.MetadataValue in
             return Logger.MetadataValue.string(value)
         }
@@ -51,7 +51,7 @@ public struct SwiftLogger: LogAgent {
 
 extension LogAgentLevel {
     func toLoggerLevel() -> Logger.Level {
-        switch(self) {
+        switch self {
         case .trace:
             return .trace
         case .debug:
