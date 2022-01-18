@@ -4,62 +4,66 @@
  */
 
 import Logging
-import enum AwsCommonRuntimeKit.LogLevel
 
-public typealias SwiftLogger = Logger
+public struct SwiftLogger: LogAgent {
+    private let logger: Logger
+    private let label: String
+    private var logLevel: LogAgentLevel
 
-extension SwiftLogger: LogAgent {
-    
-    public var level: LogLevel {
+    public init(label: String) {
+        self.label = label
+        self.logger = Logger(label: label)
+        self.logLevel = LogAgentLevel.info
+    }
+
+    public var level: LogAgentLevel {
         get {
-            return LogLevel.fromString(string: logLevel.rawValue)
+            return logLevel
         }
         set(value) {
-            logLevel = Level.init(rawValue: value.stringValue) ?? Level.info
+            logLevel = value
         }
     }
-    
+
     public var name: String {
-            return label
+        return label
     }
     
-    public func log(level: LogLevel,
-             message: String,
-             metadata: [String: String]?,
-             source: String,
-             file: String,
-             function: String,
-             line: UInt) {
-        let mappedDict = metadata?.mapValues { (value) -> MetadataValue in
-            return MetadataValue.string(value)
+    public func log(level: LogAgentLevel,
+                    message: String,
+                    metadata: [String: String]?,
+                    source: String,
+                    file: String,
+                    function: String,
+                    line: UInt) {
+        let mappedDict = metadata?.mapValues { (value) -> Logger.MetadataValue in
+            return Logger.MetadataValue.string(value)
         }
-        self.log(level: Level.init(rawValue: level.stringValue) ?? Level.info,
-                 Message(stringLiteral: message),
-                 metadata: mappedDict,
-                 source: source)
+        self.logger.log(level: logLevel.toLoggerLevel(),
+                        Logger.Message(stringLiteral: message),
+                        metadata: mappedDict,
+                        source: source,
+                        file: file,
+                        function: function,
+                        line: line)
     }
-    
-    func info(_ message: String) {
-        info(Message(stringLiteral: message))
-    }
-    
-    func debug(_ message: String) {
-        debug(Message(stringLiteral: message))
-    }
-    
-    func warn(_ message: String) {
-        warning(Message(stringLiteral: message))
-    }
-    
-    func error(_ message: String) {
-        error(Message(stringLiteral: message))
-    }
-    
-    func trace(_ message: String) {
-        trace(Message(stringLiteral: message))
-    }
-    
-    func fatal(_ message: String) {
-        critical(Message(stringLiteral: message))
+}
+
+extension LogAgentLevel {
+    func toLoggerLevel() -> Logger.Level {
+        switch self {
+        case .trace:
+            return .trace
+        case .debug:
+            return .debug
+        case .info:
+            return .info
+        case .warn:
+            return .warning
+        case .error:
+            return .error
+        case .fatal:
+            return .critical
+        }
     }
 }
