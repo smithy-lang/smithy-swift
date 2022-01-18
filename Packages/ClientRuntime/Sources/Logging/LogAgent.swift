@@ -38,7 +38,6 @@ public enum LogAgentLevel: String, Codable, CaseIterable {
     case fatal
 }
 
-
 public extension LogAgent {
     internal static func currentModule(filePath: String = #file) -> String {
         let utf8All = filePath.utf8
