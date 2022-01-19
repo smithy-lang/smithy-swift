@@ -4,7 +4,7 @@
  */
 
 @testable import SmithyTestUtil
-import ClientRuntime
+import Runtime
 import XCTest
 import AwsCommonRuntimeKit
 

@@ -17,7 +17,8 @@ let package = Package(
         .iOS(.v13)
     ],
     products: [
-        .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "JSONRuntime", targets: ["JSONRuntime"]),
+        .library(name: "XMLRuntime", targets: ["XMLRuntime"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
@@ -26,26 +27,58 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "ClientRuntime",
+            name: "Runtime",
             dependencies: [
                 .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
-                .product(name: "Logging", package: "swift-log"),
-                .product(name: "XMLCoder", package: "XMLCoder")
+                .product(name: "Logging", package: "swift-log")
             ],
-            path: "./ClientRuntime/Sources",
+            path: "./Runtime/Sources",
             exclude: excludes
         ),
         .testTarget(
-            name: "ClientRuntimeTests",
+            name: "RuntimeTests",
             dependencies: [
-                "ClientRuntime",
+                "Runtime",
                 "SmithyTestUtil"
             ],
-            path: "./ClientRuntime/Tests"
+            path: "./Runtime/Tests"
+        ),
+        .target(
+            name: "JSONRuntime",
+            dependencies: [
+                "Runtime"
+            ],
+            path: "./JSONRuntime/Sources",
+            exclude: excludes
+        ),
+        .testTarget(
+            name: "JSONRuntimeTests",
+            dependencies: [
+                "Runtime",
+                "SmithyTestUtil"
+            ],
+            path: "./JSONRuntime/Tests"
+        ),
+        .target(
+            name: "XMLRuntime",
+            dependencies: [
+                "Runtime",
+                .product(name: "XMLCoder", package: "XMLCoder")
+            ],
+            path: "./XMLRuntime/Sources",
+            exclude: excludes
+        ),
+        .testTarget(
+            name: "XMLRuntimeTests",
+            dependencies: [
+                "Runtime",
+                "SmithyTestUtil"
+            ],
+            path: "./XMLRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"],
+            dependencies: ["Runtime", "JSONRuntime", "XMLRuntime"],
             path: "./SmithyTestUtil/Sources"
         ),
         .testTarget(

@@ -4,7 +4,7 @@
  */
 
 import Foundation
-import ClientRuntime
+import Runtime
 import XCTest
 import class AwsCommonRuntimeKit.ByteBuffer
 
