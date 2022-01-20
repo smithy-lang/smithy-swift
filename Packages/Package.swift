@@ -19,6 +19,7 @@ let package = Package(
     products: [
         .library(name: "JSONRuntime", targets: ["JSONRuntime"]),
         .library(name: "XMLRuntime", targets: ["XMLRuntime"]),
+        .library(name: "Runtime", targets: ["Runtime"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [

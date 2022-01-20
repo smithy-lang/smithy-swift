@@ -15,8 +15,7 @@ public struct QueryListsInput: Equatable {
     public init (
         flattenedListArg: [String]? = nil,
         listArg: [String]? = nil
-    )
-    {
+    ) {
         self.flattenedListArg = flattenedListArg
         self.listArg = listArg
     }
@@ -30,7 +29,7 @@ extension QueryListsInput: Encodable, Reflection {
                 var flattenedListArgContainer = container.nestedUnkeyedContainer(forKey: Key("FlattenedListArg"))
                 try flattenedListArgContainer.encodeNil()
             } else {
-                for (idx,string0) in flattenedListArg.enumerated() {
+                for (idx, string0) in flattenedListArg.enumerated() {
                     try container.encode(string0, forKey: Key("FlattenedListArg.\(idx.advanced(by: 1))"))
                 }
             }

@@ -8,14 +8,13 @@ import Runtime
 @testable import XMLRuntime
 
 public struct QueryMapsInput: Equatable {
-    public let flattenedMap: [String:String]?
-    public let mapArg: [String:String]?
+    public let flattenedMap: [String: String]?
+    public let mapArg: [String: String]?
 
     public init (
-        flattenedMap: [String:String]? = nil,
-        mapArg: [String:String]? = nil
-    )
-    {
+        flattenedMap: [String: String]? = nil,
+        mapArg: [String: String]? = nil
+    ) {
         self.flattenedMap = flattenedMap
         self.mapArg = mapArg
     }
@@ -26,7 +25,7 @@ extension QueryMapsInput: Encodable, Reflection {
         var container = encoder.container(keyedBy: Key.self)
         if let flattenedMap = flattenedMap {
             if flattenedMap.isEmpty {
-                let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap"))
+                _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap"))
             } else {
                 for (index, element) in flattenedMap.enumerated() {
                     let stringKey0 = element.key
