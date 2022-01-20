@@ -97,9 +97,9 @@ public class CRTClientEngine: HttpClientEngine {
         } onIncomingHeadersBlockDone: { [self] (stream, _) in
             logger.debug("header block is done")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
-        } onIncomingBody: { [self] (_, data) in
+        } onIncomingBody: { [self] (stream, data) in
             logger.debug("incoming data")
-            
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
             let byteBuffer = ByteBuffer(data: data)
             streamReader.write(buffer: byteBuffer)
         } onStreamComplete: { [self] (stream, error) in
@@ -115,9 +115,9 @@ public class CRTClientEngine: HttpClientEngine {
             }
             
             response.body = .stream(.reader(streamReader))
-            if let stream = stream {
-                response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
-            }
+           
+            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            
             continuation.resume(returning: response)
         }
         return requestOptions
