@@ -104,7 +104,7 @@ class HttpProtocolTestGenerator(
                     writer.addImport(import)
                 }
                 writer.addImport(SwiftDependency.RUNTIME.target)
-                if(ctx.protocol.name.contains("json")) {
+                if (ctx.protocol.name.contains("json")) {
                     writer.addImport(SwiftDependency.JSON_RUNTIME.target)
                 } else {
                     writer.addImport(SwiftDependency.XML_RUNTIME.target)
@@ -144,7 +144,7 @@ class HttpProtocolTestGenerator(
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
                 writer.addImport(SwiftDependency.RUNTIME.target)
-                if(ctx.protocol.name.contains("json")) {
+                if (ctx.protocol.name.contains("json")) {
                     writer.addImport(SwiftDependency.JSON_RUNTIME.target)
                 } else {
                     writer.addImport(SwiftDependency.XML_RUNTIME.target)

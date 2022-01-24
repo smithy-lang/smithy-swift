@@ -94,4 +94,3 @@ private fun runtimeSymbol(name: String, dependency: SwiftDependency = SwiftDepen
     this.namespace = dependency.target
     dependency(dependency)
 }
-
