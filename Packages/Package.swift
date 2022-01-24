@@ -49,16 +49,7 @@ let package = Package(
             dependencies: [
                 "Runtime"
             ],
-            path: "./JSONRuntime/Sources",
-            exclude: excludes
-        ),
-        .testTarget(
-            name: "JSONRuntimeTests",
-            dependencies: [
-                "Runtime",
-                "SmithyTestUtil"
-            ],
-            path: "./JSONRuntime/Tests"
+            path: "./JSONRuntime/Sources"
         ),
         .target(
             name: "XMLRuntime",
@@ -66,8 +57,7 @@ let package = Package(
                 "Runtime",
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
-            path: "./XMLRuntime/Sources",
-            exclude: excludes
+            path: "./XMLRuntime/Sources"
         ),
         .testTarget(
             name: "XMLRuntimeTests",
