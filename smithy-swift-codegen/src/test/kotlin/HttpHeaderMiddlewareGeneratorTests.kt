@@ -25,14 +25,14 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct SmokeTestInputHeadersMiddleware: ClientRuntime.Middleware {
+            public struct SmokeTestInputHeadersMiddleware: Runtime.Middleware {
                 public let id: Swift.String = "SmokeTestInputHeadersMiddleware"
             
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: ClientRuntime.SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
+                              input: Runtime.SerializeStepInput<SmokeTestInput>,
+                              next: H) -> Swift.Result<Runtime.OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -48,10 +48,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = ClientRuntime.SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<SmokeTestOutputResponse>
-                public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<SmokeTestOutputError>
+                public typealias MInput = Runtime.SerializeStepInput<SmokeTestInput>
+                public typealias MOutput = Runtime.OperationOutput<SmokeTestOutputResponse>
+                public typealias Context = Runtime.HttpContext
+                public typealias MError = Runtime.SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -63,14 +63,14 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct EnumInputInputHeadersMiddleware: ClientRuntime.Middleware {
+            public struct EnumInputInputHeadersMiddleware: Runtime.Middleware {
                 public let id: Swift.String = "EnumInputInputHeadersMiddleware"
             
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: ClientRuntime.SerializeStepInput<EnumInputInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<EnumInputOutputResponse>, MError>
+                              input: Runtime.SerializeStepInput<EnumInputInput>,
+                              next: H) -> Swift.Result<Runtime.OperationOutput<EnumInputOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -83,10 +83,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = ClientRuntime.SerializeStepInput<EnumInputInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<EnumInputOutputResponse>
-                public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<EnumInputOutputError>
+                public typealias MInput = Runtime.SerializeStepInput<EnumInputInput>
+                public typealias MOutput = Runtime.OperationOutput<EnumInputOutputResponse>
+                public typealias Context = Runtime.HttpContext
+                public typealias MError = Runtime.SdkError<EnumInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -102,14 +102,14 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: ClientRuntime.Middleware {
+            public struct IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware: Runtime.Middleware {
                 public let id: Swift.String = "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInputHeadersMiddleware"
             
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: ClientRuntime.SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputResponse>, MError>
+                              input: Runtime.SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>,
+                              next: H) -> Swift.Result<Runtime.OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -122,10 +122,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = ClientRuntime.SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputResponse>
-                public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>
+                public typealias MInput = Runtime.SerializeStepInput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput>
+                public typealias MOutput = Runtime.OperationOutput<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputResponse>
+                public typealias Context = Runtime.HttpContext
+                public typealias MError = Runtime.SdkError<IdempotencyTokenWithoutHttpPayloadTraitOnTokenOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -138,14 +138,14 @@ class HttpHeaderMiddlewareGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct TimestampInputInputHeadersMiddleware: ClientRuntime.Middleware {
+            public struct TimestampInputInputHeadersMiddleware: Runtime.Middleware {
                 public let id: Swift.String = "TimestampInputInputHeadersMiddleware"
             
                 public init() {}
             
                 public func handle<H>(context: Context,
-                              input: ClientRuntime.SerializeStepInput<TimestampInputInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<TimestampInputOutputResponse>, MError>
+                              input: Runtime.SerializeStepInput<TimestampInputInput>,
+                              next: H) -> Swift.Result<Runtime.OperationOutput<TimestampInputOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -161,10 +161,10 @@ class HttpHeaderMiddlewareGeneratorTests {
                     return next.handle(context: context, input: input)
                 }
             
-                public typealias MInput = ClientRuntime.SerializeStepInput<TimestampInputInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<TimestampInputOutputResponse>
-                public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<TimestampInputOutputError>
+                public typealias MInput = Runtime.SerializeStepInput<TimestampInputInput>
+                public typealias MOutput = Runtime.OperationOutput<TimestampInputOutputResponse>
+                public typealias Context = Runtime.HttpContext
+                public typealias MError = Runtime.SdkError<TimestampInputOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

@@ -22,43 +22,43 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Ec2QueryListsInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension Ec2QueryListsInput: Swift.Encodable, Runtime.Reflection {
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     if let complexListArg = complexListArg {
                         if !complexListArg.isEmpty {
                             for (index0, greetingstruct0) in complexListArg.enumerated() {
-                                var complexListArgContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ComplexListArg.\(index0.advanced(by: 1))"))
-                                try complexListArgContainer0.encode(greetingstruct0, forKey: ClientRuntime.Key(""))
+                                var complexListArgContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("ComplexListArg.\(index0.advanced(by: 1))"))
+                                try complexListArgContainer0.encode(greetingstruct0, forKey: Runtime.Key(""))
                             }
                         }
                     }
                     if let listArg = listArg {
                         if !listArg.isEmpty {
                             for (index0, string0) in listArg.enumerated() {
-                                var listArgContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArg.\(index0.advanced(by: 1))"))
-                                try listArgContainer0.encode(string0, forKey: ClientRuntime.Key(""))
+                                var listArgContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("ListArg.\(index0.advanced(by: 1))"))
+                                try listArgContainer0.encode(string0, forKey: Runtime.Key(""))
                             }
                         }
                     }
                     if let listArgWithXmlName = listArgWithXmlName {
                         if !listArgWithXmlName.isEmpty {
                             for (index0, string0) in listArgWithXmlName.enumerated() {
-                                var listArgWithXmlNameContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Hi.\(index0.advanced(by: 1))"))
-                                try listArgWithXmlNameContainer0.encode(string0, forKey: ClientRuntime.Key(""))
+                                var listArgWithXmlNameContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("Hi.\(index0.advanced(by: 1))"))
+                                try listArgWithXmlNameContainer0.encode(string0, forKey: Runtime.Key(""))
                             }
                         }
                     }
                     if let listArgWithXmlNameMember = listArgWithXmlNameMember {
                         if !listArgWithXmlNameMember.isEmpty {
                             for (index0, string0) in listArgWithXmlNameMember.enumerated() {
-                                var listArgWithXmlNameMemberContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArgWithXmlNameMember.\(index0.advanced(by: 1))"))
-                                try listArgWithXmlNameMemberContainer0.encode(string0, forKey: ClientRuntime.Key(""))
+                                var listArgWithXmlNameMemberContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("ListArgWithXmlNameMember.\(index0.advanced(by: 1))"))
+                                try listArgWithXmlNameMemberContainer0.encode(string0, forKey: Runtime.Key(""))
                             }
                         }
                     }
-                    try container.encode("Ec2QueryLists", forKey:ClientRuntime.Key("Action"))
-                    try container.encode("2020-01-08", forKey:ClientRuntime.Key("Version"))
+                    try container.encode("Ec2QueryLists", forKey:Runtime.Key("Action"))
+                    try container.encode("2020-01-08", forKey:Runtime.Key("Version"))
                 }
             }
             """.trimIndent()

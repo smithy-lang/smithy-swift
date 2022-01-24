@@ -43,7 +43,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SmokeTestInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension SmokeTestInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case payload1
                     case payload2
@@ -73,7 +73,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension Nested4: Swift.Codable, ClientRuntime.Reflection {
+            extension Nested4: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case intList
                     case intMap
@@ -90,18 +90,18 @@ class StructEncodeGenerationTests {
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try intMapContainer.encode(intmap0, forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = member1 {
                         try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
-                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .stringMap)
+                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .stringMap)
                         for (dictKey0, nestedstringmap0) in stringMap {
-                            try stringMapContainer.encode(nestedstringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try stringMapContainer.encode(nestedstringmap0, forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                 }
@@ -162,7 +162,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension TimestampInputInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension TimestampInputInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case epochSeconds
@@ -203,7 +203,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MapInputInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension MapInputInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobMap
                     case dateMap
@@ -215,33 +215,33 @@ class StructEncodeGenerationTests {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let blobMap = blobMap {
-                        var blobMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .blobMap)
+                        var blobMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .blobMap)
                         for (dictKey0, blobmap0) in blobMap {
-                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try blobMapContainer.encode(blobmap0.base64EncodedString(), forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                     if let dateMap = dateMap {
-                        var dateMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .dateMap)
+                        var dateMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .dateMap)
                         for (dictKey0, datemap0) in dateMap {
-                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                     if let enumMap = enumMap {
-                        var enumMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .enumMap)
+                        var enumMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .enumMap)
                         for (dictKey0, enummap0) in enumMap {
-                            try enumMapContainer.encode(enummap0.rawValue, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try enumMapContainer.encode(enummap0.rawValue, forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try intMapContainer.encode(intmap0, forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                     if let structMap = structMap {
-                        var structMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .structMap)
+                        var structMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .structMap)
                         for (dictKey0, structmap0) in structMap {
-                            try structMapContainer.encode(structmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try structMapContainer.encode(structmap0, forKey: Runtime.Key(stringValue: dictKey0))
                         }
                     }
                 }
@@ -256,7 +256,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension EnumInputInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension EnumInputInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedWithEnum
                 }
@@ -275,7 +275,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents2 =
             """
-            extension NestedEnum: Swift.Codable, ClientRuntime.Reflection {
+            extension NestedEnum: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myEnum
                 }
@@ -307,7 +307,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
+            extension RecursiveShapesInputOutputNested1: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -345,7 +345,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
+            extension RecursiveShapesInputOutputNested2: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember
@@ -379,7 +379,7 @@ class StructEncodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonListsInput: Swift.Encodable, ClientRuntime.Reflection {
+extension JsonListsInput: Swift.Encodable, Runtime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case booleanList
         case integerList
@@ -449,7 +449,7 @@ extension JsonListsInput: Swift.Encodable, ClientRuntime.Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension JsonMapsInput: Swift.Encodable, ClientRuntime.Reflection {
+extension JsonMapsInput: Swift.Encodable, Runtime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case denseBooleanMap
         case denseNumberMap
@@ -464,51 +464,51 @@ extension JsonMapsInput: Swift.Encodable, ClientRuntime.Reflection {
     public func encode(to encoder: Swift.Encoder) throws {
         var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
         if let denseBooleanMap = denseBooleanMap {
-            var denseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseBooleanMap)
+            var denseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .denseBooleanMap)
             for (dictKey0, densebooleanmap0) in denseBooleanMap {
-                try denseBooleanMapContainer.encode(densebooleanmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try denseBooleanMapContainer.encode(densebooleanmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let denseNumberMap = denseNumberMap {
-            var denseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseNumberMap)
+            var denseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .denseNumberMap)
             for (dictKey0, densenumbermap0) in denseNumberMap {
-                try denseNumberMapContainer.encode(densenumbermap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try denseNumberMapContainer.encode(densenumbermap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let denseStringMap = denseStringMap {
-            var denseStringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseStringMap)
+            var denseStringMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .denseStringMap)
             for (dictKey0, densestringmap0) in denseStringMap {
-                try denseStringMapContainer.encode(densestringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try denseStringMapContainer.encode(densestringmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let denseStructMap = denseStructMap {
-            var denseStructMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseStructMap)
+            var denseStructMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .denseStructMap)
             for (dictKey0, densestructmap0) in denseStructMap {
-                try denseStructMapContainer.encode(densestructmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try denseStructMapContainer.encode(densestructmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let sparseBooleanMap = sparseBooleanMap {
-            var sparseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseBooleanMap)
+            var sparseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .sparseBooleanMap)
             for (dictKey0, sparsebooleanmap0) in sparseBooleanMap {
-                try sparseBooleanMapContainer.encode(sparsebooleanmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try sparseBooleanMapContainer.encode(sparsebooleanmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let sparseNumberMap = sparseNumberMap {
-            var sparseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseNumberMap)
+            var sparseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .sparseNumberMap)
             for (dictKey0, sparsenumbermap0) in sparseNumberMap {
-                try sparseNumberMapContainer.encode(sparsenumbermap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try sparseNumberMapContainer.encode(sparsenumbermap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let sparseStringMap = sparseStringMap {
-            var sparseStringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseStringMap)
+            var sparseStringMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .sparseStringMap)
             for (dictKey0, sparsestringmap0) in sparseStringMap {
-                try sparseStringMapContainer.encode(sparsestringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try sparseStringMapContainer.encode(sparsestringmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
         if let sparseStructMap = sparseStructMap {
-            var sparseStructMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseStructMap)
+            var sparseStructMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .sparseStructMap)
             for (dictKey0, sparsestructmap0) in sparseStructMap {
-                try sparseStructMapContainer.encode(sparsestructmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                try sparseStructMapContainer.encode(sparsestructmap0, forKey: Runtime.Key(stringValue: dictKey0))
             }
         }
     }
@@ -523,7 +523,7 @@ extension JsonMapsInput: Swift.Encodable, ClientRuntime.Reflection {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension PrimitiveTypesInput: Swift.Encodable, ClientRuntime.Reflection {
+extension PrimitiveTypesInput: Swift.Encodable, Runtime.Reflection {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case booleanVal
         case byteVal

@@ -53,7 +53,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try SmokeTestOutputResponse(httpResponse: httpResponse, decoder: decoder)
@@ -174,7 +174,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
@@ -225,7 +225,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let actual = try RecursiveShapesOutputResponse(httpResponse: httpResponse, decoder: decoder)
@@ -283,7 +283,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         return
                     }
             
-                    let decoder = ClientRuntime.JSONDecoder()
+                    let decoder = JSONRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     let actual = try InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
@@ -332,7 +332,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         return
                     }
             
-                    let decoder = ClientRuntime.JSONDecoder()
+                    let decoder = JSONRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     let actual = try InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)

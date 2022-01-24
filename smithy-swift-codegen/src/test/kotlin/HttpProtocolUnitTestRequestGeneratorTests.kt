@@ -61,7 +61,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -77,7 +77,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             ),
             query1: "Query 1"
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -87,7 +87,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(id: "SmokeTest")
         operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, ClientRuntime.SdkError<SmokeTestOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<SmokeTestOutputResponse>, Runtime.SdkError<SmokeTestOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -98,7 +98,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -162,14 +162,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = ExplicitStringInput(
             payload1: "explicit string"
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -179,7 +179,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
         operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStringOutputResponse>, ClientRuntime.SdkError<ExplicitStringOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<ExplicitStringOutputResponse>, Runtime.SdkError<ExplicitStringOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -190,7 +190,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(contentType: "text/plain"))
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -238,13 +238,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = EmptyInputAndEmptyOutputInput(
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -254,7 +254,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
         operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<EmptyInputAndEmptyOutputOutputResponse>, ClientRuntime.SdkError<EmptyInputAndEmptyOutputOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<EmptyInputAndEmptyOutputOutputResponse>, Runtime.SdkError<EmptyInputAndEmptyOutputOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -310,14 +310,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
         let input = SimpleScalarPropertiesInput(
             stringValue: nil
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -327,7 +327,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
         operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SimpleScalarPropertiesOutputResponse>, ClientRuntime.SdkError<SimpleScalarPropertiesOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<SimpleScalarPropertiesOutputResponse>, Runtime.SdkError<SimpleScalarPropertiesOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -338,7 +338,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -389,7 +389,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -397,7 +397,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             blob: ByteStream.from(data: "blobby blob blob".data(using: .utf8)!),
             foo: "Foo"
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -407,7 +407,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
         operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<StreamingTraitsOutputResponse>, ClientRuntime.SdkError<StreamingTraitsOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<StreamingTraitsOutputResponse>, Runtime.SdkError<StreamingTraitsOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -418,7 +418,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -469,7 +469,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -478,7 +478,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             fooMap: [:]
 
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -488,7 +488,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
         operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<HttpPrefixHeadersOutputResponse>, ClientRuntime.SdkError<HttpPrefixHeadersOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<HttpPrefixHeadersOutputResponse>, Runtime.SdkError<HttpPrefixHeadersOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -550,7 +550,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -558,7 +558,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             contents: MyUnion.stringvalue("foo")
 
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -568,7 +568,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
         operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<JsonUnionsOutputResponse>, ClientRuntime.SdkError<JsonUnionsOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<JsonUnionsOutputResponse>, Runtime.SdkError<JsonUnionsOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -579,7 +579,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -651,7 +651,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -673,7 +673,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 )
             )
         )
-        let encoder = ClientRuntime.JSONEncoder()
+        let encoder = JSONRuntime.JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
@@ -683,7 +683,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
         operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLPathMiddleware(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLHostMiddleware(host: hostOnly))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<RecursiveShapesOutputResponse>, ClientRuntime.SdkError<RecursiveShapesOutputError>> in
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<RecursiveShapesOutputResponse>, Runtime.SdkError<RecursiveShapesOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -694,7 +694,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputBodyMiddleware())
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
@@ -757,7 +757,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -771,7 +771,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 ,
                 stringValue: "string"
             )
-            let encoder = ClientRuntime.JSONEncoder()
+            let encoder = JSONRuntime.JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()
@@ -781,7 +781,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLPathMiddleware(urlPrefix: urlPrefix))
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLHostMiddleware(host: hostOnly))
-            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentOutputResponse>, ClientRuntime.SdkError<InlineDocumentOutputError>> in
+            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<InlineDocumentOutputResponse>, Runtime.SdkError<InlineDocumentOutputError>> in
                 input.withMethod(context.getMethod())
                 input.withPath(context.getPath())
                 let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -792,7 +792,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputBodyMiddleware())
-            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+            operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
@@ -854,7 +854,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -867,7 +867,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 ""${'"'}.data(using: .utf8)!)
 
             )
-            let encoder = ClientRuntime.JSONEncoder()
+            let encoder = JSONRuntime.JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
             encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
             let context = HttpContextBuilder()
@@ -877,7 +877,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLPathMiddleware(urlPrefix: urlPrefix))
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLHostMiddleware(host: hostOnly))
-            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentAsPayloadOutputResponse>, ClientRuntime.SdkError<InlineDocumentAsPayloadOutputError>> in
+            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<InlineDocumentAsPayloadOutputResponse>, Runtime.SdkError<InlineDocumentAsPayloadOutputError>> in
                 input.withMethod(context.getMethod())
                 input.withPath(context.getPath())
                 let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
@@ -888,7 +888,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
-            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+            operationStack.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
@@ -897,8 +897,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                     self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
                         do {
-                            let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
-                            let actualObj = try decoder.decode(ClientRuntime.Document.self, from: actualData)
+                            let expectedObj = try decoder.decode(Runtime.Document.self, from: expectedData)
+                            let actualObj = try decoder.decode(Runtime.Document.self, from: actualData)
                             XCTAssertEqual(expectedObj, actualObj)
                         } catch let err {
                             XCTFail("Failed to verify body \(err)")

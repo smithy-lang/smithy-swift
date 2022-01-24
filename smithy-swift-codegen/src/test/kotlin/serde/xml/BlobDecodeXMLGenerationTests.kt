@@ -28,7 +28,7 @@ class BlobDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.data) {
                     do {
-                        let dataDecoded = try containerValues.decodeIfPresent(ClientRuntime.Data.self, forKey: .data)
+                        let dataDecoded = try containerValues.decodeIfPresent(Runtime.Data.self, forKey: .data)
                         data = dataDecoded
                     } catch {
                         data = "".data(using: .utf8)
@@ -57,15 +57,15 @@ class BlobDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedBlobList) {
                     struct KeyVal0{struct member{}}
-                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
+                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
                     if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
-                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[ClientRuntime.Data]].self, forKey: .member)
-                        var nestedBlobListBuffer:[[ClientRuntime.Data]]? = nil
+                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[Runtime.Data]].self, forKey: .member)
+                        var nestedBlobListBuffer:[[Runtime.Data]]? = nil
                         if let nestedBlobListContainer = nestedBlobListContainer {
-                            nestedBlobListBuffer = [[ClientRuntime.Data]]()
-                            var listBuffer0: [ClientRuntime.Data]? = nil
+                            nestedBlobListBuffer = [[Runtime.Data]]()
+                            var listBuffer0: [Runtime.Data]? = nil
                             for listContainer0 in nestedBlobListContainer {
-                                listBuffer0 = [ClientRuntime.Data]()
+                                listBuffer0 = [Runtime.Data]()
                                 for blobContainer1 in listContainer0 {
                                     listBuffer0?.append(blobContainer1)
                                 }

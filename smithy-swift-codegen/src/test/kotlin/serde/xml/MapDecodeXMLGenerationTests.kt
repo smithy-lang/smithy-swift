@@ -28,9 +28,9 @@ class MapDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myMap) {
                     struct KeyVal0{struct key{}; struct value{}}
-                    let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                    let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                     if let myMapWrappedContainer = myMapWrappedContainer {
-                        let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                        let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                         var myMapBuffer: [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]? = nil
                         if let myMapContainer = myMapContainer {
                             myMapBuffer = [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]()
@@ -65,9 +65,9 @@ class MapDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.`protocol`) {
                     struct KeyVal0{struct key{}; struct value{}}
-                    let protocolWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .protocol)
+                    let protocolWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .protocol)
                     if let protocolWrappedContainer = protocolWrappedContainer {
-                        let protocolContainer = try protocolWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                        let protocolContainer = try protocolWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                         var protocolBuffer: [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]? = nil
                         if let protocolContainer = protocolContainer {
                             protocolBuffer = [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]()
@@ -104,9 +104,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
                         struct KeyVal1{struct key{}; struct value{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]()
@@ -151,9 +151,9 @@ class MapDecodeXMLGenerationTests {
                         struct KeyVal0{struct key{}; struct value{}}
                         struct KeyVal1{struct key{}; struct value{}}
                         struct KeyVal2{struct key{}; struct value{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal2.key, KeyVal2.value>, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:[Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]]()
@@ -203,9 +203,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]()
@@ -242,9 +242,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
                         struct KeyVal1{struct key{}; struct value{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.key, KeyVal1.value>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]()
@@ -287,9 +287,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Attribute{}; struct Setting{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.Attribute, KeyVal0.Setting>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]()
@@ -325,9 +325,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal0.SomeCustomKey, KeyVal0.SomeCustomValue>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:RestXmlProtocolClientTypes.GreetingStruct]()
@@ -364,9 +364,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct CustomKey1{}; struct CustomValue1{}}
                         struct KeyVal1{struct CustomKey2{}; struct CustomValue2{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, RestXmlProtocolClientTypes.GreetingStruct, KeyVal1.CustomKey2, KeyVal1.CustomValue2>, KeyVal0.CustomKey1, KeyVal0.CustomValue1>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:RestXmlProtocolClientTypes.GreetingStruct]]()
@@ -409,9 +409,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
                         struct KeyVal1{struct K{}; struct V{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:[Swift.String:Swift.String]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:Swift.String]]()
@@ -454,9 +454,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Quality{}; struct Degree{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.Quality, KeyVal0.Degree>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.Quality, KeyVal0.Degree>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.Quality, KeyVal0.Degree>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.Quality, KeyVal0.Degree>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:Swift.String]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:Swift.String]()
@@ -492,9 +492,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Uid{}; struct Val{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.Uid, KeyVal0.Val>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.Uid, KeyVal0.Val>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.Uid, KeyVal0.Val>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:Swift.String]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:Swift.String]()
@@ -531,9 +531,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
                         struct KeyVal1{struct K{}; struct V{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:[Swift.String:Swift.String]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:Swift.String]]()
@@ -577,9 +577,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
                         struct KeyVal1{struct K{}; struct V{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal1.K, KeyVal1.V>, KeyVal0.yek, KeyVal0.eulav>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:[Swift.String:Swift.String]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String:Swift.String]]()
@@ -622,9 +622,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
                         struct KeyVal1{struct member{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:[Swift.String]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String]]()
@@ -665,9 +665,9 @@ class MapDecodeXMLGenerationTests {
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
                         struct KeyVal1{struct member{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, ClientRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, XMLRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if myMapWrappedContainer != nil {
-                            let myMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, ClientRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
+                            let myMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, XMLRuntime.CollectionMember<Swift.String, KeyVal1.member>, KeyVal0.key, KeyVal0.value>].self, forKey: .myMap)
                             var myMapBuffer: [Swift.String:[Swift.String]]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:[Swift.String]]()
@@ -708,14 +708,14 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.timestampMap) {
                         struct KeyVal0{struct key{}; struct value{}}
-                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
+                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if let timestampMapWrappedContainer = timestampMapWrappedContainer {
-                            let timestampMapContainer = try timestampMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
-                            var timestampMapBuffer: [Swift.String:ClientRuntime.Date]? = nil
+                            let timestampMapContainer = try timestampMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            var timestampMapBuffer: [Swift.String:Runtime.Date]? = nil
                             if let timestampMapContainer = timestampMapContainer {
-                                timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
+                                timestampMapBuffer = [Swift.String:Runtime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
                                 }
                             }
                             timestampMap = timestampMapBuffer
@@ -746,14 +746,14 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.timestampMap) {
                         struct KeyVal0{struct key{}; struct value{}}
-                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
+                        let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if timestampMapWrappedContainer != nil {
-                            let timestampMapContainer = try containerValues.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .timestampMap)
-                            var timestampMapBuffer: [Swift.String:ClientRuntime.Date]? = nil
+                            let timestampMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .timestampMap)
+                            var timestampMapBuffer: [Swift.String:Runtime.Date]? = nil
                             if let timestampMapContainer = timestampMapContainer {
-                                timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
+                                timestampMapBuffer = [Swift.String:Runtime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
                                 }
                             }
                             timestampMap = timestampMapBuffer
@@ -784,9 +784,9 @@ class MapDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
-                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
+                        let myMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .myMap)
                         if let myMapWrappedContainer = myMapWrappedContainer {
-                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            let myMapContainer = try myMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                             var myMapBuffer: [Swift.String:Swift.String]? = nil
                             if let myMapContainer = myMapContainer {
                                 myMapBuffer = [Swift.String:Swift.String]()
@@ -803,9 +803,9 @@ class MapDecodeXMLGenerationTests {
                     }
                     if containerValues.contains(.mySecondMap) {
                         struct KeyVal0{struct key{}; struct value{}}
-                        let mySecondMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .mySecondMap)
+                        let mySecondMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .mySecondMap)
                         if let mySecondMapWrappedContainer = mySecondMapWrappedContainer {
-                            let mySecondMapContainer = try mySecondMapWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
+                            let mySecondMapContainer = try mySecondMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
                             var mySecondMapBuffer: [Swift.String:Swift.String]? = nil
                             if let mySecondMapContainer = mySecondMapContainer {
                                 mySecondMapBuffer = [Swift.String:Swift.String]()

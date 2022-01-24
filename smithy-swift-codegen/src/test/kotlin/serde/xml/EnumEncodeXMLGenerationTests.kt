@@ -19,7 +19,7 @@ class EnumEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumsInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnum1
                     case fooEnum2
@@ -28,20 +28,20 @@ class EnumEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     if let fooEnum1 = fooEnum1 {
-                        try container.encode(fooEnum1, forKey: ClientRuntime.Key("fooEnum1"))
+                        try container.encode(fooEnum1, forKey: Runtime.Key("fooEnum1"))
                     }
                     if let fooEnum2 = fooEnum2 {
-                        try container.encode(fooEnum2, forKey: ClientRuntime.Key("fooEnum2"))
+                        try container.encode(fooEnum2, forKey: Runtime.Key("fooEnum2"))
                     }
                     if let fooEnum3 = fooEnum3 {
-                        try container.encode(fooEnum3, forKey: ClientRuntime.Key("fooEnum3"))
+                        try container.encode(fooEnum3, forKey: Runtime.Key("fooEnum3"))
                     }
                     if let fooEnumList = fooEnumList {
-                        var fooEnumListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumList"))
+                        var fooEnumListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("fooEnumList"))
                         for fooenum0 in fooEnumList {
-                            try fooEnumListContainer.encode(fooenum0, forKey: ClientRuntime.Key("member"))
+                            try fooEnumListContainer.encode(fooenum0, forKey: Runtime.Key("member"))
                         }
                     }
                 }
@@ -56,19 +56,19 @@ class EnumEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumsNestedInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedEnumsList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     if let nestedEnumsList = nestedEnumsList {
-                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedEnumsList"))
+                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedEnumsList"))
                         for nestedenumslist0 in nestedEnumsList {
-                            var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                            var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
                             for fooenum1 in nestedenumslist0 {
-                                try nestedenumslist0Container0.encode(fooenum1, forKey: ClientRuntime.Key("member"))
+                                try nestedenumslist0Container0.encode(fooenum1, forKey: Runtime.Key("member"))
                             }
                         }
                     }

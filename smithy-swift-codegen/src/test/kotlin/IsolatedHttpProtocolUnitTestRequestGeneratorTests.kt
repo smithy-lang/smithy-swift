@@ -28,7 +28,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -61,7 +61,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-            let decoder = ClientRuntime.JSONDecoder()
+            let decoder = JSONRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 
@@ -93,7 +93,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
     
             let deserializeMiddleware = expectation(description: "deserializeMiddleware")
     
-            let decoder = ClientRuntime.JSONDecoder()
+            let decoder = JSONRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
     
@@ -186,7 +186,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
 
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
-        let decoder = ClientRuntime.JSONDecoder()
+        let decoder = JSONRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
 

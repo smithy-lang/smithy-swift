@@ -66,7 +66,7 @@ class UnionDecodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.MyUnion: Swift.Codable, ClientRuntime.Reflection {
+            extension ExampleClientTypes.MyUnion: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"
@@ -95,9 +95,9 @@ class UnionDecodeGeneratorTests {
                                 try listvalueContainer.encode(stringlist0)
                             }
                         case let .mapvalue(mapvalue):
-                            var mapvalueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .mapvalue)
+                            var mapvalueContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: .mapvalue)
                             for (dictKey0, stringmap0) in mapvalue {
-                                try mapvalueContainer.encode(stringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                                try mapvalueContainer.encode(stringmap0, forKey: Runtime.Key(stringValue: dictKey0))
                             }
                         case let .numbervalue(numbervalue):
                             try container.encode(numbervalue, forKey: .numbervalue)
@@ -129,15 +129,15 @@ class UnionDecodeGeneratorTests {
                         self = .numbervalue(numbervalue)
                         return
                     }
-                    let blobvalueDecoded = try values.decodeIfPresent(ClientRuntime.Data.self, forKey: .blobvalue)
+                    let blobvalueDecoded = try values.decodeIfPresent(Runtime.Data.self, forKey: .blobvalue)
                     if let blobvalue = blobvalueDecoded {
                         self = .blobvalue(blobvalue)
                         return
                     }
                     let timestampvalueDateString = try values.decodeIfPresent(Swift.String.self, forKey: .timestampvalue)
-                    var timestampvalueDecoded: ClientRuntime.Date? = nil
+                    var timestampvalueDecoded: Runtime.Date? = nil
                     if let timestampvalueDateString = timestampvalueDateString {
-                        let timestampvalueFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                        let timestampvalueFormatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         timestampvalueDecoded = timestampvalueFormatter.date(from: timestampvalueDateString)
                     }
                     if let timestampvalue = timestampvalueDecoded {

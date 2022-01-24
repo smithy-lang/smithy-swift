@@ -19,7 +19,7 @@ class UnionEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
         val expectedContents =
             """
-            extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable, ClientRuntime.Reflection {
+            extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case datavalue = "dataValue"
                     case doublevalue = "doubleValue"
@@ -32,34 +32,34 @@ class UnionEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     switch self {
                         case let .datavalue(datavalue):
-                            try container.encode(datavalue, forKey: ClientRuntime.Key("dataValue"))
+                            try container.encode(datavalue, forKey: Runtime.Key("dataValue"))
                         case let .doublevalue(doublevalue):
-                            try container.encode(Swift.String(doublevalue), forKey: ClientRuntime.Key("doubleValue"))
+                            try container.encode(Swift.String(doublevalue), forKey: Runtime.Key("doubleValue"))
                         case let .mapvalue(mapvalue):
-                            var mapValueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("mapValue"))
+                            var mapValueContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("mapValue"))
                             for (stringKey0, stringValue0) in mapvalue {
-                                var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("K"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("V"))
-                                try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
+                                var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("entry"))
+                                var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("K"))
+                                try keyContainer0.encode(stringKey0, forKey: Runtime.Key(""))
+                                var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("V"))
+                                try valueContainer0.encode(stringValue0, forKey: Runtime.Key(""))
                             }
                         case let .stringlist(stringlist):
-                            var stringlistContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringList"))
+                            var stringlistContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("stringList"))
                             for string0 in stringlist {
-                                try stringlistContainer.encode(string0, forKey: ClientRuntime.Key("member"))
+                                try stringlistContainer.encode(string0, forKey: Runtime.Key("member"))
                             }
                         case let .structvalue(structvalue):
-                            try container.encode(structvalue, forKey: ClientRuntime.Key("structValue"))
+                            try container.encode(structvalue, forKey: Runtime.Key("structValue"))
                         case let .timestampvalue(timestampvalue):
-                            try container.encode(ClientRuntime.TimestampWrapper(timestampvalue, format: .dateTime), forKey: ClientRuntime.Key("timeStampValue"))
+                            try container.encode(Runtime.TimestampWrapper(timestampvalue, format: .dateTime), forKey: Runtime.Key("timeStampValue"))
                         case let .unionvalue(unionvalue):
-                            try container.encode(unionvalue, forKey: ClientRuntime.Key("unionValue"))
+                            try container.encode(unionvalue, forKey: Runtime.Key("unionValue"))
                         case let .sdkUnknown(sdkUnknown):
-                            try container.encode(sdkUnknown, forKey: ClientRuntime.Key("sdkUnknown"))
+                            try container.encode(sdkUnknown, forKey: Runtime.Key("sdkUnknown"))
                     }
                 }
             
@@ -71,7 +71,7 @@ class UnionEncodeXMLGenerationTests {
                             let doublevalueDecoded = try containerValues.decode(Swift.Double.self, forKey: .doublevalue)
                             self = .doublevalue(doublevalueDecoded)
                         case .datavalue:
-                            let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
+                            let datavalueDecoded = try containerValues.decode(Runtime.Data.self, forKey: .datavalue)
                             self = .datavalue(datavalueDecoded)
                         case .unionvalue:
                             let unionvalueDecoded = try containerValues.decode(Box<RestXmlProtocolClientTypes.XmlUnionShape>.self, forKey: .unionvalue)
@@ -81,9 +81,9 @@ class UnionEncodeXMLGenerationTests {
                             self = .structvalue(structvalueDecoded)
                         case .mapvalue:
                             struct KeyVal0{struct K{}; struct V{}}
-                            let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
+                            let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
                             if let mapvalueWrappedContainer = mapvalueWrappedContainer {
-                                let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
+                                let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
                                 var mapvalueBuffer: [Swift.String:Swift.String]? = nil
                                 if let mapvalueContainer = mapvalueContainer {
                                     mapvalueBuffer = [Swift.String:Swift.String]()
@@ -97,7 +97,7 @@ class UnionEncodeXMLGenerationTests {
                             }
                         case .stringlist:
                             struct KeyVal0{struct member{}}
-                            let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
+                            let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
                             if let stringlistWrappedContainer = stringlistWrappedContainer {
                                 let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
                                 var stringlistBuffer:[Swift.String]? = nil
@@ -113,7 +113,7 @@ class UnionEncodeXMLGenerationTests {
                             }
                         case .timestampvalue:
                             let timestampvalueDecoded = try containerValues.decode(Swift.String.self, forKey: .timestampvalue)
-                            let timestampvalueBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
+                            let timestampvalueBuffer = try Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
                             self = .timestampvalue(timestampvalueBuffer)
                         default:
                             self = .sdkUnknown("")
@@ -134,12 +134,12 @@ class UnionEncodeXMLGenerationTests {
             extension ExampleClientTypes {
                 public indirect enum XmlUnionShape: Swift.Equatable {
                     case doublevalue(Swift.Double)
-                    case datavalue(ClientRuntime.Data)
+                    case datavalue(Runtime.Data)
                     case unionvalue(ExampleClientTypes.XmlUnionShape)
                     case structvalue(ExampleClientTypes.XmlNestedUnionStruct)
                     case mapvalue([Swift.String:Swift.String])
                     case stringlist([Swift.String])
-                    case timestampvalue(ClientRuntime.Date)
+                    case timestampvalue(Runtime.Date)
                     case sdkUnknown(Swift.String)
                 }
             

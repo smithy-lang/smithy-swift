@@ -44,7 +44,7 @@ class EnumDecodeXMLGenerationTests {
                 fooEnum3 = fooEnum3Decoded
                 if containerValues.contains(.fooEnumList) {
                     struct KeyVal0{struct member{}}
-                    let fooEnumListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumList)
+                    let fooEnumListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumList)
                     if let fooEnumListWrappedContainer = fooEnumListWrappedContainer {
                         let fooEnumListContainer = try fooEnumListWrappedContainer.decodeIfPresent([RestXmlProtocolClientTypes.FooEnum].self, forKey: .member)
                         var fooEnumListBuffer:[RestXmlProtocolClientTypes.FooEnum]? = nil
@@ -86,7 +86,7 @@ class EnumDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedEnumsList) {
                         struct KeyVal0{struct member{}}
-                        let nestedEnumsListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedEnumsList)
+                        let nestedEnumsListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedEnumsList)
                         if let nestedEnumsListWrappedContainer = nestedEnumsListWrappedContainer {
                             let nestedEnumsListContainer = try nestedEnumsListWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.FooEnum]].self, forKey: .member)
                             var nestedEnumsListBuffer:[[RestXmlProtocolClientTypes.FooEnum]]? = nil

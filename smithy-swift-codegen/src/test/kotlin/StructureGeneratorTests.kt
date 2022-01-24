@@ -256,17 +256,17 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         contents.shouldContain(SwiftWriter.staticHeader)
         val expectedGeneratedStructure =
             """
-                import ClientRuntime
+                import Runtime
 
                 /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ServiceError, Swift.Equatable {
-                    public var _headers: ClientRuntime.Headers?
-                    public var _statusCode: ClientRuntime.HttpStatusCode?
+                public struct MyError: Runtime.ServiceError, Swift.Equatable {
+                    public var _headers: Runtime.Headers?
+                    public var _statusCode: Runtime.HttpStatusCode?
                     public var _message: Swift.String?
                     public var _requestID: Swift.String?
                     public var _retryable: Swift.Bool = true
                     public var _isThrottling: Swift.Bool = false
-                    public var _type: ClientRuntime.ErrorType = .client
+                    public var _type: Runtime.ErrorType = .client
                     /// This is documentation about the member.
                     public var baz: Swift.Int?
                     public var message: Swift.String?
@@ -317,7 +317,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 public var sparseStringList: [Swift.String?]?
                 public var stringList: [Swift.String]?
                 public var stringSet: Swift.Set<Swift.String>?
-                public var timestampList: [ClientRuntime.Date]?
+                public var timestampList: [Runtime.Date]?
             
                 public init (
                     booleanList: [Swift.Bool]? = nil,
@@ -326,7 +326,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                     sparseStringList: [Swift.String?]? = nil,
                     stringList: [Swift.String]? = nil,
                     stringSet: Swift.Set<Swift.String>? = nil,
-                    timestampList: [ClientRuntime.Date]? = nil
+                    timestampList: [Runtime.Date]? = nil
                 )
                 {
                     self.booleanList = booleanList

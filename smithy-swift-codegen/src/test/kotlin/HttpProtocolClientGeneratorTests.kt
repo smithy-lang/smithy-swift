@@ -17,19 +17,19 @@ class HttpProtocolClientGeneratorTests {
             """
             public class RestJsonProtocolClient {
                 public static let clientName = "RestJsonProtocolClient"
-                let client: ClientRuntime.SdkHttpClient
-                let config: ClientRuntime.SDKRuntimeConfiguration
+                let client: Runtime.SdkHttpClient
+                let config: Runtime.SDKRuntimeConfiguration
                 let serviceName = "Rest Json Protocol"
-                let encoder: ClientRuntime.RequestEncoder
-                let decoder: ClientRuntime.ResponseDecoder
+                let encoder: Runtime.RequestEncoder
+                let decoder: Runtime.ResponseDecoder
             
-                public init(config: ClientRuntime.SDKRuntimeConfiguration) {
-                    client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
-                    let encoder = ClientRuntime.JSONEncoder()
+                public init(config: Runtime.SDKRuntimeConfiguration) {
+                    client = Runtime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+                    let encoder = JSONRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
                     encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     self.encoder = config.encoder ?? encoder
-                    let decoder = ClientRuntime.JSONDecoder()
+                    let decoder = JSONRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     self.decoder = config.decoder ?? decoder
@@ -45,18 +45,18 @@ class HttpProtocolClientGeneratorTests {
                     client.close()
                 }
             
-                public class RestJsonProtocolClientConfiguration: ClientRuntime.SDKRuntimeConfiguration {
+                public class RestJsonProtocolClientConfiguration: Runtime.SDKRuntimeConfiguration {
             
-                    public var clientLogMode: ClientRuntime.ClientLogMode
-                    public var decoder: ClientRuntime.ResponseDecoder?
-                    public var encoder: ClientRuntime.RequestEncoder?
-                    public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
-                    public var httpClientEngine: ClientRuntime.HttpClientEngine
-                    public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
-                    public var logger: ClientRuntime.LogAgent
-                    public var retryer: ClientRuntime.SDKRetryer
+                    public var clientLogMode: Runtime.ClientLogMode
+                    public var decoder: Runtime.ResponseDecoder?
+                    public var encoder: Runtime.RequestEncoder?
+                    public var httpClientConfiguration: Runtime.HttpClientConfiguration
+                    public var httpClientEngine: Runtime.HttpClientEngine
+                    public var idempotencyTokenGenerator: Runtime.IdempotencyTokenGenerator
+                    public var logger: Runtime.LogAgent
+                    public var retryer: Runtime.SDKRetryer
             
-                    public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
+                    public init(runtimeConfig: Runtime.SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
                         self.decoder = runtimeConfig.decoder
                         self.encoder = runtimeConfig.encoder
@@ -68,21 +68,21 @@ class HttpProtocolClientGeneratorTests {
                     }
             
                     public convenience init() throws {
-                        let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
+                        let defaultRuntimeConfig = try Runtime.DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
                         try self.init(runtimeConfig: defaultRuntimeConfig)
                     }
                 }
             }
             
-            public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {
+            public struct RestJsonProtocolClientLogHandlerFactory: Runtime.SDKLogHandlerFactory {
                 public var label = "RestJsonProtocolClient"
-                let logLevel: ClientRuntime.SDKLogLevel
+                let logLevel: Runtime.SDKLogLevel
                 public func construct(label: String) -> LogHandler {
                     var handler = StreamLogHandler.standardOutput(label: label)
                     handler.logLevel = logLevel.toLoggerType()
                     return handler
                 }
-                public init(logLevel: ClientRuntime.SDKLogLevel) {
+                public init(logLevel: Runtime.SDKLogLevel) {
                     self.logLevel = logLevel
                 }
             }
@@ -96,7 +96,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Runtime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
                       .withMethod(value: .post)
@@ -114,7 +114,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/models/GetStatusInput+UrlPathMiddleware.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
-        public struct GetStatusInputURLHostMiddleware: ClientRuntime.Middleware {
+        public struct GetStatusInputURLHostMiddleware: Runtime.Middleware {
             public let id: Swift.String = "GetStatusInputURLHostMiddleware"
         
             let host: Swift.String?
@@ -125,7 +125,7 @@ class HttpProtocolClientGeneratorTests {
         
             public func handle<H>(context: Context,
                           input: GetStatusInput,
-                          next: H) -> Swift.Result<ClientRuntime.OperationOutput<GetStatusOutputResponse>, MError>
+                          next: H) -> Swift.Result<Runtime.OperationOutput<GetStatusOutputResponse>, MError>
             where H: Handler,
             Self.MInput == H.Input,
             Self.MOutput == H.Output,
@@ -185,9 +185,9 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expected = """
         extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
-            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (ClientRuntime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
+            public func allocateWidget(input: AllocateWidgetInput, completion: @escaping (Runtime.SdkResult<AllocateWidgetOutputResponse, AllocateWidgetOutputError>) -> Void)
             {
-                let context = ClientRuntime.HttpContextBuilder()
+                let context = Runtime.HttpContextBuilder()
                               .withEncoder(value: encoder)
                               .withDecoder(value: decoder)
                               .withMethod(value: .post)
@@ -195,8 +195,8 @@ class HttpProtocolClientGeneratorTests {
                               .withOperation(value: "allocateWidget")
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
-                var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
-                operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<AllocateWidgetOutputResponse>, ClientRuntime.SdkError<AllocateWidgetOutputError>> in
+                var operation = Runtime.OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
+                operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<AllocateWidgetOutputResponse>, Runtime.SdkError<AllocateWidgetOutputError>> in
                     let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                     var copiedInput = input
                     if input.clientToken == nil {
@@ -210,9 +210,9 @@ class HttpProtocolClientGeneratorTests {
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputBodyMiddleware())
-                operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
-                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())
+                operation.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
+                operation.deserializeStep.intercept(position: .before, middleware: Runtime.LoggerMiddleware(clientLogMode: config.clientLogMode))
+                operation.deserializeStep.intercept(position: .after, middleware: Runtime.DeserializeMiddleware())
                 let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
                 completion(result)
             }

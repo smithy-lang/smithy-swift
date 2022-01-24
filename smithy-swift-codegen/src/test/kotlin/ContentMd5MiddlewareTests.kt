@@ -9,9 +9,9 @@ class ContentMd5MiddlewareTests {
         val expectedContents =
             """
             extension RestXmlProtocolClient: RestXmlProtocolClientProtocol {
-                public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput, completion: @escaping (ClientRuntime.SdkResult<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>) -> Void)
+                public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput, completion: @escaping (Runtime.SdkResult<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>) -> Void)
                 {
-                    let context = ClientRuntime.HttpContextBuilder()
+                    let context = Runtime.HttpContextBuilder()
                                   .withEncoder(value: encoder)
                                   .withDecoder(value: decoder)
                                   .withMethod(value: .put)
@@ -19,8 +19,8 @@ class ContentMd5MiddlewareTests {
                                   .withOperation(value: "idempotencyTokenWithStructure")
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
-                    var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
-                    operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse>, ClientRuntime.SdkError<IdempotencyTokenWithStructureOutputError>> in
+                    var operation = Runtime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
+                    operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> Swift.Result<Runtime.OperationOutput<IdempotencyTokenWithStructureOutputResponse>, Runtime.SdkError<IdempotencyTokenWithStructureOutputError>> in
                         let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
                         var copiedInput = input
                         if input.token == nil {
@@ -30,14 +30,14 @@ class ContentMd5MiddlewareTests {
                     }
                     operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLPathMiddleware())
                     operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLHostMiddleware())
-                    operation.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
+                    operation.buildStep.intercept(position: .before, middleware: Runtime.ContentMD5Middleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputHeadersMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputQueryItemMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(contentType: "application/xml"))
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputBodyMiddleware())
-                    operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                    operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
-                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())
+                    operation.finalizeStep.intercept(position: .before, middleware: Runtime.ContentLengthMiddleware())
+                    operation.deserializeStep.intercept(position: .before, middleware: Runtime.LoggerMiddleware(clientLogMode: config.clientLogMode))
+                    operation.deserializeStep.intercept(position: .after, middleware: Runtime.DeserializeMiddleware())
                     let result = operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
                     completion(result)
                 }

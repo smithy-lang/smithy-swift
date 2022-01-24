@@ -29,27 +29,27 @@ class TimeStampDecodeGenerationTests {
             public init (from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 let normalDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .normal)
-                var normalBuffer:ClientRuntime.Date? = nil
+                var normalBuffer:Runtime.Date? = nil
                 if let normalDecoded = normalDecoded {
-                    normalBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
+                    normalBuffer = try Runtime.TimestampWrapperDecoder.parseDateStringValue(normalDecoded, format: .dateTime)
                 }
                 normal = normalBuffer
                 let dateTimeDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .dateTime)
-                var dateTimeBuffer:ClientRuntime.Date? = nil
+                var dateTimeBuffer:Runtime.Date? = nil
                 if let dateTimeDecoded = dateTimeDecoded {
-                    dateTimeBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
+                    dateTimeBuffer = try Runtime.TimestampWrapperDecoder.parseDateStringValue(dateTimeDecoded, format: .dateTime)
                 }
                 dateTime = dateTimeBuffer
                 let epochSecondsDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .epochSeconds)
-                var epochSecondsBuffer:ClientRuntime.Date? = nil
+                var epochSecondsBuffer:Runtime.Date? = nil
                 if let epochSecondsDecoded = epochSecondsDecoded {
-                    epochSecondsBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
+                    epochSecondsBuffer = try Runtime.TimestampWrapperDecoder.parseDateStringValue(epochSecondsDecoded, format: .epochSeconds)
                 }
                 epochSeconds = epochSecondsBuffer
                 let httpDateDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .httpDate)
-                var httpDateBuffer:ClientRuntime.Date? = nil
+                var httpDateBuffer:Runtime.Date? = nil
                 if let httpDateDecoded = httpDateDecoded {
-                    httpDateBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
+                    httpDateBuffer = try Runtime.TimestampWrapperDecoder.parseDateStringValue(httpDateDecoded, format: .httpDate)
                 }
                 httpDate = httpDateBuffer
             }
@@ -73,17 +73,17 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
+                        var nestedTimestampListBuffer:[[Runtime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
-                            var listBuffer0: [ClientRuntime.Date]? = nil
+                            nestedTimestampListBuffer = [[Runtime.Date]]()
+                            var listBuffer0: [Runtime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [ClientRuntime.Date]()
+                                listBuffer0 = [Runtime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                    try listBuffer0?.append(Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -118,17 +118,17 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
+                        var nestedTimestampListBuffer:[[Runtime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
-                            var listBuffer0: [ClientRuntime.Date]? = nil
+                            nestedTimestampListBuffer = [[Runtime.Date]]()
+                            var listBuffer0: [Runtime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [ClientRuntime.Date]()
+                                listBuffer0 = [Runtime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
+                                    try listBuffer0?.append(Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .httpDate))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -162,17 +162,17 @@ class TimeStampDecodeGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct nestedTag1{}}
-                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
+                    let nestedTimestampListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.nestedTag1>.CodingKeys.self, forKey: .nestedTimestampList)
                     if let nestedTimestampListWrappedContainer = nestedTimestampListWrappedContainer {
                         let nestedTimestampListContainer = try nestedTimestampListWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
-                        var nestedTimestampListBuffer:[[ClientRuntime.Date]]? = nil
+                        var nestedTimestampListBuffer:[[Runtime.Date]]? = nil
                         if let nestedTimestampListContainer = nestedTimestampListContainer {
-                            nestedTimestampListBuffer = [[ClientRuntime.Date]]()
-                            var listBuffer0: [ClientRuntime.Date]? = nil
+                            nestedTimestampListBuffer = [[Runtime.Date]]()
+                            var listBuffer0: [Runtime.Date]? = nil
                             for listContainer0 in nestedTimestampListContainer {
-                                listBuffer0 = [ClientRuntime.Date]()
+                                listBuffer0 = [Runtime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
+                                    try listBuffer0?.append(Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer1, format: .epochSeconds))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)

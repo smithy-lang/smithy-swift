@@ -34,7 +34,7 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expectedContents = """
         .package(
-            name: "ComplexModule",
+            name: "swift-numerics",
             url: "https://github.com/apple/swift-numerics",
             from: "0.0.5"
         ),
@@ -81,7 +81,7 @@ class PackageManifestGeneratorTests {
                 "                    package: \"swift-numerics\"\n" +
                 "                ),\n" +
                 "                .product(\n" +
-                "                    name: \"ClientRuntime\",\n" +
+                "                    name: \"Runtime\",\n" +
                 "                    package: \"ClientRuntime\"\n" +
                 "                ),\n" +
                 "            ],\n" +
@@ -115,7 +115,7 @@ class PackageManifestGeneratorTests {
                     package: "swift-numerics"
                 ),
                 .product(
-                    name: "ClientRuntime",
+                    name: "Runtime",
                     package: "ClientRuntime"
                 ),
             ],

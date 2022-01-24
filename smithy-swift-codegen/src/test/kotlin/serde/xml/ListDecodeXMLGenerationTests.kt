@@ -28,7 +28,7 @@ class ListDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.renamedListMembers) {
                         struct KeyVal0{struct item{}}
-                        let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
+                        let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                         if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
                             let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
                             var renamedListMembersBuffer:[Swift.String]? = nil
@@ -65,7 +65,7 @@ class ListDecodeXMLGenerationTests {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.renamedListMembers) {
                     struct KeyVal0{struct item{}}
-                    let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
+                    let renamedListMembersWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.item>.CodingKeys.self, forKey: .renamedListMembers)
                     if let renamedListMembersWrappedContainer = renamedListMembersWrappedContainer {
                         let renamedListMembersContainer = try renamedListMembersWrappedContainer.decodeIfPresent([[Swift.String]].self, forKey: .member)
                         var renamedListMembersBuffer:[[Swift.String]]? = nil
@@ -186,7 +186,7 @@ class ListDecodeXMLGenerationTests {
                 }
                 if containerValues.contains(.integerList) {
                     struct KeyVal0{struct member{}}
-                    let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
+                    let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
                     if let integerListWrappedContainer = integerListWrappedContainer {
                         let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Swift.Int].self, forKey: .member)
                         var integerListBuffer:[Swift.Int]? = nil
@@ -205,7 +205,7 @@ class ListDecodeXMLGenerationTests {
                 }
                 if containerValues.contains(.booleanList) {
                     struct KeyVal0{struct member{}}
-                    let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
+                    let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
                     if let booleanListWrappedContainer = booleanListWrappedContainer {
                         let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Swift.Bool].self, forKey: .member)
                         var booleanListBuffer:[Swift.Bool]? = nil
@@ -294,10 +294,10 @@ class ListDecodeXMLGenerationTests {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         struct KeyVal0{struct member{}}
-                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .myList)
+                        let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .myList)
                         if let myListWrappedContainer = myListWrappedContainer {
                             struct KeyVal0{struct key{}; struct value{}}
-                            let myListContainer = try myListWrappedContainer.decodeIfPresent([ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
+                            let myListContainer = try myListWrappedContainer.decodeIfPresent([XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .member)
                             var myListBuffer:[[Swift.String:Swift.String]]? = nil
                             if let myListContainer = myListContainer {
                                 myListBuffer = [[Swift.String:Swift.String]]()
@@ -345,7 +345,7 @@ class ListDecodeXMLGenerationTests {
                         let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myList)
                         if myListWrappedContainer != nil {
                             struct KeyVal0{struct key{}; struct value{}}
-                            let myListContainer = try containerValues.decodeIfPresent([ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)
+                            let myListContainer = try containerValues.decodeIfPresent([XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .myList)
                             var myListBuffer:[[Swift.String:Swift.String]]? = nil
                             if let myListContainer = myListContainer {
                                 myListBuffer = [[Swift.String:Swift.String]]()

@@ -20,17 +20,17 @@ class SetEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumSetInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumSetInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnumSet
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumSet"))
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("fooEnumSet"))
                         for fooenum0 in fooEnumSet {
-                            try fooEnumSetContainer.encode(fooenum0, forKey: ClientRuntime.Key("member"))
+                            try fooEnumSetContainer.encode(fooenum0, forKey: Runtime.Key("member"))
                         }
                     }
                 }
@@ -47,19 +47,19 @@ class SetEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumNestedSetInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumNestedSetInput: Swift.Encodable, Runtime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnumSet
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
+                    var container = encoder.container(keyedBy: Runtime.Key.self)
                     if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumSet"))
+                        var fooEnumSetContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("fooEnumSet"))
                         for fooenumset0 in fooEnumSet {
-                            var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                            var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
                             for fooenum1 in fooenumset0 {
-                                try fooenumset0Container0.encode(fooenum1, forKey: ClientRuntime.Key("member"))
+                                try fooenumset0Container0.encode(fooenum1, forKey: Runtime.Key("member"))
                             }
                         }
                     }
