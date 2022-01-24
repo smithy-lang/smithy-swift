@@ -38,9 +38,14 @@ open class HttpProtocolClientGenerator(
     private val httpProtocolServiceClient = httpProtocolCustomizable.serviceClient(ctx, writer, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+        writer.addImport(SwiftDependency.RUNTIME.target)
         writer.addImport(SwiftDependency.SWIFT_LOG.target)
         writer.addFoundationImport()
+        if(ctx.protocol.name.contains("json")) {
+            writer.addImport(SwiftDependency.JSON_RUNTIME.target)
+        } else {
+            writer.addImport(SwiftDependency.XML_RUNTIME.target)
+        }
         httpProtocolCustomizable.renderInternals(ctx)
         httpProtocolServiceClient.render(serviceSymbol)
         writer.write("")
@@ -48,7 +53,7 @@ open class HttpProtocolClientGenerator(
         val rootNamespace = ctx.settings.moduleName
         ctx.delegator.useFileWriter("./$rootNamespace/${serviceSymbol.name}+Async.swift") {
             it.write("#if swift(>=5.5) && canImport(_Concurrency)")
-            it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            it.addImport(SwiftDependency.RUNTIME.target)
             renderAsyncOperationsInExtension(serviceSymbol, it)
             it.write("#endif")
         }

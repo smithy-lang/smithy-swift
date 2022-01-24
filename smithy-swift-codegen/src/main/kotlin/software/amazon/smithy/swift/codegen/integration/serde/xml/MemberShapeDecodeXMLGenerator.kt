@@ -52,7 +52,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         if (!memberIsFlattened) {
             val memberCodingKey = CollectionMemberCodingKey.construct(memberTarget.member)
             memberCodingKey.renderStructs(writer)
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)")
+            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: \$N<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)", ClientRuntimeTypes.Serde.CollectionMemberCodingKey)
             currContainerKey = ".member"
             currContainerName = nextContainerName
             containerUsedForDecoding = currContainerName

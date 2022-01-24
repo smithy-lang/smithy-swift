@@ -19,8 +19,24 @@ enum class SwiftDependency(
 ) : SymbolDependencyContainer {
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
     SWIFT_LOG("Logging", null, "", "", "", ""),
-    CLIENT_RUNTIME(
-        "ClientRuntime",
+    RUNTIME(
+        "Runtime",
+        "main",
+        "0.1.0",
+        "https://github.com/awslabs/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift/Packages", "Packages", "SMITHY_SWIFT_CI_DIR") + "/Packages",
+        "ClientRuntime"
+    ),
+    JSON_RUNTIME(
+        "JSONRuntime",
+        "main",
+        "0.1.0",
+        "https://github.com/awslabs/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift/Packages", "Packages", "SMITHY_SWIFT_CI_DIR") + "/Packages",
+        "ClientRuntime"
+    ),
+    XML_RUNTIME(
+        "XMLRuntime",
         "main",
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",

@@ -8,8 +8,8 @@ package software.amazon.smithy.swift.codegen
 class ImportDeclarations {
     private val imports = mutableSetOf<ImportStatement>()
 
-    fun addImport(packageName: String, isTestable: Boolean = false) {
-        imports.add(ImportStatement(packageName, isTestable))
+    fun addImport(target: String, isTestable: Boolean = false) {
+        imports.add(ImportStatement(target, isTestable))
     }
 
     override fun toString(): String {
@@ -24,13 +24,13 @@ class ImportDeclarations {
     }
 }
 
-private data class ImportStatement(val packageName: String, val isTestable: Boolean) {
+private data class ImportStatement(val target: String, val isTestable: Boolean) {
     val statement: String
         get() {
             if (isTestable) {
-                return "@testable import $packageName"
+                return "@testable import $target"
             }
-            return "import $packageName"
+            return "import $target"
         }
 
     override fun toString(): String = statement

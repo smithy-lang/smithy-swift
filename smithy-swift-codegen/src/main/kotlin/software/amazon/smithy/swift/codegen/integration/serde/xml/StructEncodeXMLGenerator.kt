@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -27,6 +28,7 @@ class StructEncodeXMLGenerator(
 ) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
 
     override fun render() {
+        writer.addImport(SwiftDependency.XML_RUNTIME.target)
         writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
             if (members.isNotEmpty()) {
                 renderEncodeBody()

@@ -56,7 +56,7 @@ class HttpBodyMiddleware(
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.RUNTIME.target)
                     val requestBindings = httpBindingResolver.requestBindings(op)
                     val bodyMiddleware = httpProtocolBodyMiddleware.httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                     MiddlewareGenerator(writer, bodyMiddleware).generate()

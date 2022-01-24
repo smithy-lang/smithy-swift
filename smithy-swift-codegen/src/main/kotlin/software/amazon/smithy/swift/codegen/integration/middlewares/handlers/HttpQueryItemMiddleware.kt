@@ -59,7 +59,7 @@ class HttpQueryItemMiddleware(
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 val queryItemMiddleware = HttpQueryItemMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, queryLiterals, queryBindings, defaultTimestampFormat, writer)
                 MiddlewareGenerator(writer, queryItemMiddleware).generate()
             }

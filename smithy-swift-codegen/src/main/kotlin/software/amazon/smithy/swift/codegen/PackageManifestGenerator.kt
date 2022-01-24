@@ -13,6 +13,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
 
     // filter duplicates in dependencies
     val distinctDependencies = dependencies.distinctBy { it.packageName }
+    val distinctTargetDependencies = dependencies.distinctBy { it.expectProperty("target", String::class.java) }
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -40,7 +41,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             writer.openBlock(".target(", "),") {
                 writer.write("name: \"${settings.moduleName}\",")
                 writer.openBlock("dependencies: [", "],") {
-                    for (dependency in distinctDependencies) {
+                    for (dependency in distinctTargetDependencies) {
                         writer.openBlock(".product(", "),") {
                             val target = dependency.expectProperty("target", String::class.java)
                             writer.write("name: \"${target}\",")
@@ -79,10 +80,10 @@ fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependen
     writer.openBlock("package.dependencies += [", "]") {
         for (dependency in distinctDependencies) {
             val localPath = dependency.expectProperty("localPath", String::class.java)
-            val target = dependency.expectProperty("target", String::class.java)
+            val packageName = dependency.packageName
 
             if (localPath.isNotEmpty()) {
-                writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
+                writer.write(".package(name: \"${packageName}\", path: \"$localPath\"),")
             } else {
                 renderPackageWithUrl(writer, dependency)
             }
@@ -100,9 +101,9 @@ fun renderPackageDependenciesUsingSPMBranchDependency(writer: CodeWriter, distin
 
 fun renderPackageWithUrl(writer: CodeWriter, dependency: SymbolDependency) {
     writer.openBlock(".package(", "),") {
-        val target = dependency.expectProperty("target", String::class.java)
+        val packageName = dependency.packageName
         val dependencyURL = dependency.expectProperty("url", String::class.java)
-        writer.write("name: \"$target\",")
+        writer.write("name: \"$packageName\",")
         writer.write("url: \"$dependencyURL\",")
         val branch = dependency.getProperty("branch", String::class.java)
         if (!branch.getOrNull().isNullOrEmpty()) {

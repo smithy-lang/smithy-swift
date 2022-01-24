@@ -103,7 +103,12 @@ class HttpProtocolTestGenerator(
                 for (import in imports) {
                     writer.addImport(import)
                 }
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
+                if(ctx.protocol.name.contains("json")) {
+                    writer.addImport(SwiftDependency.JSON_RUNTIME.target)
+                } else {
+                    writer.addImport(SwiftDependency.XML_RUNTIME.target)
+                }
                 writer.addImport(ctx.settings.moduleName, true)
                 writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                 writer.addImport(SwiftDependency.XCTest.target)
@@ -138,7 +143,12 @@ class HttpProtocolTestGenerator(
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
+                if(ctx.protocol.name.contains("json")) {
+                    writer.addImport(SwiftDependency.JSON_RUNTIME.target)
+                } else {
+                    writer.addImport(SwiftDependency.XML_RUNTIME.target)
+                }
                 writer.addImport(ctx.settings.moduleName, true)
                 writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                 writer.addImport(SwiftDependency.XCTest.target)
@@ -180,7 +190,7 @@ class HttpProtocolTestGenerator(
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.RUNTIME.target)
                     writer.addImport(ctx.settings.moduleName, true)
                     writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                     writer.addImport(SwiftDependency.XCTest.target)

@@ -35,19 +35,20 @@ object ClientRuntimeTypes {
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
         val Key = runtimeSymbol("Key")
         val TimestampWrapper = runtimeSymbol("TimestampWrapper")
-        val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
-        val DynamicNodeEncoding = runtimeSymbol("DynamicNodeEncoding")
-        val NodeDecoding = runtimeSymbol("NodeDecoding")
-        val NodeEncoding = runtimeSymbol("NodeEncoding")
+        val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding", SwiftDependency.XML_RUNTIME)
+        val DynamicNodeEncoding = runtimeSymbol("DynamicNodeEncoding", SwiftDependency.XML_RUNTIME)
+        val NodeDecoding = runtimeSymbol("NodeDecoding", SwiftDependency.XML_RUNTIME)
+        val NodeEncoding = runtimeSymbol("NodeEncoding", SwiftDependency.XML_RUNTIME)
         val TimestampWrapperDecoder = runtimeSymbol("TimestampWrapperDecoder")
-        val MapEntry = runtimeSymbol("MapEntry")
-        val CollectionMember = runtimeSymbol("CollectionMember")
-        val MapKeyValue = runtimeSymbol("MapKeyValue")
-        val FormURLEncoder = runtimeSymbol("FormURLEncoder")
-        val JSONDecoder = runtimeSymbol("JSONDecoder")
-        val JSONEncoder = runtimeSymbol("JSONEncoder")
-        val XMLEncoder = runtimeSymbol("XMLEncoder")
-        val XMLDecoder = runtimeSymbol("XMLDecoder")
+        val MapEntry = runtimeSymbol("MapEntry", SwiftDependency.XML_RUNTIME)
+        val CollectionMember = runtimeSymbol("CollectionMember", SwiftDependency.XML_RUNTIME)
+        val CollectionMemberCodingKey = runtimeSymbol("CollectionMemberCodingKey", SwiftDependency.XML_RUNTIME)
+        val MapKeyValue = runtimeSymbol("MapKeyValue", SwiftDependency.XML_RUNTIME)
+        val FormURLEncoder = runtimeSymbol("FormURLEncoder", SwiftDependency.XML_RUNTIME)
+        val JSONDecoder = runtimeSymbol("JSONDecoder", SwiftDependency.JSON_RUNTIME)
+        val JSONEncoder = runtimeSymbol("JSONEncoder", SwiftDependency.JSON_RUNTIME)
+        val XMLEncoder = runtimeSymbol("XMLEncoder", SwiftDependency.XML_RUNTIME)
+        val XMLDecoder = runtimeSymbol("XMLDecoder", SwiftDependency.XML_RUNTIME)
     }
 
     object Middleware {
@@ -88,8 +89,9 @@ object ClientRuntimeTypes {
     }
 }
 
-private fun runtimeSymbol(name: String): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String, dependency: SwiftDependency = SwiftDependency.RUNTIME): Symbol = buildSymbol {
     this.name = name
-    this.namespace = SwiftDependency.CLIENT_RUNTIME.target
-    dependency(SwiftDependency.CLIENT_RUNTIME)
+    this.namespace = dependency.target
+    dependency(dependency)
 }
+

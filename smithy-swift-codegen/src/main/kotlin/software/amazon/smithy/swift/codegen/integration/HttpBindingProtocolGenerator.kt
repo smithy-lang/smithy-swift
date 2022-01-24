@@ -151,7 +151,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.RUNTIME.target)
                     val httpBodyMembers = shape.members()
                         .filter { it.isInHttpBody() }
                         .toList()
@@ -205,7 +205,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N: \$N, \$N {", "}", symbol, SwiftTypes.Protocols.Codable, ClientRuntimeTypes.Core.Reflection) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
                     is StructureShape -> {
@@ -252,7 +252,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             writer.write("")
             writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Decodable) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")
                 renderStructDecode(ctx, metadata, httpBodyMembers, writer, defaultTimestampFormat)

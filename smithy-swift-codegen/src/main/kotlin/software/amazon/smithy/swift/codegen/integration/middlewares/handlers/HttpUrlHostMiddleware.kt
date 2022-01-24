@@ -33,7 +33,7 @@ class HttpUrlHostMiddleware(
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 val queryItemMiddleware = HttpUrlHostMiddleware(ctx, op, inputSymbol, outputSymbol, outputErrorSymbol, writer)
                 MiddlewareGenerator(writer, queryItemMiddleware).generate()
             }

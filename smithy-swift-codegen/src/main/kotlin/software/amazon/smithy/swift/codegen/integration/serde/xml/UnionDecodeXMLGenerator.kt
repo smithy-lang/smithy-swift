@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
@@ -27,6 +28,7 @@ class UnionDecodeXMLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
+        writer.addImport(SwiftDependency.XML_RUNTIME.target)
         val containerName = "containerValues"
         writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)

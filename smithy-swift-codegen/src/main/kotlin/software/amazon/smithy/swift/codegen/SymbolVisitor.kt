@@ -162,7 +162,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         }
 
         if (shape.hasTrait<ErrorTrait>()) {
-            builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
+            builder.addDependency(SwiftDependency.RUNTIME)
         }
         return builder.build()
     }
@@ -196,7 +196,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "ClientRuntime", true)
+        return createSymbolBuilder(shape, "Date", "Runtime", true)
             .build()
     }
 
@@ -211,22 +211,22 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun blobShape(shape: BlobShape): Symbol {
         if (shape.hasTrait<StreamingTrait>()) {
-            return createSymbolBuilder(shape, "ByteStream", "ClientRuntime", true).build()
+            return createSymbolBuilder(shape, "ByteStream", "Runtime", true).build()
         } else {
-            return createSymbolBuilder(shape, "Data", "ClientRuntime", true).build()
+            return createSymbolBuilder(shape, "Data", "Runtime", true).build()
         }
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "ClientRuntime", true)
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        return createSymbolBuilder(shape, "Document", "Runtime", true)
+            .addDependency(SwiftDependency.RUNTIME)
             .build()
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = sdkId.clientName()
-        return createSymbolBuilder(shape, "${name}Client", "ClientRuntime")
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        return createSymbolBuilder(shape, "${name}Client", "Runtime")
+            .addDependency(SwiftDependency.RUNTIME)
             .definitionFile(formatModuleName(shape.type, name))
             .build()
     }

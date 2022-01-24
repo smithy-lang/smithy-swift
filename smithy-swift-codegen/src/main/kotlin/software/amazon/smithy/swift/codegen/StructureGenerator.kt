@@ -121,7 +121,7 @@ class StructureGenerator(
             var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             if (it.hasTrait<SwiftBoxTrait>()) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 memberSymbol = memberSymbol.recursiveSymbol()
             }
 
@@ -194,7 +194,7 @@ class StructureGenerator(
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+        writer.addImport(SwiftDependency.RUNTIME.target)
 
         serviceErrorProtocolSymbol?.let {
             writer.addImport(it)

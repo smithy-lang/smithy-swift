@@ -48,7 +48,7 @@ class HttpUrlPathMiddleware(
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                writer.addImport(SwiftDependency.RUNTIME.target)
                 val urlPathMiddleware = HttpUrlPathMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, httpTrait, pathBindings, writer)
                 MiddlewareGenerator(writer, urlPathMiddleware).generate()
             }
