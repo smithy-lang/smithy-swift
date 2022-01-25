@@ -41,7 +41,7 @@ open class HttpProtocolClientGenerator(
         writer.addImport(SwiftDependency.RUNTIME.target)
         writer.addImport(SwiftDependency.SWIFT_LOG.target)
         writer.addFoundationImport()
-        if (ctx.protocol.name.contains("json")) {
+        if (ctx.protocol.name.lowercase().contains("json")) {
             writer.addImport(SwiftDependency.JSON_RUNTIME.target)
         } else {
             writer.addImport(SwiftDependency.XML_RUNTIME.target)
