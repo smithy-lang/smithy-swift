@@ -32,6 +32,7 @@ class DynamicNodeDecodingXMLGenerator(
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N: \$N {", "}", symbol, ClientRuntimeTypes.Serde.DynamicNodeDecoding) {
                 writer.addImport(SwiftDependency.RUNTIME.target)
+                writer.addImport(SwiftDependency.XML_RUNTIME.target)
                 renderDynamicNodeDecodingConformance(symbol.name, writer)
             }
         }
