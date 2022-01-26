@@ -19,19 +19,19 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested1+Codable.swift")
         val expectedContents =
             """
-            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, Runtime.Reflection {
+            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let foo = foo {
-                        try container.encode(foo, forKey: Runtime.Key("foo"))
+                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
                     }
                     if let nested = nested {
-                        try container.encode(nested, forKey: Runtime.Key("nested"))
+                        try container.encode(nested, forKey: ClientRuntime.Key("nested"))
                     }
                 }
             
@@ -53,19 +53,19 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested2+Codable.swift")
         val expectedContents =
             """
-            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, Runtime.Reflection {
+            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let bar = bar {
-                        try container.encode(bar, forKey: Runtime.Key("bar"))
+                        try container.encode(bar, forKey: ClientRuntime.Key("bar"))
                     }
                     if let recursiveMember = recursiveMember {
-                        try container.encode(recursiveMember, forKey: Runtime.Key("recursiveMember"))
+                        try container.encode(recursiveMember, forKey: ClientRuntime.Key("recursiveMember"))
                     }
                 }
             
@@ -87,19 +87,19 @@ class RecursiveShapesEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedRecursiveShapesInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlNestedRecursiveShapesInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedRecursiveList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedRecursiveList = nestedRecursiveList {
-                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedRecursiveList"))
+                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedRecursiveList"))
                         for nestedrecursiveshapeslist0 in nestedRecursiveList {
-                            var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                            var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
-                                try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: Runtime.Key("member"))
+                                try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }

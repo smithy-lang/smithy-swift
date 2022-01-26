@@ -4,7 +4,7 @@
  */
 
 import Foundation
-import Runtime
+import ClientRuntime
 
 public typealias JSONEncoder = Foundation.JSONEncoder
 extension JSONEncoder: RequestEncoder {}

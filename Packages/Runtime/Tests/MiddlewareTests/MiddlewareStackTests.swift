@@ -3,7 +3,7 @@
 
 import XCTest
 import SmithyTestUtil
-import Runtime
+import ClientRuntime
 @testable import JSONRuntime
 
 class MiddlewareStackTests: XCTestCase {

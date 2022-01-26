@@ -17,6 +17,6 @@ class OperationSerializeStep(
     override val inputType: Symbol = Symbol
         .builder()
         .name("SerializeStepInput<$inputType>")
-        .namespace("Runtime", ".")
-        .dependencies(SwiftDependency.RUNTIME).build()
+        .namespace("ClientRuntime", ".")
+        .dependencies(SwiftDependency.CLIENT_RUNTIME).build()
 }

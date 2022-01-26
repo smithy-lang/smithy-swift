@@ -105,6 +105,11 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         imports.addImport(target, isTestable)
     }
 
+    fun addImport(dep: SymbolDependencyContainer, target: String) {
+        dependencies.addAll(dep.dependencies)
+        imports.addImport(target)
+    }
+
     fun addFoundationImport() {
         imports.addImport("Foundation", false)
     }

@@ -81,7 +81,7 @@ class PackageManifestGeneratorTests {
                 "                    package: \"swift-numerics\"\n" +
                 "                ),\n" +
                 "                .product(\n" +
-                "                    name: \"Runtime\",\n" +
+                "                    name: \"ClientRuntime\",\n" +
                 "                    package: \"ClientRuntime\"\n" +
                 "                ),\n" +
                 "            ],\n" +
@@ -115,7 +115,7 @@ class PackageManifestGeneratorTests {
                     package: "swift-numerics"
                 ),
                 .product(
-                    name: "Runtime",
+                    name: "ClientRuntime",
                     package: "ClientRuntime"
                 ),
             ],

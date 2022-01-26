@@ -711,11 +711,11 @@ class MapDecodeXMLGenerationTests {
                         let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if let timestampMapWrappedContainer = timestampMapWrappedContainer {
                             let timestampMapContainer = try timestampMapWrappedContainer.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .entry)
-                            var timestampMapBuffer: [Swift.String:Runtime.Date]? = nil
+                            var timestampMapBuffer: [Swift.String:ClientRuntime.Date]? = nil
                             if let timestampMapContainer = timestampMapContainer {
-                                timestampMapBuffer = [Swift.String:Runtime.Date]()
+                                timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
                                 }
                             }
                             timestampMap = timestampMapBuffer
@@ -749,11 +749,11 @@ class MapDecodeXMLGenerationTests {
                         let timestampMapWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: XMLRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>.CodingKeys.self, forKey: .timestampMap)
                         if timestampMapWrappedContainer != nil {
                             let timestampMapContainer = try containerValues.decodeIfPresent([XMLRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.key, KeyVal0.value>].self, forKey: .timestampMap)
-                            var timestampMapBuffer: [Swift.String:Runtime.Date]? = nil
+                            var timestampMapBuffer: [Swift.String:ClientRuntime.Date]? = nil
                             if let timestampMapContainer = timestampMapContainer {
-                                timestampMapBuffer = [Swift.String:Runtime.Date]()
+                                timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try Runtime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
                                 }
                             }
                             timestampMap = timestampMapBuffer

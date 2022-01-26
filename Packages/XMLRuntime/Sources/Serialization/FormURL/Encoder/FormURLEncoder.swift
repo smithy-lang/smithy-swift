@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import Runtime
+import ClientRuntime
 	
 // Inspired from:
 // https://stackoverflow.com/questions/45169254/custom-swift-encoder-decoder-for-the-strings-resource-format

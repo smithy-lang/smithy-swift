@@ -23,7 +23,7 @@ class MiddlewareGeneratorTests {
         val contents = writer.toString()
         val expectedGeneratedStructure =
             """
-            public struct TestMiddleware: Runtime.Middleware {
+            public struct TestMiddleware: ClientRuntime.Middleware {
                 public let id: Swift.String = "TestMiddleware"
             
                 let test: Swift.String
@@ -32,7 +32,7 @@ class MiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: Swift.String,
-                              next: H) -> Swift.Result<Runtime.OperationOutput<Swift.String>, MError>
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<Swift.String>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -44,9 +44,9 @@ class MiddlewareGeneratorTests {
                 }
             
                 public typealias MInput = Swift.String
-                public typealias MOutput = Runtime.OperationOutput<Swift.String>
-                public typealias Context = Runtime.HttpContext
-                public typealias MError = Runtime.SdkError<Swift.Error>
+                public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
+                public typealias Context = ClientRuntime.HttpContext
+                public typealias MError = ClientRuntime.SdkError<Swift.Error>
             }
             """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)

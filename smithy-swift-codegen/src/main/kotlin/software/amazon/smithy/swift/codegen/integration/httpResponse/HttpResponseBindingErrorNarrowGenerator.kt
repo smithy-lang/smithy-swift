@@ -35,7 +35,7 @@ class HttpResponseBindingErrorNarrowGenerator(
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.RUNTIME.target)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(unknownServiceErrorSymbol)
             val unknownServiceErrorType = unknownServiceErrorSymbol.name
 

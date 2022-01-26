@@ -6,7 +6,7 @@
 //
 	
 import XCTest
-import Runtime
+import ClientRuntime
 
 class TimestampWrapperTests: XCTestCase {
     func testSplitHeaderListValues() {

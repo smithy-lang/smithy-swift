@@ -17,7 +17,7 @@ class SymbolBuilderTest {
     fun `it builds symbols`() {
         val x = buildSymbol {
             name = "Foo"
-            dependencies += SwiftDependency.RUNTIME
+            dependencies += SwiftDependency.CLIENT_RUNTIME
             reference {
                 name = "MyRef"
             }

@@ -5,7 +5,7 @@
 
 import Foundation
 import AwsCommonRuntimeKit
-@testable import Runtime
+@testable import ClientRuntime
 
 class MockHttpClientEngine: HttpClientEngine {    
     func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {

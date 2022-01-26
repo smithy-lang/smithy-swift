@@ -4,7 +4,7 @@
  */
 
 import XCTest
-import Runtime
+import ClientRuntime
 
 class HttpHeadersTests: XCTestCase {
 

@@ -19,17 +19,17 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListXmlNameInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlListXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let renamedListMembers = renamedListMembers {
-                        var renamedListMembersContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("renamed"))
+                        var renamedListMembersContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("renamed"))
                         for string0 in renamedListMembers {
-                            try renamedListMembersContainer.encode(string0, forKey: Runtime.Key("item"))
+                            try renamedListMembersContainer.encode(string0, forKey: ClientRuntime.Key("item"))
                         }
                     }
                 }
@@ -44,19 +44,19 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListXmlNameNestedInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlListXmlNameNestedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case renamedListMembers = "renamed"
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let renamedListMembers = renamedListMembers {
-                        var renamedListMembersContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("renamed"))
+                        var renamedListMembersContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("renamed"))
                         for renamedlistmembers0 in renamedListMembers {
-                            var renamedlistmembers0Container0 = renamedListMembersContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("item"))
+                            var renamedlistmembers0Container0 = renamedListMembersContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("item"))
                             for string1 in renamedlistmembers0 {
-                                try renamedlistmembers0Container0.encode(string1, forKey: Runtime.Key("subItem"))
+                                try renamedlistmembers0Container0.encode(string1, forKey: ClientRuntime.Key("subItem"))
                             }
                         }
                     }
@@ -73,19 +73,19 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedWrappedListInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlNestedWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedStringList = nestedStringList {
-                        var nestedStringListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedStringList"))
+                        var nestedStringListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedStringList"))
                         for stringlist0 in nestedStringList {
-                            var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                            var stringlist0Container0 = nestedStringListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for string1 in stringlist0 {
-                                try stringlist0Container0.encode(string1, forKey: Runtime.Key("member"))
+                                try stringlist0Container0.encode(string1, forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
@@ -101,21 +101,21 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedNestedWrappedListInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlNestedNestedWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedNestedStringList = nestedNestedStringList {
-                        var nestedNestedStringListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedNestedStringList"))
+                        var nestedNestedStringListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedNestedStringList"))
                         for nestedstringlist0 in nestedNestedStringList {
-                            var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                            var nestedstringlist0Container0 = nestedNestedStringListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for stringlist1 in nestedstringlist0 {
-                                var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                                var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                                 for string2 in stringlist1 {
-                                    try stringlist1Container1.encode(string2, forKey: Runtime.Key("member"))
+                                    try stringlist1Container1.encode(string2, forKey: ClientRuntime.Key("member"))
                                 }
                             }
                         }
@@ -132,27 +132,27 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlNestedNestedFlattenedListInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlNestedNestedFlattenedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedNestedStringList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedNestedStringList = nestedNestedStringList {
                         if nestedNestedStringList.isEmpty {
-                            var nestedNestedStringListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("nestedNestedStringList"))
+                            var nestedNestedStringListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("nestedNestedStringList"))
                             try nestedNestedStringListContainer.encodeNil()
                         } else {
                             for nestedstringlist0 in nestedNestedStringList {
                                 if let nestedstringlist0 = nestedstringlist0 {
-                                    var nestedstringlist0Container0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedNestedStringList"))
+                                    var nestedstringlist0Container0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedNestedStringList"))
                                     for stringlist1 in nestedstringlist0 {
                                         if let stringlist1 = stringlist1 {
-                                            var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                                            var stringlist1Container1 = nestedstringlist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                                             for string2 in stringlist1 {
-                                                var stringlist1Container2 = stringlist1Container1.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
-                                                try stringlist1Container2.encode(string2, forKey: Runtime.Key(""))
+                                                var stringlist1Container2 = stringlist1Container1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
+                                                try stringlist1Container2.encode(string2, forKey: ClientRuntime.Key(""))
                                             }
                                         }
                                     }
@@ -172,7 +172,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEmptyListsInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlEmptyListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case booleanList
                     case integerList
@@ -181,29 +181,29 @@ class ListEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let booleanList = booleanList {
-                        var booleanListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("booleanList"))
+                        var booleanListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("booleanList"))
                         for primitiveboolean0 in booleanList {
-                            try booleanListContainer.encode(primitiveboolean0, forKey: Runtime.Key("member"))
+                            try booleanListContainer.encode(primitiveboolean0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                     if let integerList = integerList {
-                        var integerListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("integerList"))
+                        var integerListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("integerList"))
                         for integer0 in integerList {
-                            try integerListContainer.encode(integer0, forKey: Runtime.Key("member"))
+                            try integerListContainer.encode(integer0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                     if let stringList = stringList {
-                        var stringListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("stringList"))
+                        var stringListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringList"))
                         for string0 in stringList {
-                            try stringListContainer.encode(string0, forKey: Runtime.Key("member"))
+                            try stringListContainer.encode(string0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                     if let stringSet = stringSet {
-                        var stringSetContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("stringSet"))
+                        var stringSetContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringSet"))
                         for string0 in stringSet {
-                            try stringSetContainer.encode(string0, forKey: Runtime.Key("member"))
+                            try stringSetContainer.encode(string0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                 }
@@ -218,17 +218,17 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlWrappedListInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlWrappedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myGroceryList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let myGroceryList = myGroceryList {
-                        var myGroceryListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("myGroceryList"))
+                        var myGroceryListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myGroceryList"))
                         for string0 in myGroceryList {
-                            try myGroceryListContainer.encode(string0, forKey: Runtime.Key("member"))
+                            try myGroceryListContainer.encode(string0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                 }
@@ -244,21 +244,21 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlFlattenedListInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlFlattenedListInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myGroceryList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let myGroceryList = myGroceryList {
                         if myGroceryList.isEmpty {
-                            var myGroceryListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("myGroceryList"))
+                            var myGroceryListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("myGroceryList"))
                             try myGroceryListContainer.encodeNil()
                         } else {
                             for string0 in myGroceryList {
-                                var myGroceryListContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("myGroceryList"))
-                                try myGroceryListContainer0.encode(string0, forKey: Runtime.Key(""))
+                                var myGroceryListContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myGroceryList"))
+                                try myGroceryListContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
                         }
                     }
@@ -280,7 +280,7 @@ class ListEncodeXMLGenerationTests {
                     let xmlNamespaceValues = [
                         "xmlns:baz"
                     ]
-                    if let key = key as? Runtime.Key {
+                    if let key = key as? ClientRuntime.Key {
                         if xmlNamespaceValues.contains(key.stringValue) {
                             return .attribute
                         }
@@ -299,25 +299,25 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedFlattenedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedFlattenedInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlTimestampsNestedFlattenedInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedTimestampList = nestedTimestampList {
                         if nestedTimestampList.isEmpty {
-                            var nestedTimestampListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("nestedTimestampList"))
+                            var nestedTimestampListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("nestedTimestampList"))
                             try nestedTimestampListContainer.encodeNil()
                         } else {
                             for nestedtimestamplist0 in nestedTimestampList {
                                 if let nestedtimestamplist0 = nestedtimestamplist0 {
-                                    var nestedtimestamplist0Container0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedTimestampList"))
+                                    var nestedtimestamplist0Container0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
                                     for timestamp1 in nestedtimestamplist0 {
-                                        var nestedtimestamplist0Container1 = nestedtimestamplist0Container0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedMember"))
-                                        try nestedtimestamplist0Container1.encode("http://baz.com", forKey: Runtime.Key("xmlns:baz"))
-                                        try nestedtimestamplist0Container1.encode(Runtime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key(""))
+                                        var nestedtimestamplist0Container1 = nestedtimestamplist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedMember"))
+                                        try nestedtimestamplist0Container1.encode("http://baz.com", forKey: ClientRuntime.Key("xmlns:baz"))
+                                        try nestedtimestamplist0Container1.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key(""))
                                     }
                                 }
                             }
@@ -335,7 +335,7 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEmptyFlattenedListsInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlEmptyFlattenedListsInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case booleanList
                     case integerList
@@ -344,38 +344,38 @@ class ListEncodeXMLGenerationTests {
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let booleanList = booleanList {
-                        var booleanListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("booleanList"))
+                        var booleanListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("booleanList"))
                         for primitiveboolean0 in booleanList {
-                            try booleanListContainer.encode(primitiveboolean0, forKey: Runtime.Key("member"))
+                            try booleanListContainer.encode(primitiveboolean0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                     if let integerList = integerList {
-                        var integerListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("integerList"))
+                        var integerListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("integerList"))
                         for integer0 in integerList {
-                            try integerListContainer.encode(integer0, forKey: Runtime.Key("member"))
+                            try integerListContainer.encode(integer0, forKey: ClientRuntime.Key("member"))
                         }
                     }
                     if let stringList = stringList {
                         if stringList.isEmpty {
-                            var stringListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("stringList"))
+                            var stringListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("stringList"))
                             try stringListContainer.encodeNil()
                         } else {
                             for string0 in stringList {
-                                var stringListContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("stringList"))
-                                try stringListContainer0.encode(string0, forKey: Runtime.Key(""))
+                                var stringListContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringList"))
+                                try stringListContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
                         }
                     }
                     if let stringSet = stringSet {
                         if stringSet.isEmpty {
-                            var stringSetContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("stringSet"))
+                            var stringSetContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("stringSet"))
                             try stringSetContainer.encodeNil()
                         } else {
                             for string0 in stringSet {
-                                var stringSetContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("stringSet"))
-                                try stringSetContainer0.encode(string0, forKey: Runtime.Key(""))
+                                var stringSetContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringSet"))
+                                try stringSetContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
                         }
                     }
@@ -392,24 +392,24 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListNestedFlattenedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListNestedFlattenedXmlNameInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlListNestedFlattenedXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedList = "listOfNestedStrings"
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let nestedList = nestedList {
                         if nestedList.isEmpty {
-                            var nestedListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("listOfNestedStrings"))
+                            var nestedListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("listOfNestedStrings"))
                             try nestedListContainer.encodeNil()
                         } else {
                             for nestedstringmember0 in nestedList {
                                 if let nestedstringmember0 = nestedstringmember0 {
-                                    var nestedstringmember0Container0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("listOfNestedStrings"))
+                                    var nestedstringmember0Container0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("listOfNestedStrings"))
                                     for string1 in nestedstringmember0 {
-                                        var nestedstringmember0Container1 = nestedstringmember0Container0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("nestedMember"))
-                                        try nestedstringmember0Container1.encode(string1, forKey: Runtime.Key(""))
+                                        var nestedstringmember0Container1 = nestedstringmember0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedMember"))
+                                        try nestedstringmember0Container1.encode(string1, forKey: ClientRuntime.Key(""))
                                     }
                                 }
                             }
@@ -428,24 +428,24 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListContainMapInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlListContainMapInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let myList = myList {
-                        var myListContainer = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("myList"))
+                        var myListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myList"))
                         for mysimplemap0 in myList {
-                            var myListContainer0 = myListContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("member"))
+                            var myListContainer0 = myListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             if let mysimplemap0 = mysimplemap0 {
                                 for (stringKey0, stringValue0) in mysimplemap0 {
-                                    var entryContainer0 = myListContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("entry"))
-                                    var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("key"))
-                                    try keyContainer0.encode(stringKey0, forKey: Runtime.Key(""))
-                                    var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("value"))
-                                    try valueContainer0.encode(stringValue0, forKey: Runtime.Key(""))
+                                    var entryContainer0 = myListContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
+                                    var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
+                                    try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
+                                    var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
+                                    try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
                                 }
                             }
                         }
@@ -462,27 +462,27 @@ class ListEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlListFlattenedContainMapInput: Swift.Encodable, Runtime.Reflection {
+            extension XmlListFlattenedContainMapInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case myList
                 }
             
                 public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: Runtime.Key.self)
+                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let myList = myList {
                         if myList.isEmpty {
-                            var myListContainer = container.nestedUnkeyedContainer(forKey: Runtime.Key("myList"))
+                            var myListContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("myList"))
                             try myListContainer.encodeNil()
                         } else {
                             for mysimplemap0 in myList {
-                                var myListContainer0 = container.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("myList"))
+                                var myListContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myList"))
                                 if let mysimplemap0 = mysimplemap0 {
                                     for (stringKey0, stringValue0) in mysimplemap0 {
-                                        var entryContainer0 = myListContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("entry"))
-                                        var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("key"))
-                                        try keyContainer0.encode(stringKey0, forKey: Runtime.Key(""))
-                                        var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Runtime.Key.self, forKey: Runtime.Key("value"))
-                                        try valueContainer0.encode(stringValue0, forKey: Runtime.Key(""))
+                                        var entryContainer0 = myListContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
+                                        var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
+                                        try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
+                                        var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
+                                        try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
                                     }
                                 }
                             }

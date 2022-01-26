@@ -19,7 +19,7 @@ let package = Package(
     products: [
         .library(name: "JSONRuntime", targets: ["JSONRuntime"]),
         .library(name: "XMLRuntime", targets: ["XMLRuntime"]),
-        .library(name: "Runtime", targets: ["Runtime"]),
+        .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
@@ -28,7 +28,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Runtime",
+            name: "ClientRuntime",
             dependencies: [
                 .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
                 .product(name: "Logging", package: "swift-log")
@@ -39,7 +39,7 @@ let package = Package(
         .testTarget(
             name: "RuntimeTests",
             dependencies: [
-                "Runtime",
+                "ClientRuntime",
                 "SmithyTestUtil"
             ],
             path: "./Runtime/Tests"
@@ -47,14 +47,14 @@ let package = Package(
         .target(
             name: "JSONRuntime",
             dependencies: [
-                "Runtime"
+                "ClientRuntime"
             ],
             path: "./JSONRuntime/Sources"
         ),
         .target(
             name: "XMLRuntime",
             dependencies: [
-                "Runtime",
+                "ClientRuntime",
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
             path: "./XMLRuntime/Sources"
@@ -62,14 +62,14 @@ let package = Package(
         .testTarget(
             name: "XMLRuntimeTests",
             dependencies: [
-                "Runtime",
+                "ClientRuntime",
                 "SmithyTestUtil"
             ],
             path: "./XMLRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["Runtime", "JSONRuntime", "XMLRuntime"],
+            dependencies: ["ClientRuntime", "JSONRuntime", "XMLRuntime"],
             path: "./SmithyTestUtil/Sources"
         ),
         .testTarget(

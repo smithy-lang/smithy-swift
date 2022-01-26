@@ -57,7 +57,7 @@ class SymbolProviderTest {
         "PrimitiveDouble, Double, 0.0, false, Swift",
         "Boolean, Bool, nil, true, Swift",
         "PrimitiveBoolean, Bool, false, false, Swift",
-        "Document, Document, nil, true, Runtime"
+        "Document, Document, nil, true, ClientRuntime"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$primitiveType").build()
@@ -86,7 +86,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("Runtime", memberSymbol.namespace)
+        assertEquals("ClientRuntime", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 
@@ -103,7 +103,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("Runtime", memberSymbol.namespace)
+        assertEquals("ClientRuntime", memberSymbol.namespace)
         assertEquals("nil", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
 

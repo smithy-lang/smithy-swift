@@ -5,7 +5,7 @@
 
 import Foundation
 import XMLCoder
-import Runtime
+import ClientRuntime
 
 public typealias XMLEncoder = XMLCoder.XMLEncoder
 extension XMLEncoder: RequestEncoder {

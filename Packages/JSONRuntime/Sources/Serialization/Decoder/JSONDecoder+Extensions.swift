@@ -4,7 +4,7 @@
  */
 
 import Foundation
-import Runtime
+import ClientRuntime
 
 public typealias JSONDecoder = Foundation.JSONDecoder
 extension JSONDecoder: ResponseDecoder {

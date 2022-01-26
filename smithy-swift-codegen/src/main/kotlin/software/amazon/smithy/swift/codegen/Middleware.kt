@@ -19,8 +19,8 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
     open val contextType: Symbol = Symbol
         .builder()
         .name("HttpContext")
-        .namespace(SwiftDependency.RUNTIME.target, ".")
-        .addDependency(SwiftDependency.RUNTIME)
+        .namespace(SwiftDependency.CLIENT_RUNTIME.target, ".")
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     open val typesToConformMiddlewareTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Middleware.Middleware)

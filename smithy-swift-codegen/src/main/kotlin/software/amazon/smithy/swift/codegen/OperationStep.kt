@@ -12,12 +12,12 @@ abstract class OperationStep(outputType: Symbol, outputErrorType: Symbol) {
     val outputType: Symbol = Symbol
         .builder()
         .name("${ClientRuntimeTypes.Middleware.OperationOutput}<$outputType>")
-        .addDependency(SwiftDependency.RUNTIME)
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 
     val errorType: Symbol = Symbol
         .builder()
         .name("${ClientRuntimeTypes.Core.SdkError}<$outputErrorType>")
-        .addDependency(SwiftDependency.RUNTIME)
+        .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .build()
 }

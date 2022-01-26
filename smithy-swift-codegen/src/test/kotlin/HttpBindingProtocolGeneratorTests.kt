@@ -70,8 +70,8 @@ class HttpBindingProtocolGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructOutputResponse: Runtime.HttpResponseBinding {
-    public init (httpResponse: Runtime.HttpResponse, decoder: Runtime.ResponseDecoder? = nil) throws {
+extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         if case .stream(let reader) = httpResponse.body {
             let data = reader.toBytes().toData()
             if let responseDecoder = decoder {
@@ -102,8 +102,8 @@ extension ExplicitStructOutputResponse: Runtime.HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension HttpResponseCodeOutputResponse: Runtime.HttpResponseBinding {
-    public init (httpResponse: Runtime.HttpResponse, decoder: Runtime.ResponseDecoder? = nil) throws {
+extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         self.status = httpResponse.statusCode.rawValue
     }
 }
@@ -117,12 +117,12 @@ extension HttpResponseCodeOutputResponse: Runtime.HttpResponseBinding {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension InlineDocumentAsPayloadOutputResponse: Runtime.HttpResponseBinding {
-    public init (httpResponse: Runtime.HttpResponse, decoder: Runtime.ResponseDecoder? = nil) throws {
+extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBinding {
+    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
         if case .stream(let reader) = httpResponse.body {
             let data = reader.toBytes().toData()
             if let responseDecoder = decoder {
-                let output: Runtime.Document = try responseDecoder.decode(responseBody: data)
+                let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
                 self.documentValue = output
             } else {
                 self.documentValue = nil
@@ -140,8 +140,8 @@ extension InlineDocumentAsPayloadOutputResponse: Runtime.HttpResponseBinding {
         val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents =
             """
-            extension HttpPrefixHeadersOutputResponse: Runtime.HttpResponseBinding {
-                public init (httpResponse: Runtime.HttpResponse, decoder: Runtime.ResponseDecoder? = nil) throws {
+            extension HttpPrefixHeadersOutputResponse: ClientRuntime.HttpResponseBinding {
+                public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
                     if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue
                     } else {

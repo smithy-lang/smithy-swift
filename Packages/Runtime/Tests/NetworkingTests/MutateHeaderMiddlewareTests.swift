@@ -6,7 +6,7 @@
 //
 	
 import XCTest
-import Runtime
+import ClientRuntime
 @testable import JSONRuntime
 import SmithyTestUtil
 

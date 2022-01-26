@@ -11,7 +11,7 @@ class HttpUrlPathMiddlewareTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct SmokeTestInputURLPathMiddleware: Runtime.Middleware {
+            public struct SmokeTestInputURLPathMiddleware: ClientRuntime.Middleware {
                 public let id: Swift.String = "SmokeTestInputURLPathMiddleware"
             
                 let urlPrefix: Swift.String?
@@ -22,7 +22,7 @@ class HttpUrlPathMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: SmokeTestInput,
-                              next: H) -> Swift.Result<Runtime.OperationOutput<SmokeTestOutputResponse>, MError>
+                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -30,7 +30,7 @@ class HttpUrlPathMiddlewareTests {
                 Self.MError == H.MiddlewareError
                 {
                     guard let label1 = input.label1 else {
-                        return .failure(.client(Runtime.ClientError.pathCreationFailed(("label1 is nil and needs a value for the path of this operation"))))
+                        return .failure(.client(ClientRuntime.ClientError.pathCreationFailed(("label1 is nil and needs a value for the path of this operation"))))
                     }
                     var urlPath = "/smoketest/\(label1.urlPercentEncoding())/foo"
                     if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
@@ -42,9 +42,9 @@ class HttpUrlPathMiddlewareTests {
                 }
             
                 public typealias MInput = SmokeTestInput
-                public typealias MOutput = Runtime.OperationOutput<SmokeTestOutputResponse>
-                public typealias Context = Runtime.HttpContext
-                public typealias MError = Runtime.SdkError<SmokeTestOutputError>
+                public typealias MOutput = ClientRuntime.OperationOutput<SmokeTestOutputResponse>
+                public typealias Context = ClientRuntime.HttpContext
+                public typealias MError = ClientRuntime.SdkError<SmokeTestOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

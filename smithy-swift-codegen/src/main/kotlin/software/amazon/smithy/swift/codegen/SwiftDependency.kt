@@ -19,8 +19,8 @@ enum class SwiftDependency(
 ) : SymbolDependencyContainer {
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
     SWIFT_LOG("Logging", null, "", "", "", ""),
-    RUNTIME(
-        "Runtime",
+    CLIENT_RUNTIME(
+        "ClientRuntime",
         "main",
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",

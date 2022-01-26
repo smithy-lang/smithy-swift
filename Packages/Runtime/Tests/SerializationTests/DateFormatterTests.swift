@@ -4,7 +4,7 @@
  */
 
 import XCTest
-@testable import Runtime
+@testable import ClientRuntime
 
 class DateFormatterTests: XCTestCase {
     

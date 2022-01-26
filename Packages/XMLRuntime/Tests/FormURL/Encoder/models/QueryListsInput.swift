@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Runtime
+import ClientRuntime
 @testable import XMLRuntime
 
 public struct QueryListsInput: Equatable {

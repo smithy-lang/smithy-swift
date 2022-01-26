@@ -6,7 +6,7 @@
 //
 
 import AwsCommonRuntimeKit
-import Runtime
+import ClientRuntime
 import XCTest
 
 /**
@@ -96,7 +96,7 @@ open class HttpRequestTestBase: XCTestCase {
     func deconflictHost(host: String, resolvedHost: String?) -> String? {
         var deconflictedHost: String?
         if !host.isEmpty,
-           let urlFromHost = Runtime.URL(string: "http://\(host)"),
+           let urlFromHost = ClientRuntime.URL(string: "http://\(host)"),
            let parsedHost = urlFromHost.host {
             deconflictedHost = parsedHost
         }

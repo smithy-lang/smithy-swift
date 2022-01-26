@@ -7,7 +7,7 @@ import Foundation
 #if os(Linux)
 import FoundationNetworking
 #endif
-@testable import Runtime
+@testable import ClientRuntime
 
 class MockURLProtocol: URLProtocol {
 

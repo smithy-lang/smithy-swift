@@ -79,7 +79,7 @@ class StructDecodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.Nested4: Swift.Codable, Runtime.Reflection {
+            extension ExampleClientTypes.Nested4: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case intList
                     case intMap
@@ -96,18 +96,18 @@ class StructDecodeGenerationTests {
                         }
                     }
                     if let intMap = intMap {
-                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .intMap)
+                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
                         for (dictKey0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: Runtime.Key(stringValue: dictKey0))
+                            try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = member1 {
                         try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
-                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: Runtime.Key.self, forKey: .stringMap)
+                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .stringMap)
                         for (dictKey0, nestedstringmap0) in stringMap {
-                            try stringMapContainer.encode(nestedstringmap0, forKey: Runtime.Key(stringValue: dictKey0))
+                            try stringMapContainer.encode(nestedstringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
                 }
@@ -170,12 +170,12 @@ class StructDecodeGenerationTests {
         val expectedContents =
             """
 struct TimestampInputOutputResponseBody: Swift.Equatable {
-    public let normal: Runtime.Date?
-    public let dateTime: Runtime.Date?
-    public let epochSeconds: Runtime.Date?
-    public let httpDate: Runtime.Date?
-    public let nestedTimestampList: [[Runtime.Date]]?
-    public let timestampList: [Runtime.Date]?
+    public let normal: ClientRuntime.Date?
+    public let dateTime: ClientRuntime.Date?
+    public let epochSeconds: ClientRuntime.Date?
+    public let httpDate: ClientRuntime.Date?
+    public let nestedTimestampList: [[ClientRuntime.Date]]?
+    public let timestampList: [ClientRuntime.Date]?
 }
 
 extension TimestampInputOutputResponseBody: Swift.Decodable {
@@ -191,38 +191,38 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
     public init (from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let normalDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .normal)
-        var normalDecoded: Runtime.Date? = nil
+        var normalDecoded: ClientRuntime.Date? = nil
         if let normalDateString = normalDateString {
-            let normalFormatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+            let normalFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             normalDecoded = normalFormatter.date(from: normalDateString)
         }
         normal = normalDecoded
         let dateTimeDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .dateTime)
-        var dateTimeDecoded: Runtime.Date? = nil
+        var dateTimeDecoded: ClientRuntime.Date? = nil
         if let dateTimeDateString = dateTimeDateString {
-            let dateTimeFormatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+            let dateTimeFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
             dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
         }
         dateTime = dateTimeDecoded
-        let epochSecondsDecoded = try containerValues.decodeIfPresent(Runtime.Date.self, forKey: .epochSeconds)
+        let epochSecondsDecoded = try containerValues.decodeIfPresent(ClientRuntime.Date.self, forKey: .epochSeconds)
         epochSeconds = epochSecondsDecoded
         let httpDateDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .httpDate)
-        var httpDateDecoded: Runtime.Date? = nil
+        var httpDateDecoded: ClientRuntime.Date? = nil
         if let httpDateDateString = httpDateDateString {
-            let httpDateFormatter = Runtime.DateFormatter.rfc5322DateFormatter
+            let httpDateFormatter = ClientRuntime.DateFormatter.rfc5322DateFormatter
             httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
         }
         httpDate = httpDateDecoded
         let nestedTimestampListContainer = try containerValues.decodeIfPresent([[Swift.String?]?].self, forKey: .nestedTimestampList)
-        var nestedTimestampListDecoded0:[[Runtime.Date]]? = nil
+        var nestedTimestampListDecoded0:[[ClientRuntime.Date]]? = nil
         if let nestedTimestampListContainer = nestedTimestampListContainer {
-            nestedTimestampListDecoded0 = [[Runtime.Date]]()
+            nestedTimestampListDecoded0 = [[ClientRuntime.Date]]()
             for list0 in nestedTimestampListContainer {
                 var list0Decoded0: [Swift.String]? = nil
                 if let list0 = list0 {
                     list0Decoded0 = [Swift.String]()
                     for timestamp1 in list0 {
-                        let timestamp1Formatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                        let timestamp1Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
                         }
@@ -236,11 +236,11 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
         }
         nestedTimestampList = nestedTimestampListDecoded0
         let timestampListContainer = try containerValues.decodeIfPresent([Swift.String?].self, forKey: .timestampList)
-        var timestampListDecoded0:[Runtime.Date]? = nil
+        var timestampListDecoded0:[ClientRuntime.Date]? = nil
         if let timestampListContainer = timestampListContainer {
-            timestampListDecoded0 = [Runtime.Date]()
+            timestampListDecoded0 = [ClientRuntime.Date]()
             for timestamp0 in timestampListContainer {
-                let timestamp0Formatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                let timestamp0Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
                     throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -264,9 +264,9 @@ struct MapInputOutputResponseBody: Swift.Equatable {
     public let intMap: [Swift.String:Swift.Int]?
     public let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
     public let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
-    public let blobMap: [Swift.String:Runtime.Data]?
+    public let blobMap: [Swift.String:ClientRuntime.Data]?
     public let nestedMap: [Swift.String:[Swift.String:Swift.Int]]?
-    public let dateMap: [Swift.String:Runtime.Date]?
+    public let dateMap: [Swift.String:ClientRuntime.Date]?
 }
 
 extension MapInputOutputResponseBody: Swift.Decodable {
@@ -314,10 +314,10 @@ extension MapInputOutputResponseBody: Swift.Decodable {
             }
         }
         enumMap = enumMapDecoded0
-        let blobMapContainer = try containerValues.decodeIfPresent([Swift.String: Runtime.Data?].self, forKey: .blobMap)
-        var blobMapDecoded0: [Swift.String:Runtime.Data]? = nil
+        let blobMapContainer = try containerValues.decodeIfPresent([Swift.String: ClientRuntime.Data?].self, forKey: .blobMap)
+        var blobMapDecoded0: [Swift.String:ClientRuntime.Data]? = nil
         if let blobMapContainer = blobMapContainer {
-            blobMapDecoded0 = [Swift.String:Runtime.Data]()
+            blobMapDecoded0 = [Swift.String:ClientRuntime.Data]()
             for (key0, blob0) in blobMapContainer {
                 if let blob0 = blob0 {
                     blobMapDecoded0?[key0] = blob0
@@ -344,11 +344,11 @@ extension MapInputOutputResponseBody: Swift.Decodable {
         }
         nestedMap = nestedMapDecoded0
         let dateMapContainer = try containerValues.decodeIfPresent([Swift.String: Swift.String?].self, forKey: .dateMap)
-        var dateMapDecoded0: [Swift.String:Runtime.Date]? = nil
+        var dateMapDecoded0: [Swift.String:ClientRuntime.Date]? = nil
         if let dateMapContainer = dateMapContainer {
-            dateMapDecoded0 = [Swift.String:Runtime.Date]()
+            dateMapDecoded0 = [Swift.String:ClientRuntime.Date]()
             for (key0, timestamp0) in dateMapContainer {
-                let dateMapContainerFormatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                let dateMapContainerFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                 guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
                     throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
                 }
@@ -370,7 +370,7 @@ extension MapInputOutputResponseBody: Swift.Decodable {
         val expectedContents =
             """
 struct NestedShapesOutputResponseBody: Swift.Equatable {
-    public let nestedListInDict: [Swift.String:[Runtime.Date]]?
+    public let nestedListInDict: [Swift.String:[ClientRuntime.Date]]?
     public let nestedDictInList: [[Swift.String:Swift.String]]?
     public let nestedListOfListInDict: [Swift.String:[[Swift.Int]]]?
 }
@@ -385,15 +385,15 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
     public init (from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let nestedListInDictContainer = try containerValues.decodeIfPresent([Swift.String: [Swift.String?]?].self, forKey: .nestedListInDict)
-        var nestedListInDictDecoded0: [Swift.String:[Runtime.Date]]? = nil
+        var nestedListInDictDecoded0: [Swift.String:[ClientRuntime.Date]]? = nil
         if let nestedListInDictContainer = nestedListInDictContainer {
-            nestedListInDictDecoded0 = [Swift.String:[Runtime.Date]]()
+            nestedListInDictDecoded0 = [Swift.String:[ClientRuntime.Date]]()
             for (key0, timestamplist0) in nestedListInDictContainer {
                 var timestamplist0Decoded0: [Swift.String]? = nil
                 if let timestamplist0 = timestamplist0 {
                     timestamplist0Decoded0 = [Swift.String]()
                     for timestamp1 in timestamplist0 {
-                        let timestamp1Formatter = Runtime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+                        let timestamp1Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
                         guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
                             throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
                         }
@@ -467,7 +467,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, Runtime.Reflection {
+            extension ExampleClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -505,7 +505,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, Runtime.Reflection {
+            extension ExampleClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember

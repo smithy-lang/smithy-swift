@@ -38,7 +38,7 @@ class NestedListEncodeJSONGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ListOfMapsOperationInput: Swift.Encodable, Runtime.Reflection {
+            extension ListOfMapsOperationInput: Swift.Encodable, ClientRuntime.Reflection {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case targetMaps
                 }
@@ -48,9 +48,9 @@ class NestedListEncodeJSONGenerationTests {
                     if let targetMaps = targetMaps {
                         var targetMapsContainer = encodeContainer.nestedUnkeyedContainer(forKey: .targetMaps)
                         for targetmaps0 in targetMaps {
-                            var targetmaps0Container = targetMapsContainer.nestedContainer(keyedBy: Runtime.Key.self)
+                            var targetmaps0Container = targetMapsContainer.nestedContainer(keyedBy: ClientRuntime.Key.self)
                             for (dictKey1, targetmap1) in targetmaps0 {
-                                var targetmap1Container = targetmaps0Container.nestedUnkeyedContainer(forKey: Runtime.Key(dictKey1))
+                                var targetmap1Container = targetmaps0Container.nestedUnkeyedContainer(forKey: ClientRuntime.Key(dictKey1))
                                 for targetmapvaluelist2 in targetmap1 {
                                     try targetmap1Container.encode(targetmapvaluelist2)
                                 }

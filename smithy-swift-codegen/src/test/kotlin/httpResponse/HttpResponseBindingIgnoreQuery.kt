@@ -22,8 +22,8 @@ class HttpResponseBindingIgnoreQuery {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension IgnoreQueryParamsInResponseOutputResponse: Runtime.HttpResponseBinding {
-                public init (httpResponse: Runtime.HttpResponse, decoder: Runtime.ResponseDecoder? = nil) throws {
+            extension IgnoreQueryParamsInResponseOutputResponse: ClientRuntime.HttpResponseBinding {
+                public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
                     self.baz = nil
                 }
             }

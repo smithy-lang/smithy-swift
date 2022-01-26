@@ -6,7 +6,7 @@
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
-@testable import Runtime
+@testable import ClientRuntime
 
 class HttpRequestTests: NetworkingTestUtils {
     

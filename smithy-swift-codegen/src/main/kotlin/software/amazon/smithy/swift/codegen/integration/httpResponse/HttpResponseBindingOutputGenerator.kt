@@ -41,7 +41,7 @@ class HttpResponseBindingOutputGenerator(
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.RUNTIME.target)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension $outputShapeName: \$N {", "}", ClientRuntimeTypes.Http.HttpResponseBinding) {
                 writer.openBlock("public init (httpResponse: \$N, decoder: \$D) throws {", "}", ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder) {
                     HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
