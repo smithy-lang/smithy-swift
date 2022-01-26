@@ -21,7 +21,7 @@ interface HttpProtocolBodyMiddlewareGeneratorFactory {
 
 class DefaultHttpProtocolBodyMiddlewareGeneratorFactory : HttpProtocolBodyMiddlewareGeneratorFactory {
     override fun shouldRenderHttpBodyMiddleware(shape: Shape): Boolean {
-        return shape.members().filter { it.isInHttpBody() }.count() > 0
+        return shape.members().any { it.isInHttpBody() }
     }
 
     override fun httpBodyMiddleware(

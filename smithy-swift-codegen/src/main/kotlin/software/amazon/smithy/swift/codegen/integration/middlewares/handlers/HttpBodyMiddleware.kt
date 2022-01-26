@@ -44,8 +44,9 @@ class HttpBodyMiddleware(
         ) {
             val opIndex = OperationIndex.of(ctx.model)
             val inputShape = opIndex.getInput(op).get()
-
-            if (httpProtocolBodyMiddleware.shouldRenderHttpBodyMiddleware(inputShape)) {
+            val requestBindings = httpBindingResolver.requestBindings(op)
+            val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+            if (httpProtocolBodyMiddleware.shouldRenderHttpBodyMiddleware(inputShape) && httpPayload != null) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
@@ -57,7 +58,7 @@ class HttpBodyMiddleware(
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    val requestBindings = httpBindingResolver.requestBindings(op)
+
                     val bodyMiddleware = httpProtocolBodyMiddleware.httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                     MiddlewareGenerator(writer, bodyMiddleware).generate()
                 }
@@ -76,24 +77,7 @@ class HttpBodyMiddleware(
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitPayload(httpPayload)
-        } else {
-            renderSerializablePayload()
         }
-    }
-
-    private fun renderSerializablePayload() {
-        writer.openBlock("do {", "} catch let err {") {
-            writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
-                writer.write("let encoder = context.getEncoder()")
-                writer.write("let data = try encoder.encode(input.operationInput)")
-                writer.write("let body = \$N.data(data)", ClientRuntimeTypes.Http.HttpBody)
-                writer.write("input.builder.withBody(body)")
-            }
-        }
-        writer.indent()
-        writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
-        writer.dedent()
-        writer.write("}")
     }
 
     private fun renderExplicitPayload(binding: HttpBindingDescriptor) {
