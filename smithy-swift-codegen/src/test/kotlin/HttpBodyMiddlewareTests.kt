@@ -25,48 +25,6 @@ class HttpBodyMiddlewareTests {
     }
 
     @Test
-    fun `it builds body middleware smoke test`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+BodyMiddleware.swift", newTestContext.manifest)
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            public struct SmokeTestInputBodyMiddleware: ClientRuntime.Middleware {
-                public let id: Swift.String = "SmokeTestInputBodyMiddleware"
-            
-                public init() {}
-            
-                public func handle<H>(context: Context,
-                              input: ClientRuntime.SerializeStepInput<SmokeTestInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, MError>
-                where H: Handler,
-                Self.MInput == H.Input,
-                Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
-                {
-                    do {
-                        if try !input.operationInput.allPropertiesAreNull() {
-                            let encoder = context.getEncoder()
-                            let data = try encoder.encode(input.operationInput)
-                            let body = ClientRuntime.HttpBody.data(data)
-                            input.builder.withBody(body)
-                        }
-                    } catch let err {
-                        return .failure(.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription)))
-                    }
-                    return next.handle(context: context, input: input)
-                }
-            
-                public typealias MInput = ClientRuntime.SerializeStepInput<SmokeTestInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<SmokeTestOutputResponse>
-                public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<SmokeTestOutputError>
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `it builds body middleware for explicit string payloads`() {
         val contents = getModelFileContents("example", "ExplicitStringInput+BodyMiddleware.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
