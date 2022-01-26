@@ -18,7 +18,7 @@ public class ClientRuntime {
      this function once and only once, but it should be safe to call this multiple times during
      start up
      */
-    static func initialize() {
+    public static func initialize() {
         AwsCommonRuntimeKit.initialize()
     }
 
@@ -29,7 +29,7 @@ public class ClientRuntime {
      this function once and only once, but it should be safe to call this multiple times during
      start up
      */
-    static func cleanUp() {
+    public static func cleanUp() {
         AwsCommonRuntimeKit.cleanUp()
     }
 }
