@@ -170,7 +170,7 @@ class HttpProtocolClientGeneratorTests {
                     return next.handle(context: context, input: copiedInput)
                 }
                 operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLPathMiddleware())
-                operation.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
+                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))

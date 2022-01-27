@@ -29,7 +29,7 @@ class ContentMd5MiddlewareTests {
                         return next.handle(context: context, input: copiedInput)
                     }
                     operation.initializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputURLPathMiddleware())
-                    operation.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
                     operation.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputHeadersMiddleware())
                     operation.serializeStep.intercept(position: .after, middleware: IdempotencyTokenWithStructureInputQueryItemMiddleware())
