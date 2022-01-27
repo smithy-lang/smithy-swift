@@ -186,7 +186,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(contentType: "text/plain"))
         operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputBodyMiddleware())
@@ -261,7 +260,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputQueryItemMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
@@ -575,7 +573,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: JsonUnionsInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>())
@@ -690,7 +687,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputHeadersMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: RecursiveShapesInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>())
@@ -788,7 +784,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 input.withHost(host)
                 return next.handle(context: context, input: input)
             }
-            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(contentType: "application/json"))
             operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>())
@@ -884,7 +879,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 input.withHost(host)
                 return next.handle(context: context, input: input)
             }
-            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputHeadersMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputQueryItemMiddleware())
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(contentType: "application/json"))
             operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputBodyMiddleware())

@@ -7,6 +7,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.integration.hasHeaders
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 
@@ -44,7 +45,12 @@ class MiddlewareShapeUtils {
 
         fun hasHttpBody(model: Model, op: OperationShape): Boolean {
             val inputShape = inputShape(model, op)
-            return inputShape.members().filter { it.isInHttpBody() }.count() > 0
+            return inputShape.members().any { it.isInHttpBody() }
+        }
+
+        fun hasHttpHeaders(model: Model, op: OperationShape): Boolean {
+            val inputShape = inputShape(model, op)
+            return inputShape.members().any { it.hasHeaders() }
         }
     }
 }

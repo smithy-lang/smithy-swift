@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
+import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -53,20 +54,24 @@ class HttpHeaderMiddleware(
                 .sortedBy { it.memberName }
             val prefixHeaderBindings = requestBindings
                 .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+            val opIndex = OperationIndex.of(ctx.model)
+            val inputShape = opIndex.getInput(op).get()
+            val hasHeaders = MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)
+            if (hasHeaders) {
+                val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+                val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
 
-            val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
-            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
-            val headerMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
-                .name(inputSymbol.name)
-                .build()
-            ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
-                MiddlewareGenerator(writer, headerMiddleware).generate()
+                val headerMiddlewareSymbol = Symbol.builder()
+                    .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
+                    .name(inputSymbol.name)
+                    .build()
+                ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
+                    MiddlewareGenerator(writer, headerMiddleware).generate()
+                }
             }
         }
     }

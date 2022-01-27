@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class OperationInputHeadersMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider,
+    val symbolProvider: SymbolProvider
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputHeadersMiddleware"
@@ -26,6 +26,9 @@ class OperationInputHeadersMiddleware(
         operationStackName: String,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}HeadersMiddleware())")
+        val hasHeaders = MiddlewareShapeUtils.hasHttpHeaders(model, op)
+        if (hasHeaders) {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}HeadersMiddleware())")
+        }
     }
 }

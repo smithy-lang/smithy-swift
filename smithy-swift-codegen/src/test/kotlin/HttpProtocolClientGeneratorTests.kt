@@ -171,7 +171,6 @@ class HttpProtocolClientGeneratorTests {
                 }
                 operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLPathMiddleware())
                 operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
-                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
