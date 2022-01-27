@@ -23,8 +23,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
-    Self.MError == H.MiddlewareError
-    {
+    Self.MError == H.MiddlewareError {
         do {
             if try !input.operationInput.allPropertiesAreNull() || alwaysSendBody {
                 let encoder = context.getEncoder()

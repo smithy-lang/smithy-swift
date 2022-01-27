@@ -25,8 +25,7 @@ public struct URLHostMiddleware<OperationStackInput: Encodable & Reflection,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
-    Self.MError == H.MiddlewareError
-    {
+    Self.MError == H.MiddlewareError {
         var copiedContext = context
         if let host = host {
             copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"),
