@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.hasHeaders
+import software.amazon.smithy.swift.codegen.integration.hasQueryItems
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 
@@ -51,6 +52,11 @@ class MiddlewareShapeUtils {
         fun hasHttpHeaders(model: Model, op: OperationShape): Boolean {
             val inputShape = inputShape(model, op)
             return inputShape.members().any { it.hasHeaders() }
+        }
+
+        fun hasQueryItems(model: Model, op: OperationShape): Boolean {
+            val inputShape = inputShape(model, op)
+            return inputShape.members().any { it.hasQueryItems() }
         }
     }
 }

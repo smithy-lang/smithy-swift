@@ -80,6 +80,10 @@ fun Shape.hasHeaders(): Boolean {
     return this.hasTrait<HttpHeaderTrait>() || this.hasTrait<HttpPrefixHeadersTrait>()
 }
 
+fun Shape.hasQueryItems(): Boolean {
+    return this.hasTrait<HttpQueryTrait>() || this.hasTrait<HttpQueryParamsTrait>()
+}
+
 /**
  * Adds the appropriate extension for serialization of special types i.e. timestamps, blobs, etc
  */
