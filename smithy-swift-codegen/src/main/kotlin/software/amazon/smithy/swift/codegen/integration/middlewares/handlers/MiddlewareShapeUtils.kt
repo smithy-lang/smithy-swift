@@ -3,14 +3,17 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.integration.hasHeaders
-import software.amazon.smithy.swift.codegen.integration.hasQueryItems
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.getTrait
 
 class MiddlewareShapeUtils {
     companion object {
@@ -50,13 +53,24 @@ class MiddlewareShapeUtils {
         }
 
         fun hasHttpHeaders(model: Model, op: OperationShape): Boolean {
-            val inputShape = inputShape(model, op)
-            return inputShape.members().any { it.hasHeaders() }
+            val bindingIndex = HttpBindingIndex.of(model)
+            val requestBindings = bindingIndex.getRequestBindings(op).values.map { HttpBindingDescriptor(it) }
+            val headerBindings = requestBindings
+                .filter { it.location == HttpBinding.Location.HEADER }
+                .sortedBy { it.memberName }
+            val prefixHeaderBindings = requestBindings
+                .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+            return headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()
         }
 
         fun hasQueryItems(model: Model, op: OperationShape): Boolean {
-            val inputShape = inputShape(model, op)
-            return inputShape.members().any { it.hasQueryItems() }
+            val bindingIndex = HttpBindingIndex.of(model)
+            val httpTrait = op.getTrait<HttpTrait>()
+            val requestBindings = bindingIndex.getRequestBindings(op).values.map { HttpBindingDescriptor(it) }
+            val queryBindings =
+                requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
+            val queryLiterals = httpTrait?.uri?.queryLiterals
+            return queryBindings.isNotEmpty() || !queryLiterals.isNullOrEmpty()
         }
     }
 }

@@ -58,7 +58,6 @@ import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenera
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -74,14 +73,6 @@ fun Shape.isInHttpBody(): Boolean {
         !this.hasTrait(HttpQueryTrait::class.java) &&
         !this.hasTrait(HttpQueryParamsTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
-}
-
-fun Shape.hasHeaders(): Boolean {
-    return this.hasTrait<HttpHeaderTrait>() || this.hasTrait<HttpPrefixHeadersTrait>()
-}
-
-fun Shape.hasQueryItems(): Boolean {
-    return this.hasTrait<HttpQueryTrait>() || this.hasTrait<HttpQueryParamsTrait>()
 }
 
 /**

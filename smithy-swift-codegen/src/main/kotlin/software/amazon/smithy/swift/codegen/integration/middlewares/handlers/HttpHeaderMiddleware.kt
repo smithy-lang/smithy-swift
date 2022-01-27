@@ -57,7 +57,7 @@ class HttpHeaderMiddleware(
             val opIndex = OperationIndex.of(ctx.model)
             val inputShape = opIndex.getInput(op).get()
             val hasHeaders = MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)
-            if (hasHeaders) {
+            if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
