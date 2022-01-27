@@ -12,7 +12,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 class OperationInputUrlHostMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    val inputParameters: String
+    private val inputParameters: String
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputUrlHostMiddleware"
@@ -27,6 +27,8 @@ class OperationInputUrlHostMiddleware(
         operationStackName: String
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}URLHostMiddleware($inputParameters))")
+        val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+        val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: URLHostMiddleware<$inputShapeName, $outputShapeName, $errorShapeName>($inputParameters))")
     }
 }

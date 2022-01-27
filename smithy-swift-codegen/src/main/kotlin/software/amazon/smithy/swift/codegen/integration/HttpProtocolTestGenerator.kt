@@ -9,6 +9,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.protocoltests.traits.AppliesTo
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
@@ -21,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestE
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.TreeSet
 import java.util.logging.Logger
@@ -83,7 +85,13 @@ class HttpProtocolTestGenerator(
             val hostMiddlewares = cloned.middlewares(operation, MiddlewareStep.INITIALIZESTEP)
                 .filter { it.name.contains("HostMiddleware") }
             if (hostMiddlewares.isEmpty()) {
-                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, "host: hostOnly"))
+                var inputParameters = "host: hostOnly"
+                operation.getTrait<EndpointTrait>()?.let {
+                    val inputShape = ctx.model.expectShape(operation.input.get())
+                    val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
+                    inputParameters += ", hostPrefix: \"$hostPrefix\""
+                }
+                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, inputParameters))
             }
         }
         return cloned

@@ -7,14 +7,14 @@
 
 public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflection,
                                          OperationStackOutput: HttpResponseBinding,
-                                         OperationStackError: HttpResponseBinding>: ClientRuntime.Middleware {
+                                         OperationStackError: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
 
     public init() {}
 
     public func handle<H>(context: Context,
-                  input: ClientRuntime.SerializeStepInput<OperationStackInput>,
-                  next: H) -> Swift.Result<ClientRuntime.OperationOutput<OperationStackOutput>, MError>
+                  input: SerializeStepInput<OperationStackInput>,
+                  next: H) -> Swift.Result<OperationOutput<OperationStackOutput>, MError>
     where H: Handler,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
@@ -25,17 +25,17 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
             if try !input.operationInput.allPropertiesAreNull() {
                 let encoder = context.getEncoder()
                 let data = try encoder.encode(input.operationInput)
-                let body = ClientRuntime.HttpBody.data(data)
+                let body = HttpBody.data(data)
                 input.builder.withBody(body)
             }
         } catch let err {
-            return .failure(.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription)))
+            return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
         }
         return next.handle(context: context, input: input)
     }
 
-    public typealias MInput = ClientRuntime.SerializeStepInput<OperationStackInput>
-    public typealias MOutput = ClientRuntime.OperationOutput<OperationStackOutput>
-    public typealias Context = ClientRuntime.HttpContext
-    public typealias MError = ClientRuntime.SdkError<OperationStackError>
+    public typealias MInput = SerializeStepInput<OperationStackInput>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
+    public typealias Context = HttpContext
+    public typealias MError = SdkError<OperationStackError>
 }

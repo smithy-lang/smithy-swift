@@ -86,7 +86,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(id: "SmokeTest")
         operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: SmokeTestInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SmokeTestOutputResponse>, ClientRuntime.SdkError<SmokeTestOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -178,7 +178,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(id: "ExplicitString")
         operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: ExplicitStringInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStringOutputResponse>, ClientRuntime.SdkError<ExplicitStringOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -253,7 +253,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(id: "RestJsonEmptyInputAndEmptyOutput")
         operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: EmptyInputAndEmptyOutputInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<EmptyInputAndEmptyOutputOutputResponse>, ClientRuntime.SdkError<EmptyInputAndEmptyOutputOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -326,7 +326,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(id: "RestJsonDoesntSerializeNullStructureValues")
         operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<SimpleScalarPropertiesOutputResponse>, ClientRuntime.SdkError<SimpleScalarPropertiesOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -406,7 +406,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(id: "RestJsonStreamingTraitsWithBlob")
         operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: StreamingTraitsInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<StreamingTraitsOutputResponse>, ClientRuntime.SdkError<StreamingTraitsOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -487,7 +487,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(id: "RestJsonHttpPrefixHeadersAreNotPresent")
         operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<HttpPrefixHeadersOutputResponse>, ClientRuntime.SdkError<HttpPrefixHeadersOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -567,7 +567,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(id: "RestJsonSerializeStringUnionValue")
         operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: JsonUnionsInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<JsonUnionsOutputResponse>, ClientRuntime.SdkError<JsonUnionsOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -682,7 +682,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                       .build()
         var operationStack = OperationStack<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(id: "RestJsonRecursiveShapes")
         operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLPathMiddleware(urlPrefix: urlPrefix))
-        operationStack.initializeStep.intercept(position: .after, middleware: RecursiveShapesInputURLHostMiddleware(host: hostOnly))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<RecursiveShapesOutputResponse>, ClientRuntime.SdkError<RecursiveShapesOutputError>> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())
@@ -780,7 +780,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                           .build()
             var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(id: "InlineDocumentInput")
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLPathMiddleware(urlPrefix: urlPrefix))
-            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentInputURLHostMiddleware(host: hostOnly))
+            operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(host: hostOnly))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentOutputResponse>, ClientRuntime.SdkError<InlineDocumentOutputError>> in
                 input.withMethod(context.getMethod())
                 input.withPath(context.getPath())
@@ -876,7 +876,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                           .build()
             var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(id: "InlineDocumentAsPayloadInput")
             operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLPathMiddleware(urlPrefix: urlPrefix))
-            operationStack.initializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputURLHostMiddleware(host: hostOnly))
+            operationStack.initializeStep.intercept(position: .after, middleware: URLHostMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(host: hostOnly))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> Swift.Result<ClientRuntime.OperationOutput<InlineDocumentAsPayloadOutputResponse>, ClientRuntime.SdkError<InlineDocumentAsPayloadOutputError>> in
                 input.withMethod(context.getMethod())
                 input.withPath(context.getPath())
