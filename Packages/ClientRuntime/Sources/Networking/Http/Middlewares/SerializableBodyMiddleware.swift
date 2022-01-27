@@ -9,9 +9,13 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
                                          OperationStackOutput: HttpResponseBinding,
                                          OperationStackError: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
-
-    public init() {}
-
+    
+    let alwaysSendBody: Bool
+    
+    public init(alwaysSendBody: Bool = false) {
+        self.alwaysSendBody = alwaysSendBody
+    }
+    
     public func handle<H>(context: Context,
                   input: SerializeStepInput<OperationStackInput>,
                   next: H) -> Swift.Result<OperationOutput<OperationStackOutput>, MError>
@@ -22,7 +26,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
     Self.MError == H.MiddlewareError
     {
         do {
-            if try !input.operationInput.allPropertiesAreNull() {
+            if try !input.operationInput.allPropertiesAreNull() || alwaysSendBody {
                 let encoder = context.getEncoder()
                 let data = try encoder.encode(input.operationInput)
                 let body = HttpBody.data(data)

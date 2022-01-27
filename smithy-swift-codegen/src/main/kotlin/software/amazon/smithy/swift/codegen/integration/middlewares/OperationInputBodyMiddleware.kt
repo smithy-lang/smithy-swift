@@ -35,8 +35,10 @@ class OperationInputBodyMiddleware(
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || shouldRender) {
             val requestBindings = httpBindingResolver.requestBindings(op)
-            val middlewareTypeName = if (requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD } != null) "${inputShapeName}BodyMiddleware" else "ClientRuntime.SerializableBodyMiddleware<$inputShapeName, $outputShapeName, $errorShapeName>"
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: $middlewareTypeName())")
+            val alwaysSendBodyParam = if(shouldRender) "alwaysSendBody: true" else ""
+            val middlewareTypeName = if (requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD } != null) "${inputShapeName}BodyMiddleware()" else "ClientRuntime.SerializableBodyMiddleware<$inputShapeName, $outputShapeName, $errorShapeName>($alwaysSendBodyParam)"
+
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: $middlewareTypeName)")
         }
     }
 }
