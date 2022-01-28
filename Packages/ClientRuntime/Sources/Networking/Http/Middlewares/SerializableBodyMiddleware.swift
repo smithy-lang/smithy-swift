@@ -25,7 +25,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
           Self.Context == H.Context,
           Self.MError == H.MiddlewareError {
               do {
-                  if try !input.operationInput.allPropertiesAreNull() || alwaysSendBody {
+                  if alwaysSendBody || try !input.operationInput.allPropertiesAreNull() {
                       let encoder = context.getEncoder()
                       let data = try encoder.encode(input.operationInput)
                       let body = HttpBody.data(data)

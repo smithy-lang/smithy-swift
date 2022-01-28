@@ -44,17 +44,16 @@ class HttpQueryItemMiddleware(
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
     companion object {
         fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver, defaultTimestampFormat: TimestampFormatTrait.Format) {
-            val httpTrait = httpBindingResolver.httpTrait(op)
-            val requestBindings = httpBindingResolver.requestBindings(op)
-            val queryBindings =
-                requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
-            val queryLiterals = httpTrait.uri.queryLiterals
-            if (queryBindings.isNotEmpty() || queryLiterals.isNotEmpty()) {
+            if (MiddlewareShapeUtils.hasQueryItems(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
                 val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
+                val httpTrait = httpBindingResolver.httpTrait(op)
+                val requestBindings = httpBindingResolver.requestBindings(op)
+                val queryBindings =
+                    requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
+                val queryLiterals = httpTrait.uri.queryLiterals
                 val headerMiddlewareSymbol = Symbol.builder()
                     .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemMiddleware.swift")
                     .name(inputSymbol.name)

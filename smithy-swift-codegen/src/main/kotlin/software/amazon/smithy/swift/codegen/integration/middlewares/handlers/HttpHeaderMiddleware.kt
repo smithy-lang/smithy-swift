@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -48,21 +47,17 @@ class HttpHeaderMiddleware(
             httpBindingResolver: HttpBindingResolver,
             defaultTimestampFormat: TimestampFormatTrait.Format
         ) {
-            val requestBindings = httpBindingResolver.requestBindings(op)
-            val headerBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.HEADER }
-                .sortedBy { it.memberName }
-            val prefixHeaderBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
-            val opIndex = OperationIndex.of(ctx.model)
-            val inputShape = opIndex.getInput(op).get()
-            val hasHeaders = MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)
-            if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
+            if (MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
                 val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
+                val requestBindings = httpBindingResolver.requestBindings(op)
+                val headerBindings = requestBindings
+                    .filter { it.location == HttpBinding.Location.HEADER }
+                    .sortedBy { it.memberName }
+                val prefixHeaderBindings = requestBindings
+                    .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
                 val headerMiddlewareSymbol = Symbol.builder()
                     .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
                     .name(inputSymbol.name)
