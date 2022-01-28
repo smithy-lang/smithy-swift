@@ -30,13 +30,16 @@ class OperationInputBodyMiddleware(
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
+        if (alwaysSendBody) {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>(alwaysSendBody: true))", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
+            return
+        }
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
-        if (hasHttpBody || alwaysSendBody) {
-
-            val alwaysSendBodyParam = if (alwaysSendBody) "alwaysSendBody: true" else ""
-            val middlewareTypeName = if (MiddlewareShapeUtils.bodyIsHttpPayload(model, op)) "${inputShapeName}BodyMiddleware()" else "${ClientRuntimeTypes.Middleware.SerializableBodyMiddleware.fullName}<$inputShapeName, $outputShapeName, $errorShapeName>($alwaysSendBodyParam)"
-
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: $middlewareTypeName)")
+        if (!hasHttpBody) return
+        if (MiddlewareShapeUtils.bodyIsHttpPayload(model, op)) {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}BodyMiddleware())")
+        } else {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>())", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
         }
     }
 }
