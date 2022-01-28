@@ -132,7 +132,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 HttpUrlPathMiddleware.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver, httpProtocolBodyMiddleware())
+                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -426,10 +426,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         defaultTimestampFormat: TimestampFormatTrait.Format
     )
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
-
-    open fun httpProtocolBodyMiddleware(): HttpProtocolBodyMiddlewareGeneratorFactory {
-        return DefaultHttpProtocolBodyMiddlewareGeneratorFactory()
-    }
 
     /**
      * Get the operations with HTTP Bindings.

@@ -16,7 +16,8 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 class OperationInputUrlHostMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    val operation: OperationShape
+    val operation: OperationShape,
+    val requiresHost: Boolean = false
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputUrlHostMiddleware"
@@ -33,10 +34,12 @@ class OperationInputUrlHostMiddleware(
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        var inputParameters = ""
+
+        var inputParameters = if(requiresHost) "host: hostOnly" else ""
         operation.getTrait<EndpointTrait>()?.let {
             val inputShape = model.expectShape(operation.input.get())
             val hostPrefix = EndpointTraitConstructor(it, inputShape).construct()
+            inputParameters += if(requiresHost) ", " else ""
             inputParameters += "hostPrefix: \"$hostPrefix\""
         }
         writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLHostMiddleware)
