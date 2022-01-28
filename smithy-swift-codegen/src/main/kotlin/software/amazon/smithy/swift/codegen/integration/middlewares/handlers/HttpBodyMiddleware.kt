@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
@@ -20,7 +19,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolBodyMiddlewareGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -39,14 +37,11 @@ class HttpBodyMiddleware(
         fun renderBodyMiddleware(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape,
-            httpBindingResolver: HttpBindingResolver,
-            httpProtocolBodyMiddleware: HttpProtocolBodyMiddlewareGeneratorFactory
+            httpBindingResolver: HttpBindingResolver
         ) {
-            val opIndex = OperationIndex.of(ctx.model)
-            val inputShape = opIndex.getInput(op).get()
             val requestBindings = httpBindingResolver.requestBindings(op)
             val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-            if (httpProtocolBodyMiddleware.shouldRenderHttpBodyMiddleware(inputShape) && httpPayload != null) {
+            if (MiddlewareShapeUtils.hasHttpBody(ctx.model, op) && httpPayload != null) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
@@ -59,7 +54,7 @@ class HttpBodyMiddleware(
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
-                    val bodyMiddleware = httpProtocolBodyMiddleware.httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
+                    val bodyMiddleware = HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                     MiddlewareGenerator(writer, bodyMiddleware).generate()
                 }
             }
