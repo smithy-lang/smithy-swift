@@ -52,7 +52,7 @@ class MiddlewareShapeUtils {
             return inputShape.members().any { it.isInHttpBody() }
         }
 
-        fun bodyIsHttpPayload(model: Model, op:OperationShape): Boolean {
+        fun bodyIsHttpPayload(model: Model, op: OperationShape): Boolean {
             // a special type in smithy where body only has one member and is typically bytes
             val bindingIndex = HttpBindingIndex.of(model)
             val requestBindings = bindingIndex.getRequestBindings(op).values.map { HttpBindingDescriptor(it) }
