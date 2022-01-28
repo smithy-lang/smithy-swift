@@ -39,14 +39,12 @@ class HttpBodyMiddleware(
             op: OperationShape,
             httpBindingResolver: HttpBindingResolver
         ) {
-            val requestBindings = httpBindingResolver.requestBindings(op)
-            val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-            if (MiddlewareShapeUtils.hasHttpBody(ctx.model, op) && httpPayload != null) {
+            if (MiddlewareShapeUtils.hasHttpBody(ctx.model, op) && MiddlewareShapeUtils.bodyIsHttpPayload(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
                 val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
+                val requestBindings = httpBindingResolver.requestBindings(op)
                 val headerMiddlewareSymbol = Symbol.builder()
                     .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")
                     .name(inputSymbol.name)

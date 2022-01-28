@@ -32,14 +32,12 @@ class OperationInputBodyMiddleware(
         val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         if (alwaysSendBody) {
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>(alwaysSendBody: true))", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
-            return
-        }
-        val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
-        if (!hasHttpBody) return
-        if (MiddlewareShapeUtils.bodyIsHttpPayload(model, op)) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}BodyMiddleware())")
-        } else {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>())", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
+        } else if (MiddlewareShapeUtils.hasHttpBody(model, op)) {
+            if (MiddlewareShapeUtils.bodyIsHttpPayload(model, op)) {
+                writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}BodyMiddleware())")
+            } else {
+                writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>())", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
+            }
         }
     }
 }
