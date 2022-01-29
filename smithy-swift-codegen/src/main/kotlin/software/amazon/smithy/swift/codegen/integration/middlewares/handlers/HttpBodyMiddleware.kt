@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
@@ -20,7 +19,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolBodyMiddlewareGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -39,26 +37,22 @@ class HttpBodyMiddleware(
         fun renderBodyMiddleware(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape,
-            httpBindingResolver: HttpBindingResolver,
-            httpProtocolBodyMiddleware: HttpProtocolBodyMiddlewareGeneratorFactory
+            httpBindingResolver: HttpBindingResolver
         ) {
-            val opIndex = OperationIndex.of(ctx.model)
-            val inputShape = opIndex.getInput(op).get()
-
-            if (httpProtocolBodyMiddleware.shouldRenderHttpBodyMiddleware(inputShape)) {
+            if (MiddlewareShapeUtils.hasHttpBody(ctx.model, op) && MiddlewareShapeUtils.bodyIsHttpPayload(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
                 val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
                 val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
+                val requestBindings = httpBindingResolver.requestBindings(op)
                 val headerMiddlewareSymbol = Symbol.builder()
                     .definitionFile("./$rootNamespace/models/${inputSymbol.name}+BodyMiddleware.swift")
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    val requestBindings = httpBindingResolver.requestBindings(op)
-                    val bodyMiddleware = httpProtocolBodyMiddleware.httpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
+
+                    val bodyMiddleware = HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                     MiddlewareGenerator(writer, bodyMiddleware).generate()
                 }
             }
@@ -76,24 +70,7 @@ class HttpBodyMiddleware(
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitPayload(httpPayload)
-        } else {
-            renderSerializablePayload()
         }
-    }
-
-    private fun renderSerializablePayload() {
-        writer.openBlock("do {", "} catch let err {") {
-            writer.openBlock("if try !input.operationInput.allPropertiesAreNull() {", "}") {
-                writer.write("let encoder = context.getEncoder()")
-                writer.write("let data = try encoder.encode(input.operationInput)")
-                writer.write("let body = \$N.data(data)", ClientRuntimeTypes.Http.HttpBody)
-                writer.write("input.builder.withBody(body)")
-            }
-        }
-        writer.indent()
-        writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
-        writer.dedent()
-        writer.write("}")
     }
 
     private fun renderExplicitPayload(binding: HttpBindingDescriptor) {

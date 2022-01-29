@@ -109,41 +109,6 @@ class HttpProtocolClientGeneratorTests {
     }
 
     @Test
-    fun `it renders host prefix middleware with label correctly`() {
-        val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/RestJson/models/GetStatusInput+UrlPathMiddleware.swift")
-        contents.shouldSyntacticSanityCheck()
-        val expectedFragment = """
-        public struct GetStatusInputURLHostMiddleware: ClientRuntime.Middleware {
-            public let id: Swift.String = "GetStatusInputURLHostMiddleware"
-        
-            let host: Swift.String?
-        
-            public init(host: Swift.String? = nil) {
-                self.host = host
-            }
-        
-            public func handle<H>(context: Context,
-                          input: GetStatusInput,
-                          next: H) -> Swift.Result<ClientRuntime.OperationOutput<GetStatusOutputResponse>, MError>
-            where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context,
-            Self.MError == H.MiddlewareError
-            {
-                var copiedContext = context
-                if let host = host {
-                    copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
-                }
-                copiedContext.attributes.set(key: AttributeKey<String>(name: "HostPrefix"), value: "\(input.foo!).data.")
-                return next.handle(context: copiedContext, input: input)
-            }
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedFragment)
-    }
-
-    @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
@@ -205,11 +170,9 @@ class HttpProtocolClientGeneratorTests {
                     return next.handle(context: context, input: copiedInput)
                 }
                 operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLPathMiddleware())
-                operation.initializeStep.intercept(position: .after, middleware: AllocateWidgetInputURLHostMiddleware())
-                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputHeadersMiddleware())
-                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputQueryItemMiddleware())
+                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(contentType: "application/json"))
-                operation.serializeStep.intercept(position: .after, middleware: AllocateWidgetInputBodyMiddleware())
+                operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                 operation.deserializeStep.intercept(position: .before, middleware: ClientRuntime.LoggerMiddleware(clientLogMode: config.clientLogMode))
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware())

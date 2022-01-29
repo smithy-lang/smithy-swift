@@ -26,6 +26,9 @@ class OperationInputQueryItemMiddleware(
         operationStackName: String,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}QueryItemMiddleware())")
+        val hasQueryItems = MiddlewareShapeUtils.hasQueryItems(model, op)
+        if (hasQueryItems) {
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}QueryItemMiddleware())")
+        }
     }
 }

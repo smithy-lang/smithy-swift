@@ -83,7 +83,7 @@ class HttpProtocolTestGenerator(
             val hostMiddlewares = cloned.middlewares(operation, MiddlewareStep.INITIALIZESTEP)
                 .filter { it.name.contains("HostMiddleware") }
             if (hostMiddlewares.isEmpty()) {
-                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, "host: hostOnly"))
+                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation, true))
             }
         }
         return cloned

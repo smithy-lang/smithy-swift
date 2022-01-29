@@ -49,7 +49,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpHeaderMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpQueryItemMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
@@ -130,11 +129,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-                HttpUrlHostMiddleware.renderMiddleware(ctx, operation, httpBindingResolver)
                 HttpUrlPathMiddleware.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver, httpProtocolBodyMiddleware())
+                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -380,13 +378,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-
         for (operation in getHttpBindingOperations(ctx)) {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
 
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
-            operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, ""))
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
@@ -429,10 +426,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         defaultTimestampFormat: TimestampFormatTrait.Format
     )
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
-
-    open fun httpProtocolBodyMiddleware(): HttpProtocolBodyMiddlewareGeneratorFactory {
-        return DefaultHttpProtocolBodyMiddlewareGeneratorFactory()
-    }
 
     /**
      * Get the operations with HTTP Bindings.

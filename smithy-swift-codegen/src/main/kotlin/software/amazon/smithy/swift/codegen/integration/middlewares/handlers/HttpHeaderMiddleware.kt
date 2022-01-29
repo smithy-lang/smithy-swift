@@ -47,26 +47,26 @@ class HttpHeaderMiddleware(
             httpBindingResolver: HttpBindingResolver,
             defaultTimestampFormat: TimestampFormatTrait.Format
         ) {
-            val requestBindings = httpBindingResolver.requestBindings(op)
-            val headerBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.HEADER }
-                .sortedBy { it.memberName }
-            val prefixHeaderBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
-
-            val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
-            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
-
-            val headerMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
-                .name(inputSymbol.name)
-                .build()
-            ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
-                MiddlewareGenerator(writer, headerMiddleware).generate()
+            if (MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)) {
+                val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+                val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
+                val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
+                val requestBindings = httpBindingResolver.requestBindings(op)
+                val headerBindings = requestBindings
+                    .filter { it.location == HttpBinding.Location.HEADER }
+                    .sortedBy { it.memberName }
+                val prefixHeaderBindings = requestBindings
+                    .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                val headerMiddlewareSymbol = Symbol.builder()
+                    .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderMiddleware.swift")
+                    .name(inputSymbol.name)
+                    .build()
+                ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
+                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    val headerMiddleware = HttpHeaderMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
+                    MiddlewareGenerator(writer, headerMiddleware).generate()
+                }
             }
         }
     }
