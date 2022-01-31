@@ -6,8 +6,7 @@
 //
 
 public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflection,
-                                         OperationStackOutput: HttpResponseBinding,
-                                         OperationStackError: HttpResponseBinding>: Middleware {
+                                         OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
     
     let alwaysSendBody: Bool
@@ -18,12 +17,11 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
     
     public func handle<H>(context: Context,
                           input: SerializeStepInput<OperationStackInput>,
-                          next: H) -> Swift.Result<OperationOutput<OperationStackOutput>, MError>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
               do {
                   if try alwaysSendBody || !input.operationInput.allPropertiesAreNull() {
                       let encoder = context.getEncoder()
@@ -32,13 +30,12 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
                       input.builder.withBody(body)
                   }
               } catch let err {
-                  return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
+                  throw ClientError.serializationFailed(err.localizedDescription)
               }
-              return next.handle(context: context, input: input)
+              return try await next.handle(context: context, input: input)
           }
     
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }
