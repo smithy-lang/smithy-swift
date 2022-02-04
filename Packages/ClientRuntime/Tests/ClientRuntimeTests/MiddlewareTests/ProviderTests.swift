@@ -67,9 +67,39 @@ class ProviderTests: HttpRequestTestBase {
             return .success(output)
         })
     }
+    
+    func testHeaderProvider() {
+        var mockInput = MockInput()
+        mockInput.value = 3
+        
+        XCTAssert(mockInput.headers.headers.count == 1)
+    }
+    
+    func testHeaderMiddleware() {
+        var mockInput = MockInput()
+        mockInput.value = 3
+        
+        let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
+        
+        var operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "testURLPathOperation")
+        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware())
+        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+        _ = operationStack.handleMiddleware(context: context,
+                                        input: mockInput,
+                                        next: MockHandler { (context, request) in
+            
+            XCTAssert(request.headers.headers.count == 1)
+            XCTAssert(request.headers.headers.first(where: { header in
+                header.value == ["3"]
+            }) != nil)
+            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
+            return .success(output)
+        })
+    }
 }
 
-extension MockInput: URLPathProvider, QueryItemProvider {
+extension MockInput: URLPathProvider, QueryItemProvider, HeaderProvider {
     public var urlPath: String? {
         guard let value = value else {
             return nil
@@ -84,6 +114,17 @@ extension MockInput: URLPathProvider, QueryItemProvider {
             let valueQueryItem = URLQueryItem(name: "test", value: "\(value)")
             items.append(valueQueryItem)
         }
+        return items
+    }
+    
+    public var headers: Headers {
+        var items = Headers()
+        
+        if let value = value {
+            let headerItem = Header(name: "test", value: "\(value)")
+            items.add(headerItem)
+        }
+        
         return items
     }
 }

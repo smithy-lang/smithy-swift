@@ -94,7 +94,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>())
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>())
@@ -330,7 +330,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: SimpleScalarPropertiesInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>())
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
@@ -409,7 +409,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(contentType: "application/octet-stream"))
         operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputBodyMiddleware())
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
@@ -489,7 +489,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: HttpPrefixHeadersInputHeadersMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in

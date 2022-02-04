@@ -109,7 +109,7 @@ class HttpQueryItemProviderGeneratorTests {
                         items.append(queryStringQueryItem)
                     }
                     if let queryParamsMapOfStrings = queryParamsMapOfStrings {
-                        let currentQueryItemNames = queryItems.map({${'$'}0.name})
+                        let currentQueryItemNames = items.map({${'$'}0.name})
                         queryParamsMapOfStrings.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
                                 let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
@@ -139,7 +139,7 @@ class HttpQueryItemProviderGeneratorTests {
                         items.append(quxQueryItem)
                     }
                     if let foo = foo {
-                        let currentQueryItemNames = queryItems.map({${'$'}0.name})
+                        let currentQueryItemNames = items.map({${'$'}0.name})
                         foo.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
                                 value0.forEach { value1 in
@@ -171,7 +171,7 @@ class HttpQueryItemProviderGeneratorTests {
                         items.append(fooQueryItem)
                     }
                     if let baz = baz {
-                        let currentQueryItemNames = queryItems.map({${'$'}0.name})
+                        let currentQueryItemNames = items.map({${'$'}0.name})
                         baz.forEach { key0, value0 in
                             if !currentQueryItemNames.contains(key0) {
                                 let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())

@@ -110,7 +110,7 @@ class HttpQueryItemProvider(
     private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
         writer.openBlock("if let $memberName = $memberName {", "}") {
             val currentQueryItemsNames = "currentQueryItemNames"
-            writer.write("let $currentQueryItemsNames = queryItems.map({\$L.name})", "\$0")
+            writer.write("let $currentQueryItemsNames = items.map({\$L.name})", "\$0")
 
             writer.openBlock("$memberName.forEach { key0, value0 in ", "}") {
                 val valueTargetShape = ctx.model.expectShape(memberTarget.value.target)

@@ -27,7 +27,6 @@ class HttpUrlPathProvider(
     private val pathBindings: List<HttpBindingDescriptor>,
     private val writer: SwiftWriter
 ) {
-
     companion object {
         fun renderUrlPathMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver) {
             val httpTrait = httpBindingResolver.httpTrait(op)
