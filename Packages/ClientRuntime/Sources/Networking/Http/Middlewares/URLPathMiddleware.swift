@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URLPathMiddleware<OperationStackInput: Encodable & URLPathProvider,
+public struct URLPathMiddleware<OperationStackInput: Encodable & Reflection & URLPathProvider,
                                 OperationStackOutput: HttpResponseBinding,
                                 OperationStackError: HttpResponseBinding>: ClientRuntime.Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"

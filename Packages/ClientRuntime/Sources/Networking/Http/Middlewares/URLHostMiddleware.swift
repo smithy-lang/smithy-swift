@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URLHostMiddleware<OperationStackInput: Encodable,
+public struct URLHostMiddleware<OperationStackInput: Encodable & Reflection,
                                 OperationStackOutput: HttpResponseBinding,
                                 OperationStackError: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
