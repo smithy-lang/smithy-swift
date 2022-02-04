@@ -139,10 +139,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val inputShapesWithMetadata = resolveInputShapes(ctx)
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
-            val httpBodyMembers = shape.members()
-                .filter { it.isInHttpBody() }
-                .toList()
-
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
@@ -150,10 +146,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
                 .name(symbolName)
                 .build()
-
+            val httpBodyMembers = shape.members()
+                .filter { it.isInHttpBody() }
+                .toList()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+
                     if (shouldRenderCodingKeysForEncodable) {
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("")

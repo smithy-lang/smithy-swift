@@ -36,7 +36,8 @@ class HttpQueryItemProvider(
     private val queryLiterals: Map<String, String>,
     private val queryBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
-    private val writer: SwiftWriter) {
+    private val writer: SwiftWriter
+) {
     companion object {
         fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver, defaultTimestampFormat: TimestampFormatTrait.Format) {
             if (MiddlewareShapeUtils.hasQueryItems(ctx.model, op)) {
