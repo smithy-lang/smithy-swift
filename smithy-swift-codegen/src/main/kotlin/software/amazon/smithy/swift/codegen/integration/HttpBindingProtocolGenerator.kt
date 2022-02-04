@@ -48,7 +48,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpHeaderMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpQueryItemMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
@@ -131,7 +131,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
                 HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
+                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
@@ -142,9 +142,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val httpBodyMembers = shape.members()
                 .filter { it.isInHttpBody() }
                 .toList()
-            if (httpBodyMembers.isEmpty()) {
-                continue
-            }
+
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
@@ -156,7 +154,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-
                     if (shouldRenderCodingKeysForEncodable) {
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("")
@@ -164,7 +161,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
-            if (shouldRenderDecodableBodyStructForInputShapes) {
+            if (shouldRenderDecodableBodyStructForInputShapes && httpBodyMembers.isNotEmpty()) {
                 renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
                 DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }

@@ -95,7 +95,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputHeadersMiddleware())
-        operationStack.serializeStep.intercept(position: .after, middleware: SmokeTestInputQueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>())
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
