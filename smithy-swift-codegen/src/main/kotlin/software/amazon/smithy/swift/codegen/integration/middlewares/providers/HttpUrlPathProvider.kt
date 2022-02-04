@@ -1,4 +1,4 @@
-package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
+package software.amazon.smithy.swift.codegen.integration.middlewares.providers
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -9,29 +9,24 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Core.ClientError
-import software.amazon.smithy.swift.codegen.Middleware
-import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.steps.OperationInitializeStep
+import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 
-class HttpUrlPathMiddleware(
+class HttpUrlPathProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
-    inputSymbol: Symbol,
-    outputSymbol: Symbol,
-    outputErrorSymbol: Symbol,
+    val inputSymbol: Symbol,
     private val httpTrait: HttpTrait,
     private val pathBindings: List<HttpBindingDescriptor>,
     private val writer: SwiftWriter
-) : Middleware(writer, inputSymbol, OperationInitializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
-
+) {
     companion object {
         fun renderUrlPathMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver) {
             val httpTrait = httpBindingResolver.httpTrait(op)
@@ -39,38 +34,26 @@ class HttpUrlPathMiddleware(
             val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
 
             val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
-            val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
             val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
 
             val urlPathMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathMiddleware.swift")
+                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathProvider.swift")
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                val urlPathMiddleware = HttpUrlPathMiddleware(ctx, inputSymbol, outputSymbol, outputErrorSymbol, httpTrait, pathBindings, writer)
-                MiddlewareGenerator(writer, urlPathMiddleware).generate()
+                val urlPathMiddleware = HttpUrlPathProvider(ctx, inputSymbol, httpTrait, pathBindings, writer)
+                urlPathMiddleware.renderProvider(writer)
             }
         }
     }
 
-    override val typeName = "${inputSymbol.name}URLPathMiddleware"
-
-    override fun generateMiddlewareClosure() {
-        renderUriPath()
-    }
-
-    override fun generateInit() {
-        writer.write("let urlPrefix: \$T", SwiftTypes.String)
-        writer.write("")
-        writer.openBlock("public init(urlPrefix: \$T = nil) {", "}", SwiftTypes.String) {
-            writer.write("self.urlPrefix = urlPrefix")
+    fun renderProvider(writer: SwiftWriter) {
+        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.URLPathProvider) {
+            writer.openBlock("public var urlPath: \$T {", "}", SwiftTypes.String) {
+                renderUriPath()
+            }
         }
-    }
-
-    override fun renderReturn() {
-        writer.write("return next.handle(context: copiedContext, input: input)")
     }
 
     private fun renderUriPath() {
@@ -113,11 +96,9 @@ class HttpUrlPathMiddleware(
 
                 // unwrap the label members if boxed
                 if (isBoxed) {
-                    writer.openBlock("guard let $labelMemberName = input.$labelMemberName else {", "}") {
-                        writer.write("return .failure(.client(\$N.pathCreationFailed((\"$labelMemberName is nil and needs a value for the path of this operation\"))))", ClientError)
+                    writer.openBlock("guard let $labelMemberName = $labelMemberName else {", "}") {
+                        writer.write("return nil")
                     }
-                } else {
-                    writer.write("let $labelMemberName = input.$labelMemberName")
                 }
                 resolvedURIComponents.add("\\($formattedLabel)")
             } else {
@@ -126,11 +107,6 @@ class HttpUrlPathMiddleware(
         }
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
-        writer.write("var urlPath = \"\$L\"", uri)
-        writer.openBlock("if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {", "}") {
-            writer.write("urlPath = \"\\(urlPrefix)\\(urlPath)\"")
-        }
-        writer.write("var copiedContext = context")
-        writer.write("copiedContext.attributes.set(key: AttributeKey<String>(name: \"Path\"), value: urlPath)")
+        writer.write("return \"\$L\"", uri)
     }
 }

@@ -47,9 +47,9 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpHeaderMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpQueryItemMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpUrlPathMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
+import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
+import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
@@ -129,9 +129,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-                HttpUrlPathMiddleware.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
-                HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
+                HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
+                HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
+                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
@@ -146,13 +146,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
                 .name(symbolName)
                 .build()
-
+            val httpBodyMembers = shape.members()
+                .filter { it.isInHttpBody() }
+                .toList()
             ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                 writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    val httpBodyMembers = shape.members()
-                        .filter { it.isInHttpBody() }
-                        .toList()
+
                     if (shouldRenderCodingKeysForEncodable) {
                         generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                         writer.write("")
@@ -160,7 +160,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
-            if (shouldRenderDecodableBodyStructForInputShapes) {
+            if (shouldRenderDecodableBodyStructForInputShapes && httpBodyMembers.isNotEmpty()) {
                 renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
                 DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }
