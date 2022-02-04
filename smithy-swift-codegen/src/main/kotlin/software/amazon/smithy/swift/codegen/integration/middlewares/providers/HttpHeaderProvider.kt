@@ -31,7 +31,8 @@ class HttpHeaderProvider(
     private val inputSymbol: Symbol,
     private val headerBindings: List<HttpBindingDescriptor>,
     private val prefixHeaderBindings: List<HttpBindingDescriptor>,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format) {
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
+) {
 
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
     companion object {
