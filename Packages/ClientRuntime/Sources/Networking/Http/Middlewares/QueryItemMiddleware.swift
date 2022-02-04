@@ -19,8 +19,7 @@ public struct QueryItemMiddleware<OperationStackInput: Encodable & Reflection & 
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
-    Self.MError == H.MiddlewareError
-    {
+    Self.MError == H.MiddlewareError {
         for queryItem in input.operationInput.queryItems {
             input.builder.withQueryItem(queryItem)
         }

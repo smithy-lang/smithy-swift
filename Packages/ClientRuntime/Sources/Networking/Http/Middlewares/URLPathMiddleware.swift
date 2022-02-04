@@ -23,8 +23,7 @@ public struct URLPathMiddleware<OperationStackInput: Encodable & Reflection & UR
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
-    Self.MError == H.MiddlewareError
-    {
+    Self.MError == H.MiddlewareError {
         guard var urlPath = input.urlPath else {
             return .failure(.client(ClientError.pathCreationFailed("Creating the url path failed, a required property in the path was nil")))
         }

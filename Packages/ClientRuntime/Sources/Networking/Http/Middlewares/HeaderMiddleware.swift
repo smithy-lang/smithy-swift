@@ -19,8 +19,7 @@ public struct HeaderMiddleware<OperationStackInput: Encodable & Reflection & Hea
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context,
-    Self.MError == H.MiddlewareError
-    {
+    Self.MError == H.MiddlewareError {
         input.builder.withHeaders(input.operationInput.headers)
         
         return next.handle(context: context, input: input)
