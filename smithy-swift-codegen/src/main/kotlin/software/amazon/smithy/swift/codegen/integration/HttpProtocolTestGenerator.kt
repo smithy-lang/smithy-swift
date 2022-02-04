@@ -79,7 +79,7 @@ class HttpProtocolTestGenerator(
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
 
             cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
-            cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, "urlPrefix: urlPrefix"))
+            cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, httpBindingResolver, true))
             val hostMiddlewares = cloned.middlewares(operation, MiddlewareStep.INITIALIZESTEP)
                 .filter { it.name.contains("HostMiddleware") }
             if (hostMiddlewares.isEmpty()) {

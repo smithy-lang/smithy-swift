@@ -60,6 +60,7 @@ object ClientRuntimeTypes {
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware")
         val OperationStack = runtimeSymbol("OperationStack")
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware")
+        val URLPathMiddleware = runtimeSymbol("URLPathMiddleware")
         val SerializableBodyMiddleware = runtimeSymbol("SerializableBodyMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
     }
