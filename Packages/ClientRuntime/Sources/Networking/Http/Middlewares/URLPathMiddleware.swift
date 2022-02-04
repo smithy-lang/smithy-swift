@@ -5,16 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URLPathMiddleware<OperationStackInput: Encodable & Reflection,
+public struct URLPathMiddleware<OperationStackInput: Encodable & Reflection & URLPathProvider,
                                 OperationStackOutput: HttpResponseBinding,
                                 OperationStackError: HttpResponseBinding>: ClientRuntime.Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
 
     let urlPrefix: Swift.String?
-    let urlPath: String
 
-    public init(urlPath: String, urlPrefix: Swift.String? = nil) {
-        self.urlPath = urlPath
+    public init(urlPrefix: Swift.String? = nil) {
         self.urlPrefix = urlPrefix
     }
 
@@ -27,7 +25,9 @@ public struct URLPathMiddleware<OperationStackInput: Encodable & Reflection,
     Self.Context == H.Context,
     Self.MError == H.MiddlewareError
     {
-        var urlPath = urlPath
+        guard var urlPath = input.urlPath else {
+            return .failure(.client(ClientError.pathCreationFailed("Creating the url path failed, a required property in the path was nil")))
+        }
         if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
             urlPath = "\(urlPrefix)\(urlPath)"
         }

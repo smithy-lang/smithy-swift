@@ -63,6 +63,10 @@ object ClientRuntimeTypes {
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware")
         val SerializableBodyMiddleware = runtimeSymbol("SerializableBodyMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
+
+        object Providers {
+            val URLPathProvider = runtimeSymbol("URLPathProvider")
+        }
     }
 
     object Core {

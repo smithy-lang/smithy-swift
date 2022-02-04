@@ -49,6 +49,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpHeaderMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpQueryItemMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
@@ -128,6 +129,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
+                HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderMiddleware.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemMiddleware.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
@@ -380,7 +382,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
 
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, resolver))
+            operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
