@@ -9,24 +9,24 @@ public struct QueryItemMiddleware<OperationStackInput: Encodable & Reflection & 
                                   OperationStackOutput: HttpResponseBinding,
                                   OperationStackError: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))QueryItemMiddleware"
-
+    
     public init() {}
-
+    
     public func handle<H>(context: Context,
-                  input: MInput,
-                  next: H) -> Result<MOutput, MError>
+                          input: MInput,
+                          next: H) -> Result<MOutput, MError>
     where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context,
-    Self.MError == H.MiddlewareError {
-        for queryItem in input.operationInput.queryItems {
-            input.builder.withQueryItem(queryItem)
-        }
-        
-        return next.handle(context: context, input: input)
-    }
-
+          Self.MInput == H.Input,
+          Self.MOutput == H.Output,
+          Self.Context == H.Context,
+          Self.MError == H.MiddlewareError {
+              for queryItem in input.operationInput.queryItems {
+                  input.builder.withQueryItem(queryItem)
+              }
+              
+              return next.handle(context: context, input: input)
+          }
+    
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
