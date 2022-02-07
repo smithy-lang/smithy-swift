@@ -6,8 +6,7 @@
 //
 
 public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
-                                OperationStackOutput: HttpResponseBinding,
-                                OperationStackError: HttpResponseBinding>: ClientRuntime.Middleware {
+                                OperationStackOutput: HttpResponseBinding>: ClientRuntime.Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
     
     let urlPrefix: Swift.String?
@@ -18,12 +17,11 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
     
     public func handle<H>(context: Context,
                           input: MInput,
-                          next: H) -> Swift.Result<MOutput, MError>
+                          next: H) -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
               guard var urlPath = input.urlPath else {
                   return .failure(.client(ClientError.pathCreationFailed("Creating the url path failed, a required property in the path was nil")))
               }
@@ -38,5 +36,4 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }
