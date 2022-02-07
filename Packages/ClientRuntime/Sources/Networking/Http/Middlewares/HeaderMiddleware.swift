@@ -20,7 +20,7 @@ public struct HeaderMiddleware<OperationStackInput: HeaderProvider,
           Self.Context == H.Context {
               input.builder.withHeaders(input.operationInput.headers)
               
-              return next.handle(context: context, input: input)
+              return try await next.handle(context: context, input: input)
           }
     
     public typealias MInput = SerializeStepInput<OperationStackInput>

@@ -22,7 +22,7 @@ public struct QueryItemMiddleware<OperationStackInputQueryItemProvider,
                   input.builder.withQueryItem(queryItem)
               }
               
-              return next.handle(context: context, input: input)
+              return try await next.handle(context: context, input: input)
           }
     
     public typealias MInput = SerializeStepInput<OperationStackInput>
