@@ -149,7 +149,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val httpBodyMembers = shape.members()
                 .filter { it.isInHttpBody() }
                 .toList()
-            if (httpBodyMembers.isNotEmpty()) {
+            if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
                         "extension $symbolName: \$N, \$N {",
@@ -420,6 +420,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
     protected abstract val shouldRenderCodingKeysForEncodable: Boolean
+    protected abstract val shouldRenderEncodableConformance: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
