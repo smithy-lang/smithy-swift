@@ -182,7 +182,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val outputShapesWithMetadata = resolveOutputShapes(ctx)
 
         for ((shape, metadata) in outputShapesWithMetadata) {
-            if(shape.members().any { it.isInHttpBody() }) {
+            if (shape.members().any { it.isInHttpBody() }) {
                 renderBodyStructAndDecodableExtension(ctx, shape, metadata)
                 DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }
