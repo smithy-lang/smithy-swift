@@ -42,8 +42,10 @@ class HttpResponseBindingOutputGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.openBlock("extension $outputShapeName: \$N {", "}", ClientRuntimeTypes.Http.HttpResponseBinding) {
-                val outputShape = ctx.model.expectShape(op.output.get().toShapeId())
+            val outputShape = ctx.model.expectShape(op.output.get().toShapeId())
+            val bindingSymbol = if(outputShape.members().isNotEmpty()) ClientRuntimeTypes.Http.HttpResponseBinding else ClientRuntimeTypes.Http.NoOpHttpResponseBinding
+            writer.openBlock("extension $outputShapeName: \$N {", "}", bindingSymbol) {
+
                 if (outputShape.members().isNotEmpty()) {
                     writer.openBlock(
                         "public init (httpResponse: \$N, decoder: \$D) throws {",
