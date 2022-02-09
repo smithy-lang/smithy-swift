@@ -6,3 +6,10 @@
 public protocol HttpResponseBinding {
     init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws
 }
+
+extension HttpResponseBinding {
+    public init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws {
+        //no op default implementation
+        try self.init(httpResponse: httpResponse, decoder: decoder)
+    }
+}
