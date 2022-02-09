@@ -47,9 +47,9 @@ class StructDecodeGenerationTests {
         val expectedContents =
             """
             struct SmokeTestOutputResponseBody: Swift.Equatable {
-                public let payload1: Swift.String?
-                public let payload2: Swift.Int?
-                public let payload3: ExampleClientTypes.Nested?
+                let payload1: Swift.String?
+                let payload2: Swift.Int?
+                let payload3: ExampleClientTypes.Nested?
             }
             
             extension SmokeTestOutputResponseBody: Swift.Decodable {
@@ -170,12 +170,12 @@ class StructDecodeGenerationTests {
         val expectedContents =
             """
 struct TimestampInputOutputResponseBody: Swift.Equatable {
-    public let normal: ClientRuntime.Date?
-    public let dateTime: ClientRuntime.Date?
-    public let epochSeconds: ClientRuntime.Date?
-    public let httpDate: ClientRuntime.Date?
-    public let nestedTimestampList: [[ClientRuntime.Date]]?
-    public let timestampList: [ClientRuntime.Date]?
+    let normal: ClientRuntime.Date?
+    let dateTime: ClientRuntime.Date?
+    let epochSeconds: ClientRuntime.Date?
+    let httpDate: ClientRuntime.Date?
+    let nestedTimestampList: [[ClientRuntime.Date]]?
+    let timestampList: [ClientRuntime.Date]?
 }
 
 extension TimestampInputOutputResponseBody: Swift.Decodable {
@@ -261,12 +261,12 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
         val expectedContents =
             """
 struct MapInputOutputResponseBody: Swift.Equatable {
-    public let intMap: [Swift.String:Swift.Int]?
-    public let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
-    public let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
-    public let blobMap: [Swift.String:ClientRuntime.Data]?
-    public let nestedMap: [Swift.String:[Swift.String:Swift.Int]]?
-    public let dateMap: [Swift.String:ClientRuntime.Date]?
+    let intMap: [Swift.String:Swift.Int]?
+    let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
+    let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
+    let blobMap: [Swift.String:ClientRuntime.Data]?
+    let nestedMap: [Swift.String:[Swift.String:Swift.Int]]?
+    let dateMap: [Swift.String:ClientRuntime.Date]?
 }
 
 extension MapInputOutputResponseBody: Swift.Decodable {
@@ -370,9 +370,9 @@ extension MapInputOutputResponseBody: Swift.Decodable {
         val expectedContents =
             """
 struct NestedShapesOutputResponseBody: Swift.Equatable {
-    public let nestedListInDict: [Swift.String:[ClientRuntime.Date]]?
-    public let nestedDictInList: [[Swift.String:Swift.String]]?
-    public let nestedListOfListInDict: [Swift.String:[[Swift.Int]]]?
+    let nestedListInDict: [Swift.String:[ClientRuntime.Date]]?
+    let nestedDictInList: [[Swift.String:Swift.String]]?
+    let nestedListOfListInDict: [Swift.String:[[Swift.Int]]]?
 }
 
 extension NestedShapesOutputResponseBody: Swift.Decodable {

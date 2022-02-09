@@ -22,7 +22,7 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             public struct MyTestOperationInput: Swift.Equatable {
-                public var bar: ExampleClientTypes.RenamedGreeting?
+                var bar: ExampleClientTypes.RenamedGreeting?
             
                 public init (
                     bar: ExampleClientTypes.RenamedGreeting? = nil
@@ -50,7 +50,7 @@ class ServiceRenamesTests {
         val expectedContents =
             """
             public struct MyTestOperationOutputResponse: Swift.Equatable {
-                public var baz: ExampleClientTypes.GreetingStruct?
+                var baz: ExampleClientTypes.GreetingStruct?
             
                 public init (
                     baz: ExampleClientTypes.GreetingStruct? = nil
@@ -79,7 +79,7 @@ class ServiceRenamesTests {
             """
             extension ExampleClientTypes {
                 public struct GreetingStruct: Swift.Equatable {
-                    public var hi: Swift.String?
+                    var hi: Swift.String?
             
                     public init (
                         hi: Swift.String? = nil
@@ -111,7 +111,7 @@ class ServiceRenamesTests {
             """
             extension ExampleClientTypes {
                 public struct RenamedGreeting: Swift.Equatable {
-                    public var salutation: Swift.String?
+                    var salutation: Swift.String?
             
                     public init (
                         salutation: Swift.String? = nil

@@ -20,10 +20,10 @@ class EnumDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputResponseBody+Decodable.swift")
         val expectedContents = """
         struct XmlEnumsOutputResponseBody: Swift.Equatable {
-            public let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
-            public let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
-            public let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
-            public let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
+            let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
+            let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
+            let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
+            let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
         }
         
         extension XmlEnumsOutputResponseBody: Swift.Decodable {
@@ -74,7 +74,7 @@ class EnumDecodeXMLGenerationTests {
         val expectedContents =
             """
             struct XmlEnumsNestedOutputResponseBody: Swift.Equatable {
-                public let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
+                let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
             }
             
             extension XmlEnumsNestedOutputResponseBody: Swift.Decodable {
