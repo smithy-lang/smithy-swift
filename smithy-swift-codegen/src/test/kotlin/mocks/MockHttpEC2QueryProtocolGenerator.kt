@@ -76,6 +76,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
     override val shouldRenderCodingKeysForEncodable = false
+    override val shouldRenderEncodableConformance = true
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,

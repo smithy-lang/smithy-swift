@@ -45,6 +45,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
     override val shouldRenderCodingKeysForEncodable = true
+    override val shouldRenderEncodableConformance = false
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
