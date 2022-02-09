@@ -42,7 +42,7 @@ class UnionDecodeGeneratorTests {
         val expectedContents =
             """
             struct JsonUnionsOutputResponseBody: Swift.Equatable {
-                public let contents: ExampleClientTypes.MyUnion?
+                let contents: ExampleClientTypes.MyUnion?
             }
             
             extension JsonUnionsOutputResponseBody: Swift.Decodable {

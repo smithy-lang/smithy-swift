@@ -18,6 +18,7 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -154,8 +155,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun structureShape(shape: StructureShape): Void? {
         writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render() }
-        writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
-            CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() }) {
+            writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+                CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape).render()
+            }
         }
         return null
     }

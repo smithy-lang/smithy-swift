@@ -59,16 +59,16 @@ class StructDecodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputResponseBody+Decodable.swift")
         val expectedContents = """
         struct SimpleScalarPropertiesOutputResponseBody: Swift.Equatable {
-            public let stringValue: Swift.String?
-            public let trueBooleanValue: Swift.Bool?
-            public let falseBooleanValue: Swift.Bool?
-            public let byteValue: Swift.Int8?
-            public let shortValue: Swift.Int16?
-            public let integerValue: Swift.Int?
-            public let longValue: Swift.Int?
-            public let floatValue: Swift.Float?
-            public let `protocol`: Swift.String?
-            public let doubleValue: Swift.Double?
+            let stringValue: Swift.String?
+            let trueBooleanValue: Swift.Bool?
+            let falseBooleanValue: Swift.Bool?
+            let byteValue: Swift.Int8?
+            let shortValue: Swift.Int16?
+            let integerValue: Swift.Int?
+            let longValue: Swift.Int?
+            let floatValue: Swift.Float?
+            let `protocol`: Swift.String?
+            let doubleValue: Swift.Double?
         }
         
         extension SimpleScalarPropertiesOutputResponseBody: Swift.Decodable {

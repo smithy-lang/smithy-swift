@@ -42,22 +42,6 @@ class SensitiveTraitGeneratorTests {
     }
 
     @Test
-    fun `NoSensitiveMemberStruct+CustomDebugStringConvertible`() {
-        val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestInput+CustomDebugStringConvertible.swift").get()
-        extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SensitiveTraitTestRequestInput: Swift.CustomDebugStringConvertible {
-                public var debugDescription: Swift.String {
-                    "SensitiveTraitTestRequestInput(bar: \(Swift.String(describing: bar)), baz: \(Swift.String(describing: baz)), foo: \(Swift.String(describing: foo)))"}
-            }
-            """.trimIndent()
-        extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
