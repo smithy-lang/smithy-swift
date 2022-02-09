@@ -149,15 +149,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val httpBodyMembers = shape.members()
                 .filter { it.isInHttpBody() }
                 .toList()
-            ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-                writer.openBlock("extension $symbolName: \$N, \$N {", "}", SwiftTypes.Protocols.Encodable, ClientRuntimeTypes.Core.Reflection) {
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            if (httpBodyMembers.isNotEmpty()) {
+                ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
+                    writer.openBlock(
+                        "extension $symbolName: \$N, \$N {",
+                        "}",
+                        SwiftTypes.Protocols.Encodable,
+                        ClientRuntimeTypes.Core.Reflection
+                    ) {
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
-                    if (shouldRenderCodingKeysForEncodable) {
-                        generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                        writer.write("")
+                        if (shouldRenderCodingKeysForEncodable) {
+                            generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                            writer.write("")
+                        }
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                     }
-                    renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat)
                 }
             }
             if (shouldRenderDecodableBodyStructForInputShapes && httpBodyMembers.isNotEmpty()) {

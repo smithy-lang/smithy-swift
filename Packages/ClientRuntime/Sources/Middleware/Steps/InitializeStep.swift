@@ -7,7 +7,7 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public typealias InitializeStep<I: Encodable & Reflection,
+public typealias InitializeStep<I,
                                 O: HttpResponseBinding,
                                 E: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                          I,
@@ -16,7 +16,7 @@ public typealias InitializeStep<I: Encodable & Reflection,
 
 public let InitializeStepId = "Initialize"
 
-public struct InitializeStepHandler<OperationStackInput: Encodable & Reflection,
+public struct InitializeStepHandler<OperationStackInput,
                                     OperationStackOutput: HttpResponseBinding,
                                     OperationStackError: HttpResponseBinding,
                                     H: Handler>: Handler where H.Context == HttpContext,
