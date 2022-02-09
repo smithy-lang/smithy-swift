@@ -42,23 +42,18 @@ class HttpResponseBindingOutputGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            val outputShape = ctx.model.expectShape(op.output.get().toShapeId())
-            val bindingSymbol = if (outputShape.members().isNotEmpty()) ClientRuntimeTypes.Http.HttpResponseBinding else ClientRuntimeTypes.Http.NoOpHttpResponseBinding
-            writer.openBlock("extension $outputShapeName: \$N {", "}", bindingSymbol) {
-
-                if (outputShape.members().isNotEmpty()) {
-                    writer.openBlock(
-                        "public init (httpResponse: \$N, decoder: \$D) throws {",
-                        "}",
-                        ClientRuntimeTypes.Http.HttpResponse,
-                        ClientRuntimeTypes.Serde.ResponseDecoder
-                    ) {
-                        HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
-                        HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                        HttpResponseTraitPayload(ctx, responseBindings, outputShapeName, writer).render()
-                        HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                        HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                    }
+            writer.openBlock("extension $outputShapeName: \$N {", "}", ClientRuntimeTypes.Http.HttpResponseBinding) {
+                writer.openBlock(
+                    "public init (httpResponse: \$N, decoder: \$D) throws {",
+                    "}",
+                    ClientRuntimeTypes.Http.HttpResponse,
+                    ClientRuntimeTypes.Serde.ResponseDecoder
+                ) {
+                    HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                    HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                    HttpResponseTraitPayload(ctx, responseBindings, outputShapeName, writer).render()
+                    HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                    HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                 }
             }
             writer.write("")
