@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct QueryItemMiddleware<OperationStackInput: Encodable & Reflection & QueryItemProvider,
+public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
                                   OperationStackOutput: HttpResponseBinding,
                                   OperationStackError: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))QueryItemMiddleware"
