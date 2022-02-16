@@ -12,17 +12,15 @@ public class SdkHttpClient {
         self.engine = engine
     }
     
-    public func getHandler<Output: HttpResponseBinding,
-                           OutputError: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
-                                                                             OperationOutput<Output>,
-                                                                             HttpContext,
-                                                                             SdkError<OutputError>> {
-        let clientHandler = ClientHandler<Output, OutputError>(engine: engine)
+    public func getHandler<Output: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
+                                                                        OperationOutput<Output>,
+                                                                        HttpContext> {
+        let clientHandler = ClientHandler<Output>(engine: engine)
         return clientHandler.eraseToAnyHandler()
     }
     
-    func execute(request: SdkHttpRequest, completion: @escaping NetworkResult) {
-        engine.executeWithClosure(request: request, completion: completion)
+    func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+        return try await engine.execute(request: request)
     }
     
     public func close() {
@@ -31,24 +29,17 @@ public class SdkHttpClient {
     
 }
 
-struct ClientHandler<Output: HttpResponseBinding, OutputError: HttpResponseBinding>: Handler {
+struct ClientHandler<Output: HttpResponseBinding>: Handler {
     let engine: HttpClientEngine
-    func handle(context: HttpContext, input: SdkHttpRequest) -> Result<OperationOutput<Output>, SdkError<OutputError>> {
-        let result = engine.execute(request: input)
-        do {
-            let httpResponse = try result.get()
-            let output = OperationOutput<Output>(httpResponse: httpResponse)
-            return .success(output)
-        } catch let err {
-            return .failure(.client(ClientError.networkError(err)))
-        }
+    func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
+        let httpResponse = try await engine.execute(request: input)
+        
+        return OperationOutput<Output>(httpResponse: httpResponse)
     }
-
-    typealias Input = SdkHttpRequest
-
-    typealias Output = OperationOutput<Output>
-
-    typealias Context = HttpContext
     
-    typealias MiddlewareError = SdkError<OutputError>
+    typealias Input = SdkHttpRequest
+    
+    typealias Output = OperationOutput<Output>
+    
+    typealias Context = HttpContext
 }

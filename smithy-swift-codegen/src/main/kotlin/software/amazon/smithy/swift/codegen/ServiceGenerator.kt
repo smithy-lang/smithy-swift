@@ -54,11 +54,9 @@ class ServiceGenerator(
             val inputShape = opIndex.getInput(op).get()
             val inputShapeName = symbolProvider.toSymbol(inputShape).name
             val inputParam = "input: $inputShapeName"
+            val outputShape = opIndex.getOutput(op).get()
+            val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            val outputType = createOutputType(opIndex, op, symbolProvider)
-            val outputParam = "completion: @escaping ($outputType) -> Void"
-
-            val paramTerminator = ", "
             if (op.id.name == "createBucket") {
                 print("we are here")
             }
@@ -68,33 +66,11 @@ class ServiceGenerator(
             val accessSpecifier = if (insideProtocol) "" else "public "
 
             writer.write(
-                "${accessSpecifier}func \$L(\$L${paramTerminator}\$L)",
+                "${accessSpecifier}func \$L(\$L) async throws -> \$L",
                 operationName,
                 inputParam,
-                outputParam
+                outputShapeName
             )
-        }
-
-        fun renderAsyncOperationDefinition(model: Model, symbolProvider: SymbolProvider, writer: SwiftWriter, opIndex: OperationIndex, op: OperationShape) {
-            if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
-
-            val inputSymbolName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
-            val inputParam = "input: $inputSymbolName"
-            val outputType = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-
-            writer.writeShapeDocs(op)
-            writer.writeAvailableAttribute(model, op)
-
-            val operationName = op.camelCaseName()
-            writer.write("func \$L(\$L) async throws -> \$L", operationName, inputParam, outputType)
-        }
-
-        fun createOutputType(opIndex: OperationIndex, op: OperationShape, symbolProvider: SymbolProvider): String {
-            val outputShape = opIndex.getOutput(op).get()
-            val outputShapeName = symbolProvider.toSymbol(outputShape).name
-            val errorTypeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-
-            return "${ClientRuntimeTypes.Core.SdkResult}<$outputShapeName, $errorTypeName>"
         }
     }
 

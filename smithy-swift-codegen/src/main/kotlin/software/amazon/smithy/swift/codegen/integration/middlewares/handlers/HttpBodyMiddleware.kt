@@ -28,7 +28,7 @@ class HttpBodyMiddleware(
     private val ctx: ProtocolGenerator.GenerationContext,
     inputSymbol: Symbol,
     outputSymbol: Symbol,
-    outputErrorSymbol: Symbol,
+    private val outputErrorSymbol: Symbol,
     private val requestBindings: List<HttpBindingDescriptor>
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
@@ -103,7 +103,7 @@ class HttpBodyMiddleware(
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
-                    writer.write("return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))")
+                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
                     writer.dedent()
                     writer.write("}")
                 }
@@ -115,7 +115,7 @@ class HttpBodyMiddleware(
                         writer.write("input.builder.withBody($bodyDeclaration)")
                     }
                     writer.indent()
-                    writer.write("return .failure(.client(\$N.serializationFailed(err.localizedDescription)))", ClientRuntimeTypes.Core.ClientError)
+                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
                     writer.dedent()
                     writer.write("}")
                 }

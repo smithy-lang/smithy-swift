@@ -18,23 +18,23 @@ class ProviderTests: HttpRequestTestBase {
         XCTAssert(mockInput.urlPath == "/3")
     }
     
-    func testURLPathMiddleware() {
+    func testURLPathMiddleware() async throws {
         var mockInput = MockInput()
         mockInput.value = 3
         
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
         
         var operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "testURLPathOperation")
-        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware())
+        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput, MockMiddlewareError>())
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
-        _ = operationStack.handleMiddleware(context: context,
+        _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
             
             XCTAssert(context.getPath() == "/3")
             let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return .success(output)
+            return output
         })
     }
     
@@ -45,7 +45,7 @@ class ProviderTests: HttpRequestTestBase {
         XCTAssert(mockInput.queryItems.count == 1)
     }
     
-    func testQueryItemMiddleware() {
+    func testQueryItemMiddleware() async throws {
         var mockInput = MockInput()
         mockInput.value = 3
         
@@ -54,7 +54,7 @@ class ProviderTests: HttpRequestTestBase {
         var operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware())
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
-        _ = operationStack.handleMiddleware(context: context,
+        _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
             
@@ -64,7 +64,7 @@ class ProviderTests: HttpRequestTestBase {
             }) != nil)
             let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return .success(output)
+            return output
         })
     }
     
@@ -75,7 +75,7 @@ class ProviderTests: HttpRequestTestBase {
         XCTAssert(mockInput.headers.headers.count == 1)
     }
     
-    func testHeaderMiddleware() {
+    func testHeaderMiddleware() async throws {
         var mockInput = MockInput()
         mockInput.value = 3
         
@@ -84,7 +84,7 @@ class ProviderTests: HttpRequestTestBase {
         var operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware())
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
-        _ = operationStack.handleMiddleware(context: context,
+        _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
             
@@ -94,7 +94,7 @@ class ProviderTests: HttpRequestTestBase {
             }) != nil)
             let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return .success(output)
+            return output
         })
     }
 }

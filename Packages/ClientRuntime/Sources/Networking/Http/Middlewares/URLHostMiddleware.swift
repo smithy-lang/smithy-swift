@@ -6,8 +6,7 @@
 //
 
 public struct URLHostMiddleware<OperationStackInput,
-                                OperationStackOutput: HttpResponseBinding,
-                                OperationStackError: HttpResponseBinding>: Middleware {
+                                OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
     
     let host: String?
@@ -20,12 +19,11 @@ public struct URLHostMiddleware<OperationStackInput,
     
     public func handle<H>(context: Context,
                           input: MInput,
-                          next: H) -> Result<MOutput, MError>
+                          next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
               var copiedContext = context
               if let host = host {
                   copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"),
@@ -35,11 +33,10 @@ public struct URLHostMiddleware<OperationStackInput,
                   copiedContext.attributes.set(key: AttributeKey<String>(name: "HostPrefix"),
                                                value: hostPrefix)
               }
-              return next.handle(context: copiedContext, input: input)
+              return try await next.handle(context: copiedContext, input: input)
           }
     
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }

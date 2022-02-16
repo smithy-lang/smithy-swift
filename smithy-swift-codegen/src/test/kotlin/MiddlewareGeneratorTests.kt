@@ -32,21 +32,19 @@ class MiddlewareGeneratorTests {
             
                 public func handle<H>(context: Context,
                               input: Swift.String,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<Swift.String>, MError>
+                              next: H) async throws -> ClientRuntime.OperationOutput<Swift.String>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
+                Self.Context == H.Context
                 {
                     print("this is a \(test)")
-                    return next.handle(context: context, input: input)
+                    return try await next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = Swift.String
                 public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<Swift.Error>
             }
             """.trimIndent()
         contents.shouldContain(expectedGeneratedStructure)

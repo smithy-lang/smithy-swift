@@ -37,25 +37,23 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStringInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStringOutputResponse>, MError>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStringOutputResponse>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
+                Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let payload1data = payload1.data(using: .utf8)
                         let payload1body = ClientRuntime.HttpBody.data(payload1data)
                         input.builder.withBody(payload1body)
                     }
-                    return next.handle(context: context, input: input)
+                    return try await next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitStringInput>
                 public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStringOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<ExplicitStringOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -74,25 +72,23 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>, MError>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
+                Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let payload1data = payload1
                         let payload1body = ClientRuntime.HttpBody.data(payload1data)
                         input.builder.withBody(payload1body)
                     }
-                    return next.handle(context: context, input: input)
+                    return try await next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitBlobInput>
                 public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<ExplicitBlobOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -111,25 +107,23 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobStreamInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>, MError>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
+                Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
                         let payload1data = payload1
                         let payload1body = ClientRuntime.HttpBody.stream(payload1data)
                         input.builder.withBody(payload1body)
                     }
-                    return next.handle(context: context, input: input)
+                    return try await next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitBlobStreamInput>
                 public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<ExplicitBlobStreamOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
@@ -148,12 +142,11 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStructInput>,
-                              next: H) -> Swift.Result<ClientRuntime.OperationOutput<ExplicitStructOutputResponse>, MError>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStructOutputResponse>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
-                Self.Context == H.Context,
-                Self.MError == H.MiddlewareError
+                Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
                         do {
@@ -162,16 +155,15 @@ class HttpBodyMiddlewareTests {
                             let payload1body = ClientRuntime.HttpBody.data(payload1data)
                             input.builder.withBody(payload1body)
                         } catch let err {
-                            return .failure(.client(ClientError.serializationFailed(err.localizedDescription)))
+                            throw SdkError<ExplicitStructOutputError>.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription))
                         }
                     }
-                    return next.handle(context: context, input: input)
+                    return try await next.handle(context: context, input: input)
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitStructInput>
                 public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStructOutputResponse>
                 public typealias Context = ClientRuntime.HttpContext
-                public typealias MError = ClientRuntime.SdkError<ExplicitStructOutputError>
             }
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)

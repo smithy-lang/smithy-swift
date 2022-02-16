@@ -8,27 +8,21 @@
 ///
 /// Receives result or error from Build step.
 public typealias SerializeStep<I,
-                               O: HttpResponseBinding,
-                               E: HttpResponseBinding> = MiddlewareStep<HttpContext,
+                               O: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                         SerializeStepInput<I>,
-                                                                        OperationOutput<O>,
-                                                                        SdkError<E>>
+                                                                        OperationOutput<O>>
 
 public let SerializeStepId = "Serialize"
 
 public struct SerializeStepHandler<OperationStackInput,
                                    OperationStackOutput: HttpResponseBinding,
-                                   OperationStackError: HttpResponseBinding,
                                    H: Handler>: Handler where H.Context == HttpContext,
                                                               H.Input == SdkHttpRequestBuilder,
-                                                              H.Output == OperationOutput<OperationStackOutput>,
-                                                              H.MiddlewareError == SdkError<OperationStackError> {
+                                                              H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
     
     public typealias Output = OperationOutput<OperationStackOutput>
-    
-    public typealias MiddlewareError = SdkError<OperationStackError>
     
     let handler: H
     
@@ -36,8 +30,8 @@ public struct SerializeStepHandler<OperationStackInput,
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
-        return handler.handle(context: context, input: input.builder)
+    public func handle(context: HttpContext, input: Input) async throws -> Output {
+        return try await handler.handle(context: context, input: input.builder)
     }
 }
 

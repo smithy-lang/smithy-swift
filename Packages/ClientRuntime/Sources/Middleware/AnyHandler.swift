@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// Type erased Handler
-public struct AnyHandler<MInput, MOutput, Context: MiddlewareContext, MError: Error>: Handler {
-    private let _handle: (Context, MInput) -> Result<MOutput, MError>
+public struct AnyHandler<MInput, MOutput, Context: MiddlewareContext>: Handler {
+    private let _handle: (Context, MInput) async throws -> MOutput
     
     public init<H: Handler> (_ realHandler: H)
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context, H.MiddlewareError == MError {
-        if let alreadyErased = realHandler as? AnyHandler<MInput, MOutput, Context, MError> {
+    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
+        if let alreadyErased = realHandler as? AnyHandler<MInput, MOutput, Context> {
             self = alreadyErased
             return
         }
         self._handle = realHandler.handle
     }
     
-    public func handle(context: Context, input: MInput) -> Result<MOutput, MError> {
-        return _handle(context, input)
+    public func handle(context: Context, input: MInput) async throws -> MOutput {
+        return try await _handle(context, input)
     }
 }

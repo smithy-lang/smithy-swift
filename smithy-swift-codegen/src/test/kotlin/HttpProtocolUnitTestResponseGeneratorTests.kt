@@ -29,7 +29,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         val expectedContents =
             """
-    func testSmokeTest() throws {
+    func testSmokeTest() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -88,7 +88,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonHttpPrefixHeadersPresent() throws {
+    func testRestJsonHttpPrefixHeadersPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -125,7 +125,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonHttpPrefixHeadersAreNotPresent() throws {
+    func testRestJsonHttpPrefixHeadersAreNotPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -156,7 +156,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-    func testRestJsonDeserializeStringUnionValue() throws {
+    func testRestJsonDeserializeStringUnionValue() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -198,7 +198,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         val expectedContents =
             """
-    func testRestJsonRecursiveShapes() throws {
+    func testRestJsonRecursiveShapes() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -264,7 +264,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             """
             class InlineDocumentResponseTest: HttpResponseTestBase {
                 /// Serializes inline documents as part of the JSON response payload with no escaping.
-                func testInlineDocumentOutput() throws {
+                func testInlineDocumentOutput() async throws {
                     guard let httpResponse = buildHttpResponse(
                         code: 200,
                         headers: [
@@ -316,7 +316,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             """
             class InlineDocumentAsPayloadResponseTest: HttpResponseTestBase {
                 /// Serializes an inline document as the target of the httpPayload trait.
-                func testInlineDocumentAsPayloadInputOutput() throws {
+                func testInlineDocumentAsPayloadInputOutput() async throws {
                     guard let httpResponse = buildHttpResponse(
                         code: 200,
                         headers: [

@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
-                                      OperationStackError: HttpResponseBinding>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>: Middleware {
     
     public let id: String = "MutateHeaders"
     
@@ -20,12 +19,11 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: SdkHttpRequestBuilder,
-                          next: H) -> Result<OperationOutput<OperationStackOutput>, MError>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
-    Self.Context == H.Context,
-    Self.MError == H.MiddlewareError {
+    Self.Context == H.Context {
         if !additional.dictionary.isEmpty {
             input.withHeaders(additional)
         }
@@ -44,11 +42,10 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding,
             }
         }
         
-        return next.handle(context: context, input: input)
+        return try await next.handle(context: context, input: input)
     }
     
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }

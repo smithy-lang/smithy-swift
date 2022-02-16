@@ -11,7 +11,7 @@ import SmithyTestUtil
 
 class OperationStackTests: HttpRequestTestBase {
     
-    func testMiddlewareInjectableInit() {
+    func testMiddlewareInjectableInit() async throws {
         var currExpectCount = 1
         let defaultTimeout = 2.0
         let expectInitializeMiddleware = expectation(description: "initializeMiddleware")
@@ -57,14 +57,14 @@ class OperationStackTests: HttpRequestTestBase {
                                                 return nil
                                             }))
         
-        let result = stack.handleMiddleware(context: builtContext,
+        let result = try await stack.handleMiddleware(context: builtContext,
                                             input: MockInput(),
                                             next: MockHandler { (_, request) in
                                                 currExpectCount = self.checkAndFulfill(currExpectCount, 6, expectation: expectHandler)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-                                                return .success(output)
+                                                return output
                                             })
         
         wait(for: [expectInitializeMiddleware,
@@ -75,12 +75,8 @@ class OperationStackTests: HttpRequestTestBase {
                    expectHandler],
              timeout: defaultTimeout)
         
-        switch result {
-        case .success(let output):
-            XCTAssert(output.value == 200)
-        case .failure(let error):
-            XCTFail(error.localizedDescription)
-        }
+
+        XCTAssert(result.value == 200)
     }
     
     private func checkAndFulfill(_ currCount: Int, _ expectedCount: Int, expectation: XCTestExpectation) -> Int {

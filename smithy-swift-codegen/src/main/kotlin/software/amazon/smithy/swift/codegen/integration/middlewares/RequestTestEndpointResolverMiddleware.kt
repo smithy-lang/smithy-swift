@@ -4,7 +4,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
@@ -20,16 +19,14 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         writer.openBlock(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<\$N<$outputShapeName>, \$N<$outputErrorShapeName>> in", "}",
-            SwiftTypes.Result,
-            ClientRuntimeTypes.Middleware.OperationOutput,
-            ClientRuntimeTypes.Core.SdkError
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
+            ClientRuntimeTypes.Middleware.OperationOutput
         ) {
             writer.write("input.withMethod(context.getMethod())")
             writer.write("input.withPath(context.getPath())")
             writer.write("let host = \"\\(context.getHostPrefix() ?? \"\")\\(context.getHost() ?? \"\")\"")
             writer.write("input.withHost(host)")
-            writer.write("return next.handle(context: context, input: input)")
+            writer.write("return try await next.handle(context: context, input: input)")
         }
     }
 }

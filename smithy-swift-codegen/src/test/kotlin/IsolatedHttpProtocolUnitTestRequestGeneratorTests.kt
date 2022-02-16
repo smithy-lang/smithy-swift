@@ -15,7 +15,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
         val expectedContents = """
 class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
     /// Supports handling NaN float label values.
-    func testRestJsonSupportsNaNFloatLabels() throws {
+    func testRestJsonSupportsNaNFloatLabels() async throws {
         let urlPrefix = urlPrefixFromHost(host: "")
         let hostOnly = hostOnlyFromHost(host: "")
         let expected = buildExpectedHttpRequest(
@@ -25,8 +25,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -48,7 +46,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         val expectedContents =
             """
-    func testRestJsonSupportsInfinityFloatLabels() throws {
+    func testRestJsonSupportsInfinityFloatLabels() async throws {
             let urlPrefix = urlPrefixFromHost(host: "")
             let hostOnly = hostOnlyFromHost(host: "")
             let expected = buildExpectedHttpRequest(
@@ -58,8 +56,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 host: "",
                 resolvedHost: ""
             )
-
-            let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
@@ -80,7 +76,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
 
         val expectedContents =
             """
-    func testRestJsonSupportsNegativeInfinityFloatLabels() throws {
+    func testRestJsonSupportsNegativeInfinityFloatLabels() async throws {
             let urlPrefix = urlPrefixFromHost(host: "")
             let hostOnly = hostOnlyFromHost(host: "")
             let expected = buildExpectedHttpRequest(
@@ -90,8 +86,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 host: "",
                 resolvedHost: ""
             )
-    
-            let deserializeMiddleware = expectation(description: "deserializeMiddleware")
     
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
@@ -114,7 +108,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             """
 class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
     /// Supports handling NaN float header values.
-    func testRestJsonSupportsNaNFloatHeaderOutputs() throws {
+    func testRestJsonSupportsNaNFloatHeaderOutputs() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -150,7 +144,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
         val expectedContents = """
 class DocumentTypeRequestTest: HttpRequestTestBase {
     /// Serializes document types using a list.
-    func testDocumentInputWithList() throws {
+    func testDocumentInputWithList() async throws {
         let urlPrefix = urlPrefixFromHost(host: "")
         let hostOnly = hostOnlyFromHost(host: "")
         let expected = buildExpectedHttpRequest(
@@ -183,8 +177,6 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970

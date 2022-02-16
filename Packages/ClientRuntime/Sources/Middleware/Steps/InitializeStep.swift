@@ -8,36 +8,31 @@
 ///
 /// Receives result or error from Serialize step.
 public typealias InitializeStep<I,
-                                O: HttpResponseBinding,
-                                E: HttpResponseBinding> = MiddlewareStep<HttpContext,
+                                O: HttpResponseBinding> = MiddlewareStep<HttpContext,
                                                                          I,
-                                                                         OperationOutput<O>,
-                                                                         SdkError<E>>
+                                                                         OperationOutput<O>>
 
 public let InitializeStepId = "Initialize"
 
 public struct InitializeStepHandler<OperationStackInput,
                                     OperationStackOutput: HttpResponseBinding,
-                                    OperationStackError: HttpResponseBinding,
                                     H: Handler>: Handler where H.Context == HttpContext,
                                                                H.Input == SerializeStepInput<OperationStackInput>,
-                                                               H.Output == OperationOutput<OperationStackOutput>,
-                                                               H.MiddlewareError == SdkError<OperationStackError> {
+                                                               H.Output == OperationOutput<OperationStackOutput> {
     
     public typealias Input = OperationStackInput
     
     public typealias Output = OperationOutput<OperationStackOutput>
     
-    public typealias MiddlewareError = SdkError<OperationStackError>
     let handler: H
     
     public init(handler: H) {
         self.handler = handler
     }
     
-    public func handle(context: HttpContext, input: Input) -> Result<Output, MiddlewareError> {
+    public func handle(context: HttpContext, input: Input) async throws -> Output {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
         
-        return handler.handle(context: context, input: serializeInput)
+        return try await handler.handle(context: context, input: serializeInput)
     }
 }

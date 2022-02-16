@@ -18,15 +18,14 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
 
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) -> Result<OperationOutput<Output>, SdkError<OutputError>>
+                          next: H) async throws -> OperationOutput<Output>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
         
         guard let logger = context.getLogger() else {
-            return next.handle(context: context, input: input)
+            return try await next.handle(context: context, input: input)
         }
         
         if clientLogMode == .request || clientLogMode == .requestAndResponse {
@@ -35,18 +34,12 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
             logger.debug("Request: \(input.debugDescriptionWithBody)")
         }
         
-        let response = next.handle(context: context, input: input)
+        let response = try await next.handle(context: context, input: input)
         
-        do {
-            let output = try response.get()
-            if clientLogMode == .response || clientLogMode == .requestAndResponse {
-                logger.debug("Response: \(output.httpResponse.debugDescription)")
-            } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
-                logger.debug("Response: \(output.httpResponse.debugDescriptionWithBody)")
-            }
-            
-        } catch {
-            return response
+        if clientLogMode == .response || clientLogMode == .requestAndResponse {
+            logger.debug("Response: \(response.httpResponse.debugDescription)")
+        } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
+            logger.debug("Response: \(response.httpResponse.debugDescriptionWithBody)")
         }
         
         return response

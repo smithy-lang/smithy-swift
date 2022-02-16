@@ -33,7 +33,6 @@ class OperationInputUrlHostMiddleware(
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
 
         var inputParameters = if (requiresHost) "host: hostOnly" else ""
         operation.getTrait<EndpointTrait>()?.let {
@@ -42,6 +41,6 @@ class OperationInputUrlHostMiddleware(
             inputParameters += if (requiresHost) ", " else ""
             inputParameters += "hostPrefix: \"$hostPrefix\""
         }
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLHostMiddleware)
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLHostMiddleware)
     }
 }

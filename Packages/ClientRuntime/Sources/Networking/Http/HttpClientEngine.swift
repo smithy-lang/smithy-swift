@@ -5,7 +5,6 @@
 import AwsCommonRuntimeKit
 
 public protocol HttpClientEngine {
-    func executeWithClosure(request: SdkHttpRequest, completion: @escaping NetworkResult)
-    func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse>
+    func execute(request: SdkHttpRequest) async throws -> HttpResponse
     func close()
 }

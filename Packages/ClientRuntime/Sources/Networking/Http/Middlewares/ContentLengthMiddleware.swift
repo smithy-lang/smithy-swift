@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
-                                      OperationStackError: HttpResponseBinding>: Middleware {
+public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "ContentLength"
     
     private let contentLengthHeaderName = "Content-Length"
@@ -11,12 +10,11 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
     
     public func handle<H>(context: Context,
                           input: MInput,
-                          next: H) -> Result<MOutput, MError>
+                          next: H) async throws -> MOutput
     where H: Handler,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
-    Self.Context == H.Context,
-    Self.MError == H.MiddlewareError {
+    Self.Context == H.Context {
         
         switch input.body {
         case .data(let data):
@@ -32,11 +30,10 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding,
             input.headers.update(name: "Content-Length", value: "0")
         }
         
-        return next.handle(context: context, input: input)
+        return try await next.handle(context: context, input: input)
     }
     
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
 }

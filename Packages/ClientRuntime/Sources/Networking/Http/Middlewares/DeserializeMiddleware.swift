@@ -6,41 +6,29 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
     
     public var id: String = "Deserialize"
     public init() {}
-    public func handle<H>(context: Context,
+    public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
-                          next: H) -> Result<OperationOutput<Output>, SdkError<OutputError>>
+                          next: H) async throws -> OperationOutput<Output>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
-        
-        let decoder = context.getDecoder()
-        let response = next.handle(context: context, input: input) // call handler to get http response
-        
-        switch response {
-        case .failure(let err):
-            return .failure(.client(ClientError.deserializationFailed(err)))
-        case .success(let result) :
-            var copiedResponse = result
-            do {
-                if (200..<300).contains(copiedResponse.httpResponse.statusCode.rawValue) {
-                    let output = try Output(httpResponse: copiedResponse.httpResponse, decoder: decoder)
-                    copiedResponse.output = output
-                    return .success(copiedResponse)
-                } else {
-                    let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
-                    return .failure(.service(error, copiedResponse.httpResponse))
-                }
-            } catch let err {
-                return .failure(.client(ClientError.deserializationFailed(err), copiedResponse.httpResponse))
-            }
-        }
-        
+          Self.Context == H.Context {
+              
+          let decoder = context.getDecoder()
+          let response = try await next.handle(context: context, input: input) // call handler to get http response
+          var copiedResponse = response
+          if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
+              let output = try Output(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+              copiedResponse.output = output
+              return copiedResponse
+          } else {
+              let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+              throw SdkError.service(error, copiedResponse.httpResponse)
+          }
     }
     
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<Output>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OutputError>
+    
 }

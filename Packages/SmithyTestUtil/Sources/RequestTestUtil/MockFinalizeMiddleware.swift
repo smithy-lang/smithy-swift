@@ -21,17 +21,16 @@ public struct MockFinalizeMiddleware: Middleware {
         self.callback = callback
     }
     
-    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, MError>
+    public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
         if let callback = self.callback {
             callback(context, input)
         }
         
-        return next.handle(context: context, input: input)
+        return try await next.handle(context: context, input: input)
     }
    
 }

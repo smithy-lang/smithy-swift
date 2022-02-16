@@ -11,7 +11,6 @@ public struct MockInitializeMiddleware: Middleware {
     public typealias Context = HttpContext
     public typealias MInput = MockInput
     public typealias MOutput = OperationOutput<MockOutput>
-    public typealias MError = SdkError<MockMiddlewareError>
     public typealias MockInitializeMiddlewareCallback = (HttpContext, MInput) -> Void
     public let id: String
     let callback: MockInitializeMiddlewareCallback?
@@ -21,18 +20,17 @@ public struct MockInitializeMiddleware: Middleware {
         self.callback = callback
     }
     
-    public func handle<H>(context: HttpContext, input: MInput, next: H) -> Result<MOutput, MError>
+    public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
-          Self.Context == H.Context,
-          Self.MError == H.MiddlewareError {
+          Self.Context == H.Context {
         if let callback = self.callback {
             callback(context, input)
         }
         var copiedInput = input
         copiedInput.value = 1023
         
-        return next.handle(context: context, input: copiedInput)
+        return try await next.handle(context: context, input: copiedInput)
     }
 }

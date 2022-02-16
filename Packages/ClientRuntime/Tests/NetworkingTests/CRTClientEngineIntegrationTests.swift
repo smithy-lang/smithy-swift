@@ -22,31 +22,19 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         super.tearDown()
     }
     
-    func testMakeHttpGetRequest() {
-        let expectation = XCTestExpectation(description: "Request has been completed")
+    func testMakeHttpGetRequest() async throws {
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
         let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get"), headers: headers)
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let response = try await httpClient.execute(request: request)
+          
+        XCTAssertNotNil(response)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpPostRequest() throws {
+    func testMakeHttpPostRequest() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -57,25 +45,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
                                      body: HttpBody.data(encodedData))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 20.0)
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpStreamRequestDynamicReceive() {
+    func testMakeHttpStreamRequestDynamicReceive() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -83,25 +59,13 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
                                      body: HttpBody.stream(ByteStream.defaultReader()))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 20.0)
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpStreamRequestReceive() {
+    func testMakeHttpStreamRequestReceive() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -110,30 +74,18 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
                                      body: HttpBody.stream(ByteStream.defaultReader()))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                if case let HttpBody.stream(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toBytes().length == 1024)
-                } else {
-                    XCTFail("Bytes not received")
-                }
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        if case let HttpBody.stream(unwrappedStream) = response.body {
+            XCTAssert(unwrappedStream.toBytes().length == 1024)
+        } else {
+            XCTFail("Bytes not received")
         }
-        
-        wait(for: [expectation], timeout: 20.0)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpStreamRequestReceiveOneByte() {
+    func testMakeHttpStreamRequestReceiveOneByte() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -142,31 +94,18 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1"),
                                      headers: headers,
                                      body: HttpBody.stream(ByteStream.defaultReader()))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                if case let HttpBody.stream(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toBytes().length == 1)
-                } else {
-                    XCTFail("Bytes not received")
-                }
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        if case let HttpBody.stream(unwrappedStream) = response.body {
+            XCTAssert(unwrappedStream.toBytes().length == 1)
+        } else {
+            XCTFail("Bytes not received")
         }
-        
-        wait(for: [expectation], timeout: 20.0)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpStreamRequestReceive3ThousandBytes() {
+    func testMakeHttpStreamRequestReceive3ThousandBytes() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
-        
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -175,30 +114,18 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
                                      headers: headers,
                                      body: HttpBody.stream(ByteStream.defaultReader()))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                if case let HttpBody.stream(unwrappedStream) = response.body {
-                    XCTAssert(unwrappedStream.toBytes().length == 3000)
-                } else {
-                    XCTFail("Bytes not received")
-                }
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        if case let HttpBody.stream(unwrappedStream) = response.body {
+            XCTAssert(unwrappedStream.toBytes().length == 3000)
+        } else {
+            XCTFail("Bytes not received")
         }
-        
-        wait(for: [expectation], timeout: 20.0)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttpStreamRequestFromData() throws {
+    func testMakeHttpStreamRequestFromData() async throws {
         //used https://httpbin.org
-        let expectation = XCTestExpectation(description: "Request has been completed")
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
@@ -210,20 +137,9 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
                                      body: HttpBody.stream(.buffer(ByteBuffer(data: encodedData))))
-        httpClient.execute(request: request) { result in
-            switch result {
-            case .success(let response):
-                XCTAssertNotNil(response)
-                XCTAssert(response.statusCode == HttpStatusCode.ok)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error)
-                XCTFail(error.localizedDescription)
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 20.0)
+        let response = try await httpClient.execute(request: request)
+        XCTAssertNotNil(response)
+        XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
 }
 
