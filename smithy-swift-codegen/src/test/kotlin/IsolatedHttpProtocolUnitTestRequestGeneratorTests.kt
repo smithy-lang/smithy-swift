@@ -26,8 +26,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             resolvedHost: ""
         )
 
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
@@ -59,8 +57,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 resolvedHost: ""
             )
 
-            let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
@@ -90,8 +86,6 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
                 host: "",
                 resolvedHost: ""
             )
-    
-            let deserializeMiddleware = expectation(description: "deserializeMiddleware")
     
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
@@ -183,8 +177,6 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970

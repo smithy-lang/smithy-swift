@@ -59,8 +59,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             resolvedHost: ""
         )
 
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
-
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
@@ -121,7 +119,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! SmokeTestOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<SmokeTestOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -130,7 +127,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! SmokeTestOutputError(httpResponse: httpResponse)
             throw SdkError<SmokeTestOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -159,8 +155,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -202,7 +196,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! ExplicitStringOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<ExplicitStringOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -211,7 +204,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! ExplicitStringOutputError(httpResponse: httpResponse)
             throw SdkError<ExplicitStringOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -233,8 +225,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -269,7 +259,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! EmptyInputAndEmptyOutputOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<EmptyInputAndEmptyOutputOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -278,7 +267,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! EmptyInputAndEmptyOutputOutputError(httpResponse: httpResponse)
             throw SdkError<EmptyInputAndEmptyOutputOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -303,8 +291,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -344,7 +330,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! SimpleScalarPropertiesOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<SimpleScalarPropertiesOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -353,7 +338,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! SimpleScalarPropertiesOutputError(httpResponse: httpResponse)
             throw SdkError<SimpleScalarPropertiesOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -381,8 +365,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -426,7 +408,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! StreamingTraitsOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<StreamingTraitsOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -435,7 +416,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! StreamingTraitsOutputError(httpResponse: httpResponse)
             throw SdkError<StreamingTraitsOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -460,8 +440,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -500,7 +478,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! HttpPrefixHeadersOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<HttpPrefixHeadersOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -509,7 +486,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! HttpPrefixHeadersOutputError(httpResponse: httpResponse)
             throw SdkError<HttpPrefixHeadersOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -540,8 +516,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -590,7 +564,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! JsonUnionsOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<JsonUnionsOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -599,7 +572,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! JsonUnionsOutputError(httpResponse: httpResponse)
             throw SdkError<JsonUnionsOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -639,8 +611,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -703,7 +673,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! RecursiveShapesOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<RecursiveShapesOutputResponse>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -712,7 +681,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let serviceError = try! RecursiveShapesOutputError(httpResponse: httpResponse)
             throw SdkError<RecursiveShapesOutputError>.service(serviceError, httpResponse)
         })
-        wait(for: [deserializeMiddleware], timeout: 0.3)
  """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -743,8 +711,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -800,7 +766,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
                 let mockOutput = try! InlineDocumentOutputResponse(httpResponse: response, decoder: nil)
                 let output = OperationOutput<InlineDocumentOutputResponse>(httpResponse: response, output: mockOutput)
-                deserializeMiddleware.fulfill()
                 return output
             })
             _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -809,7 +774,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 let serviceError = try! InlineDocumentOutputError(httpResponse: httpResponse)
                 throw SdkError<InlineDocumentOutputError>.service(serviceError, httpResponse)
             })
-            wait(for: [deserializeMiddleware], timeout: 0.3)
         }
  """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -838,8 +802,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             host: "",
             resolvedHost: ""
         )
-
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
 
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
@@ -893,7 +855,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
                 let mockOutput = try! InlineDocumentAsPayloadOutputResponse(httpResponse: response, decoder: nil)
                 let output = OperationOutput<InlineDocumentAsPayloadOutputResponse>(httpResponse: response, output: mockOutput)
-                deserializeMiddleware.fulfill()
                 return output
             })
             _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
@@ -902,7 +863,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 let serviceError = try! InlineDocumentAsPayloadOutputError(httpResponse: httpResponse)
                 throw SdkError<InlineDocumentAsPayloadOutputError>.service(serviceError, httpResponse)
             })
-            wait(for: [deserializeMiddleware], timeout: 0.3)
         }
  """
         contents.shouldContainOnlyOnce(expectedContents)
