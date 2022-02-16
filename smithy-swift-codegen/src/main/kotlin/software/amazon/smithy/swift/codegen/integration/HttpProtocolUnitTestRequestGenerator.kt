@@ -66,7 +66,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-            writer.write("let deserializeMiddleware = expectation(description: \"deserializeMiddleware\")\n")
+
             val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
             decoderProperty?.renderInstantiation(writer)
             decoderProperty?.renderConfiguration(writer)
@@ -115,7 +115,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("let serviceError = try! $outputErrorName(httpResponse: httpResponse)")
                 writer.write("throw SdkError<$outputErrorName>.service(serviceError, httpResponse)")
             }
-            writer.write("wait(for: [deserializeMiddleware], timeout: 0.3)")
         }
     }
 
@@ -140,7 +139,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
             writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
-            writer.write("deserializeMiddleware.fulfill()")
             writer.write("return output")
         }
     }
