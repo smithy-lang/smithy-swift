@@ -126,7 +126,7 @@ class StructureGenerator(
             }
 
             writer.writeAvailableAttribute(model, it)
-            writer.write("var \$L: \$T", memberName, memberSymbol)
+            writer.write("public var \$L: \$T", memberName, memberSymbol)
         }
     }
 
