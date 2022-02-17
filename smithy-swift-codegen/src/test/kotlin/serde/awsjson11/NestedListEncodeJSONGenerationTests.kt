@@ -18,7 +18,7 @@ class NestedListEncodeJSONGenerationTests {
         val expectedContents =
             """
             public struct ListOfMapsOperationInput: Swift.Equatable {
-                var targetMaps: [[Swift.String:[Swift.String]]]?
+                public var targetMaps: [[Swift.String:[Swift.String]]]?
             
                 public init (
                     targetMaps: [[Swift.String:[Swift.String]]]? = nil

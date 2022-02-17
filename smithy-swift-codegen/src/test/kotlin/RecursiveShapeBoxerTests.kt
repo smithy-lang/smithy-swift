@@ -51,7 +51,7 @@ internal class RecursiveShapeBoxerTests {
         val expected =
             """
             public struct RecursiveShapesInput: Swift.Equatable {
-                var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+                public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
                 public init (
                     nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
@@ -69,7 +69,7 @@ internal class RecursiveShapeBoxerTests {
         val expected2 =
             """
             public struct RecursiveShapesOutputResponse: Swift.Equatable {
-                var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+                public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
                 public init (
                     nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
@@ -88,8 +88,8 @@ internal class RecursiveShapeBoxerTests {
             """
             extension ExampleClientTypes {
                 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
-                    var foo: Swift.String?
-                    var nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
+                    public var foo: Swift.String?
+                    public var nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
             
                     public init (
                         foo: Swift.String? = nil,
@@ -112,8 +112,8 @@ internal class RecursiveShapeBoxerTests {
             """
         extension ExampleClientTypes {
             public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
-                var bar: Swift.String?
-                var recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1?
+                public var bar: Swift.String?
+                public var recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1?
         
                 public init (
                     bar: Swift.String? = nil,
