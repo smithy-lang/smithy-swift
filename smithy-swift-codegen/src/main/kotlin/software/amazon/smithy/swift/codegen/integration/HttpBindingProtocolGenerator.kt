@@ -167,7 +167,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
             }
-            if (shouldRenderDecodableBodyStructForInputShapes && httpBodyMembers.isNotEmpty()) {
+            if (shouldRenderDecodableBodyStructForInputShapes || httpBodyMembers.isNotEmpty()) {
                 renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
                 DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }

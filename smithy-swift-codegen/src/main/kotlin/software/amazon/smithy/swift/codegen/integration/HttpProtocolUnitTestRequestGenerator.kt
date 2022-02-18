@@ -143,7 +143,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
-        if (test.body.isPresent && test.body.get().isNotBlank() && test.body.get() != "{}") {
+        if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
                 "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
