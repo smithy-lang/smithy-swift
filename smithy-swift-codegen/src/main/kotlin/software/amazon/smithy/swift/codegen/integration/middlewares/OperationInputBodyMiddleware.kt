@@ -30,7 +30,7 @@ class OperationInputBodyMiddleware(
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         if (alwaysSendBody) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>(alwaysSendBody: true))", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>())", ClientRuntimeTypes.Middleware.SerializableBodyMiddleware)
         } else if (MiddlewareShapeUtils.hasHttpBody(model, op)) {
             if (MiddlewareShapeUtils.bodyIsHttpPayload(model, op)) {
                 writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: ${inputShapeName}BodyMiddleware())")

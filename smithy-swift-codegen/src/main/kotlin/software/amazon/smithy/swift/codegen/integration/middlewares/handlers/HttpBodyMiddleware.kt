@@ -78,49 +78,63 @@ class HttpBodyMiddleware(
         val target = ctx.model.expectShape(binding.member.target)
         val dataDeclaration = "${memberName}data"
         val bodyDeclaration = "${memberName}body"
-        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-            when (target.type) {
+
+        when (target.type) {
                 ShapeType.BLOB -> {
                     val isBinaryStream =
                         ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    val bodyType = if (isBinaryStream) ".stream" else ".data"
-                    writer.write("let $dataDeclaration = \$L", memberName)
-                    writer.write("let $bodyDeclaration = \$N$bodyType($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
-                    writer.write("input.builder.withBody($bodyDeclaration)")
+                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                        writer.write("let $dataDeclaration = \$L", memberName)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration, isBinaryStream)
+                    }
                 }
                 ShapeType.STRING -> {
                     val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
-                    writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
-                    writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
-                    writer.write("input.builder.withBody($bodyDeclaration)")
+                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                        writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     // delegate to the member encode function
                     writer.openBlock("do {", "} catch let err {") {
                         writer.write("let encoder = context.getEncoder()")
-                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                        writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
-                        writer.write("input.builder.withBody($bodyDeclaration)")
+                        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
+                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                            renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                        }
+                        writer.indent()
+                        writer.write("let $dataDeclaration = try encoder.encode(input.operationInput)")
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                        writer.dedent()
+                        writer.write("}")
                     }
-                    writer.indent()
-                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
-                    writer.dedent()
-                    writer.write("}")
+                    renderErrorCase()
                 }
                 ShapeType.DOCUMENT -> {
                     writer.openBlock("do {", "} catch let err {") {
+                        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                         writer.write("let encoder = context.getEncoder()")
-                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                        writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
-                        writer.write("input.builder.withBody($bodyDeclaration)")
+                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                            renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                        }
                     }
-                    writer.indent()
-                    writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
-                    writer.dedent()
-                    writer.write("}")
+                    renderErrorCase()
                 }
                 else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
-        }
+    }
+
+    private fun renderEncodedBodyAddedToRequest(bodyDeclaration: String, dataDeclaration: String, isBinaryStream: Boolean = false) {
+        val bodyType = if (isBinaryStream) ".stream" else ".data"
+        writer.write("let $bodyDeclaration = \$N$bodyType($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+        writer.write("input.builder.withBody($bodyDeclaration)")
+    }
+
+    private fun renderErrorCase() {
+        writer.indent()
+        writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
+        writer.dedent()
+        writer.write("}")
     }
 }

@@ -252,10 +252,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
-                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
-            })
+            self.assertEqual(expected, actual)
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! EmptyInputAndEmptyOutputOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<EmptyInputAndEmptyOutputOutputResponse>(httpResponse: response, output: mockOutput)
@@ -490,10 +487,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
-                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
-            })
+            self.assertEqual(expected, actual)
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! HttpPrefixHeadersOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<HttpPrefixHeadersOutputResponse>(httpResponse: response, output: mockOutput)

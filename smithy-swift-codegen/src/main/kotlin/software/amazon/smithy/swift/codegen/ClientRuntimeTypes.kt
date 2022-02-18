@@ -83,7 +83,6 @@ object ClientRuntimeTypes {
         val ClientError = runtimeSymbol("ClientError")
         val SdkError = runtimeSymbol("SdkError")
         val ServiceError = runtimeSymbol("ServiceError")
-        val SdkResult = runtimeSymbol("SdkResult")
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
@@ -94,7 +93,6 @@ object ClientRuntimeTypes {
         val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration")
         val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration")
         val DateFormatter = runtimeSymbol("DateFormatter")
-        val Reflection: Symbol = runtimeSymbol("Reflection")
     }
 }
 

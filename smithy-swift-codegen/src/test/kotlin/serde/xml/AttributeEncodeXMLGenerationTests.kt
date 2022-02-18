@@ -42,7 +42,7 @@ class AttributeEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlAttributesInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlAttributesInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case attr = "test"
                     case foo

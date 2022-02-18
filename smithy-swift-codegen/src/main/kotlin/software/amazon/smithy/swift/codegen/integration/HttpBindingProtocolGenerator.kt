@@ -152,10 +152,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
-                        "extension $symbolName: \$N, \$N {",
+                        "extension $symbolName: \$N {",
                         "}",
-                        SwiftTypes.Protocols.Encodable,
-                        ClientRuntimeTypes.Core.Reflection
+                        SwiftTypes.Protocols.Encodable
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
@@ -212,7 +211,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension \$N: \$N, \$N {", "}", symbol, SwiftTypes.Protocols.Codable, ClientRuntimeTypes.Core.Reflection) {
+            writer.openBlock("extension \$N: \$N {", "}", symbol, SwiftTypes.Protocols.Codable) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {

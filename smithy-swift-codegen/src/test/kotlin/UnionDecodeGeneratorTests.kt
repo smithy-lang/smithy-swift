@@ -66,7 +66,7 @@ class UnionDecodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.MyUnion: Swift.Codable, ClientRuntime.Reflection {
+            extension ExampleClientTypes.MyUnion: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"

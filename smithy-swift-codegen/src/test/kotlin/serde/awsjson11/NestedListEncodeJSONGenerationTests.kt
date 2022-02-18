@@ -38,7 +38,7 @@ class NestedListEncodeJSONGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ListOfMapsOperationInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension ListOfMapsOperationInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case targetMaps
                 }

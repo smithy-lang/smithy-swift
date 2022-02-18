@@ -19,7 +19,7 @@ class BlobEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlBlobsInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlBlobsInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case data
                 }
@@ -42,7 +42,7 @@ class BlobEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlBlobsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlBlobsNestedInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedBlobList
                 }

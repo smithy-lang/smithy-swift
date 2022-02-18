@@ -6,7 +6,7 @@
 //
 import ClientRuntime
 
-public struct MockStreamInput: Reflection, Encodable {
+public struct MockStreamInput: Encodable {
     let body: ByteStream
     
     public init(body: ByteStream) {
