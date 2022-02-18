@@ -167,7 +167,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "self.assertEqual(expected, actual)" )
+                "self.assertEqual(expected, actual)"
+            )
         }
     }
 

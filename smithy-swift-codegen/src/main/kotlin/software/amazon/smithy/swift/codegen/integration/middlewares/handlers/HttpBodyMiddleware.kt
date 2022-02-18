@@ -80,49 +80,49 @@ class HttpBodyMiddleware(
         val bodyDeclaration = "${memberName}body"
 
         when (target.type) {
-                ShapeType.BLOB -> {
-                    val isBinaryStream =
-                        ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
-                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                        writer.write("let $dataDeclaration = \$L", memberName)
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration, isBinaryStream)
-                    }
+            ShapeType.BLOB -> {
+                val isBinaryStream =
+                    ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
+                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                    writer.write("let $dataDeclaration = \$L", memberName)
+                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration, isBinaryStream)
                 }
-                ShapeType.STRING -> {
-                    val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
-                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                        writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
-                    }
-                }
-                ShapeType.STRUCTURE, ShapeType.UNION -> {
-                    // delegate to the member encode function
-                    writer.openBlock("do {", "} catch let err {") {
-                        writer.write("let encoder = context.getEncoder()")
-                        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
-                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                            renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
-                        }
-                        writer.indent()
-                        writer.write("let $dataDeclaration = try encoder.encode(input.operationInput)")
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
-                        writer.dedent()
-                        writer.write("}")
-                    }
-                    renderErrorCase()
-                }
-                ShapeType.DOCUMENT -> {
-                    writer.openBlock("do {", "} catch let err {") {
-                        writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                        writer.write("let encoder = context.getEncoder()")
-                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                            renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
-                        }
-                    }
-                    renderErrorCase()
-                }
-                else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
             }
+            ShapeType.STRING -> {
+                val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
+                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                    writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
+                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                }
+            }
+            ShapeType.STRUCTURE, ShapeType.UNION -> {
+                // delegate to the member encode function
+                writer.openBlock("do {", "} catch let err {") {
+                    writer.write("let encoder = context.getEncoder()")
+                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
+                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
+                    writer.indent()
+                    writer.write("let $dataDeclaration = try encoder.encode(input.operationInput)")
+                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    writer.dedent()
+                    writer.write("}")
+                }
+                renderErrorCase()
+            }
+            ShapeType.DOCUMENT -> {
+                writer.openBlock("do {", "} catch let err {") {
+                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                        writer.write("let encoder = context.getEncoder()")
+                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
+                }
+                renderErrorCase()
+            }
+            else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
+        }
     }
 
     private fun renderEncodedBodyAddedToRequest(bodyDeclaration: String, dataDeclaration: String, isBinaryStream: Boolean = false) {
