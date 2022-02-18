@@ -287,7 +287,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            body: nil,
+            body: ""${'"'}
+            {}
+            ""${'"'},
             host: "",
             resolvedHost: ""
         )
@@ -324,8 +326,25 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssert(actualHttpBody == HttpBody.none, "The actual HttpBody is not none as expected")
-                XCTAssert(expectedHttpBody == HttpBody.none, "The expected HttpBody is not none as expected")
+                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { expectedData, actualData in
+                    do {
+                        let expectedObj = try decoder.decode(SimpleScalarPropertiesInputBody.self, from: expectedData)
+                        let actualObj = try decoder.decode(SimpleScalarPropertiesInputBody.self, from: actualData)
+                        XCTAssertEqual(expectedObj.stringValue, actualObj.stringValue)
+                        XCTAssertEqual(expectedObj.trueBooleanValue, actualObj.trueBooleanValue)
+                        XCTAssertEqual(expectedObj.falseBooleanValue, actualObj.falseBooleanValue)
+                        XCTAssertEqual(expectedObj.byteValue, actualObj.byteValue)
+                        XCTAssertEqual(expectedObj.shortValue, actualObj.shortValue)
+                        XCTAssertEqual(expectedObj.integerValue, actualObj.integerValue)
+                        XCTAssertEqual(expectedObj.longValue, actualObj.longValue)
+                        XCTAssertEqual(expectedObj.floatValue, actualObj.floatValue)
+                        XCTAssertEqual(expectedObj.doubleValue, actualObj.doubleValue)
+                    } catch let err {
+                        XCTFail("Failed to verify body \(err)")
+                    }
+                }
             })
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! SimpleScalarPropertiesOutputResponse(httpResponse: response, decoder: nil)
