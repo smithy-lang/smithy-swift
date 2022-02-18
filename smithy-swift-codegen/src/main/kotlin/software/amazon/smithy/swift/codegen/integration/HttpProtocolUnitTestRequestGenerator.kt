@@ -51,11 +51,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         } else {
             test.body.ifPresent { body ->
                 when {
-                    !body.isBlank() && body != "{}" -> writer.write(
+                    body.isNotBlank() -> writer.write(
                         "body: \"\"\"\n\$L\n\"\"\",",
                         body.replace("\\\"", "\\\\\"")
                     )
-                    body == "{}" -> writer.write("body: nil,")
                     else -> writer.write("body: nil,")
                 }
             }

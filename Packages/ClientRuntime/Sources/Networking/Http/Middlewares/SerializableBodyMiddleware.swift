@@ -30,6 +30,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
                       input.builder.withBody(body)
                   }
               } catch let err {
+                  print(String(describing: err)) 
                   throw ClientError.serializationFailed(err.localizedDescription)
               }
               return try await next.handle(context: context, input: input)

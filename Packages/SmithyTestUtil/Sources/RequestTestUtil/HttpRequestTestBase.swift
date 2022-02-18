@@ -84,7 +84,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         // handle empty string body cases that should still create a request
         // without the body
-        if body != "" && body != "{}" {
+        if body != "" {
             let httpBody = HttpBody.data(body.data(using: .utf8))
             builder.withBody(httpBody)
         }
