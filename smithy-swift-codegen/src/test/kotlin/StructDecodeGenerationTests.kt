@@ -79,7 +79,7 @@ class StructDecodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.Nested4: Swift.Codable, ClientRuntime.Reflection {
+            extension ExampleClientTypes.Nested4: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case intList
                     case intMap
@@ -467,7 +467,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable, ClientRuntime.Reflection {
+            extension ExampleClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case foo
                     case nested
@@ -505,7 +505,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension ExampleClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable, ClientRuntime.Reflection {
+            extension ExampleClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case bar
                     case recursiveMember

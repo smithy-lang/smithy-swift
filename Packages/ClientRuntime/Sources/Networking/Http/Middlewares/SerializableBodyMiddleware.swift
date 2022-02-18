@@ -5,15 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflection,
+public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
                                          OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
     
-    let alwaysSendBody: Bool
-    
-    public init(alwaysSendBody: Bool = false) {
-        self.alwaysSendBody = alwaysSendBody
-    }
+    public init() {}
     
     public func handle<H>(context: Context,
                           input: SerializeStepInput<OperationStackInput>,
@@ -23,12 +19,10 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable & Reflec
           Self.MOutput == H.Output,
           Self.Context == H.Context {
               do {
-                  if try alwaysSendBody || !input.operationInput.allPropertiesAreNull() {
-                      let encoder = context.getEncoder()
-                      let data = try encoder.encode(input.operationInput)
-                      let body = HttpBody.data(data)
-                      input.builder.withBody(body)
-                  }
+                  let encoder = context.getEncoder()
+                  let data = try encoder.encode(input.operationInput)
+                  let body = HttpBody.data(data)
+                  input.builder.withBody(body)
               } catch let err {
                   throw ClientError.serializationFailed(err.localizedDescription)
               }

@@ -19,7 +19,7 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlTimestampsInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case epochSeconds
@@ -54,7 +54,7 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlTimestampsNestedInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
@@ -83,7 +83,7 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedHTTPDateInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlTimestampsNestedHTTPDateInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
@@ -112,7 +112,7 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsNestedXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlTimestampsNestedXmlNameInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedTimestampList
                 }
@@ -141,7 +141,7 @@ class TimeStampEncodeGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsXmlNameInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlTimestampsXmlNameInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlTimestampsXmlNameInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case dateTime
                     case normal = "notNormalName"

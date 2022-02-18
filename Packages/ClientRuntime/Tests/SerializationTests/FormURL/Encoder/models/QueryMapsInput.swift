@@ -21,7 +21,7 @@ public struct QueryMapsInput: Equatable {
     }
 }
 
-extension QueryMapsInput: Encodable, Reflection {
+extension QueryMapsInput: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: Key.self)
         if let flattenedMap = flattenedMap {

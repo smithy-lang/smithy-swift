@@ -19,7 +19,7 @@ class EnumEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumsInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case fooEnum1
                     case fooEnum2
@@ -56,7 +56,7 @@ class EnumEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedInput+Encodable.swift")
         val expectedContents =
             """
-            extension XmlEnumsNestedInput: Swift.Encodable, ClientRuntime.Reflection {
+            extension XmlEnumsNestedInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedEnumsList
                 }

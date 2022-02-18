@@ -9,7 +9,7 @@
  * Used for decoding lists for RestXML
  */
 public struct CollectionMember<M, MemberCodingKey>: Codable where M: Codable {
-    let member: [M]
+    public let member: [M]
     public enum CodingKeys: String, CodingKey {
         case member
 

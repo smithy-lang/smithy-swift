@@ -116,7 +116,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         typealias Context = HttpContext
     }
     
-    struct SayHelloInput: Encodable, Reflection {
+    struct SayHelloInput: Encodable {
         
         let greeting: String?
         let forbiddenQuery: String?

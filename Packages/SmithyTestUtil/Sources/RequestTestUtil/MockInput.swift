@@ -7,7 +7,7 @@
 
 import ClientRuntime
 
-public struct MockInput: Encodable, Reflection {
+public struct MockInput: Encodable {
     public var value: Int?
     public init() {}
 }

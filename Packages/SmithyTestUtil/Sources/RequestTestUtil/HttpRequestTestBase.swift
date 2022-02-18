@@ -84,7 +84,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         // handle empty string body cases that should still create a request
         // without the body
-        if body != "" && body != "{}" {
+        if body != "" {
             let httpBody = HttpBody.data(body.data(using: .utf8))
             builder.withBody(httpBody)
         }
@@ -206,7 +206,7 @@ open class HttpRequestTestBase: XCTestCase {
      */
     public func assertEqual(_ expected: ExpectedSdkHttpRequest,
                             _ actual: SdkHttpRequest,
-                            _ assertEqualHttpBody: (HttpBody?, HttpBody?) -> Void) {
+                            _ assertEqualHttpBody: ((HttpBody?, HttpBody?) -> Void)? = nil) {
         // assert headers match
         assertHttpHeaders(expected.headers, actual.headers)
         
@@ -223,8 +223,11 @@ open class HttpRequestTestBase: XCTestCase {
         
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems)
         
-        // assert the contents of HttpBody match
-        assertEqualHttpBody(expected.body, actual.body)
+        // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
+        // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
+        if let assertEqualHttpBody = assertEqualHttpBody {
+            assertEqualHttpBody(expected.body, actual.body)
+        }
     }
     
     public func genericAssertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody, _ callback: (Data, Data) -> Void) {

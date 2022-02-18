@@ -46,19 +46,13 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedBody(test: HttpRequestTestCase) {
-        if (test.body.isEmpty) {
-            writer.write("body: nil,")
+        if (test.body.isPresent && test.body.get().isNotBlank()) {
+            writer.write(
+                "body: \"\"\"\n\$L\n\"\"\",",
+                test.body.get().replace("\\\"", "\\\\\"")
+            )
         } else {
-            test.body.ifPresent { body ->
-                when {
-                    !body.isBlank() && body != "{}" -> writer.write(
-                        "body: \"\"\"\n\$L\n\"\"\",",
-                        body.replace("\\\"", "\\\\\"")
-                    )
-                    body == "{}" -> writer.write("body: nil,")
-                    else -> writer.write("body: nil,")
-                }
-            }
+            writer.write("body: nil,")
         }
     }
 
@@ -144,7 +138,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
-        if (test.body.isPresent && test.body.get().isNotBlank() && test.body.get() != "{}") {
+        if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
                 "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
@@ -172,13 +166,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
             }
         } else {
-            writer.openBlock(
-                "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})"
-            ) {
-                writer.write("XCTAssert(actualHttpBody == HttpBody.none, \"The actual HttpBody is not none as expected\")")
-                writer.write("XCTAssert(expectedHttpBody == HttpBody.none, \"The expected HttpBody is not none as expected\")")
-            }
+            writer.write(
+                "self.assertEqual(expected, actual)"
+            )
         }
     }
 

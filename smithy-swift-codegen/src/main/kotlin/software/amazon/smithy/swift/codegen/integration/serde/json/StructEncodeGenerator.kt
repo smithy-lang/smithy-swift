@@ -76,6 +76,9 @@ class StructEncodeGenerator(
                         }
                     }
                 }
+            } else {
+                writer.write("var container = encoder.singleValueContainer()")
+                writer.write("try container.encode([String:String]())")
             }
         }
     }
