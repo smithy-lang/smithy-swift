@@ -33,7 +33,7 @@ public extension Endpoint {
         components.scheme = protocolType?.rawValue
         components.host = host
         components.path = path
-        components.queryItems = queryItems
+        components.percentEncodedQueryItems = queryItems
         // for local development
         components.port = Int(port)
 

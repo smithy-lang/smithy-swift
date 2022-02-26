@@ -64,7 +64,7 @@ extension SdkHttpRequestBuilder {
         // TODO: remove extra slash if not needed
         let pathAndQueryItems = URLComponents(string: crtRequest.path ?? "/")
         path = pathAndQueryItems?.path ?? "/"
-        queryItems = pathAndQueryItems?.queryItems ?? [URLQueryItem]()
+        queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
 
         return self
     }
