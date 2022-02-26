@@ -143,7 +143,7 @@ class PaginatorGenerator : SwiftIntegration {
                     .call {
                         val objectBuilder = Node.objectNodeBuilder()
                         val inputShape = model.expectShape(operationShape.input.get())
-                        for (member in inputShape.members()) {
+                        for (member in inputShape.members().sortedBy { it.camelCaseName() }) {
                             if (member.memberName != markerLiteral) {
                                 objectBuilder.withMember(member.memberName, "self.${member.camelCaseName()}")
                             } else {
