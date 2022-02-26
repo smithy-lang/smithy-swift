@@ -77,7 +77,7 @@ class PaginatorGeneratorTest {
         /// - Returns: `[TestClientTypes.FunctionConfiguration]`
         extension PaginatorSequence where Input == ListFunctionsInput, Output == ListFunctionsOutputResponse {
             func functions() async throws -> [TestClientTypes.FunctionConfiguration] {
-                return try await self.asyncCompactMap { item in item.functions() }
+                return try await self.asyncCompactMap { item in item.functions }
             }
         }
         """.trimIndent()

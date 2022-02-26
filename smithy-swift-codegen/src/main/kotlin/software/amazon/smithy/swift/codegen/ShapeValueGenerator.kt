@@ -185,7 +185,7 @@ class ShapeValueGenerator(
     private fun primitiveDecl(writer: SwiftWriter, shape: Shape, block: () -> Unit) {
         val suffix = when (shape.type) {
             ShapeType.STRING -> {
-                if (shape.hasTrait(EnumTrait::class.java)) {
+                if (shape.hasTrait(EnumTrait::class.java) && !printStringAsVariable) {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$N(rawValue: ", symbol)
                     ")!"

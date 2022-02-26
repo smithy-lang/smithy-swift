@@ -28,7 +28,7 @@ class PaginatorGenerator : SwiftIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        delegator.useFileWriter("/${ctx.settings.moduleName}/Paginators.swift") { writer ->
+        delegator.useFileWriter("${ctx.settings.moduleName}/Paginators.swift") { writer ->
             val paginatedOperations = service.allOperations
                 .map { ctx.model.expectShape<OperationShape>(it) }
                 .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
@@ -37,7 +37,6 @@ class PaginatorGenerator : SwiftIntegration {
                 val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).getOrNull()
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
                 val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx)
-                println(paginationInfo.toString())
                 renderPaginatorForOperation(writer, ctx, service, paginatedOperation, paginationInfo, paginationItemInfo)
             }
         }
@@ -145,13 +144,14 @@ class PaginatorGenerator : SwiftIntegration {
                         val objectBuilder = Node.objectNodeBuilder()
                         val inputShape = model.expectShape(operationShape.input.get())
                         for (member in inputShape.members()) {
-                            if (member.camelCaseName() != markerLiteral) {
-                                objectBuilder.withMember(member.camelCaseName(), "self.${member.camelCaseName()}")
+                            if (member.memberName != markerLiteral) {
+                                objectBuilder.withMember(member.memberName, "self.${member.camelCaseName()}")
                             } else {
-                                objectBuilder.withMember(member.camelCaseName(), "token")
+                                objectBuilder.withMember(member.memberName, "token")
                             }
                         }
                         val params = objectBuilder.build()
+
                         ShapeValueGenerator(model, symbolProvider, true).writeShapeValueInline(
                             writer,
                             inputShape,
@@ -184,7 +184,7 @@ class PaginatorGenerator : SwiftIntegration {
 
         writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
             writer.openBlock("func \$L() async throws -> \$N {", "}", itemDesc.nestedItemMemberName, itemDesc.itemSymbol) {
-                writer.write("return try await self.asyncCompactMap { item in item.\$L() }", itemDesc.nestedItemMemberName)
+                writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.nestedItemMemberName)
             }
         }
     }
@@ -203,7 +203,7 @@ private data class ItemDescriptor(
  */
 private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: CodegenContext): ItemDescriptor? {
     val itemMemberId = paginationInfo.itemsMemberPath?.lastOrNull()?.target ?: return null
-    val nestedItemMemberName = paginationInfo.itemsMemberPath!!.last()!!.memberName
+    val nestedItemMemberName = paginationInfo.itemsMemberPath!!.last()!!.camelCaseName()
     val itemMember = ctx.model.expectShape(itemMemberId)
 
     return ItemDescriptor(
