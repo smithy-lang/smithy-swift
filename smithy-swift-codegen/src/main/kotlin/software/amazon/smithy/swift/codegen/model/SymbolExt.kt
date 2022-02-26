@@ -20,9 +20,6 @@ object SymbolProperty {
 
     // Boolean property indicating this symbol should be boxed
     const val BOXED_KEY: String = "boxed"
-
-    // Entry type for Maps
-    const val ENTRY_EXPRESSION: String = "entryExpression"
 }
 
 /**
