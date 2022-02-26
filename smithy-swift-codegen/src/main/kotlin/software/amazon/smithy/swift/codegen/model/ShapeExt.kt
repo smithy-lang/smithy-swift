@@ -75,7 +75,7 @@ fun Shape.capitalizedName(): String {
     return StringUtils.capitalize(this.id.name)
 }
 
-fun Shape.defaultName(serviceShape: ServiceShape?): String {
+fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
     return serviceShape?.let {
         StringUtils.capitalize(id.getName(it))
     } ?: run {

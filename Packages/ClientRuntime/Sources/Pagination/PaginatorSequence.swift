@@ -1,0 +1,49 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBinding>: AsyncSequence where Input.Token: Equatable {
+    public typealias Element = Output
+    let input: Input
+    let inputKey: KeyPath<Input, Input.Token?>?
+    let outputKey: KeyPath<Output, Input.Token?>
+    let paginationFunction: (Input) async throws -> Output
+    
+    public init(input: Input,
+                inputKey: KeyPath<Input, Input.Token?>?,
+                outputKey: KeyPath<Output, Input.Token?>,
+                paginationFunction: @escaping (Input) async throws -> Output) {
+        self.input = input
+        self.inputKey = inputKey
+        self.outputKey = outputKey
+        self.paginationFunction = paginationFunction
+    }
+    
+    public struct PaginationIterator: AsyncIteratorProtocol {
+        public typealias Element = Output
+        var input: Input
+        let sequence: PaginatorSequence
+        var token: Input.Token? = nil
+        var isFirstPage: Bool = true
+        
+        public mutating func next() async throws -> Output? {
+            while token != nil || isFirstPage {
+                if let token = token {
+                    self.input = input.usingPaginationToken(token)
+                }
+                let output = try await sequence.paginationFunction(input)
+                isFirstPage = false
+                token = output[keyPath: sequence.outputKey]
+                return output
+            }
+            return nil
+        }
+    }
+    
+    public func makeAsyncIterator() -> PaginationIterator {
+        PaginationIterator(input: input, sequence: self)
+    }
+}
