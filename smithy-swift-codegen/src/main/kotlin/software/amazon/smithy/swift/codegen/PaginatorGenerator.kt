@@ -115,20 +115,24 @@ class PaginatorGenerator : SwiftIntegration {
             this.write(docBody)
         }
 
-        writer.openBlock("extension \$N {", "}", serviceSymbol) {
-            writer.openBlock("func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
+        writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
+            writer.openBlock(
+                "func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
                 operationShape.camelCaseName(),
                 inputSymbol,
                 ClientRuntimeTypes.Core.PaginatorSequence,
                 inputSymbol,
-                outputSymbol) {
-                writer.write("return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral, paginationFunction: self.\$L(input:))",
+                outputSymbol
+            ) {
+                writer.write(
+                    "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral, paginationFunction: self.\$L(input:))",
                     ClientRuntimeTypes.Core.PaginatorSequence,
                     inputSymbol,
                     outputSymbol,
                     inputSymbol,
                     outputSymbol,
-                    operationShape.camelCaseName())
+                    operationShape.camelCaseName()
+                )
             }
         }
 
@@ -172,7 +176,7 @@ class PaginatorGenerator : SwiftIntegration {
         This paginator transforms the `AsyncSequence` returned by `${operationShape.camelCaseName()}Paginated`
         to access the nested member `${itemDesc.itemSymbol.fullName}`
         - Returns: `${itemDesc.itemSymbol.fullName}`
-         """.trimIndent()
+        """.trimIndent()
 
         writer.writeSingleLineDocs {
             this.write(docBody)

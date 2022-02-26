@@ -23,7 +23,7 @@ class PaginatorGeneratorTest {
        /// - Parameters:
        ///     - input: A `[ListFunctions2Input]` to start pagination
        /// - Returns: An `AsyncSequence` that can iterate over `ListFunctions2OutputResponse`
-       extension ClientRuntime.TestClient {
+       extension TestClient {
            func listFunctions2Paginated(input: ListFunctions2Input) -> ClientRuntime.PaginatorSequence<ListFunctions2Input, ListFunctions2OutputResponse> {
                return ClientRuntime.PaginatorSequence<ListFunctions2Input, ListFunctions2OutputResponse>(input: input, inputKey: \ListFunctions2Input.marker, outputKey: \ListFunctions2OutputResponse.nextMarker, paginationFunction: self.listFunctions2(input:))
            }
@@ -56,7 +56,7 @@ class PaginatorGeneratorTest {
         /// - Parameters:
         ///     - input: A `[ListFunctionsInput]` to start pagination
         /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutputResponse`
-        extension ClientRuntime.TestClient {
+        extension TestClient {
             func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse> {
                 return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutputResponse.nextMarker, paginationFunction: self.listFunctions(input:))
             }
