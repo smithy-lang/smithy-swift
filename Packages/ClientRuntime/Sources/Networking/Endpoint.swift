@@ -34,8 +34,6 @@ public extension Endpoint {
         components.host = host
         components.path = path
         components.percentEncodedQueryItems = queryItems
-        // for local development
-        components.port = Int(port)
 
         return components.url
     }
