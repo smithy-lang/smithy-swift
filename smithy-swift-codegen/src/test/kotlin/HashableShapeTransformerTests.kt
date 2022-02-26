@@ -70,16 +70,16 @@ class HashableShapeTransformerTests {
         Assertions.assertNotNull(hashableShapeInput)
         val expected = """
             public struct HashableShapesInput: Swift.Equatable {
-                public var `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
                 public var bar: Swift.String?
+                public var `set`: Swift.Set<ExampleClientTypes.HashableStructure>?
             
                 public init (
-                    `set`: Swift.Set<ExampleClientTypes.HashableStructure>? = nil,
-                    bar: Swift.String? = nil
+                    bar: Swift.String? = nil,
+                    `set`: Swift.Set<ExampleClientTypes.HashableStructure>? = nil
                 )
                 {
-                    self.`set` = `set`
                     self.bar = bar
+                    self.`set` = `set`
                 }
             }
         """.trimIndent()
