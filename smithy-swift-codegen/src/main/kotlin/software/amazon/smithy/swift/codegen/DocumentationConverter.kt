@@ -106,7 +106,7 @@ class DocumentationConverter {
                 needsListPrefix = false
                 writer.write("")
                 writeIndent()
-                text = "* " + StringUtils.stripStart(text, " \t")
+                text = "- " + StringUtils.stripStart(text, " \t")
             }
             writer.writeInline(text)
         }

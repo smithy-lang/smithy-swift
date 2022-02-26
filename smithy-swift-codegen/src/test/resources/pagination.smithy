@@ -7,10 +7,10 @@ service Lambda {
 }
 
 @paginated(
-    inputToken: "Marker",
-    outputToken: "NextMarker",
-    pageSize: "MaxItems",
-    items: "Functions"
+    inputToken: "marker",
+    outputToken: "nextMarker",
+    pageSize: "maxItems",
+    items: "functions"
 )
 @readonly
 @http(method: "GET", uri: "/functions", code: 200)
@@ -21,18 +21,18 @@ operation ListFunctions {
 
 structure ListFunctionsRequest {
     @httpQuery("FunctionVersion")
-    FunctionVersion: String,
+    functionVersion: String,
     @httpQuery("Marker")
-    Marker: String,
+    marker: String,
     @httpQuery("MasterRegion")
-    MasterRegion: String,
+    masterRegion: String,
     @httpQuery("MaxItems")
-    MaxItems: Integer
+    maxItems: Integer
 }
 
 structure ListFunctionsResponse {
-    Functions: FunctionConfigurationList,
-    NextMarker: String
+    functions: FunctionConfigurationList,
+    nextMarker: String
 }
 
 list FunctionConfigurationList {
@@ -40,13 +40,13 @@ list FunctionConfigurationList {
 }
 
 structure FunctionConfiguration {
-    FunctionName: String
+    functionName: String
 }
 
 @paginated(
-    inputToken: "Marker",
-    outputToken: "NextMarker",
-    pageSize: "MaxItems"
+    inputToken: "marker",
+    outputToken: "nextMarker",
+    pageSize: "maxItems"
 )
 @readonly
 @http(method: "GET", uri: "/functions2", code: 200)
@@ -57,16 +57,16 @@ operation ListFunctions2 {
 
 structure ListFunctionsRequest2 {
     @httpQuery("FunctionVersion")
-    FunctionVersion: String,
+    functionVersion: String,
     @httpQuery("Marker")
-    Marker: String,
+    marker: String,
     @httpQuery("MasterRegion")
-    MasterRegion: String,
+    masterRegion: String,
     @httpQuery("MaxItems")
-    MaxItems: Integer
+    maxItems: Integer
 }
 
 structure ListFunctionsResponse2 {
-    Functions: FunctionConfigurationList,
-    NextMarker: String
+    functions: FunctionConfigurationList,
+    nextMarker: String
 }

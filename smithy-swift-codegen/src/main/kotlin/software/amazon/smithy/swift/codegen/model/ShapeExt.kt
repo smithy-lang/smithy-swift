@@ -82,7 +82,7 @@ fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
         StringUtils.capitalize(this.id.name)
     }
 }
-
+fun MemberShape.camelCaseName(): String = StringUtils.uncapitalize(this.memberName)
 fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
 
 fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {

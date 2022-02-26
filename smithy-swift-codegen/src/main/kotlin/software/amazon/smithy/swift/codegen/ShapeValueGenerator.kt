@@ -36,7 +36,8 @@ import software.amazon.smithy.utils.StringUtils.lowerCase
  */
 class ShapeValueGenerator(
     internal val model: Model,
-    internal val symbolProvider: SymbolProvider
+    internal val symbolProvider: SymbolProvider,
+    private val printStringAsVariable: Boolean = false
 ) {
 
     /**
@@ -47,7 +48,7 @@ class ShapeValueGenerator(
      * @param params parameters to fill the generated shape declaration.
      */
     fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node, recursiveMemberWithTrait: Boolean = false) {
-        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
+        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape, printStringAsVariable)
 
         when (shape.type) {
             ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), recursiveMemberWithTrait) {
@@ -215,7 +216,8 @@ class ShapeValueGenerator(
     private class ShapeValueNodeVisitor(
         val writer: SwiftWriter,
         val generator: ShapeValueGenerator,
-        val currShape: Shape
+        val currShape: Shape,
+        private val printStringAsVariable: Boolean = false
     ) : NodeVisitor<Unit> {
 
         override fun objectNode(node: ObjectNode) {
@@ -292,7 +294,13 @@ class ShapeValueGenerator(
                     }
                     writer.writeInline("\$L", value)
                 }
-                else -> writer.writeInline("\$S", node.value)
+                else -> {
+                    if (printStringAsVariable) {
+                        writer.writeInline("\$L", node.value)
+                    } else {
+                        writer.writeInline("\$S", node.value)
+                    }
+                }
             }
         }
 

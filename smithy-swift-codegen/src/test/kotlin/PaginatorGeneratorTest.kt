@@ -13,33 +13,31 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorNoItem() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
-        val contents = getFileContents(context.manifest, "/Test/Pagination.swift")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expected = """
-            /**
-             * Paginate over [ListFunctionsResponse] results.
-             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are
-             * made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once
-             * you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no
-             * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-             * collection.
-             * @param initialRequest A [ListFunctionsRequest] to start pagination
-             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
-             */
-            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
-                flow {
-                    var cursor: String? = null
-                    var isFirstPage: Boolean = true
-            
-                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
-                        val req = initialRequest.copy {
-                            this.marker = cursor
-                        }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
-                        isFirstPage = false
-                        cursor = result.nextMarker
-                        emit(result)
-                    }
-                }
+       /// Paginate over `[ListFunctions2OutputResponse]` results.
+       ///
+       /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
+       /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
+       /// until then. If there are errors in your request, you will see the failures only after you start iterating.
+       /// - Parameters:
+       ///     - input: A `[ListFunctions2Input]` to start pagination
+       /// - Returns: An `AsyncSequence` that can iterate over `ListFunctions2OutputResponse`
+       extension ClientRuntime.TestClient {
+           func listFunctions2Paginated(input: ListFunctions2Input) -> ClientRuntime.PaginatorSequence<ListFunctions2Input, ListFunctions2OutputResponse> {
+               return ClientRuntime.PaginatorSequence<ListFunctions2Input, ListFunctions2OutputResponse>(input: input, inputKey: \ListFunctions2Input.marker, outputKey: \ListFunctions2OutputResponse.nextMarker, paginationFunction: self.listFunctions2(input:))
+           }
+       }
+
+       extension ListFunctions2Input: ClientRuntime.PaginateToken {
+           public func usingPaginationToken(_ token: Swift.String) -> ListFunctions2Input {
+               return ListFunctions2Input(
+                   functionVersion: self.functionVersion,
+                   marker: token,
+                   masterRegion: self.masterRegion,
+                   maxItems: self.maxItems
+               )}
+       }
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
@@ -48,46 +46,40 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorWithItem() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
-        val contents = getFileContents(context.manifest, "/Test/Pagination.swift")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expectedCode = """
-            /**
-             * Paginate over [ListFunctionsResponse] results.
-             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are
-             * made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once
-             * you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no
-             * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-             * collection.
-             * @param initialRequest A [ListFunctionsRequest] to start pagination
-             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
-             */
-            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
-                flow {
-                    var cursor: String? = null
-                    var isFirstPage: Boolean = true
-            
-                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
-                        val req = initialRequest.copy {
-                            this.marker = cursor
-                        }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
-                        isFirstPage = false
-                        cursor = result.nextMarker
-                        emit(result)
-                    }
-                }
-            
-            /**
-             * This paginator transforms the flow returned by [listFunctionsPaginated]
-             * to access the nested member [FunctionConfiguration]
-             * @return A [kotlinx.coroutines.flow.Flow] that can collect [FunctionConfiguration]
-             */
-            @JvmName("listFunctionsResponseFunctionConfiguration")
-            fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
-                transform() { response ->
-                    response.functions?.forEach {
-                        emit(it)
-                    }
-                }
+        /// Paginate over `[ListFunctionsOutputResponse]` results.
+        ///
+        /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
+        /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
+        /// until then. If there are errors in your request, you will see the failures only after you start iterating.
+        /// - Parameters:
+        ///     - input: A `[ListFunctionsInput]` to start pagination
+        /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutputResponse`
+        extension ClientRuntime.TestClient {
+            func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse> {
+                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutputResponse.nextMarker, paginationFunction: self.listFunctions(input:))
+            }
+        }
+        
+        extension ListFunctionsInput: ClientRuntime.PaginateToken {
+            public func usingPaginationToken(_ token: Swift.String) -> ListFunctionsInput {
+                return ListFunctionsInput(
+                    functionVersion: self.functionVersion,
+                    marker: token,
+                    masterRegion: self.masterRegion,
+                    maxItems: self.maxItems
+                )}
+        }
+        
+        /// This paginator transforms the `AsyncSequence` returned by `listFunctionsPaginated`
+        /// to access the nested member `[TestClientTypes.FunctionConfiguration]`
+        /// - Returns: `[TestClientTypes.FunctionConfiguration]`
+        extension PaginatorSequence where Input == ListFunctionsInput, Output == ListFunctionsOutputResponse {
+            func functions() async throws -> [TestClientTypes.FunctionConfiguration] {
+                return try await self.asyncCompactMap { item in item.functions() }
+            }
+        }
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedCode)
