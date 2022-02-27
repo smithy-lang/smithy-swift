@@ -292,9 +292,7 @@ class ShapeValueGenerator(
                     }
                     writer.writeInline("\$L", value)
                 }
-                else -> {
-                    writer.writeInline("\$S", node.value)
-                }
+                else -> writer.writeInline("\$S", node.value)
             }
         }
 
