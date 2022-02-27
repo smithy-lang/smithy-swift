@@ -184,8 +184,8 @@ class PaginatorGenerator : SwiftIntegration {
         }
 
         writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
-            writer.openBlock("func \$L() async throws -> \$N {", "}", itemDesc.nestedItemMemberName, itemDesc.itemSymbol) {
-                writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.nestedItemMemberName)
+            writer.openBlock("func \$L() async throws -> \$N {", "}", itemDesc.itemLiteral, itemDesc.itemSymbol) {
+                writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
             }
         }
     }
@@ -195,7 +195,8 @@ class PaginatorGenerator : SwiftIntegration {
  * Model info necessary to codegen paginator item
  */
 private data class ItemDescriptor(
-    val nestedItemMemberName: String,
+    val itemLiteral: String,
+    val itemPathLiteral: String,
     val itemSymbol: Symbol
 )
 
@@ -204,11 +205,13 @@ private data class ItemDescriptor(
  */
 private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: CodegenContext): ItemDescriptor? {
     val itemMemberId = paginationInfo.itemsMemberPath?.lastOrNull()?.target ?: return null
-    val nestedItemMemberName = paginationInfo.itemsMemberPath!!.last()!!.camelCaseName()
+    val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.camelCaseName()
+    val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.camelCaseName() }
     val itemMember = ctx.model.expectShape(itemMemberId)
 
     return ItemDescriptor(
-        nestedItemMemberName,
+        itemLiteral,
+        itemPathLiteral,
         ctx.symbolProvider.toSymbol(itemMember)
     )
 }
