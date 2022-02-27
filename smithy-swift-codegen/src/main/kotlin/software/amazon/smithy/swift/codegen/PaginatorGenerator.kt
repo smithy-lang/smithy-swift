@@ -6,7 +6,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
 import software.amazon.smithy.model.knowledge.PaginationInfo
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.PaginatedTrait
@@ -141,22 +140,24 @@ class PaginatorGenerator : SwiftIntegration {
             writer.openBlock("public func usingPaginationToken(_ token: \$N) -> \$N {", "}", SwiftTypes.String, inputSymbol) {
                 writer.writeInline("return ")
                     .call {
-                        val objectBuilder = Node.objectNodeBuilder()
                         val inputShape = model.expectShape(operationShape.input.get())
-                        for (member in inputShape.members().sortedBy { it.camelCaseName() }) {
-                            if (member.memberName != markerLiteral) {
-                                objectBuilder.withMember(member.memberName, "self.${member.camelCaseName()}")
-                            } else {
-                                objectBuilder.withMember(member.memberName, "token")
+                        writer.writeInline("\$N(", inputSymbol)
+                            .indent()
+                            .call {
+                                val sortedMembers = inputShape.members().sortedBy { it.camelCaseName() }
+                                for ((index, member) in sortedMembers.withIndex()) {
+                                    if (member.memberName != markerLiteral) {
+                                        writer.writeInline("\n\$L: \$L", member.camelCaseName(), "self.${member.camelCaseName()}")
+                                    } else {
+                                        writer.writeInline("\n\$L: \$L", member.camelCaseName(), "token")
+                                    }
+                                    if (index < sortedMembers.size - 1) {
+                                        writer.writeInline(",")
+                                    }
+                                }
                             }
-                        }
-                        val params = objectBuilder.build()
-
-                        ShapeValueGenerator(model, symbolProvider, true).writeShapeValueInline(
-                            writer,
-                            inputShape,
-                            params
-                        )
+                            .dedent()
+                            .writeInline("\n)")
                     }
             }
         }
