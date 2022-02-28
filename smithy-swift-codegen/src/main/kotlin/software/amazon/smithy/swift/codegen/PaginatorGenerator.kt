@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.utils.toCamelCase
 
 /**
  * Generate paginators for supporting operations.  See
@@ -98,6 +99,8 @@ class PaginatorGenerator : SwiftIntegration {
             it.camelCaseName()
         }
         val markerLiteral = paginationInfo.inputTokenMember.camelCaseName()
+        val markerLiteralShape = model.expectShape(paginationInfo.inputTokenMember.target)
+        val markerLiteralSymbol = symbolProvider.toSymbol(markerLiteralShape)
         val docBody = """
             Paginate over `[${outputSymbol.name}]` results.
             
@@ -115,7 +118,7 @@ class PaginatorGenerator : SwiftIntegration {
 
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
             writer.openBlock(
-                "func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
+                "public func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
                 operationShape.camelCaseName(),
                 inputSymbol,
                 ClientRuntimeTypes.Core.PaginatorSequence,
@@ -137,7 +140,7 @@ class PaginatorGenerator : SwiftIntegration {
         writer.write("")
 
         writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Core.PaginateToken) {
-            writer.openBlock("public func usingPaginationToken(_ token: \$N) -> \$N {", "}", SwiftTypes.String, inputSymbol) {
+            writer.openBlock("public func usingPaginationToken(_ token: \$N) -> \$N {", "}", markerLiteralSymbol, inputSymbol) {
                 writer.writeInline("return ")
                     .call {
                         val inputShape = model.expectShape(operationShape.input.get())
@@ -146,7 +149,9 @@ class PaginatorGenerator : SwiftIntegration {
                             .call {
                                 val sortedMembers = inputShape.members().sortedBy { it.camelCaseName() }
                                 for ((index, member) in sortedMembers.withIndex()) {
-                                    if (member.memberName != markerLiteral) {
+                                    println(member.memberName.toCamelCase())
+                                    println(markerLiteral)
+                                    if (member.memberName.toCamelCase() != markerLiteral) {
                                         writer.writeInline("\n\$L: \$L", member.camelCaseName(), "self.${member.camelCaseName()}")
                                     } else {
                                         writer.writeInline("\n\$L: \$L", member.camelCaseName(), "token")

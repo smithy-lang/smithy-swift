@@ -13,7 +13,7 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
     let paginationFunction: (Input) async throws -> Output
     
     public init(input: Input,
-                inputKey: KeyPath<Input, Input.Token?>?,
+                inputKey: KeyPath<Input, Input.Token?>? = nil,
                 outputKey: KeyPath<Output, Input.Token?>,
                 paginationFunction: @escaping (Input) async throws -> Output) {
         self.input = input
@@ -23,7 +23,6 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
     }
     
     public struct PaginationIterator: AsyncIteratorProtocol {
-        public typealias Element = Output
         var input: Input
         let sequence: PaginatorSequence
         var token: Input.Token? = nil
@@ -32,7 +31,9 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
         public mutating func next() async throws -> Output? {
             while token != nil || isFirstPage {
                 if let token = token {
-                    self.input = input.usingPaginationToken(token)
+                    if (token is String && !(token as! String).isEmpty) || (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
+                        self.input = input.usingPaginationToken(token)
+                    }
                 }
                 let output = try await sequence.paginationFunction(input)
                 isFirstPage = false
