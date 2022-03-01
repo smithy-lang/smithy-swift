@@ -93,6 +93,8 @@ object ClientRuntimeTypes {
         val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration")
         val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration")
         val DateFormatter = runtimeSymbol("DateFormatter")
+        val PaginateToken = runtimeSymbol("PaginateToken")
+        val PaginatorSequence = runtimeSymbol("PaginatorSequence")
     }
 }
 
