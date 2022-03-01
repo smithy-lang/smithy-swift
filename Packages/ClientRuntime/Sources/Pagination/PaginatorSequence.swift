@@ -30,14 +30,16 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
         
         public mutating func next() async throws -> Output? {
             while token != nil || isFirstPage {
-                if let token = token {
-                    if (token is String && !(token as! String).isEmpty) || (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
-                        self.input = input.usingPaginationToken(token)
-                    }
+
+                if let token = token, (token is String && !(token as! String).isEmpty) || (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
+                    self.input = input.usingPaginationToken(token)
                 }
                 let output = try await sequence.paginationFunction(input)
                 isFirstPage = false
                 token = output[keyPath: sequence.outputKey]
+                if token == input[keyPath: sequence.inputKey!] {
+                    break
+                }
                 return output
             }
             return nil
