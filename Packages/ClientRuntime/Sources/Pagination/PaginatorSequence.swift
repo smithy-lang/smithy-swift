@@ -25,7 +25,7 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
     public struct PaginationIterator: AsyncIteratorProtocol {
         var input: Input
         let sequence: PaginatorSequence
-        var token: Input.Token? = nil
+        var token: Input.Token?
         var isFirstPage: Bool = true
         
         public mutating func next() async throws -> Output? {
