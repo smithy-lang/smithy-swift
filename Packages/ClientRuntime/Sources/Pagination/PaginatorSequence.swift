@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBinding>: AsyncSequence where Input.Token: Equatable {
+public struct PaginatorSequence<Input: PaginateToken,
+                                Output: HttpResponseBinding>: AsyncSequence
+where Input.Token: Equatable {
     public typealias Element = Output
     let input: Input
     let inputKey: KeyPath<Input, Input.Token?>?
@@ -28,10 +30,13 @@ public struct PaginatorSequence<Input: PaginateToken, Output: HttpResponseBindin
         var token: Input.Token?
         var isFirstPage: Bool = true
         
+        // swiftlint:disable force_cast
         public mutating func next() async throws -> Output? {
             while token != nil || isFirstPage {
-
-                if let token = token, (token is String && !(token as! String).isEmpty) || (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
+                
+                if let token = token,
+                   (token is String && !(token as! String).isEmpty) ||
+                    (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
                     self.input = input.usingPaginationToken(token)
                 }
                 let output = try await sequence.paginationFunction(input)
