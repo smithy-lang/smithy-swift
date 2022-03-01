@@ -85,6 +85,46 @@ class PaginatorGeneratorTest {
         contents.shouldContainOnlyOnce(expectedCode)
     }
 
+    @Test
+    fun testRenderPaginatorNoItemWithMapToken() {
+        val context = setupTests("pagination-map.smithy", "com.test#TestService")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val expectedCode = """
+        /// Paginate over `[PaginatedMapOutputResponse]` results.
+        ///
+        /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
+        /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
+        /// until then. If there are errors in your request, you will see the failures only after you start iterating.
+        /// - Parameters:
+        ///     - input: A `[PaginatedMapInput]` to start pagination
+        /// - Returns: An `AsyncSequence` that can iterate over `PaginatedMapOutputResponse`
+        extension TestClient {
+            public func paginatedMapPaginated(input: PaginatedMapInput) -> ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutputResponse> {
+                return ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutputResponse>(input: input, inputKey: \PaginatedMapInput.nextToken, outputKey: \PaginatedMapOutputResponse.inner?.token, paginationFunction: self.paginatedMap(input:))
+            }
+        }
+        
+        extension PaginatedMapInput: ClientRuntime.PaginateToken {
+            public func usingPaginationToken(_ token: Swift.String) -> PaginatedMapInput {
+                return PaginatedMapInput(
+                    maxResults: self.maxResults,
+                    nextToken: token
+                )}
+        }
+        
+        /// This paginator transforms the `AsyncSequence` returned by `paginatedMapPaginated`
+        /// to access the nested member `[Swift.String:Swift.Int]`
+        /// - Returns: `[Swift.String:Swift.Int]`
+        extension PaginatorSequence where Input == PaginatedMapInput, Output == PaginatedMapOutputResponse {
+            func mapItems() async throws -> [Swift.String:Swift.Int] {
+                return try await self.asyncCompactMap { item in item.inner?.mapItems }
+            }
+        }
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnce(expectedCode)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")

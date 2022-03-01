@@ -149,8 +149,6 @@ class PaginatorGenerator : SwiftIntegration {
                             .call {
                                 val sortedMembers = inputShape.members().sortedBy { it.camelCaseName() }
                                 for ((index, member) in sortedMembers.withIndex()) {
-                                    println(member.memberName.toCamelCase())
-                                    println(markerLiteral)
                                     if (member.memberName.toCamelCase() != markerLiteral) {
                                         writer.writeInline("\n\$L: \$L", member.camelCaseName(), "self.${member.camelCaseName()}")
                                     } else {
