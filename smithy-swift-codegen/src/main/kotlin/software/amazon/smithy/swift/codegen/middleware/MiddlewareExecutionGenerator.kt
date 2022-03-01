@@ -13,7 +13,7 @@ import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
-typealias HttpMethodCallback = () -> String
+typealias HttpMethodCallback = (OperationShape) -> String
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
@@ -56,7 +56,7 @@ class MiddlewareExecutionGenerator(
 
     private fun resolveHttpMethod(op: OperationShape): String {
         return httpMethodCallback?.let {
-            it()
+            it(op)
         } ?: run {
             val httpTrait = httpBindingResolver.httpTrait(op)
             httpTrait.method.toLowerCase()
