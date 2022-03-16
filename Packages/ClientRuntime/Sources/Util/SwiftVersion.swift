@@ -6,8 +6,10 @@
 //
 
 public var swiftVersion: String {
-    #if swift(>=5.6)
+    #if swift(>=5.7)
       #error("Cannot use a version of Swift greater than available. Please create a Github issue for us to add support for the version of Swift you want to use.")
+    #elseif swift(>=5.6)
+    return "5.6"
     #elseif swift(>=5.5)
     return "5.5"
     #elseif swift(>=5.4)
