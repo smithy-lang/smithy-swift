@@ -7,10 +7,10 @@
 import AwsCommonRuntimeKit
 
 public struct ExponentialBackOffRetryOptions {
-    let maxRetries: Int
-    let backOffScaleFactor: UInt32
-    let jitterMode: ExponentialBackOffJitterMode
-    let generateRandom: (() -> UInt64)?
+    public let maxRetries: Int
+    public let backOffScaleFactor: UInt32
+    public let jitterMode: ExponentialBackOffJitterMode
+    public let generateRandom: (() -> UInt64)?
     
     public init(maxRetries: Int = 10,
                 backOffScaleFactor: UInt32 = 25,

@@ -9,8 +9,10 @@ import AwsCommonRuntimeKit
 public class SDKRetryer: Retryer {
     let crtRetryStrategy: CRTAWSRetryStrategy
     private let sharedDefaultIO: SDKDefaultIO = SDKDefaultIO.shared
+    public let options: RetryOptions
     
     public init(options: RetryOptions) throws {
+        self.options = options
         self.crtRetryStrategy = try CRTAWSRetryStrategy(options: options.toCRTType())
     }
     

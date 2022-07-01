@@ -14,7 +14,7 @@ public enum ClientError: Error, Equatable {
     case dataNotFound(String)
     case unknownError(String)
     case authError(String)
-    case retryError(Error)
+    case maximumRetryAttemptsError(Int, Error)
     
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
         switch (lhs, rhs) {
@@ -40,9 +40,10 @@ public enum ClientError: Error, Equatable {
         case (let .authError(lhsAuthString),
               let .authError(rhsAuthString)):
             return lhsAuthString == rhsAuthString
-        case (let .retryError(lhsRetryError),
-              let .retryError(rhsRetryError)):
-            return String(reflecting: lhsRetryError) == String(reflecting: rhsRetryError)
+        case (let .maximumRetryAttemptsError(lhsMaxRetries, lhsRetryError),
+              let .maximumRetryAttemptsError(rhsMaxRetries, rhsRetryError)):
+            return lhsMaxRetries == rhsMaxRetries &&
+                String(reflecting: lhsRetryError) == String(reflecting: rhsRetryError)
         default:
             return false
         }
