@@ -14,6 +14,7 @@ public enum ClientError: Error, Equatable {
     case dataNotFound(String)
     case unknownError(String)
     case authError(String)
+    case retryError(Error)
     case maximumRetryAttemptsError(Int, Error)
     
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
