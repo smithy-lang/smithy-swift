@@ -50,8 +50,12 @@ public class CRTClientEngine: HttpClientEngine {
                                                   monitoringOptions: nil,
                                                   maxConnections: maxConnectionsPerEndpoint,
                                                   enableManualWindowManagement: false) // not using backpressure yet
-        logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
-                     "with max connections: \(maxConnectionsPerEndpoint)")
+        if let endpoint = endpoint.url?.absoluteString {
+            logger.debug("Creating connection pool for \(endpoint)" +
+                         " with max connections: \(maxConnectionsPerEndpoint)")
+        } else {
+            logger.debug("Creating connection pool with max connections: \(maxConnectionsPerEndpoint)")
+        }
         return HttpClientConnectionManager(options: options)
     }
     
@@ -69,7 +73,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
-        self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+        self.logger.trace("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
             let requestOptions = makeHttpRequestStreamOptions(request, continuation)
             let stream = connection.makeRequest(requestOptions: requestOptions)
@@ -80,7 +84,7 @@ public class CRTClientEngine: HttpClientEngine {
     
     public func close() {
         for (endpoint, value) in connectionPools {
-            logger.debug("Connection to endpoint: \(String(describing: endpoint.url?.absoluteString)) is closing")
+            logger.trace("Connection to endpoint: \(String(describing: endpoint.url?.absoluteString)) is closing")
             value.closePendingConnections()
         }
     }
@@ -91,19 +95,19 @@ public class CRTClientEngine: HttpClientEngine {
         let streamReader: StreamReader = DataStreamReader()
         
         let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
-            logger.debug("headers were received")
+            logger.trace("headers were received")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { [self] (stream, _) in
-            logger.debug("header block is done")
+            logger.trace("header block is done")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
         } onIncomingBody: { [self] (stream, data) in
-            logger.debug("incoming data")
+            logger.trace("incoming data")
             response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
             let byteBuffer = ByteBuffer(data: data)
             streamReader.write(buffer: byteBuffer)
         } onStreamComplete: { [self] (stream, error) in
-            logger.debug("stream completed")
+            logger.trace("stream completed")
             streamReader.hasFinishedWriting = true
             if case let CRTError.crtError(unwrappedError) = error {
                 if unwrappedError.errorCode != 0 {
