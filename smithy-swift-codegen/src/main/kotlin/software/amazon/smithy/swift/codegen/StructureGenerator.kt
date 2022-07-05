@@ -150,6 +150,8 @@ class StructureGenerator(
                     writer.write("self.\$1L = \$1L", memberName)
                 }
             }
+        } else {
+            writer.write("public init () { }")
         }
     }
 
