@@ -42,7 +42,7 @@ where Input.Token: Equatable {
                 let output = try await sequence.paginationFunction(input)
                 isFirstPage = false
                 token = output[keyPath: sequence.outputKey]
-                if token == input[keyPath: sequence.inputKey!] {
+                if token != nil && token == input[keyPath: sequence.inputKey!] {
                     break
                 }
                 return output
