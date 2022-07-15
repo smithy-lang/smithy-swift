@@ -34,8 +34,8 @@ public class SDKRetryer: Retryer {
         crtRetryStrategy.recordSuccess(token: token.crtToken)
     }
     
+    @available(*, deprecated, message: "This function will be removed soon.")
     public func releaseToken(token: RetryToken) {
-        crtRetryStrategy.releaseToken(token: token.crtToken)
     }
     
     public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
