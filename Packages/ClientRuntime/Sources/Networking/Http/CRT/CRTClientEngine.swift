@@ -71,7 +71,7 @@ public class CRTClientEngine: HttpClientEngine {
 
     public typealias StreamContinuation = CheckedContinuation<HttpResponse, Error>
     private var logger: LogAgent
-    private let connectonPoolContainer: SerialExecutor
+    private let serialExecutor: SerialExecutor
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
@@ -84,11 +84,11 @@ public class CRTClientEngine: HttpClientEngine {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
-        self.connectonPoolContainer = SerialExecutor(config: config)
+        self.serialExecutor = SerialExecutor(config: config)
     }
     
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
-        let connectionMgr = await connectonPoolContainer.getOrCreateConnectionPool(endpoint: request.endpoint)
+        let connectionMgr = await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
@@ -103,7 +103,7 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     public func close() async {
-        await connectonPoolContainer.closeAllPendingConnections()
+        await serialExecutor.closeAllPendingConnections()
     }
     
     public func makeHttpRequestStreamOptions(_ request: SdkHttpRequest, _ continuation: StreamContinuation) -> HttpRequestOptions {
