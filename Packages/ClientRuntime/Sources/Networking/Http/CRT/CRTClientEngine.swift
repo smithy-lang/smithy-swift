@@ -11,7 +11,7 @@ import Darwin
 #endif
 
 public class CRTClientEngine: HttpClientEngine {
-    actor ConnectionPoolContainer {
+    actor SerialExecutor {
         private var logger: LogAgent
 
         private let windowSize: Int
@@ -21,7 +21,7 @@ public class CRTClientEngine: HttpClientEngine {
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
-            self.logger = SwiftLogger(label: "ConnectionPoolContainer")
+            self.logger = SwiftLogger(label: "SerialExecutor")
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
@@ -71,7 +71,7 @@ public class CRTClientEngine: HttpClientEngine {
 
     public typealias StreamContinuation = CheckedContinuation<HttpResponse, Error>
     private var logger: LogAgent
-    private let connectonPoolContainer: ConnectionPoolContainer
+    private let connectonPoolContainer: SerialExecutor
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
@@ -84,7 +84,7 @@ public class CRTClientEngine: HttpClientEngine {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
-        self.connectonPoolContainer = ConnectionPoolContainer(config: config)
+        self.connectonPoolContainer = SerialExecutor(config: config)
     }
     
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
