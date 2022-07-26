@@ -24,7 +24,9 @@ public class SdkHttpClient {
     }
     
     public func close() {
-        engine.close()
+        Task {
+            await self.engine.close()
+        }
     }
     
 }
