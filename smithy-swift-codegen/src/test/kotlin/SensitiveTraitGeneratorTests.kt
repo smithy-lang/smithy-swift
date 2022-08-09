@@ -8,21 +8,6 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 
 class SensitiveTraitGeneratorTests {
-    @Test
-    fun `SensitiveTraitInRequestInput+CustomDebugStringConvertible`() {
-        val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift").get()
-        extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SensitiveTraitInRequestInput: Swift.CustomDebugStringConvertible {
-                public var debugDescription: Swift.String {
-                    "SensitiveTraitInRequestInput(foo: \(Swift.String(describing: foo)), baz: \"CONTENT_REDACTED\")"}
-            }
-            """.trimIndent()
-        extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
-    }
 
     @Test
     fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
@@ -36,22 +21,6 @@ class SensitiveTraitGeneratorTests {
                 public var debugDescription: Swift.String {
                     "CONTENT_REDACTED"
                 }
-            }
-            """.trimIndent()
-        extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
-        val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestOutputResponse+CustomDebugStringConvertible.swift").get()
-        extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SensitiveTraitTestRequestOutputResponse: Swift.CustomDebugStringConvertible {
-                public var debugDescription: Swift.String {
-                    "SensitiveTraitTestRequestOutputResponse(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
         extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)
