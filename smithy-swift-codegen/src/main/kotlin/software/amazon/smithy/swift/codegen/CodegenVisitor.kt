@@ -155,7 +155,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun structureShape(shape: StructureShape): Void? {
         writers.useShapeWriter(shape) { writer: SwiftWriter -> StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render() }
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() } || shape.members().any { model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
             writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
                 CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
             }
