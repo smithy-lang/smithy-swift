@@ -129,10 +129,7 @@ public func splitHeaderListValues(_ value: String?) throws -> [String]? {
         let next: (idx: Int, str: String)
         
         switch value[currIdx] {
-        case " ":
-            currIdx += 1
-            continue
-        case "\t":
+        case " ", "\t":
             currIdx += 1
             continue
         case "\"":
