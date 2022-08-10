@@ -11,5 +11,8 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 interface CodingKeysCustomizable {
     fun shouldHandleMember(member: MemberShape): Boolean
+
     fun handleMember(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, member: MemberShape)
 }
+
+

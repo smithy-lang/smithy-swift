@@ -57,7 +57,7 @@ class StructDecodeGenerator(
                     val target = ctx.model.expectShape(member.target)
                     val memberNames = ctx.symbolProvider.toMemberNames(member)
                     when (target) {
-                        is CollectionShape -> renderDecodeListMember(target, memberNames.second, containerName, member)
+                        is CollectionShape -> renderDecodeListMember(target, memberNames.second, containerName, member, parentMember = member)
                         is MapShape -> renderDecodeMapMember(target, memberNames.second, containerName, member)
                         is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
                         else -> writeDecodeForPrimitive(target, member, containerName)

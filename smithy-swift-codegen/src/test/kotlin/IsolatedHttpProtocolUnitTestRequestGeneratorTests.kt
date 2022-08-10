@@ -114,7 +114,8 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             headers: [
                 "X-Double": "NaN",
                 "X-Float": "NaN"
-            ]
+            ],
+            content: HttpBody.empty
         ) else {
             XCTFail("Something is wrong with the created http response")
             return

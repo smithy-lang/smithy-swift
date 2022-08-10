@@ -95,7 +95,8 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Foo": "Foo",
                 "X-Foo-abc": "ABC",
                 "X-Foo-xyz": "XYZ"
-            ]
+            ],
+            content: HttpBody.empty
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -130,7 +131,8 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             code: 200,
             headers: [
                 "X-Foo": "Foo"
-            ]
+            ],
+            content: HttpBody.empty
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
