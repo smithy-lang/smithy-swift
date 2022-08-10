@@ -67,7 +67,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     writer.write("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
                 } else {
                     writer.write("content: HttpBody.empty")
-                } 
+                }
             },
             {
                 writer.write("content: HttpBody.empty")
