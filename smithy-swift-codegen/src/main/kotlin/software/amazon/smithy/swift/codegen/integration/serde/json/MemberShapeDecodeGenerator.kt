@@ -126,7 +126,6 @@ abstract class MemberShapeDecodeGenerator(
         parentMember: Shape,
         level: Int = 0
     ) {
-        val isSparse = parentMember.hasTrait<SparseTrait>()
         val symbolName = determineSymbolForShape(shape, true)
         val originalSymbol = ctx.symbolProvider.toSymbol(shape)
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
