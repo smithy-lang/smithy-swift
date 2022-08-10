@@ -74,9 +74,9 @@ fileprivate extension String {
 }
 
 // chars in an HTTP header value that require quotations
-fileprivate let QUOTABLE_HEADER_VALUE_CHARS = "\",()"
+private let QUOTABLE_HEADER_VALUE_CHARS = "\",()"
 
-public func quoteHeaderValue(_ value: String) -> String  {
+public func quoteHeaderValue(_ value: String) -> String {
     if value.trim().count != value.count || value.contains(where: { char1 in
         QUOTABLE_HEADER_VALUE_CHARS.contains { char2 in
             char1 == char2
@@ -123,7 +123,7 @@ public func splitHeaderListValues(_ value: String?) throws -> [String]? {
 public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? {
     guard let value = value else { return nil}
     
-    let n = value.filter ({$0 == ","}).count
+    let n = value.filter({$0 == ","}).count
     
     if n <= 1 {
         return [value]
