@@ -100,7 +100,7 @@ class StringExtensionsTests: XCTestCase {
     func testOffset() {
         let string = "FooBar"
         let offset = string[3]
-        XCTAssertEqual("B", char)
+        XCTAssertEqual("B", offset)
     }
 
     func testRange() {
