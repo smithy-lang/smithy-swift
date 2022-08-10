@@ -6,13 +6,10 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
-import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -63,15 +60,19 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     private fun renderBuildHttpResponseParams(test: HttpResponseTestCase) {
         writer.write("code: \$L,", test.code)
         renderExpectedHeaders(test)
-        test.body.ifPresentOrElse({ body ->
-            if (body.isNotBlank() && body.isNotEmpty()) {
-                writer.write("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
-            } else {
+        test.body.ifPresentOrElse(
+            {
+                body ->
+                if (body.isNotBlank() && body.isNotEmpty()) {
+                    writer.write("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
+                } else {
+                    writer.write("content: HttpBody.empty")
+                } 
+            },
+            {
                 writer.write("content: HttpBody.empty")
             }
-        }, {
-            writer.write("content: HttpBody.empty")
-        })
+        )
     }
 
     private fun renderExpectedHeaders(test: HttpResponseTestCase) {
@@ -80,7 +81,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 .call {
                     for ((idx, hdr) in test.headers.entries.withIndex()) {
                         val suffix = if (idx < test.headers.size - 1) "," else ""
-                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)                    }
+                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
+                    }
                 }
                 .closeBlock("],")
         } else {

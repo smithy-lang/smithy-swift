@@ -14,5 +14,3 @@ interface CodingKeysCustomizable {
 
     fun handleMember(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, member: MemberShape)
 }
-
-

@@ -289,13 +289,13 @@ abstract class MemberShapeDecodeGenerator(
                 is CollectionShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
-                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember,  valueTargetShape.member,level + 1)
+                    renderDecodeListMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, valueTargetShape.member, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is MapShape -> {
                     val nestedDecodedMemberName = "${valueIterator}Decoded$level"
                     writer.write("var \$L: \$L? = nil", nestedDecodedMemberName, symbolName)
-                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember,level + 1)
+                    renderDecodeMapMember(valueTargetShape, valueIterator, nestedDecodedMemberName, topLevelMember, level + 1)
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
