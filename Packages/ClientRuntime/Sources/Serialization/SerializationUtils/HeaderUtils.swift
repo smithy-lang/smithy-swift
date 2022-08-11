@@ -6,43 +6,43 @@
 import Foundation
 
 fileprivate extension String {
-    func readNextQuoted(startIdx: Int, delim: Character = ",") throws -> (Int, String) {
+    func readNextQuoted(startIdx: String.Index, delim: Character = ",") throws -> (String.Index, String) {
         // startIdx is start of the quoted value, there must be at least an ending quotation mark
-        if !(startIdx + 1 < count) {
+        if !(self.index(after: startIdx) < self.endIndex) {
             throw HeaderDeserializationError.invalidStringHeaderList(value: self)
         }
         
         // find first non-escaped quote or end of string
-        var endIdx = startIdx + 1
-        while endIdx < count {
+        var endIdx = self.index(after: startIdx)
+        while endIdx < self.endIndex {
             let char = self[endIdx]
             if char == "\\" {
                 // skip escaped chars
-                endIdx += 1
+                endIdx = self.index(after: endIdx)
             } else if char == "\"" {
                 break
             }
-            endIdx += 1
+            endIdx = self.index(after: endIdx)
         }
         
-        let next = self[startIdx + 1..<endIdx]
+        let next = self[self.index(after: startIdx)..<endIdx]
         
         // consume trailing quote
-        if endIdx >= count || self[endIdx] != "\"" {
+        if endIdx >= self.endIndex || self[endIdx] != "\"" {
             throw HeaderDeserializationError.invalidStringHeaderList(value: self)
         }
-        assert(endIdx < count)
+        assert(endIdx < self.endIndex)
         assert(self[endIdx] == "\"")
         
-        endIdx += 1
+        endIdx = self.index(after: endIdx)
         
         // consume delim
-        while endIdx < count {
+        while endIdx < self.endIndex {
             let char = self[endIdx]
             if char == " " || char == "\t" {
-                endIdx += 1
+                endIdx = self.index(after: endIdx)
             } else if char == delim {
-                endIdx += 1
+                endIdx = self.index(after: endIdx)
                 break
             } else {
                 throw HeaderDeserializationError.invalidStringHeaderList(value: self)
@@ -55,18 +55,18 @@ fileprivate extension String {
         return (endIdx, unescaped)
     }
     
-    func readNextUnquoted(startIdx: Int, delim: Character = ",") -> (Int, String) {
-        assert(startIdx < self.count)
+    func readNextUnquoted(startIdx: String.Index, delim: Character = ",") -> (String.Index, String) {
+        assert(startIdx < self.endIndex)
         
         var endIdx = startIdx
         
-        while endIdx < count && self[endIdx] != delim {
-            endIdx += 1
+        while endIdx < self.endIndex && self[endIdx] != delim {
+            endIdx = self.index(after: endIdx)
         }
         
         let next = self[startIdx..<endIdx]
-        if endIdx < count && self[endIdx] == delim {
-            endIdx += 1
+        if endIdx < self.endIndex && self[endIdx] == delim {
+            endIdx = self.index(after: endIdx)
         }
         
         return (endIdx, next.trim())
@@ -96,14 +96,14 @@ public func splitHeaderListValues(_ value: String?) throws -> [String]? {
         return nil
     }
     var results: [String] = []
-    var currIdx = 0
+    var currIdx = value.startIndex
     
-    while currIdx < value.count {
-        let next: (idx: Int, str: String)
+    while currIdx < value.endIndex {
+        let next: (idx: String.Index, str: String)
         
         switch value[currIdx] {
         case " ", "\t":
-            currIdx += 1
+            currIdx = value.index(after: currIdx)
             continue
         case "\"":
             next = try value.readNextQuoted(startIdx: currIdx)
@@ -133,9 +133,9 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
     
     var cnt = 0
     var splits: [String] = []
-    var startIdx = 0
+    var startIdx = value.startIndex
     
-    for i in 0..<value.count {
+    for i in value.indices[value.startIndex..<value.endIndex] {
         if value[i] == "," {
             cnt += 1
         }
@@ -143,12 +143,12 @@ public func splitHttpDateHeaderListValues(_ value: String?) throws -> [String]? 
         // split on every other ','
         if cnt > 1 {
             splits.append(value[startIdx..<i].trim())
-            startIdx = i + 1
+            startIdx = value.index(after: i)
             cnt = 0
         }
     }
     
-    if startIdx < value.count {
+    if startIdx < value.endIndex {
         splits.append(value[startIdx...].trim())
     }
     

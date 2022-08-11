@@ -96,40 +96,4 @@ class StringExtensionsTests: XCTestCase {
             XCTAssertEqual(string.substringBefore(":"), match)
         }
     }
-
-    func testOffset() {
-        let string = "FooBar"
-        let offset = string[3]
-        XCTAssertEqual("B", offset)
-    }
-
-    func testRange() {
-        let string = "FooBar"
-        let range = string[1...3]
-        XCTAssertEqual("ooB", range)
-    }
-
-    func testClosedRange() {
-        let string = "FooBar"
-        let range = string[1...]
-        XCTAssertEqual("ooBar", range)
-    }
-
-    func testPartialRangeThrough() {
-        let string = "FooBar"
-        let range = string[...3]
-        XCTAssertEqual("FooB", range)
-    }
-
-    func testPartialRangeUpTo() {
-        let string = "FooBar"
-        let range = string[..<3]
-        XCTAssertEqual("Foo", range)
-    }
-
-    func testPartialRangeFrom() {
-        let string = "FooBar"
-        let range = string[3...]
-        XCTAssertEqual("Bar", range)
-    }
 }
