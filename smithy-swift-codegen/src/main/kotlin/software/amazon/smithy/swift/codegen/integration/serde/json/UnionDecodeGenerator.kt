@@ -27,7 +27,7 @@ class UnionDecodeGenerator(
                 val target = ctx.model.expectShape(member.target)
                 val memberName = ctx.symbolProvider.toMemberName(member)
                 when (target) {
-                    is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member)
+                    is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member, member)
                     is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
                     is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
                     else -> writeDecodeForPrimitive(target, member, containerName)

@@ -58,25 +58,36 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     private fun renderBuildHttpResponseParams(test: HttpResponseTestCase) {
-        val params = mutableListOf<String>()
-        params.add("code: ${test.code}")
-        if (test.headers.isNotEmpty()) {
-            params.add(renderBuildHttpResponseHeaderParams(test))
-        }
-        test.body.ifPresent { body ->
-            if (body.isNotBlank() && body.isNotEmpty()) {
-                params.add("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
+        writer.write("code: \$L,", test.code)
+        renderExpectedHeaders(test)
+        test.body.ifPresentOrElse(
+            {
+                body ->
+                if (body.isNotBlank() && body.isNotEmpty()) {
+                    writer.write("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
+                } else {
+                    writer.write("content: HttpBody.empty")
+                }
+            },
+            {
+                writer.write("content: HttpBody.empty")
             }
-        }
-        writer.write(params.joinToString(",\n"))
+        )
     }
 
-    private fun renderBuildHttpResponseHeaderParams(test: HttpResponseTestCase): String {
-        var headers = mutableListOf<String>()
-        for (hdr in test.headers.entries) {
-            headers.add("    \"${hdr.key}\": \"${hdr.value}\"")
+    private fun renderExpectedHeaders(test: HttpResponseTestCase) {
+        if (test.headers.isNotEmpty()) {
+            writer.openBlock("headers: [")
+                .call {
+                    for ((idx, hdr) in test.headers.entries.withIndex()) {
+                        val suffix = if (idx < test.headers.size - 1) "," else ""
+                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
+                    }
+                }
+                .closeBlock("],")
+        } else {
+            writer.write("headers: nil,")
         }
-        return "headers: [\n${headers.joinToString(",\n")}\n]"
     }
 
     protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {

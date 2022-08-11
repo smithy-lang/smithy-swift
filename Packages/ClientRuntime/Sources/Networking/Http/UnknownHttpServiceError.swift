@@ -4,7 +4,7 @@
  */
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
-public struct UnknownHttpServiceError: HttpServiceError {
+public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
     public var _isThrottling: Bool = false
     
     public var _statusCode: HttpStatusCode?
