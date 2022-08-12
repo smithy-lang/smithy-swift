@@ -101,7 +101,7 @@ class StructDecodeGenerationTests {
                             try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
-                    if let member1 = member1 {
+                    if let member1 = self.member1 {
                         try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
@@ -475,10 +475,10 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let foo = foo {
+                    if let foo = self.foo {
                         try encodeContainer.encode(foo, forKey: .foo)
                     }
-                    if let nested = nested {
+                    if let nested = self.nested {
                         try encodeContainer.encode(nested.value, forKey: .nested)
                     }
                 }
@@ -513,10 +513,10 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let bar = bar {
+                    if let bar = self.bar {
                         try encodeContainer.encode(bar, forKey: .bar)
                     }
-                    if let recursiveMember = recursiveMember {
+                    if let recursiveMember = self.recursiveMember {
                         try encodeContainer.encode(recursiveMember, forKey: .recursiveMember)
                     }
                 }

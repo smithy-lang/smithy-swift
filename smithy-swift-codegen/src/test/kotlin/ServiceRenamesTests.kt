@@ -148,7 +148,7 @@ class ServiceRenamesTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let salutation = salutation {
+                    if let salutation = self.salutation {
                         try encodeContainer.encode(salutation, forKey: .salutation)
                     }
                 }

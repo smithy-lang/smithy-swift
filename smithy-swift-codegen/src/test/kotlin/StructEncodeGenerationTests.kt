@@ -52,13 +52,13 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let payload1 = payload1 {
+                    if let payload1 = self.payload1 {
                         try encodeContainer.encode(payload1, forKey: .payload1)
                     }
-                    if let payload2 = payload2 {
+                    if let payload2 = self.payload2 {
                         try encodeContainer.encode(payload2, forKey: .payload2)
                     }
-                    if let payload3 = payload3 {
+                    if let payload3 = self.payload3 {
                         try encodeContainer.encode(payload3, forKey: .payload3)
                     }
                 }
@@ -95,7 +95,7 @@ class StructEncodeGenerationTests {
                             try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
-                    if let member1 = member1 {
+                    if let member1 = self.member1 {
                         try encodeContainer.encode(member1, forKey: .member1)
                     }
                     if let stringMap = stringMap {
@@ -173,16 +173,16 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let dateTime = dateTime {
+                    if let dateTime = self.dateTime {
                         try encodeContainer.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
                     }
-                    if let epochSeconds = epochSeconds {
+                    if let epochSeconds = self.epochSeconds {
                         try encodeContainer.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
                     }
-                    if let httpDate = httpDate {
+                    if let httpDate = self.httpDate {
                         try encodeContainer.encode(httpDate.rfc5322(), forKey: .httpDate)
                     }
-                    if let normal = normal {
+                    if let normal = self.normal {
                         try encodeContainer.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
                     }
                     if let timestampList = timestampList {
@@ -263,7 +263,7 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let nestedWithEnum = nestedWithEnum {
+                    if let nestedWithEnum = self.nestedWithEnum {
                         try encodeContainer.encode(nestedWithEnum, forKey: .nestedWithEnum)
                     }
                 }
@@ -282,7 +282,7 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let myEnum = myEnum {
+                    if let myEnum = self.myEnum {
                         try encodeContainer.encode(myEnum.rawValue, forKey: .myEnum)
                     }
                 }
@@ -315,10 +315,10 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let foo = foo {
+                    if let foo = self.foo {
                         try encodeContainer.encode(foo, forKey: .foo)
                     }
-                    if let nested = nested {
+                    if let nested = self.nested {
                         try encodeContainer.encode(nested.value, forKey: .nested)
                     }
                 }
@@ -353,10 +353,10 @@ class StructEncodeGenerationTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let bar = bar {
+                    if let bar = self.bar {
                         try encodeContainer.encode(bar, forKey: .bar)
                     }
-                    if let recursiveMember = recursiveMember {
+                    if let recursiveMember = self.recursiveMember {
                         try encodeContainer.encode(recursiveMember, forKey: .recursiveMember)
                     }
                 }
@@ -544,22 +544,22 @@ extension PrimitiveTypesInput: Swift.Encodable {
 
     public func encode(to encoder: Swift.Encoder) throws {
         var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-        if let booleanVal = booleanVal {
+        if let booleanVal = self.booleanVal {
             try encodeContainer.encode(booleanVal, forKey: .booleanVal)
         }
-        if let byteVal = byteVal {
+        if let byteVal = self.byteVal {
             try encodeContainer.encode(byteVal, forKey: .byteVal)
         }
-        if let doubleVal = doubleVal {
+        if let doubleVal = self.doubleVal {
             try encodeContainer.encode(doubleVal, forKey: .doubleVal)
         }
-        if let floatVal = floatVal {
+        if let floatVal = self.floatVal {
             try encodeContainer.encode(floatVal, forKey: .floatVal)
         }
-        if let intVal = intVal {
+        if let intVal = self.intVal {
             try encodeContainer.encode(intVal, forKey: .intVal)
         }
-        if let longVal = longVal {
+        if let longVal = self.longVal {
             try encodeContainer.encode(longVal, forKey: .longVal)
         }
         if primitiveBooleanVal != false {
@@ -583,10 +583,10 @@ extension PrimitiveTypesInput: Swift.Encodable {
         if primitiveShortVal != 0 {
             try encodeContainer.encode(primitiveShortVal, forKey: .primitiveShortVal)
         }
-        if let shortVal = shortVal {
+        if let shortVal = self.shortVal {
             try encodeContainer.encode(shortVal, forKey: .shortVal)
         }
-        if let str = str {
+        if let str = self.str {
             try encodeContainer.encode(str, forKey: .str)
         }
     }
