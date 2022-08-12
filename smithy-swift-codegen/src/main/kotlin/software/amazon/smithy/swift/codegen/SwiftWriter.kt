@@ -11,6 +11,7 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.loader.Prelude
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DeprecatedTrait
@@ -212,7 +213,13 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         if (shape.getTrait(DeprecatedTrait::class.java).isPresent) {
             deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()
         } else if (shape.getMemberTrait(model, DeprecatedTrait::class.java).isPresent) {
-            deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
+            if (shape is MemberShape) {
+                if (!Prelude.isPreludeShape(shape.getTarget())) {
+                    deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
+                }
+            } else {
+                deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
+            }
         }
 
         if (deprecatedTrait != null) {

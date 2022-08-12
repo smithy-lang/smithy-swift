@@ -95,6 +95,13 @@ class HttpBodyMiddleware(
                     renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
                 }
             }
+            ShapeType.ENUM -> {
+                val contents = "$memberName.rawValue"
+                writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
+                    writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
+                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                }
+            }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the member encode function
                 writer.openBlock("do {", "} catch let err {") {
