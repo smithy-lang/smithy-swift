@@ -14,7 +14,7 @@ interface MemberShapeEncodeGeneratable {
 class MemberShapeEncodeConstants {
     companion object {
         val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
-            ShapeType.INTEGER, ShapeType.BYTE, ShapeType.SHORT,
+            ShapeType.INTEGER, ShapeType.INT_ENUM, ShapeType.BYTE, ShapeType.SHORT,
             ShapeType.LONG, ShapeType.FLOAT, ShapeType.DOUBLE, ShapeType.BOOLEAN
         )
         val floatingPointPrimitiveSymbols: MutableSet <ShapeType> = hashSetOf(

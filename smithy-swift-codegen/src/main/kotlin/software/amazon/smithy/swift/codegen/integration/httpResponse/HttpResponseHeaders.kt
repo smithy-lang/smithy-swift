@@ -188,6 +188,7 @@ class HttpResponseHeaders(
         ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue) ?? 0"
         ShapeType.SHORT -> "${SwiftTypes.Int16}($stringValue) ?? 0"
         ShapeType.INTEGER -> "${SwiftTypes.Int}($stringValue) ?? 0"
+        ShapeType.INT_ENUM -> "${SwiftTypes.Int}($stringValue) ?? 0"
         ShapeType.LONG -> "${SwiftTypes.Int}($stringValue) ?? 0"
         ShapeType.FLOAT -> "${SwiftTypes.Float}($stringValue) ?? 0"
         ShapeType.DOUBLE -> "${SwiftTypes.Double}($stringValue) ?? 0"

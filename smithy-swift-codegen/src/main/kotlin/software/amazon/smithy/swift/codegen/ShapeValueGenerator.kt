@@ -190,6 +190,11 @@ class ShapeValueGenerator(
                     ")!"
                 } else { "" }
             }
+            ShapeType.ENUM -> {
+                val symbol = symbolProvider.toSymbol(shape)
+                writer.writeInline("\$N(rawValue: ", symbol)
+                ")!"
+            }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
                     writer.writeInline("ByteStream.from(data: ")
@@ -319,7 +324,7 @@ class ShapeValueGenerator(
                     writer.writeInline("Date(timeIntervalSince1970: \$L)", node.value)
                 }
 
-                ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
+                ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER, ShapeType.INT_ENUM,
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
                 /*
