@@ -246,7 +246,7 @@ abstract class MemberShapeEncodeGenerator(
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
         if (isBoxed) {
-            writer.openBlock("if let $memberName = $memberName {", "}") {
+            writer.openBlock("if let $memberName = self.$memberName {", "}") {
                 writer.write("try $containerName.encode($memberWithExtension, forKey: .\$L)", memberName)
             }
         } else {
