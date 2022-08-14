@@ -6,14 +6,11 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
 import software.amazon.smithy.model.knowledge.PaginationInfo
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.PaginatedTrait
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import software.amazon.smithy.swift.codegen.model.camelCaseName
-import software.amazon.smithy.swift.codegen.model.expectShape
-import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.*
 import software.amazon.smithy.swift.codegen.utils.toCamelCase
 
 /**
@@ -187,9 +184,20 @@ class PaginatorGenerator : SwiftIntegration {
         }
 
         writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
-            writer.openBlock("func \$L() async throws -> \$N {", "}", itemDesc.itemLiteral, itemDesc.itemSymbol) {
-                writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
+            val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
+            if (itemSymbolShape?.isListShape == true) {
+                writer.openBlock("public func \$L() async throws -> \$N {", "}", itemDesc.itemLiteral, itemDesc.itemSymbol) {
+                    writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
+                }
+            } else if (itemSymbolShape?.isMapShape == true) {
+                val suffix = if (itemDesc.itemSymbol.isBoxed()) "?" else ""
+                writer.openBlock("public func \$L() async throws -> [\$L] {", "}", itemDesc.itemLiteral, itemDesc.collectionLiteral) {
+                    writer.write("return try await self.asyncCompactMap { item in item.\$L$suffix.map { (\$\$0, \$\$1) } }", itemDesc.itemPathLiteral)
+                }
+            } else {
+                error("Unexpected shape type $itemSymbolShape")
             }
+
         }
     }
 }
@@ -198,6 +206,7 @@ class PaginatorGenerator : SwiftIntegration {
  * Model info necessary to codegen paginator item
  */
 private data class ItemDescriptor(
+    val collectionLiteral: String,
     val itemLiteral: String,
     val itemPathLiteral: String,
     val itemSymbol: Symbol
@@ -211,8 +220,14 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.camelCaseName()
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.camelCaseName() }
     val itemMember = ctx.model.expectShape(itemMemberId)
+    val collectionLiteral = when (itemMember) {
+        is MapShape -> ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
+        is CollectionShape -> ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target)).name
+        else -> error("Unexpected shape type ${itemMember.type}")
+    }
 
     return ItemDescriptor(
+        collectionLiteral,
         itemLiteral,
         itemPathLiteral,
         ctx.symbolProvider.toSymbol(itemMember)

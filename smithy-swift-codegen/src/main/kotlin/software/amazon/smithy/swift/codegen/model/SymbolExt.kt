@@ -15,6 +15,9 @@ import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
  * Property bag keys used by symbol provider implementation
  */
 object SymbolProperty {
+    // Entry type for Maps
+    const val ENTRY_EXPRESSION: String = "entryExpression"
+
     // The key that holds the default value for a type (symbol) as a string
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
