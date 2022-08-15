@@ -113,8 +113,8 @@ class PaginatorGeneratorTest {
         }
         
         /// This paginator transforms the `AsyncSequence` returned by `paginatedMapPaginated`
-        /// to access the nested member `[Swift.String:Swift.Int]`
-        /// - Returns: `[Swift.String:Swift.Int]`
+        /// to access the nested member `[(String, Swift.Int)]`
+        /// - Returns: `[(String, Swift.Int)]`
         extension PaginatorSequence where Input == PaginatedMapInput, Output == PaginatedMapOutputResponse {
             public func mapItems() async throws -> [(String, Swift.Int)] {
                 return try await self.asyncCompactMap { item in item.inner?.mapItems?.map { (${'$'}0, ${'$'}1) } }

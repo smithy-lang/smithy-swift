@@ -181,10 +181,11 @@ class PaginatorGenerator : SwiftIntegration {
         outputSymbol: Symbol,
     ) {
         writer.write("")
+        val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
         val docBody = """
         This paginator transforms the `AsyncSequence` returned by `${operationShape.camelCaseName()}Paginated`
-        to access the nested member `${itemDesc.itemSymbol.fullName}`
-        - Returns: `${itemDesc.itemSymbol.fullName}`
+        to access the nested member `${itemDesc.collectionLiteral}`
+        - Returns: `${itemDesc.collectionLiteral}`
         """.trimIndent()
 
         writer.writeSingleLineDocs {
@@ -192,18 +193,15 @@ class PaginatorGenerator : SwiftIntegration {
         }
 
         writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
-            val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
-            if (itemSymbolShape?.isListShape == true) {
-                writer.openBlock("public func \$L() async throws -> \$N {", "}", itemDesc.itemLiteral, itemDesc.itemSymbol) {
+            writer.openBlock("public func \$L() async throws -> \$L {", "}", itemDesc.itemLiteral, itemDesc.collectionLiteral) {
+                if (itemSymbolShape?.isListShape == true) {
                     writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
-                }
-            } else if (itemSymbolShape?.isMapShape == true) {
-                val suffix = if (itemDesc.itemSymbol.isBoxed()) "?" else ""
-                writer.openBlock("public func \$L() async throws -> [\$L] {", "}", itemDesc.itemLiteral, itemDesc.collectionLiteral) {
+                } else if (itemSymbolShape?.isMapShape == true) {
+                    val suffix = if (itemDesc.itemSymbol.isBoxed()) "?" else ""
                     writer.write("return try await self.asyncCompactMap { item in item.\$L$suffix.map { (\$\$0, \$\$1) } }", itemDesc.itemPathLiteral)
+                } else {
+                    error("Unexpected shape type $itemSymbolShape")
                 }
-            } else {
-                error("Unexpected shape type $itemSymbolShape")
             }
         }
     }
@@ -228,8 +226,13 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.camelCaseName() }
     val itemMember = ctx.model.expectShape(itemMemberId)
     val collectionLiteral = when (itemMember) {
-        is MapShape -> ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
-        is CollectionShape -> ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target)).name
+        is MapShape -> {
+            val entryType = ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
+            "[$entryType]"
+        }
+        is CollectionShape -> {
+            ctx.symbolProvider.toSymbol(itemMember).fullName
+        }
         else -> error("Unexpected shape type ${itemMember.type}")
     }
 
