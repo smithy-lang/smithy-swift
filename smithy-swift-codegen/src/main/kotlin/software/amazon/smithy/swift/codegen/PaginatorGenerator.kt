@@ -197,7 +197,6 @@ class PaginatorGenerator : SwiftIntegration {
             } else {
                 error("Unexpected shape type $itemSymbolShape")
             }
-
         }
     }
 }
