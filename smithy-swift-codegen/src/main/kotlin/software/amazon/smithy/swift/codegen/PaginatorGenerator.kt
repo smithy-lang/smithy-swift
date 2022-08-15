@@ -6,14 +6,19 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
 import software.amazon.smithy.model.knowledge.PaginationInfo
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.PaginatedTrait
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.utils.toCamelCase
 
 /**
@@ -176,10 +181,11 @@ class PaginatorGenerator : SwiftIntegration {
         outputSymbol: Symbol,
     ) {
         writer.write("")
+        val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
         val docBody = """
         This paginator transforms the `AsyncSequence` returned by `${operationShape.camelCaseName()}Paginated`
-        to access the nested member `${itemDesc.itemSymbol.fullName}`
-        - Returns: `${itemDesc.itemSymbol.fullName}`
+        to access the nested member `${itemDesc.collectionLiteral}`
+        - Returns: `${itemDesc.collectionLiteral}`
         """.trimIndent()
 
         writer.writeSingleLineDocs {
@@ -187,8 +193,15 @@ class PaginatorGenerator : SwiftIntegration {
         }
 
         writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
-            writer.openBlock("func \$L() async throws -> \$N {", "}", itemDesc.itemLiteral, itemDesc.itemSymbol) {
-                writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
+            writer.openBlock("public func \$L() async throws -> \$L {", "}", itemDesc.itemLiteral, itemDesc.collectionLiteral) {
+                if (itemSymbolShape?.isListShape == true) {
+                    writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
+                } else if (itemSymbolShape?.isMapShape == true) {
+                    val suffix = if (itemDesc.itemSymbol.isBoxed()) "?" else ""
+                    writer.write("return try await self.asyncCompactMap { item in item.\$L$suffix.map { (\$\$0, \$\$1) } }", itemDesc.itemPathLiteral)
+                } else {
+                    error("Unexpected shape type $itemSymbolShape")
+                }
             }
         }
     }
@@ -198,6 +211,7 @@ class PaginatorGenerator : SwiftIntegration {
  * Model info necessary to codegen paginator item
  */
 private data class ItemDescriptor(
+    val collectionLiteral: String,
     val itemLiteral: String,
     val itemPathLiteral: String,
     val itemSymbol: Symbol
@@ -211,8 +225,19 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.camelCaseName()
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.camelCaseName() }
     val itemMember = ctx.model.expectShape(itemMemberId)
+    val collectionLiteral = when (itemMember) {
+        is MapShape -> {
+            val entryType = ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
+            "[$entryType]"
+        }
+        is CollectionShape -> {
+            ctx.symbolProvider.toSymbol(itemMember).fullName
+        }
+        else -> error("Unexpected shape type ${itemMember.type}")
+    }
 
     return ItemDescriptor(
+        collectionLiteral,
         itemLiteral,
         itemPathLiteral,
         ctx.symbolProvider.toSymbol(itemMember)
