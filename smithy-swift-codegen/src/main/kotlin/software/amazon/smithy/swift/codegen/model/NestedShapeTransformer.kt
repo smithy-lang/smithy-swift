@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.model
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -14,6 +15,9 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 object NestedShapeTransformer {
     fun transform(model: Model, service: ServiceShape): Model {
         val next = transformInner(model, service)
+        if (next == model) {
+            throw CodegenException("model $model is equal to $next, loop detected")
+        }
         return if (next == null) {
             model
         } else {
@@ -35,6 +39,7 @@ object NestedShapeTransformer {
                     ShapeType.STRUCTURE -> shape.asStructureShape().get().toBuilder().addTrait(NestedTrait()).build()
                     ShapeType.UNION -> shape.asUnionShape().get().toBuilder().addTrait(NestedTrait()).build()
                     ShapeType.STRING -> shape.asStringShape().get().toBuilder().addTrait(NestedTrait()).build()
+                    ShapeType.ENUM -> shape.asEnumShape().get().toBuilder().addTrait(NestedTrait()).build()
                     else -> shape
                 }
             } else {
