@@ -214,7 +214,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
             deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()
         } else if (shape.getMemberTrait(model, DeprecatedTrait::class.java).isPresent) {
             if (shape is MemberShape) {
-                if (!Prelude.isPreludeShape(shape.getTarget())) {
+                if (isTargetDeprecated(model, shape)) {
                     deprecatedTrait = shape.getMemberTrait(model, DeprecatedTrait::class.java).get()
                 }
             } else {
@@ -259,5 +259,11 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         enumDefinition.documentation.ifPresent {
             writeDocs(it)
         }
+    }
+
+    private fun isTargetDeprecated(model: Model?, member: MemberShape): Boolean {
+        return model != null &&
+            model.expectShape(member.target).getTrait(DeprecatedTrait::class.java).isPresent &&
+            !Prelude.isPreludeShape(member.target)
     }
 }
