@@ -86,10 +86,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<SmokeTestInput, SmokeTestOutputResponse, SmokeTestOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<SmokeTestInput, SmokeTestOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<SmokeTestOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutputResponse>())
@@ -174,10 +174,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<ExplicitStringInput, ExplicitStringOutputResponse, ExplicitStringOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<ExplicitStringInput, ExplicitStringOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<ExplicitStringOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutputResponse>(contentType: "text/plain"))
@@ -243,10 +243,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<EmptyInputAndEmptyOutputInput, EmptyInputAndEmptyOutputOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<EmptyInputAndEmptyOutputOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.deserializeStep.intercept(position: .after,
@@ -309,10 +309,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<SimpleScalarPropertiesOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutputResponse>())
@@ -401,10 +401,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse, StreamingTraitsOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<StreamingTraitsOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<StreamingTraitsInput, StreamingTraitsOutputResponse>())
@@ -477,10 +477,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpPrefixHeadersOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<HttpPrefixHeadersInput, HttpPrefixHeadersOutputResponse>())
@@ -549,10 +549,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<JsonUnionsInput, JsonUnionsOutputResponse, JsonUnionsOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<JsonUnionsInput, JsonUnionsOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<JsonUnionsOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutputResponse>(contentType: "application/json"))
@@ -658,10 +658,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse, RecursiveShapesOutputError>(urlPrefix: urlPrefix))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<RecursiveShapesOutputResponse> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
+            input.httpRequestBuilder.withMethod(context.getMethod())
+            input.httpRequestBuilder.withPath(context.getPath())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutputResponse>(contentType: "application/json"))
@@ -750,10 +750,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<InlineDocumentInput, InlineDocumentOutputResponse, InlineDocumentOutputError>(urlPrefix: urlPrefix))
             operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<InlineDocumentInput, InlineDocumentOutputResponse>(host: hostOnly))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<InlineDocumentOutputResponse> in
-                input.withMethod(context.getMethod())
-                input.withPath(context.getPath())
+                input.httpRequestBuilder.withMethod(context.getMethod())
+                input.httpRequestBuilder.withPath(context.getPath())
                 let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-                input.withHost(host)
+                input.httpRequestBuilder.withHost(host)
                 return try await next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutputResponse>(contentType: "application/json"))
@@ -840,10 +840,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(urlPrefix: urlPrefix))
             operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse>(host: hostOnly))
             operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<InlineDocumentAsPayloadOutputResponse> in
-                input.withMethod(context.getMethod())
-                input.withPath(context.getPath())
+                input.httpRequestBuilder.withMethod(context.getMethod())
+                input.httpRequestBuilder.withPath(context.getPath())
                 let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-                input.withHost(host)
+                input.httpRequestBuilder.withHost(host)
                 return try await next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutputResponse>(contentType: "application/json"))

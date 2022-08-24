@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvert
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.ClientContextParamsTransformer
 import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
@@ -43,6 +44,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val integrations: List<SwiftIntegration>
     private val protocolGenerator: ProtocolGenerator?
     private val baseGenerationContext: GenerationContext
+    private var protocolGenerationContext: ProtocolGenerator.GenerationContext?
 
     init {
         LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
@@ -78,6 +80,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         }
 
         baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
+
+        protocolGenerationContext = protocolGenerator?.let { ProtocolGenerator.GenerationContext(settings, model, service, symbolProvider, integrations, it.protocol, writers) }
     }
 
     fun preprocessModel(model: Model): Model {
@@ -86,6 +90,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         resolvedModel = HashableShapeTransformer.transform(resolvedModel)
         resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+        resolvedModel = ClientContextParamsTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
 
@@ -115,31 +120,25 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         serviceShapes.forEach { it.accept(this) }
         var shouldGenerateTestTarget = false
         protocolGenerator?.apply {
-            val ctx = ProtocolGenerator.GenerationContext(
-                settings,
-                model,
-                service,
-                symbolProvider,
-                integrations,
-                protocolGenerator.protocol,
-                writers
-            )
-            LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
-            generateSerializers(ctx)
-            generateDeserializers(ctx)
-            generateCodableConformanceForNestedTypes(ctx)
+            protocolGenerationContext?.let { ctx ->
+                LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
+                generateSerializers(ctx)
+                generateDeserializers(ctx)
+                generateCodableConformanceForNestedTypes(ctx)
 
-            initializeMiddleware(ctx)
+                initializeMiddleware(ctx)
 
-            LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
-            val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
-            shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
+                LOGGER.info("[${service.id}] Generating unit tests for protocol ${protocolGenerator.protocol}")
+                val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
+                shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
-            LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
+                LOGGER.info("[${service.id}] Generating service client for protocol ${protocolGenerator.protocol}")
 
-            generateProtocolClient(ctx)
+                generateProtocolClient(ctx)
+
+                integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, ctx, writers) }
+            }
         }
-        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
 
         println("Flushing swift writers")
         val dependencies = writers.dependencies
@@ -176,9 +175,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun serviceShape(shape: ServiceShape): Void? {
-        writers.useShapeWriter(shape) {
-            writer: SwiftWriter ->
-            ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator).render()
+        writers.useShapeWriter(shape) { writer: SwiftWriter ->
+            ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator, protocolGenerationContext).render()
             ServiceNamespaceGenerator(settings, model, symbolProvider, writer).render()
         }
         return null

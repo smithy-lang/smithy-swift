@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>: Middleware {
-    
+public struct MutateHeadersMiddleware<OperationStackInput,
+                                      OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "MutateHeaders"
     
     private var overrides: Headers
@@ -18,26 +18,26 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>
     }
     
     public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
+                          input: BuildStepInput<OperationStackInput>,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
         if !additional.dictionary.isEmpty {
-            input.withHeaders(additional)
+            input.httpRequestBuilder.withHeaders(additional)
         }
         
         if !overrides.dictionary.isEmpty {
             for header in overrides.headers {
-                input.updateHeader(name: header.name, value: header.value)
+                input.httpRequestBuilder.updateHeader(name: header.name, value: header.value)
             }
         }
         
         if !conditionallySet.dictionary.isEmpty {
             for header in conditionallySet.headers {
-                if !input.headers.exists(name: header.name) {
-                    input.headers.add(name: header.name, values: header.value)
+                if !input.httpRequestBuilder.headers.exists(name: header.name) {
+                    input.httpRequestBuilder.headers.add(name: header.name, values: header.value)
                 }
             }
         }
@@ -45,7 +45,7 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>
         return try await next.handle(context: context, input: input)
     }
     
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = BuildStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 }

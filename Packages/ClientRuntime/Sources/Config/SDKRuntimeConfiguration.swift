@@ -17,6 +17,7 @@ public protocol SDKRuntimeConfiguration {
     var logger: LogAgent {get}
     var clientLogMode: ClientLogMode {get}
     var retryer: SDKRetryer {get}
+    var endpoint: String? {get set}
 }
 
 public extension SDKRuntimeConfiguration {

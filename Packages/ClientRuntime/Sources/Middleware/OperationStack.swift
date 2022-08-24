@@ -9,7 +9,7 @@ public struct OperationStack<OperationStackInput,
     public var id: String
     public var initializeStep: InitializeStep<OperationStackInput, OperationStackOutput>
     public var serializeStep: SerializeStep<OperationStackInput, OperationStackOutput>
-    public var buildStep: BuildStep<OperationStackOutput>
+    public var buildStep: BuildStep<OperationStackInput, OperationStackOutput>
     public var finalizeStep: FinalizeStep<OperationStackOutput>
     public var deserializeStep: DeserializeStep<OperationStackOutput>
     
@@ -19,7 +19,7 @@ public struct OperationStack<OperationStackInput,
                                              OperationStackOutput>(id: InitializeStepId)
         self.serializeStep = SerializeStep<OperationStackInput,
                                            OperationStackOutput>(id: SerializeStepId)
-        self.buildStep = BuildStep<OperationStackOutput>(id: BuildStepId)
+        self.buildStep = BuildStep<OperationStackInput, OperationStackOutput>(id: BuildStepId)
         self.finalizeStep = FinalizeStep<OperationStackOutput>(id: FinalizeStepId)
         self.deserializeStep = DeserializeStep<OperationStackOutput>(id: DeserializeStepId)
         

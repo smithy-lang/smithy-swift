@@ -8,30 +8,60 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.utils.toCamelCase
 
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val memberName: String?, val type: Symbol, val formatter: String = "\$N", private val documentation: String? = null)
+data class ConfigField(
+    val memberName: String?,
+    val type: Symbol,
+    val formatter: String = "\$N",
+    private val documentation: String? = null,
+)
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
  */
 abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
-    open val typeName: String = "${serviceName}Configuration"
+    open val typeName: String = "${serviceName.toCamelCase()}Configuration"
+    open val typeProtocol: Symbol = Symbol.builder().name("${typeName}Protocol").build()
 
     open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
 
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
-            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder, formatter = "\$T"),
-            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder, formatter = "\$T"),
-            ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
-            ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
-            ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryer", ClientRuntimeTypes.Core.SDKRetryer),
-            ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
+            ConfigField(
+                "encoder",
+                ClientRuntimeTypes.Serde.RequestEncoder,
+                formatter = "\$T",
+            ),
+            ConfigField(
+                "decoder",
+                ClientRuntimeTypes.Serde.ResponseDecoder,
+                formatter = "\$T",
+            ),
+            ConfigField(
+                "httpClientEngine",
+                ClientRuntimeTypes.Http.HttpClientEngine
+            ),
+            ConfigField(
+                "httpClientConfiguration",
+                ClientRuntimeTypes.Http.HttpClientConfiguration,
+            ),
+            ConfigField(
+                "idempotencyTokenGenerator",
+                ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
+            ),
+            ConfigField(
+                "retryer",
+                ClientRuntimeTypes.Core.SDKRetryer
+            ),
+            ConfigField(
+                "clientLogMode",
+                ClientRuntimeTypes.Core.ClientLogMode
+            ),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }
         return configFields
@@ -56,4 +86,6 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }
+
+    open fun serviceConfigProperties(): List<ConfigField> = listOf()
 }

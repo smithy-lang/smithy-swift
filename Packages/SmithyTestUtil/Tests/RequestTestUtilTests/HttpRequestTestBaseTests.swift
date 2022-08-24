@@ -175,9 +175,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
         operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<MockOutput> in
-            input.withMethod(context.getMethod())
+            input.httpRequestBuilder.withMethod(context.getMethod())
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-            input.withHost(host)
+            input.httpRequestBuilder.withHost(host)
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())

@@ -9,7 +9,7 @@ import ClientRuntime
 
 public struct MockBuildMiddleware: Middleware {
     public typealias Context = HttpContext
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = BuildStepInput<MockInput>
     public typealias MOutput = OperationOutput<MockOutput>
     public typealias MockBuildMiddlewareCallback = (HttpContext, MInput) -> Void
     public let id: String

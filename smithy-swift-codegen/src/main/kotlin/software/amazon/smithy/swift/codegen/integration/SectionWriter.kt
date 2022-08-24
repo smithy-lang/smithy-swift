@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.utils.CodeWriter
 
 /**
@@ -25,7 +26,7 @@ fun interface SectionWriter {
      *  [CodeWriter](https://github.com/awslabs/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
      *  documentation for more details
      */
-    fun write(writer: CodeWriter, previousValue: String?)
+    fun write(writer: SwiftWriter, previousValue: String?)
 }
 
 /**

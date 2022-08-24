@@ -3,7 +3,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "ContentMD5"
     
     private let contentMD5HeaderName = "Content-MD5"
@@ -18,14 +18,14 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: M
     Self.MOutput == H.Output,
     Self.Context == H.Context {
         
-        switch input.body {
+        switch input.httpRequestBuilder.body {
         case .data(let data):
             guard let data = data,
                   let bodyString = String(data: data, encoding: .utf8),
                   let base64Encoded = bodyString.base64EncodedMD5() else {
                 return try await next.handle(context: context, input: input)
             }
-            input.headers.update(name: "Content-MD5", value: base64Encoded)
+            input.httpRequestBuilder.headers.update(name: "Content-MD5", value: base64Encoded)
         case .stream:
             guard let logger = context.getLogger() else {
                 return try await next.handle(context: context, input: input)
@@ -41,7 +41,7 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: M
         return try await next.handle(context: context, input: input)
     }
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = BuildStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 }

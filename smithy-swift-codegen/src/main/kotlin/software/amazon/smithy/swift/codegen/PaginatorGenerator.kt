@@ -13,6 +13,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.PaginatedTrait
 import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.camelCaseName
@@ -29,7 +30,11 @@ class PaginatorGenerator : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean =
         model.operationShapes.any { it.hasTrait<PaginatedTrait>() }
 
-    override fun writeAdditionalFiles(ctx: CodegenContext, delegator: SwiftDelegator) {
+    override fun writeAdditionalFiles(
+        ctx: CodegenContext,
+        protocolGenerationContext: ProtocolGenerator.GenerationContext,
+        delegator: SwiftDelegator
+    ) {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 

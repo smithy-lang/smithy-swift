@@ -18,12 +18,12 @@ class HttpProtocolClientGeneratorTests {
             public class RestJsonProtocolClient {
                 public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
-                let config: ClientRuntime.SDKRuntimeConfiguration
+                let config: RestJsonProtocolClientConfiguration
                 let serviceName = "Rest Json Protocol"
                 let encoder: ClientRuntime.RequestEncoder
                 let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: ClientRuntime.SDKRuntimeConfiguration) {
+                public init(config: ClientRuntime.SDKRuntimeConfiguration) async throws {
                     client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = ClientRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
@@ -33,20 +33,25 @@ class HttpProtocolClientGeneratorTests {
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     self.decoder = config.decoder ?? decoder
-                    self.config = config
+                    if let config = config as? RestJsonProtocolClientConfiguration {
+                        self.config = config
+                    } else if let region = config.region {
+                        self.config = try RestJsonProtocolClientConfiguration(region: region, runtimeConfig: config)
+                    } else {
+                        self.config = try await RestJsonProtocolClientConfiguration(runtimeConfig: config)
+                    }
                 }
             
-                public convenience init() throws {
+                public convenience init() async throws {
                     let config = try RestJsonProtocolClientConfiguration()
-                    self.init(config: config)
+                    try await self.init(config: config)
                 }
-            
+
                 deinit {
                     client.close()
                 }
-            
+
                 public class RestJsonProtocolClientConfiguration: ClientRuntime.SDKRuntimeConfiguration {
-            
                     public var clientLogMode: ClientRuntime.ClientLogMode
                     public var decoder: ClientRuntime.ResponseDecoder?
                     public var encoder: ClientRuntime.RequestEncoder?

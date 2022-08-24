@@ -22,10 +22,10 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
             "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
             ClientRuntimeTypes.Middleware.OperationOutput
         ) {
-            writer.write("input.withMethod(context.getMethod())")
-            writer.write("input.withPath(context.getPath())")
+            writer.write("input.httpRequestBuilder.withMethod(context.getMethod())")
+            writer.write("input.httpRequestBuilder.withPath(context.getPath())")
             writer.write("let host = \"\\(context.getHostPrefix() ?? \"\")\\(context.getHost() ?? \"\")\"")
-            writer.write("input.withHost(host)")
+            writer.write("input.httpRequestBuilder.withHost(host)")
             writer.write("return try await next.handle(context: context, input: input)")
         }
     }

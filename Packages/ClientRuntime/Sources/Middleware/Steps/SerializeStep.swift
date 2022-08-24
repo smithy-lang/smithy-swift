@@ -17,7 +17,7 @@ public let SerializeStepId = "Serialize"
 public struct SerializeStepHandler<OperationStackInput,
                                    OperationStackOutput: HttpResponseBinding,
                                    H: Handler>: Handler where H.Context == HttpContext,
-                                                              H.Input == SdkHttpRequestBuilder,
+                                                              H.Input == BuildStepInput<OperationStackInput>,
                                                               H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
@@ -31,7 +31,8 @@ public struct SerializeStepHandler<OperationStackInput,
     }
     
     public func handle(context: HttpContext, input: Input) async throws -> Output {
-        return try await handler.handle(context: context, input: input.builder)
+        let buildInput = BuildStepInput(operationInput: input.operationInput, httpRequestBuilder: input.builder)
+        return try await handler.handle(context: context, input: buildInput)
     }
 }
 

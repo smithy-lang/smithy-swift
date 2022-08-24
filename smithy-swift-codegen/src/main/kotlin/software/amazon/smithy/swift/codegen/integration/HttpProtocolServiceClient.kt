@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("public static let clientName = \"${serviceSymbol.name}\"")
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$N", serviceConfig.typesToConformConfigTo.first())
+            writer.write("let config: \$L", serviceConfig.typeProtocol)
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
             writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
@@ -29,7 +29,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: \$N) {", "}", serviceConfig.typesToConformConfigTo.first()) {
+            writer.openBlock("public init(config: \$L) async throws {", "}", serviceConfig.typeProtocol) {
                 writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
@@ -56,9 +56,9 @@ open class HttpProtocolServiceClient(
     }
 
     open fun renderConvenienceInit(serviceSymbol: Symbol) {
-        writer.openBlock("public convenience init() throws {", "}") {
+        writer.openBlock("public convenience init() async throws {", "}") {
             writer.write("let config = try ${serviceConfig.typeName}()")
-            writer.write("self.init(config: config)")
+            writer.write("try await self.init(config: config)")
         }
     }
 
@@ -82,9 +82,9 @@ open class HttpProtocolServiceClient(
     private fun renderConfig(serviceSymbol: Symbol) {
         val configFields = serviceConfig.sdkRuntimeConfigProperties()
         val otherConfigFields = serviceConfig.otherRuntimeConfigProperties()
+        val serviceSpecificConfigField = serviceConfig.serviceConfigProperties()
         val inheritance = serviceConfig.getTypeInheritance()
-        writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
-            writer.write("")
+        writer.openBlock("public class \$L: \$L {", "}", serviceConfig.typeName, serviceConfig.typeProtocol) {
             configFields.forEach {
                 writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
             }
@@ -92,6 +92,13 @@ open class HttpProtocolServiceClient(
             otherConfigFields.forEach {
                 writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
             }
+            if (serviceSpecificConfigField != null) {
+                writer.write("")
+                serviceSpecificConfigField.forEach {
+                    writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
+                }
+            }
+
             writer.write("")
             serviceConfig.renderInitializers(serviceSymbol)
         }

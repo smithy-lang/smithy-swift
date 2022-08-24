@@ -17,6 +17,10 @@ extra["moduleName"] = "software.amazon.smithy.swift.codegen"
 group = "software.amazon.smithy"
 version = "0.1.0"
 
+configurations.implementation {
+    exclude(group = "brazil")
+}
+
 val smithyVersion: String by project
 val commonMarkParserVersion: String by project
 val jsoupVersion: String by project
@@ -34,6 +38,8 @@ dependencies {
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    implementation("software.amazon.smithy:smithy-rules-engine:$smithyVersion")
+    implementation("software.amazon.smithy:reterminus-core:0.2.0")
 }
 
 jacoco {

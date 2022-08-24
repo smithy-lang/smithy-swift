@@ -8,18 +8,20 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public typealias BuildStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
-                                                                    SdkHttpRequestBuilder,
+public typealias BuildStep<I,
+                           O: HttpResponseBinding> = MiddlewareStep<HttpContext,
+                                                                    BuildStepInput<I>,
                                                                     OperationOutput<O>>
 
 public let BuildStepId = "Build"
 
-public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
+public struct BuildStepHandler<OperationStackInput,
+                               OperationStackOutput: HttpResponseBinding,
                                H: Handler>: Handler where H.Context == HttpContext,
                                                           H.Input == SdkHttpRequestBuilder,
                                                           H.Output == OperationOutput<OperationStackOutput> {
 
-    public typealias Input = SdkHttpRequestBuilder
+    public typealias Input = BuildStepInput<OperationStackInput>
     
     public typealias Output = OperationOutput<OperationStackOutput>
     
@@ -30,6 +32,11 @@ public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
     }
     
     public func handle(context: HttpContext, input: Input) async throws -> Output {
-        return try await handler.handle(context: context, input: input)
+        return try await handler.handle(context: context, input: input.httpRequestBuilder)
     }
+}
+
+public struct BuildStepInput<OperationStackInput> {
+    public let operationInput: OperationStackInput
+    public let httpRequestBuilder: SdkHttpRequestBuilder
 }

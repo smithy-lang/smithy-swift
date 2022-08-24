@@ -24,8 +24,9 @@ class ContentMD5Middleware(
 
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
+            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }
 }

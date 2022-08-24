@@ -50,7 +50,7 @@ class MiddlewareStackTests: XCTestCase {
         }
 
         stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+            input.httpRequestBuilder.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
             return try await next.handle(context: context, input: input)
         }
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> OperationOutput<MockOutput> in

@@ -35,8 +35,8 @@ class MutateHeaderMiddlewareTests: XCTestCase {
     
     func testOverridesHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.withHeader(name: "foo", value: "bar")
-            input.withHeader(name: "baz", value: "qux")
+            input.httpRequestBuilder.withHeader(name: "foo", value: "bar")
+            input.httpRequestBuilder.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"]))
@@ -50,8 +50,8 @@ class MutateHeaderMiddlewareTests: XCTestCase {
     
     func testAppendsHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.withHeader(name: "foo", value: "bar")
-            input.withHeader(name: "baz", value: "qux")
+            input.httpRequestBuilder.withHeader(name: "foo", value: "bar")
+            input.httpRequestBuilder.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .before, middleware: MutateHeadersMiddleware(additional: ["foo": "appended", "z": "zebra"]))
@@ -65,8 +65,8 @@ class MutateHeaderMiddlewareTests: XCTestCase {
     
     func testConditionallySetHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.withHeader(name: "foo", value: "bar")
-            input.withHeader(name: "baz", value: "qux")
+            input.httpRequestBuilder.withHeader(name: "foo", value: "bar")
+            input.httpRequestBuilder.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(conditionallySet: ["foo": "nope", "z": "zebra"]))

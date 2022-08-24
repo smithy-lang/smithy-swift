@@ -28,7 +28,14 @@ class ServiceGeneratorTests {
         val manifest = MockManifest()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val writers = SwiftDelegator(settings, model, manifest, provider)
-        val generator = ServiceGenerator(settings, model, provider, writer, writers)
+        val generator = ServiceGenerator(
+            settings,
+            model,
+            provider,
+            writer,
+            writers,
+            protocolGenerationContext = protocolGenerationContext
+        )
         generator.render()
 
         commonTestContents = writer.toString()
