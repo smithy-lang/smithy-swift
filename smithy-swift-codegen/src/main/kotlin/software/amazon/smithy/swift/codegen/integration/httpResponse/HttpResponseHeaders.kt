@@ -141,7 +141,7 @@ class HttpResponseHeaders(
                     if (memberTarget.isSetShape) {
                         memberValue = "${SwiftTypes.Set}(${memberName}HeaderValues)"
                     }
-                    writer.write("if let ${memberName}HeaderValues = $splitFnPrefix$splitFn(${memberName}HeaderValue) {")
+                    writer.write("if let ${memberName}HeaderValues = try $splitFnPrefix$splitFn(${memberName}HeaderValue) {")
                     writer.indent()
                     // render map function
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)

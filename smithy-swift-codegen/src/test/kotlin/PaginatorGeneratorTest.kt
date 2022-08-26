@@ -76,7 +76,7 @@ class PaginatorGeneratorTest {
         /// to access the nested member `[TestClientTypes.FunctionConfiguration]`
         /// - Returns: `[TestClientTypes.FunctionConfiguration]`
         extension PaginatorSequence where Input == ListFunctionsInput, Output == ListFunctionsOutputResponse {
-            func functions() async throws -> [TestClientTypes.FunctionConfiguration] {
+            public func functions() async throws -> [TestClientTypes.FunctionConfiguration] {
                 return try await self.asyncCompactMap { item in item.functions }
             }
         }
@@ -113,11 +113,11 @@ class PaginatorGeneratorTest {
         }
         
         /// This paginator transforms the `AsyncSequence` returned by `paginatedMapPaginated`
-        /// to access the nested member `[Swift.String:Swift.Int]`
-        /// - Returns: `[Swift.String:Swift.Int]`
+        /// to access the nested member `[(String, Swift.Int)]`
+        /// - Returns: `[(String, Swift.Int)]`
         extension PaginatorSequence where Input == PaginatedMapInput, Output == PaginatedMapOutputResponse {
-            func mapItems() async throws -> [Swift.String:Swift.Int] {
-                return try await self.asyncCompactMap { item in item.inner?.mapItems }
+            public func mapItems() async throws -> [(String, Swift.Int)] {
+                return try await self.asyncCompactMap { item in item.inner?.mapItems?.map { (${'$'}0, ${'$'}1) } }
             }
         }
         """.trimIndent()

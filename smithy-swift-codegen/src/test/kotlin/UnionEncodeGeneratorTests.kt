@@ -45,7 +45,7 @@ class UnionEncodeGeneratorTests {
             
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let contents = contents {
+                    if let contents = self.contents {
                         try encodeContainer.encode(contents, forKey: .contents)
                     }
                 }

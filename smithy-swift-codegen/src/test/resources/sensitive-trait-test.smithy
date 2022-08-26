@@ -29,8 +29,7 @@ operation SensitiveTraitTestRequest {
 }
 
 structure SensitiveTraitInRequestInput {
-    @sensitive
-    baz: String,
+    baz: SensitiveString,
     foo: String
 }
 
@@ -46,10 +45,10 @@ structure SensitiveTraitTestRequestInput {
 }
 
 structure SensitiveTraitTestRequestOutput {
-   @sensitive
-   foo: String,
-   @sensitive
-   bar: String,
-   @sensitive
-   baz: String
+   foo: SensitiveString,
+   bar: SensitiveString,
+   baz: SensitiveString
 }
+
+@sensitive
+string SensitiveString

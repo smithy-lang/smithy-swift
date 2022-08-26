@@ -11,6 +11,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -114,6 +115,8 @@ class HttpHeaderProvider(
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     writer.write("items.add(Header(name: \"$paramName\", value: \$N($memberNameWithExtension)))", SwiftTypes.String)
                 }
+            } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
+                writer.write("items.add(Header(name: \"$paramName\", value: quoteHeaderValue(\$N($memberNameWithExtension))))", SwiftTypes.String)
             } else {
                 writer.write("items.add(Header(name: \"$paramName\", value: \$N($memberNameWithExtension)))", SwiftTypes.String)
             }

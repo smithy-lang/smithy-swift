@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.SensitiveTrait
@@ -18,7 +19,8 @@ import software.amazon.smithy.swift.codegen.model.toMemberNames
 class CustomDebugStringConvertibleGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: StructureShape
+    private val shape: StructureShape,
+    private val model: Model
 ) {
     companion object {
         const val REDACT_STRING = "CONTENT_REDACTED"
@@ -46,11 +48,11 @@ class CustomDebugStringConvertibleGenerator(
         val symbolName = structSymbol.name
         writer.writeInline("\"$symbolName(")
         val membersWithoutSensitiveTrait = membersSortedByName
-            .filterNot { it.hasTrait(SensitiveTrait::class.java) }
+            .filterNot { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }
             .sortedBy { it.memberName }
             .toList()
         val membersWithSensitiveTrait = membersSortedByName
-            .filter { it.hasTrait(SensitiveTrait::class.java) }
+            .filter { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }
             .sortedBy { it.memberName }
             .toList()
         for (member in membersWithoutSensitiveTrait) {

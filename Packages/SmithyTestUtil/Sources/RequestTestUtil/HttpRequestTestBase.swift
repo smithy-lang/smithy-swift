@@ -57,13 +57,7 @@ open class HttpRequestTestBase: XCTestCase {
         if let headers = headers {
             for (headerName, headerValue) in headers {
                 let value = sanitizeStringForNonConformingValues(headerValue)
-                do {
-                    if let values = try splitHttpDateHeaderListValues(value) {
-                        builder.withHeader(name: headerName, values: values)
-                    }
-                } catch let err {
-                    XCTFail(err.localizedDescription)
-                }
+                builder.withHeader(name: headerName, value: value)
             }
         }
         
@@ -288,20 +282,20 @@ open class HttpRequestTestBase: XCTestCase {
             XCTFail("There are expected headers and no actual headers.")
             return
         }
-
-        for expectedHeader in expected.headers {
-            XCTAssertTrue(actual.exists(name: expectedHeader.name),
-                          "expected header \(expectedHeader.name) has no actual values")
-            guard let values = actual.values(for: expectedHeader.name) else {
-                XCTFail("actual values expected to not be null")
+        
+        expected.headers.forEach { header in
+            XCTAssertTrue(actual.exists(name: header.name))
+            
+            guard actual.values(for: header.name) != header.value else {
+                XCTAssertEqual(actual.values(for: header.name), header.value)
                 return
             }
             
-            XCTAssert(expectedHeader.value.containsSameElements(as: values),
-                      """
-                      expected header name value pair not equal: \(expectedHeader.name):
-                      \(expectedHeader.value); found: \(expectedHeader.name):\(values)
-                      """)
+            let actualValue = actual.values(for: header.name)?.joined(separator: ", ")
+            XCTAssertNotNil(actualValue)
+            
+            let expectedValue = header.value.joined(separator: ", ")
+            XCTAssertEqual(actualValue, expectedValue)
         }
     }
     

@@ -190,6 +190,11 @@ class ShapeValueGenerator(
                     ")!"
                 } else { "" }
             }
+            ShapeType.ENUM -> {
+                val symbol = symbolProvider.toSymbol(shape)
+                writer.writeInline("\$N(rawValue: ", symbol)
+                ")!"
+            }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
                     writer.writeInline("ByteStream.from(data: ")
