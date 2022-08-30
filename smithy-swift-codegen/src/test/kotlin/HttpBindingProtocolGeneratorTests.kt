@@ -8,7 +8,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
-import software.amazon.smithy.swift.codegen.integration.DefaultConfig
+import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
 import software.amazon.smithy.swift.codegen.integration.DefaultResponseDecoder
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -43,7 +43,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
     }
 
     private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
-        return DefaultConfig(writer, serviceName)
+        return DefaultServiceConfig(writer, serviceName)
     }
 }
 

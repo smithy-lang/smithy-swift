@@ -1,6 +1,7 @@
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.PaginatorGenerator
@@ -138,7 +139,8 @@ class PaginatorGeneratorTest {
             override val protocolGenerator: ProtocolGenerator? = context.generator
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
-        unit.writeAdditionalFiles(codegenContext, context.generationCtx.delegator)
+
+        unit.writeAdditionalFiles(codegenContext, context.generationCtx, context.generationCtx.delegator)
         context.generationCtx.delegator.flushWriters()
         return context
     }

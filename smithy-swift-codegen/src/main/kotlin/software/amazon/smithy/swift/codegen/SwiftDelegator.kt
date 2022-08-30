@@ -139,7 +139,7 @@ class SwiftDelegator(
             val swiftWriter = SwiftWriter(settings.moduleName)
             integrations.forEach { integration ->
                 integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
-                    swiftWriter.customizeSection(sectionId) { codeWriter: CodeWriter, previousValue: String? ->
+                    swiftWriter.customizeSection(sectionId) { codeWriter, previousValue ->
                         sectionWriter.write(codeWriter, previousValue)
                     }
                 }

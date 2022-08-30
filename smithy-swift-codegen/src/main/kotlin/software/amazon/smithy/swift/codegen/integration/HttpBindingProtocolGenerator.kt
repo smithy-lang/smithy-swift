@@ -461,4 +461,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 }
 
-class DefaultConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)
+const val ENDPOINT = "endpoint"
+
+class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName) {
+    override val runtimeConfigNames: Set<String> = setOf(
+        ENDPOINT
+    )
+}

@@ -8,25 +8,29 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.utils.toPascalCase
 
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val memberName: String?, val type: Symbol, val formatter: String = "\$N", private val documentation: String? = null)
+data class ConfigField(val memberName: String?, val type: Symbol, val propFormatter: String = "\$N", private val documentation: String? = null, val paramFormatter: String = "\$D")
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
  */
 abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
-    open val typeName: String = "${serviceName}Configuration"
+    open val typeName: String = "${serviceName.toPascalCase()}Configuration"
+    open val typeProtocol: Symbol = Symbol.builder().name("${typeName}Protocol").build()
 
     open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
 
+    open val runtimeConfigNames = setOf<String>()
+
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
-            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder, formatter = "\$T"),
-            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder, formatter = "\$T"),
+            ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder, propFormatter = "\$T"),
+            ConfigField("decoder", ClientRuntimeTypes.Serde.ResponseDecoder, propFormatter = "\$T"),
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
@@ -56,4 +60,6 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }
+
+    open fun serviceConfigProperties(): List<ConfigField> = listOf()
 }

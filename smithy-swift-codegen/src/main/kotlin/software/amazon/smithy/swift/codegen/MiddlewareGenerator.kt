@@ -33,7 +33,7 @@ class MiddlewareGenerator(
     fun generate() {
 
         writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {
-            writer.write("public let id: \$N = \"${middleware.typeName}\"", SwiftTypes.String)
+            writer.write("public let id: \$N = \"${middleware.id}\"", SwiftTypes.String)
             writer.write("")
             middleware.properties.forEach {
                 val memberName = it.key

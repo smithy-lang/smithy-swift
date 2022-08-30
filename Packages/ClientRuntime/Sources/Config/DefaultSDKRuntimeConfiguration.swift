@@ -6,6 +6,7 @@
 //
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
+    public var endpoint: String?
     public let retryer: SDKRetryer
     public var clientLogMode: ClientLogMode
     public var logger: LogAgent
