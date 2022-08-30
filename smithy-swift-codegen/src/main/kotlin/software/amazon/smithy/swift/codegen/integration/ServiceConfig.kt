@@ -25,8 +25,6 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
 
-    open val runtimeConfigNames = setOf<String>()
-
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
             ConfigField("encoder", ClientRuntimeTypes.Serde.RequestEncoder, propFormatter = "\$T"),
