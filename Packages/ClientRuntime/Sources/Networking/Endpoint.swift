@@ -6,11 +6,6 @@
 import Foundation
 
 public struct Endpoint: Hashable {
-    
-    enum EndpointError: Error {
-        case invalid(String)
-    }
-    
     public let path: String
     public let queryItems: [URLQueryItem]?
     public let protocolType: ProtocolType?
@@ -24,7 +19,7 @@ public struct Endpoint: Hashable {
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let url = URL(string: urlString) else {
-            throw ClientError.networkError(EndpointError.invalid("invalid url \(urlString)"))
+            throw ClientError.unknownError("invalid url \(urlString)")
         }
         
         try self.init(url: url, headers: headers, properties: properties)
@@ -34,7 +29,7 @@ public struct Endpoint: Hashable {
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let host = url.host else {
-            throw ClientError.networkError(EndpointError.invalid("invalid host \(String(describing: url.host))"))
+            throw ClientError.unknownError("invalid host \(String(describing: url.host))")
         }
         
         self.init(host: host,
