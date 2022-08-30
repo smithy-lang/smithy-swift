@@ -16,7 +16,6 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
 /**
