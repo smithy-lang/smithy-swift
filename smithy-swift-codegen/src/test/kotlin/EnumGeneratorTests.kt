@@ -4,7 +4,9 @@
  */
 
 import io.kotest.matchers.string.shouldContain
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.DocumentationTrait
@@ -136,6 +138,60 @@ class EnumGeneratorTests {
             """.trimIndent()
 
         contents.shouldContain(expectedGeneratedEnum)
+    }
+
+    @Test
+    fun `generates enums from IDL-2 enum shape`() {
+        val model = javaClass.getResource("enum-shape-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+        val suitEnumShape = manifest
+            .getFileString("example/models/Suit.swift").get()
+        Assertions.assertNotNull(suitEnumShape)
+
+        var expectedGeneratedEnum =
+            """
+            extension ExampleClientTypes {
+                public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+                    case club
+                    case diamond
+                    case heart
+                    case spade
+                    case sdkUnknown(Swift.String)
+
+                    public static var allCases: [Suit] {
+                        return [
+                            .club,
+                            .diamond,
+                            .heart,
+                            .spade,
+                            .sdkUnknown("")
+                        ]
+                    }
+                    public init?(rawValue: Swift.String) {
+                        let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+                        self = value ?? Self.sdkUnknown(rawValue)
+                    }
+                    public var rawValue: Swift.String {
+                        switch self {
+                        case .club: return "CLUB"
+                        case .diamond: return "DIAMOND"
+                        case .heart: return "HEART"
+                        case .spade: return "SPADE"
+                        case let .sdkUnknown(s): return s
+                        }
+                    }
+                    public init(from decoder: Swift.Decoder) throws {
+                        let container = try decoder.singleValueContainer()
+                        let rawValue = try container.decode(RawValue.self)
+                        self = Suit(rawValue: rawValue) ?? Suit.sdkUnknown(rawValue)
+                    }
+                }
+            }
+            """.trimIndent()
+
+        suitEnumShape.shouldContain(expectedGeneratedEnum)
     }
 
     private fun createStringWithEnumTrait(vararg enumDefinitions: EnumDefinition): StringShape {
