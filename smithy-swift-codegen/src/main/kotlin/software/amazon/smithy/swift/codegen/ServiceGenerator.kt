@@ -113,7 +113,7 @@ class ServiceGenerator(
      * We will generate the following:
      * ```
      * public protocol ExampleServiceProtocol {
-     *      func getFoo(input: GetFooInput) async throws -> GetFooResponse)
+     *      func getFoo(input: GetFooInput) async throws -> GetFooResponse
      * }
      * ```
      */
