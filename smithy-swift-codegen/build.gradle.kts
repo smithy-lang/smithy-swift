@@ -17,6 +17,7 @@ extra["moduleName"] = "software.amazon.smithy.swift.codegen"
 group = "software.amazon.smithy"
 version = "0.1.0"
 
+// TODO: remove once we have all the dependencies in the maven-publish plugin
 configurations.implementation {
     exclude(group = "brazil")
 }
