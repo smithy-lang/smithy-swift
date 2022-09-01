@@ -43,7 +43,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val integrations: List<SwiftIntegration>
     private val protocolGenerator: ProtocolGenerator?
     private val baseGenerationContext: GenerationContext
-    private var protocolContext: ProtocolGenerator.GenerationContext?
+    private val protocolContext: ProtocolGenerator.GenerationContext?
 
     init {
         LOGGER.info("Attempting to discover SwiftIntegration from classpath...")
