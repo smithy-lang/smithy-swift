@@ -1,50 +1,42 @@
 // swift-tools-version:5.4
+
 import PackageDescription
-let excludes = ["README.md"]
 
 let package = Package(
-    name: "ClientRuntime",
+    name: "SmithyClientRuntime",
     platforms: [
-    .macOS(.v10_15),
-    .iOS(.v13)
+        .macOS(.v10_15),
+        .iOS(.v13)
     ],
     products: [
-        .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyClientRuntime", targets: ["SmithyClientRuntime"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(name: "AwsCrt", url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.2.2"),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.2.2"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.13.0")
     ],
     targets: [
         .target(
-            name: "ClientRuntime",
+            name: "SmithyClientRuntime",
             dependencies: [
-                .product(name: "AwsCommonRuntimeKit", package: "AwsCrt"),
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
-            ],
-            path: "./Packages/ClientRuntime/Sources",
-            exclude: excludes
+            ]
         ),
         .testTarget(
-            name: "ClientRuntimeTests",
-            dependencies: [
-	        "ClientRuntime",
-	        "SmithyTestUtil"
-	    ],
-	    path: "./Packages/ClientRuntime/Tests"
+            name: "SmithyClientRuntimeTests",
+            dependencies: ["SmithyClientRuntime", "SmithyTestUtil"]
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"],
-            path: "./Packages/SmithyTestUtil/Sources"
+            dependencies: ["SmithyClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"],
-            path: "./Packages/SmithyTestUtil/Tests"
+            dependencies: ["SmithyTestUtil"]
         )
     ]
 )
