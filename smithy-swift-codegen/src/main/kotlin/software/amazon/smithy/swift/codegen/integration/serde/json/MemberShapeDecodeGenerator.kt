@@ -69,9 +69,9 @@ abstract class MemberShapeDecodeGenerator(
         val decodedMemberName = "${memberName}Decoded"
 
         // no need to assign nil to a member that is optional
-        val defaultValueLiteral = if (defaultValue != null && defaultValue != "nil") "?? $defaultValue" else ""
+        val defaultValueLiteral = if (defaultValue != null && defaultValue != "nil") " ?? $defaultValue" else ""
 
-        writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L) $defaultValueLiteral", decodedMemberName, containerName, symbol, memberName)
+        writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L)$defaultValueLiteral", decodedMemberName, containerName, symbol, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
