@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
+import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
@@ -63,9 +64,14 @@ abstract class MemberShapeDecodeGenerator(
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
         }
-        val decodeVerb = if (symbol.isBoxed()) "decodeIfPresent" else "decode"
+        val defaultValue = symbol.defaultValue()
+        val decodeVerb = if (symbol.isBoxed() || !defaultValue.isNullOrEmpty()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L)", decodedMemberName, containerName, symbol, memberName)
+
+        // no need to assign nil to a member that is optional
+        val defaultValueLiteral = if (defaultValue != null && defaultValue != "nil") "?? $defaultValue" else ""
+
+        writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L) $defaultValueLiteral", decodedMemberName, containerName, symbol, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
