@@ -31,7 +31,8 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["ClientRuntime", "SmithyTestUtil"],
+            path: "./Packages/ClientRuntime/Tests"
         ),
         .target(
             name: "SmithyTestUtil",
