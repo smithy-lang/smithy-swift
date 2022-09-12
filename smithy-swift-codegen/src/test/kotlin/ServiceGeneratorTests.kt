@@ -21,12 +21,12 @@ class ServiceGeneratorTests {
 
     init {
         var model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writer = SwiftWriter("test")
 
         val settings = model.defaultSettings()
         val manifest = MockManifest()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writers = SwiftDelegator(settings, model, manifest, provider)
         val generator = ServiceGenerator(settings, model, provider, writer, writers)
         generator.render()

@@ -133,7 +133,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, level: Int) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed() && memberTarget.hasTrait<SparseTrait>()
+        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed() && memberTarget.hasTrait<SparseTrait>()
 
         val isSetShape = memberTarget is SetShape
 
@@ -150,7 +150,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, memberName: String) {
         val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
-        val symbolOptional = if (ctx.symbolProvider.toSymbol(memberTarget).isBoxed()) "?" else ""
+        val symbolOptional = if (ctx.symbolProvider.toSymbol(member).isBoxed()) "?" else ""
 
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var currContainerName = containerName
@@ -236,7 +236,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     open fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
         val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"
         writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberName)", SwiftTypes.String)
@@ -282,7 +282,7 @@ abstract class MemberShapeDecodeXMLGenerator(
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean = false, isUnion: Boolean = false) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+        var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }

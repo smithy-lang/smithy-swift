@@ -65,7 +65,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
-                    val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+                    val isBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed()
                     if (isBoxed && !(nestedMemberTarget is SetShape)) {
                         writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                             renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
@@ -119,7 +119,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
-                    val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+                    val isBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed()
                     if (isBoxed && !(nestedMemberTarget is SetShape)) {
                         writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                             renderFlattenedListContainer(nestedMemberTargetName, nestedMemberTarget, nestedMember, memberName, member, containerName, level)
@@ -360,7 +360,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
-        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
         val isBoxed = symbol.isBoxed()

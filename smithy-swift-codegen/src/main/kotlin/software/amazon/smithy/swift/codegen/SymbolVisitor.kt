@@ -12,6 +12,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BigIntegerShape
 import software.amazon.smithy.model.shapes.BlobShape
@@ -38,7 +39,6 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -62,13 +62,15 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     private val sdkId = swiftSettings.sdkId
     private val service: ServiceShape? = try { swiftSettings.getService(model) } catch (e: CodegenException) { null }
     private val logger = Logger.getLogger(CodegenVisitor::class.java.name)
-    private var escaper: Escaper
+    private val escaper: Escaper
+    private val nullableIndex: NullableIndex
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
     // how deep in the model we have recursed
     private var depth = 0
 
     init {
         val reservedWords = swiftReservedWords
+        nullableIndex = NullableIndex.of(model)
         escaper = ReservedWordSymbolProvider
             .builder()
             .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
@@ -195,7 +197,11 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun memberShape(shape: MemberShape): Symbol {
         val targetShape = model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
-        return toSymbol(targetShape)
+        var symbol = toSymbol(targetShape)
+        if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1)) {
+            symbol = symbol.toBuilder().boxed().build()
+        }
+        return symbol
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
@@ -243,8 +249,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
      */
     private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
-        val explicitlyBoxed = shape?.hasTrait<BoxTrait>() ?: false
-        if (explicitlyBoxed || boxed) {
+        if (boxed) {
             builder.boxed()
         }
         return builder

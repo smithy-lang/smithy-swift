@@ -18,12 +18,14 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SymbolVisitor
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
 class SymbolProviderTest {
@@ -60,12 +62,13 @@ class SymbolProviderTest {
         "Document, Document, nil, true, ClientRuntime"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$primitiveType").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = createModelFromShapes(struct, member)
+        val model = """
+            namespace foo.bar
+            structure MyStruct {
+                quux: $primitiveType
+            }
+       """.asSmithyModel()
+        val member = model.expectShape(ShapeId.from("foo.bar#MyStruct\$quux"))
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
@@ -74,6 +77,42 @@ class SymbolProviderTest {
         assertEquals(boxed, memberSymbol.isBoxed())
 
         assertEquals(swiftType, memberSymbol.name)
+    }
+
+    @Test
+    fun `can read box trait from member`() {
+        val model = """
+        namespace com.test
+        structure MyStruct {
+           @box
+           foo: MyFoo
+        }
+        long MyFoo
+        """.asSmithyModel()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("Swift", memberSymbol.namespace)
+        assertTrue(memberSymbol.isBoxed())
+    }
+
+    @Test
+    fun `can read box trait from target`() {
+        val model = """
+        namespace com.test
+        structure MyStruct {
+           foo: MyFoo
+        }
+        @box
+        long MyFoo
+        """.asSmithyModel()
+
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("Swift", memberSymbol.namespace)
+        assertTrue(memberSymbol.isBoxed())
     }
 
     @Test fun `creates blobs`() {
