@@ -11,6 +11,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.StructureGenerator
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
@@ -20,12 +21,11 @@ import java.util.function.Consumer
 class StructureGeneratorTests {
     @Test
     fun `it renders non-error structures`() {
-
-        val struct: StructureShape = createStructureWithoutErrorTrait()
-        val model: Model = createModelWithStructureShape(struct)
+        val model = createModelWithStructureWithoutErrorTrait()
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
+        val struct = model.getShape(ShapeId.from("smithy.example#MyStruct")).get() as StructureShape
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
 

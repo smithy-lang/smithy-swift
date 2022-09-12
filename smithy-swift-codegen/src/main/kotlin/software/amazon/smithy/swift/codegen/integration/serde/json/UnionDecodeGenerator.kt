@@ -30,7 +30,7 @@ class UnionDecodeGenerator(
                     is CollectionShape -> renderDecodeListMember(target, memberName, containerName, member, member)
                     is MapShape -> renderDecodeMapMember(target, memberName, containerName, member)
                     is TimestampShape -> renderDecodeForTimestamp(ctx, target, member, containerName)
-                    else -> writeDecodeForPrimitive(target, member, containerName)
+                    else -> writeDecodeForPrimitive(target, member, containerName, ignoreDefaultValues = true)
                 }
             }
             writer.write("self = .sdkUnknown(\"\")")

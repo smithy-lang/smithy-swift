@@ -58,8 +58,8 @@ abstract class MemberShapeDecodeGenerator(
         }
     }
 
-    fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String) {
-        var symbol = ctx.symbolProvider.toSymbol(shape)
+    fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String, ignoreDefaultValues: Boolean = false) {
+        var symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberNames(member).second
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             symbol = symbol.recursiveSymbol()
@@ -69,7 +69,7 @@ abstract class MemberShapeDecodeGenerator(
         val decodedMemberName = "${memberName}Decoded"
 
         // no need to assign nil to a member that is optional
-        val defaultValueLiteral = if (defaultValue != null && defaultValue != "nil") " ?? $defaultValue" else ""
+        val defaultValueLiteral = if (!ignoreDefaultValues && defaultValue != null && defaultValue != "nil") " ?? $defaultValue" else ""
 
         writer.write("let \$L = try \$L.$decodeVerb(\$N.self, forKey: .\$L)$defaultValueLiteral", decodedMemberName, containerName, symbol, memberName)
         renderAssigningDecodedMember(member, decodedMemberName)
@@ -133,7 +133,7 @@ abstract class MemberShapeDecodeGenerator(
         level: Int = 0
     ) {
         val symbolName = determineSymbolForShape(shape, true)
-        val originalSymbol = ctx.symbolProvider.toSymbol(shape)
+        val originalSymbol = ctx.symbolProvider.toSymbol(parentMember)
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
         var insertMethod = when (shape) {
             is SetShape -> "insert"
@@ -249,7 +249,7 @@ abstract class MemberShapeDecodeGenerator(
         level: Int = 0
     ) {
         val symbolName = determineSymbolForShape(shape, true)
-        val originalSymbol = ctx.symbolProvider.toSymbol(shape)
+        val originalSymbol = ctx.symbolProvider.toSymbol(topLevelMember)
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
