@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import XCTest
-import SmithyClientRuntime
+import ClientRuntime
 
 extension HttpRequestTestBase {
     public func assertEqualFormURLBody(_ expected: Data, _ actual: Data) {

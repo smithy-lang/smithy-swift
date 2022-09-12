@@ -6,7 +6,7 @@
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 class HttpRequestTests: NetworkingTestUtils {
     

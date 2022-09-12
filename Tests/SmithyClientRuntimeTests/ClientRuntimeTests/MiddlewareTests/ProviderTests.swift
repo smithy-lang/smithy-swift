@@ -6,7 +6,7 @@
 //
 	
 import XCTest
-import SmithyClientRuntime
+import ClientRuntime
 import SmithyTestUtil
 
 class ProviderTests: HttpRequestTestBase {
@@ -107,8 +107,8 @@ extension MockInput: URLPathProvider, QueryItemProvider, HeaderProvider {
         return "/\(value)"
     }
     
-    public var queryItems: [SmithyClientRuntime.URLQueryItem] {
-        var items = [SmithyClientRuntime.URLQueryItem]()
+    public var queryItems: [ClientRuntime.URLQueryItem] {
+        var items = [ClientRuntime.URLQueryItem]()
         
         if let value = value {
             let valueQueryItem = URLQueryItem(name: "test", value: "\(value)")

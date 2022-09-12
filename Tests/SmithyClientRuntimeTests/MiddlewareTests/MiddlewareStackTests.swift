@@ -3,7 +3,7 @@
 
 import XCTest
 import SmithyTestUtil
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 class MiddlewareStackTests: XCTestCase {
     func testMiddlewareStackSuccessInterceptAfter() async throws {

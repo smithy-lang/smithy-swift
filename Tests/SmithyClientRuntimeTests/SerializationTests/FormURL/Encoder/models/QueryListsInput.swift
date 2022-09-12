@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 public struct QueryListsInput: Equatable {
     public let flattenedListArg: [String]?

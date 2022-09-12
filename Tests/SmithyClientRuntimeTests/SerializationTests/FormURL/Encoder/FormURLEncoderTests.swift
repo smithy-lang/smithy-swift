@@ -6,7 +6,7 @@
 //
 	
 import XCTest
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 class FormURLEncoderTests: XCTestCase {
     

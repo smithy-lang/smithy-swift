@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 public struct QueryMapsInput: Equatable {
     public let flattenedMap: [String:String]?

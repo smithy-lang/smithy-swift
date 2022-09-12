@@ -4,7 +4,7 @@
  */
 
 import XCTest
-import SmithyClientRuntime
+import ClientRuntime
 
 class HttpHeadersTests: XCTestCase {
 

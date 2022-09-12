@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyClientRuntime
+import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
                                  OperationStackError: HttpResponseBinding>: Middleware {

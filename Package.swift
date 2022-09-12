@@ -30,7 +30,7 @@ let package = Package(
             exclude: ["README.md"]
         ),
         .testTarget(
-            name: "SmithyClientRuntimeTests",
+            name: "ClientRuntimeTests",
             dependencies: ["ClientRuntime", "SmithyTestUtil"]
         ),
         .target(

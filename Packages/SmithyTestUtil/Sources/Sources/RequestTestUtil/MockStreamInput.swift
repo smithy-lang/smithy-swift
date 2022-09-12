@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import SmithyClientRuntime
+import ClientRuntime
 
 public struct MockStreamInput: Encodable {
     let body: ByteStream

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyClientRuntime
+import ClientRuntime
 
 public enum MockMiddlewareError: Error {
     case unknown(Error)

@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import SmithyClientRuntime
+import ClientRuntime
 import SmithyTestUtil
 
 class OperationStackTests: HttpRequestTestBase {

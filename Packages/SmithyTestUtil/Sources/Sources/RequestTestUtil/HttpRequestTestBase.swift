@@ -6,7 +6,7 @@
 //
 
 import AwsCommonRuntimeKit
-import SmithyClientRuntime
+import ClientRuntime
 import XCTest
 
 /**
@@ -90,7 +90,7 @@ open class HttpRequestTestBase: XCTestCase {
     func deconflictHost(host: String, resolvedHost: String?) -> String? {
         var deconflictedHost: String?
         if !host.isEmpty,
-           let urlFromHost = SmithyClientRuntime.URL(string: "http://\(host)"),
+           let urlFromHost = ClientRuntime.URL(string: "http://\(host)"),
            let parsedHost = urlFromHost.host {
             deconflictedHost = parsedHost
         }

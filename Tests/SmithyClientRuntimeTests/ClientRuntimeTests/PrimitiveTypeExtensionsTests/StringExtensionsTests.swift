@@ -4,7 +4,7 @@
  */
 
 import XCTest
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 class StringExtensionsTests: XCTestCase {
 

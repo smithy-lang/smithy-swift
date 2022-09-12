@@ -5,7 +5,7 @@
 
 import XCTest
 import AwsCommonRuntimeKit
-@testable import SmithyClientRuntime
+@testable import ClientRuntime
 
 class SdkRequestBuilderTests: XCTestCase {
     func testSdkRequestBuilderUpdate() {

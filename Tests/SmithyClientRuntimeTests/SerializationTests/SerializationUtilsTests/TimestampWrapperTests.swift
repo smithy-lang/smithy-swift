@@ -6,7 +6,7 @@
 //
 	
 import XCTest
-import SmithyClientRuntime
+import ClientRuntime
 
 class TimestampWrapperTests: XCTestCase {
     func testSplitHeaderListValues() {
