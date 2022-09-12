@@ -2,14 +2,15 @@
 
 import PackageDescription
 
+
 let package = Package(
-    name: "SmithyClientRuntime",
+    name: "ClientRuntime",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13)
     ],
     products: [
-        .library(name: "SmithyClientRuntime", targets: ["SmithyClientRuntime"]),
+        .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
@@ -19,24 +20,28 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SmithyClientRuntime",
+            name: "ClientRuntime",
             dependencies: [
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
-            ]
+            ],
+            path: "./Packages/ClientRuntime/Sources",
+            exclude: ["README.md"]
         ),
         .testTarget(
             name: "SmithyClientRuntimeTests",
-            dependencies: ["SmithyClientRuntime", "SmithyTestUtil"]
+            dependencies: ["ClientRuntime", "SmithyTestUtil"]
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["SmithyClientRuntime"]
+            dependencies: ["ClientRuntime"],
+            path: "./Packages/SmithyTestUtil/Sources"
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"]
+            dependencies: ["SmithyTestUtil"],
+            path: "./Packages/SmithyTestUtil/Tests"
         )
     ]
 )
