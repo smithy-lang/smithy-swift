@@ -26,8 +26,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
             ],
-            path: "./Packages/ClientRuntime/Sources",
-            exclude: ["README.md"]
+            path: "./Packages/ClientRuntime/Sources"
         ),
         .testTarget(
             name: "ClientRuntimeTests",
