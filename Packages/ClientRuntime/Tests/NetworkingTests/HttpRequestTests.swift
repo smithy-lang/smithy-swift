@@ -94,12 +94,13 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssert(updatedRequest.queryItems.contains(URLQueryItem(name: "signedthing", value: "signed")))
     }
 
-    func testSpecialCharactersInPathAreEscapedInHttpRequest() throws {
+    func testPathInInHttpRequestIsEscapedPerRFC3986() throws {
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
-            .withPath("/space /colon:/dollar$")
+            .withPath("/space /colon:/dollar$/tilde~/dash-/underscore_/period.")
         let httpRequest = builder.build().toHttpRequest()
-        XCTAssertEqual(httpRequest.path, "/space%20/colon%3A/dollar%24")
+        let escapedPath = "/space%20/colon%3A/dollar%24/tilde~/dash-/underscore_/period."
+        XCTAssertEqual(httpRequest.path, escapedPath)
     }
     
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
