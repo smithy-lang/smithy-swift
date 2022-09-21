@@ -27,8 +27,8 @@ public struct TimestampWrapperDecoder {
         }
 
         guard let formattedDate = formattedDate else {
-            let context = DecodingError.Context(codingPath: codingPath ?? [],
-                                                debugDescription: "Unable to parse: \(dateStringValue) to format \(format)")
+            let debugDescription = "Unable to parse: \(dateStringValue) to format \(format)"
+            let context = DecodingError.Context(codingPath: codingPath ?? [], debugDescription: debugDescription)
             throw DecodingError.dataCorrupted(context)
         }
         return formattedDate

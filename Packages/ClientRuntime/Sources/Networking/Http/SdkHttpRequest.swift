@@ -58,11 +58,14 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
     }
     
     public var debugDescription: String {
-        return "\(method.rawValue.uppercased()) \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Path: \(endpoint.path), \n \(headers) \n \(String(describing: queryItems))"
+        description
     }
     
     public var description: String {
-        return "\(method.rawValue.uppercased()) \(endpoint.protocolType ?? ProtocolType.https):\(endpoint.port) \n Path: \(endpoint.path) \n \(headers) \n \(String(describing: queryItems))"
+        let method = method.rawValue.uppercased()
+        let protocolType = endpoint.protocolType ?? ProtocolType.https
+        let query = String(describing: queryItems)
+        return "\(method) \(protocolType):\(endpoint.port) \n Path: \(endpoint.path) \n \(headers) \n \(query)"
     }
 }
 

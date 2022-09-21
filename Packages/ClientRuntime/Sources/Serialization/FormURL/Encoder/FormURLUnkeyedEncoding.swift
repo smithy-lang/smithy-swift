@@ -83,7 +83,8 @@ struct FormURLUnkeyedEncoding: UnkeyedEncodingContainer {
         try value.encode(to: stringsEncoding)
     }
     
-    mutating func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+    mutating func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type) 
+        -> KeyedEncodingContainer<NestedKey> {
         var container = FormURLKeyedEncoding<NestedKey>(to: data)
         container.codingPath = codingPath
         return KeyedEncodingContainer(container)

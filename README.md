@@ -11,10 +11,14 @@ Smithy code generators for Swift.
 
 ## Development
 
-### Modules
+### Kotlin Modules
 
-* `Packages` - library code used by generated clients to perform SDK functions
-* `smithy-swift-codegen` - a module that generates Swift code from Smithy models
+* `smithy-swift-codegen` - a module that generates Swift code from Smithy models.
+
+### Swift Modules
+
+* `ClientRuntime` - provides networking, serialization interfaces and implementations using the AWS Swift CRT Bindings for a Swift SDK generated from Smithy Models.
+* `SmithyTestUtil` - provides helper methods for auto-generated Swift unit tests.
 
 ## License
 
