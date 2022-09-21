@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-
+import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
@@ -29,12 +29,22 @@ public class SdkHttpRequest {
     }
 }
 
+// Create a `CharacterSet` of the characters that need not be percent encoded in the
+// resulting URL.  This set consists of alphanumerics plus underscore, dash, tilde, and
+// period.  Any other character should be percent-encoded when used in a path segment.
+// Forward-slash is added as well because the segments have already been joined into a path.
+//
+// See, for URL-allowed characters:
+// https://www.rfc-editor.org/rfc/rfc3986#section-2.3
+private let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "/_-.~"))
+
 extension SdkHttpRequest {
     public func toHttpRequest(bufferSize: Int = 1024) -> HttpRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = HttpRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = "\(endpoint.path)\(endpoint.queryItemString)"
+        let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
+        httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
         httpRequest.body = body.toAwsInputStream()
         return httpRequest

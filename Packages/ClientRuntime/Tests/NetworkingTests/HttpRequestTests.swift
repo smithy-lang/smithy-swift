@@ -93,6 +93,15 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssert(updatedRequest.queryItems.contains(queryItem2))
         XCTAssert(updatedRequest.queryItems.contains(URLQueryItem(name: "signedthing", value: "signed")))
     }
+
+    func testPathInInHttpRequestIsEscapedPerRFC3986() throws {
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "xctest.amazon.com")
+            .withPath("/space /colon:/dollar$/tilde~/dash-/underscore_/period.")
+        let httpRequest = builder.build().toHttpRequest()
+        let escapedPath = "/space%20/colon%3A/dollar%24/tilde~/dash-/underscore_/period."
+        XCTAssertEqual(httpRequest.path, escapedPath)
+    }
     
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // TODO:: When is the endpoint invalid or endpoint.url nil?
