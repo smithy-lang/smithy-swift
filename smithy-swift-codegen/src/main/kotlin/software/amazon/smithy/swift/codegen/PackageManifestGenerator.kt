@@ -63,7 +63,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
         }
     }
 
-    writer.write("let isUsingSPMLocal: Bool = FileManager.default.fileExists(atPath: \"${Resources.computeAbsolutePath("smithy-swift/Packages", "Packages", "SMITHY_SWIFT_CI_DIR")}/Packages/Package.swift\")")
+    writer.write("let isUsingSPMLocal: Bool = FileManager.default.fileExists(atPath: \"${Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR")}/Package.swift\")")
     writer.openBlock("if isUsingSPMLocal {", "}") {
         renderPackageDependenciesWithLocalPaths(writer, distinctDependencies)
     }
