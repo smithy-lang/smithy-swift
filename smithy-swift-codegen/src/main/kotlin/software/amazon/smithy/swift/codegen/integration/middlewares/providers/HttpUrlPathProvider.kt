@@ -90,6 +90,10 @@ class HttpUrlPathProvider(
                         "$labelMemberName$enumRawValueSuffix$percentEncoded"
                     }
                     ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
+                    ShapeType.ENUM -> {
+                        val percentEncoded = if (!it.isGreedyLabel) ".urlPercentEncoding()" else ""
+                        "$labelMemberName.rawValue$percentEncoded"
+                    }
                     else -> labelMemberName
                 }
 
