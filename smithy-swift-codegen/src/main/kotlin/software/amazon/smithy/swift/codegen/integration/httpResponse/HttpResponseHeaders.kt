@@ -10,7 +10,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
-import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.NumberShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
@@ -43,7 +43,7 @@ class HttpResponseHeaders(
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {
-                    val memberValue = stringToNumber(memberTarget, headerDeclaration)
+                    val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
                     writer.write("self.\$L = $memberValue", memberName)
                 }
                 is BlobShape -> {
@@ -92,7 +92,7 @@ class HttpResponseHeaders(
                         writer.write("self.\$L = $memberValue", memberName)
                     }
                 }
-                is CollectionShape -> {
+                is ListShape -> {
                     // member > boolean, number, string, or timestamp
                     // headers are List<String>, get the internal mapping function contents (if any) to convert
                     // to the target symbol type
@@ -106,7 +106,7 @@ class HttpResponseHeaders(
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "${SwiftTypes.Bool}(\$0)"
                         }
-                        is NumberShape -> "(${stringToNumber(collectionMemberTarget, "\$0")} ?? 0)"
+                        is NumberShape -> "${stringToNumber(collectionMemberTarget, "\$0", false)}"
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -184,14 +184,17 @@ class HttpResponseHeaders(
         }
     }
 
-    private fun stringToNumber(shape: NumberShape, stringValue: String): String = when (shape.type) {
-        ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue) ?? 0"
-        ShapeType.SHORT -> "${SwiftTypes.Int16}($stringValue) ?? 0"
-        ShapeType.INTEGER -> "${SwiftTypes.Int}($stringValue) ?? 0"
-        ShapeType.LONG -> "${SwiftTypes.Int}($stringValue) ?? 0"
-        ShapeType.FLOAT -> "${SwiftTypes.Float}($stringValue) ?? 0"
-        ShapeType.DOUBLE -> "${SwiftTypes.Double}($stringValue) ?? 0"
-        else -> throw CodegenException("unknown number shape: $shape")
+    private fun stringToNumber(shape: NumberShape, stringValue: String, zeroDefaultValue: Boolean): String {
+        val defaultValue = if (zeroDefaultValue) " ?? 0" else ""
+        return when (shape.type) {
+            ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue)$defaultValue"
+            ShapeType.SHORT -> "${SwiftTypes.Int16}($stringValue)$defaultValue"
+            ShapeType.INTEGER -> "${SwiftTypes.Int}($stringValue)$defaultValue"
+            ShapeType.LONG -> "${SwiftTypes.Int}($stringValue)$defaultValue"
+            ShapeType.FLOAT -> "${SwiftTypes.Float}($stringValue)$defaultValue"
+            ShapeType.DOUBLE -> "${SwiftTypes.Double}($stringValue)$defaultValue"
+            else -> throw CodegenException("unknown number shape: $shape")
+        }
     }
 
     private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
