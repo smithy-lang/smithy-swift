@@ -118,7 +118,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
             when (nestedMemberTarget) {
                 is CollectionShape -> {
-                    val isBoxed = ctx.symbolProvider.toSymbol(nestedMemberTarget).isBoxed()
+                    val isBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed()
                     if (isBoxed && !(nestedMemberTarget is SetShape)) {
                         writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                             renderFlattenedListContainer(nestedMemberTargetName, nestedMemberTarget, nestedMember, memberName, member, containerName, level)
@@ -317,7 +317,7 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
-        val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+        val symbol = ctx.symbolProvider.toSymbol(member)
         val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()

@@ -77,7 +77,7 @@ class StructEncodeXMLGenerator(
                 }
             }
             is TimestampShape -> {
-                val symbol = ctx.symbolProvider.toSymbol(memberTarget)
+                val symbol = ctx.symbolProvider.toSymbol(member)
                 val isBoxed = symbol.isBoxed()
                 if (isBoxed) {
                     writer.openBlock("if let $memberName = $memberName {", "}") {

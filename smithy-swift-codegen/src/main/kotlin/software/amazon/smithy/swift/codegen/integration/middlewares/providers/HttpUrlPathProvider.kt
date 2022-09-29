@@ -90,12 +90,19 @@ class HttpUrlPathProvider(
                         "$labelMemberName$enumRawValueSuffix$percentEncoded"
                     }
                     ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
+                    ShapeType.ENUM -> {
+                        val percentEncoded = if (!it.isGreedyLabel) ".urlPercentEncoding()" else ""
+                        "$labelMemberName.rawValue$percentEncoded"
+                    }
                     else -> labelMemberName
                 }
-                val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed()
+
+                // use member symbol to determine if we need to box the value
+                // similar to how struct is generated
+                val symbol = ctx.symbolProvider.toSymbol(binding.member)
 
                 // unwrap the label members if boxed
-                if (isBoxed) {
+                if (symbol.isBoxed()) {
                     writer.openBlock("guard let $labelMemberName = $labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
