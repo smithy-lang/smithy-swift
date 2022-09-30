@@ -7,11 +7,11 @@
     "gradlew": "{source_dir}/gradlew -p {source_dir}"
   },
   "test_steps": [
-    "cd {source_dir}/Packages && swift test"
+    "cd {source_dir} && swift test"
   ],
   "build_steps": [
     "{gradlew} build",
-    "cd {source_dir}/Packages && swift build"
+    "cd {source_dir} && swift build"
   ],
   "post_build_steps": [
     "{gradlew} publishToMavenLocal"
