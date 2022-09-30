@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration.serde.json
 
+import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
@@ -37,6 +38,8 @@ abstract class MemberShapeEncodeGenerator(
 ) : MemberShapeEncodeGeneratable {
 
     private val dictKey = "dictKey"
+    private val nullableIndex = NullableIndex.of(ctx.model)
+
     /*
      Add custom extensions to be rendered to handle optional shapes and
      special types like enum, timestamp, blob
@@ -241,7 +244,7 @@ abstract class MemberShapeEncodeGenerator(
         containerName: String,
         httpPayloadTraitNotOnAnyMember: Boolean = false
     ) {
-        val symbol = ctx.symbolProvider.toSymbol(target)
+        val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
@@ -269,7 +272,7 @@ abstract class MemberShapeEncodeGenerator(
         member: MemberShape,
         containerName: String
     ) {
-        val symbol = ctx.symbolProvider.toSymbol(target)
+        val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)

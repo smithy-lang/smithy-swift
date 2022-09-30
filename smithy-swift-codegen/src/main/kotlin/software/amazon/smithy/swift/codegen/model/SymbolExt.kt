@@ -44,8 +44,8 @@ fun Symbol.recursiveSymbol(): Symbol {
     return Symbol.builder()
         .addDependency(SwiftDependency.CLIENT_RUNTIME)
         .name("Box<$fullName>")
-        .putProperty("boxed", isBoxed())
-        .putProperty("defaultValue", defaultValue())
+        .putProperty(SymbolProperty.BOXED_KEY, isBoxed())
+        .putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue())
         .build()
 }
 
@@ -65,8 +65,8 @@ fun Symbol.defaultValue(): String? {
 fun Symbol.bodySymbol(): Symbol {
     return Symbol.builder()
         .name("${name}Body")
-        .putProperty("boxed", isBoxed())
-        .putProperty("defaultValue", defaultValue())
+        .putProperty(SymbolProperty.BOXED_KEY, isBoxed())
+        .putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue())
         .build()
 }
 

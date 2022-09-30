@@ -94,22 +94,17 @@ fun buildMockPluginContext(model: Model, manifest: FileManifest, serviceShapeId:
     return buildPluginContext(model, manifest, serviceShapeId, "example", "0.0.1")
 }
 
-// FIXME: use inline string modeling rather than the builder here
-fun createStructureWithoutErrorTrait(): StructureShape {
-    val member1 = MemberShape.builder().id("smithy.example#MyStruct\$foo").target("smithy.api#String").build()
-    val member2 = MemberShape.builder().id("smithy.example#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
-    val member3 = MemberShape.builder().id("smithy.example#MyStruct\$baz")
-        .target("smithy.api#Integer")
-        .addTrait(DocumentationTrait("This *is* documentation about the member."))
-        .build()
-
-    return StructureShape.builder()
-        .id("smithy.example#MyStruct")
-        .addMember(member1)
-        .addMember(member2)
-        .addMember(member3)
-        .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-        .build()
+fun createModelWithStructureWithoutErrorTrait(): Model {
+    return """
+        namespace smithy.example,
+        /// This is documentation about the shape.
+        structure MyStruct {
+          foo: String,
+          bar: PrimitiveInteger,
+          /// This is documentation about the member.
+          baz: Integer,
+        }
+    """.asSmithyModel()
 }
 
 /**
