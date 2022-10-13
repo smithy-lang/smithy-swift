@@ -37,6 +37,12 @@ public class WaiterIterator<Input, Output>: AsyncIteratorProtocol {
         // AsyncSequence) after a failure event.
         guard !finished else { return nil }
 
+        // Check to see if waiting has reached its maximum wait time;
+        // if so, fail with an appropriate error
+        guard !scheduler.isExpired else {
+            throw ClientError.unknownError("Waiter timed out")
+        }
+
         // Find the required delay from the scheduler, and wait if required.
         let delay = scheduler.currentDelay
         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))

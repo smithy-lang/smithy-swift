@@ -17,7 +17,8 @@ public class Waiter<Input, Output> {
     let maximumWaitTime: TimeInterval
     public let operation: (Input) async throws -> Output
 
-    public init(input: Input, acceptors: [Acceptor<Input, Output>], minDelay: TimeInterval, maxDelay: TimeInterval, maximumWaitTime: TimeInterval, operation: @escaping (Input) async throws -> Output) {
+    public init(input: Input, acceptors: [Acceptor<Input, Output>], minDelay: TimeInterval, maxDelay: TimeInterval,
+                maximumWaitTime: TimeInterval, operation: @escaping (Input) async throws -> Output) {
         self.input = input
         self.acceptors = acceptors
         self.minDelay = minDelay

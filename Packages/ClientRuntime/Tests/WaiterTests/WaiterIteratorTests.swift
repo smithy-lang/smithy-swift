@@ -64,6 +64,18 @@ class WaiterIteratorTests: XCTestCase {
         XCTAssertNotNil(result)
     }
 
+    func test_next_failsWithErrorOnTimeout() async throws {
+        let acceptors = [Acceptor<String, String>(state: .retry, matcher: .output({ $0 == "notYet" }))]
+        let subject = newIterator(acceptors: acceptors, maximumWaitTime: 0.0, operation: MockOperation.notYet(input:))
+        _ = try await subject.next()
+        do {
+            _ = try await subject.next()
+            XCTFail("Error was expected")
+        } catch {
+            // test passes, error was expected
+        }
+    }
+
     // MARK: .failure status
 
     func test_next_throwsWhenFailureConditionMet() async throws {
@@ -90,9 +102,11 @@ class WaiterIteratorTests: XCTestCase {
 
     // MARK: - Helper functions
 
-    private func newIterator(acceptors: [Acceptor<String, String>], operation:  @escaping (String) async throws -> String) -> WaiterIterator<String, String> {
+    private func newIterator(acceptors: [Acceptor<String, String>], maximumWaitTime: TimeInterval = 360.0,
+                             operation:  @escaping (String) async throws -> String) -> WaiterIterator<String, String> {
         // Set extremely small delays here to minimize the time to complete tests.
         // Can't set zero because it causes divide-by-zero in the Smithy retry logic.
-        return WaiterIterator<String, String>(input: "input", acceptors: acceptors, minDelay: 0.00001, maxDelay: 0.00001, maximumWaitTime: 360.0, operation: operation)
+        return WaiterIterator<String, String>(input: "input", acceptors: acceptors, minDelay: 0.00001,
+                                              maxDelay: 0.00001, maximumWaitTime: maximumWaitTime, operation: operation)
     }
 }
