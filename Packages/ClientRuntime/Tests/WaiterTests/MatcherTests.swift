@@ -70,17 +70,17 @@ class MatcherTests: XCTestCase {
     }
 
     func test_errorType_returnsFalseWhenErrorIsNil() async throws {
-        let subject = Matcher.errorType(ErrorA.self)
+        let subject = Matcher.errorType({ $0 is ErrorA })
         XCTAssertFalse(subject.isAMatch(input: "input", output: "output", error: nil))
     }
 
     func test_errorType_returnsTrueWhenErrorIsOfTheCorrectType() async throws {
-        let subject = Matcher.errorType(ErrorA.self)
+        let subject = Matcher.errorType({ $0 is ErrorA })
         XCTAssertTrue(subject.isAMatch(input: "input", output: "output", error: ErrorA()))
     }
 
     func test_errorType_returnsFalseWhenErrorIsOfADifferentType() async throws {
-        let subject = Matcher.errorType(ErrorA.self)
+        let subject = Matcher.errorType({ $0 is ErrorA })
         XCTAssertFalse(subject.isAMatch(input: "input", output: "output", error: ErrorB()))
     }
 }

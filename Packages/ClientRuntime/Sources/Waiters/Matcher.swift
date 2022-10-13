@@ -15,7 +15,7 @@ extension Acceptor {
         case output((Output) -> Bool)
         case inputOutput((Input, Output) -> Bool)
         case success(Bool)
-        case errorType(Error.Type)
+        case errorType((Error) -> Bool)
 
         func isAMatch(input: Input, output: Output?, error: Error?) -> Bool {
             switch self {
@@ -28,9 +28,9 @@ extension Acceptor {
             case .success(let success):
                 let hasOutput = output != nil
                 return success ? hasOutput : !hasOutput
-            case .errorType(let ErrorType):
+            case .errorType(let testClosure):
                 guard let error = error else { return false }
-                return type(of: error) == ErrorType.self
+                return testClosure(error)
             }
         }
     }
