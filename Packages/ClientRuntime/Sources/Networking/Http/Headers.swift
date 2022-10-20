@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct Headers: Equatable, Hashable {
+public struct Headers: Hashable {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -161,6 +161,17 @@ public struct Headers: Equatable, Hashable {
     }
 }
 
+extension Headers: Equatable {
+    /// Returns a boolean value indicating whether two values are equal irrespective of order.
+    /// - Parameters:
+    ///   - lhs: The first `Headers` to compare.
+    ///   - rhs: The second `Headers` to compare.
+    /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
+    public static func == (lhs: Headers, rhs: Headers) -> Bool {
+        return lhs.headers.sorted() == rhs.headers.sorted()
+    }
+}
+
 extension Array where Element == Header {
     /// Case-insensitively finds the index of an `Header` with the provided name, if it exists.
     func index(of name: String) -> Int? {
@@ -175,7 +186,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header: Equatable, Hashable {
+public struct Header: Hashable {
     public var name: String
     public var value: [String]
 
@@ -187,6 +198,23 @@ public struct Header: Equatable, Hashable {
     public init(name: String, value: String) {
         self.name = name
         self.value = [value]
+    }
+}
+
+extension Header: Equatable {
+    public static func == (lhs: Header, rhs: Header) -> Bool {
+        return lhs.name == rhs.name && lhs.value.sorted() == rhs.value.sorted()
+    }
+}
+
+extension Header: Comparable {
+    /// Compares two `Header` instances by name.
+    /// - Parameters:
+    ///  - lhs: The first `Header` to compare.
+    /// - rhs: The second `Header` to compare.
+    /// - Returns: `true` if the first `Header`'s name is less than the second `Header`'s name, otherwise `false`.
+    public static func < (lhs: Header, rhs: Header) -> Bool {
+        return lhs.name < rhs.name
     }
 }
 
