@@ -162,6 +162,11 @@ public struct Headers: Hashable {
 }
 
 extension Headers: Equatable {
+    /// Returns a boolean value indicating whether two values are equal irrespective of order.
+    /// - Parameters:
+    ///   - lhs: The first `Headers` to compare.
+    ///   - rhs: The second `Headers` to compare.
+    /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
         return lhs.headers.sorted() == rhs.headers.sorted()
     }
@@ -203,6 +208,11 @@ extension Header: Equatable {
 }
 
 extension Header: Comparable {
+    /// Compares two `Header` instances by name.
+    /// - Parameters:
+    ///  - lhs: The first `Header` to compare.
+    /// - rhs: The second `Header` to compare.
+    /// - Returns: `true` if the first `Header`'s name is less than the second `Header`'s name, otherwise `false`.
     public static func < (lhs: Header, rhs: Header) -> Bool {
         return lhs.name < rhs.name
     }
