@@ -22,9 +22,9 @@ class WaiterSchedulerTests: XCTestCase {
         let base = Date()
         subject.now = { base }
         XCTAssertEqual(subject.attempt, 0)
-        _ = subject.updateAfterRetry()
+        subject.updateAfterRetry()
         XCTAssertEqual(subject.attempt, 1)
-        _ = subject.updateAfterRetry()
+        subject.updateAfterRetry()
         XCTAssertEqual(subject.attempt, 2)
     }
 
@@ -32,10 +32,10 @@ class WaiterSchedulerTests: XCTestCase {
         let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maximumWaitTime: 360.0)
         let base = Date()
         subject.now = { base }
-        _ = subject.updateAfterRetry()
+        subject.updateAfterRetry()
         subject.now = { base + 361.0 }
         XCTAssertFalse(subject.isExpired)
-        _ = subject.updateAfterRetry()
+        subject.updateAfterRetry()
         XCTAssertTrue(subject.isExpired)
     }
 
@@ -63,12 +63,7 @@ class WaiterSchedulerTests: XCTestCase {
                 iteration += 1
 
                 // Update the scheduler to indicate time of the next retry
-                let retryInfo = subject.updateAfterRetry()
-
-                // Verify that retryInfo is correct
-                XCTAssertEqual(retryInfo.attempt, iteration)
-                XCTAssertEqual(retryInfo.timeUntilNextAttempt, subject.currentDelay, accuracy: 0.0001)
-                XCTAssertEqual(retryInfo.timeUntilTimeout, subject.maximumWaitTime - elapsed, accuracy: 0.0001)
+                subject.updateAfterRetry()
 
                 // Read the currentDelay from the subject
                 let delay = subject.currentDelay

@@ -20,6 +20,9 @@ class WaiterScheduler {
     /// Returns the current Date.  For testing, this closure may be replaced to provide simulated time.
     var now: () -> Date = { Date() }
 
+    /// The Date when the next request should take place after a retry.
+    var nextRequestDate = Date.distantPast
+    
     /// The number of requests ("attempts") that have been made by this waiter.
     private(set) var attempt = 0
 
@@ -29,9 +32,6 @@ class WaiterScheduler {
     /// Set to the Date of the start of the first request.
     /// Used to track the total time elapsed when waiting.
     private var startDate = Date.distantPast
-
-    /// The Date when the next request should take place after a retry.
-    private var nextRequestDate = Date.distantPast
 
     init(minDelay: TimeInterval, maxDelay: TimeInterval, maximumWaitTime: TimeInterval) {
         self.minDelay = minDelay
@@ -48,7 +48,7 @@ class WaiterScheduler {
         return maximumWaitTime - totalElapsedTime
     }
 
-    func updateAfterRetry() -> WaiterRetryInfo {
+    func updateAfterRetry() {
         // Update attempt number; the first request is 1.
         attempt += 1
 
@@ -74,11 +74,5 @@ class WaiterScheduler {
 
         // Determine & store the "wall clock date" of the next request.
         nextRequestDate = now().addingTimeInterval(delay)
-
-        // Fill in & return RetryInfo to inform the caller of the waiter's status.
-        let timeUntilNextAttempt = currentDelay
-        let timeoutDate = startDate.addingTimeInterval(maximumWaitTime)
-        let timeUntilTimeout = timeoutDate.timeIntervalSince(now())
-        return WaiterRetryInfo(attempt: attempt, timeUntilNextAttempt: timeUntilNextAttempt, timeUntilTimeout: timeUntilTimeout)
     }
 }
