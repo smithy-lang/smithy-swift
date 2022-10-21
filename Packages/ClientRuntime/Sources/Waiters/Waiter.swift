@@ -18,8 +18,8 @@ public class Waiter<Input, Output> {
     /// The operation that this waiter will call one or more times while waiting on the success condition.
     public let operation: (Input) async throws -> Output
 
-    // Allows for advancing of time during waiter tests.
-    // The default hook does nothing.
+    /// Allows for advancing of time during waiter unit tests.
+    /// The default hook does nothing.
     var postSchedulerUpdateHook: (WaiterScheduler) -> Void = { _ in }
 
     /// Creates a `waiter` object with the supplied config and operation.
@@ -27,7 +27,10 @@ public class Waiter<Input, Output> {
     ///   - config: An instance of `WaiterConfig` that defines the default behavior of this waiter.
     ///   - operation: A closure that is called one or more times to perform the waiting operation; takes an `Input` as its sole param & returns an `Output` asynchronously.
     ///   The `operation` closure throws an error if the operation cannot be performed or the operation completes with an error.
-    public init(config: WaiterConfig<Input, Output>, operation: @escaping (Input) async throws -> Output) {
+    public init(
+        config: WaiterConfig<Input, Output>,
+        operation: @escaping (Input) async throws -> Output
+    ) {
         self.config = config
         self.operation = operation
     }
@@ -38,8 +41,15 @@ public class Waiter<Input, Output> {
     ///   - options: `WaiterOptions` to be used to configure this wait.
     ///   - input: The `Input` object to be used as a parameter when performing the operation.
     /// - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
+    /// - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
+    /// or there is an error not handled by any `Acceptor.`
+    ///
+    /// `WaiterTimeoutError` if the waiter times out.
     @discardableResult
-    public func waitUntil(options: WaiterOptions, input: Input) async throws -> WaiterOutcome<Output> {
+    public func waitUntil(
+        options: WaiterOptions,
+        input: Input
+    ) async throws -> WaiterOutcome<Output> {
         let minDelay = options.minDelay ?? config.minDelay
         let maxDelay = options.maxDelay ?? config.maxDelay
         let maximumWaitTime = options.maximumWaitTime

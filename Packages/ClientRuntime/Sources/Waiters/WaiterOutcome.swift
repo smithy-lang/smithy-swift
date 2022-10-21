@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-//import Foundation
-
 /// `WaiterOutcome` is returned after waiting ends successfully.  The `attempts`
 /// field indicates how many attempts to poll the resource were needed for the wait to succeed, and
 /// the `result` field contains the result of the operation that caused the wait

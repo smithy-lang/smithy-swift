@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// `WaiterConfig` contains the parameters for a predefined waiter.  `WaiterConfig` will
+/// `WaiterConfig` contains the parameters for a predefined waiter on a given operation.  `WaiterConfig` will
 /// usually be code-generated from a Smithy definition for a Smithy waiter defined on an operation.
 public struct WaiterConfig<Input, Output> {
 
@@ -20,7 +20,17 @@ public struct WaiterConfig<Input, Output> {
     public let acceptors: [Acceptor]
 
     /// Creates a new `WaiterConfig` with the supplied parameters.
-    public init(minDelay: TimeInterval?, maxDelay: TimeInterval?, acceptors: [Acceptor]) throws {
+    /// - Parameters:
+    ///   - minDelay: The minimum delay before a retry may be sent.  Defaults to `2.0` if not supplied.
+    ///   - maxDelay: The maximum delay before a retry may be sent.  Defaults to `120.0` if not supplied.
+    ///   - acceptors: The acceptors for this waiter.  Acceptors are evaluated in the order they are supplied.
+    /// At least one `Acceptor` with the `success` state must be supplied.
+    /// - Throws: `WaiterConfigError` if the `acceptors` do not include at least one member with state `success`.
+    public init(
+        minDelay: TimeInterval?,
+        maxDelay: TimeInterval?,
+        acceptors: [Acceptor]
+    ) throws {
         guard acceptors.filter({ $0.state == .success }).count >= 1 else {
             throw WaiterConfigError(localizedDescription: "There must be at least one Acceptor with a success state")
         }

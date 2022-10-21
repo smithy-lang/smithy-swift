@@ -115,9 +115,11 @@ class WaiterTests: XCTestCase {
     // MARK: - Helper functions
 
     /// Returns a `WaiterConfig` with acceptors suitable for use in the test being performed.
-    private func config(succeedOn succeedResult: Result<String, Error>? = nil,
-                        retryOn retryResult: Result<String, Error>? = nil,
-                        failOn failureResult: Result<String, Error>? = nil) throws -> WaiterConfig<String, String> {
+    private func config(
+        succeedOn succeedResult: Result<String, Error>? = nil,
+        retryOn retryResult: Result<String, Error>? = nil,
+        failOn failureResult: Result<String, Error>? = nil
+    ) throws -> WaiterConfig<String, String> {
         var acceptors = [Acceptor]()
 
         // Add acceptors for the specified conditions
@@ -139,7 +141,10 @@ class WaiterTests: XCTestCase {
 }
 
 /// An async version of `XCTAssertThrowsError`.
-fileprivate func XCTAssertThrowsErrorAsync(_ exp: @autoclosure () async throws -> Void, _ block: (Error) -> Void) async {
+fileprivate func XCTAssertThrowsErrorAsync(
+    _ exp: @autoclosure () async throws -> Void,
+    _ block: (Error) -> Void
+) async {
     do {
         try await exp()
         XCTFail("Should have thrown error")

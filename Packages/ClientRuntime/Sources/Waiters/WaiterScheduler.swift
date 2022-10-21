@@ -13,8 +13,11 @@ import Foundation
 /// published in the Smithy specification:
 /// https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries
 class WaiterScheduler {
+    /// The minimum delay between retries while waiting.
     let minDelay: TimeInterval
+    /// The maximum delay between retries while waiting.
     let maxDelay: TimeInterval
+    /// The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
     let maximumWaitTime: TimeInterval
 
     /// Returns the current Date.  For testing, this closure may be replaced to provide simulated time.
@@ -33,7 +36,11 @@ class WaiterScheduler {
     /// Used to track the total time elapsed when waiting.
     private var startDate = Date.distantPast
 
-    init(minDelay: TimeInterval, maxDelay: TimeInterval, maximumWaitTime: TimeInterval) {
+    init(
+        minDelay: TimeInterval,
+        maxDelay: TimeInterval,
+        maximumWaitTime: TimeInterval
+    ) {
         self.minDelay = minDelay
         self.maxDelay = maxDelay
         self.maximumWaitTime = maximumWaitTime
