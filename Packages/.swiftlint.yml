@@ -18,6 +18,7 @@ disabled_rules:
   - file_length
   - syntactic_sugar
   - unused_capture_list
+  - nesting
 
 opt_in_rules:
   - empty_count
