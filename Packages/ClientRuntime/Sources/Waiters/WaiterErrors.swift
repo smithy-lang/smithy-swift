@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Thrown when a `WaiterConfig` is constructed with invalid parameters.
-struct WaiterConfigError: Error {
+/// Thrown when a `WaiterConfiguration` is constructed with invalid parameters.
+struct WaiterConfigurationError: Error {
     var localizedDescription: String?
 }
 

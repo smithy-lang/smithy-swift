@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-fileprivate typealias Acceptor = WaiterConfig<String, String>.Acceptor
+fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 
 class AcceptorTests: XCTestCase {
     let input = "input"

@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-fileprivate typealias Acceptor = WaiterConfig<String, String>.Acceptor
+fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 
 class WaiterTests: XCTestCase {
 
@@ -119,7 +119,7 @@ class WaiterTests: XCTestCase {
         succeedOn succeedResult: Result<String, Error>? = nil,
         retryOn retryResult: Result<String, Error>? = nil,
         failOn failureResult: Result<String, Error>? = nil
-    ) throws -> WaiterConfig<String, String> {
+    ) throws -> WaiterConfiguration<String, String> {
         var acceptors = [Acceptor]()
 
         // Add acceptors for the specified conditions
@@ -136,7 +136,7 @@ class WaiterTests: XCTestCase {
         // This acceptor satisfies the "one success" requirement even though it never matches
         acceptors.append(Acceptor(state: .success, matcher: { _, _ in return false }))
 
-        return try WaiterConfig(minDelay: 2.0, maxDelay: 10.0, acceptors: acceptors)
+        return try WaiterConfiguration(minDelay: 2.0, maxDelay: 10.0, acceptors: acceptors)
     }
 }
 

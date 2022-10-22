@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-extension WaiterConfig {
+extension WaiterConfiguration {
     /// `Acceptor` is a Swift-native equivalent of Smithy acceptors:
     /// https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#acceptor-structure
     /// An `Acceptor` defines a condition (its `matcher`) that will cause the wait operation to transition to

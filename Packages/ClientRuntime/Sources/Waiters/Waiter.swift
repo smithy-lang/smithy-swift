@@ -13,7 +13,7 @@ import Foundation
 public class Waiter<Input, Output> {
 
     /// The configuration this waiter was created with.
-    public let config: WaiterConfig<Input, Output>
+    public let config: WaiterConfiguration<Input, Output>
 
     /// The operation that this waiter will call one or more times while waiting on the success condition.
     public let operation: (Input) async throws -> Output
@@ -24,11 +24,13 @@ public class Waiter<Input, Output> {
 
     /// Creates a `waiter` object with the supplied config and operation.
     /// - Parameters:
-    ///   - config: An instance of `WaiterConfig` that defines the default behavior of this waiter.
-    ///   - operation: A closure that is called one or more times to perform the waiting operation; takes an `Input` as its sole param & returns an `Output` asynchronously.
-    ///   The `operation` closure throws an error if the operation cannot be performed or the operation completes with an error.
+    ///   - config: An instance of `WaiterConfiguration` that defines the default behavior of this waiter.
+    ///   - operation: A closure that is called one or more times to perform the waiting operation;
+    ///   takes an `Input` as its sole param & returns an `Output` asynchronously.
+    ///   The `operation` closure throws an error if the operation cannot be performed or the
+    ///   operation completes with an error.
     public init(
-        config: WaiterConfig<Input, Output>,
+        config: WaiterConfiguration<Input, Output>,
         operation: @escaping (Input) async throws -> Output
     ) {
         self.config = config
@@ -36,7 +38,8 @@ public class Waiter<Input, Output> {
     }
 
     /// Initiates waiting, retrying the operation if necessary until the wait succeeds, fails, or times out.
-    /// Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on waiter failure or timeout.
+    /// Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
+    /// waiter failure or timeout.
     /// - Parameters:
     ///   - options: `WaiterOptions` to be used to configure this wait.
     ///   - input: The `Input` object to be used as a parameter when performing the operation.
@@ -79,7 +82,11 @@ public class Waiter<Input, Output> {
                 }
             // If no matching acceptor is found, fail if the result was an error.
             } else if case .failure(let error) = result {
-                throw WaiterFailureError<Output>(attempts: scheduler.attempt, failedOnMatch: false, result: .failure(error))
+                throw WaiterFailureError<Output>(
+                    attempts: scheduler.attempt,
+                    failedOnMatch: false,
+                    result: .failure(error)
+                )
             }
             // Loop back to the top for a retry.
         }

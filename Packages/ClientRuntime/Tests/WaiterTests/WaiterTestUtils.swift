@@ -12,7 +12,7 @@ import Foundation
 // to makes tests as simple as possible.
 // These Equatable conformances make the tests easier to read (and write).
 
-extension WaiterConfig.Acceptor.Match: Equatable where Output: Equatable {
+extension WaiterConfiguration.Acceptor.Match: Equatable where Output: Equatable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
