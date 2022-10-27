@@ -74,6 +74,7 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val Endpoint = runtimeSymbol("Endpoint")
         val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
@@ -95,6 +96,12 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+    }
+
+    object Test {
+        val CrtXCBaseTestCase = buildSymbol {
+            name = "CrtXCBaseTestCase"
+        }
     }
 }
 

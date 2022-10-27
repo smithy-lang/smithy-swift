@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.Symbol
 
 abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, step: OperationStep) {
+    open val id: String get() = typeName
     open val typeName: String = "${shapeSymbol.name}Middleware"
 
     open val inputType: Symbol = step.inputType

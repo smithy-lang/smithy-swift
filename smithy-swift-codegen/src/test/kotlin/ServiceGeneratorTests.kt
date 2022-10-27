@@ -7,12 +7,14 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 class ServiceGeneratorTests {
@@ -28,7 +30,15 @@ class ServiceGeneratorTests {
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val writers = SwiftDelegator(settings, model, manifest, provider)
-        val generator = ServiceGenerator(settings, model, provider, writer, writers)
+        val protocolGenerationContext = ProtocolGenerator.GenerationContext(settings, model, model.serviceShapes.first(), provider, listOf(), RestJson1Trait.ID, writers)
+        val generator = ServiceGenerator(
+            settings,
+            model,
+            provider,
+            writer,
+            writers,
+            protocolGenerationContext = protocolGenerationContext
+        )
         generator.render()
 
         commonTestContents = writer.toString()
