@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("public static let clientName = \"${serviceSymbol.name}\"")
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$N", serviceConfig.typesToConformConfigTo.first())
+            writer.write("let config: \$L", serviceConfig.typeProtocol)
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
             writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
@@ -29,7 +29,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: \$N) {", "}", serviceConfig.typesToConformConfigTo.first()) {
+            writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeProtocol) {
                 writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
@@ -80,18 +80,23 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderConfig(serviceSymbol: Symbol) {
-        val configFields = serviceConfig.sdkRuntimeConfigProperties()
-        val otherConfigFields = serviceConfig.otherRuntimeConfigProperties()
-        val inheritance = serviceConfig.getTypeInheritance()
-        writer.openBlock("public class ${serviceSymbol.name}Configuration: $inheritance {", "}") {
-            writer.write("")
-            configFields.forEach {
-                writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
+        val sdkConfigs = serviceConfig.sdkRuntimeConfigProperties()
+        val otherConfigs = serviceConfig.otherRuntimeConfigProperties()
+        val serviceConfigs = serviceConfig.serviceConfigProperties()
+        writer.openBlock("public class \$L: \$L {", "}", serviceConfig.typeName, serviceConfig.typeProtocol) {
+            sdkConfigs.forEach {
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
             }
             writer.write("")
-            otherConfigFields.forEach {
-                writer.write("public var ${it.memberName}: ${it.formatter}", it.type)
+            otherConfigs.forEach {
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
             }
+
+            writer.write("")
+            serviceConfigs.forEach {
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
+            }
+
             writer.write("")
             serviceConfig.renderInitializers(serviceSymbol)
         }

@@ -14,7 +14,9 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.camelCaseName
 
@@ -27,11 +29,15 @@ class ServiceGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val delegator: SwiftDelegator,
-    private val protocolGenerator: ProtocolGenerator? = null
+    private val protocolGenerator: ProtocolGenerator? = null,
+    private val protocolGenerationContext: ProtocolGenerator.GenerationContext?
 ) {
     private var service = settings.getService(model)
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
+    }
+    private val serviceConfig: DefaultServiceConfig by lazy {
+        DefaultServiceConfig(writer, serviceSymbol.name)
     }
     private val rootNamespace = settings.moduleName
 
@@ -107,7 +113,7 @@ class ServiceGenerator(
      * We will generate the following:
      * ```
      * public protocol ExampleServiceProtocol {
-     *      func getFoo(input: GetFooInput, completion: @escaping (SdkResult<GetFooOutput, GetFooError>) -> Void)
+     *      func getFoo(input: GetFooInput) async throws -> GetFooResponse
      * }
      * ```
      */
@@ -127,7 +133,19 @@ class ServiceGenerator(
             }
             .closeBlock("}")
             .write("")
+
+        val sectionContext = mapOf(
+            "serviceSymbol" to serviceSymbol,
+            "protocolGenerator" to protocolGenerator,
+            "protocolGenerationContext" to protocolGenerationContext
+        )
+        writer.declareSection(ConfigurationProtocolSectionId, sectionContext) {
+            writer.openBlock("public protocol \$L : \$L {", "}", serviceConfig.typeProtocol, serviceConfig.getTypeInheritance()) {
+            }
+        }.write("")
     }
+
+    object ConfigurationProtocolSectionId : SectionId
 
     /*
         Renders the Operation Error enum

@@ -138,7 +138,8 @@ class PaginatorGeneratorTest {
             override val protocolGenerator: ProtocolGenerator? = context.generator
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
-        unit.writeAdditionalFiles(codegenContext, context.generationCtx.delegator)
+
+        unit.writeAdditionalFiles(codegenContext, context.generationCtx, context.generationCtx.delegator)
         context.generationCtx.delegator.flushWriters()
         return context
     }
