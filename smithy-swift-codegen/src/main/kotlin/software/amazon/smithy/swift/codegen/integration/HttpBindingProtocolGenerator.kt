@@ -461,4 +461,4 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 }
 
-class DefaultConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)
+class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)

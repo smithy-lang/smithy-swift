@@ -18,12 +18,12 @@ class HttpProtocolClientGeneratorTests {
             public class RestJsonProtocolClient {
                 public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
-                let config: ClientRuntime.SDKRuntimeConfiguration
+                let config: RestJsonProtocolClientConfigurationProtocol
                 let serviceName = "Rest Json Protocol"
                 let encoder: ClientRuntime.RequestEncoder
                 let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: ClientRuntime.SDKRuntimeConfiguration) {
+                public init(config: RestJsonProtocolClientConfigurationProtocol) {
                     client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = ClientRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
@@ -45,8 +45,7 @@ class HttpProtocolClientGeneratorTests {
                     client.close()
                 }
             
-                public class RestJsonProtocolClientConfiguration: ClientRuntime.SDKRuntimeConfiguration {
-            
+                public class RestJsonProtocolClientConfiguration: RestJsonProtocolClientConfigurationProtocol {
                     public var clientLogMode: ClientRuntime.ClientLogMode
                     public var decoder: ClientRuntime.ResponseDecoder?
                     public var encoder: ClientRuntime.RequestEncoder?
