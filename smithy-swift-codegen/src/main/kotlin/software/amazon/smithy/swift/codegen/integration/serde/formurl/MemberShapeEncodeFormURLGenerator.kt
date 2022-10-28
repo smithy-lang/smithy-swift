@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeC
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
 abstract class MemberShapeEncodeFormURLGenerator(
