@@ -29,27 +29,6 @@ class TimestampSerdeUtilsTests: XCTestCase {
         second: 10
     )
     
-    // MARK: - TimestampFormat.encodingValueForDate Tests
-    
-    func test_encodingValueForDate_forEpochSeconds_returnsTimeInterval() throws {
-        let date = Date(timeIntervalSince1970: 12345678)
-        let result = TimestampFormat.epochSeconds.encodingValueForDate(date) as? TimeInterval
-        let seconds = try XCTUnwrap(result, "encodingValueForDate returned invalid type for epochSeconds format")
-        XCTAssertEqual(seconds, 12345678)
-    }
-    
-    func test_encodingValueForDate_forDateTime_returnsISO8601StringWithFractionalSeconds() throws {
-        let result = TimestampFormat.dateTime.encodingValueForDate(testDateWithFractionalSeconds) as? String
-        let dateString = try XCTUnwrap(result, "encodingValueForDate returned invalid type for dateTime format")
-        XCTAssertEqual(dateString, "1991-05-04T10:12:10.123Z")
-    }
-    
-    func test_encodingValueForDate_forHttpDate_returnsRFC5322StringWithFractionalSeconds() throws {
-        let result = TimestampFormat.httpDate.encodingValueForDate(testDateWithFractionalSeconds) as? String
-        let dateString = try XCTUnwrap(result, "encodingValueForDate returned invalid type for httpDate format")
-        XCTAssertEqual(dateString, "Sat, 04 May 1991 10:12:10.123 GMT")
-    }
-    
     // MARK: - Encoding Tests
     
     func test_encodeTimeStamp_forKeyedContainer_returnsExpectedValue() throws {

@@ -20,19 +20,24 @@ public enum TimestampFormat: CaseIterable {
 
 // MARK: - Encoding Helpers
 
-extension TimestampFormat {
-    typealias EncodableValueForDate = (Date) -> Encodable
+struct TimestampEncodable: Encodable {
+    let date: Date
+    let format: TimestampFormat
     
-    /// Returns the preferred function for converting a date to an Encodable value for a given timestamp format
-    /// Always use this function when encoding a timestamp
-    var encodingValueForDate: EncodableValueForDate {
-        switch self {
+    init(date: Date, format: TimestampFormat) {
+        self.date = date
+        self.format = format
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch format {
         case .epochSeconds:
-            return { $0.timeIntervalSince1970 }
+            try container.encode(date.timeIntervalSince1970)
         case .dateTime:
-            return { $0.iso8601WithFractionalSeconds() }
+            try container.encode(date.iso8601WithFractionalSeconds())
         case .httpDate:
-            return { $0.rfc5322WithFractionalSeconds() }
+            try container.encode(date.rfc5322WithFractionalSeconds())
         }
     }
 }
@@ -49,8 +54,8 @@ extension KeyedEncodingContainer {
         format: TimestampFormat,
         forKey key: KeyedEncodingContainer<K>.Key
     ) throws {
-        let value = format.encodingValueForDate(date)
-        try encode(value, forKey: key)
+        let timestamp = TimestampEncodable(date: date, format: format)
+        try encode(timestamp, forKey: key)
     }
 }
 
@@ -65,8 +70,8 @@ extension SingleValueEncodingContainer {
         _ date: Date,
         format: TimestampFormat
     ) throws {
-        let value = format.encodingValueForDate(date)
-        try encode(value)
+        let timestamp = TimestampEncodable(date: date, format: format)
+        try encode(timestamp)
     }
 }
 
