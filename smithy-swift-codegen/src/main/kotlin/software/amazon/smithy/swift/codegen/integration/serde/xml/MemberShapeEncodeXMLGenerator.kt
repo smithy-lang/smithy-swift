@@ -18,8 +18,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 import software.amazon.smithy.swift.codegen.model.isBoxed
@@ -81,9 +82,14 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val encodeValue = "${ClientRuntimeTypes.Serde.TimestampWrapper}($nestedMemberTargetName, format: .$format), forKey: ${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
-                    writer.write("try $containerName.encode($encodeValue)")
+                    val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
+                    val code = TimestampEncodeGenerator(
+                        containerName,
+                        nestedMemberTargetName,
+                        codingKey,
+                        TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
+                    ).generate()
+                    writer.write(code)
                 }
                 else -> {
                     val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
@@ -135,10 +141,15 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    val encodeValue = "${ClientRuntimeTypes.Serde.TimestampWrapper}($nestedMemberTargetName, format: .$format), forKey: Key(\"\")"
-                    writer.write("try $nestedContainerName.encode($encodeValue)")
+                    val codingKey = "Key(\"\")"
+                    val code = TimestampEncodeGenerator(
+                        nestedContainerName,
+                        nestedMemberTargetName,
+                        codingKey,
+                        TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
+                    ).generate()
+                    writer.write(code)
                 }
                 else -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
@@ -204,8 +215,14 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
-                        val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        writer.write("try $valueContainer.encode(\$N(${nestedKeyValueName.second}, format: .$format), forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
+                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
+                        val code = TimestampEncodeGenerator(
+                            valueContainer,
+                            nestedKeyValueName.second,
+                            codingKey,
+                            TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
+                        ).generate()
+                        writer.write(code)
                     }
                 }
                 else -> {
@@ -246,8 +263,14 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val format = determineTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        writer.write("try $valueContainer.encode(\$N(${nestedKeyValueName.second}, format: .$format), forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
+                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
+                        val code = TimestampEncodeGenerator(
+                            valueContainer,
+                            nestedKeyValueName.second,
+                            codingKey,
+                            TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
+                        ).generate()
+                        writer.write(code)
                     }
                 }
                 else -> {
@@ -312,8 +335,14 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val originalMemberName = member.memberName
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        writer.write("try $containerName.encode(\$N($memberName, format: .$format), forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.TimestampWrapper, ClientRuntimeTypes.Serde.Key)
+        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\")"
+        val code = TimestampEncodeGenerator(
+            containerName,
+            memberName,
+            codingKey,
+            TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
+        ).generate()
+        writer.write(code)
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {

@@ -592,7 +592,7 @@ class MapEncodeXMLGenerationTests {
                             var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
                             try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
                             var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            try valueContainer0.encode(ClientRuntime.TimestampWrapper(timestampValue0, format: .epochSeconds), forKey: ClientRuntime.Key(""))
+                            try valueContainer0.encodeTimestamp(timestampValue0, format: .epochSeconds, forKey: ClientRuntime.Key(""))
                         }
                     }
                 }
@@ -623,7 +623,7 @@ class MapEncodeXMLGenerationTests {
                                 var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
                                 try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
                                 var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                try valueContainer0.encode(ClientRuntime.TimestampWrapper(timestampValue0, format: .epochSeconds), forKey: ClientRuntime.Key(""))
+                                try valueContainer0.encodeTimestamp(timestampValue0, format: .epochSeconds, forKey: ClientRuntime.Key(""))
                             }
                         }
                     }

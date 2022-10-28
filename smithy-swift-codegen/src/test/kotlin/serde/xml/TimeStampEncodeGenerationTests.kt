@@ -30,16 +30,16 @@ class TimeStampEncodeGenerationTests {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let dateTime = dateTime {
-                        try container.encode(ClientRuntime.TimestampWrapper(dateTime, format: .dateTime), forKey: ClientRuntime.Key("dateTime"))
+                        try container.encodeTimestamp(dateTime, format: .dateTime, forKey: ClientRuntime.Key("dateTime"))
                     }
                     if let epochSeconds = epochSeconds {
-                        try container.encode(ClientRuntime.TimestampWrapper(epochSeconds, format: .epochSeconds), forKey: ClientRuntime.Key("epochSeconds"))
+                        try container.encodeTimestamp(epochSeconds, format: .epochSeconds, forKey: ClientRuntime.Key("epochSeconds"))
                     }
                     if let httpDate = httpDate {
-                        try container.encode(ClientRuntime.TimestampWrapper(httpDate, format: .httpDate), forKey: ClientRuntime.Key("httpDate"))
+                        try container.encodeTimestamp(httpDate, format: .httpDate, forKey: ClientRuntime.Key("httpDate"))
                     }
                     if let normal = normal {
-                        try container.encode(ClientRuntime.TimestampWrapper(normal, format: .dateTime), forKey: ClientRuntime.Key("normal"))
+                        try container.encodeTimestamp(normal, format: .dateTime, forKey: ClientRuntime.Key("normal"))
                     }
                 }
             }
@@ -66,7 +66,7 @@ class TimeStampEncodeGenerationTests {
                         for nestedtimestamplist0 in nestedTimestampList {
                             var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: ClientRuntime.Key("member"))
+                                try nestedtimestamplist0Container0.encodeTimestamp(timestamp1, format: .epochSeconds, forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
@@ -95,7 +95,7 @@ class TimeStampEncodeGenerationTests {
                         for nestedhttpdatetimestamplist0 in nestedTimestampList {
                             var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
                             for timestamp1 in nestedhttpdatetimestamplist0 {
-                                try nestedhttpdatetimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .httpDate), forKey: ClientRuntime.Key("member"))
+                                try nestedhttpdatetimestamplist0Container0.encodeTimestamp(timestamp1, format: .httpDate, forKey: ClientRuntime.Key("member"))
                             }
                         }
                     }
@@ -124,7 +124,7 @@ class TimeStampEncodeGenerationTests {
                         for nestedtimestamplist0 in nestedTimestampList {
                             var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTag1"))
                             for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: ClientRuntime.Key("nestedTag2"))
+                                try nestedtimestamplist0Container0.encodeTimestamp(timestamp1, format: .epochSeconds, forKey: ClientRuntime.Key("nestedTag2"))
                             }
                         }
                     }
@@ -150,10 +150,10 @@ class TimeStampEncodeGenerationTests {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: ClientRuntime.Key.self)
                     if let dateTime = dateTime {
-                        try container.encode(ClientRuntime.TimestampWrapper(dateTime, format: .dateTime), forKey: ClientRuntime.Key("dateTime"))
+                        try container.encodeTimestamp(dateTime, format: .dateTime, forKey: ClientRuntime.Key("dateTime"))
                     }
                     if let normal = normal {
-                        try container.encode(ClientRuntime.TimestampWrapper(normal, format: .dateTime), forKey: ClientRuntime.Key("notNormalName"))
+                        try container.encodeTimestamp(normal, format: .dateTime, forKey: ClientRuntime.Key("notNormalName"))
                     }
                 }
             }

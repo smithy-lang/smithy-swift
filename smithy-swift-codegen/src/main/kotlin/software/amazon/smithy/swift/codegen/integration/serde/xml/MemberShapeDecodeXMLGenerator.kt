@@ -24,7 +24,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -73,7 +74,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
             writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
                 writer.write("$memberBuffer = \$N()", memberTargetSymbol)
-                renderListMemberItems(memberTarget, memberContainerName, memberBuffer)
+                renderListMemberItems(memberTarget, memberContainerName, memberBuffer, currContainerKey)
             }
             renderAssigningDecodedMember(memberName, memberBuffer)
         }
@@ -82,7 +83,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.dedent().write("}")
     }
 
-    private fun renderListMemberItems(memberTarget: CollectionShape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
+    private fun renderListMemberItems(memberTarget: CollectionShape, memberContainerName: String, memberBuffer: String, currentContainerKey: String, level: Int = 0) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMember = memberTarget.member
         val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
@@ -102,27 +103,28 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
             when (nestedMemberTarget) {
                 is ListShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, currentContainerKey,level + 1)
                     writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
                         writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                     }
                 }
                 is MapShape -> {
-                    renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, level + 1)
+                    renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, memberContainerName, currentContainerKey, level + 1)
                     writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
                         writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                     }
                 }
                 is SetShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, level + 1)
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, currentContainerKey,level + 1)
                     writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
                         writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                     }
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val wrappedNestedMemberBuffer = "${ClientRuntimeTypes.Serde.TimestampWrapperDecoder}.parseDateStringValue($nestedContainerName, format: .$format)"
-                    writer.write("try $memberBuffer?.$insertMethod($wrappedNestedMemberBuffer)")
+                    val timestampFormat = TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
+                    val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
+                    val code = "containerValues.timestampStringAsDate($nestedContainerName, format: .${swiftTimestampName}, forKey: ${currentContainerKey})"
+                    writer.write("try $memberBuffer?.$insertMethod($code)")
                 }
                 else -> {
                     writer.write("$memberBuffer?.$insertMethod($nestedContainerName)")
@@ -131,7 +133,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, level: Int) {
+    private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, currentContainerKey: String, level: Int) {
         val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
         val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed() && memberTarget.hasTrait<SparseTrait>()
 
@@ -141,10 +143,10 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.write("$memberBuffer = \$N()", memberTargetSymbol)
         if (nestedMemberTargetIsBoxed && !isSetShape) {
             writer.openBlock("if let $containerName = $containerName {", "}") {
-                renderListMemberItems(memberTarget, containerName, memberBuffer, level)
+                renderListMemberItems(memberTarget, containerName, memberBuffer, currentContainerKey, level)
             }
         } else {
-            renderListMemberItems(memberTarget, containerName, memberBuffer, level)
+            renderListMemberItems(memberTarget, containerName, memberBuffer, currentContainerKey, level)
         }
     }
 
@@ -161,6 +163,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         var ifNilOrIfLetStatement: String
         val nextContainerName = "${memberNameUnquoted}WrappedContainer"
         writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
+        val keyedDecodingContainerKey = currContainerKey
         if (!memberIsFlattened) {
             currContainerKey = ".entry"
             currContainerName = nextContainerName
@@ -183,7 +186,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil")
             writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
                 writer.write("$memberBuffer = $memberTargetSymbol()")
-                renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer)
+                renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer, nextContainerName, keyedDecodingContainerKey)
             }
             renderAssigningDecodedMember(memberName, memberBuffer)
         }
@@ -192,7 +195,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.dedent().write("}")
     }
 
-    private fun renderMapMemberItems(memberShape: MemberShape, memberContainerName: String, memberBuffer: String, level: Int = 0) {
+    private fun renderMapMemberItems(memberShape: MemberShape, memberContainerName: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int = 0) {
         val memberTarget = ctx.model.expectShape(memberShape.target)
         val itemInContainerName = "${memberTarget.type.name.toLowerCase()}Container$level"
 
@@ -206,16 +209,18 @@ abstract class MemberShapeDecodeXMLGenerator(
             when (memberTarget) {
                 is CollectionShape -> {
                     writer.write("$nestedBuffer = \$N()", memberTargetSymbol)
-                    renderListMemberItems(memberTarget, "$itemInContainerName.value.member", nestedBuffer, level)
+                    renderListMemberItems(memberTarget, "$itemInContainerName.value.member", nestedBuffer, currentContainerKey, level)
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is MapShape -> {
-                    renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, level)
+                    renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, parentKeyedContainerName, currentContainerKey, level)
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
                 }
                 is TimestampShape -> {
-                    val format = determineTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = try \$N.parseDateStringValue($itemInContainerName.value, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
+                    val timestampFormat = TimestampHelpers.getTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
+                    val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
+                    val code = "try ${parentKeyedContainerName}.timestampStringAsDate($itemInContainerName.value, format: .${swiftTimestampName}, forKey: ${currentContainerKey})"
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = ${code}")
                 }
                 else -> {
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
@@ -224,30 +229,29 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, entryLocation: String, memberBuffer: String, level: Int) {
+    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, entryLocation: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int) {
         val entryContainerName = "${itemInContainerName}NestedEntry$level"
 
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
         writer.write("$memberBuffer = \$N()", memberTargetSymbol)
         writer.openBlock("if let $entryContainerName = $itemInContainerName.$entryLocation {", "}") {
-            renderMapMemberItems(memberTarget.value, entryContainerName, memberBuffer, level + 1)
+            renderMapMemberItems(memberTarget.value, entryContainerName, memberBuffer, parentKeyedContainerName, currentContainerKey, level + 1)
         }
     }
 
     open fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-        var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
-        val decodeVerb = if (memberTargetSymbol.isBoxed()) "decodeIfPresent" else "decode"
+        val memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
+        val timestampFormat = TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
+        val decodingCode = TimestampDecodeGenerator(
+            containerName,
+            ".${memberName}",
+            timestampFormat,
+            memberTargetSymbol.isBoxed()
+        ).generate()
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberName)", SwiftTypes.String)
-
-        val memberBuffer = "${memberName}Buffer"
-        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-        writer.openBlock("if let $decodedMemberName = $decodedMemberName {", "}") {
-            writer.write("$memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
-        }
-        renderAssigningDecodedMember(memberName, memberBuffer)
+        writer.write("let ${decodedMemberName} = ${decodingCode}")
+        renderAssigningDecodedMember(memberName, decodedMemberName)
     }
 
     open fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {

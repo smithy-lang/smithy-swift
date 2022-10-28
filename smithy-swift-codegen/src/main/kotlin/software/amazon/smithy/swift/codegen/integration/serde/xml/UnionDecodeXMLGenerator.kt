@@ -16,7 +16,8 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimeStampFormat.Companion.determineTimestampFormat
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
@@ -77,12 +78,16 @@ class UnionDecodeXMLGenerator(
     override fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberName)", SwiftTypes.String)
+        val timestampFormat = TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
+        val code = TimestampDecodeGenerator(
+            containerName,
+            ".$memberName",
+            timestampFormat,
+            false
+        ).generate()
 
-        val memberBuffer = "${memberName}Buffer"
-        val format = determineTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        writer.write("let $memberBuffer = try \$N.parseDateStringValue($decodedMemberName, format: .$format)", ClientRuntimeTypes.Serde.TimestampWrapperDecoder)
-        renderAssigningDecodedMember(memberName, memberBuffer)
+        writer.write("let $decodedMemberName = ${code}")
+        renderAssigningDecodedMember(memberName, decodedMemberName)
     }
 
     override fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
