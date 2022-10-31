@@ -124,3 +124,24 @@ public extension String {
         return self
     }
 }
+
+public extension String {
+    /// Returns a substring after the last occurrence of `separator` or original string if `separator` is absent
+    /// - Parameter pathComponent: The path component to append to the string
+    /// - Returns: The string with the path component appended
+    func appendingPathComponent(_ pathComponent: String) -> String {
+        if self.hasSuffix("/") {
+            if pathComponent.hasPrefix("/") {
+                return self + pathComponent.dropFirst()
+            } else {
+                return self + pathComponent
+            }
+        } else {
+            if pathComponent.hasPrefix("/") {
+                return self + pathComponent
+            } else {
+                return self + "/" + pathComponent
+            }
+        }
+    }
+}
