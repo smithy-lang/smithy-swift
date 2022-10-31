@@ -18,19 +18,19 @@ public struct WaiterOptions {
     let maxDelay: TimeInterval?
 
     /// The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
-    let maximumWaitTime: TimeInterval
+    let maxWaitTime: TimeInterval
 
     /// Creates a new set of `WaiterOptions`
     /// - Parameters:
     ///   - minDelay: The minimum delay between retries while waiting.  If `nil`, the default for the `Waiter` is used.
     ///   - maxDelay: The maximum delay between retries while waiting.  If `nil`, the default for the `Waiter` is used.
-    ///   - maximumWaitTime: The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
+    ///   - maxWaitTime: The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
     public init(
         minDelay: TimeInterval? = nil,
         maxDelay: TimeInterval? = nil,
-        maximumWaitTime: TimeInterval
+        maxWaitTime: TimeInterval
     ) {
-        self.maximumWaitTime = maximumWaitTime
+        self.maxWaitTime = maxWaitTime
         self.minDelay = minDelay
         self.maxDelay = maxDelay
     }

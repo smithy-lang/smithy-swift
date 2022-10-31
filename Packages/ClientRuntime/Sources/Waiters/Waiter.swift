@@ -18,10 +18,6 @@ public class Waiter<Input, Output> {
     /// The operation that this waiter will call one or more times while waiting on the success condition.
     public let operation: (Input) async throws -> Output
 
-    /// Allows for advancing of time during waiter unit tests.
-    /// The default hook does nothing.
-    var postSchedulerUpdateHook: (WaiterScheduler) -> Void = { _ in }
-
     /// Creates a `waiter` object with the supplied config and operation.
     /// - Parameters:
     ///   - config: An instance of `WaiterConfiguration` that defines the default behavior of this waiter.
@@ -53,58 +49,27 @@ public class Waiter<Input, Output> {
         options: WaiterOptions,
         input: Input
     ) async throws -> WaiterOutcome<Output> {
+        let retryer = WaiterRetryer<Input, Output>()
+        let retryerContainer = WaiterRetryerContainer(retryer)
+        return try await waitUntil(options: options, input: input, retryerContainer: retryerContainer)
+    }
+
+    func waitUntil(
+        options: WaiterOptions,
+        input: Input,
+        retryerContainer: WaiterRetryerContainer<Input, Output>
+    ) async throws -> WaiterOutcome<Output> {
         let minDelay = options.minDelay ?? config.minDelay
         let maxDelay = options.maxDelay ?? config.maxDelay
-        let maximumWaitTime = options.maximumWaitTime
-        let scheduler = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maximumWaitTime: maximumWaitTime)
+        let maxWaitTime = options.maxWaitTime
+        let scheduler = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
 
         while !scheduler.isExpired {
-            // Find the required delay from the scheduler, and wait if required.
-            if scheduler.currentDelay > 0.0 {
-                try await Task.sleep(nanoseconds: UInt64(scheduler.currentDelay * 1_000_000_000.0))
+            if let result = try await retryerContainer.waitThenRequest(scheduler: scheduler, input: input, config: config, operation: operation) {
+                return result
             }
-
-            // Try the operation, collect the result & update the scheduler (for test use only) for this attempt.
-            let result = await Result<Output, Error>(catching: { try await operation(input) })
-            scheduler.updateAfterRetry()
-            postSchedulerUpdateHook(scheduler)
-
-            // Test the acceptors, to see if one matches.  Take the first match if there is one.
-            // If a match is found, take action as required.
-            if let match = config.acceptors.compactMap({ $0.evaluate(input: input, result: result) }).first {
-                switch match {
-                case .success(let lastResult):
-                    return WaiterOutcome(attempts: scheduler.attempt, result: lastResult)
-                case .failure(let lastResult):
-                    throw WaiterFailureError(attempts: scheduler.attempt, failedOnMatch: true, result: lastResult)
-                case .retry:
-                    break
-                }
-            // If no matching acceptor is found, fail if the result was an error.
-            } else if case .failure(let error) = result {
-                throw WaiterFailureError<Output>(
-                    attempts: scheduler.attempt,
-                    failedOnMatch: false,
-                    result: .failure(error)
-                )
-            }
-            // Loop back to the top for a retry.
         }
         // Waiting has expired, throw an error back to the caller
         throw WaiterTimeoutError(attempts: scheduler.attempt)
-    }
-}
-
-// MARK: - Helper methods
-
-fileprivate extension Result where Failure == Error {
-
-    /// The `Swift.Result` type has a similar initializer, but it is not asynchronous.
-    init(catching body: () async throws -> Success) async {
-        do {
-            self = .success(try await body())
-        } catch {
-            self = .failure(error)
-        }
     }
 }

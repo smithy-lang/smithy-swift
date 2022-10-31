@@ -13,142 +13,147 @@ fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 
 class WaiterTests: XCTestCase {
 
-    fileprivate class Mock {
-        var attempt = 0
-        var throwsOnOperation = false
+    fileprivate class WaiterRetryerMock: WaiterRetryerInterface {
+        typealias Input = String
+        typealias Output = String
 
-        /// Returns or throws "1" the first time it is called, then "2", "3", etc.
-        func operation(input: String) async throws -> String {
-            attempt += 1
-            if throwsOnOperation {
-                throw ClientError.unknownError("\(attempt)")
+        let returnVals: [WaiterOutcome<String>?]
+        var callCounter = 0
+        var scheduler: WaiterScheduler!
+        var errorToThrow: Error?
+
+        init(returnVals: [WaiterOutcome<String>?]) {
+            self.returnVals = returnVals
+        }
+
+        func waitThenRequest(
+            scheduler: WaiterScheduler,
+            input: Input, config: ClientRuntime.WaiterConfiguration<String, String>,
+            operation: (Input) async throws -> Output
+        ) async throws -> ClientRuntime.WaiterOutcome<String>? {
+            defer {
+                scheduler.updateAfterRetry()
+                callCounter += 1
+            }
+
+            // Save the scheduler so it can be tested for proper config
+            self.scheduler = scheduler
+
+            // Advance the scheduler clock to the time for the next request,
+            // so tests proceed with no delay
+            let now = scheduler.now()
+            let offset = scheduler.currentDelay
+            scheduler.now = { now + offset }
+
+            // Return or throw as needed
+            if let errorToThrow = errorToThrow {
+                throw errorToThrow
+            } else if callCounter < returnVals.count {
+                return returnVals[callCounter]
             } else {
-                return "\(attempt)"
+                return nil
             }
         }
-    }
-
-    /// This closure is to be used as a `postSchedulerUpdateHook` on the subject waiter during testing.
-    /// Sets the waiter's scheduler so that it is time for the next request to be made.
-    let waitEliminator = { (scheduler: WaiterScheduler) in
-        let nextRequestDate = scheduler.nextRequestDate
-        scheduler.now = { nextRequestDate }
     }
 
     // MARK: - waitUntil()
 
+    // MARK: - scheduler config
+
+    func test_scheduler_isConfiguredFromTheWaiterConfig() async throws {
+        let minDelay = TimeInterval.random(in: 2.0...10.0)
+        let maxDelay = TimeInterval.random(in: 20.0...30.0)
+        let maxWaitTime = TimeInterval.random(in: 60.0...120.0)
+        let mock = WaiterRetryerMock(returnVals: [WaiterOutcome.init(attempts: 1, result: .success("output"))])
+        let mockContainer = WaiterRetryerContainer(mock)
+        let config = config(minDelay: minDelay, maxDelay: maxDelay)
+        let options = WaiterOptions(maxWaitTime: maxWaitTime)
+        let subject = Waiter(config: config, operation: {_ in return "output" })
+        _ = try await subject.waitUntil(options: options, input: "input", retryerContainer: mockContainer)
+        XCTAssertEqual(mock.scheduler.minDelay, minDelay)
+        XCTAssertEqual(mock.scheduler.maxDelay, maxDelay)
+        XCTAssertEqual(mock.scheduler.maxWaitTime, maxWaitTime)
+    }
+
+    func test_scheduler_isConfiguredWithOverridesFromOptionsWhenProvided() async throws {
+        let minDelay = TimeInterval.random(in: 2.0...10.0)
+        let maxDelay = TimeInterval.random(in: 20.0...30.0)
+        let maxWaitTime = TimeInterval.random(in: 60.0...120.0)
+        let mock = WaiterRetryerMock(returnVals: [WaiterOutcome.init(attempts: 1, result: .success("output"))])
+        let mockContainer = WaiterRetryerContainer(mock)
+        let config = config(minDelay: minDelay, maxDelay: maxDelay)
+        let optionsMinDelay = TimeInterval.random(in: 2.0...10.0)
+        let optionsMaxDelay = TimeInterval.random(in: 20.0...30.0)
+        let options = WaiterOptions(minDelay: optionsMinDelay, maxDelay: optionsMaxDelay, maxWaitTime: maxWaitTime)
+        let subject = Waiter(config: config, operation: {_ in return "output" })
+        _ = try await subject.waitUntil(options: options, input: "input", retryerContainer: mockContainer)
+        XCTAssertEqual(mock.scheduler.minDelay, optionsMinDelay)
+        XCTAssertEqual(mock.scheduler.maxDelay, optionsMaxDelay)
+        XCTAssertEqual(mock.scheduler.maxWaitTime, maxWaitTime)
+    }
+
     // MARK: success
 
-    func test_waitUntil_returnsSuccessWhenSuccessConditionMet() async throws {
-        let config = try config(succeedOn: .success("1"))
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        let result = try await subject.waitUntil(options: options, input: "input")
-        XCTAssertEqual(result, .init(attempts: 1, result: .success("1")))
+    func test_waitUntil_returnsSuccessWhenRetryerSignalsSuccess() async throws {
+        let success = WaiterOutcome(attempts: 1, result: .success("output"))
+        let mockContainer = mockContainer(returnVals: [success])
+        let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" })
+        let result = try await subject.waitUntil(options: options, input: "input", retryerContainer: mockContainer)
+        XCTAssertEqual(result, success)
     }
 
     // MARK: retry
 
-    func test_waitUntil_retriesOnSuccessByDefault() async throws {
-        let config = try config(succeedOn: .success("4"))
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        let result = try await subject.waitUntil(options: options, input: "input")
-        XCTAssertEqual(result, .init(attempts: 4, result: .success("4")))
-    }
-
-    func test_waitUntil_retriesUntilRetryConditionMet() async throws {
-        let config = try config(succeedOn: .success("3"))
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        let result = try await subject.waitUntil(options: options, input: "input")
-        XCTAssertEqual(result, .init(attempts: 3, result: .success("3")))
+    func test_waitUntil_retriesWhenRetryerSignalsRetry() async throws {
+        let outcomes: [WaiterOutcome<String>?] = [
+            nil,
+            nil,
+            WaiterOutcome(attempts: 3, result: .success("output"))
+        ]
+        let mock = WaiterRetryerMock(returnVals: outcomes)
+        let mockContainer = WaiterRetryerContainer(mock)
+        let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" })
+        let result = try await subject.waitUntil(options: options, input: "input", retryerContainer: mockContainer)
+        XCTAssertEqual(result, outcomes.last!)
     }
 
     // MARK: - failure
 
-    func test_waitUntil_throwsWhenFailureIsMatched() async throws {
-        let config = try config(failOn: .success("3"))
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) { error in
-            guard let waiterFailureError = error as? WaiterFailureError<String> else {
-                XCTFail("Error is not of expected type"); return
-            }
-            let expectedError = WaiterFailureError<String>(attempts: 3, failedOnMatch: true, result: .success("3"))
-            XCTAssertEqual(waiterFailureError, expectedError)
+    func test_waitUntil_failsWhenRetryerReturnsAnError() async throws {
+        let mock = WaiterRetryerMock(returnVals: [nil])
+        mock.errorToThrow = ClientError.unknownError(UUID().uuidString)
+        let mockContainer = WaiterRetryerContainer(mock)
+        let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" })
+        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input", retryerContainer: mockContainer)) {
+            XCTAssertEqual($0.localizedDescription, mock.errorToThrow?.localizedDescription)
         }
     }
-
-    func test_waitUntil_throwsWhenUnmatchedErrorIsThrownByOperation() async throws {
-        let config = try config()
-        let mockThatThrows = Mock()
-        mockThatThrows.throwsOnOperation = true
-        let subject = Waiter(config: config, operation: mockThatThrows.operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) { error in
-            guard let waiterFailureError = error as? WaiterFailureError<String> else {
-                XCTFail("Error is not of expected type"); return
-            }
-            let expectedError = WaiterFailureError<String>(attempts: 1, failedOnMatch: false, result: .failure(ClientError.unknownError("1")))
-            XCTAssertEqual(waiterFailureError, expectedError)
-        }
-    }
-
     // MARK: - timeout
 
-    func test_waitUntil_retriesUntilTimeoutIfNoSuccessOrFailure() async throws {
-        let config = try config()
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        subject.postSchedulerUpdateHook = waitEliminator
-        let options = WaiterOptions(maximumWaitTime: 120.0)
-        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) { error in
-            XCTAssert(error is WaiterTimeoutError)
+    func test_waitUntil_throwsATimeoutErrorOnTimeout() async throws {
+        let mock = WaiterRetryerMock(returnVals: [nil])
+        let mockContainer = WaiterRetryerContainer(mock)
+        let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" })
+        let closure: () async throws -> Void = {
+            while true {
+                _ = try await subject.waitUntil(options: self.options, input: "input", retryerContainer: mockContainer)
+            }
+        }
+        await XCTAssertThrowsErrorAsync(try await closure()) {
+            XCTAssert($0 is WaiterTimeoutError)
         }
     }
 
-    // MARK: - Helper functions
+    // MARK: - Helpers
 
-    /// Returns a `WaiterConfig` with acceptors suitable for use in the test being performed.
-    private func config(
-        succeedOn succeedResult: Result<String, Error>? = nil,
-        retryOn retryResult: Result<String, Error>? = nil,
-        failOn failureResult: Result<String, Error>? = nil
-    ) throws -> WaiterConfiguration<String, String> {
-        var acceptors = [Acceptor]()
-
-        // Add acceptors for the specified conditions
-        if let succeedResult = succeedResult {
-            acceptors.append(Acceptor(state: .success, matcher: { $1 == succeedResult }))
-        }
-        if let retryResult = retryResult {
-            acceptors.append(Acceptor(state: .retry, matcher: { $1 == retryResult }))
-        }
-        if let failureResult = failureResult {
-            acceptors.append(Acceptor(state: .failure, matcher: { $1 == failureResult }))
-        }
-
-        // This acceptor satisfies the "one success" requirement even though it never matches
-        acceptors.append(Acceptor(state: .success, matcher: { _, _ in return false }))
-
-        return try WaiterConfiguration(minDelay: 2.0, maxDelay: 10.0, acceptors: acceptors)
+    func config(minDelay: TimeInterval = 1.0, maxDelay: TimeInterval = 4.0) -> WaiterConfiguration<String, String> {
+        let acceptor = Acceptor(state: .success, matcher: { _, _ in return true })
+        return try! WaiterConfiguration<String, String>(minDelay: minDelay, maxDelay: maxDelay, acceptors: [acceptor])
     }
-}
 
-/// An async version of `XCTAssertThrowsError`.
-fileprivate func XCTAssertThrowsErrorAsync(
-    _ exp: @autoclosure () async throws -> Void,
-    _ block: (Error) -> Void
-) async {
-    do {
-        try await exp()
-        XCTFail("Should have thrown error")
-    } catch {
-        block(error)
+    let options = WaiterOptions(maxWaitTime: 8.0)
+
+    func mockContainer(returnVals: [WaiterOutcome<String>?]) -> WaiterRetryerContainer<String, String> {
+        WaiterRetryerContainer(WaiterRetryerMock(returnVals: returnVals))
     }
 }

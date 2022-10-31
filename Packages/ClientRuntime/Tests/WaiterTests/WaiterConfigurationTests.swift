@@ -11,7 +11,7 @@ import XCTest
 
 fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 
-class WaiterConfigTests: XCTestCase {
+class WaiterConfigurationTests: XCTestCase {
     private let acceptors = [Acceptor(state: .success, matcher: { _, _ in return true })]
 
     func test_init_minDelayDefaultsTo2WhenNotGiven() async throws {

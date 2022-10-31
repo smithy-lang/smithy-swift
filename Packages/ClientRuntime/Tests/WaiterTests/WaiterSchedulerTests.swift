@@ -12,13 +12,13 @@ import XCTest
 class WaiterSchedulerTests: XCTestCase {
 
     func test_immediateRequestToBeMadeOnCreation() async throws {
-        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maximumWaitTime: 360.0)
+        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maxWaitTime: 360.0)
         XCTAssertEqual(subject.currentDelay, 0.0)
         XCTAssertFalse(subject.isExpired)
     }
 
     func test_updateAfterRetry_updatesAttemptAfterCall() async throws {
-        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maximumWaitTime: 360.0)
+        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maxWaitTime: 360.0)
         let base = Date()
         subject.now = { base }
         XCTAssertEqual(subject.attempt, 0)
@@ -29,7 +29,7 @@ class WaiterSchedulerTests: XCTestCase {
     }
 
     func test_updateAfterRetry_setsExpiredWhenCalledAfterMaxTime() async throws {
-        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maximumWaitTime: 360.0)
+        let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maxWaitTime: 360.0)
         let base = Date()
         subject.now = { base }
         subject.updateAfterRetry()
@@ -46,10 +46,10 @@ class WaiterSchedulerTests: XCTestCase {
             // Generate random settings for the scheduler
             let minDelay = TimeInterval.random(in: 5.0...10.0)
             let maxDelay = TimeInterval.random(in: 10.0...20.0)
-            let maximumWaitTime = TimeInterval.random(in: 20.0...240.0)
+            let maxWaitTime = TimeInterval.random(in: 20.0...240.0)
 
             // Create a test subject, and mock its current time
-            let subject = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maximumWaitTime: maximumWaitTime)
+            let subject = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
 
             // Simulate the passage of time by replacing the now() closure on subject
             let base = Date()
@@ -73,7 +73,7 @@ class WaiterSchedulerTests: XCTestCase {
                 elapsed += delay + requestInflightTime
 
                 // Ensure a request never takes place after the max wait time expires
-                XCTAssert(elapsed < subject.maximumWaitTime)
+                XCTAssert(elapsed < subject.maxWaitTime)
             }
         }
     }

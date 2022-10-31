@@ -18,7 +18,7 @@ class WaiterScheduler {
     /// The maximum delay between retries while waiting.
     let maxDelay: TimeInterval
     /// The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
-    let maximumWaitTime: TimeInterval
+    let maxWaitTime: TimeInterval
 
     /// Returns the current Date.  For testing, this closure may be replaced to provide simulated time.
     var now: () -> Date = { Date() }
@@ -39,11 +39,11 @@ class WaiterScheduler {
     init(
         minDelay: TimeInterval,
         maxDelay: TimeInterval,
-        maximumWaitTime: TimeInterval
+        maxWaitTime: TimeInterval
     ) {
         self.minDelay = minDelay
         self.maxDelay = maxDelay
-        self.maximumWaitTime = maximumWaitTime
+        self.maxWaitTime = maxWaitTime
     }
 
     var currentDelay: TimeInterval {
@@ -52,7 +52,7 @@ class WaiterScheduler {
 
     private var remainingTime: TimeInterval {
         let totalElapsedTime = now().timeIntervalSince(startDate)
-        return maximumWaitTime - totalElapsedTime
+        return maxWaitTime - totalElapsedTime
     }
 
     func updateAfterRetry() {

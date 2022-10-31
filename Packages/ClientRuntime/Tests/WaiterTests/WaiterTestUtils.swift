@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import XCTest
 @testable import ClientRuntime
 
 // In tests, waiters are used with String as Input & String as Output
@@ -53,5 +54,18 @@ extension WaiterFailureError: Equatable where Output == String {
 
     public static func ==(lhs: WaiterFailureError, rhs: WaiterFailureError) -> Bool {
         lhs.attempts == rhs.attempts && lhs.failedOnMatch == rhs.failedOnMatch && lhs.result == rhs.result
+    }
+}
+
+/// An async version of `XCTAssertThrowsError`.
+func XCTAssertThrowsErrorAsync(
+    _ exp: @autoclosure () async throws -> Void,
+    _ block: (Error) -> Void
+) async {
+    do {
+        try await exp()
+        XCTFail("Should have thrown error")
+    } catch {
+        block(error)
     }
 }
