@@ -121,7 +121,7 @@ class StringExtensionsTests: XCTestCase {
     func testAppendingPathComponent_NonePresent() {
         let path = ""
         let component = ""
-        let expected = ""
+        let expected = "/"
         XCTAssertEqual(path.appendingPathComponent(component), expected)
     }
 }

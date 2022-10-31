@@ -130,18 +130,25 @@ public extension String {
     /// - Parameter pathComponent: The path component to append to the string
     /// - Returns: The string with the path component appended
     func appendingPathComponent(_ pathComponent: String) -> String {
+        let path: String
         if self.hasSuffix("/") {
             if pathComponent.hasPrefix("/") {
-                return self + pathComponent.dropFirst()
+                path = self + pathComponent.dropFirst()
             } else {
-                return self + pathComponent
+                path = self + pathComponent
             }
         } else {
             if pathComponent.hasPrefix("/") {
-                return self + pathComponent
+                path = self + pathComponent
             } else {
-                return self + "/" + pathComponent
+                path = self + "/" + pathComponent
             }
+        }
+
+        if path.count > 1 && path.hasSuffix("/") {
+            return String(path.dropLast())
+        } else {
+            return path
         }
     }
 }
