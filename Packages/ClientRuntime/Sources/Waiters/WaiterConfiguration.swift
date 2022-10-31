@@ -33,7 +33,8 @@ public struct WaiterConfiguration<Input, Output> {
         acceptors: [Acceptor]
     ) throws {
         guard acceptors.filter({ $0.state == .success }).count >= 1 else {
-            throw WaiterConfigurationError(localizedDescription: "There must be at least one Acceptor with a success state")
+            let localizedDescription = "There must be at least one Acceptor with a success state"
+            throw WaiterConfigurationError(localizedDescription: localizedDescription)
         }
         self.minDelay = minDelay ?? 2.0
         self.maxDelay = maxDelay ?? 120.0
