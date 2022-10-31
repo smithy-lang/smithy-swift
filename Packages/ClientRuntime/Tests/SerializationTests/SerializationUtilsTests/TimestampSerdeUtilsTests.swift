@@ -31,6 +31,26 @@ class TimestampSerdeUtilsTests: XCTestCase {
     
     // MARK: - Encoding Tests
     
+    func test_timestampEncodable_encodesDateAsExpectedForEachFormat() throws {
+        let subjects: [(TimestampFormat, Date, String)] = [
+            (.epochSeconds, testDateWithFractionalSeconds, "673351930.12300003"),
+            (.epochSeconds, testDateWithoutFractionalSeconds, "673351930"),
+            (.dateTime, testDateWithFractionalSeconds, "\"1991-05-04T10:12:10.123Z\""),
+            (.dateTime, testDateWithoutFractionalSeconds, "\"1991-05-04T10:12:10Z\""),
+            (.httpDate, testDateWithFractionalSeconds, "\"Sat, 04 May 1991 10:12:10.123 GMT\""),
+            (.httpDate, testDateWithoutFractionalSeconds, "\"Sat, 04 May 1991 10:12:10 GMT\"")
+        ]
+        
+        let encoder = JSONEncoder()
+        
+        for (format, date, expectedValue) in subjects {
+            let timestampEncodable = TimestampEncodable(date: date, format: format)
+            let data = try encoder.encode(timestampEncodable)
+            let dataAsString = String(data: data, encoding: .utf8)!
+            XCTAssertEqual(dataAsString, expectedValue)
+        }
+    }
+    
     func test_encodeTimeStamp_forKeyedContainer_returnsExpectedValue() throws {
         let encoder = JSONEncoder()
         

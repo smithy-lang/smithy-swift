@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import func Foundation.floor
+
 /// Custom timestamp serialization formats
 /// https://awslabs.github.io/smithy/1.0/spec/core/protocol-traits.html#timestampformat-trait
 public enum TimestampFormat: CaseIterable {
@@ -20,6 +22,7 @@ public enum TimestampFormat: CaseIterable {
 
 // MARK: - Encoding Helpers
 
+/// A struct to encapsulate the encoding logic for Timestamps
 struct TimestampEncodable: Encodable {
     let date: Date
     let format: TimestampFormat
@@ -29,15 +32,24 @@ struct TimestampEncodable: Encodable {
         self.format = format
     }
     
+    /// Encodes the date according to the format.
+    /// If the date contains fractional seconds, then this encodes the date with the fractional seconds included (up-to milliseocnd precision)
+    /// otherwise it encodes the date in the corresponding format that excludes fractional seconds
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch format {
         case .epochSeconds:
             try container.encode(date.timeIntervalSince1970)
         case .dateTime:
-            try container.encode(date.iso8601WithFractionalSeconds())
+            let dateString = date.hasFractionalSeconds
+            ? date.iso8601WithFractionalSeconds()
+            : date.iso8601WithoutFractionalSeconds()
+            try container.encode(dateString)
         case .httpDate:
-            try container.encode(date.rfc5322WithFractionalSeconds())
+            let dateString = date.hasFractionalSeconds
+            ? date.rfc5322WithFractionalSeconds()
+            : date.rfc5322WithoutFractionalSeconds()
+            try container.encode(dateString)
         }
     }
 }
@@ -232,5 +244,10 @@ extension ClientRuntime.Date {
             }
         }
         return nil
+    }
+    
+    /// Returns true if the date contains non-zero values for fractional seconds, otherwise returns false.
+    var hasFractionalSeconds: Bool {
+        timeIntervalSince1970 != Foundation.floor(timeIntervalSince1970)
     }
 }
