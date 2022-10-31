@@ -7,14 +7,15 @@
 
 import Foundation
 
-
 /// The interface for the type which delays per the wait schedule, performs the request, and evaluates the result.
-/// Called by the `Waiter` to make the initial request, then called again for an additional request when retry is needed.
-/// The protocol allows `WaiterRetryer` to be mocked for testing.
+/// Called by the `Waiter` to make the initial request, then called again for an additional request when retry
+/// is needed.
+/// Having a retryer protocol allows `WaiterRetryer` to be mocked for testing.
 protocol WaiterRetryerInterface {
     associatedtype RetryerInput
     associatedtype RetryerOutput
 
+    ///
     func waitThenRequest(
         scheduler: WaiterScheduler,
         input: RetryerInput,
@@ -29,22 +30,39 @@ class WaiterRetryerContainer<Input, Output>: WaiterRetryerInterface {
     typealias RetryerInput = Input
     typealias RetryerOutput = Output
 
-    let closure: (WaiterScheduler, RetryerInput, WaiterConfiguration<RetryerInput, RetryerOutput>, (RetryerInput) async throws -> RetryerOutput) async throws -> WaiterOutcome<RetryerOutput>?
+    let closure: (WaiterScheduler,
+                  RetryerInput,
+                  WaiterConfiguration<RetryerInput, RetryerOutput>,
+                  (RetryerInput) async throws -> RetryerOutput
+    ) async throws -> WaiterOutcome<RetryerOutput>?
 
-    init<T: WaiterRetryerInterface>(_ inner: T) where T.RetryerInput == RetryerInput, T.RetryerOutput == RetryerOutput {
+    init<T: WaiterRetryerInterface>(
+        _ inner: T
+    ) where T.RetryerInput == RetryerInput, T.RetryerOutput == RetryerOutput {
         self.closure = inner.waitThenRequest(scheduler:input:config:operation:)
     }
 
-    func waitThenRequest(scheduler: WaiterScheduler, input: Input, config: WaiterConfiguration<Input, Output>, operation: (Input) async throws -> Output) async throws -> WaiterOutcome<Output>? {
+    func waitThenRequest(
+        scheduler: WaiterScheduler,
+        input: Input,
+        config: WaiterConfiguration<Input, Output>,
+        operation: (Input) async throws -> Output
+    ) async throws -> WaiterOutcome<Output>? {
         try await closure(scheduler, input, config, operation)
     }
 }
 
+/// A type which tries the waited operation after a delay, then returns or throws the result.
 class WaiterRetryer<Input, Output>: WaiterRetryerInterface {
     typealias RetryerInput = Input
     typealias RetryerOutput = Output
 
-    func waitThenRequest(scheduler: WaiterScheduler, input: Input, config: WaiterConfiguration<Input, Output>, operation: (Input) async throws -> Output) async throws -> WaiterOutcome<Output>? {
+    func waitThenRequest(
+        scheduler: WaiterScheduler,
+        input: Input,
+        config: WaiterConfiguration<Input, Output>,
+        operation: (Input) async throws -> Output
+    ) async throws -> WaiterOutcome<Output>? {
         // Find the required delay from the scheduler, and wait if required.
         if scheduler.currentDelay > 0.0 {
             try await Task.sleep(nanoseconds: UInt64(scheduler.currentDelay * 1_000_000_000.0))
@@ -73,7 +91,7 @@ class WaiterRetryer<Input, Output>: WaiterRetryerInterface {
                 result: .failure(error)
             )
         }
-        // Since no acceptor match and the response was not an unhandled error,
+        // Since no acceptor matched and the response was not an unhandled error,
         // return nil to cause retry, if time remains
         return nil
     }

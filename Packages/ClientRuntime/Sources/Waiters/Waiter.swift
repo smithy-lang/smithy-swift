@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// An object used to wait on an operation until a desired state is reached, or until it is determined that the desired state will never be reached.
+/// An object used to wait on an operation until a desired state is reached, or until it is determined that
+/// the desired state will never be reached.
 /// Intended to be a generic type for use when waiting on any Smithy `operation`.
 /// May be reused for multiple waits, including concurrent operations.
 public class Waiter<Input, Output> {
@@ -65,7 +66,10 @@ public class Waiter<Input, Output> {
         let scheduler = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
 
         while !scheduler.isExpired {
-            if let result = try await retryerContainer.waitThenRequest(scheduler: scheduler, input: input, config: config, operation: operation) {
+            if let result = try await retryerContainer.waitThenRequest(scheduler: scheduler,
+                                                                       input: input,
+                                                                       config: config,
+                                                                       operation: operation) {
                 return result
             }
         }

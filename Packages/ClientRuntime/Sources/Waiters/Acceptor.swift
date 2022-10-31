@@ -59,11 +59,13 @@ extension WaiterConfiguration {
         /// `Acceptor.Match` encapsulates the action required by an `Acceptor` that matches the
         /// operation's response.
         public enum Match {
-            /// An `Acceptor` with `success` state matched an operation, and the associated value is that operation's result.
+            /// An `Acceptor` with `success` state matched an operation, and the associated value
+            /// is that operation's result.
             case success(Result<Output, Error>)
             /// An `Acceptor` with `retry` state matched an operation.
             case retry
-            /// An `Acceptor` with `failure` state matched an operation, and the associated value is that operation's result.
+            /// An `Acceptor` with `failure` state matched an operation, and the associated value
+            /// is that operation's result.
             case failure(Result<Output, Error>)
         }
     }
