@@ -96,4 +96,32 @@ class StringExtensionsTests: XCTestCase {
             XCTAssertEqual(string.substringBefore(":"), match)
         }
     }
+
+    func testAppendingPathComponent_BothPresent() {
+        let path = "/foo/bar"
+        let component = "/baz"
+        let expected = "/foo/bar/baz"
+        XCTAssertEqual(path.appendingPathComponent(component), expected)
+    }
+
+    func testAppendingPathComponent_FirstComponentPresent() {
+        let path = "/foo/bar"
+        let component = ""
+        let expected = "/foo/bar"
+        XCTAssertEqual(path.appendingPathComponent(component), expected)
+    }
+    
+    func testAppendingPathComponent_SecondComponentPresent() {
+        let path = ""
+        let component = "/baz"
+        let expected = "/baz"
+        XCTAssertEqual(path.appendingPathComponent(component), expected)
+    }
+
+    func testAppendingPathComponent_NonePresent() {
+        let path = ""
+        let component = ""
+        let expected = "/"
+        XCTAssertEqual(path.appendingPathComponent(component), expected)
+    }
 }
