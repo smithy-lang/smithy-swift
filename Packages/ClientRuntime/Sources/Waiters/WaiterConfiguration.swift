@@ -28,16 +28,16 @@ public struct WaiterConfiguration<Input, Output> {
     /// At least one `Acceptor` with the `success` state must be supplied.
     /// - Throws: `WaiterConfigurationError` if the `acceptors` do not include at least one member with state `success`.
     public init(
-        minDelay: TimeInterval?,
-        maxDelay: TimeInterval?,
-        acceptors: [Acceptor]
+        acceptors: [Acceptor],
+        minDelay: TimeInterval = 2.0,
+        maxDelay: TimeInterval = 120.0
     ) throws {
         guard acceptors.filter({ $0.state == .success }).count >= 1 else {
             let localizedDescription = "There must be at least one Acceptor with a success state"
             throw WaiterConfigurationError(localizedDescription: localizedDescription)
         }
-        self.minDelay = minDelay ?? 2.0
-        self.maxDelay = maxDelay ?? 120.0
+        self.minDelay = minDelay
+        self.maxDelay = maxDelay
         self.acceptors = acceptors
     }
 }

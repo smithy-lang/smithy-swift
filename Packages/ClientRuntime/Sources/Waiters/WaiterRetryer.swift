@@ -15,7 +15,6 @@ protocol WaiterRetryerInterface {
     associatedtype RetryerInput
     associatedtype RetryerOutput
 
-    ///
     func waitThenRequest(
         scheduler: WaiterScheduler,
         input: RetryerInput,
@@ -77,16 +76,16 @@ class WaiterRetryer<Input, Output>: WaiterRetryerInterface {
         if let match = config.acceptors.compactMap({ $0.evaluate(input: input, result: result) }).first {
             switch match {
             case .success(let lastResult):
-                return WaiterOutcome(attempts: scheduler.attempt, result: lastResult)
+                return WaiterOutcome(attempts: scheduler.attempts, result: lastResult)
             case .failure(let lastResult):
-                throw WaiterFailureError<Output>(attempts: scheduler.attempt, failedOnMatch: true, result: lastResult)
+                throw WaiterFailureError<Output>(attempts: scheduler.attempts, failedOnMatch: true, result: lastResult)
             case .retry:
                 return nil  // Returning nil causes retry, if time remains
             }
         // If no matching acceptor is found, fail if the result was an error.
         } else if case .failure(let error) = result {
             throw WaiterFailureError<Output>(
-                attempts: scheduler.attempt,
+                attempts: scheduler.attempts,
                 failedOnMatch: false,
                 result: .failure(error)
             )

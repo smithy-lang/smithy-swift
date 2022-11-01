@@ -74,6 +74,6 @@ public class Waiter<Input, Output> {
             }
         }
         // Waiting has expired, throw an error back to the caller
-        throw WaiterTimeoutError(attempts: scheduler.attempt)
+        throw WaiterTimeoutError(attempts: scheduler.attempts)
     }
 }

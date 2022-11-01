@@ -81,6 +81,6 @@ private func config(
     // This acceptor satisfies the "one success" requirement even though it never matches
     acceptors.append(Acceptor(state: .success, matcher: { _, _ in return false }))
 
-    return try WaiterConfiguration(minDelay: 2.0, maxDelay: 10.0, acceptors: acceptors)
+    return try WaiterConfiguration(acceptors: acceptors, minDelay: 2.0, maxDelay: 10.0)
 }
 

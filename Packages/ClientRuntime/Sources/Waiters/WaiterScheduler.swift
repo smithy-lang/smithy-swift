@@ -12,7 +12,7 @@ import Foundation
 /// After the first request, further requests are scheduled per the retry strategy formula
 /// published in the Smithy specification:
 /// https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries
-class WaiterScheduler {
+final class WaiterScheduler {
     /// The minimum delay between retries while waiting.
     let minDelay: TimeInterval
     /// The maximum delay between retries while waiting.
@@ -27,7 +27,7 @@ class WaiterScheduler {
     var nextRequestDate = Date.distantPast
     
     /// The number of requests ("attempts") that have been made by this waiter.
-    private(set) var attempt = 0
+    private(set) var attempts = 0
 
     /// Set to true once waiting has expired and no further attempts should be made.
     private(set) var isExpired = false
@@ -57,21 +57,22 @@ class WaiterScheduler {
 
     func updateAfterRetry() {
         // Update attempt number; the first request is 1.
-        attempt += 1
+        attempts += 1
 
         // The first time this method is called, set startDate
         // which is used to determine total elapsed time.
-        if attempt == 1 {
+        if attempts == 1 {
             startDate = now()
         }
 
         // Calculate & set the delay using the formula in the Smithy retry strategy:
+        // https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries
         var delay: TimeInterval
         let attemptCeiling = Int(((log(maxDelay / minDelay) / log(2.0)) + 1.0).rounded(.towardZero))
-        if attempt > attemptCeiling {
+        if attempts > attemptCeiling {
             delay = maxDelay
         } else {
-            delay = minDelay * pow(2.0, Double(attempt - 1))
+            delay = minDelay * pow(2.0, Double(attempts - 1))
         }
         delay = TimeInterval.random(in: minDelay...delay)
         if remainingTime - delay <= minDelay {

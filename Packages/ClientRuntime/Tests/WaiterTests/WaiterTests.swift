@@ -148,7 +148,7 @@ class WaiterTests: XCTestCase {
 
     func config(minDelay: TimeInterval = 1.0, maxDelay: TimeInterval = 4.0) -> WaiterConfiguration<String, String> {
         let acceptor = Acceptor(state: .success, matcher: { _, _ in return true })
-        return try! WaiterConfiguration<String, String>(minDelay: minDelay, maxDelay: maxDelay, acceptors: [acceptor])
+        return try! WaiterConfiguration<String, String>(acceptors: [acceptor], minDelay: minDelay, maxDelay: maxDelay)
     }
 
     let options = WaiterOptions(maxWaitTime: 8.0)

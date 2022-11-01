@@ -21,11 +21,11 @@ class WaiterSchedulerTests: XCTestCase {
         let subject = WaiterScheduler(minDelay: 2.0, maxDelay: 120.0, maxWaitTime: 360.0)
         let base = Date()
         subject.now = { base }
-        XCTAssertEqual(subject.attempt, 0)
+        XCTAssertEqual(subject.attempts, 0)
         subject.updateAfterRetry()
-        XCTAssertEqual(subject.attempt, 1)
+        XCTAssertEqual(subject.attempts, 1)
         subject.updateAfterRetry()
-        XCTAssertEqual(subject.attempt, 2)
+        XCTAssertEqual(subject.attempts, 2)
     }
 
     func test_updateAfterRetry_setsExpiredWhenCalledAfterMaxTime() async throws {
