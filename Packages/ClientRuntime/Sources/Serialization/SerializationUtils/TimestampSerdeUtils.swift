@@ -20,6 +20,70 @@ public enum TimestampFormat: CaseIterable {
     case httpDate
 }
 
+/// A formatter that converts between dates and their smithy timestamp string representations.
+public struct TimestampFormatter {
+    /// The timestamp serialization format
+    public var format: TimestampFormat
+    
+    /// Creates a formatter for the provided format
+    public init(format: TimestampFormat) {
+        self.format = format
+    }
+
+    
+    /// Creates and returns a smithy timestamp formatted string representation of the specified date.
+    /// For each format, the string will only contain fractional seconds if a non-zero value exists for fractional seconds.
+    ///
+    /// - Parameter date: The date to be represented.
+    /// - Returns: A smithy timestamp formatted string representing the date.
+    public func string(from date: Date) -> String {
+        switch format {
+        case .epochSeconds:
+            let seconds = date.timeIntervalSince1970
+            return date.hasFractionalSeconds
+            ? String(seconds)
+            : String(format: "%.0f", seconds)
+        case .dateTime:
+            return date.hasFractionalSeconds
+            ? date.iso8601WithFractionalSeconds()
+            : date.iso8601WithoutFractionalSeconds()
+        case .httpDate:
+            return date.hasFractionalSeconds
+            ? date.rfc5322WithFractionalSeconds()
+            : date.rfc5322WithoutFractionalSeconds()
+        }
+    }
+    
+    /// Creates and returns a date object from the specified smithy timestamp string representation.
+    ///
+    /// - Parameter string: The smithy timestamp formatted string representation of a date.
+    /// - Returns: A date object, or nil if no valid date was found.
+    public func date(from string: String) -> Date? {
+        // Fractional seconds may be optionally included
+        // therfore we need to attempt to get the date using both formatters (with fractional seconds and without)
+        switch format {
+        case .epochSeconds:
+            return Double(string).map(Date.init(timeIntervalSince1970:))
+        case .dateTime:
+            return Date(
+                from: string,
+                formatters: [
+                    .iso8601DateFormatterWithFractionalSeconds,
+                    .iso8601DateFormatterWithoutFractionalSeconds
+                ]
+            )
+        case .httpDate:
+            return Date(
+                from: string,
+                formatters: [
+                    .rfc5322WithFractionalSeconds,
+                    .rfc5322WithoutFractionalSeconds
+                ]
+            )
+        }
+    }
+}
+
 // MARK: - Encoding Helpers
 
 /// A struct to encapsulate the encoding logic for Timestamps
@@ -33,22 +97,14 @@ struct TimestampEncodable: Encodable {
     }
     
     /// Encodes the date according to the format.
-    /// If the date contains fractional seconds, then this encodes the date with the fractional seconds included (up-to milliseocnd precision)
-    /// otherwise it encodes the date in the corresponding format that excludes fractional seconds
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch format {
+        // We want epoch seconds to be encoded as a Double and not a string
         case .epochSeconds:
             try container.encode(date.timeIntervalSince1970)
-        case .dateTime:
-            let dateString = date.hasFractionalSeconds
-            ? date.iso8601WithFractionalSeconds()
-            : date.iso8601WithoutFractionalSeconds()
-            try container.encode(dateString)
-        case .httpDate:
-            let dateString = date.hasFractionalSeconds
-            ? date.rfc5322WithFractionalSeconds()
-            : date.rfc5322WithoutFractionalSeconds()
+        default:
+            let dateString = TimestampFormatter(format: format).string(from: date)
             try container.encode(dateString)
         }
     }
@@ -154,38 +210,15 @@ extension KeyedDecodingContainer {
         format: TimestampFormat,
         forKey key: KeyedDecodingContainer<K>.Key
     ) throws -> Date {
-        switch format {
-        case .epochSeconds:
-            guard let seconds = Double(string) else {
-                throw DecodingError.timestampError(
-                    forKey: key,
-                    in: self,
-                    dateAsString: string,
-                    format: .epochSeconds
-                )
-            }
-            return Date(timeIntervalSince1970: seconds)
-        case .dateTime:
-            guard let date = Date(iso8601: string) else {
-                throw DecodingError.timestampError(
-                    forKey: key,
-                    in: self,
-                    dateAsString: string,
-                    format: .dateTime
-                )
-            }
-            return date
-        case .httpDate:
-            guard let date = Date(rfc5322: string) else {
-                throw DecodingError.timestampError(
-                    forKey: key,
-                    in: self,
-                    dateAsString: string,
-                    format: .httpDate
-                )
-            }
-            return date
+        guard let date = TimestampFormatter(format: format).date(from: string) else {
+            throw DecodingError.timestampError(
+                forKey: key,
+                in: self,
+                dateAsString: string,
+                format: format
+            )
         }
+        return date
     }
 }
 
@@ -195,7 +228,7 @@ extension DecodingError {
         in container: C,
         dateAsString: String,
         format: TimestampFormat
-    ) -> DecodingError where C : KeyedDecodingContainerProtocol {
+    ) -> DecodingError where C: KeyedDecodingContainerProtocol {
         dataCorruptedError(
             forKey: key,
             in: container,
@@ -205,34 +238,6 @@ extension DecodingError {
 }
 
 extension ClientRuntime.Date {
-    /// Creates a date from a string in the ISO8601 respresentation.
-    /// This ensures a non-nil date is created regardless if the string contains fractional seconds or not.
-    /// Returns `nil` if it fails to create a date which usually means the string is not in a valid ISO8601 format
-    init?(iso8601: String) {
-        guard let date = Date(
-            from: iso8601,
-            formatters: [
-                .iso8601DateFormatterWithFractionalSeconds,
-                .iso8601DateFormatterWithoutFractionalSeconds
-            ]
-        ) else { return nil }
-        self = date
-    }
-    
-    /// Creates a date from a string in the RFC5322 respresentation.
-    /// This ensures a non-nil date is created regardless if the string contains fractional seconds or not.
-    /// Returns `nil` if it fails to create a date which usually means the string is not in a valid RFC5322 format
-    init?(rfc5322: String) {
-        guard let date = Date(
-            from: rfc5322,
-            formatters: [
-                .rfc5322WithFractionalSeconds,
-                .rfc5322WithoutFractionalSeconds
-            ]
-        ) else { return nil }
-        self = date
-    }
-    
     /// Creates a date from a string using the given formatters.
     /// The date returned will be from the first formatter, in the given formatters list, that is able to successfully convert the date to a string.
     /// Returns `nil` if the none of the given formatters were able to create a date from the given string or if formatters is empty.

@@ -20,11 +20,15 @@ extension DateFormatter {
     
     /// A date formatter that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.52Z)
     /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-    public static let iso8601DateFormatterWithFractionalSeconds = DateFormatter(fixedFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ")
+    public static let iso8601DateFormatterWithFractionalSeconds = DateFormatter(
+        fixedFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+    )
 
     /// A date formatter that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and without fractional seconds (for example, 1985-04-12T23:20:50Z)
     /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-    public static let iso8601DateFormatterWithoutFractionalSeconds = DateFormatter(fixedFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ")
+    public static let iso8601DateFormatterWithoutFractionalSeconds = DateFormatter(
+        fixedFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    )
     
     /// Creates a date formatter with a fixed format.
     /// The formatter's locale will be set to `en_US_POSIX` and the time zone to `UTC`

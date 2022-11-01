@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
@@ -77,20 +78,7 @@ class HttpResponseHeaders(
                         defaultTimestampFormat
                     )
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                        memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
-                        writer.write("if let ${headerDeclaration}Double = \$N(\$LHeaderValue) {", SwiftTypes.Double, memberName)
-                        writer.indent()
-                        writer.write("self.\$L = $memberValue", memberName)
-                        writer.dedent()
-                        writer.write("} else {")
-                        writer.indent()
-                        writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, memberName)
-                        writer.dedent()
-                        writer.write("}")
-                    } else {
-                        writer.write("self.\$L = $memberValue", memberName)
-                    }
+                    writer.write("self.\$L = $memberValue", memberName)
                 }
                 is ListShape -> {
                     // member > boolean, number, string, or timestamp
@@ -116,7 +104,6 @@ class HttpResponseHeaders(
                             )
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
-                                splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
                             "(${stringToDate("\$0", tsFormat)} ?? ${ClientRuntimeTypes.Core.Date}())"
@@ -197,10 +184,8 @@ class HttpResponseHeaders(
         }
     }
 
-    private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-        TimestampFormatTrait.Format.EPOCH_SECONDS -> "${ClientRuntimeTypes.Core.Date}(timeIntervalSince1970: $stringValue)"
-        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: $stringValue)"
-        TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
-        else -> throw CodegenException("unknown timestamp format: $tsFmt")
+    private fun stringToDate(stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
+        val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
+        return "TimestampFormatter(format: .${timestampFormat}).date(from: ${stringValue})"
     }
 }

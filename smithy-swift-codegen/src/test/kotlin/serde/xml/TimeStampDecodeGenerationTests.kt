@@ -67,7 +67,7 @@ class TimeStampDecodeGenerationTests {
                             for listContainer0 in nestedTimestampListContainer {
                                 listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(containerValues.timestampStringAsDate(timestampContainer1, format: .epochSeconds, forKey: .member))
+                                    try listBuffer0?.append(nestedTimestampListWrappedContainer.timestampStringAsDate(timestampContainer1, format: .epochSeconds, forKey: .member))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -112,7 +112,7 @@ class TimeStampDecodeGenerationTests {
                             for listContainer0 in nestedTimestampListContainer {
                                 listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(containerValues.timestampStringAsDate(timestampContainer1, format: .httpDate, forKey: .member))
+                                    try listBuffer0?.append(nestedTimestampListWrappedContainer.timestampStringAsDate(timestampContainer1, format: .httpDate, forKey: .member))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
@@ -156,7 +156,7 @@ class TimeStampDecodeGenerationTests {
                             for listContainer0 in nestedTimestampListContainer {
                                 listBuffer0 = [ClientRuntime.Date]()
                                 for timestampContainer1 in listContainer0 {
-                                    try listBuffer0?.append(containerValues.timestampStringAsDate(timestampContainer1, format: .epochSeconds, forKey: .member))
+                                    try listBuffer0?.append(nestedTimestampListWrappedContainer.timestampStringAsDate(timestampContainer1, format: .epochSeconds, forKey: .member))
                                 }
                                 if let listBuffer0 = listBuffer0 {
                                     nestedTimestampListBuffer?.append(listBuffer0)
