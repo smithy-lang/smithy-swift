@@ -143,6 +143,22 @@ extension SingleValueEncodingContainer {
     }
 }
 
+extension UnkeyedEncodingContainer {
+    /// Encodes the given date using the given format for the given key.
+    ///
+    /// - Parameters:
+    ///   - date: The date to encode
+    ///   - format: The timestamp format to determine how the date is formatted
+    ///   - key: The key to associate the date with
+    public mutating func encodeTimestamp(
+        _ date: Date,
+        format: TimestampFormat
+    ) throws {
+        let timestamp = TimestampEncodable(date: date, format: format)
+        try encode(timestamp)
+    }
+}
+
 // MARK: - Decoding Helpers
 
 extension KeyedDecodingContainer {
