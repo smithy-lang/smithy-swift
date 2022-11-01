@@ -18,9 +18,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 import software.amazon.smithy.swift.codegen.model.isBoxed

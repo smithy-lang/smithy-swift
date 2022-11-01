@@ -23,9 +23,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
@@ -110,7 +110,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
             }
             else -> {
-                renderSimpleShape(targetShape, memberName, containerName, null,false)
+                renderSimpleShape(targetShape, memberName, containerName, null, false)
             }
         }
     }
@@ -251,7 +251,7 @@ abstract class MemberShapeEncodeGenerator(
                     )
                 }
                 else -> {
-                    val keyEnumName = "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey${level})"
+                    val keyEnumName = "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey$level)"
                     renderSimpleShape(valueTargetShape, valueIterator, topLevelContainerName, keyEnumName, valueTargetShape.hasTrait(BoxTrait::class.java))
                 }
             }

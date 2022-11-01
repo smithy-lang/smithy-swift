@@ -1,10 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration.serde
 
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait.Format
-import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.model.isBoxed
 
 class TimestampEncodeGenerator(
     val container: String,
@@ -45,6 +42,6 @@ class TimestampDecodeGenerator(
             "forKey: ${this.codingKey}"
         )
         val argumentsAsString = arguments.joinToString(", ")
-        return "try ${this.container}.${decodeVerb}($argumentsAsString)"
+        return "try ${this.container}.$decodeVerb($argumentsAsString)"
     }
 }

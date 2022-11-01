@@ -186,6 +186,6 @@ class HttpResponseHeaders(
 
     private fun stringToDate(stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
         val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
-        return "TimestampFormatter(format: .${timestampFormat}).date(from: ${stringValue})"
+        return "TimestampFormatter(format: .$timestampFormat).date(from: $stringValue)"
     }
 }

@@ -103,7 +103,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
             when (nestedMemberTarget) {
                 is ListShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey,level + 1)
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey, level + 1)
                     writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
                         writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                     }
@@ -115,7 +115,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                     }
                 }
                 is SetShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey,level + 1)
+                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey, level + 1)
                     writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
                         writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
                     }
@@ -123,7 +123,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 is TimestampShape -> {
                     val timestampFormat = TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
                     val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                    val code = "${containerUsedForDecoding}.timestampStringAsDate($nestedContainerName, format: .${swiftTimestampName}, forKey: ${currentContainerKey})"
+                    val code = "$containerUsedForDecoding.timestampStringAsDate($nestedContainerName, format: .$swiftTimestampName, forKey: $currentContainerKey)"
                     writer.write("try $memberBuffer?.$insertMethod($code)")
                 }
                 else -> {
@@ -219,8 +219,8 @@ abstract class MemberShapeDecodeXMLGenerator(
                 is TimestampShape -> {
                     val timestampFormat = TimestampHelpers.getTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
                     val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                    val code = "try ${parentKeyedContainerName}.timestampStringAsDate($itemInContainerName.value, format: .${swiftTimestampName}, forKey: ${currentContainerKey})"
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = ${code}")
+                    val code = "try $parentKeyedContainerName.timestampStringAsDate($itemInContainerName.value, format: .$swiftTimestampName, forKey: $currentContainerKey)"
+                    writer.write("$memberBuffer?[$itemInContainerName.key] = $code")
                 }
                 else -> {
                     writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
@@ -245,12 +245,12 @@ abstract class MemberShapeDecodeXMLGenerator(
         val timestampFormat = TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
         val decodingCode = TimestampDecodeGenerator(
             containerName,
-            ".${memberName}",
+            ".$memberName",
             timestampFormat,
             memberTargetSymbol.isBoxed()
         ).generate()
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let ${decodedMemberName} = ${decodingCode}")
+        writer.write("let $decodedMemberName = $decodingCode")
         renderAssigningDecodedMember(memberName, decodedMemberName)
     }
 

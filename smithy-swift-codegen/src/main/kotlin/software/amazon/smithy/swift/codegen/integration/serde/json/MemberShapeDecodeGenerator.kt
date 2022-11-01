@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration.serde.json
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
@@ -42,12 +41,12 @@ abstract class MemberShapeDecodeGenerator(
         val timestampFormat = TimestampHelpers.getTimestampFormat(member, target, defaultTimestampFormat)
         val decodingCode = TimestampDecodeGenerator(
             containerName,
-            ".${memberName}",
+            ".$memberName",
             timestampFormat,
             true
         ).generate()
         val decodedMemberName = "${memberName}Decoded"
-        writer.write("let ${decodedMemberName} = ${decodingCode}")
+        writer.write("let $decodedMemberName = $decodingCode")
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
@@ -176,7 +175,7 @@ abstract class MemberShapeDecodeGenerator(
                     } else { // decode date as a string manually
                         val dateName = "date$level"
                         val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                        writer.write("let $dateName = try containerValues.timestampStringAsDate($iteratorName, format: .${swiftTimestampName}, forKey: .${topLevelMember.memberName})")
+                        writer.write("let $dateName = try containerValues.timestampStringAsDate($iteratorName, format: .$swiftTimestampName, forKey: .${topLevelMember.memberName})")
                         writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
                 }
@@ -285,7 +284,7 @@ abstract class MemberShapeDecodeGenerator(
                     } else { // decode date as a string manually
                         val dateName = "date$level"
                         val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                        writer.write("let $dateName = try containerValues.timestampStringAsDate($valueIterator, format: .${swiftTimestampName}, forKey: .${topLevelMember.memberName})")
+                        writer.write("let $dateName = try containerValues.timestampStringAsDate($valueIterator, format: .$swiftTimestampName, forKey: .${topLevelMember.memberName})")
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
                 }

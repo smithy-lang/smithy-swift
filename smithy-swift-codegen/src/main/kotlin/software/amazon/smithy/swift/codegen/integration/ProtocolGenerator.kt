@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -47,7 +46,7 @@ interface ProtocolGenerator {
         ): String {
             val stringDateTerminator = if (urlEncode) ".urlPercentEncoding()" else ""
             val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
-            return "TimestampFormatter(format: .${timestampFormat}).string(from: ${memberName})$stringDateTerminator"
+            return "TimestampFormatter(format: .$timestampFormat).string(from: $memberName)$stringDateTerminator"
         }
 
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
