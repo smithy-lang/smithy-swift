@@ -32,6 +32,10 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                                 try complexListArgContainer0.encode(greetingstruct0, forKey: ClientRuntime.Key(""))
                             }
                         }
+                        else {
+                            var complexListArgContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ComplexListArg"))
+                            try complexListArgContainer.encode("", forKey: ClientRuntime.Key(""))
+                        }
                     }
                     if let listArg = listArg {
                         if !listArg.isEmpty {
@@ -39,6 +43,10 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                                 var listArgContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArg.\(index0.advanced(by: 1))"))
                                 try listArgContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
+                        }
+                        else {
+                            var listArgContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArg"))
+                            try listArgContainer.encode("", forKey: ClientRuntime.Key(""))
                         }
                     }
                     if let listArgWithXmlName = listArgWithXmlName {
@@ -48,6 +56,10 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                                 try listArgWithXmlNameContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
                         }
+                        else {
+                            var listArgWithXmlNameContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Hi"))
+                            try listArgWithXmlNameContainer.encode("", forKey: ClientRuntime.Key(""))
+                        }
                     }
                     if let listArgWithXmlNameMember = listArgWithXmlNameMember {
                         if !listArgWithXmlNameMember.isEmpty {
@@ -55,6 +67,10 @@ class OnlyFlattenedListEncodeFormURLGeneratorTests {
                                 var listArgWithXmlNameMemberContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArgWithXmlNameMember.\(index0.advanced(by: 1))"))
                                 try listArgWithXmlNameMemberContainer0.encode(string0, forKey: ClientRuntime.Key(""))
                             }
+                        }
+                        else {
+                            var listArgWithXmlNameMemberContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("ListArgWithXmlNameMember"))
+                            try listArgWithXmlNameMemberContainer.encode("", forKey: ClientRuntime.Key(""))
                         }
                     }
                     try container.encode("Ec2QueryLists", forKey:ClientRuntime.Key("Action"))
