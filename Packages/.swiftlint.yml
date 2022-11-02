@@ -1,6 +1,6 @@
 excluded:
   - SmithyTestUtil/*
-  - ClientRuntime/Tests
+  - ClientRuntime/Tests/*
   - .build
 
 analyzer_rules:
