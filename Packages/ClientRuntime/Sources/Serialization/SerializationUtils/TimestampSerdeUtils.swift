@@ -100,9 +100,13 @@ struct TimestampEncodable: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch format {
-        // We want epoch seconds to be encoded as a Double and not a string
+        // We want epoch seconds to be encoded as a number and not a string
         case .epochSeconds:
-            try container.encode(date.timeIntervalSince1970)
+            // If the date doesn't have fractional seconds then encode as an Int
+            // so that it doesn't include a `.0` decimal
+            date.hasFractionalSeconds
+            ? try container.encode(date.timeIntervalSince1970)
+            : try container.encode(Int(date.timeIntervalSince1970))
         default:
             let dateString = TimestampFormatter(format: format).string(from: date)
             try container.encode(dateString)

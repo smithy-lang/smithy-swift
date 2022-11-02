@@ -198,24 +198,28 @@ open class HttpRequestTestBase: XCTestCase {
      /// - Parameter actual: Actual `HttpRequest` to compare against
      /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
      */
-    public func assertEqual(_ expected: ExpectedSdkHttpRequest,
-                            _ actual: SdkHttpRequest,
-                            _ assertEqualHttpBody: ((HttpBody?, HttpBody?) -> Void)? = nil) {
+    public func assertEqual(
+        _ expected: ExpectedSdkHttpRequest,
+        _ actual: SdkHttpRequest,
+        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) -> Void)? = nil,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         // assert headers match
-        assertHttpHeaders(expected.headers, actual.headers)
+        assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
         
-        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers)
+        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers, file: file, line: line)
         
-        assertRequiredHeaders(expected.requiredHeaders, actual.headers)
+        assertRequiredHeaders(expected.requiredHeaders, actual.headers, file: file, line: line)
         
-        assertQueryItems(expected.queryItems, actual.queryItems)
+        assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
         
-        XCTAssertEqual(expected.endpoint.path, actual.endpoint.path)
-        XCTAssertEqual(expected.endpoint.host, actual.endpoint.host)
-        XCTAssertEqual(expected.method, actual.method)
-        assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems)
+        XCTAssertEqual(expected.endpoint.path, actual.endpoint.path, file: file, line: line)
+        XCTAssertEqual(expected.endpoint.host, actual.endpoint.host, file: file, line: line)
+        XCTAssertEqual(expected.method, actual.method, file: file, line: line)
+        assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems, file: file, line: line)
         
-        assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems)
+        assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems, file: file, line: line)
         
         // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
         // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
@@ -224,13 +228,19 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
     
-    public func genericAssertEqualHttpBodyData(_ expected: HttpBody, _ actual: HttpBody, _ callback: (Data, Data) -> Void) {
+    public func genericAssertEqualHttpBodyData(
+        _ expected: HttpBody,
+        _ actual: HttpBody,
+        _ callback: (Data, Data) -> Void,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard case .success(let expectedData) = extractData(expected) else {
-            XCTFail("Failed to extract data from httpbody for expected")
+            XCTFail("Failed to extract data from httpbody for expected", file: file, line: line)
             return
         }
         guard case .success(let actualData) = extractData(actual) else {
-            XCTFail("Failed to extract data from httpbody for actual")
+            XCTFail("Failed to extract data from httpbody for actual", file: file, line: line)
             return
         }
         if shouldCompareData(expectedData, actualData) {
@@ -273,33 +283,43 @@ open class HttpRequestTestBase: XCTestCase {
     /// - Parameter expected: Expected `HttpHeaders`
     /// - Parameter actual: Actual `HttpHeaders` to compare against
     */
-    public func assertHttpHeaders(_ expected: Headers?, _ actual: Headers?) {
+    public func assertHttpHeaders(
+        _ expected: Headers?,
+        _ actual: Headers?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let expected = expected else {
             return
         }
         
         guard let actual = actual else {
-            XCTFail("There are expected headers and no actual headers.")
+            XCTFail("There are expected headers and no actual headers.", file: file, line: line)
             return
         }
         
         expected.headers.forEach { header in
-            XCTAssertTrue(actual.exists(name: header.name))
+            XCTAssertTrue(actual.exists(name: header.name), file: file, line: line)
             
             guard actual.values(for: header.name) != header.value else {
-                XCTAssertEqual(actual.values(for: header.name), header.value)
+                XCTAssertEqual(actual.values(for: header.name), header.value, file: file, line: line)
                 return
             }
             
             let actualValue = actual.values(for: header.name)?.joined(separator: ", ")
-            XCTAssertNotNil(actualValue)
+            XCTAssertNotNil(actualValue, file: file, line: line)
             
             let expectedValue = header.value.joined(separator: ", ")
-            XCTAssertEqual(actualValue, expectedValue)
+            XCTAssertEqual(actualValue, expectedValue, file: file, line: line)
         }
     }
     
-    public func assertForbiddenHeaders(_ expected: [String]?, _ actual: Headers) {
+    public func assertForbiddenHeaders(
+        _ expected: [String]?,
+        _ actual: Headers,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let expected = expected else {
             return
         }
@@ -309,11 +329,19 @@ open class HttpRequestTestBase: XCTestCase {
                            """
                            forbidden header found: \(forbiddenHeaderName):
                            \(String(describing: actual.value(for: forbiddenHeaderName)))
-                           """)
+                           """,
+                           file: file,
+                           line: line
+            )
         }
     }
     
-    public func assertRequiredHeaders(_ expected: [String]?, _ actual: Headers) {
+    public func assertRequiredHeaders(
+        _ expected: [String]?,
+        _ actual: Headers,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let expected = expected else {
             return
         }
@@ -323,31 +351,53 @@ open class HttpRequestTestBase: XCTestCase {
                           """
                           expected required header not found: \(requiredHeaderName):
                           \(String(describing: actual.value(for: requiredHeaderName)))
-                          """)
+                          """,
+                          file: file,
+                          line: line
+            )
         }
     }
     
-    public func assertQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+    public func assertQueryItems(
+        _ expected: [URLQueryItem]?,
+        _ actual: [URLQueryItem]?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let expectedQueryItems = expected else {
             return
         }
         guard let actualQueryItems = actual else {
-            XCTFail("actual query items in Endpoint is nil but expected are not")
+            XCTFail("actual query items in Endpoint is nil but expected are not", file: file, line: line)
             return
         }
         
         for expectedQueryItem in expectedQueryItems {
             let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
-            XCTAssertNotNil(values, "expected query parameter \(expectedQueryItem.name); no values found")
+            XCTAssertNotNil(
+                values,
+                "expected query parameter \(expectedQueryItem.name); no values found",
+                file: file,
+                line: line
+            )
             XCTAssertTrue(values.contains(expectedQueryItem.value),
                           """
-                          expected query name value pair not found: \(expectedQueryItem.name):
-                          \(String(describing: expectedQueryItem.value))
-                          """)
+                          expected query item not found.
+                          Expected Value: \(expectedQueryItem.value)
+                          Actual Values: \(values)
+                          """,
+                          file: file,
+                          line: line
+            )
         }
     }
     
-    public func assertForbiddenQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+    public func assertForbiddenQueryItems(
+        _ expected: [URLQueryItem]?,
+        _ actual: [URLQueryItem]?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let forbiddenQueryItems = expected else {
             return
         }
@@ -358,23 +408,34 @@ open class HttpRequestTestBase: XCTestCase {
         for forbiddenQueryItem in forbiddenQueryItems {
             XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name &&
                 $0.value == forbiddenQueryItem.value}),
-                           "forbidden query parameter item found:\(forbiddenQueryItem)")
+                           "forbidden query parameter item found:\(forbiddenQueryItem)",
+            file: file,
+            line: line
+            )
         }
     }
     
-    public func assertRequiredQueryItems(_ expected: [URLQueryItem]?, _ actual: [URLQueryItem]?) {
+    public func assertRequiredQueryItems(
+        _ expected: [URLQueryItem]?,
+        _ actual: [URLQueryItem]?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         guard let requiredQueryItems = expected else {
             return
         }
         guard let actualQueryItems = actual else {
-            XCTFail("actual query items in Endpoint is nil but required are not")
+            XCTFail("actual query items in Endpoint is nil but required are not", file: file, line: line)
             return
         }
         
         for requiredQueryItem in requiredQueryItems {
             XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name &&
                 $0.value == requiredQueryItem.value}),
-                          "expected required query parameter not found:\(requiredQueryItem)")
+                          "expected required query parameter not found:\(requiredQueryItem)",
+                          file: file,
+                          line: line
+            )
         }
     }
     
