@@ -41,13 +41,19 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
         val nestedContainer = "${memberName}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
-            if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
-                writer.openBlock("if !$memberName.isEmpty {", "}") {
+            writer.openBlock("if !$memberName.isEmpty {", "}") {
+                if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
                     renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
+                } else {
+                    writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    renderListMemberItems(memberName, memberTarget, nestedContainer)
                 }
-            } else {
-                writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-                renderListMemberItems(memberName, memberTarget, nestedContainer)
+            }
+            if (customizations.shouldSerializeEmptyLists()) {
+                writer.openBlock("else {", "}") {
+                    writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    writer.write("try $nestedContainer.encode(\"\", forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+                }
             }
         }
     }

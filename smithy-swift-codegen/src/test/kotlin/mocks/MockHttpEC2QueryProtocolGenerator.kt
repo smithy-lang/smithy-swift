@@ -60,6 +60,10 @@ class MockEc2QueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
     override fun customNameTraitGenerator(shape: Shape, defaultName: String): String {
         return Ec2QueryNameTraitGenerator.construct(shape, defaultName).toString()
     }
+
+    override fun shouldSerializeEmptyLists(): Boolean {
+        return true
+    }
 }
 
 class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
