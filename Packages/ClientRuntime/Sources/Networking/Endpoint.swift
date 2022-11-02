@@ -33,7 +33,7 @@ public struct Endpoint: Hashable {
         }
         
         self.init(host: host,
-                  path:  url.path,
+                  path: url.path,
                   port: Int16(url.port ?? 443),
                   queryItems: url.toQueryItems(),
                   protocolType: ProtocolType(rawValue: url.scheme ?? ProtocolType.https.rawValue),

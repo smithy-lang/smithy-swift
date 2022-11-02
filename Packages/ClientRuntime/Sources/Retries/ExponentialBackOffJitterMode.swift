@@ -16,7 +16,7 @@ public enum ExponentialBackOffJitterMode {
 extension ExponentialBackOffJitterMode {
     func toCRTType() -> CRTExponentialBackoffJitterMode {
         switch self {
-        case .default : return .default
+        case .default: return .default
         case .none: return .none
         case .full: return .full
         case .decorrelated: return .decorrelated

@@ -27,4 +27,4 @@ jobs:
       - name: Swift Lint ClientRuntime
         uses: norio-nomura/action-swiftlint@3.1.0
         with:
-          args: --path ./Packages
+          args: --path ./Packages --config ./Packages/.swiftlint.yml
