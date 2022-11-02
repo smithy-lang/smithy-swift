@@ -44,6 +44,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 writer.openBlock("if !$memberName.isEmpty {", "}") {
                     renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
                 }
+                if (customizations.shouldSerializeEmptyLists()) {
+                    val resolvedMemberName = customizations.customNameTraitGenerator(member, memberName)
+                    writer.openBlock("else {", "}") {
+                        writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                        writer.write("try $nestedContainer.encode(\"\", forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+                    }
+                }
             } else {
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                 renderListMemberItems(memberName, memberTarget, nestedContainer)
