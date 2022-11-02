@@ -9,6 +9,9 @@
   "test_steps": [
     "cd {source_dir} && swift test"
   ],
+  "pre_build_steps": [
+    "cd {source_dir}/target/build/deps/aws-sdk-swift && ./scripts/setup_for_crt_builder.sh"
+  ],
   "build_steps": [
     "{gradlew} build",
     "cd {source_dir} && swift build"
