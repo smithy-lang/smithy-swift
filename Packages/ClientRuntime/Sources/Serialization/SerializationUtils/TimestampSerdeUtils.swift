@@ -23,7 +23,7 @@ public enum TimestampFormat: CaseIterable {
 /// A formatter that converts between dates and their smithy timestamp string representations.
 public struct TimestampFormatter {
     /// The timestamp serialization format
-    public var format: TimestampFormat
+    let format: TimestampFormat
     
     /// Creates a formatter for the provided format
     public init(format: TimestampFormat) {
