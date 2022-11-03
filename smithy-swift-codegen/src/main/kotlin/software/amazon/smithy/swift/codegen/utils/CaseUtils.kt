@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.utils
 
+
 // taken from smithy-kotlin, which was originally taken from java sdk: https://github.com/awslabs/smithy-kotlin/blob/main/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/utils/CaseUtils.kt
 fun String.splitOnWordBoundaries(): List<String> {
     // adapted from Java v2 SDK CodegenNamingUtils.splitOnWordBoundaries
@@ -32,9 +33,25 @@ fun String.splitOnWordBoundaries(): List<String> {
     return result.split(" ")
 }
 
-fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.lowercase().replaceFirstChar { c -> c.uppercaseChar() } }
-
-fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowercaseChar() }
-
 // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String = toPascalCase()
+fun String.clientName(): String = toUpperCamelCase()
+
+fun String.toLowerCamelCase(): String {
+    val words = this.splitOnWordBoundaries()
+
+    // make first part lowercase
+    val firstWord = words.first().lowercase()
+
+    // join
+    return firstWord + words.drop(1).joinToString(separator = "")
+}
+
+fun String.toUpperCamelCase(): String {
+    val words = this.splitOnWordBoundaries()
+
+    // make first part uppercase
+    val firstWord = words.first().replaceFirstChar { c -> c.uppercaseChar() }
+
+    // join
+    return firstWord + words.drop(1).joinToString(separator = "")
+}

@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.utils.toPascalCase
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**
  * Represents a config field on a client config struct.
@@ -20,7 +20,7 @@ data class ConfigField(val memberName: String?, val type: Symbol, val propFormat
  */
 abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
-    open val typeName: String = "${serviceName.toPascalCase()}Configuration"
+    open val typeName: String = "${serviceName.toUpperCamelCase()}Configuration"
     open val typeProtocol: Symbol = Symbol.builder().name("${typeName}Protocol").build()
 
     open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
