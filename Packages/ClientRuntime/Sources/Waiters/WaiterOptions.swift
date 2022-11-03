@@ -26,9 +26,9 @@ public struct WaiterOptions {
     ///   - maxDelay: The maximum delay between retries while waiting.  If `nil`, the default for the `Waiter` is used.
     ///   - maxWaitTime: The maximum time to spend waiting for the retry to succeed, before a timeout error is thrown.
     public init(
+        maxWaitTime: TimeInterval,
         minDelay: TimeInterval? = nil,
-        maxDelay: TimeInterval? = nil,
-        maxWaitTime: TimeInterval
+        maxDelay: TimeInterval? = nil
     ) {
         self.maxWaitTime = maxWaitTime
         self.minDelay = minDelay
