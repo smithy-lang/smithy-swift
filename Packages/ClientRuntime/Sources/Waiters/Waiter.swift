@@ -19,6 +19,8 @@ public class Waiter<Input, Output> {
     /// The operation that this waiter will call one or more times while waiting on the success condition.
     public let operation: (Input) async throws -> Output
 
+    let retryer: WaiterRetryer<Input, Output>
+
     /// Creates a `waiter` object with the supplied config and operation.
     /// - Parameters:
     ///   - config: An instance of `WaiterConfiguration` that defines the default behavior of this waiter.
@@ -26,12 +28,31 @@ public class Waiter<Input, Output> {
     ///   takes an `Input` as its sole param & returns an `Output` asynchronously.
     ///   The `operation` closure throws an error if the operation cannot be performed or the
     ///   operation completes with an error.
-    public init(
+    public convenience init(
         config: WaiterConfiguration<Input, Output>,
         operation: @escaping (Input) async throws -> Output
     ) {
+        self.init(config: config, operation: operation, retryer: WaiterRetryer<Input, Output>())
+    }
+
+    /// The designated initializer for this class.  See public / convenience initializer for more details.
+    ///
+    /// Allows for creation with a custom retryer.
+    /// - Parameters:
+    ///   - config: An instance of `WaiterConfiguration` that defines the default behavior of this waiter.
+    ///   - operation: A closure that is called one or more times to perform the waiting operation;
+    ///   takes an `Input` as its sole param & returns an `Output` asynchronously.
+    ///   The `operation` closure throws an error if the operation cannot be performed or the
+    ///   operation completes with an error.
+    ///   - retryer: The `WaiterRetryer` to be used when polling the operation.
+    init(
+        config: WaiterConfiguration<Input, Output>,
+        operation: @escaping (Input) async throws -> Output,
+        retryer: WaiterRetryer<Input, Output>
+    ) {
         self.config = config
         self.operation = operation
+        self.retryer = retryer
     }
 
     /// Initiates waiting, retrying the operation if necessary until the wait succeeds, fails, or times out.
@@ -50,26 +71,16 @@ public class Waiter<Input, Output> {
         options: WaiterOptions,
         input: Input
     ) async throws -> WaiterOutcome<Output> {
-        let retryer = WaiterRetryer<Input, Output>()
-        let retryerContainer = WaiterRetryerContainer(retryer)
-        return try await waitUntil(options: options, input: input, retryerContainer: retryerContainer)
-    }
-
-    func waitUntil(
-        options: WaiterOptions,
-        input: Input,
-        retryerContainer: WaiterRetryerContainer<Input, Output>
-    ) async throws -> WaiterOutcome<Output> {
         let minDelay = options.minDelay ?? config.minDelay
         let maxDelay = options.maxDelay ?? config.maxDelay
         let maxWaitTime = options.maxWaitTime
         let scheduler = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
 
         while !scheduler.isExpired {
-            if let result = try await retryerContainer.waitThenRequest(scheduler: scheduler,
-                                                                       input: input,
-                                                                       config: config,
-                                                                       operation: operation) {
+            if let result = try await retryer.waitThenRequest(scheduler: scheduler,
+                                                              input: input,
+                                                              config: config,
+                                                              operation: operation) {
                 return result
             }
         }

@@ -28,15 +28,46 @@ class WaiterRetryerTests: XCTestCase {
         }
     }
 
+    func test_waitUntil_returnsSuccessWhenSuccessIsMatched() async throws {
+        let config = try config(succeedOn: .success("1"))
+        let subject = WaiterRetryer<String, String>()
+        let result = try await subject.waitThenRequest(
+            scheduler: WaiterScheduler(minDelay: 2.0, maxDelay: 10.0, maxWaitTime: 30.0),
+            input: "input",
+            config: config,
+            operation: Mock().operation(input:)
+        )
+        XCTAssertEqual(result, WaiterOutcome(attempts: 1, result: .success("1")))
+    }
+
+    func test_waitUntil_returnsNilWhenRetryIsMatched() async throws {
+        let config = try config(retryOn: .success("1"))
+        let subject = WaiterRetryer<String, String>()
+        let result = try await subject.waitThenRequest(
+            scheduler: WaiterScheduler(minDelay: 2.0, maxDelay: 10.0, maxWaitTime: 30.0),
+            input: "input",
+            config: config,
+            operation: Mock().operation(input:)
+        )
+        XCTAssertNil(result)
+    }
+
     func test_waitUntil_throwsWhenFailureIsMatched() async throws {
-        let config = try config(failOn: .success("3"))
-        let subject = Waiter(config: config, operation: Mock().operation(input:))
-        let options = WaiterOptions(maxWaitTime: 120.0)
-        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) { error in
+        let config = try config(failOn: .success("1"))
+        let subject = WaiterRetryer<String, String>()
+        let block: () async throws -> Void = {
+            _ = try await subject.waitThenRequest(
+                scheduler: WaiterScheduler(minDelay: 2.0, maxDelay: 10.0, maxWaitTime: 30.0),
+                input: "input",
+                config: config,
+                operation: Mock().operation(input:)
+            )
+        }
+        await XCTAssertThrowsErrorAsync(try await block()) { error in
             guard let waiterFailureError = error as? WaiterFailureError<String> else {
                 XCTFail("Error is not of expected type"); return
             }
-            let expectedError = WaiterFailureError<String>(attempts: 3, failedOnMatch: true, result: .success("3"))
+            let expectedError = WaiterFailureError<String>(attempts: 1, failedOnMatch: true, result: .success("1"))
             XCTAssertEqual(waiterFailureError, expectedError)
         }
     }
@@ -45,9 +76,16 @@ class WaiterRetryerTests: XCTestCase {
         let config = try config()
         let mockThatThrows = Mock()
         mockThatThrows.throwsOnOperation = true
-        let subject = Waiter(config: config, operation: mockThatThrows.operation(input:))
-        let options = WaiterOptions(maxWaitTime: 120.0)
-        await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) { error in
+        let subject = WaiterRetryer<String, String>()
+        let block: () async throws -> Void = {
+            _ = try await subject.waitThenRequest(
+                scheduler: WaiterScheduler(minDelay: 2.0, maxDelay: 10.0, maxWaitTime: 30.0),
+                input: "input",
+                config: config,
+                operation: mockThatThrows.operation(input:)
+            )
+        }
+        await XCTAssertThrowsErrorAsync(try await block()) { error in
             guard let waiterFailureError = error as? WaiterFailureError<String> else {
                 XCTFail("Error is not of expected type"); return
             }
