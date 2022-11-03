@@ -6,7 +6,7 @@
 //
 
 /// Thrown when a `WaiterConfiguration` is constructed with invalid parameters.
-struct WaiterConfigurationError: Error {
+public struct WaiterConfigurationError: Error {
     var localizedDescription: String?
 }
 

@@ -21,6 +21,13 @@ public class Waiter<Input, Output> {
 
     let retryer: WaiterRetryer<Input, Output>
 
+    /// Block that creates a `WaiterScheduler` with the supplied params.
+    /// May be replaced with a different block for testing.
+    var schedulerFactory = { (minDelay: TimeInterval, maxDelay: TimeInterval, maxWaitTime: TimeInterval)
+        -> WaiterScheduler in
+        return WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
+    }
+
     /// Creates a `waiter` object with the supplied config and operation.
     /// - Parameters:
     ///   - config: An instance of `WaiterConfiguration` that defines the default behavior of this waiter.
@@ -74,7 +81,7 @@ public class Waiter<Input, Output> {
         let minDelay = options.minDelay ?? config.minDelay
         let maxDelay = options.maxDelay ?? config.maxDelay
         let maxWaitTime = options.maxWaitTime
-        let scheduler = WaiterScheduler(minDelay: minDelay, maxDelay: maxDelay, maxWaitTime: maxWaitTime)
+        let scheduler = schedulerFactory(minDelay, maxDelay, maxWaitTime)
 
         while !scheduler.isExpired {
             if let result = try await retryer.waitThenRequest(scheduler: scheduler,

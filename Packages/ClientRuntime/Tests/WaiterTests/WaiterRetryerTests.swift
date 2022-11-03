@@ -28,6 +28,22 @@ class WaiterRetryerTests: XCTestCase {
         }
     }
 
+    func test_waitUntil_updatesTheSchedulerForTheNextAttempt() async throws {
+        let config = try config(retryOn: .success("1"))
+        let subject = WaiterRetryer<String, String>()
+        let scheduler = WaiterScheduler(minDelay: 2.0, maxDelay: 10.0, maxWaitTime: 30.0)
+        XCTAssertEqual(scheduler.attempts, 0)
+        XCTAssertEqual(scheduler.currentDelay, 0.0)
+        _ = try await subject.waitThenRequest(
+            scheduler: scheduler,
+            input: "input",
+            config: config,
+            operation: Mock().operation(input:)
+        )
+        XCTAssertEqual(scheduler.attempts, 1)
+        XCTAssertTrue(scheduler.currentDelay > 0.0)
+    }
+
     func test_waitUntil_returnsSuccessWhenSuccessIsMatched() async throws {
         let config = try config(succeedOn: .success("1"))
         let subject = WaiterRetryer<String, String>()

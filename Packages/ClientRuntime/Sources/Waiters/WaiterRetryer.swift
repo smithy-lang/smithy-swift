@@ -11,15 +11,15 @@ import Foundation
 /// Called by the `Waiter` to make the initial request, then called again for an additional request when retry
 /// is needed.
 /// A custom closure may be injected at initialization to allow `WaiterRetryer` to be used as a mock.
-class WaiterRetryer<Input, Output> {
+struct WaiterRetryer<Input, Output> {
     typealias WaitThenRequest =
         (WaiterScheduler, Input, WaiterConfiguration<Input, Output>, (Input) async throws -> Output)
             async throws -> WaiterOutcome<Output>?
 
-    private let closure: WaitThenRequest
+    private let waitThenRequest: WaitThenRequest
 
-    init(closure: @escaping WaitThenRequest = WaiterRetryer.waitThenRequest) {
-        self.closure = closure
+    init(_ waitThenRequest: @escaping WaitThenRequest = WaiterRetryer.waitThenRequest) {
+        self.waitThenRequest = waitThenRequest
     }
 
     func waitThenRequest(
@@ -28,7 +28,7 @@ class WaiterRetryer<Input, Output> {
         config: WaiterConfiguration<Input, Output>,
         operation: (Input) async throws -> Output
     ) async throws -> WaiterOutcome<Output>? {
-        try await closure(scheduler, input, config, operation)
+        try await self.waitThenRequest(scheduler, input, config, operation)
     }
 
     // MARK: - Private methods

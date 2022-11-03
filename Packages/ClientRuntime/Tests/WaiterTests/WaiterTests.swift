@@ -65,7 +65,7 @@ class WaiterTests: XCTestCase {
         let maxDelay = TimeInterval.random(in: 20.0...30.0)
         let maxWaitTime = TimeInterval.random(in: 60.0...120.0)
         let mock = WaiterRetryerMock(returnVals: [WaiterOutcome.init(attempts: 1, result: .success("output"))])
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let config = config(minDelay: minDelay, maxDelay: maxDelay)
         let options = WaiterOptions(maxWaitTime: maxWaitTime)
         let subject = Waiter(config: config, operation: {_ in return "output" }, retryer: retryer)
@@ -80,7 +80,7 @@ class WaiterTests: XCTestCase {
         let maxDelay = TimeInterval.random(in: 20.0...30.0)
         let maxWaitTime = TimeInterval.random(in: 60.0...120.0)
         let mock = WaiterRetryerMock(returnVals: [WaiterOutcome.init(attempts: 1, result: .success("output"))])
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let config = config(minDelay: minDelay, maxDelay: maxDelay)
         let optionsMinDelay = TimeInterval.random(in: 2.0...10.0)
         let optionsMaxDelay = TimeInterval.random(in: 20.0...30.0)
@@ -97,7 +97,7 @@ class WaiterTests: XCTestCase {
     func test_waitUntil_returnsSuccessWhenRetryerSignalsSuccess() async throws {
         let success = WaiterOutcome(attempts: 1, result: .success("output"))
         let mock = WaiterRetryerMock(returnVals: [success])
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" }, retryer: retryer)
         let result = try await subject.waitUntil(options: options, input: "input")
         XCTAssertEqual(result, success)
@@ -112,7 +112,7 @@ class WaiterTests: XCTestCase {
             WaiterOutcome(attempts: 3, result: .success("output"))
         ]
         let mock = WaiterRetryerMock(returnVals: outcomes)
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" }, retryer: retryer)
         let result = try await subject.waitUntil(options: options, input: "input")
         XCTAssertEqual(result, outcomes.last!)
@@ -123,7 +123,7 @@ class WaiterTests: XCTestCase {
     func test_waitUntil_failsWhenRetryerReturnsAnError() async throws {
         let mock = WaiterRetryerMock(returnVals: [nil])
         mock.errorToThrow = ClientError.unknownError(UUID().uuidString)
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" }, retryer: retryer)
         await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) {
             XCTAssertEqual($0.localizedDescription, mock.errorToThrow?.localizedDescription)
@@ -133,7 +133,7 @@ class WaiterTests: XCTestCase {
 
     func test_waitUntil_throwsATimeoutErrorOnTimeout() async throws {
         let mock = WaiterRetryerMock(returnVals: [nil])
-        let retryer = WaiterRetryer(closure: mock.waitThenRequest(scheduler:input:config:operation:))
+        let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" }, retryer: retryer)
         let closure: () async throws -> Void = {
             while true {
