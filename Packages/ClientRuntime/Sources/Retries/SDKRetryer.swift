@@ -40,7 +40,7 @@ public class SDKRetryer: Retryer {
     
     public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
         switch error {
-        case .client(let clientError, _) :
+        case .client(let clientError, _):
             switch clientError {
             case .networkError, .crtError:
                 return true
@@ -67,7 +67,7 @@ public class SDKRetryer: Retryer {
     
     public func getErrorType<E>(error: SdkError<E>) -> RetryError {
         switch error {
-        case .client(let clientError, _) :
+        case .client(let clientError, _):
             if case ClientError.crtError = clientError {
                 return .transient
             }
