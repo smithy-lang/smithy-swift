@@ -78,14 +78,14 @@ class UnionDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
         val decodedMemberName = "${memberName}Decoded"
         val timestampFormat = TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        val code = TimestampDecodeGenerator(
+        val codingKey = writer.format(".\$L", memberName)
+        TimestampDecodeGenerator(
+            decodedMemberName,
             containerName,
-            ".$memberName",
+            codingKey,
             timestampFormat,
             false
-        ).generate()
-
-        writer.write("let $decodedMemberName = $code")
+        ).generate(writer)
         renderAssigningDecodedMember(memberName, decodedMemberName)
     }
 

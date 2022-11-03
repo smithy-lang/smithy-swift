@@ -78,7 +78,7 @@ class HttpResponseHeaders(
                         defaultTimestampFormat
                     )
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
-                    writer.write("self.\$L = $memberValue", memberName)
+                    writer.write("self.\$L = \$L", memberName, memberValue)
                 }
                 is ListShape -> {
                     // member > boolean, number, string, or timestamp

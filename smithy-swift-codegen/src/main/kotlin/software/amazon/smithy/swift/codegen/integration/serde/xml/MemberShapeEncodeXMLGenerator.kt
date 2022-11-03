@@ -82,14 +82,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is TimestampShape -> {
-                    val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
-                    val code = TimestampEncodeGenerator(
+                    val codingKey = writer.format("\$L(\"\$L\")", ClientRuntimeTypes.Serde.Key, nestedMemberResolvedName)
+                    TimestampEncodeGenerator(
                         containerName,
                         nestedMemberTargetName,
                         codingKey,
                         TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate()
-                    writer.write(code)
+                    ).generate(writer)
                 }
                 else -> {
                     val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
@@ -143,13 +142,12 @@ abstract class MemberShapeEncodeXMLGenerator(
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
                     val codingKey = "Key(\"\")"
-                    val code = TimestampEncodeGenerator(
+                    TimestampEncodeGenerator(
                         nestedContainerName,
                         nestedMemberTargetName,
                         codingKey,
                         TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate()
-                    writer.write(code)
+                    ).generate(writer)
                 }
                 else -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
@@ -216,13 +214,12 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
                         val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
-                        val code = TimestampEncodeGenerator(
+                        TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
                             codingKey,
                             TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate()
-                        writer.write(code)
+                        ).generate(writer)
                     }
                 }
                 else -> {
@@ -263,14 +260,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
+                        val codingKey = writer.format("\$L(\"\")", ClientRuntimeTypes.Serde.Key)
                         val code = TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
                             codingKey,
                             TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate()
-                        writer.write(code)
+                        ).generate(writer)
                     }
                 }
                 else -> {
@@ -335,14 +331,13 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val originalMemberName = member.memberName
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\")"
-        val code = TimestampEncodeGenerator(
+        val codingKey = writer.format("\$L(\"\$L\")", ClientRuntimeTypes.Serde.Key, resolvedMemberName)
+        TimestampEncodeGenerator(
             containerName,
             memberName,
             codingKey,
             TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        ).generate()
-        writer.write(code)
+        ).generate(writer)
     }
 
     fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {

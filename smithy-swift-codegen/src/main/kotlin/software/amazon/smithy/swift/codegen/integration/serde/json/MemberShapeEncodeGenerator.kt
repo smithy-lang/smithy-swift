@@ -126,25 +126,24 @@ abstract class MemberShapeEncodeGenerator(
             is MemberShape -> ctx.model.expectShape(memberShape.target)
             else -> memberShape
         }
-        val code = when (targetShape) {
+        when (targetShape) {
             is TimestampShape -> {
                 TimestampEncodeGenerator(
                     containerName,
                     memberName,
                     codingKey,
                     TimestampHelpers.getTimestampFormat(memberShape, targetShape, defaultTimestampFormat)
-                ).generate()
+                ).generate(writer)
             }
             else -> {
                 val extension = getShapeExtension(memberShape, memberName, isBoxed)
                 if (codingKey != null) {
-                    "try $containerName.encode($extension, forKey: $codingKey)"
+                    writer.write("try \$L.encode(\$L, forKey: \$L)", containerName, extension, codingKey)
                 } else {
-                    "try $containerName.encode($extension)"
+                    writer.write("try \$L.encode(\$L)", containerName, extension)
                 }
             }
         }
-        writer.write(code)
     }
 
     // Iterate over and render encoding for all members of a list

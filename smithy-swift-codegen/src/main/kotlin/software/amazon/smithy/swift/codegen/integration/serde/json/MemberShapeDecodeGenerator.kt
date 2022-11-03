@@ -39,14 +39,15 @@ abstract class MemberShapeDecodeGenerator(
     fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val timestampFormat = TimestampHelpers.getTimestampFormat(member, target, defaultTimestampFormat)
-        val decodingCode = TimestampDecodeGenerator(
+        val codingKey = writer.format(".\$L", memberName)
+        val decodedMemberName = writer.format("\$LDecoded", memberName)
+        TimestampDecodeGenerator(
+            decodedMemberName,
             containerName,
-            ".$memberName",
+            codingKey,
             timestampFormat,
             true
-        ).generate()
-        val decodedMemberName = "${memberName}Decoded"
-        writer.write("let $decodedMemberName = $decodingCode")
+        ).generate(writer)
         renderAssigningDecodedMember(member, decodedMemberName)
     }
 
@@ -175,7 +176,10 @@ abstract class MemberShapeDecodeGenerator(
                     } else { // decode date as a string manually
                         val dateName = "date$level"
                         val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                        writer.write("let $dateName = try containerValues.timestampStringAsDate($iteratorName, format: .$swiftTimestampName, forKey: .${topLevelMember.memberName})")
+                        writer.write(
+                            "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                            dateName, iteratorName, swiftTimestampName, topLevelMember.memberName
+                        )
                         writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
                 }
@@ -284,7 +288,10 @@ abstract class MemberShapeDecodeGenerator(
                     } else { // decode date as a string manually
                         val dateName = "date$level"
                         val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                        writer.write("let $dateName = try containerValues.timestampStringAsDate($valueIterator, format: .$swiftTimestampName, forKey: .${topLevelMember.memberName})")
+                        writer.write(
+                            "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                            dateName, valueIterator, swiftTimestampName, topLevelMember.memberName
+                        )
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
                 }

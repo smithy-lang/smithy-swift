@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.integration.serde
 
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait.Format
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class TimestampEncodeGenerator(
     val container: String,
@@ -11,22 +12,19 @@ class TimestampEncodeGenerator(
 ) {
     // Generates and returns the Swift code for encoding a timestamp
     // For example, `try encodeContainer.encodeTimestamp(sampleTime, format: .dateTime, forKey: .sampleTime)`
-    fun generate(): String {
+    fun generate(writer: SwiftWriter) {
         val swiftFormat = TimestampHelpers.generateTimestampFormatEnumValue(this.format)
-        var arguments = mutableListOf(
-            "${this.property}",
-            "format: .$swiftFormat"
-        )
+        writer.writeInline("try \$L.encodeTimestamp(\$L, format: .\$L", this.container, this.property, swiftFormat)
         if (this.codingKey != null) {
-            arguments.add("forKey: ${this.codingKey}")
+            writer.writeInline(", forKey: \$L", this.codingKey)
         }
-
-        val argumentsAsString = arguments.joinToString(", ")
-        return "try ${this.container}.encodeTimestamp($argumentsAsString)"
+        writer.writeInline(")")
+        writer.ensureNewline()
     }
 }
 
 class TimestampDecodeGenerator(
+    val memberName: String,
     val container: String,
     val codingKey: String,
     val format: TimestampFormatTrait.Format,
@@ -34,14 +32,12 @@ class TimestampDecodeGenerator(
 ) {
     // Generates and returns the Swift code for encoding a timestamp
     // For example, `try encodeContainer.encodeTimestamp(sampleTime, format: .dateTime, forKey: .sampleTime)`
-    fun generate(): String {
+    fun generate(writer: SwiftWriter) {
         val decodeVerb = if (optional) "decodeTimestampIfPresent" else "decodeTimestamp"
         val swiftFormat = TimestampHelpers.generateTimestampFormatEnumValue(this.format)
-        val arguments = listOf(
-            ".$swiftFormat",
-            "forKey: ${this.codingKey}"
+        writer.write(
+            "let \$L = try \$L.\$L(.\$L, forKey: \$L)",
+            this.memberName, this.container, decodeVerb, swiftFormat, this.codingKey
         )
-        val argumentsAsString = arguments.joinToString(", ")
-        return "try ${this.container}.$decodeVerb($argumentsAsString)"
     }
 }

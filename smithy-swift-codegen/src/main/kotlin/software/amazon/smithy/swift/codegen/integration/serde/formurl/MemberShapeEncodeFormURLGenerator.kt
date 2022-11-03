@@ -89,14 +89,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     }
                 }
                 is TimestampShape -> {
-                    val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"${nestedMemberResolvedName}\")"
-                    val code = TimestampEncodeGenerator(
+                    val codingKey = writer.format("\$L(\"\$L\")", ClientRuntimeTypes.Serde.Key, nestedMemberResolvedName)
+                    TimestampEncodeGenerator(
                         containerName,
                         nestedMemberTargetName,
                         codingKey,
                         TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate()
-                    writer.write(code)
+                    ).generate(writer)
                 }
                 is BlobShape -> {
                     renderBlobMemberName(nestedMemberTargetName, nestedMemberResolvedName, containerName, false)
@@ -148,14 +147,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 }
                 is TimestampShape -> {
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-                    val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
-                    val code = TimestampEncodeGenerator(
+                    val codingKey = writer.format("\$L(\"\")", ClientRuntimeTypes.Serde.Key)
+                    TimestampEncodeGenerator(
                         nestedContainerName,
                         nestedMemberTargetName,
                         codingKey,
                         TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate()
-                    writer.write(code)
+                    ).generate(writer)
                 }
                 is BlobShape -> {
                     renderBlobMemberName(nestedMemberTargetName, resolvedMemberName, containerName, false)
@@ -226,14 +224,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 }
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
-                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
-                        val code = TimestampEncodeGenerator(
+                        val codingKey = writer.format("\$L(\"\")", ClientRuntimeTypes.Serde.Key)
+                        TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
                             codingKey,
                             TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate()
-                        writer.write(code)
+                        ).generate(writer)
                     }
                 }
                 is BlobShape -> {
@@ -286,14 +283,13 @@ abstract class MemberShapeEncodeFormURLGenerator(
                 is TimestampShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
-                        val code = TimestampEncodeGenerator(
+                        val codingKey = writer.format("\$L(\"\")", ClientRuntimeTypes.Serde.Key)
+                        TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
                             codingKey,
                             TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate()
-                        writer.write(code)
+                        ).generate(writer)
                     }
                 }
                 is BlobShape -> {
@@ -359,18 +355,22 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val resolvedMemberName = customizations.customNameTraitGenerator(member, memberName)
         val isBoxed = symbol.isBoxed()
         val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\")"
-        val encodeLine = TimestampEncodeGenerator(
-            containerName,
-            memberName,
-            codingKey,
-            TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        ).generate()
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
-                writer.write(encodeLine)
+                TimestampEncodeGenerator(
+                    containerName,
+                    memberName,
+                    codingKey,
+                    TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
+                ).generate(writer)
             }
         } else {
-            writer.write(encodeLine)
+            TimestampEncodeGenerator(
+                containerName,
+                memberName,
+                codingKey,
+                TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
+            ).generate(writer)
         }
     }
 
