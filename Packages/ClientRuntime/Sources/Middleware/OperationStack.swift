@@ -41,22 +41,29 @@ public struct OperationStack<OperationStackInput,
               
               let result = try await initialize.handle(context: context, input: input)
               guard let output = result.output else {
-                  throw ClientError.unknownError("Something went terribly wrong where the output was not set on the response. Please open a ticket with us at https://github.com/awslabs/aws-sdk-swift")
+                  let errorMessage = [
+                    "Something went terribly wrong where the output was not set on the response.",
+                    "Please open a ticket with us at https://github.com/awslabs/aws-sdk-swift"
+                  ].joined(separator: " ")
+                  throw ClientError.unknownError(errorMessage)
               }
               return output
           }
     
-    mutating public func presignedRequest<H: Handler>(context: HttpContext,
-                                                      input: OperationStackInput,
-                                                      next: H) async throws -> SdkHttpRequestBuilder?
-    where H.Input == SdkHttpRequest,
-          H.Output == OperationOutput<OperationStackOutput>,
-          H.Context == HttpContext {
+    mutating public func presignedRequest<H: Handler>(
+        context: HttpContext,
+        input: OperationStackInput,
+        next: H
+    ) async throws -> SdkHttpRequestBuilder? where
+    H.Input == SdkHttpRequest,
+    H.Output == OperationOutput<OperationStackOutput>,
+    H.Context == HttpContext {
         var builder: SdkHttpRequestBuilder?
-        self.finalizeStep.intercept(position: .after,
-                                    middleware: PresignerShim<OperationStackOutput, OperationStackError>(handler: { buildInMiddleware in
-                                        builder = buildInMiddleware
-                                    }))
+        self.finalizeStep.intercept(
+            position: .after,
+            middleware: PresignerShim<OperationStackOutput, OperationStackError>(handler: { buildInMiddleware in
+                builder = buildInMiddleware
+            }))
         _ = try await handleMiddleware(context: context, input: input, next: next)
         return builder
     }
