@@ -35,10 +35,8 @@ public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>
         }
         
         if !conditionallySet.dictionary.isEmpty {
-            for header in conditionallySet.headers {
-                if !input.headers.exists(name: header.name) {
-                    input.headers.add(name: header.name, values: header.value)
-                }
+            for header in conditionallySet.headers where !input.headers.exists(name: header.name) {
+                input.headers.add(name: header.name, values: header.value)
             }
         }
         
