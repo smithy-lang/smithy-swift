@@ -29,7 +29,6 @@ public struct TimestampFormatter {
     public init(format: TimestampFormat) {
         self.format = format
     }
-
     
     /// Creates and returns a smithy timestamp formatted string representation of the specified date.
     /// For each format, the string will only contain fractional seconds if a non-zero value exists for fractional seconds.

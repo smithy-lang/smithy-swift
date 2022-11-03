@@ -41,14 +41,6 @@ extension DateFormatter {
         self.locale = Locale(identifier: "en_US_POSIX")
         self.timeZone = TimeZone(secondsFromGMT: 0)!
     }
-    
-    private static func fixedFormatFormatter(dateFormat: String) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = dateFormat
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)!
-        return formatter
-    }
 }
 
 public extension Date {
