@@ -12,21 +12,21 @@ public typealias DateFormatter = Foundation.DateFormatter
 extension DateFormatter {
     /// A date formatter that converts between dates and the IMF-fixdate, with fractional seconds, string representation in RFC 7231#section-7.1.1.1 (for example, Sun, 02 Jan 2000 20:34:56.000 GMT)
     /// https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
-    public static let rfc5322WithFractionalSeconds = DateFormatter(fixedFormat: "EE, dd MMM yyyy HH:mm:ss.SSS zzz")
+    static let rfc5322WithFractionalSeconds = DateFormatter(fixedFormat: "EE, dd MMM yyyy HH:mm:ss.SSS zzz")
     
     /// A date formatter that converts between dates and the IMF-fixdate, without fractional seconds, string representation in RFC 7231#section-7.1.1.1 (for example, Tue, 29 Apr 2014 18:30:38 GMT)
     /// https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
-    public static let rfc5322WithoutFractionalSeconds = DateFormatter(fixedFormat: "EE, dd MMM yyyy HH:mm:ss zzz")
+    static let rfc5322WithoutFractionalSeconds = DateFormatter(fixedFormat: "EE, dd MMM yyyy HH:mm:ss zzz")
     
     /// A date formatter that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.52Z)
     /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-    public static let iso8601DateFormatterWithFractionalSeconds = DateFormatter(
+    static let iso8601DateFormatterWithFractionalSeconds = DateFormatter(
         fixedFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
     )
 
     /// A date formatter that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and without fractional seconds (for example, 1985-04-12T23:20:50Z)
     /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-    public static let iso8601DateFormatterWithoutFractionalSeconds = DateFormatter(
+    static let iso8601DateFormatterWithoutFractionalSeconds = DateFormatter(
         fixedFormat: "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
     )
     
@@ -43,7 +43,7 @@ extension DateFormatter {
     }
 }
 
-public extension Date {
+extension Date {
     /// Returns a string representation of the date in the ISO8601 format using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.52Z)
     func iso8601WithFractionalSeconds() -> String {
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
