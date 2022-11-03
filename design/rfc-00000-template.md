@@ -12,7 +12,7 @@
 
 # Feature name
 
-* Proposal: [RFC-00001](http://0001-filename.md/)
+* Proposal: [RFC-00001](design/rfc-00001-event-stream.md)
 * Authors: [Author 1](https://github.com/awsdev),
   [Author2](https://github.com/awsdev)
 
