@@ -84,7 +84,7 @@ class WaiterTests: XCTestCase {
         let config = config(minDelay: minDelay, maxDelay: maxDelay)
         let optionsMinDelay = TimeInterval.random(in: 2.0...10.0)
         let optionsMaxDelay = TimeInterval.random(in: 20.0...30.0)
-        let options = WaiterOptions(minDelay: optionsMinDelay, maxDelay: optionsMaxDelay, maxWaitTime: maxWaitTime)
+        let options = WaiterOptions(maxWaitTime: maxWaitTime, minDelay: optionsMinDelay, maxDelay: optionsMaxDelay)
         let subject = Waiter(config: config, operation: {_ in return "output" }, retryer: retryer)
         _ = try await subject.waitUntil(options: options, input: "input")
         XCTAssertEqual(mock.scheduler.minDelay, optionsMinDelay)
