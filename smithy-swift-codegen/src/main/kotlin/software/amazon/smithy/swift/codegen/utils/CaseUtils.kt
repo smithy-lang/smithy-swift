@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.utils
 
-
 // taken from smithy-kotlin, which was originally taken from java sdk: https://github.com/awslabs/smithy-kotlin/blob/main/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/utils/CaseUtils.kt
 fun String.splitOnWordBoundaries(): List<String> {
     // adapted from Java v2 SDK CodegenNamingUtils.splitOnWordBoundaries
