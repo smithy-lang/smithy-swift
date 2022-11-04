@@ -754,6 +754,9 @@ structure TimestampInputRequest {
     @timestampFormat("http-date")
     httpDate: Timestamp,
 
+    @required
+    inheritedTimestamp: CommonTimestamp,
+
     timestampList: TimestampList,
 
     @httpHeader("X-Date")
@@ -788,6 +791,9 @@ structure TimestampOutputResponse {
 
     @timestampFormat("http-date")
     httpDate: Timestamp,
+
+    @required
+    inheritedTimestamp: CommonTimestamp,
 
     nestedTimestampList: NestedTimestampList,
 
@@ -1023,6 +1029,9 @@ operation JsonUnions {
     output: UnionInputOutput,
 }
 
+@timestampFormat("http-date")
+timestamp CommonTimestamp
+
 /// A shared structure that contains a single union member.
 structure UnionInputOutput {
     contents: MyUnion
@@ -1035,6 +1044,7 @@ union MyUnion {
     numberValue: Integer,
     blobValue: Blob,
     timestampValue: Timestamp,
+    inheritedTimestamp: CommonTimestamp,
     enumValue: FooEnum,
     listValue: StringList,
     mapValue: StringMap,

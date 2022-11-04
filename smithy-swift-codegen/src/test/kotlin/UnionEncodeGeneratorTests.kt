@@ -65,6 +65,7 @@ class UnionEncodeGeneratorTests {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"
                     case enumvalue = "enumValue"
+                    case inheritedtimestamp = "inheritedTimestamp"
                     case listvalue = "listValue"
                     case mapvalue = "mapValue"
                     case numbervalue = "numberValue"
@@ -83,6 +84,8 @@ class UnionEncodeGeneratorTests {
                             try container.encode(booleanvalue, forKey: .booleanvalue)
                         case let .enumvalue(enumvalue):
                             try container.encode(enumvalue.rawValue, forKey: .enumvalue)
+                        case let .inheritedtimestamp(inheritedtimestamp):
+                            try container.encodeTimestamp(inheritedtimestamp, format: .httpDate, forKey: .inheritedtimestamp)
                         case let .listvalue(listvalue):
                             var listvalueContainer = container.nestedUnkeyedContainer(forKey: .listvalue)
                             for stringlist0 in listvalue {
@@ -100,7 +103,7 @@ class UnionEncodeGeneratorTests {
                         case let .structurevalue(structurevalue):
                             try container.encode(structurevalue, forKey: .structurevalue)
                         case let .timestampvalue(timestampvalue):
-                            try container.encode(timestampvalue.iso8601WithoutFractionalSeconds(), forKey: .timestampvalue)
+                            try container.encodeTimestamp(timestampvalue, format: .dateTime, forKey: .timestampvalue)
                         case let .sdkUnknown(sdkUnknown):
                             try container.encode(sdkUnknown, forKey: .sdkUnknown)
                     }
@@ -128,14 +131,14 @@ class UnionEncodeGeneratorTests {
                         self = .blobvalue(blobvalue)
                         return
                     }
-                    let timestampvalueDateString = try values.decodeIfPresent(Swift.String.self, forKey: .timestampvalue)
-                    var timestampvalueDecoded: ClientRuntime.Date? = nil
-                    if let timestampvalueDateString = timestampvalueDateString {
-                        let timestampvalueFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                        timestampvalueDecoded = timestampvalueFormatter.date(from: timestampvalueDateString)
-                    }
+                    let timestampvalueDecoded = try values.decodeTimestampIfPresent(.dateTime, forKey: .timestampvalue)
                     if let timestampvalue = timestampvalueDecoded {
                         self = .timestampvalue(timestampvalue)
+                        return
+                    }
+                    let inheritedtimestampDecoded = try values.decodeTimestampIfPresent(.httpDate, forKey: .inheritedtimestamp)
+                    if let inheritedtimestamp = inheritedtimestampDecoded {
+                        self = .inheritedtimestamp(inheritedtimestamp)
                         return
                     }
                     let enumvalueDecoded = try values.decodeIfPresent(FooEnum.self, forKey: .enumvalue)
