@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration.serde.json
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
@@ -20,6 +19,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
@@ -37,25 +38,17 @@ abstract class MemberShapeDecodeGenerator(
 ) : MemberShapeDecodeGeneratable {
     fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val tsFormat = member
-            .getTrait(TimestampFormatTrait::class.java)
-            .map { it.format }
-            .orElse(defaultTimestampFormat)
-        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-            writeDecodeForPrimitive(target, member, containerName)
-        } else {
-            val originalSymbol = ctx.symbolProvider.toSymbol(target)
-            val dateString = "${memberName}DateString"
-            val decodedMemberName = "${memberName}Decoded"
-            writer.write("let \$L = try $containerName.decodeIfPresent(\$N.self, forKey: .\$L)", dateString, SwiftTypes.String, memberName)
-            writer.write("var \$L: \$T = nil", decodedMemberName, originalSymbol)
-            writer.openBlock("if let \$L = \$L {", "}", dateString, dateString) {
-                val formatterName = "${memberName}Formatter"
-                writeDateFormatter(formatterName, tsFormat, writer)
-                writer.write("\$L = \$L.date(from: \$L)", decodedMemberName, formatterName, dateString)
-            }
-            renderAssigningDecodedMember(member, decodedMemberName)
-        }
+        val timestampFormat = TimestampHelpers.getTimestampFormat(member, target, defaultTimestampFormat)
+        val codingKey = writer.format(".\$L", memberName)
+        val decodedMemberName = writer.format("\$LDecoded", memberName)
+        TimestampDecodeGenerator(
+            decodedMemberName,
+            containerName,
+            codingKey,
+            timestampFormat,
+            true
+        ).generate(writer)
+        renderAssigningDecodedMember(member, decodedMemberName)
     }
 
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String, ignoreDefaultValues: Boolean = false) {
@@ -95,33 +88,14 @@ abstract class MemberShapeDecodeGenerator(
                 "${SwiftTypes.Set}<$nestedShape>"
             }
             is TimestampShape -> {
-                val tsFormat = currShape
-                    .getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElse(defaultTimestampFormat)
-                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "${ClientRuntimeTypes.Core.Date}" else "${SwiftTypes.String}"
+                val timestampFormat = TimestampHelpers.getTimestampFormat(currShape, null, defaultTimestampFormat)
+                if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "${ClientRuntimeTypes.Core.Date}" else "${SwiftTypes.String}"
             }
             else -> {
                 "${ctx.symbolProvider.toSymbol(currShape)}"
             }
         }
         return mappedSymbol
-    }
-
-    private fun writeDateFormatter(formatterName: String, tsFormat: TimestampFormatTrait.Format, writer: SwiftWriter) {
-        when (tsFormat) {
-            TimestampFormatTrait.Format.EPOCH_SECONDS -> writer.write("let \$L = \$N()", formatterName, ClientRuntimeTypes.Core.DateFormatter)
-            // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
-            // to custom date type
-            TimestampFormatTrait.Format.DATE_TIME -> writer.write("let \$L = \$N.iso8601DateFormatterWithoutFractionalSeconds", formatterName, ClientRuntimeTypes.Core.DateFormatter)
-            TimestampFormatTrait.Format.HTTP_DATE -> writer.write("let \$L = \$N.rfc5322DateFormatter", formatterName, ClientRuntimeTypes.Core.DateFormatter)
-            else -> throw CodegenException("unknown timestamp format: $tsFormat")
-        }
-    }
-
-    private fun renderDecodingDateError(member: MemberShape) {
-        val memberName = member.memberName
-        writer.write("throw \$N.dataCorrupted(\$N.Context(codingPath: containerValues.codingPath + [CodingKeys.$memberName], debugDescription: \"date cannot be properly deserialized\"))", SwiftTypes.DecodingError, SwiftTypes.DecodingError)
     }
 
     fun renderDecodeListMember(
@@ -189,12 +163,9 @@ abstract class MemberShapeDecodeGenerator(
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
             when (shape) {
                 is TimestampShape -> {
-                    val tsFormat = shape
-                        .getTrait(TimestampFormatTrait::class.java)
-                        .map { it.format }
-                        .orElse(defaultTimestampFormat)
+                    val timestampFormat = TimestampHelpers.getTimestampFormat(shape, null, defaultTimestampFormat)
 
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
+                    if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
                         if (!isSparse) {
                             writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
                                 writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
@@ -203,12 +174,12 @@ abstract class MemberShapeDecodeGenerator(
                             writer.write("${decodedMemberName}$terminator.$insertMethod($iteratorName)")
                         }
                     } else { // decode date as a string manually
-                        val formatterName = "${iteratorName}Formatter"
-                        writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
-                        writer.openBlock("guard let $dateName = $formatterName.date(from: $iteratorName) else {", "}") {
-                            renderDecodingDateError(topLevelMember)
-                        }
+                        val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
+                        writer.write(
+                            "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                            dateName, iteratorName, swiftTimestampName, topLevelMember.memberName
+                        )
                         writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
                     }
                 }
@@ -304,12 +275,9 @@ abstract class MemberShapeDecodeGenerator(
                     writer.write("$decodedMemberName?[key$level] = $nestedDecodedMemberName")
                 }
                 is TimestampShape -> {
-                    val tsFormat = valueTargetShape
-                        .getTrait(TimestampFormatTrait::class.java)
-                        .map { it.format }
-                        .orElse(defaultTimestampFormat)
+                    val timestampFormat = TimestampHelpers.getTimestampFormat(valueTargetShape, null, defaultTimestampFormat)
 
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
+                    if (timestampFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) { // if decoding a double decode as normal from [[Date]].self
                         if (!isSparse) {
                             writer.openBlock("if let $valueIterator = $valueIterator {", "}") {
                                 writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
@@ -318,12 +286,12 @@ abstract class MemberShapeDecodeGenerator(
                             writer.write("${decodedMemberName}$terminator[key$level] = $valueIterator")
                         }
                     } else { // decode date as a string manually
-                        val formatterName = "${mapName}Formatter"
-                        writeDateFormatter(formatterName, tsFormat, writer)
                         val dateName = "date$level"
-                        writer.openBlock("guard let $dateName = $formatterName.date(from: $valueIterator) else {", "}") {
-                            renderDecodingDateError(topLevelMember)
-                        }
+                        val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
+                        writer.write(
+                            "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                            dateName, valueIterator, swiftTimestampName, topLevelMember.memberName
+                        )
                         writer.write("${decodedMemberName}$terminator[key$level] = $dateName")
                     }
                 }
