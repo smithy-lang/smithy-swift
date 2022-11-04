@@ -94,10 +94,10 @@ class HttpHeaderProviderGeneratorTests {
                 public var headers: ClientRuntime.Headers {
                     var items = ClientRuntime.Headers()
                     if let headerEpoch = headerEpoch {
-                        items.add(Header(name: "X-Epoch", value: Swift.String(headerEpoch.timeIntervalSince1970.clean)))
+                        items.add(Header(name: "X-Epoch", value: Swift.String(TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
                     }
                     if let headerHttpDate = headerHttpDate {
-                        items.add(Header(name: "X-Date", value: Swift.String(headerHttpDate.rfc5322())))
+                        items.add(Header(name: "X-Date", value: Swift.String(TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
                     }
                     return items
                 }

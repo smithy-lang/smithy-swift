@@ -174,6 +174,7 @@ struct TimestampInputOutputResponseBody: Swift.Equatable {
     let dateTime: ClientRuntime.Date?
     let epochSeconds: ClientRuntime.Date?
     let httpDate: ClientRuntime.Date?
+    let inheritedTimestamp: ClientRuntime.Date?
     let nestedTimestampList: [[ClientRuntime.Date]]?
     let timestampList: [ClientRuntime.Date]?
 }
@@ -183,6 +184,7 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
         case dateTime
         case epochSeconds
         case httpDate
+        case inheritedTimestamp
         case nestedTimestampList
         case normal
         case timestampList
@@ -190,29 +192,16 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
 
     public init (from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-        let normalDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .normal)
-        var normalDecoded: ClientRuntime.Date? = nil
-        if let normalDateString = normalDateString {
-            let normalFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-            normalDecoded = normalFormatter.date(from: normalDateString)
-        }
+        let normalDecoded = try containerValues.decodeTimestampIfPresent(.dateTime, forKey: .normal)
         normal = normalDecoded
-        let dateTimeDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .dateTime)
-        var dateTimeDecoded: ClientRuntime.Date? = nil
-        if let dateTimeDateString = dateTimeDateString {
-            let dateTimeFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-            dateTimeDecoded = dateTimeFormatter.date(from: dateTimeDateString)
-        }
+        let dateTimeDecoded = try containerValues.decodeTimestampIfPresent(.dateTime, forKey: .dateTime)
         dateTime = dateTimeDecoded
-        let epochSecondsDecoded = try containerValues.decodeIfPresent(ClientRuntime.Date.self, forKey: .epochSeconds)
+        let epochSecondsDecoded = try containerValues.decodeTimestampIfPresent(.epochSeconds, forKey: .epochSeconds)
         epochSeconds = epochSecondsDecoded
-        let httpDateDateString = try containerValues.decodeIfPresent(Swift.String.self, forKey: .httpDate)
-        var httpDateDecoded: ClientRuntime.Date? = nil
-        if let httpDateDateString = httpDateDateString {
-            let httpDateFormatter = ClientRuntime.DateFormatter.rfc5322DateFormatter
-            httpDateDecoded = httpDateFormatter.date(from: httpDateDateString)
-        }
+        let httpDateDecoded = try containerValues.decodeTimestampIfPresent(.httpDate, forKey: .httpDate)
         httpDate = httpDateDecoded
+        let inheritedTimestampDecoded = try containerValues.decodeTimestampIfPresent(.httpDate, forKey: .inheritedTimestamp)
+        inheritedTimestamp = inheritedTimestampDecoded
         let nestedTimestampListContainer = try containerValues.decodeIfPresent([[Swift.String?]?].self, forKey: .nestedTimestampList)
         var nestedTimestampListDecoded0:[[ClientRuntime.Date]]? = nil
         if let nestedTimestampListContainer = nestedTimestampListContainer {
@@ -222,10 +211,7 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
                 if let list0 = list0 {
                     list0Decoded0 = [Swift.String]()
                     for timestamp1 in list0 {
-                        let timestamp1Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                        guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
-                            throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedTimestampList], debugDescription: "date cannot be properly deserialized"))
-                        }
+                        let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedTimestampList)
                         list0Decoded0?.append(date1)
                     }
                 }
@@ -240,10 +226,7 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
         if let timestampListContainer = timestampListContainer {
             timestampListDecoded0 = [ClientRuntime.Date]()
             for timestamp0 in timestampListContainer {
-                let timestamp0Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                guard let date0 = timestamp0Formatter.date(from: timestamp0) else {
-                    throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.timestampList], debugDescription: "date cannot be properly deserialized"))
-                }
+                let date0 = try containerValues.timestampStringAsDate(timestamp0, format: .dateTime, forKey: .timestampList)
                 timestampListDecoded0?.append(date0)
             }
         }
@@ -348,10 +331,7 @@ extension MapInputOutputResponseBody: Swift.Decodable {
         if let dateMapContainer = dateMapContainer {
             dateMapDecoded0 = [Swift.String:ClientRuntime.Date]()
             for (key0, timestamp0) in dateMapContainer {
-                let dateMapContainerFormatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                guard let date0 = dateMapContainerFormatter.date(from: timestamp0) else {
-                    throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.dateMap], debugDescription: "date cannot be properly deserialized"))
-                }
+                let date0 = try containerValues.timestampStringAsDate(timestamp0, format: .dateTime, forKey: .dateMap)
                 dateMapDecoded0?[key0] = date0
             }
         }
@@ -393,10 +373,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
                 if let timestamplist0 = timestamplist0 {
                     timestamplist0Decoded0 = [Swift.String]()
                     for timestamp1 in timestamplist0 {
-                        let timestamp1Formatter = ClientRuntime.DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-                        guard let date1 = timestamp1Formatter.date(from: timestamp1) else {
-                            throw Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: containerValues.codingPath + [CodingKeys.nestedListInDict], debugDescription: "date cannot be properly deserialized"))
-                        }
+                        let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedListInDict)
                         timestamplist0Decoded0?.append(date1)
                     }
                 }

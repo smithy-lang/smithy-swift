@@ -42,12 +42,12 @@ class HttpQueryItemProviderGeneratorTests {
                 public var queryItems: [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let queryTimestamp = queryTimestamp {
-                        let queryTimestampQueryItem = ClientRuntime.URLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(queryTimestamp.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
+                        let queryTimestampQueryItem = ClientRuntime.URLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
                         items.append(queryTimestampQueryItem)
                     }
                     if let queryTimestampList = queryTimestampList {
                         queryTimestampList.forEach { queryItemValue in
-                            let queryItem = ClientRuntime.URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(queryItemValue.iso8601WithoutFractionalSeconds()).urlPercentEncoding())
+                            let queryItem = ClientRuntime.URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
                             items.append(queryItem)
                         }
                     }

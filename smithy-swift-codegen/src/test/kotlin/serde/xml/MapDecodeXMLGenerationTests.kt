@@ -715,7 +715,7 @@ class MapDecodeXMLGenerationTests {
                             if let timestampMapContainer = timestampMapContainer {
                                 timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try timestampMapWrappedContainer.timestampStringAsDate(timestampContainer0.value, format: .epochSeconds, forKey: .timestampMap)
                                 }
                             }
                             timestampMap = timestampMapBuffer
@@ -753,7 +753,7 @@ class MapDecodeXMLGenerationTests {
                             if let timestampMapContainer = timestampMapContainer {
                                 timestampMapBuffer = [Swift.String:ClientRuntime.Date]()
                                 for timestampContainer0 in timestampMapContainer {
-                                    timestampMapBuffer?[timestampContainer0.key] = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampContainer0.value, format: .epochSeconds)
+                                    timestampMapBuffer?[timestampContainer0.key] = try timestampMapWrappedContainer.timestampStringAsDate(timestampContainer0.value, format: .epochSeconds, forKey: .timestampMap)
                                 }
                             }
                             timestampMap = timestampMapBuffer

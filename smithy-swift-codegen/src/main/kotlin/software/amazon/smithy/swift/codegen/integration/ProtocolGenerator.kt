@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -14,6 +13,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.utils.CaseUtils
 
@@ -42,21 +42,11 @@ interface ProtocolGenerator {
         fun getFormattedDateString(
             tsFormat: TimestampFormatTrait.Format,
             memberName: String,
-            isUnwrapped: Boolean = true,
-            roundEpoch: Boolean = false,
             urlEncode: Boolean = false
         ): String {
-            val terminator = if (isUnwrapped) "" else "?"
-            val epochTerminator = if (roundEpoch) ".clean" else ""
             val stringDateTerminator = if (urlEncode) ".urlPercentEncoding()" else ""
-            return when (tsFormat) {
-                TimestampFormatTrait.Format.EPOCH_SECONDS -> "${memberName}$terminator.timeIntervalSince1970$epochTerminator"
-                // FIXME return to this to figure out when to use fractional seconds precision in more general sense after we switch
-                // to custom date type
-                TimestampFormatTrait.Format.DATE_TIME -> "${memberName}$terminator.iso8601WithoutFractionalSeconds()$stringDateTerminator"
-                TimestampFormatTrait.Format.HTTP_DATE -> "${memberName}$terminator.rfc5322()$stringDateTerminator"
-                else -> throw CodegenException("unknown timestamp format: $tsFormat")
-            }
+            val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
+            return "TimestampFormatter(format: .$timestampFormat).string(from: $memberName)$stringDateTerminator"
         }
 
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
