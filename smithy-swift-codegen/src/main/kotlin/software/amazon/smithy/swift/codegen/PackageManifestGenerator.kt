@@ -55,7 +55,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                     writer.write("name: \"${settings.moduleName}Tests\",")
                     writer.openBlock("dependencies: [", "],") {
                         writer.write("\$S,", settings.moduleName)
-                        writer.write(".product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")")
+                        writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\")")
                     }
                     writer.write("path: \"./${settings.moduleName}Tests\"")
                 }
