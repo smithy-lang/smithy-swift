@@ -9,7 +9,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class ContentLengthMiddleware(val model: Model) : MiddlewareRenderable {
+class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boolean) : MiddlewareRenderable {
 
     override val name = "ContentLengthMiddleware"
 
@@ -23,8 +23,14 @@ class ContentLengthMiddleware(val model: Model) : MiddlewareRenderable {
         operationStackName: String
     ) {
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
-        if (hasHttpBody) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N())", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
+        if (hasHttpBody || alwaysIntercept) {
+            writer.write(
+                "\$L.\$L.intercept(position: \$L, middleware: \$N())",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                ClientRuntimeTypes.Middleware.ContentLengthMiddleware
+            )
         }
     }
 }
