@@ -34,7 +34,6 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expectedContents = """
         .package(
-            name: "ComplexModule",
             url: "https://github.com/apple/swift-numerics",
             from: "0.0.5"
         ),
