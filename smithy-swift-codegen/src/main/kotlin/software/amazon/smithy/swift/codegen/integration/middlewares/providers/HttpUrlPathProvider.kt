@@ -79,7 +79,6 @@ class HttpUrlPathProvider(
                         ProtocolGenerator.getFormattedDateString(
                             timestampFormat,
                             labelMemberName,
-                            roundEpoch = true,
                             urlEncode = true
                         )
                     }
