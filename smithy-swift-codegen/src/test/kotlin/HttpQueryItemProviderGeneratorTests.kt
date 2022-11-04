@@ -18,7 +18,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension QueryIdempotencyTokenAutoFillInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let token = token {
                         let tokenQueryItem = ClientRuntime.URLQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
@@ -39,7 +39,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension TimestampInputInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let queryTimestamp = queryTimestamp {
                         let queryTimestampQueryItem = ClientRuntime.URLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
@@ -66,7 +66,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension SmokeTestInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let query1 = query1 {
                         let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
@@ -96,7 +96,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension AllQueryStringTypesInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let queryStringList = queryStringList {
                         queryStringList.forEach { queryItemValue in
@@ -132,7 +132,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension QueryParamsAsStringListMapInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let qux = qux {
                         let quxQueryItem = ClientRuntime.URLQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
@@ -164,7 +164,7 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents =
             """
             extension QueryPrecedenceInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
                     var items = [ClientRuntime.URLQueryItem]()
                     if let foo = foo {
                         let fooQueryItem = ClientRuntime.URLQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
@@ -202,7 +202,7 @@ class HttpQueryItemProviderGeneratorTests {
                     }
                     else {
                         let message = "Creating a URL Query Item failed. query1 is required but it is nil"
-                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                        throw ClientRuntime.ClientError.queryItemCreationFailed(message)
                     }
                     if let query2 = query2 {
                         query2.forEach { queryItemValue in
@@ -212,7 +212,7 @@ class HttpQueryItemProviderGeneratorTests {
                     }
                     else {
                         let message = "Creating a URL Query Item failed. query2 is required but it is nil"
-                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                        throw ClientRuntime.ClientError.queryItemCreationFailed(message)
                     }
                     if let query3 = query3 {
                         let query3QueryItem = ClientRuntime.URLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
@@ -220,7 +220,7 @@ class HttpQueryItemProviderGeneratorTests {
                     }
                     else {
                         let message = "Creating a URL Query Item failed. query3 is required but it is nil"
-                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                        throw ClientRuntime.ClientError.queryItemCreationFailed(message)
                     }
                     return items
                 }

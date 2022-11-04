@@ -148,7 +148,7 @@ class HttpQueryItemProvider(
                         "let message = \"Creating a URL Query Item failed. \$L is required but it is nil\"",
                         memberName
                     )
-                    writer.write("throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))")
+                    writer.write("throw ClientRuntime.ClientError.queryItemCreationFailed(message)")
                 }
             }
         } else {
