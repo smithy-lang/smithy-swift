@@ -186,6 +186,49 @@ class HttpQueryItemProviderGeneratorTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `008 it handles required http query items`() {
+        val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
+        val contents = getModelFileContents("example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            extension RequiredHttpFieldsInput: ClientRuntime.QueryItemProvider {
+                public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
+                    var items = [ClientRuntime.URLQueryItem]()
+                    if let query1 = query1 {
+                        let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
+                        items.append(query1QueryItem)
+                    }
+                    else {
+                        let message = "Creating a URL Query Item failed. query1 is required but it is nil"
+                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                    }
+                    if let query2 = query2 {
+                        query2.forEach { queryItemValue in
+                            let queryItem = ClientRuntime.URLQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+                            items.append(queryItem)
+                        }
+                    }
+                    else {
+                        let message = "Creating a URL Query Item failed. query2 is required but it is nil"
+                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                    }
+                    if let query3 = query3 {
+                        let query3QueryItem = ClientRuntime.URLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
+                        items.append(query3QueryItem)
+                    }
+                    else {
+                        let message = "Creating a URL Query Item failed. query3 is required but it is nil"
+                        throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))
+                    }
+                    return items
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)

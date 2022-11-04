@@ -91,7 +91,7 @@ fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
 }
 
 fun MemberShape.needsDefaultValueCheck(model: Model, symbolProvider: SymbolProvider): Boolean {
-    if (this.hasTrait<RequiredTrait>()) {
+    if (this.isRequired()) {
         return false
     }
 
@@ -101,6 +101,10 @@ fun MemberShape.needsDefaultValueCheck(model: Model, symbolProvider: SymbolProvi
     val defaultValueNotNull = this.defaultValue(symbolProvider) != null
 
     return isPrimitiveShape && isNotBoxed && defaultValueNotNull
+}
+
+fun MemberShape.isRequired(): Boolean {
+    return (this.hasTrait<RequiredTrait>())
 }
 
 fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {

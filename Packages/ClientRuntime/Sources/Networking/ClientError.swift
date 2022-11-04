@@ -9,6 +9,7 @@ public enum ClientError: Error, Equatable {
     case networkError(Error)
     case crtError(CRTError)
     case pathCreationFailed(String)
+    case queryItemCreationFailed(String)
     case serializationFailed(String)
     case deserializationFailed(Error)
     case dataNotFound(String)
@@ -18,31 +19,24 @@ public enum ClientError: Error, Equatable {
     
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
         switch (lhs, rhs) {
-        case (let .networkError(lhsNetworkError),
-              let .networkError(rhsNetworkError)):
-            return String(reflecting: lhsNetworkError) == String(reflecting: rhsNetworkError)
-        case (let .pathCreationFailed(lhsPathError),
-              let .pathCreationFailed(rhsPathError)):
-            return lhsPathError == rhsPathError
-        case (let .serializationFailed(lhsSerializationFailedString),
-              let .serializationFailed(rhsSerializationFailedString)):
-            return lhsSerializationFailedString == rhsSerializationFailedString
-        case (let .deserializationFailed(lhsDeserializationFailedError),
-              let .deserializationFailed(rhsDeserializationFailedError)):
-            return String(reflecting: lhsDeserializationFailedError)
-                == String(reflecting: rhsDeserializationFailedError)
-        case (let .dataNotFound(lhsDataNotFoundString),
-              let .dataNotFound(rhsDataNotFoundString)):
-            return lhsDataNotFoundString == rhsDataNotFoundString
-        case (let .unknownError(lhsUnknownString),
-              let .unknownError(rhsUnknownString)):
-            return lhsUnknownString == rhsUnknownString
-        case (let .authError(lhsAuthString),
-              let .authError(rhsAuthString)):
-            return lhsAuthString == rhsAuthString
-        case (let .retryError(lhsRetryError),
-              let .retryError(rhsRetryError)):
-            return String(reflecting: lhsRetryError) == String(reflecting: rhsRetryError)
+        case let (.networkError(lhsError), .networkError(rhsError)):
+            return String(reflecting: lhsError) == String(reflecting: rhsError)
+        case let (.pathCreationFailed(lhsError), .pathCreationFailed(rhsError)):
+            return lhsError == rhsError
+        case let (.queryItemCreationFailed(lhsError), .queryItemCreationFailed(rhsError)):
+            return lhsError == rhsError
+        case let (.serializationFailed(lhsError), .serializationFailed(rhsError)):
+            return lhsError == rhsError
+        case let (.deserializationFailed(lhsError), .deserializationFailed(rhsError)):
+            return String(reflecting: lhsError) == String(reflecting: rhsError)
+        case let (.dataNotFound(lhsError), .dataNotFound(rhsError)):
+            return lhsError == rhsError
+        case let (.unknownError(lhsError), .unknownError(rhsError)):
+            return lhsError == rhsError
+        case let (.authError(lhsError), .authError(rhsError)):
+            return lhsError == rhsError
+        case let (.retryError(lhsError), .retryError(rhsError)):
+            return String(reflecting: lhsError) == String(reflecting: rhsError)
         default:
             return false
         }

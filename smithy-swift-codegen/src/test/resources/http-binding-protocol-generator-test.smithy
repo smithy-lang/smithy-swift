@@ -38,7 +38,8 @@ service Example {
         IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember,
         IdempotencyTokenWithoutHttpPayloadTraitOnToken,
         InlineDocument,
-        InlineDocumentAsPayload
+        InlineDocumentAsPayload,
+        RequiredHttpFields
     ]
 }
 
@@ -1362,4 +1363,35 @@ structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     @httpHeader("token")
     @idempotencyToken
     token: String,
+}
+
+@http(method: "POST", uri: "/RequiredHttpFields/{label1}/{label2}")
+operation RequiredHttpFields {
+    input: RequiredHttpFieldsInput
+}
+
+structure RequiredHttpFieldsInput {
+    @httpLabel
+    @required
+    label1: String,
+
+    @httpLabel
+    @required
+    label2: String,
+
+    @httpPayload
+    payload: String,
+
+    @httpQuery("Query1")
+    @required
+    query1: String
+
+    @httpQuery("Query2")
+    @required
+    query2: TimestampList,
+
+    @httpQuery("Query3")
+    @required
+    @length(min: 1)
+    query3: String
 }

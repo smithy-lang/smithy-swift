@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.model.isRequired
 
 class HttpQueryItemProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -70,7 +71,7 @@ class HttpQueryItemProvider(
 
     fun renderProvider(writer: SwiftWriter) {
         writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.QueryItemProvider) {
-            writer.openBlock("public var queryItems: [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
+            writer.openBlock("public func queryItems() throws -> [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
                 writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
                 generateQueryItems()
                 writer.write("return items")
@@ -139,6 +140,15 @@ class HttpQueryItemProvider(
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
                     renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                }
+            }
+            if (queryBinding.member.isRequired()) {
+                writer.openBlock("else {", "}") {
+                    writer.write(
+                        "let message = \"Creating a URL Query Item failed. \$L is required but it is nil\"",
+                        memberName
+                    )
+                    writer.write("throw SdkError<OperationStackError>.client(.queryItemCreationFailed(message))")
                 }
             }
         } else {
