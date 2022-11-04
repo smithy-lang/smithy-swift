@@ -82,7 +82,7 @@ class PackageManifestGeneratorTests {
                 "                ),\n" +
                 "                .product(\n" +
                 "                    name: \"ClientRuntime\",\n" +
-                "                    package: \"ClientRuntime\"\n" +
+                "                    package: \"smithy-swift\"\n" +
                 "                ),\n" +
                 "            ],\n" +
                 "            path: \"./MockSDK\"\n" +
@@ -91,7 +91,7 @@ class PackageManifestGeneratorTests {
                 "            name: \"MockSDKTests\",\n" +
                 "            dependencies: [\n" +
                 "                \"MockSDK\",\n" +
-                "                .product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")\n" +
+                "                .product(name: \"SmithyTestUtil\", package: \"smithy-swift\")\n" +
                 "            ],\n" +
                 "            path: \"./MockSDKTests\"\n" +
                 "        )\n" +
@@ -116,7 +116,7 @@ class PackageManifestGeneratorTests {
                 ),
                 .product(
                     name: "ClientRuntime",
-                    package: "ClientRuntime"
+                    package: "smithy-swift"
                 ),
             ],
             path: "./MockSDK"
