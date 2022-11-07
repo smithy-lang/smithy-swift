@@ -116,12 +116,7 @@ extension String {
 
 public extension String {
     func stripFirstMatching(prefixes: [String]) -> String {
-        for prefixToStrip in prefixes {
-            if self.hasPrefix(prefixToStrip) {
-                return self.removePrefix(prefixToStrip)
-            }
-        }
-        return self
+       return prefixes.first(where: hasPrefix(_:)).map(removePrefix(_:)) ?? self
     }
 }
 

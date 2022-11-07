@@ -55,7 +55,7 @@ class UnionEncodeXMLGenerationTests {
                         case let .structvalue(structvalue):
                             try container.encode(structvalue, forKey: ClientRuntime.Key("structValue"))
                         case let .timestampvalue(timestampvalue):
-                            try container.encode(ClientRuntime.TimestampWrapper(timestampvalue, format: .dateTime), forKey: ClientRuntime.Key("timeStampValue"))
+                            try container.encodeTimestamp(timestampvalue, format: .dateTime, forKey: ClientRuntime.Key("timeStampValue"))
                         case let .unionvalue(unionvalue):
                             try container.encode(unionvalue, forKey: ClientRuntime.Key("unionValue"))
                         case let .sdkUnknown(sdkUnknown):
@@ -112,9 +112,8 @@ class UnionEncodeXMLGenerationTests {
                                 self = .stringlist([])
                             }
                         case .timestampvalue:
-                            let timestampvalueDecoded = try containerValues.decode(Swift.String.self, forKey: .timestampvalue)
-                            let timestampvalueBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
-                            self = .timestampvalue(timestampvalueBuffer)
+                            let timestampvalueDecoded = try containerValues.decodeTimestamp(.dateTime, forKey: .timestampvalue)
+                            self = .timestampvalue(timestampvalueDecoded)
                         default:
                             self = .sdkUnknown("")
                     }

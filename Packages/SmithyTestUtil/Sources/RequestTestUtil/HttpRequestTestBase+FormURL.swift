@@ -8,10 +8,15 @@ import XCTest
 import ClientRuntime
 
 extension HttpRequestTestBase {
-    public func assertEqualFormURLBody(_ expected: Data, _ actual: Data) {
+    public func assertEqualFormURLBody(
+        _ expected: Data,
+        _ actual: Data,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         let expectedQueryItems = convertToQueryItems(data: expected)
         let actualQueryItems = convertToQueryItems(data: actual)
-        assertQueryItems(expectedQueryItems, actualQueryItems)
+        assertQueryItems(expectedQueryItems, actualQueryItems, file: file, line: line)
     }
 
     private func convertToQueryItems(data: Data) -> [URLQueryItem] {

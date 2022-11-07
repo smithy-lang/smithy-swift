@@ -317,7 +317,7 @@ class ListEncodeXMLGenerationTests {
                                     for timestamp1 in nestedtimestamplist0 {
                                         var nestedtimestamplist0Container1 = nestedtimestamplist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedMember"))
                                         try nestedtimestamplist0Container1.encode("http://baz.com", forKey: ClientRuntime.Key("xmlns:baz"))
-                                        try nestedtimestamplist0Container1.encode(ClientRuntime.TimestampWrapper(timestamp1, format: .epochSeconds), forKey: Key(""))
+                                        try nestedtimestamplist0Container1.encodeTimestamp(timestamp1, format: .epochSeconds, forKey: Key(""))
                                     }
                                 }
                             }
