@@ -12,7 +12,7 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
-import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.model.getTrait
 
 class MiddlewareShapeUtils {
@@ -41,7 +41,7 @@ class MiddlewareShapeUtils {
             return Symbol.builder().name(operationErrorName).build()
         }
         fun outputErrorSymbolName(op: OperationShape): String {
-            return "${op.capitalizedName()}OutputError"
+            return "${op.toUpperCamelCase()}OutputError"
         }
         fun rootNamespace(settings: SwiftSettings): String {
             return settings.moduleName

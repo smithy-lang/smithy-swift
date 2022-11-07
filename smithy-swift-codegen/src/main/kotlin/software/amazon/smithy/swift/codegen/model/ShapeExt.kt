@@ -25,8 +25,9 @@ import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.StringUtils
-import kotlin.streams.toList
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
@@ -71,8 +72,8 @@ val Shape.isError: Boolean
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
 
-fun Shape.capitalizedName(): String {
-    return StringUtils.capitalize(this.id.name)
+fun Shape.toUpperCamelCase(): String {
+    return this.id.name.toUpperCamelCase()
 }
 
 fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
@@ -82,8 +83,8 @@ fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
         StringUtils.capitalize(this.id.name)
     }
 }
-fun MemberShape.camelCaseName(): String = StringUtils.uncapitalize(this.memberName)
-fun Shape.camelCaseName(): String = StringUtils.uncapitalize(this.id.name)
+fun MemberShape.toLowerCamelCase(): String = this.memberName.toLowerCamelCase()
+fun Shape.toLowerCamelCase(): String = this.id.name.toLowerCamelCase()
 
 fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
     val targetSymbol = symbolProvider.toSymbol(this)
