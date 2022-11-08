@@ -20,7 +20,7 @@ import software.amazon.smithy.swift.codegen.model.camelCaseName
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.utils.toCamelCase
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
  * Generate paginators for supporting operations.  See
@@ -155,7 +155,7 @@ class PaginatorGenerator : SwiftIntegration {
                             .call {
                                 val sortedMembers = inputShape.members().sortedBy { it.camelCaseName() }
                                 for ((index, member) in sortedMembers.withIndex()) {
-                                    if (member.memberName.toCamelCase() != markerLiteral) {
+                                    if (member.memberName.toLowerCamelCase() != markerLiteral) {
                                         writer.writeInline("\n\$L: \$L", member.camelCaseName(), "self.${member.camelCaseName()}")
                                     } else {
                                         writer.writeInline("\n\$L: \$L", member.camelCaseName(), "token")
