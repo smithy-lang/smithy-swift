@@ -7,7 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EndpointTrait
-import software.amazon.smithy.swift.codegen.utils.toCamelCase
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 class EndpointTraitConstructor(private val endpointTrait: EndpointTrait, private val inputShape: Shape) {
     fun construct(): String {
@@ -16,7 +16,7 @@ class EndpointTraitConstructor(private val endpointTrait: EndpointTrait, private
                 // hostLabel can only target string shapes
                 // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
                 val member = inputShape.members().first { it.memberName == segment.content }
-                "\\(input.${member.memberName.toCamelCase()}!)"
+                "\\(input.${member.memberName.toLowerCamelCase()}!)"
             } else {
                 segment.content
             }
