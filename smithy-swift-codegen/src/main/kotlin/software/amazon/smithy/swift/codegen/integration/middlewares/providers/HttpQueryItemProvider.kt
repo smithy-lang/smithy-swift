@@ -27,9 +27,9 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.model.isRequired
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
-import software.amazon.smithy.swift.codegen.model.isRequired
 
 class HttpQueryItemProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
