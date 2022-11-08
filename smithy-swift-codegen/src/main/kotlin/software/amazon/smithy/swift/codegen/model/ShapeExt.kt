@@ -28,6 +28,7 @@ import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.StringUtils
+import kotlin.streams.toList
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
