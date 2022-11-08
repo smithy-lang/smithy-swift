@@ -10,7 +10,10 @@ fun String.splitOnWordBoundaries(): List<String> {
     var result = this
 
     // all non-alphanumeric characters: "acm-success"-> "acm success"
-    result = result.replace(Regex("[^A-Za-z0-9+]"), " ")
+    result = result.replace(Regex("[^A-Za-z0-9+_]"), " ")
+
+    // if there is an underscore, split on it: "acm_success" -> "acm", "_", "success"
+    result = result.replace(Regex("_"), " _ ")
 
     // if a number has a standalone v in front of it, separate it out
     result = result.replace(Regex("([^a-z]{2,})v([0-9]+)"), "$1 v$2 ") // TESTv4 -> "TEST v4 "

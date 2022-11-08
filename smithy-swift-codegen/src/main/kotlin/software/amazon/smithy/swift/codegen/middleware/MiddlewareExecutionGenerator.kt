@@ -9,8 +9,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.model.camelCaseName
-import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 typealias HttpMethodCallback = (OperationShape) -> String
@@ -27,14 +27,14 @@ class MiddlewareExecutionGenerator(
     private val symbolProvider = ctx.symbolProvider
 
     fun render(op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
-        val operationErrorName = "${op.capitalizedName()}OutputError"
+        val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op).name
         writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }
-        writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.camelCaseName()}\")", OperationStack)
+        writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.toLowerCamelCase()}\")", OperationStack)
         renderMiddlewares(op, operationStackName)
     }
 
@@ -46,7 +46,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withDecoder(value: decoder)")
         writer.write("  .withMethod(value: .$httpMethod)")
         writer.write("  .withServiceName(value: serviceName)")
-        writer.write("  .withOperation(value: \"${op.camelCaseName()}\")")
+        writer.write("  .withOperation(value: \"${op.toLowerCamelCase()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
 
