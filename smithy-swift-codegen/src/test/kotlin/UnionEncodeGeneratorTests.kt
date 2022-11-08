@@ -72,7 +72,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MyUnion: Swift.Codable {
+            extension ExampleClientTypes.MyUnion: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"
@@ -153,7 +153,7 @@ class UnionEncodeGeneratorTests {
                         self = .inheritedtimestamp(inheritedtimestamp)
                         return
                     }
-                    let enumvalueDecoded = try values.decodeIfPresent(FooEnum.self, forKey: .enumvalue)
+                    let enumvalueDecoded = try values.decodeIfPresent(ExampleClientTypes.FooEnum.self, forKey: .enumvalue)
                     if let enumvalue = enumvalueDecoded {
                         self = .enumvalue(enumvalue)
                         return
@@ -186,7 +186,7 @@ class UnionEncodeGeneratorTests {
                         self = .mapvalue(mapvalue)
                         return
                     }
-                    let structurevalueDecoded = try values.decodeIfPresent(GreetingWithErrorsOutput.self, forKey: .structurevalue)
+                    let structurevalueDecoded = try values.decodeIfPresent(ExampleClientTypes.GreetingWithErrorsOutput.self, forKey: .structurevalue)
                     if let structurevalue = structurevalueDecoded {
                         self = .structurevalue(structurevalue)
                         return
