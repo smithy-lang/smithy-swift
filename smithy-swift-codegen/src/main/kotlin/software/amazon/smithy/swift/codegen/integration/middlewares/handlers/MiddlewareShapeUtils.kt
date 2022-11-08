@@ -12,8 +12,8 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 class MiddlewareShapeUtils {
     companion object {
