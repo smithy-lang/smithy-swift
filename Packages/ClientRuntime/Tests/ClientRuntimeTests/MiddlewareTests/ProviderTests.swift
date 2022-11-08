@@ -38,11 +38,11 @@ class ProviderTests: HttpRequestTestBase {
         })
     }
     
-    func testQueryItemProvider() {
+    func testQueryItemProvider() throws {
         var mockInput = MockInput()
         mockInput.value = 3
-        
-        XCTAssert(mockInput.queryItems.count == 1)
+        let queryItems = try mockInput.queryItems()
+        XCTAssert(queryItems.count == 1)
     }
     
     func testQueryItemMiddleware() async throws {
@@ -107,7 +107,7 @@ extension MockInput: URLPathProvider, QueryItemProvider, HeaderProvider {
         return "/\(value)"
     }
     
-    public var queryItems: [ClientRuntime.URLQueryItem] {
+    public func queryItems() throws -> [ClientRuntime.URLQueryItem] {
         var items = [ClientRuntime.URLQueryItem]()
         
         if let value = value {
