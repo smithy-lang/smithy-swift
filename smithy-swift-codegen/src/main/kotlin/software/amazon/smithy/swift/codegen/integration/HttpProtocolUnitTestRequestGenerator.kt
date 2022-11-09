@@ -17,7 +17,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
@@ -78,7 +78,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShapeId = operation.output.get()
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
-            val outputErrorName = "${operation.capitalizedName()}OutputError"
+            val outputErrorName = "${operation.toUpperCamelCase()}OutputError"
 
             writer.write("let context = HttpContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
