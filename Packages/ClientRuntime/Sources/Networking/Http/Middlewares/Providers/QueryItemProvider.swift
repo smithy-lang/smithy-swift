@@ -6,5 +6,5 @@
 //
 
 public protocol QueryItemProvider {
-    func queryItems() throws -> [URLQueryItem]
+    var queryItems: [URLQueryItem] { get throws }
 }
