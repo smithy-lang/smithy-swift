@@ -6,5 +6,5 @@
 //
 
 public protocol QueryItemProvider {
-    var queryItems: [URLQueryItem] { get }
+    var queryItems: [URLQueryItem] { get throws }
 }
