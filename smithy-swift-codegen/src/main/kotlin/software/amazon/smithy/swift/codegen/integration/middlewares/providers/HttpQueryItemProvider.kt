@@ -71,10 +71,12 @@ class HttpQueryItemProvider(
 
     fun renderProvider(writer: SwiftWriter) {
         writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.QueryItemProvider) {
-            writer.openBlock("public func queryItems() throws -> [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
-                writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
-                generateQueryItems()
-                writer.write("return items")
+            writer.openBlock("public var queryItems: [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
+                writer.openBlock("get throws {", "}") {
+                    writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
+                    generateQueryItems()
+                    writer.write("return items")
+                }
             }
         }
     }
@@ -135,20 +137,26 @@ class HttpQueryItemProvider(
 
     fun renderHttpQuery(queryBinding: HttpBindingDescriptor, memberName: String, memberTarget: Shape, paramName: String, bindingIndex: HttpBindingIndex, isBoxed: Boolean) {
         if (isBoxed) {
-            writer.openBlock("if let $memberName = $memberName {", "}") {
+            if (queryBinding.member.isRequired()) {
+                writer.openBlock("guard let \$L = \$L else {", "}", memberName, memberName) {
+                    writer.write(
+                        "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
+                        memberName
+                    )
+                    writer.write("throw ClientRuntime.ClientError.queryItemCreationFailed(message)")
+                }
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
                     renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
                 }
-            }
-            if (queryBinding.member.isRequired()) {
-                writer.openBlock("else {", "}") {
-                    writer.write(
-                        "let message = \"Creating a URL Query Item failed. \$L is required but it is nil\"",
-                        memberName
-                    )
-                    writer.write("throw ClientRuntime.ClientError.queryItemCreationFailed(message)")
+            } else {
+                writer.openBlock("if let $memberName = $memberName {", "}") {
+                    if (memberTarget is CollectionShape) {
+                        renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
+                    } else {
+                        renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                    }
                 }
             }
         } else {
