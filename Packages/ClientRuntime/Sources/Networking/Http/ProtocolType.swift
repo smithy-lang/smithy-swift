@@ -8,4 +8,5 @@ import Foundation
 public enum ProtocolType: String, CaseIterable {
     case http
     case https
+    case wss
 }
