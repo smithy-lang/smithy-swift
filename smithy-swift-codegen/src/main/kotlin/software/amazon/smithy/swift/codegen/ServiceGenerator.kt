@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.model.camelCaseName
+import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 
 /*
 * Generates a Swift protocol for the service
@@ -53,7 +53,7 @@ class ServiceGenerator(
             op: OperationShape,
             insideProtocol: Boolean = false
         ) {
-            val operationName = op.camelCaseName()
+            val operationName = op.toLowerCamelCase()
             // Theoretically this shouldn't happen since we insert empty input/outputs for operations that don't have one or the other to allow for sdk evolution
             if (!op.input.isPresent || !op.output.isPresent) throw CodegenException("model should have been preprocessed to ensure operations always have an input or output shape: $op.id")
 
