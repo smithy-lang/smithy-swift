@@ -6,14 +6,26 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
+import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
+import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
 class UnionEncodeGeneratorTests {
     var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
-        val settings = model.defaultSettings()
-        model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
+        model = preprocessModel(model)
         return model.newTestContext()
+    }
+    private fun preprocessModel(model: Model): Model {
+        val settings = model.defaultSettings()
+        var resolvedModel = model
+        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
+        resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
+        resolvedModel = HashableShapeTransformer.transform(resolvedModel)
+        resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+        return resolvedModel
     }
     val newTestContext = newTestContext()
     init {
@@ -60,7 +72,7 @@ class UnionEncodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension MyUnion: Swift.Codable {
+            extension ExampleClientTypes.MyUnion: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
                     case booleanvalue = "booleanValue"
@@ -141,7 +153,7 @@ class UnionEncodeGeneratorTests {
                         self = .inheritedtimestamp(inheritedtimestamp)
                         return
                     }
-                    let enumvalueDecoded = try values.decodeIfPresent(FooEnum.self, forKey: .enumvalue)
+                    let enumvalueDecoded = try values.decodeIfPresent(ExampleClientTypes.FooEnum.self, forKey: .enumvalue)
                     if let enumvalue = enumvalueDecoded {
                         self = .enumvalue(enumvalue)
                         return
@@ -174,9 +186,53 @@ class UnionEncodeGeneratorTests {
                         self = .mapvalue(mapvalue)
                         return
                     }
-                    let structurevalueDecoded = try values.decodeIfPresent(GreetingWithErrorsOutput.self, forKey: .structurevalue)
+                    let structurevalueDecoded = try values.decodeIfPresent(ExampleClientTypes.GreetingWithErrorsOutput.self, forKey: .structurevalue)
                     if let structurevalue = structurevalueDecoded {
                         self = .structurevalue(structurevalue)
+                        return
+                    }
+                    self = .sdkUnknown("")
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it generates codable conformance for a recursive union`() {
+        val contents = getModelFileContents("example", "IndirectEnum+Codable.swift", newTestContext.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents =
+            """
+            extension ExampleClientTypes.IndirectEnum: Swift.Codable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
+                    case other
+                    case sdkUnknown
+                    case some
+                }
+
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    switch self {
+                        case let .other(other):
+                            try container.encode(other, forKey: .other)
+                        case let .some(some):
+                            try container.encode(some, forKey: .some)
+                        case let .sdkUnknown(sdkUnknown):
+                            try container.encode(sdkUnknown, forKey: .sdkUnknown)
+                    }
+                }
+
+                public init (from decoder: Swift.Decoder) throws {
+                    let values = try decoder.container(keyedBy: CodingKeys.self)
+                    let someDecoded = try values.decodeIfPresent(ExampleClientTypes.IndirectEnum.self, forKey: .some)
+                    if let some = someDecoded {
+                        self = .some(some)
+                        return
+                    }
+                    let otherDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .other)
+                    if let other = otherDecoded {
+                        self = .other(other)
                         return
                     }
                     self = .sdkUnknown("")

@@ -18,6 +18,7 @@ service Example {
         ListInput,
         MapInput,
         EnumInput,
+        IndirectEnumOperation,
         TimestampInput,
         BlobInput,
         EmptyInputAndEmptyOutput,
@@ -1030,6 +1031,12 @@ operation JsonUnions {
     output: UnionInputOutput,
 }
 
+@http(uri: "/IndirectEnumOperation", method: "POST")
+operation IndirectEnumOperation {
+    input: IndirectEnumInputOutput
+    output: IndirectEnumInputOutput
+}
+
 @timestampFormat("http-date")
 timestamp CommonTimestamp
 
@@ -1363,6 +1370,15 @@ structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     @httpHeader("token")
     @idempotencyToken
     token: String,
+}
+
+union IndirectEnum {
+    some: IndirectEnum
+    other: String
+}
+
+structure IndirectEnumInputOutput {
+    value: IndirectEnum
 }
 
 @http(method: "POST", uri: "/RequiredHttpFields/{label1}/{label2}")
