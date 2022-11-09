@@ -21,4 +21,21 @@ class SdkRequestBuilderTests: XCTestCase {
         XCTAssertEqual(pathToMatch, updatedPath)
         XCTAssertEqual(url, updatedRequest.endpoint.url?.absoluteString)
     }
+
+    func testBuildWSSRequest() {
+        let protocolType = ProtocolType.wss
+        let host = "foo.us-east-1.amazonaws.com"
+        let path = "/hello-world"
+        let queryItem = (name: "bar", value: "baz")
+        let request = SdkHttpRequestBuilder()
+            .withProtocol(protocolType)
+            .withHost(host)
+            .withPath(path)
+            .withQueryItem(.init(name: queryItem.name, value: queryItem.value))
+            .build()
+
+        let expectedOutput = "\(protocolType.rawValue)://\(host)\(path)?\(queryItem.name)=\(queryItem.value)"
+
+        XCTAssertEqual(request.endpoint.url?.absoluteString, expectedOutput)
+    }
 }
