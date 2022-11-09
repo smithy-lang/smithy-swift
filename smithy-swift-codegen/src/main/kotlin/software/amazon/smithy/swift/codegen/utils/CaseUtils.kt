@@ -10,7 +10,10 @@ fun String.splitOnWordBoundaries(): List<String> {
     var result = this
 
     // all non-alphanumeric characters: "acm-success"-> "acm success"
-    result = result.replace(Regex("[^A-Za-z0-9+]"), " ")
+    result = result.replace(Regex("[^A-Za-z0-9+_]"), " ")
+
+    // if there is an underscore, split on it: "acm_success" -> "acm", "_", "success"
+    result = result.replace(Regex("_"), " _ ")
 
     // if a number has a standalone v in front of it, separate it out
     result = result.replace(Regex("([^a-z]{2,})v([0-9]+)"), "$1 v$2 ") // TESTv4 -> "TEST v4 "
@@ -32,9 +35,25 @@ fun String.splitOnWordBoundaries(): List<String> {
     return result.split(" ")
 }
 
-fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.lowercase().replaceFirstChar { c -> c.uppercaseChar() } }
-
-fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowercaseChar() }
-
 // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String = toPascalCase()
+fun String.clientName(): String = toUpperCamelCase()
+
+fun String.toLowerCamelCase(): String {
+    val words = this.splitOnWordBoundaries()
+
+    // make first part lowercase
+    val firstWord = words.first().lowercase()
+
+    // join
+    return firstWord + words.drop(1).joinToString(separator = "")
+}
+
+fun String.toUpperCamelCase(): String {
+    val words = this.splitOnWordBoundaries()
+
+    // make first part uppercase
+    val firstWord = words.first().replaceFirstChar { c -> c.uppercaseChar() }
+
+    // join
+    return firstWord + words.drop(1).joinToString(separator = "")
+}
