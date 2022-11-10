@@ -38,13 +38,6 @@ class ProviderTests: HttpRequestTestBase {
         })
     }
     
-    func testQueryItemProvider() {
-        var mockInput = MockInput()
-        mockInput.value = 3
-        
-        XCTAssert(mockInput.queryItems.count == 1)
-    }
-    
     func testQueryItemMiddleware() async throws {
         var mockInput = MockInput()
         mockInput.value = 3

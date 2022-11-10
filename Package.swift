@@ -4,7 +4,7 @@ import PackageDescription
 
 
 let package = Package(
-    name: "ClientRuntime",
+    name: "smithy-swift",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13)
@@ -14,7 +14,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.3.0"),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.3.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.13.0")
     ],

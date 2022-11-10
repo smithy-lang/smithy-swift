@@ -25,7 +25,7 @@ enum class SwiftDependency(
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "ClientRuntime"
+        "smithy-swift"
     ),
     XCTest("XCTest", null, "", "", "", ""),
     SMITHY_TEST_UTIL(
@@ -34,7 +34,7 @@ enum class SwiftDependency(
         "0.1.0",
         "https://github.com/awslabs/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "ClientRuntime"
+        "smithy-swift"
     );
 
     override fun getDependencies(): List<SymbolDependency> {

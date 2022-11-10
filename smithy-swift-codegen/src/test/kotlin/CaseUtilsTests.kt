@@ -35,4 +35,12 @@ class CaseUtilsTests {
         val actual = input.toUpperCamelCase()
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun `it should preserve underscore`() {
+        val input = "Foo_Bar"
+        val expected = "foo_Bar"
+        val actual = input.toLowerCamelCase()
+        assertEquals(expected, actual)
+    }
 }
