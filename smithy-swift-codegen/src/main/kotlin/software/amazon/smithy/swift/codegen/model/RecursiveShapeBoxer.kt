@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 
@@ -19,7 +20,7 @@ object RecursiveShapeBoxer {
     /**
      * Transform a model which may contain recursive shapes into a model annotated with [SwiftBoxTrait]
      *
-     * When recursive shapes do NOT go through a List, Map, or Set, they must be boxed in Swift. This function will
+     * When recursive shapes do NOT go through a List, Map, Union, or Set, they must be boxed in Swift. This function will
      * iteratively find loops & add the `SwiftBoxTrait` trait in a deterministic way until it reaches a fixed point.
      *
      * This function MUST be deterministic (always choose the same shapes to `Box`). If it is not, that is a bug. Even so
@@ -84,6 +85,7 @@ object RecursiveShapeBoxer {
             when (it) {
                 is ListShape,
                 is MapShape,
+                is UnionShape,
                 is SetShape -> true
                 else -> it.hasTrait(SwiftBoxTrait::class.java)
             }

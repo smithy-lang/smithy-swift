@@ -74,8 +74,8 @@ class UnionEncodeXMLGenerationTests {
                             let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
                             self = .datavalue(datavalueDecoded)
                         case .unionvalue:
-                            let unionvalueDecoded = try containerValues.decode(Box<RestXmlProtocolClientTypes.XmlUnionShape>.self, forKey: .unionvalue)
-                            self = .unionvalue(unionvalueDecoded.value)
+                            let unionvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlUnionShape.self, forKey: .unionvalue)
+                            self = .unionvalue(unionvalueDecoded)
                         case .structvalue:
                             let structvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
                             self = .structvalue(structvalueDecoded)

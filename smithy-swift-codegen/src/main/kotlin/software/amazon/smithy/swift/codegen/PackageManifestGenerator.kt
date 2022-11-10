@@ -55,7 +55,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
                     writer.write("name: \"${settings.moduleName}Tests\",")
                     writer.openBlock("dependencies: [", "],") {
                         writer.write("\$S,", settings.moduleName)
-                        writer.write(".product(name: \"SmithyTestUtil\", package: \"ClientRuntime\")")
+                        writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\")")
                     }
                     writer.write("path: \"./${settings.moduleName}Tests\"")
                 }
@@ -82,7 +82,7 @@ fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependen
             val target = dependency.expectProperty("target", String::class.java)
 
             if (localPath.isNotEmpty()) {
-                writer.write(".package(name: \"${target}\", path: \"$localPath\"),")
+                writer.write(".package(path: \"$localPath\"),")
             } else {
                 renderPackageWithUrl(writer, dependency)
             }
@@ -102,7 +102,6 @@ fun renderPackageWithUrl(writer: CodeWriter, dependency: SymbolDependency) {
     writer.openBlock(".package(", "),") {
         val target = dependency.expectProperty("target", String::class.java)
         val dependencyURL = dependency.expectProperty("url", String::class.java)
-        writer.write("name: \"$target\",")
         writer.write("url: \"$dependencyURL\",")
         val branch = dependency.getProperty("branch", String::class.java)
         if (!branch.getOrNull().isNullOrEmpty()) {
