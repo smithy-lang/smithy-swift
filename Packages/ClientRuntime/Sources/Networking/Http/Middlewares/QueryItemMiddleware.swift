@@ -18,7 +18,7 @@ public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              for queryItem in input.operationInput.queryItems {
+              for queryItem in try input.operationInput.queryItems {
                   input.builder.withQueryItem(queryItem)
               }
               

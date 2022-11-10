@@ -4,7 +4,7 @@ import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 class HttpUrlPathProviderTests {
     @Test
-    fun `it builds url path provider smoke test`() {
+    fun `001 it builds url path provider smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy")
         val contents = getModelFileContents("example", "SmokeTestInput+UrlPathProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
@@ -16,6 +16,30 @@ class HttpUrlPathProviderTests {
                         return nil
                     }
                     return "/smoketest/\(label1.urlPercentEncoding())/foo"
+                }
+            }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `002 it handles required http labels`() {
+        val context = setupTests("http-binding-protocol-generator-test.smithy")
+        val contents = getModelFileContents("example", "RequiredHttpFieldsInput+UrlPathProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+
+        // All http labels are implicitly required, even if the smithy spec doesn't specify the required trait
+        val expectedContents =
+            """
+            extension RequiredHttpFieldsInput: ClientRuntime.URLPathProvider {
+                public var urlPath: Swift.String? {
+                    guard let label1 = label1 else {
+                        return nil
+                    }
+                    guard let label2 = label2 else {
+                        return nil
+                    }
+                    return "/RequiredHttpFields/\(label1.urlPercentEncoding())/\(label2.urlPercentEncoding())"
                 }
             }
             """.trimIndent()
