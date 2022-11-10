@@ -10,5 +10,4 @@ import Foundation
 public enum SampleEnum {
     case one
     case two
-    case three
 }
