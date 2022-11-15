@@ -1,3 +1,7 @@
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -7,12 +11,39 @@ import software.amazon.smithy.swift.codegen.WaiterGenerator
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import kotlin.io.path.Path
 
 class WaiterGeneratorTests {
 
     @Test
-    fun testRenderTestWaiter() {
-        val context = setupTests("waiters.smithy", "com.test#TestS3")
+    fun testGeneratorNotEnabledForServiceWithoutWaiters() {
+        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
+        WaiterGenerator().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeFalse()
+    }
+
+    @Test
+    fun testGeneratorEnabledForServiceWithWaiters() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
+        WaiterGenerator().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeTrue()
+    }
+
+    @Test
+    fun testRendersWaitersSwiftFileForServiceWithWaiters() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
+        val filePaths = context.manifest.files
+        filePaths.shouldContain(Path("/Test/Waiters.swift"))
+    }
+
+    @Test
+    fun testRendersNoWaitersSwiftFileForServiceWithoutWaiters() {
+        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
+        val filePaths = context.manifest.files
+        filePaths.shouldNotContain(Path("/Test/Waiters.swift"))
+    }
+
+    @Test
+    fun testRendersCorrectWaitersSwiftFileContentForServiceWithWaiters() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
             extension TestClient {
@@ -36,7 +67,6 @@ class WaiterGeneratorTests {
                 }
             }
         """.trimIndent()
-
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -53,7 +83,6 @@ class WaiterGeneratorTests {
             override val protocolGenerator: ProtocolGenerator? = context.generator
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
-
         unit.writeAdditionalFiles(codegenContext, context.generationCtx, context.generationCtx.delegator)
         context.generationCtx.delegator.flushWriters()
         return context

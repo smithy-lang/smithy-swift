@@ -3,7 +3,7 @@ namespace com.test
 use smithy.waiters#waitable
 use aws.protocols#restJson1
 
-service TestS3 {
+service TestHasWaiters {
     operations: [HeadBucket]
 }
 
@@ -35,10 +35,5 @@ operation HeadBucket {
     output: HeadBucketResponse
 }
 
-structure HeadBucketRequest {
-    @httpQuery("BucketName")
-    bucketName: String,
-}
-
-structure HeadBucketResponse {
-}
+structure HeadBucketRequest {}
+structure HeadBucketResponse {}
