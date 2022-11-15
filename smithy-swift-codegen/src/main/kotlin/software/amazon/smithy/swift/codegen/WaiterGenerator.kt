@@ -66,22 +66,24 @@ class WaiterGenerator : SwiftIntegration {
         val outputType = waitedOperation.outputShape.name
         writer.write("")
         writer.writeSingleLineDocs {
-            this.write("""
-            Initiates waiting for the ${"$"}L event on the ${"$"}L operation.
-            The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
-            Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
-            waiter failure or timeout.
-            - Parameters:
-              - options: `WaiterOptions` to be used to configure this wait.
-              - input: The `${"$"}L` object to be used as a parameter when performing the operation.
-            - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
-            - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
-            or there is an error not handled by any `Acceptor.`
-            `WaiterTimeoutError` if the waiter times out.
-        """.trimIndent(),
+            this.write(
+                """
+                Initiates waiting for the ${"$"}L event on the ${"$"}L operation.
+                The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
+                Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
+                waiter failure or timeout.
+                - Parameters:
+                  - options: `WaiterOptions` to be used to configure this wait.
+                  - input: The `${"$"}L` object to be used as a parameter when performing the operation.
+                - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
+                - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
+                or there is an error not handled by any `Acceptor.`
+                `WaiterTimeoutError` if the waiter times out.
+                """.trimIndent(),
                 waiterName,
                 waitedOperation.toLowerCamelCase(),
-                inputType)
+                inputType
+            )
         }
         writer.openBlock(
             "public func waitUntil\$L(options: WaiterOptions, input: \$L) async throws -> WaiterOutcome<\$L> {",
