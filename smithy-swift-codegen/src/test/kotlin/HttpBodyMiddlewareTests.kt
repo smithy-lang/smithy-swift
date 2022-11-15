@@ -149,13 +149,9 @@ class HttpBodyMiddlewareTests {
                 Self.Context == H.Context
                 {
                     do {
-                        let encoder = context.getEncoder()
                         if let payload1 = input.operationInput.payload1 {
+                            let encoder = context.getEncoder()
                             let payload1data = try encoder.encode(payload1)
-                            let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                            input.builder.withBody(payload1body)
-                        } else {
-                            let payload1data = try encoder.encode(input.operationInput)
                             let payload1body = ClientRuntime.HttpBody.data(payload1data)
                             input.builder.withBody(payload1body)
                         }
