@@ -149,11 +149,23 @@ class HttpBodyMiddlewareTests {
                 Self.Context == H.Context
                 {
                     do {
+                        let encoder = context.getEncoder()
                         if let payload1 = input.operationInput.payload1 {
-                            let encoder = context.getEncoder()
                             let payload1data = try encoder.encode(payload1)
                             let payload1body = ClientRuntime.HttpBody.data(payload1data)
                             input.builder.withBody(payload1body)
+                        } else {
+                            if encoder is JSONEncoder {
+                                // Encode an empty body as an empty structure in JSON
+                                let payload1data = "{}".data(using: .utf8)!
+                                let payload1body = ClientRuntime.HttpBody.data(payload1data)
+                                input.builder.withBody(payload1body)
+                            } else if encoder is XMLEncoder {
+                                // Encode an empty body as an empty string in XML
+                                let payload1data = "".data(using: .utf8)!
+                                let payload1body = ClientRuntime.HttpBody.data(payload1data)
+                                input.builder.withBody(payload1body)
+                            }
                         }
                     } catch let err {
                         throw SdkError<ExplicitStructOutputError>.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription))

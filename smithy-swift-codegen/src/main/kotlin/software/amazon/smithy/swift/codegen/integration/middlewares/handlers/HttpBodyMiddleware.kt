@@ -102,7 +102,32 @@ class HttpBodyMiddleware(
                     renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
                 }
             }
-            ShapeType.DOCUMENT, ShapeType.STRUCTURE, ShapeType.UNION -> {
+            ShapeType.STRUCTURE, ShapeType.UNION -> {
+                // delegate to the member encode function
+                writer.openBlock("do {", "} catch let err {") {
+                    writer.write("let encoder = context.getEncoder()")
+                    writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
+                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
+                    writer.indent()
+                    writer.openBlock("if encoder is JSONEncoder {", "} else if encoder is XMLEncoder {") {
+                        writer.write("// Encode an empty body as an empty structure in JSON")
+                        writer.write("let \$L = \"{}\".data(using: .utf8)!", dataDeclaration)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
+                    writer.indent()
+                    writer.write("// Encode an empty body as an empty string in XML")
+                    writer.write("let \$L = \"\".data(using: .utf8)!", dataDeclaration)
+                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    writer.dedent()
+                    writer.write("}")
+                    writer.dedent()
+                    writer.write("}")
+                }
+                renderErrorCase()
+            }
+            ShapeType.DOCUMENT -> {
                 writer.openBlock("do {", "} catch let err {") {
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                         writer.write("let encoder = context.getEncoder()")
