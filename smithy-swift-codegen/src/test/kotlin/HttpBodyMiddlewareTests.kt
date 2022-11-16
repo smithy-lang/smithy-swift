@@ -160,11 +160,6 @@ class HttpBodyMiddlewareTests {
                                 let payload1data = "{}".data(using: .utf8)!
                                 let payload1body = ClientRuntime.HttpBody.data(payload1data)
                                 input.builder.withBody(payload1body)
-                            } else if encoder is XMLEncoder {
-                                // Encode an empty body as an empty string in XML
-                                let payload1data = "".data(using: .utf8)!
-                                let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                                input.builder.withBody(payload1body)
                             }
                         }
                     } catch let err {
