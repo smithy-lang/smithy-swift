@@ -35,7 +35,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val settings: SwiftSettings = SwiftSettings.from(context.model, context.settings)
-    private val model: Model
+    val model: Model
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
