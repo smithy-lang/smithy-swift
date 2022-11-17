@@ -29,19 +29,27 @@ class WaiterGenerator : SwiftIntegration {
     ) {
         if (!serviceHasWaiters(ctx.model)) return
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
+
+        // Open a new file Waiters.swift to hold the waiter definitions for this service
         delegator.useFileWriter("${ctx.settings.moduleName}/Waiters.swift") { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
-            writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-                val waitedOperations = service.allOperations
-                    .map { ctx.model.expectShape<OperationShape>(it) }
-                    .filter { operationShape -> operationShape.hasTrait(WaitableTrait.ID) }
 
-                waitedOperations.forEach { waitedOperation ->
+            // Render an extension on the service protocol, which will contain the waitUntil... methods
+            writer.openBlock("extension \$LProtocol {", "}", serviceSymbol.name) {
+
+                // Get the operation shapes for this service
+                val operationShapes = service.allOperations
+                    .map { ctx.model.expectShape<OperationShape>(it) }
+
+                // On each operation shape, get only the waitable traits from the operation
+                operationShapes.forEach { waitedOperation ->
                     val waitableTraits = waitedOperation.allTraits.mapNotNull { (_, trait) -> trait as? WaitableTrait }
+
+                    // On each waitable trait, get all its waiters and render a waitUntil for each
                     waitableTraits.forEach { waitableTrait ->
                         waitableTrait.waiters.forEach { (waiterName, waiter) ->
-                            renderWaiterForOperation(writer, ctx, service, waitedOperation, waiterName, waiter)
+                            renderWaitUntilMethodForWaiter(writer, ctx, service, waitedOperation, waiterName, waiter)
                         }
                     }
                 }
@@ -53,7 +61,7 @@ class WaiterGenerator : SwiftIntegration {
         return model.operationShapes.any { it.hasTrait<WaitableTrait>() }
     }
 
-    private fun renderWaiterForOperation(
+    private fun renderWaitUntilMethodForWaiter(
         writer: SwiftWriter,
         ctx: CodegenContext,
         service: ServiceShape,
