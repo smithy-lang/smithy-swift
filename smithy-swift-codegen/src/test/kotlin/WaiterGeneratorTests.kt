@@ -46,7 +46,7 @@ class WaiterGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            extension TestClient {
+            extension TestClientProtocol {
 
                 /// Initiates waiting for the BucketExists event on the headBucket operation.
                 /// The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
