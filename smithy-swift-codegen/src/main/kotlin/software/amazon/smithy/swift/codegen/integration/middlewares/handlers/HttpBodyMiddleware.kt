@@ -111,8 +111,11 @@ class HttpBodyMiddleware(
                         renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
                     }
                     writer.indent()
-                    writer.write("let $dataDeclaration = try encoder.encode(input.operationInput)")
-                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    writer.openBlock("if encoder is JSONEncoder {", "}") {
+                        writer.write("// Encode an empty body as an empty structure in JSON")
+                        writer.write("let \$L = \"{}\".data(using: .utf8)!", dataDeclaration)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
                     writer.dedent()
                     writer.write("}")
                 }

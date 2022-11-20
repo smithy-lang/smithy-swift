@@ -155,9 +155,12 @@ class HttpBodyMiddlewareTests {
                             let payload1body = ClientRuntime.HttpBody.data(payload1data)
                             input.builder.withBody(payload1body)
                         } else {
-                            let payload1data = try encoder.encode(input.operationInput)
-                            let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                            input.builder.withBody(payload1body)
+                            if encoder is JSONEncoder {
+                                // Encode an empty body as an empty structure in JSON
+                                let payload1data = "{}".data(using: .utf8)!
+                                let payload1body = ClientRuntime.HttpBody.data(payload1data)
+                                input.builder.withBody(payload1body)
+                            }
                         }
                     } catch let err {
                         throw SdkError<ExplicitStructOutputError>.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription))
