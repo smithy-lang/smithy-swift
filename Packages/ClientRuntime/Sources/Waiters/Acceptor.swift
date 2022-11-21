@@ -24,6 +24,16 @@ extension WaiterConfiguration {
             case failure
         }
 
+        public struct InputOutput {
+            public let input: Input?
+            public let output: Output?
+
+            public init(input: Input, output: Output) {
+                self.input = input
+                self.output = output
+            }
+        }
+
         /// The state that the `Waiter` enters when this `Acceptor` matches the operation response.
         public let state: State
 

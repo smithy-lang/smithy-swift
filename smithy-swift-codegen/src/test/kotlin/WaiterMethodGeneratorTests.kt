@@ -1,7 +1,4 @@
-import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -10,34 +7,32 @@ import software.amazon.smithy.swift.codegen.waiters.WaiterGenerator
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import kotlin.io.path.Path
 
-class WaiterGeneratorTests {
-
-    @Test
-    fun testGeneratorNotEnabledForServiceWithoutWaiters() {
-        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
-        WaiterGenerator().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeFalse()
-    }
+class WaiterMethodGeneratorTests {
 
     @Test
-    fun testGeneratorEnabledForServiceWithWaiters() {
+    fun testRendersCorrectWaitersSwiftFileContentForServiceWithWaiters() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        WaiterGenerator().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeTrue()
+        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val expected = """
+    /// Initiates waiting for the BucketExists event on the headBucket operation.
+    /// The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
+    /// Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
+    /// waiter failure or timeout.
+    /// - Parameters:
+    ///   - options: `WaiterOptions` to be used to configure this wait.
+    ///   - input: The `HeadBucketInput` object to be used as a parameter when performing the operation.
+    /// - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
+    /// - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
+    /// or there is an error not handled by any `Acceptor.`
+    /// `WaiterTimeoutError` if the waiter times out.
+    public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutputResponse> {
+        let waiter = Waiter(config: try bucketExistsWaiterConfig(), operation: self.headBucket(input:))
+        return try await waiter.waitUntil(options: options, input: input)
     }
+"""
 
-    @Test
-    fun testRendersWaitersSwiftFileForServiceWithWaiters() {
-        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val filePaths = context.manifest.files
-        filePaths.shouldContain(Path("/Test/Waiters.swift"))
-    }
-
-    @Test
-    fun testRendersNoWaitersSwiftFileForServiceWithoutWaiters() {
-        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
-        val filePaths = context.manifest.files
-        filePaths.shouldNotContain(Path("/Test/Waiters.swift"))
+        contents.shouldContainOnlyOnce(expected)
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
