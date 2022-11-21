@@ -33,16 +33,16 @@ class WaiterAcceptorGenerator(
                     }
                 }
                 is Matcher.OutputMember -> {
-                    renderInputOutputBlockContents(inputType, outputType, false, matcher.value)
+                    renderInputOutputBlockContents(false, matcher.value)
                 }
                 is Matcher.InputOutputMember -> {
-                    renderInputOutputBlockContents(inputType, outputType, true, matcher.value)
+                    renderInputOutputBlockContents(true, matcher.value)
                 }
                 is Matcher.ErrorTypeMember -> {
                     val errorTypeName = "${waitedOperation.toUpperCamelCase()}OutputError"
                     var errorEnumCaseName = "${matcher.value.toLowerCamelCase()}"
                     writer.openBlock("switch result {", "}") {
-                        writer.write("case .failure(error as \$L):", errorTypeName)
+                        writer.write("case .failure(let error as \$L):", errorTypeName)
                         writer.indent()
                         writer.write("if case .\$L = error { return true } else { return false }", errorEnumCaseName)
                         writer.dedent()
@@ -53,15 +53,12 @@ class WaiterAcceptorGenerator(
         }
     }
 
-    private fun renderInputOutputBlockContents(inputType: String, outputType: String, includeInput: Boolean, pathMatcher: PathMatcher) {
-        writer.write("// JMESPath expression: ${pathMatcher.path})")
-        writer.write("// JMESPath comparator: ${pathMatcher.comparator})")
-        writer.write("// JMESPath expectation: ${pathMatcher.expected})")
+    private fun renderInputOutputBlockContents(includeInput: Boolean, pathMatcher: PathMatcher) {
         writer.write("guard case .success(let output) = result else { return false }")
         if (includeInput) {
             writer.write("let root = InputOutput(input: input, output: output)")
         } else {
-            writer.write("let root: \$L? = output", outputType)
+            writer.write("let root = Optional.some(output)")
         }
         val visitor = JMESPathVisitor(writer)
         val expression = JmespathExpression.parse(pathMatcher.path)
@@ -69,11 +66,11 @@ class WaiterAcceptorGenerator(
 
         val expected = pathMatcher.expected
         val comparison = when (pathMatcher.comparator) {
-            PathComparator.STRING_EQUALS -> "return \"\\($actual)\" == \"${expected}\""
+            PathComparator.STRING_EQUALS -> "return \"\\($actual ?? \"nil\")\" == \"\\(${expected} ?? \"nil\")\""
             PathComparator.BOOLEAN_EQUALS -> "return $actual == ${expected.toBoolean()}"
-            PathComparator.ANY_STRING_EQUALS -> "return $actual?.contains { \"\\($$0)\" == \"${expected}\" } ?? false"
+            PathComparator.ANY_STRING_EQUALS -> "return $actual?.contains { \"\\($$0 ?? \"nil\")\" == \"${expected}\" } ?? false"
             PathComparator.ALL_STRING_EQUALS ->
-                "return ($actual?.count ?? 0) > 1 && ($actual?.allSatisfy { \"\\($$0)\" == \"${expected}\" } ?? false)"
+                "return ($actual?.count ?? 0) > 1 && ($actual?.allSatisfy { \"\\($$0 ?? \"nil\")\" == \"${expected}\" } ?? false)"
         }
         writer.write(comparison)
     }

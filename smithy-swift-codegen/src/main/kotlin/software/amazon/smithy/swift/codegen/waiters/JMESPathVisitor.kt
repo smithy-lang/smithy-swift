@@ -83,8 +83,8 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
         val leftIsString = (left as? LiteralExpression)?.isStringValue ?: false
         val rightIsString = (right as? LiteralExpression)?.isStringValue ?: false
 
-        val leftName = if (rightIsString && !leftIsString) "String($leftBaseName)" else leftBaseName
-        val rightName = if (leftIsString && !rightIsString) "String($rightBaseName)" else rightBaseName
+        val leftName = if (rightIsString && !leftIsString) "\"\\($leftBaseName ?? \"nil\")\"" else leftBaseName
+        val rightName = if (leftIsString && !rightIsString) "\"\\($rightBaseName ?? \"nil\")\"" else rightBaseName
 
         val codegen = "($leftBaseName == nil || $rightBaseName == nil) ? false : $leftName ${expression.comparator} $rightName"
         return addTempVar("comparison", codegen)
@@ -116,8 +116,6 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
-//        writer.addImport(RuntimeTypes.Utils.flattenIfPossible)
-
         val innerName = expression.expression!!.accept(this)
         return addTempVar("${innerName}OrEmpty", "$innerName?.compactMap { $0 } ?? []")
     }

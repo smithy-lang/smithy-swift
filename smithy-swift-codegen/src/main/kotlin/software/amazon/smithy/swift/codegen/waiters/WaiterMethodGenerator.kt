@@ -21,7 +21,6 @@ class WaiterMethodGenerator(
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val inputType = waitedOperation.inputShape.name
         val outputType = waitedOperation.outputShape.name
-        writer.write("")
         val docBody = """
             Initiates waiting for the $waiterName event on the ${waitedOperation.toLowerCamelCase()} operation.
             The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.

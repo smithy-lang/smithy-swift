@@ -49,7 +49,9 @@ class WaiterGenerator : SwiftIntegration {
                     // On each waitable trait, get all its waiters and render a waitUntil for each
                     waitableTraits.forEach { waitableTrait ->
                         waitableTrait.waiters.forEach { (waiterName, waiter) ->
+                            writer.write("")
                             WaiterConfigGenerator(writer, ctx, service, waitedOperation, waiterName, waiter).render()
+                            writer.write("")
                             WaiterMethodGenerator(writer, ctx, service, waitedOperation, waiterName, waiter).render()
                         }
                     }
