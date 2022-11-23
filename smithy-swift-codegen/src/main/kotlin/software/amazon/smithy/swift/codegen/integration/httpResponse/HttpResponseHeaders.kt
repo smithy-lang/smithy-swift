@@ -10,7 +10,6 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
-import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.NumberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -47,7 +46,8 @@ class HttpResponseHeaders(
                 is NumberShape -> {
                     if (memberTarget.isIntEnumShape) {
                         val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                        writer.write("self.\$L = \$L(rawValue: \$L(\$L) ?? 0)",
+                        writer.write(
+                            "self.\$L = \$L(rawValue: \$L(\$L) ?? 0)",
                             memberName, enumSymbol, SwiftTypes.Int, headerDeclaration
                         )
                     } else {
@@ -105,7 +105,7 @@ class HttpResponseHeaders(
                         is NumberShape -> {
                             if (collectionMemberTarget.isIntEnumShape) {
                                 val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                "${SwiftTypes.Int}(\$0).map({ intValue in ${enumSymbol}(rawValue: intValue) })"
+                                "${SwiftTypes.Int}(\$0).map({ intValue in $enumSymbol(rawValue: intValue) })"
                             } else {
                                 "${stringToNumber(collectionMemberTarget, "\$0", false)}"
                             }

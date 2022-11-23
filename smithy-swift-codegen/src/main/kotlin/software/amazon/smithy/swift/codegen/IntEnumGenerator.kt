@@ -126,4 +126,3 @@ class IntEnumGenerator(
         return expectTrait<EnumValueTrait>(EnumValueTrait::class.java).expectIntValue()
     }
 }
-

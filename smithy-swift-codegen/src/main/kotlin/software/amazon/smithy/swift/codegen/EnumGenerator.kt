@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
-import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 
 /**
  * Generates an appropriate Swift type for a Smithy enum string.
