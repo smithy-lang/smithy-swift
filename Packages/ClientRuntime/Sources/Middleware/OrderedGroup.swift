@@ -82,7 +82,7 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
         order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
     
-    func get(id: String)-> AnyMiddleware<Input, Output, Context>? {
+    func get(id: String) -> AnyMiddleware<Input, Output, Context>? {
         return _items[id]
     }
 }
