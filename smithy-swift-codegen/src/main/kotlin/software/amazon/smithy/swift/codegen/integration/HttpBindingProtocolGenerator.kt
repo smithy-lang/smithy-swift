@@ -12,6 +12,7 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -103,6 +104,7 @@ fun formatHeaderOrQueryValue(
             }
             Pair(formattedItemValue, requiresDoCatch)
         }
+        is IntEnumShape -> Pair("$memberName.rawValue", false)
         else -> Pair(memberName, false)
     }
 }
