@@ -47,18 +47,16 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
 
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
-
         val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$L = Optional.some(\$L.flatMap { root in", outerName, leftName)
-        writer.write("let root = Optional.some(root)")
-        val innerResult = childBlock(right)
-        val innerCollector = when (right) {
-            is MultiSelectListExpression -> "return $innerResult" // Already a list
-            else -> "return [$innerResult].compactMap { $$0 }"
+        writer.openBlock("let \$L = Optional.some(\$L?.compactMap { root in", "})", outerName, leftName) {
+            writer.write("let root = Optional.some(root)")
+            val innerResult = addTempVar("innerResult", childBlock(right))
+            val innerCollector = when (right) {
+                is MultiSelectListExpression -> "return $innerResult" // Already a list
+                else -> "return [$innerResult].compactMap { $$0 }"
+            }
+            writer.write(innerCollector)
         }
-        writer.write(innerCollector)
-
-        writer.closeBlock("})")
         return outerName
     }
 
@@ -68,26 +66,17 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitAnd(expression: AndExpression): String {
+        writer.write("// visitAnd")
         val leftExp = expression.left!!.accept(this)
         val rightExp = expression.right!!.accept(this)
         return "($leftExp && $rightExp)"
     }
 
     override fun visitComparator(expression: ComparatorExpression): String {
-        val left = expression.left!!
-        val leftBaseName = left.accept(this)
-
-        val right = expression.right
-        val rightBaseName = right.accept(this)
-
-        val leftIsString = (left as? LiteralExpression)?.isStringValue ?: false
-        val rightIsString = (right as? LiteralExpression)?.isStringValue ?: false
-
-        val leftName = if (rightIsString && !leftIsString) "\"\\($leftBaseName ?? \"nil\")\"" else leftBaseName
-        val rightName = if (leftIsString && !rightIsString) "\"\\($rightBaseName ?? \"nil\")\"" else rightBaseName
-
-        val codegen = "($leftBaseName == nil || $rightBaseName == nil) ? false : $leftName ${expression.comparator} $rightName"
-        return addTempVar("comparison", codegen)
+        writer.write("// visitComparator")
+        val left = expression.left!!.accept(this)
+        val right = expression.right!!.accept(this)
+        return addTempVar("comparison", "JMESValue($left) ${expression.comparator} JMESValue($right)")
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): String {
@@ -98,9 +87,13 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
         throw Exception("ExpressionTypeExpression is unsupported")
     }
 
-    override fun visitField(expression: FieldExpression): String = subfield(expression, "root")
+    override fun visitField(expression: FieldExpression): String {
+        writer.write("// visitField")
+        return subfield(expression, "root")
+    }
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
+        writer.write("// visitFilterProjection")
         val leftName = expression.left!!.accept(this)
         val filteredName = bestTempVarName("${leftName}Filtered")
 
@@ -116,45 +109,52 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
+        writer.write("// visitFlatten")
         val innerName = expression.expression!!.accept(this)
-        return addTempVar("${innerName}OrEmpty", "$innerName?.compactMap { $0 } ?? []")
+        return addTempVar("${innerName}OrEmpty", "Optional.some($innerName?.flattenIfPossible() ?? [])")
     }
 
-    override fun visitFunction(expression: FunctionExpression): String = when (expression.name) {
-        "contains" -> {
-            codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
+    override fun visitFunction(expression: FunctionExpression): String {
+        writer.write("// visitFunction")
+        when (expression.name) {
+            "contains" -> {
+                codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
 
-            val subject = expression.arguments[0]
-            val subjectName = subject.accept(this)
+                val subject = expression.arguments[0]
+                val subjectName = subject.accept(this)
 
-            val search = expression.arguments[1]
-            val searchName = search.accept(this)
+                val search = expression.arguments[1]
+                val searchName = search.accept(this)
 
-            addTempVar("contains", "$subjectName?.contains($searchName) ?: false")
+                return addTempVar("contains", "$searchName.flatMap { $subjectName?.contains($0) } ?? false")
+            }
+
+            "length" -> {
+                codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+
+                val subject = expression.arguments[0]
+                val subjectName = subject.accept(this)
+
+                return addTempVar("count", "Optional.some(Double($subjectName?.count ?? 0))")
+            }
+
+            else -> throw Exception("Unknown function type in $expression")
         }
-
-        "length" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
-
-            val subject = expression.arguments[0]
-            val subjectName = subject.accept(this)
-
-            addTempVar("count", "Optional.some(Double($subjectName?.count ?? 0))")
-        }
-
-        else -> throw Exception("Unknown function type in $expression")
     }
 
     override fun visitIndex(expression: IndexExpression): String {
         throw Exception("IndexExpression is unsupported")
     }
 
-    override fun visitLiteral(expression: LiteralExpression): String = when (expression.type) {
-        RuntimeType.STRING -> addTempVar("string", "Optional.some(\"" + expression.expectStringValue() + "\")")
-        RuntimeType.NUMBER -> addTempVar("number", "Optional.some(Double(${expression.expectNumberValue()}))")
-        RuntimeType.BOOLEAN -> addTempVar("bool", "Optional.some(${expression.expectBooleanValue()})")
-        RuntimeType.NULL -> "nil"
-        else -> throw Exception("Expression type $expression is unsupported")
+    override fun visitLiteral(expression: LiteralExpression): String {
+        writer.write("// visitLiteral")
+        when (expression.type) {
+            RuntimeType.STRING -> return addTempVar("string", "Optional.some(\"" + expression.expectStringValue() + "\")")
+            RuntimeType.NUMBER -> return addTempVar("number", "Optional.some(Double(${expression.expectNumberValue()}))")
+            RuntimeType.BOOLEAN -> return addTempVar("bool", "Optional.some(${expression.expectBooleanValue()})")
+            RuntimeType.NULL -> return "nil"
+            else -> throw Exception("Expression type $expression is unsupported")
+        }
     }
 
     override fun visitMultiSelectHash(expression: MultiSelectHashExpression): String {
@@ -162,24 +162,25 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitMultiSelectList(expression: MultiSelectListExpression): String {
+        writer.write("// visitMultiSelectList")
         val listName = bestTempVarName("multiSelect")
-        writer.openBlock("val \$L = [", listName)
-
-        expression.expressions.forEach { inner ->
-            val innerName = inner.accept(this)
-            writer.write("\$L,", innerName)
+        val multiSelectVars = expression.expressions.map { inner ->
+            return addTempVar("multiSelectValue", inner.accept(this))
         }
-
-        writer.closeBlock("].compactMap { $$0 }")
+        writer.openBlock("let \$L = Optional.some([", "])", listName) {
+            writer.write(multiSelectVars.joinToString { ",\n" })
+        }
         return listName
     }
 
     override fun visitNot(expression: NotExpression): String {
+        writer.write("// visitNot")
         val exp = expression.expression!!.accept(this)
         return "!$exp"
     }
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
+        writer.write("// visitObjectProjection")
         val leftName = expression.left!!.accept(this)
         val valuesName = addTempVar("${leftName}Values", "Array(($leftName ?? [:]).values)")
         return flatMappingBlock(expression.right!!, valuesName)
@@ -190,6 +191,7 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitProjection(expression: ProjectionExpression): String {
+        writer.write("// visitProjection")
         val leftName = expression.left!!.accept(this)
         return flatMappingBlock(expression.right!!, leftName)
     }
@@ -199,6 +201,7 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     }
 
     override fun visitSubexpression(expression: Subexpression): String {
+        writer.write("// visitSubexpression")
         val leftName = expression.left!!.accept(this)
 
         return when (val right = expression.right!!) {

@@ -41,19 +41,24 @@ class WaiterAcceptorGenerator(
                 is Matcher.ErrorTypeMember -> {
                     val errorTypeName = "${waitedOperation.toUpperCamelCase()}OutputError"
                     var errorEnumCaseName = "${matcher.value.toLowerCamelCase()}"
-                    writer.openBlock("switch result {", "}") {
-                        writer.write("case .failure(let error as \$L):", errorTypeName)
-                        writer.indent()
-                        writer.write("if case .\$L = error { return true } else { return false }", errorEnumCaseName)
-                        writer.dedent()
-                        writer.write("default: return false")
-                    }
+                    writer.write("// Match on error case: $errorEnumCaseName")
+                    writer.write("return false")
+//                    writer.openBlock("switch result {", "}") {
+//                        writer.write("case .failure(let error as \$L):", errorTypeName)
+//                        writer.indent()
+//                        writer.write("if case .\$L = error { return true } else { return false }", errorEnumCaseName)
+//                        writer.dedent()
+//                        writer.write("default: return false")
+//                    }
                 }
             }
         }
     }
 
     private fun renderInputOutputBlockContents(includeInput: Boolean, pathMatcher: PathMatcher) {
+        writer.write("// JMESPath expression: ${pathMatcher.path}")
+        writer.write("// JMESPath comparator: ${pathMatcher.comparator}")
+        writer.write("// JMESPath expected value: ${pathMatcher.expected}")
         writer.write("guard case .success(let output) = result else { return false }")
         if (includeInput) {
             writer.write("let root = InputOutput(input: input, output: output)")
@@ -66,11 +71,11 @@ class WaiterAcceptorGenerator(
 
         val expected = pathMatcher.expected
         val comparison = when (pathMatcher.comparator) {
-            PathComparator.STRING_EQUALS -> "return \"\\($actual ?? \"nil\")\" == \"\\(${expected} ?? \"nil\")\""
-            PathComparator.BOOLEAN_EQUALS -> "return $actual == ${expected.toBoolean()}"
-            PathComparator.ANY_STRING_EQUALS -> "return $actual?.contains { \"\\($$0 ?? \"nil\")\" == \"${expected}\" } ?? false"
+            PathComparator.STRING_EQUALS -> "return JMESValue($actual) == JMESValue(\"${expected}\")"
+            PathComparator.BOOLEAN_EQUALS -> "return JMESValue($actual) == JMESValue(${expected.toBoolean()})"
+            PathComparator.ANY_STRING_EQUALS -> "return $actual?.contains { JMESValue($$0) == JMESValue(\"${expected}\") } ?? false"
             PathComparator.ALL_STRING_EQUALS ->
-                "return ($actual?.count ?? 0) > 1 && ($actual?.allSatisfy { \"\\($$0 ?? \"nil\")\" == \"${expected}\" } ?? false)"
+                "return ($actual?.count ?? 0) > 1 && ($actual?.allSatisfy { JMESValue($$0) == JMESValue(\"${expected}\") } ?? false)"
         }
         writer.write(comparison)
     }
