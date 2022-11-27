@@ -53,16 +53,11 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
         val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$LMapped = (\$L ?? []).flattenIfPossible { root in", "}", outerName, leftName) {
+        writer.openBlock("let \$L = Optional.some((\$L ?? []).flatMap { root in", "})", outerName, leftName) {
             writer.write("let root = Optional.some(root)")
             val innerResult = addTempVar("innerResult", childBlock(right))
-            val innerCollector = when (right) {
-                is MultiSelectListExpression -> "return $innerResult" // Already a list
-                else -> "return [$innerResult].compactMap { $$0 }.flattenIfPossible { $$0 }"
-            }
-            writer.write(innerCollector)
+            writer.write("return [\$L].compactMap { $$0 }.flattenIfPossible { $$0 }", innerResult)
         }
-        writer.write("let \$L = Optional.some(\$LMapped.flattenIfPossible { $$0 })", outerName, outerName)
         return outerName
     }
 
@@ -72,14 +67,12 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitAnd(expression: AndExpression): String {
-        writer.write("// visitAnd")
         val leftExp = expression.left!!.accept(this)
         val rightExp = expression.right!!.accept(this)
         return "($leftExp && $rightExp)"
     }
 
     override fun visitComparator(expression: ComparatorExpression): String {
-        writer.write("// visitComparator")
         val left = expression.left!!.accept(this)
         val right = expression.right!!.accept(this)
         return addTempVar("comparison", "JMESValue($left) ${expression.comparator} JMESValue($right)")
@@ -94,12 +87,10 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitField(expression: FieldExpression): String {
-        writer.write("// visitField")
         return subfield(expression, "root")
     }
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
-        writer.write("// visitFilterProjection")
         val leftName = expression.left!!.accept(this)
         val filteredName = bestTempVarName("${leftName}Filtered")
 
@@ -115,13 +106,11 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
-        writer.write("// visitFlatten")
         val innerName = expression.expression!!.accept(this)
         return addTempVar("${innerName}OrEmpty", "Optional.some($innerName ?? [])?.flattenIfPossible { $0 }")
     }
 
     override fun visitFunction(expression: FunctionExpression): String {
-        writer.write("// visitFunction")
         when (expression.name) {
             "contains" -> {
                 codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
@@ -134,7 +123,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
                 return addTempVar("contains", "$searchName.flatMap { $subjectName?.contains($0) } ?? false")
             }
-
             "length" -> {
                 codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
 
@@ -143,7 +131,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
                 return addTempVar("count", "Optional.some(Double($subjectName?.count ?? 0))")
             }
-
             else -> throw Exception("Unknown function type in $expression")
         }
     }
@@ -153,7 +140,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitLiteral(expression: LiteralExpression): String {
-        writer.write("// visitLiteral")
         when (expression.type) {
             RuntimeType.STRING -> return addTempVar("string", "Optional.some(\"" + expression.expectStringValue() + "\")")
             RuntimeType.NUMBER -> return addTempVar("number", "Optional.some(Double(${expression.expectNumberValue()}))")
@@ -168,7 +154,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitMultiSelectList(expression: MultiSelectListExpression): String {
-        writer.write("// visitMultiSelectList")
         val listName = bestTempVarName("multiSelect")
         val multiSelectVars = expression.expressions.map { inner ->
             return addTempVar("multiSelectValue", inner.accept(this))
@@ -180,13 +165,11 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitNot(expression: NotExpression): String {
-        writer.write("// visitNot")
         val exp = expression.expression!!.accept(this)
         return "!$exp"
     }
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
-        writer.write("// visitObjectProjection")
         val leftName = expression.left!!.accept(this)
         val valuesName = addTempVar("${leftName}Values", "Optional.some(Array(($leftName ?? [:]).values))")
         return flatMappingBlock(expression.right!!, valuesName)
@@ -197,7 +180,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitProjection(expression: ProjectionExpression): String {
-        writer.write("// visitProjection")
         val leftName = expression.left!!.accept(this)
         return flatMappingBlock(expression.right!!, leftName)
     }
@@ -207,7 +189,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitSubexpression(expression: Subexpression): String {
-        writer.write("// visitSubexpression")
         val leftName = expression.left!!.accept(this)
 
         return when (val right = expression.right!!) {
