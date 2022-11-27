@@ -8,12 +8,21 @@
 import Foundation
 
 public extension Array {
-    func flattenIfPossible() -> Array<Element> {
-        return self
+
+    func flattenIfPossible<T>(_ transform: (Element) throws -> Array<T>) rethrows -> Array<T> {
+        return try flatMap { try transform($0) }
     }
 
-    func flattenIfPossible<T>() -> Array<T> where Element == Array<T> {
-        return flatMap { $0 }
+    func flattenIfPossible<T>(_ unused: Int = 0, _ transform: (Element) throws -> T) rethrows -> Array<T> {
+        // Adding an unused argument with a default value to this function's signature allows it to still be
+        // an overload of the flattenIfPossible() implementation above, but ranks it lower when
+        // the compiler selects an overload.
+        // Without the unused argument, the compiler uses this implementation instead of the one above when
+        // the element of an array is also an array, which is not desired behavior.
+        // See: https://forums.swift.org/t/how-to-specify-which-is-the-default-function-when-functions-use-the-same-name-like-array-reversed/39168/5
+        // In the future, if Swift allows us to manually rank overloads or otherwise fixes this issue,
+        // we should eliminate this param & use the new mechanism for overload resolution instead.
+        return try map { try transform($0) }
     }
 }
 
@@ -24,43 +33,28 @@ public enum JMESValue: Equatable, Comparable {
     case null
 
     public init(_ int: Int?) {
-        if let int = int {
-            self = .number(Double(int))
-        } else {
-            self = .null
-        }
+        guard let int = int else { self = .null; return }
+        self = .number(Double(int))
     }
 
     public init(_ double: Double?) {
-        if let double = double {
-            self = .number(double)
-        } else {
-            self = .null
-        }
+        guard let double = double else { self = .null; return }
+        self = .number(double)
     }
 
     public init(_ bool: Bool?) {
-        if let bool = bool {
-            self = .boolean(bool)
-        } else {
-            self = .null
-        }
+        guard let bool = bool else { self = .null; return }
+        self = .boolean(bool)
     }
 
     public init(_ string: String?) {
-        if let string = string {
-            self = .string(string)
-        } else {
-            self = .null
-        }
+        guard let string = string else { self = .null; return }
+        self = .string(string)
     }
 
     public init<T: RawRepresentable>(_ rr: T?) where T.RawValue == String {
-        if let rr = rr {
-            self = .string(rr.rawValue)
-        } else {
-            self = .null
-        }
+        guard let string = rr?.rawValue else { self = .null; return }
+        self = .string(string)
     }
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {

@@ -48,15 +48,16 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
         val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$L = Optional.some(\$L?.compactMap { root in", "})", outerName, leftName) {
+        writer.openBlock("let \$LMapped = (\$L ?? []).flattenIfPossible { root in", "}", outerName, leftName) {
             writer.write("let root = Optional.some(root)")
             val innerResult = addTempVar("innerResult", childBlock(right))
             val innerCollector = when (right) {
                 is MultiSelectListExpression -> "return $innerResult" // Already a list
-                else -> "return [$innerResult].compactMap { $$0 }"
+                else -> "return [$innerResult].compactMap { $$0 }.flattenIfPossible { $$0 }"
             }
             writer.write(innerCollector)
         }
+        writer.write("let \$L = Optional.some(\$LMapped.flattenIfPossible { $$0 })", outerName, outerName)
         return outerName
     }
 
@@ -111,7 +112,7 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     override fun visitFlatten(expression: FlattenExpression): String {
         writer.write("// visitFlatten")
         val innerName = expression.expression!!.accept(this)
-        return addTempVar("${innerName}OrEmpty", "Optional.some($innerName?.flattenIfPossible() ?? [])")
+        return addTempVar("${innerName}OrEmpty", "Optional.some($innerName ?? [])?.flattenIfPossible { $0 }")
     }
 
     override fun visitFunction(expression: FunctionExpression): String {
@@ -182,7 +183,7 @@ class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
         writer.write("// visitObjectProjection")
         val leftName = expression.left!!.accept(this)
-        val valuesName = addTempVar("${leftName}Values", "Array(($leftName ?? [:]).values)")
+        val valuesName = addTempVar("${leftName}Values", "Optional.some(Array(($leftName ?? [:]).values))")
         return flatMappingBlock(expression.right!!, valuesName)
     }
 
