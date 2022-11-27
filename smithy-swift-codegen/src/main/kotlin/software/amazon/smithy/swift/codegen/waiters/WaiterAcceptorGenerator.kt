@@ -66,9 +66,9 @@ class WaiterAcceptorGenerator(
         writer.write("// JMESPath expected value: ${pathMatcher.expected}")
         writer.write("guard case .success(let output) = result else { return false }")
         if (includeInput) {
-            writer.write("let root = InputOutput(input: input, output: output)")
+            writer.write("let current = InputOutput(input: input, output: output)")
         } else {
-            writer.write("let root = Optional.some(output)")
+            writer.write("let current = Optional.some(output)")
         }
         val visitor = JMESPathVisitor(writer)
         val expression = JmespathExpression.parse(pathMatcher.path)

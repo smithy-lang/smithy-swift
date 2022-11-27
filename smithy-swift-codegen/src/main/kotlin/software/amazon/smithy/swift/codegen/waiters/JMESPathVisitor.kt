@@ -53,8 +53,8 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
         val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$L = Optional.some((\$L ?? []).flatMap { root in", "})", outerName, leftName) {
-            writer.write("let root = Optional.some(root)")
+        writer.openBlock("let \$L = Optional.some((\$L ?? []).flatMap { current in", "})", outerName, leftName) {
+            writer.write("let current = Optional.some(current)")
             val innerResult = addTempVar("innerResult", childBlock(right))
             writer.write("return [\$L].compactMap { $$0 }.flattenIfPossible { $$0 }", innerResult)
         }
@@ -87,15 +87,15 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     }
 
     override fun visitField(expression: FieldExpression): String {
-        return subfield(expression, "root")
+        return subfield(expression, "current")
     }
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
         val leftName = expression.left!!.accept(this)
         val filteredName = bestTempVarName("${leftName}Filtered")
 
-        writer.openBlock("let \$L = Optional.some((\$L ?? []).filter { root in", filteredName, leftName)
-        writer.write("let root = Optional.some(root)")
+        writer.openBlock("let \$L = Optional.some((\$L ?? []).filter { current in", filteredName, leftName)
+        writer.write("let current = Optional.some(current)")
         val comparisonName = childBlock(expression.comparison!!)
         writer.write("return \$L", comparisonName)
 

@@ -88,7 +88,7 @@ public enum JMESValue: Equatable, Comparable {
     ///   - lhs: The left value
     ///   - rhs: The right value
     /// - Returns: The result of the Swift comparison of the associated values if `lhs` and `rhs` are the same JMESPath type, or `false` otherwise.
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.number(let left), .number(let right)):
             return left == right
@@ -109,7 +109,7 @@ public enum JMESValue: Equatable, Comparable {
     ///   - lhs: The left value
     ///   - rhs: The right value
     /// - Returns: The result of the Swift comparison of the associated values if `lhs` and `rhs` are both JMESPath numbers, or `false` otherwise.
-    public static func <(lhs: Self, rhs: Self) -> Bool {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.number(let left), .number(let right)):
             return left < right
