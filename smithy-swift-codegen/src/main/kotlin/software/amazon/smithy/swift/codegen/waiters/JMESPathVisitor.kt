@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package software.amazon.smithy.swift.codegen.waiters
 
 import software.amazon.smithy.jmespath.ExpressionVisitor
@@ -26,7 +31,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
 
-class JMESPathVisitor(val writer: SwiftWriter): ExpressionVisitor<String> {
+class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private val tempVars = mutableSetOf<String>()
 
     private fun addTempVar(preferredName: String, codegen: String): String {

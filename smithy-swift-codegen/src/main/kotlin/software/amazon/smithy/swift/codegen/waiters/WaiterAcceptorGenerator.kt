@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package software.amazon.smithy.swift.codegen.waiters
 
 import software.amazon.smithy.jmespath.JmespathExpression
@@ -23,7 +28,7 @@ class WaiterAcceptorGenerator(
     fun render() {
         val inputType = waitedOperation.inputShape.name
         val outputType = waitedOperation.outputShape.name
-        writer.openBlock(".init(state: .${acceptor.state.toString()}) { (input: $inputType, result: Result<$outputType, Error>) -> Bool in", "},") {
+        writer.openBlock(".init(state: .${acceptor.state}) { (input: $inputType, result: Result<$outputType, Error>) -> Bool in", "},") {
             val matcher = acceptor.matcher
             when (matcher) {
                 is Matcher.SuccessMember -> {

@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package software.amazon.smithy.swift.codegen.waiters
 
 import software.amazon.smithy.model.shapes.OperationShape
@@ -26,7 +31,8 @@ class WaiterConfigGenerator(
                     WaiterAcceptorGenerator(writer, ctx, service, waitedOperation, acceptor).render()
                 }
             }
-            writer.write("return try WaiterConfiguration<\$L, \$L>(acceptors: acceptors, minDelay: \$L.0, maxDelay: \$L.0)",
+            writer.write(
+                "return try WaiterConfiguration<\$L, \$L>(acceptors: acceptors, minDelay: \$L.0, maxDelay: \$L.0)",
                 inputTypeName,
                 outputTypeName,
                 waiter.minDelay,
