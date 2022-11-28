@@ -34,9 +34,10 @@ private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map
 class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private val tempVars = mutableSetOf<String>()
 
-    private fun addTempVar(preferredName: String, codegen: String): String {
+    private fun addTempVar(preferredName: String, content: String, vararg args: Any): String {
         val name = bestTempVarName(preferredName)
-        writer.write("let \$L = \$L", name, codegen)
+        writer.writeInline("let \$L = ", name)
+        writer.write(content, *args)
         return name
     }
 
@@ -63,19 +64,19 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
     private fun subfield(expression: FieldExpression, parentName: String): String {
         val name = expression.name.toLowerCamelCase()
-        return addTempVar(name, "$parentName?.$name")
+        return addTempVar(name, "\$L?.\$L", parentName, name)
     }
 
     override fun visitAnd(expression: AndExpression): String {
         val leftExp = expression.left!!.accept(this)
         val rightExp = expression.right!!.accept(this)
-        return "($leftExp && $rightExp)"
+        return addTempVar("andResult", "\$L && \$L", leftExp, rightExp)
     }
 
     override fun visitComparator(expression: ComparatorExpression): String {
         val left = expression.left!!.accept(this)
         val right = expression.right!!.accept(this)
-        return addTempVar("comparison", "JMESValue($left) ${expression.comparator} JMESValue($right)")
+        return addTempVar("comparison", "JMESValue(\$L) \$L JMESValue(\$L)", left, expression.comparator, right)
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): String {
@@ -107,7 +108,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
     override fun visitFlatten(expression: FlattenExpression): String {
         val innerName = expression.expression!!.accept(this)
-        return addTempVar("${innerName}OrEmpty", "Optional.some($innerName ?? [])?.flattenIfPossible { $0 }")
+        return addTempVar("${innerName}OrEmpty", "Optional.some(\$L ?? [])?.flattenIfPossible { $$0 }", innerName)
     }
 
     override fun visitFunction(expression: FunctionExpression): String {
@@ -121,7 +122,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
                 val search = expression.arguments[1]
                 val searchName = search.accept(this)
 
-                return addTempVar("contains", "$searchName.flatMap { $subjectName?.contains($0) } ?? false")
+                return addTempVar("contains", "\$L.flatMap { \$L?.contains($$0) } ?? false", searchName, subjectName)
             }
             "length" -> {
                 codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
@@ -129,7 +130,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
                 val subject = expression.arguments[0]
                 val subjectName = subject.accept(this)
 
-                return addTempVar("count", "Optional.some(Double($subjectName?.count ?? 0))")
+                return addTempVar("count", "Optional.some(Double(\$L?.count ?? 0))", subjectName)
             }
             else -> throw Exception("Unknown function type in $expression")
         }
@@ -141,9 +142,9 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
     override fun visitLiteral(expression: LiteralExpression): String {
         when (expression.type) {
-            RuntimeType.STRING -> return addTempVar("string", "Optional.some(\"" + expression.expectStringValue() + "\")")
-            RuntimeType.NUMBER -> return addTempVar("number", "Optional.some(Double(${expression.expectNumberValue()}))")
-            RuntimeType.BOOLEAN -> return addTempVar("bool", "Optional.some(${expression.expectBooleanValue()})")
+            RuntimeType.STRING -> return addTempVar("string", "Optional.some(\"\$L\")", expression.expectStringValue())
+            RuntimeType.NUMBER -> return addTempVar("number", "Optional.some(Double(\$L))", expression.expectNumberValue())
+            RuntimeType.BOOLEAN -> return addTempVar("bool", "Optional.some(\$L)", expression.expectBooleanValue())
             RuntimeType.NULL -> return "nil"
             else -> throw Exception("Expression type $expression is unsupported")
         }
@@ -171,7 +172,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
         val leftName = expression.left!!.accept(this)
-        val valuesName = addTempVar("${leftName}Values", "Optional.some(Array(($leftName ?? [:]).values))")
+        val valuesName = addTempVar("${leftName}Values", "Optional.some(Array((\$L ?? [:]).values))", leftName)
         return flatMappingBlock(expression.right!!, valuesName)
     }
 

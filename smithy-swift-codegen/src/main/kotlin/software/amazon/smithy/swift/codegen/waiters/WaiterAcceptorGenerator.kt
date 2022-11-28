@@ -75,13 +75,15 @@ class WaiterAcceptorGenerator(
         val actual = expression.accept(visitor)
 
         val expected = pathMatcher.expected
-        val comparison = when (pathMatcher.comparator) {
-            PathComparator.STRING_EQUALS -> "return JMESValue($actual) == JMESValue(\"${expected}\")"
-            PathComparator.BOOLEAN_EQUALS -> "return JMESValue($actual) == JMESValue(${expected.toBoolean()})"
-            PathComparator.ANY_STRING_EQUALS -> "return $actual?.contains { JMESValue($$0) == JMESValue(\"${expected}\") } ?? false"
+        when (pathMatcher.comparator) {
+            PathComparator.STRING_EQUALS ->
+                writer.write("return JMESValue(\$L) == JMESValue(\"\$L\")", actual, expected)
+            PathComparator.BOOLEAN_EQUALS ->
+                writer.write("return JMESValue(\$L) == JMESValue(\$L)", actual, expected.toBoolean())
+            PathComparator.ANY_STRING_EQUALS ->
+                writer.write("return \$L?.contains { JMESValue($$0) == JMESValue(\"\$L\") } ?? false", actual, expected)
             PathComparator.ALL_STRING_EQUALS ->
-                "return ($actual?.count ?? 0) > 1 && ($actual?.allSatisfy { JMESValue($$0) == JMESValue(\"${expected}\") } ?? false)"
+                writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\"\$L\") } ?? false)", actual, actual, expected)
         }
-        writer.write(comparison)
     }
 }
