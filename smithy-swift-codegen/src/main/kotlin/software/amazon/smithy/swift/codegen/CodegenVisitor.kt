@@ -11,6 +11,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
+import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeVisitor
@@ -163,6 +164,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     override fun stringShape(shape: StringShape): Void? {
         if (shape.hasTrait<EnumTrait>()) {
             writers.useShapeWriter(shape) { writer: SwiftWriter -> EnumGenerator(model, symbolProvider, writer, shape, settings).render() }
+        }
+        return null
+    }
+
+    override fun integerShape(shape: IntegerShape): Void? {
+        if (shape.isIntEnumShape()) {
+            writers.useShapeWriter(shape) { writer: SwiftWriter -> IntEnumGenerator(model, symbolProvider, writer, shape.asIntEnumShape().get(), settings).render() }
         }
         return null
     }
