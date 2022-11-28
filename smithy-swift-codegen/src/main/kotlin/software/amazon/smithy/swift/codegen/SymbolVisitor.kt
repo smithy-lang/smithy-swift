@@ -242,6 +242,9 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
+        if (shape != null && shape.isIntEnumShape()) {
+            return createEnumSymbol(shape)
+        }
         return createSymbolBuilder(shape, typeName, "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 

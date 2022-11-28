@@ -12,11 +12,9 @@ import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
-import software.amazon.smithy.swift.codegen.lang.reservedWords
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
-import software.amazon.smithy.utils.CaseUtils
 
 /**
  * Generates an appropriate Swift type for a Smithy enum string.
@@ -227,19 +225,6 @@ class EnumGenerator(
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
     fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
-        var enumCaseName = CaseUtils.toCamelCase(
-            name.orElseGet {
-                value
-            }.replace(Regex("[^a-zA-Z0-9_ ]"), "")
-        )
-        if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
-            enumCaseName = "_$enumCaseName"
-        }
-
-        if (shouldBeEscaped && reservedWords.contains(enumCaseName)) {
-            enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
-        }
-
-        return enumCaseName
+        return swiftEnumCaseName(name, value, shouldBeEscaped)
     }
 }

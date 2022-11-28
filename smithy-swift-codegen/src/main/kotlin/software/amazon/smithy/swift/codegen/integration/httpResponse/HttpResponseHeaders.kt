@@ -44,8 +44,16 @@ class HttpResponseHeaders(
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {
-                    val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
-                    writer.write("self.\$L = $memberValue", memberName)
+                    if (memberTarget.isIntEnumShape) {
+                        val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+                        writer.write(
+                            "self.\$L = \$L(rawValue: \$L(\$L) ?? 0)",
+                            memberName, enumSymbol, SwiftTypes.Int, headerDeclaration
+                        )
+                    } else {
+                        val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
+                        writer.write("self.\$L = \$L", memberName, memberValue)
+                    }
                 }
                 is BlobShape -> {
                     val memberValue = "$headerDeclaration.data(using: .utf8)"
@@ -94,7 +102,14 @@ class HttpResponseHeaders(
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "${SwiftTypes.Bool}(\$0)"
                         }
-                        is NumberShape -> "${stringToNumber(collectionMemberTarget, "\$0", false)}"
+                        is NumberShape -> {
+                            if (collectionMemberTarget.isIntEnumShape) {
+                                val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
+                                "${SwiftTypes.Int}(\$0).map({ intValue in $enumSymbol(rawValue: intValue) })"
+                            } else {
+                                "${stringToNumber(collectionMemberTarget, "\$0", false)}"
+                            }
+                        }
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -133,7 +148,7 @@ class HttpResponseHeaders(
                     // render map function
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
-                    if (!collectionMemberTargetSymbol.isBoxed()) {
+                    if (!collectionMemberTargetSymbol.isBoxed() || collectionMemberTargetShape.isIntEnumShape()) {
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                             val transformedHeaderDeclaration = "${memberName}Transformed"
                             writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
