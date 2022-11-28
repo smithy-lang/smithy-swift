@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os (watchOS) || os(macOS) || os(tvOS)
+#if os(iOS) || os(watchOS) || os(macOS) || os(tvOS)
 import Foundation.NSProcessInfo
 
 public struct PlatformOperationSystemVersion {
