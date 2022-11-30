@@ -47,7 +47,7 @@ class WaiterMethodGenerator(
             "}"
         ) {
             val configMethodName = "${waiterName.toLowerCamelCase()}WaiterConfig"
-            writer.write("let waiter = Waiter(config: try \$L(), operation: self.\$L(input:))", configMethodName, waitedOperation.toLowerCamelCase())
+            writer.write("let waiter = Waiter(config: try Self.\$L(), operation: self.\$L(input:))", configMethodName, waitedOperation.toLowerCamelCase())
             writer.write("return try await waiter.waitUntil(options: options, input: input)")
         }
     }

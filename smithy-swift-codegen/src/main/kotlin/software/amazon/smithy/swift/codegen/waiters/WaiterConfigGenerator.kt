@@ -25,7 +25,7 @@ class WaiterConfigGenerator(
         val configFunctionName = "${waiterName.toLowerCamelCase()}WaiterConfig"
         val inputTypeName = waitedOperation.inputShape.name.toUpperCamelCase()
         val outputTypeName = waitedOperation.outputShape.name.toUpperCamelCase()
-        writer.openBlock("func \$L() throws -> WaiterConfiguration<\$L, \$L> {", "}", configFunctionName, inputTypeName, outputTypeName) {
+        writer.openBlock("static func \$L() throws -> WaiterConfiguration<\$L, \$L> {", "}", configFunctionName, inputTypeName, outputTypeName) {
             writer.openBlock("let acceptors: [WaiterConfiguration<\$L, \$L>.Acceptor] = [", "]", inputTypeName, outputTypeName) {
                 waiter.acceptors.forEach { acceptor ->
                     WaiterAcceptorGenerator(writer, ctx, service, waitedOperation, acceptor).render()
