@@ -39,7 +39,7 @@ public struct SwiftLogger: LogAgent {
         let mappedDict = metadata?.mapValues { (value) -> Logger.MetadataValue in
             return Logger.MetadataValue.string(value)
         }
-        self.logger.log(level: logLevel.toLoggerLevel(),
+        self.logger.log(level: level.toLoggerLevel(),
                         Logger.Message(stringLiteral: message),
                         metadata: mappedDict,
                         source: source,
