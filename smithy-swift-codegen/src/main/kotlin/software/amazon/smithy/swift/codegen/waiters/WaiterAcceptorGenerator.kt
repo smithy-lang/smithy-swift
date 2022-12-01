@@ -10,7 +10,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
+// import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
@@ -26,15 +26,18 @@ class WaiterAcceptorGenerator(
 ) {
 
     fun render() {
-        val inputType = waitedOperation.inputShape.name
-        val outputType = waitedOperation.outputShape.name
-        writer.openBlock(".init(state: .${acceptor.state}) { (input: $inputType, result: Result<$outputType, Error>) -> Bool in", "},") {
+        writer.openBlock(
+            ".init(state: .\$L, matcher: { (input: \$L, result: Result<\$L, Error>) -> Bool in", "}),",
+            acceptor.state,
+            inputTypeName,
+            outputTypeName
+        ) {
             val matcher = acceptor.matcher
             when (matcher) {
                 is Matcher.SuccessMember -> {
                     writer.openBlock("switch result {", "}") {
-                        writer.write("case .success: return ${"true".takeIf { matcher.value } ?: "false"}")
-                        writer.write("case .failure: return ${"false".takeIf { matcher.value } ?: "true"}")
+                        writer.write("case .success: return \$L", "true".takeIf { matcher.value } ?: "false")
+                        writer.write("case .failure: return \$L", "false".takeIf { matcher.value } ?: "true")
                     }
                 }
                 is Matcher.OutputMember -> {
@@ -44,9 +47,8 @@ class WaiterAcceptorGenerator(
                     renderInputOutputBlockContents(true, matcher.value)
                 }
                 is Matcher.ErrorTypeMember -> {
-                    val errorTypeName = "${waitedOperation.toUpperCamelCase()}OutputError"
-                    var errorEnumCaseName = "${matcher.value.toLowerCamelCase()}"
-                    writer.write("// Match on error case: $errorEnumCaseName")
+//                    val errorTypeName = "${waitedOperation.toUpperCamelCase()}OutputError"
+                    writer.write("// Match on error case: \$L", matcher.value.toLowerCamelCase())
                     writer.write("return false")
 //                    writer.openBlock("switch result {", "}") {
 //                        writer.write("case .failure(let error as \$L):", errorTypeName)
@@ -64,11 +66,15 @@ class WaiterAcceptorGenerator(
         writer.write("// JMESPath expression: ${pathMatcher.path}")
         writer.write("// JMESPath comparator: ${pathMatcher.comparator}")
         writer.write("// JMESPath expected value: ${pathMatcher.expected}")
-        writer.write("guard case .success(let output) = result else { return false }")
+        writer.write("guard case .success(let unwrappedOutput) = result else { return false }")
         if (includeInput) {
-            writer.write("let current = InputOutput(input: input, output: output)")
+            writer.write(
+                "let current = Optional.some(WaiterConfiguration<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput))",
+                inputTypeName,
+                outputTypeName
+            )
         } else {
-            writer.write("let current = Optional.some(output)")
+            writer.write("let current = Optional.some(unwrappedOutput)")
         }
         val visitor = JMESPathVisitor(writer)
         val expression = JmespathExpression.parse(pathMatcher.path)
@@ -86,4 +92,8 @@ class WaiterAcceptorGenerator(
                 writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\"\$L\") } ?? false)", actual, actual, expected)
         }
     }
+
+    private val inputTypeName: String = waitedOperation.inputShape.name
+
+    private val outputTypeName: String = waitedOperation.outputShape.name
 }
