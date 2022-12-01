@@ -36,7 +36,8 @@ class WaiterGenerator : SwiftIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
         // Open a new file Waiters.swift to hold the waiter definitions for this service
-        delegator.useFileWriter("${ctx.settings.moduleName}/Waiters.swift") { writer ->
+        val waiterFilename = "${ctx.settings.moduleName}/Waiters.swift"
+        delegator.useFileWriter(waiterFilename) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 

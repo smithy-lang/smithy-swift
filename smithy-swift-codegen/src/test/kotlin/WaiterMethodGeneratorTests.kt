@@ -32,7 +32,7 @@ class WaiterMethodGeneratorTests {
     /// or there is an error not handled by any `Acceptor.`
     /// `WaiterTimeoutError` if the waiter times out.
     public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutputResponse> {
-        let waiter = Waiter(config: try bucketExistsWaiterConfig(), operation: self.headBucket(input:))
+        let waiter = Waiter(config: try Self.bucketExistsWaiterConfig(), operation: self.headBucket(input:))
         return try await waiter.waitUntil(options: options, input: input)
     }
 """

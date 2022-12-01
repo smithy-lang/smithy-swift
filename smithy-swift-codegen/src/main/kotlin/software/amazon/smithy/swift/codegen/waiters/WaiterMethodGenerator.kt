@@ -24,16 +24,19 @@ class WaiterMethodGenerator(
 ) {
     fun render() {
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
-        val inputType = waitedOperation.inputShape.name
-        val outputType = waitedOperation.outputShape.name
+        val inputTypeName = waitedOperation.inputShape.name
+        val outputTypeName = waitedOperation.outputShape.name
+        val waitedOperationName = waitedOperation.toLowerCamelCase()
+        val waiterFunctionName = "waitUntil${waiterName.toUpperCamelCase()}"
+        val configMethodName = "${waiterName.toLowerCamelCase()}WaiterConfig"
         val docBody = """
-            Initiates waiting for the $waiterName event on the ${waitedOperation.toLowerCamelCase()} operation.
+            Initiates waiting for the $waiterName event on the $waitedOperationName operation.
             The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
             Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
             waiter failure or timeout.
             - Parameters:
               - options: `WaiterOptions` to be used to configure this wait.
-              - input: The `$inputType` object to be used as a parameter when performing the operation.
+              - input: The `$inputTypeName` object to be used as a parameter when performing the operation.
             - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
             - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
             or there is an error not handled by any `Acceptor.`
@@ -43,11 +46,17 @@ class WaiterMethodGenerator(
             this.write(docBody)
         }
         writer.openBlock(
-            "public func waitUntil${waiterName.toUpperCamelCase()}(options: WaiterOptions, input: $inputType) async throws -> WaiterOutcome<$outputType> {",
-            "}"
+            "public func \$L(options: WaiterOptions, input: \$L) async throws -> WaiterOutcome<\$L> {",
+            "}",
+            waiterFunctionName,
+            inputTypeName,
+            outputTypeName
         ) {
-            val configMethodName = "${waiterName.toLowerCamelCase()}WaiterConfig"
-            writer.write("let waiter = Waiter(config: try Self.\$L(), operation: self.\$L(input:))", configMethodName, waitedOperation.toLowerCamelCase())
+            writer.write(
+                "let waiter = Waiter(config: try Self.\$L(), operation: self.\$L(input:))",
+                configMethodName,
+                waitedOperationName
+            )
             writer.write("return try await waiter.waitUntil(options: options, input: input)")
         }
     }

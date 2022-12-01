@@ -47,10 +47,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private fun childBlock(forExpression: JmespathExpression): String =
         forExpression.accept(JMESPathVisitor(writer))
 
-    private fun codegenReq(condition: Boolean, lazyMessage: () -> String) {
-        if (!condition) throw Exception(lazyMessage())
-    }
-
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
         val outerName = bestTempVarName("projection")
@@ -114,7 +110,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     override fun visitFunction(expression: FunctionExpression): String {
         when (expression.name) {
             "contains" -> {
-                codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
+                if (expression.arguments.size != 2) { throw Exception("Unexpected number of arguments to $expression") }
 
                 val subject = expression.arguments[0]
                 val subjectName = subject.accept(this)
@@ -125,7 +121,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
                 return addTempVar("contains", "\$L.flatMap { \$L?.contains($$0) } ?? false", searchName, subjectName)
             }
             "length" -> {
-                codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+                if (expression.arguments.size != 1) { throw Exception("Unexpected number of arguments to $expression") }
 
                 val subject = expression.arguments[0]
                 val subjectName = subject.accept(this)
