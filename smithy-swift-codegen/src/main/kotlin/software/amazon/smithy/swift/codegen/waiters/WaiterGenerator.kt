@@ -41,6 +41,9 @@ class WaiterGenerator : SwiftIntegration {
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
+            // Only add waiters if Swift version is 5.7 or higher
+            writer.write("#if swift(>= 5.7)")
+
             // Render an extension on the service protocol, which will contain the waitUntil... methods
             writer.openBlock("extension \$LProtocol {", "}", serviceSymbol.name) {
 
@@ -63,6 +66,9 @@ class WaiterGenerator : SwiftIntegration {
                     }
                 }
             }
+
+            // Close the Swift version gate block
+            writer.write("#endif")
         }
     }
 
