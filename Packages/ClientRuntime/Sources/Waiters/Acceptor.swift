@@ -24,6 +24,8 @@ extension WaiterConfiguration {
             case failure
         }
 
+        /// Used as the root value of an `inputOutput` acceptor, which has the `input` and `output` fields
+        /// as its two top level properties.
         public struct InputOutput {
             public let input: Input?
             public let output: Output?
