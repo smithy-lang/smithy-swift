@@ -10,13 +10,16 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
-// import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
 import software.amazon.smithy.waiters.PathComparator
 import software.amazon.smithy.waiters.PathMatcher
 
+// Renders the initializer for one Smithy waiter acceptor into Swift,
+// using the provided writer & shapes.
+// The Acceptor is defined in Smithy here:
+// https://smithy.io/2.0/additional-specs/waiters.html#acceptor-structure
 class WaiterAcceptorGenerator(
     val writer: SwiftWriter,
     val ctx: CodegenContext,
@@ -33,6 +36,7 @@ class WaiterAcceptorGenerator(
             outputTypeName
         ) {
             val matcher = acceptor.matcher
+            // There are 4 possible types of acceptor.  Render each separately below.
             when (matcher) {
                 is Matcher.SuccessMember -> {
                     writer.openBlock("switch result {", "}") {
@@ -47,16 +51,9 @@ class WaiterAcceptorGenerator(
                     renderInputOutputBlockContents(true, matcher.value)
                 }
                 is Matcher.ErrorTypeMember -> {
-//                    val errorTypeName = "${waitedOperation.toUpperCamelCase()}OutputError"
+                    // This is not implemented, will be filled later
                     writer.write("// Match on error case: \$L", matcher.value.toLowerCamelCase())
                     writer.write("return false")
-//                    writer.openBlock("switch result {", "}") {
-//                        writer.write("case .failure(let error as \$L):", errorTypeName)
-//                        writer.indent()
-//                        writer.write("if case .\$L = error { return true } else { return false }", errorEnumCaseName)
-//                        writer.dedent()
-//                        writer.write("default: return false")
-//                    }
                 }
             }
         }
@@ -67,6 +64,10 @@ class WaiterAcceptorGenerator(
         writer.write("// JMESPath comparator: ${pathMatcher.comparator}")
         writer.write("// JMESPath expected value: ${pathMatcher.expected}")
         writer.write("guard case .success(let unwrappedOutput) = result else { return false }")
+        // output and inputOutput type acceptors are the same except that:
+        // - An output waiter has the output object at its root scope
+        // - An inputOutput waiter has an object with the properties input and output at its root scope
+        // Depending on the type of waiter, current is set to establish that scope.
         if (includeInput) {
             writer.write(
                 "let current = Optional.some(WaiterConfiguration<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput))",
@@ -76,10 +77,16 @@ class WaiterAcceptorGenerator(
         } else {
             writer.write("let current = Optional.some(unwrappedOutput)")
         }
-        val visitor = JMESPathVisitor(writer)
+
+        // Use smithy to parse the text JMESPath expression into a syntax tree to be visited.
         val expression = JmespathExpression.parse(pathMatcher.path)
+
+        // Create a visitor & send it through the tree.  actual will hold the name of the variable
+        // with the result of the expression
+        val visitor = JMESPathVisitor(writer)
         val actual = expression.accept(visitor)
 
+        // Get the expected result and type of comparison needed, and render the result.
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
