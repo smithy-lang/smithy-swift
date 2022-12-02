@@ -42,7 +42,7 @@ class WaiterGenerator : SwiftIntegration {
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
             // Only add waiters if Swift version is 5.7 or higher
-            writer.write("#if swift(>= 5.7)")
+            writer.write("#if swift(>=5.7)")
 
             // Render an extension on the service protocol, which will contain the waitUntil... methods
             writer.openBlock("extension \$LProtocol {", "}", serviceSymbol.name) {
