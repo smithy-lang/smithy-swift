@@ -87,7 +87,7 @@ class WaiterAcceptorGenerator(
             PathComparator.BOOLEAN_EQUALS ->
                 writer.write("return JMESValue(\$L) == JMESValue(\$L)", actual, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
-                writer.write("return \$L?.contains { JMESValue($$0) == JMESValue(\"\$L\") } ?? false", actual, expected)
+                writer.write("return \$L?.contains(where: { JMESValue($$0) == JMESValue(\"\$L\") }) ?? false", actual, expected)
             PathComparator.ALL_STRING_EQUALS ->
                 writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\"\$L\") } ?? false)", actual, actual, expected)
         }

@@ -50,10 +50,10 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
         val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$L = Optional.some((\$L ?? []).flatMap { current in", "})", outerName, leftName) {
+        writer.openBlock("let \$L = Optional.some((\$L ?? []).compactMap { current in", "})", outerName, leftName) {
             writer.write("let current = Optional.some(current)")
             val innerResult = addTempVar("innerResult", childBlock(right))
-            writer.write("return [\$L].compactMap { $$0 }.flattenIfPossible { $$0 }", innerResult)
+            writer.write("return \$L", innerResult)
         }
         return outerName
     }
@@ -90,21 +90,18 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
         val leftName = expression.left!!.accept(this)
         val filteredName = bestTempVarName("${leftName}Filtered")
-
-        writer.openBlock("let \$L = Optional.some((\$L ?? []).filter { current in", filteredName, leftName)
-        writer.write("let current = Optional.some(current)")
-        val comparisonName = childBlock(expression.comparison!!)
-        writer.write("return \$L", comparisonName)
-
-        writer.closeBlock("})")
-
+        writer.openBlock("let \$L = Optional.some((\$L ?? []).filter { current in", "})", filteredName, leftName) {
+            writer.write("let current = Optional.some(current)")
+            val comparisonName = childBlock(expression.comparison!!)
+            writer.write("return \$L", comparisonName)
+        }
         val right = expression.right!!
         return flatMappingBlock(right, filteredName)
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
         val innerName = expression.expression!!.accept(this)
-        return addTempVar("${innerName}OrEmpty", "Optional.some(\$L ?? [])?.flattenIfPossible { $$0 }", innerName)
+        return addTempVar("${innerName}OrEmpty", "Optional.some((\$L ?? []).flattenIfPossible { $$0 })", innerName)
     }
 
     override fun visitFunction(expression: FunctionExpression): String {
@@ -114,10 +111,8 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
                 val subject = expression.arguments[0]
                 val subjectName = subject.accept(this)
-
                 val search = expression.arguments[1]
                 val searchName = search.accept(this)
-
                 return addTempVar("contains", "\$L.flatMap { \$L?.contains($$0) } ?? false", searchName, subjectName)
             }
             "length" -> {
@@ -125,7 +120,6 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
 
                 val subject = expression.arguments[0]
                 val subjectName = subject.accept(this)
-
                 return addTempVar("count", "Optional.some(Double(\$L?.count ?? 0))", subjectName)
             }
             else -> throw Exception("Unknown function type in $expression")
