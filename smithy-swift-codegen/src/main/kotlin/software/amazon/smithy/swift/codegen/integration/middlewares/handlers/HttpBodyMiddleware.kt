@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -111,7 +112,7 @@ class HttpBodyMiddleware(
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
 
                         val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?: target.getTrait<XmlNameTrait>()
-                        if (xmlNameTrait != null) {
+                        if (ctx.protocol == RestXmlTrait.ID && xmlNameTrait != null) {
                             val xmlName = xmlNameTrait.value
                             writer.write("let xmlEncoder = encoder as! XMLEncoder")
                             writer.write(
