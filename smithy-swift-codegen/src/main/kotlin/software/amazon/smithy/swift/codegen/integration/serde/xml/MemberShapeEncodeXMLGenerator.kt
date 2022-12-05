@@ -373,17 +373,13 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
-        var renderableMemberName = memberName
-        if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
-            renderableMemberName = "${SwiftTypes.String}($memberName)"
-        }
         XMLNamespaceTraitGenerator?.let {
             writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-            writer.write("try $nestedContainerName.encode($renderableMemberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $nestedContainerName.encode($memberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
             it.render(writer, nestedContainerName)
             it.appendKey(xmlNamespaces)
         } ?: run {
-            writer.write("try $containerName.encode($renderableMemberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $containerName.encode($memberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
         }
     }
 }
