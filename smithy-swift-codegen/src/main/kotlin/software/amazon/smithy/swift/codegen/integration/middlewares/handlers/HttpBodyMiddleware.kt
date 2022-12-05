@@ -24,7 +24,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
@@ -111,7 +110,7 @@ class HttpBodyMiddleware(
                     writer.write("let encoder = context.getEncoder()")
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
 
-                        val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?:  target.getTrait<XmlNameTrait>()
+                        val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?: target.getTrait<XmlNameTrait>()
                         if (xmlNameTrait != null) {
                             val xmlName = xmlNameTrait.value
                             writer.write("let xmlEncoder = encoder as! XMLEncoder")
