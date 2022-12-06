@@ -6,6 +6,13 @@
 //
 
 import Foundation
+#if canImport(FoundationXML)
+// As of Swift 5.1, the Foundation module on Linux only has the same set of dependencies as the Swift standard library itself
+// Therefore, we need to explicitly import FoundationXML on linux.
+// The preferred way to do this, is to check if FoundationXML can be imported.
+// https://github.com/apple/swift-corelibs-foundation/blob/main/Docs/ReleaseNotes_Swift5.md
+import FoundationXML
+#endif
 
 public struct XMLComparator {
     public static func xmlData(_ dataA: Data, isEqualTo dataB: Data) -> Bool {
