@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import java.util.logging.Logger
 
@@ -109,6 +110,15 @@ class AddOperationShapes {
                         .build()
                 )
             }
+
+            val xmlName = shape.getTrait<XmlNameTrait>()?.value
+            if (xmlName == null) {
+                // If the operation shape doesn't define an explicit xml name,
+                // then add a xml name trait set to the shape's original name.
+                // This is necessary since we modify the shape's name.
+                builder.addTrait(XmlNameTrait(shape.defaultName()))
+            }
+
             return builder.build() as Shape
         }
     }

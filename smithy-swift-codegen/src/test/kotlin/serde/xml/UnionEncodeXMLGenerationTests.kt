@@ -37,7 +37,7 @@ class UnionEncodeXMLGenerationTests {
                         case let .datavalue(datavalue):
                             try container.encode(datavalue, forKey: ClientRuntime.Key("dataValue"))
                         case let .doublevalue(doublevalue):
-                            try container.encode(Swift.String(doublevalue), forKey: ClientRuntime.Key("doubleValue"))
+                            try container.encode(doublevalue, forKey: ClientRuntime.Key("doubleValue"))
                         case let .mapvalue(mapvalue):
                             var mapValueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("mapValue"))
                             for (stringKey0, stringValue0) in mapvalue {

@@ -9,7 +9,11 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
                                          OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
     
-    public init() {}
+    let xmlName: String?
+    
+    public init(xmlName: String? = nil) {
+        self.xmlName = xmlName
+    }
     
     public func handle<H>(context: Context,
                           input: SerializeStepInput<OperationStackInput>,
@@ -20,7 +24,12 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
           Self.Context == H.Context {
               do {
                   let encoder = context.getEncoder()
-                  let data = try encoder.encode(input.operationInput)
+                  let data: Data
+                  if let xmlName = xmlName, let xmlEncoder = encoder as? XMLEncoder {
+                      data = try xmlEncoder.encode(input.operationInput, withRootKey: xmlName)
+                  } else {
+                      data = try encoder.encode(input.operationInput)
+                  }
                   let body = HttpBody.data(data)
                   input.builder.withBody(body)
               } catch let err {
