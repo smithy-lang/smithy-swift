@@ -147,7 +147,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!) { $expectedData, $actualData in ", "}") {
+                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {
@@ -202,6 +202,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("XCTFail(\"Failed to verify body \\(err)\")")
         writer.dedent()
         writer.write("}")
+    }
+
+    private fun renderDataComparison(writer: SwiftWriter, expectedData: String, actualData: String) {
+        val assertionMethod = "XCTAssertJSONDataEqual"
+        writer.write("\$L(\$L, \$L, \"Some error message\")", assertionMethod, actualData, expectedData)
     }
 
     protected open fun renderAssertions(test: HttpRequestTestCase, outputShape: Shape) {

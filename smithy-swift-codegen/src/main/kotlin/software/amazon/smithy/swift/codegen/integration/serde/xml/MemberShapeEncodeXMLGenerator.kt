@@ -13,7 +13,6 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
@@ -373,17 +372,13 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
-        var renderableMemberName = memberName
-        if (MemberShapeEncodeConstants.floatingPointPrimitiveSymbols.contains(memberTarget.type)) {
-            renderableMemberName = "${SwiftTypes.String}($memberName)"
-        }
         XMLNamespaceTraitGenerator?.let {
             writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-            writer.write("try $nestedContainerName.encode($renderableMemberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $nestedContainerName.encode($memberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
             it.render(writer, nestedContainerName)
             it.appendKey(xmlNamespaces)
         } ?: run {
-            writer.write("try $containerName.encode($renderableMemberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $containerName.encode($memberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
         }
     }
 }
