@@ -5,6 +5,8 @@
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
+    public var _errorCode: String?
+
     public var _isThrottling: Bool = false
     
     public var _statusCode: HttpStatusCode?
@@ -19,9 +21,15 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
 }
 
 extension UnknownHttpServiceError {
-    public init(httpResponse: HttpResponse, message: String? = nil) {
+    public init(httpResponse: HttpResponse, message: String? = nil, errorCode: String? = nil) {
         self._statusCode = httpResponse.statusCode
         self._headers = httpResponse.headers
         self._message = message
+        self._errorCode = errorCode
     }
+}
+
+extension UnknownHttpServiceError: CodedError {
+
+    public var errorCode: String? { _errorCode }
 }
