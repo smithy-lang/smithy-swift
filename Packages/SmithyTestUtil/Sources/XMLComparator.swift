@@ -15,6 +15,12 @@ import FoundationXML
 #endif
 
 public struct XMLComparator {
+    /// Returns true if the XML documents, for the corresponding data objects, are equal.
+    /// Order of elements within the document do not affect equality.
+    /// - Parameters:
+    ///   - dataA: The first data object to compare to the second data object.
+    ///   - dataB: The second data object to compare to the first data object.
+    /// - Returns: Returns true if the XML documents, for the corresponding data objects, are equal.
     public static func xmlData(_ dataA: Data, isEqualTo dataB: Data) -> Bool {
         let rootA = XMLConverter.xmlTree(with: dataA)
         let rootB = XMLConverter.xmlTree(with: dataB)
