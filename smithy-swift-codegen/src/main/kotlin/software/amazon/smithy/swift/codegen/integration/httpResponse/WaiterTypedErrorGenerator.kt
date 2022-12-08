@@ -16,19 +16,19 @@ import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 
-class CodedErrorGenerator(
+class WaiterTypedErrorGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val op: OperationShape,
     val unknownServiceErrorSymbol: Symbol
 ) {
-    object CodedErrorGeneratorSectionId : SectionId
+    object WaiterTypedErrorGeneratorSectionId : SectionId
 
     fun render() {
         val errorShapes = op.errors.map { ctx.model.expectShape(it) as StructureShape }.toSet().sorted()
         val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+CodedError.swift")
+            .definitionFile("./$rootNamespace/models/$operationErrorName+WaiterTypedError.swift")
             .name(operationErrorName)
             .build()
 
@@ -43,12 +43,12 @@ class CodedErrorGenerator(
                 "operationErrorName" to operationErrorName,
                 "errorShapes" to errorShapes
             )
-            writer.declareSection(CodedErrorGeneratorSectionId, context) {
-                writer.openBlock("extension \$L: CodedError {", "}", operationErrorName) {
+            writer.declareSection(WaiterTypedErrorGeneratorSectionId, context) {
+                writer.openBlock("extension \$L: WaiterTypedError {", "}", operationErrorName) {
                     writer.write("")
-                    writer.write("/// The error code for this error, or `nil` if the code could not be determined.")
-                    writer.write("/// How this code is determined depends on the protocol used to decode the error response.")
-                    writer.openBlock("public var errorCode: String? {", "}") {
+                    writer.write("/// The Smithy identifier, without namespace, for the type of this error, or `nil` if the")
+                    writer.write("/// error has no known type.")
+                    writer.openBlock("public var waiterErrorType: String? {", "}") {
                         writer.write("switch self {")
                         for (errorShape in errorShapes) {
                             var errorShapeName = resolveErrorShapeName(errorShape)
@@ -56,7 +56,7 @@ class CodedErrorGenerator(
                             var errorShapeEnumCase = errorShapeType.decapitalize()
                             writer.write("case .\$L: return \$S", errorShapeEnumCase, errorShapeName)
                         }
-                        writer.write("case .unknown(let error): return error.errorCode")
+                        writer.write("case .unknown(let error): return error.waiterErrorType")
                         writer.write("}")
                     }
                 }

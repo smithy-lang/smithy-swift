@@ -5,8 +5,8 @@ namespace com.test
 use aws.api#service
 use aws.protocols#restJson1
 
-@service(sdkId: "CodedErrorTest")
-service CodedErrorTest {
+@service(sdkId: "WaiterTypedErrorTest")
+service WaiterTypedErrorTest {
     version: "2019-12-16",
     operations: [GetWidget]
 }

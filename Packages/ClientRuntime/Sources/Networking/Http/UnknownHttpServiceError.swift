@@ -5,7 +5,7 @@
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
-    public var _errorCode: String?
+    public var _errorType: String?
 
     public var _isThrottling: Bool = false
     
@@ -26,19 +26,19 @@ extension UnknownHttpServiceError {
     /// Creates an `UnknownHttpServiceError` from a HTTP response.
     /// - Parameters:
     ///   - httpResponse: The `HttpResponse` for this error.
-    ///   - message: The message associated with this error. Defaults to nil
-    ///   - errorCode: The error code associated with this error.  Defaults to nil
-    public init(httpResponse: HttpResponse, message: String? = nil, errorCode: String? = nil) {
+    ///   - message: The message associated with this error. Defaults to `nil`.
+    ///   - errorType: The error type associated with this error.  Defaults to `nil`.
+    public init(httpResponse: HttpResponse, message: String? = nil, errorType: String? = nil) {
         self._statusCode = httpResponse.statusCode
         self._headers = httpResponse.headers
         self._message = message
-        self._errorCode = errorCode
+        self._errorType = errorType
     }
 }
 
-extension UnknownHttpServiceError: CodedError {
+extension UnknownHttpServiceError: WaiterTypedError {
 
-    /// The error code for this error, or `nil` if the code could not be determined.
-    /// How this code is determined depends on the Smithy protocol used to decode the response.
-    public var errorCode: String? { _errorCode }
+    /// The Smithy identifier, without namespace, for the type of this error, or `nil` if the
+    /// error has no known type.
+    public var waiterErrorType: String? { _errorType }
 }

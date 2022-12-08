@@ -15,18 +15,18 @@ public enum SdkError<E>: Error {
 
 }
 
-extension SdkError: CodedError {
+extension SdkError: WaiterTypedError {
 
-    /// The error code associated with this error, or `nil` if the error is not a `CodedError` or
-    /// the error's code is unknown.
-    public var errorCode: String? {
+    /// The Smithy identifier, without namespace, for the type of this error, or `nil` if the
+    /// error has no known type.
+    public var waiterErrorType: String? {
         switch self {
         case .service(let error, _):
-            return (error as? CodedError)?.errorCode
+            return (error as? WaiterTypedError)?.waiterErrorType
         case .client(let error, _):
-            return (error as? CodedError)?.errorCode
+            return (error as? WaiterTypedError)?.waiterErrorType
         case .unknown(let error):
-            return (error as? CodedError)?.errorCode
+            return (error as? WaiterTypedError)?.waiterErrorType
         }
     }
 }
