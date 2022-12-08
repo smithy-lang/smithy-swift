@@ -1,8 +1,11 @@
-/*
+package waiters/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import MockHttpRestJsonProtocolGenerator
+import TestContext
+import defaultSettings
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
@@ -46,9 +49,10 @@ class WaiterGeneratorTests {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
-        }
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+                model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
+            }
         context.generator.generateProtocolClient(context.generationCtx)
         val unit = WaiterGenerator()
         val codegenContext = object : CodegenContext {

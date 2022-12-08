@@ -1,14 +1,23 @@
+package waiters
+
+import MockHttpRestJsonProtocolGenerator
+import TestContext
+import defaultSettings
+import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.integration.httpResponse.WaiterTypedErrorGenerator
+import software.amazon.smithy.swift.codegen.waiters.WaiterTypedErrorGenerator
 
 class WaiterTypedErrorGeneratorTests {
 
     @Test
     fun `renders correct WaiterTypedError extension for operation error`() {
         val context = setupTests("waiter-typed-error.smithy", "com.test#WaiterTypedErrorTest")
-        val contents = getFileContents(context.manifest, "/WaiterTypedErrorTest/models/GetWidgetOutputError+WaiterTypedError.swift")
+        val contents = getFileContents(
+            context.manifest,
+            "/WaiterTypedErrorTest/models/GetWidgetOutputError+WaiterTypedError.swift"
+        )
         val expected = """
         extension GetWidgetOutputError: WaiterTypedError {
         
@@ -27,9 +36,10 @@ class WaiterTypedErrorGeneratorTests {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "WaiterTypedErrorTest", "2019-12-16", "WaiterTypedErrorTest")
-        }
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+                model.defaultSettings(serviceShapeId, "WaiterTypedErrorTest", "2019-12-16", "WaiterTypedErrorTest")
+            }
         context.generator.generateProtocolClient(context.generationCtx)
         val operationShape = context.generationCtx.model.operationShapes.first()
         WaiterTypedErrorGenerator(context.generationCtx, operationShape, ClientRuntimeTypes.Http.UnknownHttpServiceError).render()
