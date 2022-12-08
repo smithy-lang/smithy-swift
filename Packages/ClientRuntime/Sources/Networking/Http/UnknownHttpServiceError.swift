@@ -26,8 +26,8 @@ extension UnknownHttpServiceError {
     /// Creates an `UnknownHttpServiceError` from a HTTP response.
     /// - Parameters:
     ///   - httpResponse: The `HttpResponse` for this error.
-    ///   - message: The message associated with this error.  May be omitted.
-    ///   - errorCode: The error code associated with this error.  May be omitted.
+    ///   - message: The message associated with this error. Defaults to nil
+    ///   - errorCode: The error code associated with this error.  Defaults to nil
     public init(httpResponse: HttpResponse, message: String? = nil, errorCode: String? = nil) {
         self._statusCode = httpResponse.statusCode
         self._headers = httpResponse.headers
