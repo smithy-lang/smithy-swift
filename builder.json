@@ -19,10 +19,7 @@
   "build_dir": "target/build",
   "downstream": [
     { "name": "aws-sdk-swift" }
-  ],
-  "upstream": [
-    { "name": "aws-crt-swift" }
-  ],    
+  ], 
   "hosts": {
     "ubuntu": {
       "packages": [
