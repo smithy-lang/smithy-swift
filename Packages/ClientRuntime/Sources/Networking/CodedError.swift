@@ -5,12 +5,12 @@
 
 import Foundation
 
+/// An error that may be identified by a string error code.
+/// The error code identifies the general cause or nature of a server error.
+/// Typically this error code will come from a response to a network request.
 public protocol CodedError: Error {
 
-    /// The `String` error code that identifies the general type of this HTTP service error, or `nil` if the
+    /// The code that identifies the cause of this error, or `nil` if the
     /// error has no known code.
-    ///
-    /// The source of this code is the HTTP response to an API call, but what exact header, body field, etc.
-    /// it comes from is specific to the response encoding used.
     var errorCode: String? { get }
 }

@@ -21,6 +21,13 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
 }
 
 extension UnknownHttpServiceError {
+
+
+    /// Creates an `UnknownHttpServiceError` from a HTTP response.
+    /// - Parameters:
+    ///   - httpResponse: The `HttpResponse` for this error.
+    ///   - message: The message associated with this error.  May be omitted.
+    ///   - errorCode: The error code associated with this error.  May be omitted.
     public init(httpResponse: HttpResponse, message: String? = nil, errorCode: String? = nil) {
         self._statusCode = httpResponse.statusCode
         self._headers = httpResponse.headers
@@ -31,5 +38,7 @@ extension UnknownHttpServiceError {
 
 extension UnknownHttpServiceError: CodedError {
 
+    /// The error code for this error, or `nil` if the code could not be determined.
+    /// How this code is determined depends on the Smithy protocol used to decode the response.
     public var errorCode: String? { _errorCode }
 }

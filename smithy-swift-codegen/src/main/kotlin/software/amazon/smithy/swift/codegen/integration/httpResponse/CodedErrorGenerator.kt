@@ -46,6 +46,8 @@ class CodedErrorGenerator(
             writer.declareSection(CodedErrorGeneratorSectionId, context) {
                 writer.openBlock("extension \$L: CodedError {", "}", operationErrorName) {
                     writer.write("")
+                    writer.write("/// The error code for this error, or `nil` if the code could not be determined.")
+                    writer.write("/// How this code is determined depends on the protocol used to decode the error response.")
                     writer.openBlock("public var errorCode: String? {", "}") {
                         writer.write("switch self {")
                         for (errorShape in errorShapes) {
