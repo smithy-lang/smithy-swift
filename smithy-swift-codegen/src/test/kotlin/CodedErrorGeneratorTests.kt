@@ -12,6 +12,8 @@ class CodedErrorGeneratorTests {
         val expected = """
         extension GetWidgetOutputError: CodedError {
         
+            /// The error code for this error, or `nil` if the code could not be determined.
+            /// How this code is determined depends on the protocol used to decode the error response.
             public var errorCode: String? {
                 switch self {
                 case .invalidWidgetError: return "InvalidWidgetError"
