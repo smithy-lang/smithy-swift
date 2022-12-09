@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package waiters
 
 import MockHttpRestJsonProtocolGenerator
@@ -6,7 +11,6 @@ import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.waiters.WaiterTypedErrorGenerator
 
 class WaiterTypedErrorGeneratorTests {
@@ -42,7 +46,7 @@ class WaiterTypedErrorGeneratorTests {
             }
         context.generator.generateProtocolClient(context.generationCtx)
         val operationShape = context.generationCtx.model.operationShapes.first()
-        WaiterTypedErrorGenerator(context.generationCtx, operationShape, ClientRuntimeTypes.Http.UnknownHttpServiceError).render()
+        WaiterTypedErrorGenerator(context.generationCtx, operationShape).render()
         context.generationCtx.delegator.flushWriters()
         return context
     }

@@ -1,0 +1,4 @@
+package waiters
+
+class WaiterConfigGeneratorTests {
+}

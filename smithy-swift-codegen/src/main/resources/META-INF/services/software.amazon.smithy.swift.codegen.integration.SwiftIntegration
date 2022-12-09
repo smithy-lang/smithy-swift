@@ -1,2 +1,2 @@
 software.amazon.smithy.swift.codegen.PaginatorGenerator
-software.amazon.smithy.swift.codegen.waiters.WaiterGenerator
+software.amazon.smithy.swift.codegen.waiters.WaiterIntegration

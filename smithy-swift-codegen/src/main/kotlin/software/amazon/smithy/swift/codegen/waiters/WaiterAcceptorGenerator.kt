@@ -51,9 +51,9 @@ class WaiterAcceptorGenerator(
                     renderInputOutputBlockContents(true, matcher.value)
                 }
                 is Matcher.ErrorTypeMember -> {
-                    // This is not implemented, will be filled later
-                    writer.write("// Match on error case: \$L", matcher.value.toLowerCamelCase())
-                    writer.write("return false")
+                    val errorType = matcher.value.toLowerCamelCase()
+                    writer.write("guard case .failure(let error) = result else { return false }")
+                    writer.write("return (error as? WaiterTypedError)?.waiterErrorType == \$S", errorType)
                 }
             }
         }
@@ -90,13 +90,13 @@ class WaiterAcceptorGenerator(
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
-                writer.write("return JMESValue(\$L) == JMESValue(\"\$L\")", actual, expected)
+                writer.write("return JMESValue(\$L) == JMESValue(\$S)", actual, expected)
             PathComparator.BOOLEAN_EQUALS ->
                 writer.write("return JMESValue(\$L) == JMESValue(\$L)", actual, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
-                writer.write("return \$L?.contains(where: { JMESValue($$0) == JMESValue(\"\$L\") }) ?? false", actual, expected)
+                writer.write("return \$L?.contains(where: { JMESValue($$0) == JMESValue(\$S) }) ?? false", actual, expected)
             PathComparator.ALL_STRING_EQUALS ->
-                writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\"\$L\") } ?? false)", actual, actual, expected)
+                writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\$S) } ?? false)", actual, actual, expected)
         }
     }
 

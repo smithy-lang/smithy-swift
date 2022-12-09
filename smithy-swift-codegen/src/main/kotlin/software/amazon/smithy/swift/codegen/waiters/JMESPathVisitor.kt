@@ -166,7 +166,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     // Renders a literal of any supported type, wrapped in an optional.
     override fun visitLiteral(expression: LiteralExpression): String {
         when (expression.type) {
-            RuntimeType.STRING -> return addTempVar("string", "Optional.some(\"\$L\")", expression.expectStringValue())
+            RuntimeType.STRING -> return addTempVar("string", "Optional.some(\$S)", expression.expectStringValue())
             RuntimeType.NUMBER -> return addTempVar("number", "Optional.some(Double(\$L))", expression.expectNumberValue())
             RuntimeType.BOOLEAN -> return addTempVar("bool", "Optional.some(\$L)", expression.expectBooleanValue())
             RuntimeType.NULL -> return "nil"

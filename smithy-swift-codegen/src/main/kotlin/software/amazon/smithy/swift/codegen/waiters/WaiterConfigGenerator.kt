@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
+import software.amazon.smithy.waiters.Matcher.ErrorTypeMember
 import software.amazon.smithy.waiters.Waiter
 
 class WaiterConfigGenerator(
@@ -40,4 +41,7 @@ class WaiterConfigGenerator(
             )
         }
     }
+
+    var usesErrorTypeMatchers: Boolean =
+        waiter.acceptors.any { it.matcher is ErrorTypeMember }
 }

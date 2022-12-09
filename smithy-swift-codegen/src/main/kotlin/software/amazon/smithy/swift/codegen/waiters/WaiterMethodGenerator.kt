@@ -12,18 +12,15 @@ import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
-import software.amazon.smithy.waiters.Waiter
 
 class WaiterMethodGenerator(
     val writer: SwiftWriter,
     val ctx: CodegenContext,
     val service: ServiceShape,
     val waitedOperation: OperationShape,
-    val waiterName: String,
-    val waiter: Waiter
+    val waiterName: String
 ) {
     fun render() {
-        val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val inputTypeName = waitedOperation.inputShape.name
         val outputTypeName = waitedOperation.outputShape.name
         val waitedOperationName = waitedOperation.toLowerCamelCase()

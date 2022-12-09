@@ -8,8 +8,10 @@ package waiters
 import MockHttpRestJsonProtocolGenerator
 import TestContext
 import defaultSettings
-import getFileContents
-import io.kotest.matchers.string.shouldContainOnlyOnce
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -17,44 +19,35 @@ import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import software.amazon.smithy.swift.codegen.waiters.WaiterGenerator
+import software.amazon.smithy.swift.codegen.waiters.WaiterIntegration
+import kotlin.io.path.Path
 
-class WaiterGeneratorTests {
+class WaiterIntegrationTests {
 
     @Test
-    fun `renders a waiters extension on protocol`() {
-        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
-        val expected = """
-            #if swift(>=5.7)
-            extension TestClientProtocol {
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expected)
-        val expected2 = """
-            }
-            #endif
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expected2)
+    fun testGeneratorNotEnabledForServiceWithoutWaiters() {
+        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
+        WaiterIntegration().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeFalse()
     }
 
     @Test
-    fun `renders a waiter config into extension`() {
+    fun testGeneratorEnabledForServiceWithWaiters() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
-        val expected = """
-            return try WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expected)
+        WaiterIntegration().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeTrue()
     }
 
     @Test
-    fun `renders a waiter method into extension`() {
+    fun testRendersWaitersSwiftFileForServiceWithWaiters() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
-        val expected = """
-            public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutputResponse> {
-        """.trimIndent()
-        contents.shouldContainOnlyOnce(expected)
+        val filePaths = context.manifest.files
+        filePaths.shouldContain(Path("/Test/Waiters.swift"))
+    }
+
+    @Test
+    fun testRendersNoWaitersSwiftFileForServiceWithoutWaiters() {
+        val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
+        val filePaths = context.manifest.files
+        filePaths.shouldNotContain(Path("/Test/Waiters.swift"))
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
@@ -70,10 +63,9 @@ class WaiterGeneratorTests {
             override val protocolGenerator: ProtocolGenerator? = context.generator
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
-        val path = "Test/Waiters.swift"
-        context.generationCtx.delegator.useFileWriter(path) {writer ->
-            val unit = WaiterGenerator(codegenContext, context.generationCtx, context.generationCtx.delegator)
-            unit.render()
+        val unit = WaiterIntegration()
+        if (unit.enabledForService(codegenContext.model, codegenContext.settings)) {
+            unit.writeAdditionalFiles(codegenContext, context.generationCtx, context.generationCtx.delegator)
         }
         context.generationCtx.delegator.flushWriters()
         return context
