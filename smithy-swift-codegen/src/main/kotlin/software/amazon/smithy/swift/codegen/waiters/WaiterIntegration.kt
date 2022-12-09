@@ -9,7 +9,7 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.waiters.WaitableTrait
 
-class WaiterIntegration: SwiftIntegration {
+class WaiterIntegration : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean {
         return serviceHasWaiters(model)
     }

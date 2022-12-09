@@ -63,7 +63,7 @@ class WaiterMethodGeneratorTests {
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
         val path = "Test/Waiters.swift"
-        context.generationCtx.delegator.useFileWriter(path) {writer ->
+        context.generationCtx.delegator.useFileWriter(path) { writer ->
             val service = codegenContext.model.expectShape<ServiceShape>(codegenContext.settings.service)
             val waitedOperation = service.allOperations
                 .map { codegenContext.model.expectShape<OperationShape>(it) }.first()

@@ -71,7 +71,7 @@ class WaiterGeneratorTests {
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
         }
         val path = "Test/Waiters.swift"
-        context.generationCtx.delegator.useFileWriter(path) {writer ->
+        context.generationCtx.delegator.useFileWriter(path) { writer ->
             val unit = WaiterGenerator(codegenContext, context.generationCtx, context.generationCtx.delegator)
             unit.render()
         }
