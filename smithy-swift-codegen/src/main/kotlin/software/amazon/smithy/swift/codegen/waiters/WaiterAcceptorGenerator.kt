@@ -51,9 +51,8 @@ class WaiterAcceptorGenerator(
                     renderInputOutputBlockContents(true, matcher.value)
                 }
                 is Matcher.ErrorTypeMember -> {
-                    val errorType = matcher.value.toLowerCamelCase()
                     writer.write("guard case .failure(let error) = result else { return false }")
-                    writer.write("return (error as? WaiterTypedError)?.waiterErrorType == \$S", errorType)
+                    writer.write("return (error as? WaiterTypedError)?.waiterErrorType == \$S", matcher.value)
                 }
             }
         }
