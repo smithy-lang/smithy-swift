@@ -10,7 +10,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
-import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
 import software.amazon.smithy.waiters.PathComparator
