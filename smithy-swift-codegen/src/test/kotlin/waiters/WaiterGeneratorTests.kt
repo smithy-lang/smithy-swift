@@ -9,6 +9,8 @@ import MockHttpRestJsonProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -18,6 +20,7 @@ import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.waiters.WaiterGenerator
+import kotlin.io.path.Path
 
 class WaiterGeneratorTests {
 
@@ -55,6 +58,20 @@ class WaiterGeneratorTests {
             public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutputResponse> {
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `renders a WaiterTypedError extension if the waiter has errorType acceptors`() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
+        val filePaths = context.manifest.files
+        filePaths.shouldContain(Path("/Test/models/HeadBucketOutputError+WaiterTypedError.swift"))
+    }
+
+    @Test
+    fun `does not render a WaiterTypedError extension if the waiter has no errorType acceptors`() {
+        val context = setupTests("waiters-no-error-type.smithy", "com.test#TestHasWaiters")
+        val filePaths = context.manifest.files
+        filePaths.shouldNotContain(Path("/Test/models/HeadBucketOutputError+WaiterTypedError.swift"))
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

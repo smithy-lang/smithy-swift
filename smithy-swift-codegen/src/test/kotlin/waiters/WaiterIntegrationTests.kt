@@ -25,26 +25,26 @@ import kotlin.io.path.Path
 class WaiterIntegrationTests {
 
     @Test
-    fun testGeneratorNotEnabledForServiceWithoutWaiters() {
+    fun `generator not enabled for service without waiters`() {
         val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
         WaiterIntegration().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeFalse()
     }
 
     @Test
-    fun testGeneratorEnabledForServiceWithWaiters() {
+    fun `generator enabled for service with waiters`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         WaiterIntegration().enabledForService(context.generationCtx.model, context.generationCtx.settings).shouldBeTrue()
     }
 
     @Test
-    fun testRendersWaitersSwiftFileForServiceWithWaiters() {
+    fun `renders waiters swift file for service with waiters`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val filePaths = context.manifest.files
         filePaths.shouldContain(Path("/Test/Waiters.swift"))
     }
 
     @Test
-    fun testRendersNoWaitersSwiftFileForServiceWithoutWaiters() {
+    fun `renders no waiters Swift file for service without waiters`() {
         val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
         val filePaths = context.manifest.files
         filePaths.shouldNotContain(Path("/Test/Waiters.swift"))

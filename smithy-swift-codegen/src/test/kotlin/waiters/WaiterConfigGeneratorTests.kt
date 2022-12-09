@@ -26,25 +26,31 @@ import software.amazon.smithy.waiters.WaitableTrait
 class WaiterConfigGeneratorTests {
 
     @Test
-    fun `renders correct config for waiter`() {
+    fun `renders correct function signature for waiter config`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
             static func bucketExistsWaiterConfig() throws -> WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse> {
-                let acceptors: [WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor] = [
-                    .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
-                        switch result {
-                            case .success: return true
-                            case .failure: return false
-                        }
-                    }),
-                    .init(state: .retry, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
-                        guard case .failure(let error) = result else { return false }
-                        return (error as? WaiterTypedError)?.waiterErrorType == "notFound"
-                    }),
-                ]
-                return try WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
-            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `renders correct function return value for waiter config`() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
+        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val expected = """
+            return try WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `renders acceptor array for waiter config`() {
+        val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
+        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val expected = """
+            let acceptors: [WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor] = [
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
