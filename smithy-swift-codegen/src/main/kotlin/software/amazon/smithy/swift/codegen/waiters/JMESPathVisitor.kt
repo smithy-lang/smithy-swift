@@ -29,7 +29,8 @@ import software.amazon.smithy.jmespath.ast.Subexpression
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
-private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
+// sequence of "", "2", "3", "4", etc.
+private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString)
 
 // Visits the JMESPath syntax tree, rendering the JMESPath expression into a Swift expression.
 // Smithy does not support all JMESPath expressions, and smithy-swift does not support all Smithy
@@ -46,13 +47,18 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     private val tempVars = mutableSetOf<String>()
 
     private fun addTempVar(preferredName: String, content: String, vararg args: Any): String {
-        val name = bestTempVarName(preferredName)
+        val name = uniqueTempVarName(preferredName)
         writer.writeInline("let \$L = ", name)
         writer.write(content, *args)
         return name
     }
 
-    private fun bestTempVarName(preferredName: String): String =
+    // Returns a name, based on preferredName, that is guaranteed to be unique among those issued
+    // by this visitor.
+    // If not yet used, preferredName will be returned as the new variable name.  If preferredName
+    // is not available, preferredname2, preferredname3, etc. will be used.
+    // The chosen name is inserted into tempVars so it is not reused in a future call to this method.
+    private fun uniqueTempVarName(preferredName: String): String =
         suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
     // Some JMESPath expressions may have their own valid JMESPath expressions
@@ -64,8 +70,12 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     // Maps the expression result in leftName into a new collection using the right expression.
     private fun mappingBlock(right: JmespathExpression, leftName: String): String {
         if (right is CurrentExpression) return leftName // Nothing to map
-        val outerName = bestTempVarName("projection")
-        writer.openBlock("let \$L = Optional.some((\$L ?? []).compactMap { current in", "})", outerName, leftName) {
+        val outerName = uniqueTempVarName("projection")
+        writer.openBlock(
+            "let \$L = Optional.some((\$L ?? []).compactMap { current in", "})",
+            outerName,
+            leftName
+        ) {
             writer.write("let current = Optional.some(current)")
             val innerResult = addTempVar("innerResult", childBlock(right))
             writer.write("return \$L", innerResult)
@@ -115,7 +125,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     // Filters elements from a collection which don't passing a test provided in a JMESPath child expression.
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
         val leftName = expression.left!!.accept(this)
-        val filteredName = bestTempVarName("${leftName}Filtered")
+        val filteredName = uniqueTempVarName("${leftName}Filtered")
         writer.openBlock("let \$L = Optional.some((\$L ?? []).filter { current in", "})", filteredName, leftName) {
             writer.write("let current = Optional.some(current)")
             val comparisonName = childBlock(expression.comparison!!)
@@ -181,7 +191,7 @@ class JMESPathVisitor(val writer: SwiftWriter) : ExpressionVisitor<String> {
     // Render a JMESPath multi-select to an array.
     // All expressions must result in the same type or a Swift compile error will occur.
     override fun visitMultiSelectList(expression: MultiSelectListExpression): String {
-        val listName = bestTempVarName("multiSelect")
+        val listName = uniqueTempVarName("multiSelect")
         val multiSelectVars = expression.expressions.map { inner ->
             return addTempVar("multiSelectValue", inner.accept(this))
         }
