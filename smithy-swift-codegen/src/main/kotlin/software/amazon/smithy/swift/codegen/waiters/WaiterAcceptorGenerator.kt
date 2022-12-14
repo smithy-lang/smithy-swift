@@ -6,8 +6,12 @@
 package software.amazon.smithy.swift.codegen.waiters
 
 import software.amazon.smithy.jmespath.JmespathExpression
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.waiters.Acceptor
@@ -62,18 +66,21 @@ class WaiterAcceptorGenerator(
         writer.write("// JMESPath comparator: ${pathMatcher.comparator}")
         writer.write("// JMESPath expected value: ${pathMatcher.expected}")
         writer.write("guard case .success(let unwrappedOutput) = result else { return false }")
+        val startingVar: Variable
         // output and inputOutput type acceptors are the same except that:
         // - An output waiter has the output object at its root scope
         // - An inputOutput waiter has an object with the properties input and output at its root scope
-        // Depending on the type of waiter, current is set to establish that scope.
+        // Depending on the type of waiter, starting var is set to establish that scope.
         if (includeInput) {
             writer.write(
-                "let current = Optional.some(WaiterConfiguration<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput))",
+                "let inputOutput = WaiterConfiguration<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput)",
                 inputTypeName,
                 outputTypeName
             )
+            startingVar = Variable("inputOutput", false, inputOutputShape)
         } else {
-            writer.write("let current = Optional.some(unwrappedOutput)")
+            writer.write("let output = unwrappedOutput")
+            startingVar = Variable("output", false, ctx.model.expectShape(waitedOperation.outputShape))
         }
 
         // Use smithy to parse the text JMESPath expression into a syntax tree to be visited.
@@ -81,24 +88,42 @@ class WaiterAcceptorGenerator(
 
         // Create a visitor & send it through the tree.  actual will hold the name of the variable
         // with the result of the expression
-        val visitor = JMESPathVisitor(writer)
+        val visitor = JMESPathVisitor(writer, startingVar, ctx.model)
         val actual = expression.accept(visitor)
 
         // Get the expected result and type of comparison needed, and render the result.
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
-                writer.write("return JMESValue(\$L) == JMESValue(\$S)", actual, expected)
+                writer.write("return JMESValue(\$L) == JMESValue(\$S)", actual.name, expected)
             PathComparator.BOOLEAN_EQUALS ->
-                writer.write("return JMESValue(\$L) == JMESValue(\$L)", actual, expected.toBoolean())
+                writer.write("return JMESValue(\$L) == JMESValue(\$L)", actual.name, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
-                writer.write("return \$L?.contains(where: { JMESValue($$0) == JMESValue(\$S) }) ?? false", actual, expected)
+                writer.write("return \$L?.contains(where: { JMESValue($$0) == JMESValue(\$S) }) ?? false", actual.name, expected)
             PathComparator.ALL_STRING_EQUALS ->
-                writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\$S) } ?? false)", actual, actual, expected)
+                writer.write("return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESValue($$0) == JMESValue(\$S) } ?? false)", actual.name, actual.name, expected)
         }
     }
 
     private val inputTypeName: String = waitedOperation.inputShape.name
 
     private val outputTypeName: String = waitedOperation.outputShape.name
+
+    private val inputOutputShape: Shape
+    get() {
+        val inputMember = MemberShape.builder()
+            .id("smithy.swift.synthetic#InputOutput\$input")
+            .target(waitedOperation.inputShape)
+            .build()
+        val outputMember = MemberShape.builder()
+            .id("smithy.swift.synthetic#InputOutput\$output")
+            .target(waitedOperation.outputShape)
+            .build()
+        return StructureShape.builder()
+            .id("smithy.swift.synthetic#InputOutput")
+            .members(
+                mutableListOf(inputMember, outputMember)
+            )
+            .build()
+    }
 }

@@ -7,34 +7,6 @@
 
 import Foundation
 
-public extension Array {
-
-    /// Flattens an array of arrays down to single depth.
-    /// - Parameter transform: A block that transforms the element(s) of this array into an array containing type T.
-    /// - Returns: A single-depth array of type T.
-    func flattenIfPossible<T>(_ transform: (Element) throws -> Array<T>) rethrows -> Array<T> {
-        return try flatMap { try transform($0) }
-    }
-
-    /// Returns the receiver mapped to an array of a different, non-array type using the provided transform block.
-    /// - Parameters:
-    ///   - unused: An unused integer parameter which is used to affect the precedence of selection of overloads by the Swift compiler.
-    ///   See discussion in the implementation.
-    ///   - transform: A block that transforms each element of the array into a type that is not itself an Array.
-    /// - Returns: The receiver, mapped by the `transform` block.
-    func flattenIfPossible<T>(_ unused: Int = 0, _ transform: (Element) throws -> T) rethrows -> Array<T> {
-        // Adding an unused argument with a default value to this function's signature allows it to still be
-        // an overload of the flattenIfPossible() implementation above, but ranks it lower when
-        // the compiler selects an overload.
-        // Without the unused argument, the compiler uses this implementation instead of the one above when
-        // the element of an array is also an array, which is not desired behavior.
-        // See: https://forums.swift.org/t/how-to-specify-which-is-the-default-function-when-functions-use-the-same-name-like-array-reversed/39168/5
-        // In the future, if Swift allows us to manually rank overloads or otherwise fixes this issue,
-        // we should eliminate this param & use the new mechanism for overload resolution instead.
-        return try map { try transform($0) }
-    }
-}
-
 /// A value type that is used to facilitate comparison of values returned by JMESPath types, in accordance with the JMESPath spec.
 public enum JMESValue: Equatable, Comparable {
     /// A value that is a "number" per the JMESPath spec.
