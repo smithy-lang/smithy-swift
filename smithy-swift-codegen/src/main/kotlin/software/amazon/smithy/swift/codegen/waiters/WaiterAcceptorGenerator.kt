@@ -11,7 +11,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.waiters.Acceptor
@@ -110,20 +109,20 @@ class WaiterAcceptorGenerator(
     private val outputTypeName: String = waitedOperation.outputShape.name
 
     private val inputOutputShape: Shape
-    get() {
-        val inputMember = MemberShape.builder()
-            .id("smithy.swift.synthetic#InputOutput\$input")
-            .target(waitedOperation.inputShape)
-            .build()
-        val outputMember = MemberShape.builder()
-            .id("smithy.swift.synthetic#InputOutput\$output")
-            .target(waitedOperation.outputShape)
-            .build()
-        return StructureShape.builder()
-            .id("smithy.swift.synthetic#InputOutput")
-            .members(
-                mutableListOf(inputMember, outputMember)
-            )
-            .build()
-    }
+        get() {
+            val inputMember = MemberShape.builder()
+                .id("smithy.swift.synthetic#InputOutput\$input")
+                .target(waitedOperation.inputShape)
+                .build()
+            val outputMember = MemberShape.builder()
+                .id("smithy.swift.synthetic#InputOutput\$output")
+                .target(waitedOperation.outputShape)
+                .build()
+            return StructureShape.builder()
+                .id("smithy.swift.synthetic#InputOutput")
+                .members(
+                    mutableListOf(inputMember, outputMember)
+                )
+                .build()
+        }
 }

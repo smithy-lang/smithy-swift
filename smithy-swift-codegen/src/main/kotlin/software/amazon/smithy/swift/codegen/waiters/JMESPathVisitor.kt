@@ -37,61 +37,46 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
-// sequence of "", "2", "3", "4", etc.
+// sequence of "", "2", "3", "4", etc, used for creating unique local vars
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString)
 
-class Variable (
+// Holds the name of a variable defined in Swift, plus the optionality and the Smithy
+// shape equivalent of its type.
+class Variable(
+
+    // The name of the Swift variable that this data is stored in.
     val name: String,
+
+    // true if this variable is an optional, false otherwise.
+    // Used to render correct Swift using this variable.
     val isOptional: Boolean,
+
+    // The Smithy shape that is equivalent to this variable's Swift type.
+    // (Note that this will never be a MemberShape, rather the member shape's targeted shape.)
     val shape: Shape
-) {
+)
 
-    companion object {
-        fun from(name: String, shape: Shape, model: Model): Variable {
-            val unmemberizedShape: Shape
-            val isOptional: Boolean
-            when (shape) {
-                is MemberShape -> {
-                    unmemberizedShape = model.expectShape(shape.target)
-                    isOptional = !(shape.hasTrait<RequiredTrait>() || unmemberizedShape.hasTrait<RequiredTrait>())
-                }
-                else -> {
-                    unmemberizedShape = shape
-                    isOptional = !shape.hasTrait<RequiredTrait>()
-                }
-            }
-            return Variable(name, isOptional, unmemberizedShape)
-        }
-    }
-    init {
-    }
-}
-
-// Visits the JMESPath syntax tree, rendering the JMESPath expression into a Swift expression.
+// Visits the JMESPath syntax tree, rendering the JMESPath expression into a Swift expression and returning a Variable
+// holding the result of the Swift expression.
+//
 // Smithy does not support all JMESPath expressions, and smithy-swift does not support all Smithy
 // expressions.  However, this support is sufficient to generate all waiters currently in use on AWS.
-// Use of a JMESPath feature not supported by Smithy will cause an exception at the time of code
-// generation.
-
-// Because JMESPath has no concept of non-optional, every visitor below will take an optional value
-// as input and also return an optional.
-class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, val model: Model) : ExpressionVisitor<Variable> {
+// Use of a JMESPath feature not supported by Smithy or smithy-swift will cause an exception at the
+// time of code generation.
+class JMESPathVisitor(
+    val writer: SwiftWriter,
+    val currentExpression: Variable,
+    val model: Model
+) : ExpressionVisitor<Variable> {
 
     // A few methods are provided here for generating unique yet still somewhat
     // descriptive variable names when needed.
-    private val tempVars = mutableSetOf<String>()
 
-    private fun addTempVar(variable: Variable, content: String, vararg args: Any): Variable {
-        val name = uniqueTempVarName(variable.name)
-        writer.writeInline("let \$L = ", name)
-        writer.write(content, *args)
-        return Variable(name, variable.isOptional, variable.shape)
-    }
+    // Storage for variable names already used in this scope / expression.
+    private val tempVars = mutableSetOf<String>()
 
     // Returns a name, based on preferredName, that is guaranteed to be unique among those issued
     // by this visitor.
@@ -100,6 +85,16 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
     // The chosen name is inserted into tempVars so it is not reused in a future call to this method.
     private fun uniqueTempVarName(preferredName: String): String =
         suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
+
+    // Creates a temporary var with the type & optionality of the passed var, but with a name
+    // based on the passed var but guaranteed to be unique.
+    // The new temp var is set to the result of the passed expression.
+    private fun addTempVar(variable: Variable, content: String, vararg args: Any): Variable {
+        val tempVar = Variable(uniqueTempVarName(variable.name), variable.isOptional, variable.shape)
+        writer.writeInline("let \$L = ", tempVar.name)
+        writer.write(content, *args)
+        return tempVar
+    }
 
     // Some JMESPath expressions may have their own valid JMESPath expressions
     // within them, i.e. to map or filter.  This method is called to render
@@ -110,11 +105,13 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
     // Maps the expression result in leftName into a new collection using the right expression.
     private fun mappingBlock(right: JmespathExpression, left: Variable): Variable {
         when (right) {
-            is CurrentExpression -> return left  // Nothing to map
+            is CurrentExpression -> return left // Nothing to map
         }
         when (left.shape) {
             is CollectionShape -> {
                 val outerName = uniqueTempVarName("projection")
+                // initialized as a mutable var with placeholder value since Kotlin doesn't like if the initial value
+                // is set in the writer closure below
                 var transformed = Variable("", false, boolShape)
                 writer.openBlock(
                     "let \$L = \$L?.compactMap { original in", "}",
@@ -125,45 +122,55 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
                     transformed = childBlock(right, original)
                     writer.write("return \$L", transformed.name)
                 }
-                val returnMember = MemberShape.builder().id("smithy.swift.synthetic#mappedCollection\$member").target(transformed.shape).build()
-                val returnType = ListShape.builder().id("smithy.swift.synthetic#mappedCollection").member(returnMember).build()
+                val returnMember = MemberShape.builder()
+                    .id("smithy.swift.synthetic#mappedCollection\$member")
+                    .target(transformed.shape)
+                    .build()
+                val returnType = ListShape.builder()
+                    .id("smithy.swift.synthetic#mappedCollection")
+                    .member(returnMember)
+                    .build()
                 return Variable(outerName, left.isOptional, returnType)
             }
             else -> throw Exception("Mapping a non-collection shape: ${left.shape}")
         }
     }
 
-    // Accesses a field on the expression named parentName & returns the name of the
+    // Accesses a field on the parent variable & returns a variable containing the
     // resulting expression.
-    private fun subfield(expression: FieldExpression, parentExpression: Variable): Variable {
-        when (parentExpression.shape) {
+    private fun subfield(expression: FieldExpression, parentVar: Variable): Variable {
+        when (parentVar.shape) {
             is StructureShape -> {
-                val parentMembers = parentExpression.shape.members()
+                val parentMembers = parentVar.shape.members()
                 val subfieldMember = parentMembers.first { it.memberName == expression.name }
                 val subfieldShape = expectShape(subfieldMember.target)
-                val fieldName = expression.name.toLowerCamelCase()
-                val fieldOperator = "?.".takeIf { parentExpression.isOptional } ?: "."
-
-                // Because all fields on Swift models are now optional, every subfield value will also be optional
-                // Later we may have to replace this with logic to determine actual optionality
-                // so,
+                val subfieldName = expression.name.toLowerCamelCase()
+                val fieldOperator = "?.".takeIf { parentVar.isOptional } ?: "."
+                //
+                // Because all fields on Swift models are currently optional, every subfield value will also be
+                // optional.  Later we may have to replace this with logic to determine actual optionality,
+                // so:
                 // val subfieldIsOptional = parentExpression.isOptional || subfieldMember.hasTrait<RequiredTrait>()
-                // becomes:
+                // is replaced with:
                 val subfieldIsOptional = true
-                return addTempVar(Variable(fieldName, subfieldIsOptional, subfieldShape), "\$L\$L\$L", parentExpression.name, fieldOperator, fieldName)
+
+                val subfieldVarName = uniqueTempVarName(subfieldName)
+                val subfieldVar = Variable(subfieldVarName, subfieldIsOptional, subfieldShape)
+                return addTempVar(subfieldVar, "\$L\$L\$L", parentVar.name, fieldOperator, subfieldName)
             }
             else -> {
-                throw Exception("Accessed subfield on parent: $parentExpression")
+                throw Exception("Accessed subfield on parent: $parentVar")
             }
         }
     }
 
     // Performs a Boolean "and" of the left & right expressions
-    // A Swift compile error will result if both left & right aren't Bool.
+    // A Swift compile error will result if both left & right aren't Booleans.
     override fun visitAnd(expression: AndExpression): Variable {
         val leftExp = expression.left!!.accept(this)
         val rightExp = expression.right!!.accept(this)
-        return addTempVar(Variable("andResult", false, boolShape), "\$L && \$L", leftExp, rightExp)
+        val andResultVar = Variable("andResult", false, boolShape)
+        return addTempVar(andResultVar, "\$L && \$L", leftExp, rightExp)
     }
 
     // Perform a comparison of two values.
@@ -175,7 +182,14 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
     override fun visitComparator(expression: ComparatorExpression): Variable {
         val left = expression.left!!.accept(this)
         val right = expression.right!!.accept(this)
-        return addTempVar(Variable("comparison", false, boolShape), "JMESValue(\$L) \$L JMESValue(\$L)", left.name, expression.comparator, right.name)
+        val comparisonResultVar = Variable("comparison", false, boolShape)
+        return addTempVar(
+            comparisonResultVar,
+            "JMESValue(\$L) \$L JMESValue(\$L)",
+            left.name,
+            expression.comparator,
+            right.name
+        )
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): Variable {
@@ -190,7 +204,7 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
         return subfield(expression, currentExpression)
     }
 
-    // Filters elements from a collection which don't passing a test provided in a JMESPath child expression.
+    // Filters a collection to only those elements which pass a test provided in a JMESPath child expression.
     override fun visitFilterProjection(expression: FilterProjectionExpression): Variable {
         val unfiltered = expression.left!!.accept(this)
         when (unfiltered.shape) {
@@ -198,7 +212,12 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
                 val filteredName = uniqueTempVarName("${unfiltered.name}Filtered")
                 val filteredVar = Variable(filteredName, unfiltered.isOptional, unfiltered.shape)
                 val elementShape = expectShape(unfiltered.shape.member.target)
-                writer.openBlock("let \$L = \$L?.filter { original in", "}", filteredName, unfiltered.name) {
+                writer.openBlock(
+                    "let \$L = \$L?.filter { original in",
+                    "}",
+                    filteredName,
+                    unfiltered.name
+                ) {
                     val original = Variable("original", false, elementShape)
                     val comparison = childBlock(expression.comparison!!, original)
                     writer.write("return \$L", comparison.name)
@@ -214,14 +233,14 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
     // Returns the inner expression flattened when the inner expression is an array of arrays.
     override fun visitFlatten(expression: FlattenExpression): Variable {
         val toBeFlattened = expression.expression!!.accept(this)
-        when (toBeFlattened.shape) {
+        return when (toBeFlattened.shape) {
             is ListShape -> {
                 val elementShape = expectShape(toBeFlattened.shape.member.target)
-                return when (elementShape) {
+                when (elementShape) {
                     is ListShape -> {
                         // Double-nested List.  Perform Swift flat mapping.
-                        val dotOperator= "?.".takeIf { toBeFlattened.isOptional } ?: "."
                         val flattenedVar = Variable("flattened", toBeFlattened.isOptional, elementShape)
+                        val dotOperator = "?.".takeIf { toBeFlattened.isOptional } ?: "."
                         addTempVar(flattenedVar, "\$L\$LflatMap { $$0 }", toBeFlattened.name, dotOperator)
                     }
                     else -> {
@@ -231,9 +250,7 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
                 }
             }
             else -> {
-                return toBeFlattened
-//                val exception = Exception("Cannot flatten non-list type: ${toBeFlattened.shape}")
-//                throw exception
+                toBeFlattened
             }
         }
     }
@@ -242,11 +259,13 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
     // contains() returns true if its 1st param is a collection that contains an element equal
     // to the 2nd param, false otherwise.
     // length() returns the number of elements of an array, the number of key/value pairs for a map,
-    // or the number of characters for a string.
+    // or the number of characters for a string.  Zero is returned if the argument is nil.
     override fun visitFunction(expression: FunctionExpression): Variable {
         when (expression.name) {
             "contains" -> {
-                if (expression.arguments.size != 2) { throw Exception("Unexpected number of arguments to $expression") }
+                if (expression.arguments.size != 2) {
+                    throw Exception("Unexpected number of arguments to $expression")
+                }
                 val subject = expression.arguments[0]
                 val subjectVariable = subject.accept(this)
                 val search = expression.arguments[1]
@@ -254,20 +273,35 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
                 val subjectDotOperator = "?.".takeIf { subjectVariable.isOptional } ?: "."
                 val returnValueVar = Variable("contains", false, boolShape)
                 return if (searchVariable.isOptional) {
-                    addTempVar(returnValueVar, "\$L.flatMap { \$L\$Lcontains($$0) } ?? false", searchVariable.name, subjectVariable.name, subjectDotOperator)
+                    addTempVar(
+                        returnValueVar,
+                        "\$L.flatMap { \$L\$Lcontains($$0) } ?? false",
+                        searchVariable.name,
+                        subjectVariable.name,
+                        subjectDotOperator
+                    )
                 } else {
-                    addTempVar(returnValueVar, "\$L\$Lcontains(\$L)", subjectVariable.name, subjectDotOperator, searchVariable.name)
+                    addTempVar(
+                        returnValueVar,
+                        "\$L\$Lcontains(\$L)",
+                        subjectVariable.name,
+                        subjectDotOperator,
+                        searchVariable.name
+                    )
                 }
             }
             "length" -> {
-                if (expression.arguments.size != 1) { throw Exception("Unexpected number of arguments to $expression") }
+                if (expression.arguments.size != 1) {
+                    throw Exception("Unexpected number of arguments to $expression")
+                }
                 val subjectExp = expression.arguments[0]
                 val subject = subjectExp.accept(this)
 
-                when (subject.shape) {
+                return when (subject.shape) {
                     is StringShape, is ListShape, is MapShape -> {
+                        val countVar = Variable("count", false, doubleShape)
                         val dotOperator = "?.".takeIf { subject.isOptional } ?: "."
-                        return addTempVar(Variable("count", false, doubleShape), "Double(\$L\$Lcount ?? 0)", subject.name, dotOperator)
+                        addTempVar(countVar, "Double(\$L\$Lcount ?? 0)", subject.name, dotOperator)
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
                 }
@@ -280,7 +314,7 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
         throw Exception("IndexExpression is unsupported")
     }
 
-    // Renders a literal of any supported type, wrapped in an optional.
+    // Renders a literal of any supported type.
     override fun visitLiteral(expression: LiteralExpression): Variable {
         when (expression.type) {
             RuntimeType.STRING -> return addTempVar(Variable("string", false, stringShape), "\$S", expression.expectStringValue())
@@ -309,24 +343,30 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
             writer.write(multiSelectVars.joinToString { ",\n" })
         }
         val memberShape = MemberShape.builder().id("smithy.swift.synthetic#MultiSelectListElement").build()
-        return Variable(listName, false, ListShape.builder().id("smithy.swift.synthetic#MultiSelectList").build())
+        val multiSelectListShape = ListShape.builder()
+            .id("smithy.swift.synthetic#MultiSelectList")
+            .member(memberShape)
+            .build()
+        return Variable(listName, false, multiSelectListShape)
     }
 
     // Negates the passed expression.
     // The passed expression must be Boolean, else a Swift compile error will occur.
     override fun visitNot(expression: NotExpression): Variable {
         val expressionToNegate = expression.expression!!.accept(this)
-        return addTempVar(Variable("negated", false, expressionToNegate.shape), "!\$L", expressionToNegate.name)
+        val negatedVar = Variable("negated", false, expressionToNegate.shape)
+        return addTempVar(negatedVar, "!\$L", expressionToNegate.name)
     }
 
     // Converts a JSON object / Swift dictionary into an array of its values.
     override fun visitObjectProjection(expression: ObjectProjectionExpression): Variable {
         val original = expression.left!!.accept(this)
-        when (original.shape) {
+        return when (original.shape) {
             is MapShape -> {
                 val valueShape = expectShape(original.shape.value.target)
-                val valuesName = addTempVar(Variable("projected", false, valueShape), "Optional.some(Array((\$L ?? [:]).values))", original.name)
-                return mappingBlock(expression.right!!, valuesName)
+                val mapToProjectVar = Variable("mapToProject", false, valueShape)
+                val valuesVar = addTempVar(mapToProjectVar, "Array((\$L ?? [:]).values))", original.name)
+                mappingBlock(expression.right!!, valuesVar)
             }
             else -> throw Exception("Cannot object-project a non-map type: ${original.shape}")
         }
@@ -357,11 +397,15 @@ class JMESPathVisitor(val writer: SwiftWriter, val currentExpression: Variable, 
         }
     }
 
+    // When looking up a shape by ID, check for a synthetic literal (defined below) before
+    // checking the current model.
     private fun expectShape(shapeID: ShapeId): Shape {
         val foundSyntheticShape = listOf(stringShape, boolShape, doubleShape).firstOrNull { it.toShapeId() == shapeID }
         if (foundSyntheticShape != null) return foundSyntheticShape
         return model.expectShape(shapeID)
     }
+
+    // Below are Smithy shapes to be used with JMESPath literals.
 
     private val stringShape = StringShape.builder().id("smithy.swift.synthetic#LiteralString").build()
 
