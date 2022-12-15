@@ -80,7 +80,7 @@ public enum JMESValue: Equatable, Comparable {
     /// - Parameters:
     ///   - lhs: The left value
     ///   - rhs: The right value
-    /// - Returns: The result of the Swift comparison of the associated values if `lhs` and `rhs` are both JMESPath numbers, or `false` otherwise.
+    /// - Returns: True if both the `lhs` and `rhs` are numbers and the `lhs` is less than the `rhs`, otherwise returns false.
     public static func < (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.number(let left), .number(let right)):
