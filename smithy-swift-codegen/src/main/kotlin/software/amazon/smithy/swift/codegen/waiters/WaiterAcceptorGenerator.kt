@@ -65,9 +65,9 @@ class WaiterAcceptorGenerator(
     }
 
     private fun renderInputOutputBlockContents(includeInput: Boolean, pathMatcher: PathMatcher) {
-        writer.write("// JMESPath expression: ${pathMatcher.path}")
-        writer.write("// JMESPath comparator: ${pathMatcher.comparator}")
-        writer.write("// JMESPath expected value: ${pathMatcher.expected}")
+        writer.write("// JMESPath expression: \"${pathMatcher.path}\"")
+        writer.write("// JMESPath comparator: \"${pathMatcher.comparator}\"")
+        writer.write("// JMESPath expected value: \"${pathMatcher.expected}\"")
         val startingVar: Variable
         // output and inputOutput type acceptors are the same except that:
         // - An output waiter has the output object at its root scope

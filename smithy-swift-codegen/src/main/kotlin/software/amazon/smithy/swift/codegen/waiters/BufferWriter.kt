@@ -13,7 +13,7 @@ import java.util.UUID
  * then "plays it back" onto the writer at a later time.
  *
  * Useful when the result of rendering an expression is needed before the expression
- * is actually rendered into code.
+ * is actually to be included in the code.
  */
 class BufferWriter(
     val writer: SwiftWriter,

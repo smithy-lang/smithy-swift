@@ -20,10 +20,10 @@ class Variable(
 ) {
 
     /**
-     * Returns the Swift type, without an optional marker, for this variable.
+     * Returns the fully namespaced Swift type, without an optional marker, for this variable.
      */
     fun baseSwiftSymbol(symbolProvider: SymbolProvider): String {
-        return symbolProvider.toSymbol(shape).name
+        return symbolProvider.toSymbol(shape).fullName
     }
 
     /**

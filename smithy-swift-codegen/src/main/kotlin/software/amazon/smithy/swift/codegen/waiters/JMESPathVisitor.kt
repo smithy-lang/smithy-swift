@@ -264,22 +264,22 @@ class JMESPathVisitor(
                 val subjectVariable = subject.accept(this)
                 val search = expression.arguments[1]
                 val searchVariable = search.accept(this)
-                val subjectDotOperator = "?.".takeIf { subjectVariable.isOptional } ?: "."
+                val optionalityMark = "?".takeIf { subjectVariable.isOptional } ?: ""
                 val returnValueVar = Variable("contains", false, boolShape)
                 return if (searchVariable.isOptional) {
                     addTempVar(
                         returnValueVar,
-                        "\$L.flatMap { \$L\$Lcontains($$0) } ?? false",
+                        "\$L.flatMap { \$L\$L.contains($$0) } ?? false",
                         searchVariable.name,
                         subjectVariable.name,
-                        subjectDotOperator
+                        optionalityMark
                     )
                 } else {
                     addTempVar(
                         returnValueVar,
-                        "\$L\$Lcontains(\$L)",
+                        "\$L\$L.contains(\$L)",
                         subjectVariable.name,
-                        subjectDotOperator,
+                        optionalityMark,
                         searchVariable.name
                     )
                 }
@@ -294,8 +294,8 @@ class JMESPathVisitor(
                 return when (subject.shape) {
                     is StringShape, is ListShape, is MapShape -> {
                         val countVar = Variable("count", false, doubleShape)
-                        val dotOperator = "?.".takeIf { subject.isOptional } ?: "."
-                        addTempVar(countVar, "Double(\$L\$Lcount ?? 0)", subject.name, dotOperator)
+                        val optionalityMark = "?".takeIf { subject.isOptional } ?: ""
+                        addTempVar(countVar, "Double(\$L\$L.count ?? 0)", subject.name, optionalityMark)
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
                 }
@@ -358,9 +358,17 @@ class JMESPathVisitor(
         return when (original.shape) {
             is MapShape -> {
                 val valueShape = model.expectShape(original.shape.value.target)
-                val mapToProjectVar = Variable("mapToProject", false, valueShape)
-                val valuesVar = addTempVar(mapToProjectVar, "Array((\$L ?? [:]).values))", original.name)
-                mappingBlock(expression.right!!, valuesVar)
+                val projectionShape = ListShape.builder()
+                    .id("smithy.swift.synthetic#ObjectProjection")
+                    .member(valueShape.toShapeId())
+                    .build()
+                var projectionVar = Variable("projection", original.isOptional, projectionShape)
+                if (original.isOptional) {
+                    projectionVar = addTempVar(projectionVar, "\$L.flatMap { Array($$0.values) }", original.name)
+                } else {
+                    projectionVar = addTempVar(projectionVar, "Array(\$L.values)", original.name)
+                }
+                mappingBlock(expression.right!!, projectionVar)
             }
             else -> throw Exception("Cannot object-project a non-map type: ${original.shape}")
         }
