@@ -36,6 +36,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.utils.BufferWriter
 
 // sequence of "", "2", "3", "4", etc, used for creating unique local vars
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString)

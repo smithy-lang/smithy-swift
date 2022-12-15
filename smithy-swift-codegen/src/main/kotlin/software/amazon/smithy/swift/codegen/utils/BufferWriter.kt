@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen.waiters
+package software.amazon.smithy.swift.codegen.utils
 
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import java.util.UUID
