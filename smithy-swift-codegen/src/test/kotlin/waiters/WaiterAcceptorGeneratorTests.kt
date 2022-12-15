@@ -59,9 +59,9 @@ class WaiterAcceptorGeneratorTests {
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
             .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
-                // JMESPath expression: field1
-                // JMESPath comparator: stringEquals
-                // JMESPath expected value: abc
+                // JMESPath expression: "field1"
+                // JMESPath comparator: "stringEquals"
+                // JMESPath expected value: "abc"
                 guard case .success(let output) = result else { return false }
                 let field1 = output.field1
                 return JMESValue(field1) == JMESValue("abc")
@@ -76,9 +76,9 @@ class WaiterAcceptorGeneratorTests {
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
             .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
-                // JMESPath expression: input.bucketName == output.field1
-                // JMESPath comparator: booleanEquals
-                // JMESPath expected value: true
+                // JMESPath expression: "input.bucketName == output.field1"
+                // JMESPath comparator: "booleanEquals"
+                // JMESPath expected value: "true"
                 guard case .success(let unwrappedOutput) = result else { return false }
                 let inputOutput = WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
                 let input = inputOutput.input
