@@ -296,7 +296,14 @@ class JMESPathVisitor(
                     is StringShape, is ListShape, is MapShape -> {
                         val countVar = Variable("count", false, doubleShape)
                         val optionalityMark = "?".takeIf { subject.isOptional } ?: ""
-                        addTempVar(countVar, "Double(\$L\$L.count ?? 0)", subject.name, optionalityMark)
+                        val nilCoalescense = " ?? 0".takeIf { subject.isOptional } ?: ""
+                        addTempVar(
+                            countVar,
+                            "Double(\$L\$L.count\$L)",
+                            subject.name,
+                            optionalityMark,
+                            nilCoalescense
+                        )
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
                 }
