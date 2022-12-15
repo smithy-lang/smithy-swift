@@ -76,7 +76,7 @@ public enum JMESValue: Equatable, Comparable {
     }
 
     /// Compares two `JMESValue` values, testing for order per the JMESPath rules.
-    /// Comparison fails if both left and right are not JMESPath numbers.
+    /// Returns false if both left and right are not JMESPath numbers.
     /// - Parameters:
     ///   - lhs: The left value
     ///   - rhs: The right value
