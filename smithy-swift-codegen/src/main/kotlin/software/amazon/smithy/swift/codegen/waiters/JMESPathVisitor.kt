@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.waiters
 
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.jmespath.ExpressionVisitor
 import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.jmespath.RuntimeType
@@ -27,37 +28,17 @@ import software.amazon.smithy.jmespath.ast.ProjectionExpression
 import software.amazon.smithy.jmespath.ast.SliceExpression
 import software.amazon.smithy.jmespath.ast.Subexpression
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.BooleanShape
 import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 // sequence of "", "2", "3", "4", etc, used for creating unique local vars
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString)
-
-// Holds the name of a variable defined in Swift, plus the optionality and the Smithy
-// shape equivalent of its type.
-class Variable(
-
-    // The name of the Swift variable that this data is stored in.
-    val name: String,
-
-    // true if this variable is an optional, false otherwise.
-    // Used to render correct Swift using this variable.
-    val isOptional: Boolean,
-
-    // The Smithy shape that is equivalent to this variable's Swift type.
-    // (Note that this will never be a MemberShape, rather the member shape's targeted shape.)
-    val shape: Shape
-)
 
 // Visits the JMESPath syntax tree, rendering the JMESPath expression into a Swift expression and returning a Variable
 // holding the result of the Swift expression.
@@ -69,7 +50,8 @@ class Variable(
 class JMESPathVisitor(
     val writer: SwiftWriter,
     val currentExpression: Variable,
-    val model: Model
+    val model: Model,
+    val symbolProvider: SymbolProvider
 ) : ExpressionVisitor<Variable> {
 
     // A few methods are provided here for generating unique yet still somewhat
@@ -100,7 +82,7 @@ class JMESPathVisitor(
     // within them, i.e. to map or filter.  This method is called to render
     // those expressions.
     private fun childBlock(forExpression: JmespathExpression, currentExpression: Variable): Variable =
-        forExpression.accept(JMESPathVisitor(writer, currentExpression, model))
+        forExpression.accept(JMESPathVisitor(writer, currentExpression, model, symbolProvider))
 
     // Maps the expression result in leftName into a new collection using the right expression.
     private fun mappingBlock(right: JmespathExpression, left: Variable): Variable {
@@ -110,21 +92,27 @@ class JMESPathVisitor(
         when (left.shape) {
             is CollectionShape -> {
                 val outerName = uniqueTempVarName("projection")
-                // initialized as a mutable var with placeholder value since Kotlin doesn't like if the initial value
-                // is set in the writer closure below
-                var transformed = Variable("", false, boolShape)
+                val original = Variable("original", false, model.expectShape(left.shape.member.target))
+                val bufferWriter = BufferWriter(writer)
+                var transformedVar: Variable? = null
+                bufferWriter.record { writer ->
+                    transformedVar = childBlock(right, original)
+                }
+                val optionalityMark = "?".takeIf { left.isOptional } ?: ""
                 writer.openBlock(
-                    "let \$L = \$L?.compactMap { original in", "}",
+                    "let \$L: [\$L]\$L = \$L\$L.compactMap { original in", "}",
                     outerName,
-                    left.name
+                    transformedVar!!.baseSwiftSymbol(symbolProvider),
+                    optionalityMark,
+                    left.name,
+                    optionalityMark
                 ) {
-                    val original = Variable("original", false, expectShape(left.shape.member.target))
-                    transformed = childBlock(right, original)
-                    writer.write("return \$L", transformed.name)
+                    bufferWriter.playback()
+                    writer.write("return \$L", transformedVar!!.name)
                 }
                 val returnMember = MemberShape.builder()
                     .id("smithy.swift.synthetic#mappedCollection\$member")
-                    .target(transformed.shape)
+                    .target(transformedVar!!.shape)
                     .build()
                 val returnType = ListShape.builder()
                     .id("smithy.swift.synthetic#mappedCollection")
@@ -143,19 +131,18 @@ class JMESPathVisitor(
             is StructureShape -> {
                 val parentMembers = parentVar.shape.members()
                 val subfieldMember = parentMembers.first { it.memberName == expression.name }
-                val subfieldShape = expectShape(subfieldMember.target)
-                val subfieldName = expression.name.toLowerCamelCase()
+                val subfieldShape = model.expectShape(subfieldMember.target)
+                val subfieldName = symbolProvider.toMemberName(subfieldMember)
                 val fieldOperator = "?.".takeIf { parentVar.isOptional } ?: "."
                 //
                 // Because all fields on Swift models are currently optional, every subfield value will also be
                 // optional.  Later we may have to replace this with logic to determine actual optionality,
                 // so:
-                // val subfieldIsOptional = parentExpression.isOptional || subfieldMember.hasTrait<RequiredTrait>()
-                // is replaced with:
+                // val subfieldIsOptional = !subfieldMember.hasTrait<RequiredTrait>()
+                // is temporarily replaced with:
                 val subfieldIsOptional = true
 
-                val subfieldVarName = uniqueTempVarName(subfieldName)
-                val subfieldVar = Variable(subfieldVarName, subfieldIsOptional, subfieldShape)
+                val subfieldVar = Variable(subfieldName, subfieldIsOptional, subfieldShape)
                 return addTempVar(subfieldVar, "\$L\$L\$L", parentVar.name, fieldOperator, subfieldName)
             }
             else -> {
@@ -209,18 +196,25 @@ class JMESPathVisitor(
         val unfiltered = expression.left!!.accept(this)
         when (unfiltered.shape) {
             is ListShape -> {
+                val elementShape = model.expectShape(unfiltered.shape.member.target)
+                val bufferWriter = BufferWriter(writer)
+                bufferWriter.record { writer ->
+                    val original = Variable("original", false, elementShape)
+                    val predicateVar = childBlock(expression.comparison!!, original)
+                    writer.write("return \$L", predicateVar.name)
+                }
                 val filteredName = uniqueTempVarName("${unfiltered.name}Filtered")
                 val filteredVar = Variable(filteredName, unfiltered.isOptional, unfiltered.shape)
-                val elementShape = expectShape(unfiltered.shape.member.target)
+                val optionalityMark = "?".takeIf { unfiltered.isOptional } ?: ""
                 writer.openBlock(
-                    "let \$L = \$L?.filter { original in",
+                    "let \$L: \$L = \$L\$L.filter { original in",
                     "}",
                     filteredName,
-                    unfiltered.name
+                    unfiltered.swiftSymbolWithOptionality(symbolProvider),
+                    unfiltered.name,
+                    optionalityMark
                 ) {
-                    val original = Variable("original", false, elementShape)
-                    val comparison = childBlock(expression.comparison!!, original)
-                    writer.write("return \$L", comparison.name)
+                    bufferWriter.playback()
                 }
                 val right = expression.right!!
                 return mappingBlock(right, filteredVar)
@@ -235,7 +229,7 @@ class JMESPathVisitor(
         val toBeFlattened = expression.expression!!.accept(this)
         return when (toBeFlattened.shape) {
             is ListShape -> {
-                val elementShape = expectShape(toBeFlattened.shape.member.target)
+                val elementShape = model.expectShape(toBeFlattened.shape.member.target)
                 when (elementShape) {
                     is ListShape -> {
                         // Double-nested List.  Perform Swift flat mapping.
@@ -363,7 +357,7 @@ class JMESPathVisitor(
         val original = expression.left!!.accept(this)
         return when (original.shape) {
             is MapShape -> {
-                val valueShape = expectShape(original.shape.value.target)
+                val valueShape = model.expectShape(original.shape.value.target)
                 val mapToProjectVar = Variable("mapToProject", false, valueShape)
                 val valuesVar = addTempVar(mapToProjectVar, "Array((\$L ?? [:]).values))", original.name)
                 mappingBlock(expression.right!!, valuesVar)
@@ -389,27 +383,22 @@ class JMESPathVisitor(
     // Returns a subexpression derived from a parent expression.
     // Only accessing fields is supported.
     override fun visitSubexpression(expression: Subexpression): Variable {
-        val leftName = expression.left!!.accept(this)
+        val leftVar = expression.left!!.accept(this)
 
         return when (val right = expression.right!!) {
-            is FieldExpression -> subfield(right, leftName)
+            is FieldExpression -> subfield(right, leftVar)
             else -> throw Exception("Subexpression type $right is unsupported")
         }
     }
 
-    // When looking up a shape by ID, check for a synthetic literal (defined below) before
-    // checking the current model.
-    private fun expectShape(shapeID: ShapeId): Shape {
-        val foundSyntheticShape = listOf(stringShape, boolShape, doubleShape).firstOrNull { it.toShapeId() == shapeID }
-        if (foundSyntheticShape != null) return foundSyntheticShape
-        return model.expectShape(shapeID)
-    }
-
     // Below are Smithy shapes to be used with JMESPath literals.
 
-    private val stringShape = StringShape.builder().id("smithy.swift.synthetic#LiteralString").build()
+    private val stringShape =
+        model.expectShape(ShapeId.from("smithy.swift.synthetic#LiteralString"))
 
-    private val boolShape = BooleanShape.builder().id("smithy.swift.synthetic#LiteralBoolean").build()
+    private val boolShape =
+        model.expectShape(ShapeId.from("smithy.swift.synthetic#LiteralBoolean"))
 
-    private val doubleShape = DoubleShape.builder().id("smithy.swift.synthetic#LiteralDouble").build()
+    private val doubleShape =
+        model.expectShape(ShapeId.from("smithy.swift.synthetic#LiteralDouble"))
 }
