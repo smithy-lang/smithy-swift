@@ -62,9 +62,8 @@ class WaiterAcceptorGeneratorTests {
                 // JMESPath expression: field1
                 // JMESPath comparator: stringEquals
                 // JMESPath expected value: abc
-                guard case .success(let unwrappedOutput) = result else { return false }
-                let current = Optional.some(unwrappedOutput)
-                let field1 = current?.field1
+                guard case .success(let output) = result else { return false }
+                let field1 = output.field1
                 return JMESValue(field1) == JMESValue("abc")
             }),
         """.trimIndent()
@@ -81,10 +80,10 @@ class WaiterAcceptorGeneratorTests {
                 // JMESPath comparator: booleanEquals
                 // JMESPath expected value: true
                 guard case .success(let unwrappedOutput) = result else { return false }
-                let current = Optional.some(WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor.InputOutput(input: input, output: unwrappedOutput))
-                let input = current?.input
+                let inputOutput = WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
+                let input = inputOutput.input
                 let bucketName = input?.bucketName
-                let output = current?.output
+                let output = inputOutput.output
                 let field1 = output?.field1
                 let comparison = JMESValue(bucketName) == JMESValue(field1)
                 return JMESValue(comparison) == JMESValue(true)
