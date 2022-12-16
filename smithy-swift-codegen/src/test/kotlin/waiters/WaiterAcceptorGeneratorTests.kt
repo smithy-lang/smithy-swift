@@ -64,7 +64,7 @@ class WaiterAcceptorGeneratorTests {
                 // JMESPath expected value: "abc"
                 guard case .success(let output) = result else { return false }
                 let field1 = output.field1
-                return JMESValue(field1) == JMESValue("abc")
+                return JMESUtils.test(field1, ==, "abc")
             }),
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
@@ -85,8 +85,8 @@ class WaiterAcceptorGeneratorTests {
                 let bucketName = input?.bucketName
                 let output = inputOutput.output
                 let field1 = output?.field1
-                let comparison = JMESValue(bucketName) == JMESValue(field1)
-                return JMESValue(comparison) == JMESValue(true)
+                let comparison = JMESUtils.test(bucketName, ==, field1)
+                return JMESUtils.test(comparison, ==, true)
             }),
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
