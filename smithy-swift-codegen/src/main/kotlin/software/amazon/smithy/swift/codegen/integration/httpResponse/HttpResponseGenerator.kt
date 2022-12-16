@@ -36,7 +36,6 @@ class HttpResponseGenerator(
         httpOperations.forEach {
             httpResponseBindingErrorGenerator.render(ctx, it)
             HttpResponseBindingErrorNarrowGenerator(ctx, it, unknownServiceErrorSymbol).render()
-            WaiterTypedErrorGenerator(ctx, it, unknownServiceErrorSymbol).render()
         }
 
         val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()

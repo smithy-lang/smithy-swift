@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.swift.codegen.integration.httpResponse
+package software.amazon.smithy.swift.codegen.waiters
 
 import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.codegen.core.Symbol
@@ -18,8 +18,7 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 
 class WaiterTypedErrorGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
-    val op: OperationShape,
-    val unknownServiceErrorSymbol: Symbol
+    val op: OperationShape
 ) {
     object WaiterTypedErrorGeneratorSectionId : SectionId
 
@@ -34,16 +33,8 @@ class WaiterTypedErrorGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(unknownServiceErrorSymbol)
-            val unknownServiceErrorType = unknownServiceErrorSymbol.name
 
-            val context = mapOf(
-                "ctx" to ctx,
-                "unknownServiceErrorType" to unknownServiceErrorType,
-                "operationErrorName" to operationErrorName,
-                "errorShapes" to errorShapes
-            )
-            writer.declareSection(WaiterTypedErrorGeneratorSectionId, context) {
+            writer.declareSection(WaiterTypedErrorGeneratorSectionId) {
                 writer.openBlock("extension \$L: WaiterTypedError {", "}", operationErrorName) {
                     writer.write("")
                     writer.write("/// The Smithy identifier, without namespace, for the type of this error, or `nil` if the")

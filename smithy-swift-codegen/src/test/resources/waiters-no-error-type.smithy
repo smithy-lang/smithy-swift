@@ -21,27 +21,7 @@ service TestHasWaiters {
             {
                 state: "retry"
                 matcher: {
-                    errorType: "NotFound"
-                }
-            },
-            {
-                state: "success"
-                matcher: {
-                    output: {
-                        path: "field1"
-                        expected: "abc"
-                        comparator: "stringEquals"
-                    }
-                }
-            },
-            {
-                state: "success"
-                matcher: {
-                    inputOutput: {
-                        path: "input.bucketName == output.field1"
-                        expected: "true"
-                        comparator: "booleanEquals"
-                    }
+                    success: false
                 }
             }
         ]
@@ -61,6 +41,4 @@ structure HeadBucketRequest {
 }
 
 structure HeadBucketResponse {
-    field1: String
-    field2: Integer
 }
