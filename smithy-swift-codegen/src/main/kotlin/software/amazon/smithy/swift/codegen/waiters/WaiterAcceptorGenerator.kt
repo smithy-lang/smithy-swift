@@ -104,18 +104,18 @@ class WaiterAcceptorGenerator(
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
-                writer.write("return JMESUtils.test(\$L, ==, \$S)", actual.name, expected)
+                writer.write("return JMESUtils.compare(\$L, ==, \$S)", actual.name, expected)
             PathComparator.BOOLEAN_EQUALS ->
-                writer.write("return JMESUtils.test(\$L, ==, \$L)", actual.name, expected.toBoolean())
+                writer.write("return JMESUtils.compare(\$L, ==, \$L)", actual.name, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
                 writer.write(
-                    "return \$L?.contains(where: { JMESUtils.test($$0, ==, \$S) }) ?? false",
+                    "return \$L?.contains(where: { JMESUtils.compare($$0, ==, \$S) }) ?? false",
                     actual.name,
                     expected
                 )
             PathComparator.ALL_STRING_EQUALS ->
                 writer.write(
-                    "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESUtils.test($$0, ==, \$S) } ?? false)",
+                    "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESUtils.compare($$0, ==, \$S) } ?? false)",
                     actual.name,
                     actual.name,
                     expected

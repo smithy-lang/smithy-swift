@@ -173,7 +173,7 @@ class JMESPathVisitor(
         val comparisonResultVar = JMESVariable("comparison", false, boolShape)
         return addTempVar(
             comparisonResultVar,
-            "JMESUtils.test(\$L, \$L, \$L)",
+            "JMESUtils.compare(\$L, \$L, \$L)",
             left.name,
             expression.comparator,
             right.name
@@ -270,7 +270,7 @@ class JMESPathVisitor(
                 return if (searchVariable.isOptional) {
                     addTempVar(
                         returnValueVar,
-                        "\$L.flatMap { \$L\$L.contains($$0) } ?? false",
+                        "\$L.map { \$L\$L.contains($$0) } ?? false",
                         searchVariable.name,
                         subjectVariable.name,
                         optionalityMark
@@ -372,7 +372,7 @@ class JMESPathVisitor(
                     .build()
                 var projectionVar = JMESVariable("projection", original.isOptional, projectionShape)
                 if (original.isOptional) {
-                    projectionVar = addTempVar(projectionVar, "\$L.flatMap { Array($$0.values) }", original.name)
+                    projectionVar = addTempVar(projectionVar, "\$L.map { Array($$0.values) }", original.name)
                 } else {
                     projectionVar = addTempVar(projectionVar, "Array(\$L.values)", original.name)
                 }
