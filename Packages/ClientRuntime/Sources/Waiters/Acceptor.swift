@@ -26,6 +26,14 @@ extension WaiterConfiguration {
 
         /// Used as the root value of an `inputOutput` acceptor, which has the `input` and `output` fields
         /// as its two top level properties.
+        ///
+        /// Even though `input` and `output` are both guaranteed to be present when this type is created,
+        /// these properties are optional because `InputOutput` is handled like any other Smithy model object,
+        /// and smithy-swift currently does not support `@required` properties on Smithy models.
+        ///
+        /// In the future, if smithy-swift is updated to support `@required` properties, these may be made
+        /// non-optional and the corresponding Smithy model's members for `input` and `output` should be
+        /// marked with `@required` as well.
         public struct InputOutput {
             public let input: Input?
             public let output: Output?

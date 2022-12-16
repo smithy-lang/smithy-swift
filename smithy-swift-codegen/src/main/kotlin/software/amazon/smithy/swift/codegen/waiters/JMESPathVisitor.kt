@@ -173,7 +173,7 @@ class JMESPathVisitor(
         val comparisonResultVar = Variable("comparison", false, boolShape)
         return addTempVar(
             comparisonResultVar,
-            "JMESValue(\$L) \$L JMESValue(\$L)",
+            "JMESUtils.test(\$L, \$L, \$L)",
             left.name,
             expression.comparator,
             right.name
