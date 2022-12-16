@@ -155,10 +155,10 @@ class JMESPathVisitor(
     // Performs a Boolean "and" of the left & right expressions
     // A Swift compile error will result if both left & right aren't Booleans.
     override fun visitAnd(expression: AndExpression): JMESVariable {
-        val leftExp = expression.left!!.accept(this)
-        val rightExp = expression.right!!.accept(this)
+        val leftVar = expression.left!!.accept(this)
+        val rightVar = expression.right!!.accept(this)
         val andResultVar = JMESVariable("andResult", false, boolShape)
-        return addTempVar(andResultVar, "\$L && \$L", leftExp, rightExp)
+        return addTempVar(andResultVar, "\$L && \$L", leftVar.name, rightVar.name)
     }
 
     // Perform a comparison of two values.
