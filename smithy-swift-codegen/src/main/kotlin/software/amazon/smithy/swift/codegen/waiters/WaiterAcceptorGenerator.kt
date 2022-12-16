@@ -68,7 +68,7 @@ class WaiterAcceptorGenerator(
         writer.write("// JMESPath expression: \"${pathMatcher.path}\"")
         writer.write("// JMESPath comparator: \"${pathMatcher.comparator}\"")
         writer.write("// JMESPath expected value: \"${pathMatcher.expected}\"")
-        val startingVar: Variable
+        val startingVar: JMESVariable
         // output and inputOutput type acceptors are the same except that:
         // - An output waiter has the output object at its root scope
         // - An inputOutput waiter has an object with the properties input and output at its root scope
@@ -80,10 +80,10 @@ class WaiterAcceptorGenerator(
                 inputTypeName,
                 outputTypeName
             )
-            startingVar = Variable("inputOutput", false, inputOutputShape)
+            startingVar = JMESVariable("inputOutput", false, inputOutputShape)
         } else {
             writer.write("guard case .success(let output) = result else { return false }")
-            startingVar = Variable("output", false, ctx.model.expectShape(waitedOperation.outputShape))
+            startingVar = JMESVariable("output", false, ctx.model.expectShape(waitedOperation.outputShape))
         }
 
         // Use smithy to parse the text JMESPath expression into a syntax tree to be visited.

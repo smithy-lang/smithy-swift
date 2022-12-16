@@ -8,6 +8,7 @@
 import Foundation
 
 /// Utility functions for performing comparisons between values in JMESPath expressions.
+///
 /// `Bool` may be compared for equality & inequality.
 ///
 /// `String` and a `RawRepresentable where RawValue == String` may be interchangeable compared for equality and inequality.

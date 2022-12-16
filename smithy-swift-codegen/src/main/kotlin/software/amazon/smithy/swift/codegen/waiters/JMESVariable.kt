@@ -5,7 +5,7 @@ import software.amazon.smithy.model.shapes.Shape
 
 // Holds the name of a variable defined in Swift, plus the optionality and the Smithy
 // shape equivalent of its type.
-class Variable(
+class JMESVariable(
 
     // The name of the Swift variable that this data is stored in.
     val name: String,
