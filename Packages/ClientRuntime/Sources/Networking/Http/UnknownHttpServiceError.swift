@@ -22,7 +22,6 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
 
 extension UnknownHttpServiceError {
 
-
     /// Creates an `UnknownHttpServiceError` from a HTTP response.
     /// - Parameters:
     ///   - httpResponse: The `HttpResponse` for this error.
