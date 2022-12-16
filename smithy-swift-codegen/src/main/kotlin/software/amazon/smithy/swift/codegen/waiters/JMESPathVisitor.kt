@@ -265,23 +265,25 @@ class JMESPathVisitor(
                 val subjectVariable = subject.accept(this)
                 val search = expression.arguments[1]
                 val searchVariable = search.accept(this)
-                val optionalityMark = "?".takeIf { subjectVariable.isOptional } ?: ""
+                val subjectOptionalityMark = "?".takeIf { subjectVariable.isOptional } ?: ""
                 val returnValueVar = JMESVariable("contains", false, boolShape)
                 return if (searchVariable.isOptional) {
                     addTempVar(
                         returnValueVar,
-                        "\$L.map { \$L\$L.contains($$0) } ?? false",
+                        "\$L.flatMap { \$L\$L.contains($$0) } ?? false",
                         searchVariable.name,
                         subjectVariable.name,
-                        optionalityMark
+                        subjectOptionalityMark
                     )
                 } else {
+                    val subjectNilCoalescence = " ?? false".takeIf { subjectVariable.isOptional } ?: ""
                     addTempVar(
                         returnValueVar,
-                        "\$L\$L.contains(\$L)",
+                        "\$L\$L.contains(\$L)\$L",
                         subjectVariable.name,
-                        optionalityMark,
-                        searchVariable.name
+                        subjectOptionalityMark,
+                        searchVariable.name,
+                        subjectNilCoalescence
                     )
                 }
             }
