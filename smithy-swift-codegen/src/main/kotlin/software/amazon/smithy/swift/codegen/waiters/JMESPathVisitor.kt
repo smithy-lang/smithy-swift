@@ -11,6 +11,7 @@ import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.jmespath.RuntimeType
 import software.amazon.smithy.jmespath.ast.AndExpression
 import software.amazon.smithy.jmespath.ast.ComparatorExpression
+import software.amazon.smithy.jmespath.ast.ComparatorType
 import software.amazon.smithy.jmespath.ast.CurrentExpression
 import software.amazon.smithy.jmespath.ast.ExpressionTypeExpression
 import software.amazon.smithy.jmespath.ast.FieldExpression
@@ -162,20 +163,29 @@ class JMESPathVisitor(
     }
 
     // Perform a comparison of two values.
-    // The JMESValue type is used to provide conversion and comparison as needed between types
-    // that aren't comparable in "pure Swift" (i.e. Int to Double or String to RawRepresentable
-    // by String.)
+    //
+    // The JMESUtils.compare() function is used to provide conversion and comparison as needed
+    // between types that aren't comparable in "pure Swift" (i.e. Int to Double or String to
+    // RawRepresentable by String.)
+    //
     // The Smithy comparator is a string that just happens to match up with all Swift comparators,
-    // so it is rendered into Swift as-is.
+    // so it is rendered into Swift as-is, with one exception:
+    //
+    // Due to overload resolution difficulties with `!=` in Swift, an inequality expression is
+    // rendered as equality then negated.
     override fun visitComparator(expression: ComparatorExpression): JMESVariable {
         val left = expression.left!!.accept(this)
         val right = expression.right!!.accept(this)
+        val isInequality = expression.comparator == ComparatorType.NOT_EQUAL
+        val comparator = ComparatorType.EQUAL.takeIf { isInequality } ?: expression.comparator
+        val negationMark = "!".takeIf { isInequality } ?: ""
         val comparisonResultVar = JMESVariable("comparison", false, boolShape)
         return addTempVar(
             comparisonResultVar,
-            "JMESUtils.compare(\$L, \$L, \$L)",
+            "\$LJMESUtils.compare(\$L, \$L, \$L)",
+            negationMark,
             left.name,
-            expression.comparator,
+            comparator,
             right.name
         )
     }

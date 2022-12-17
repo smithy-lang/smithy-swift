@@ -35,15 +35,17 @@ public enum JMESUtils {
         return comparator(lhs, rhs)
     }
 
-// Functions for comparing Int to Int.
+// Functions for comparing Int to Int.  Double comparators are used since Int has
+// extra overloads on `==` that prevent it from resolving correctly, and Ints compared
+// to Doubles are already compared as Doubles anyway.
 
-    public static func compare(_ lhs: Int?, _ comparator: (Int?, Int?) -> Bool, _ rhs: Int?) -> Bool {
-        comparator(lhs, rhs)
+    public static func compare(_ lhs: Int?, _ comparator: (Double?, Double?) -> Bool, _ rhs: Int?) -> Bool {
+        comparator(lhs.map { Double($0) }, rhs.map { Double($0) })
     }
 
-    public static func compare(_ lhs: Int?, _ comparator: (Int, Int) -> Bool, _ rhs: Int?) -> Bool {
+    public static func compare(_ lhs: Int?, _ comparator: (Double, Double) -> Bool, _ rhs: Int?) -> Bool {
         guard let lhs = lhs, let rhs = rhs else { return false }
-        return comparator(lhs, rhs)
+        return comparator(Double(lhs), Double(rhs))
     }
 
 // Function for comparing String to String.
