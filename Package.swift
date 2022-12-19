@@ -1,7 +1,6 @@
-// swift-tools-version:5.4
+// swift-tools-version:5.5
 
 import PackageDescription
-
 
 let package = Package(
     name: "smithy-swift",
@@ -25,23 +24,19 @@ let package = Package(
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
-            ],
-            path: "./Packages/ClientRuntime/Sources"
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"],
-            path: "./Packages/ClientRuntime/Tests"
+            dependencies: ["ClientRuntime", "SmithyTestUtil"]
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"],
-            path: "./Packages/SmithyTestUtil/Sources"
+            dependencies: ["ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"],
-            path: "./Packages/SmithyTestUtil/Tests"
+            dependencies: ["SmithyTestUtil"]
         )
     ]
 )

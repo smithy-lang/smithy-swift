@@ -1,9 +1,8 @@
 excluded:
-  - ./SmithyTestUtil/*
-  - ./ClientRuntime/Tests/*
-  - ./Packages/SmithyTestUtil/*
-  - ./Packages/ClientRuntime/Tests/*
   - .build
+  - Sources/SmithyTestUtil/*
+  - Tests/ClientRuntimeTests/*
+  - Tests/SmithyTestUtilTests/*
 
 analyzer_rules:
   - unused_import
