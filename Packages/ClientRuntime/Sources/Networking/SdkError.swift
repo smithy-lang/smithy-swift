@@ -14,3 +14,19 @@ public enum SdkError<E>: Error {
   case unknown(Error?)
 
 }
+
+extension SdkError: WaiterTypedError {
+
+    /// The Smithy identifier, without namespace, for the type of this error, or `nil` if the
+    /// error has no known type.
+    public var waiterErrorType: String? {
+        switch self {
+        case .service(let error, _):
+            return (error as? WaiterTypedError)?.waiterErrorType
+        case .client(let error, _):
+            return (error as? WaiterTypedError)?.waiterErrorType
+        case .unknown(let error):
+            return (error as? WaiterTypedError)?.waiterErrorType
+        }
+    }
+}

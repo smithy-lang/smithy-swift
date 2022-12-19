@@ -20,6 +20,8 @@ disabled_rules:
   - file_length
   - syntactic_sugar
   - unused_capture_list
+  - nesting
+  - large_tuple
   - type_body_length
 
 opt_in_rules:
