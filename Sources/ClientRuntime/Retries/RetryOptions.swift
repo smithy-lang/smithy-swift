@@ -5,32 +5,26 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import AwsCommonRuntimeKit
+import Foundation
 
 public struct RetryOptions {
     public let initialBucketCapacity: Int
+    public let maxRetries: Int
+    public let backOffScaleFactor: TimeInterval
+    public let jitterMode: ExponentialBackOffJitterMode
+    public let generateRandom: (() -> UInt64)?
     
-    public let backOffRetryOptions: ExponentialBackOffRetryOptions
-    
-    public init(initialBucketCapacity: Int = 500,
-                backOffRetryOptions: ExponentialBackOffRetryOptions) {
+    public init(
+        initialBucketCapacity: Int = 500,
+        maxRetries: Int = 10,
+        backOffScaleFactor: TimeInterval = 0.025,
+        jitterMode: ExponentialBackOffJitterMode = .default,
+        generateRandom: (() -> UInt64)? = nil
+    ) {
         self.initialBucketCapacity = initialBucketCapacity
-        self.backOffRetryOptions = backOffRetryOptions
-    }
-}
-
-public extension RetryOptions {
-    func toCRTType() -> TransformRetryOptions {
-        return TransformRetryOptions(initialBucketCapacity: initialBucketCapacity,
-                            backOffRetryOptions: backOffRetryOptions.toCRTType())
-    }
-}
-
-public struct TransformRetryOptions: CRTRetryOptions {
-    public var initialBucketCapacity: Int
-    public var backOffRetryOptions: CRTExponentialBackoffRetryOptions
-    
-    init(initialBucketCapacity: Int, backOffRetryOptions: CRTExponentialBackoffRetryOptions) {
-        self.initialBucketCapacity = initialBucketCapacity
-        self.backOffRetryOptions = backOffRetryOptions
+        self.maxRetries = maxRetries
+        self.backOffScaleFactor = backOffScaleFactor
+        self.jitterMode = jitterMode
+        self.generateRandom = generateRandom
     }
 }

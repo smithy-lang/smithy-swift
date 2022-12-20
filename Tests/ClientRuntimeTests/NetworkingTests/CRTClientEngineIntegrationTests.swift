@@ -14,7 +14,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
-        let crtEngine = CRTClientEngine()
+        let crtEngine = try! CRTClientEngine(sdkIO: SDKDefaultIO())
         httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
     
@@ -77,7 +77,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length == 1024)
+            XCTAssert(unwrappedStream.toBytes().length() == 1024)
         } else {
             XCTFail("Bytes not received")
         }
@@ -97,7 +97,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length == 1)
+            XCTAssert(unwrappedStream.toBytes().length() == 1)
         } else {
             XCTFail("Bytes not received")
         }
@@ -117,7 +117,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length == 3000)
+            XCTAssert(unwrappedStream.toBytes().length() == 3000)
         } else {
             XCTFail("Bytes not received")
         }

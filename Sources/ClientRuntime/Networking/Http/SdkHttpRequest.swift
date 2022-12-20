@@ -39,14 +39,14 @@ public class SdkHttpRequest {
 private let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "/_-.~"))
 
 extension SdkHttpRequest {
-    public func toHttpRequest(bufferSize: Int = 1024) -> HttpRequest {
+    public func toHttpRequest() throws -> HTTPRequest {
         let httpHeaders = headers.toHttpHeaders()
-        let httpRequest = HttpRequest()
+        let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
         let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
         httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
-        httpRequest.body = body.toAwsInputStream()
+        httpRequest.body = body.toBytes()
         return httpRequest
     }
 }
@@ -70,22 +70,20 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
 }
 
 extension SdkHttpRequestBuilder {
-    public func update(from crtRequest: HttpRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+    public func update(from crtRequest: HTTPRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
         host = originalRequest.endpoint.host
         // TODO: remove extra slash if not needed
-        let pathAndQueryItems = URLComponents(string: crtRequest.path ?? "/")
+        let pathAndQueryItems = URLComponents(string: crtRequest.path)
         path = pathAndQueryItems?.path ?? "/"
         queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
 
         return self
     }
         
-    func convertSignedHeadersToHeaders(crtRequest: HttpRequest) -> Headers {
-        let httpHeaders = HttpHeaders()
-        httpHeaders.addArray(headers: crtRequest.getHeaders())
-        return Headers(httpHeaders: httpHeaders)
+    func convertSignedHeadersToHeaders(crtRequest: HTTPRequest) -> Headers {
+        return Headers(httpHeaders: crtRequest.getHeaders())
     }
 }
 

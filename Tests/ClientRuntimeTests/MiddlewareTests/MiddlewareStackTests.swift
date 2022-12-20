@@ -73,7 +73,7 @@ class MiddlewareStackTests: XCTestCase {
     
     func testFullBlownOperationRequestWithClientHandler() async throws {
         let httpClientConfiguration = HttpClientConfiguration()
-        let clientEngine = CRTClientEngine()
+        let clientEngine = try CRTClientEngine(sdkIO: SDKDefaultIO())
         let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
 
         let builtContext = HttpContextBuilder()

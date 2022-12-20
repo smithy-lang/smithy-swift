@@ -14,7 +14,7 @@ public enum RetryError {
 }
 
 public extension RetryError {
-    func toCRTType() -> CRTRetryError {
+    func toCRTType() -> AwsCommonRuntimeKit.RetryError {
         switch self {
         case .transient: return .transient
         case .throttling: return .throttling

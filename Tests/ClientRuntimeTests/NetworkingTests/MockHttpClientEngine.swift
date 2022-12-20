@@ -7,13 +7,7 @@ import Foundation
 import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
-class MockHttpClientEngine: HttpClientEngine {    
-    func execute(request: SdkHttpRequest) -> SdkFuture<HttpResponse> {
-        let future = SdkFuture<HttpResponse>()
-        future.fulfill(successHttpResponse(request: request))
-        return future
-    }
-    
+class MockHttpClientEngine: HttpClientEngine {
     func close() {
         //do nothing cuz fake engine
     }

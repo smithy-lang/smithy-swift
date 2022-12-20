@@ -7,17 +7,21 @@
 import AwsCommonRuntimeKit
 
 public class SDKRetryer: Retryer {
-    let crtRetryStrategy: CRTAWSRetryStrategy
-    private let sharedDefaultIO: SDKDefaultIO = SDKDefaultIO.shared
+    let crtRetryStrategy: AwsCommonRuntimeKit.RetryStrategy
+    private let sharedDefaultIO: SDKDefaultIO
     
-    public init(options: RetryOptions) throws {
-        self.crtRetryStrategy = try CRTAWSRetryStrategy(options: options.toCRTType())
+    public init(options: RetryOptions, sdkIO: SDKDefaultIO) throws {
+        self.sharedDefaultIO = sdkIO
+        self.crtRetryStrategy = try AwsCommonRuntimeKit.RetryStrategy(
+            options: options,
+            eventLoopGroup: sdkIO.eventLoopGroup
+        )
     }
     
     public convenience init() throws {
-        let backOffOptions = ExponentialBackOffRetryOptions()
-        let retryOptions = RetryOptions(backOffRetryOptions: backOffOptions)
-        try self.init(options: retryOptions)
+        let retryOptions = RetryOptions()
+        let sdkIO = try SDKDefaultIO()
+        try self.init(options: retryOptions, sdkIO: sdkIO)
     }
     
     public func acquireToken(partitionId: String) async throws -> RetryToken {
@@ -26,8 +30,9 @@ public class SDKRetryer: Retryer {
     }
     
     public func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken {
-        let token = try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
-        return RetryToken(crtToken: token)
+        try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
+        // remove this return after CRT updates scheduleRetry to return a token
+        return token
     }
     
     public func recordSuccess(token: RetryToken) {
@@ -93,5 +98,18 @@ public class SDKRetryer: Retryer {
         case .unknown:
             return .clientError
         }
+    }
+}
+
+extension AwsCommonRuntimeKit.RetryStrategy {
+    convenience init(options: RetryOptions, eventLoopGroup: EventLoopGroup) throws {
+       try self.init(
+            eventLoopGroup: eventLoopGroup,
+            initialBucketCapacity: options.initialBucketCapacity,
+            maxRetries: options.maxRetries,
+            backOffScaleFactor: options.backOffScaleFactor,
+            jitterMode: options.jitterMode.toCRTType(),
+            generateRandom: nil // we should pass in the options.generateRandom but currently it fails since the underlying closure is a c closure
+        )
     }
 }

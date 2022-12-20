@@ -19,29 +19,3 @@ public protocol SDKRuntimeConfiguration {
     var retryer: SDKRetryer {get}
     var endpoint: String? {get set}
 }
-
-public extension SDKRuntimeConfiguration {
-    var httpClientEngine: HttpClientEngine {
-        return CRTClientEngine()
-    }
-    
-    var httpClientConfiguration: HttpClientConfiguration {
-        return HttpClientConfiguration()
-    }
-    
-    var idempotencyTokenGenerator: IdempotencyTokenGenerator {
-        return DefaultIdempotencyTokenGenerator()
-    }
-    
-    var clientLogMode: ClientLogMode {
-        return .request
-    }
-    
-    var encoder: RequestEncoder? {
-        return nil
-    }
-    
-    var decoder: ResponseDecoder? {
-        return nil
-    }
-}

@@ -7,9 +7,9 @@
 import AwsCommonRuntimeKit
 
 public struct RetryToken {
-    public let crtToken: CRTAWSRetryToken
+    public let crtToken: AwsCommonRuntimeKit.RetryToken
     
-    public init(crtToken: CRTAWSRetryToken) {
+    public init(crtToken: AwsCommonRuntimeKit.RetryToken) {
         self.crtToken = crtToken
     }
 }
