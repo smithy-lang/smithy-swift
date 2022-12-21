@@ -17,13 +17,12 @@ public class CRTClientEngine: HttpClientEngine {
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
         private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
-        private let sharedDefaultIO: SDKDefaultIO
+        private let sharedDefaultIO = SDKDefaultIO.shared
 
-        init(config: CRTClientEngineConfig, sdkIO: SDKDefaultIO) {
+        init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
             self.logger = SwiftLogger(label: "SerialExecutor")
-            self.sharedDefaultIO = sdkIO
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
@@ -74,14 +73,11 @@ public class CRTClientEngine: HttpClientEngine {
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
     
-    init(
-        config: CRTClientEngineConfig = CRTClientEngineConfig(),
-        sdkIO: SDKDefaultIO
-    ) {
+    init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
-        self.serialExecutor = SerialExecutor(config: config, sdkIO: sdkIO)
+        self.serialExecutor = SerialExecutor(config: config)
     }
     
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {

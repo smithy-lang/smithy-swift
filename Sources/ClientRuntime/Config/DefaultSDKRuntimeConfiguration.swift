@@ -22,7 +22,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     ) throws {
         self.encoder = nil
         self.decoder = nil
-        self.httpClientEngine = CRTClientEngine(sdkIO: try SDKDefaultIO())
+        self.httpClientEngine = CRTClientEngine()
         self.httpClientConfiguration = HttpClientConfiguration()
         self.idempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()
         self.retryer = try SDKRetryer()

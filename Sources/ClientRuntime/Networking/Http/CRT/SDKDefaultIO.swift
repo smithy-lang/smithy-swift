@@ -14,34 +14,40 @@ import Darwin
 #endif
 
 public final class SDKDefaultIO {
-    public var eventLoopGroup: EventLoopGroup
-    public var hostResolver: HostResolver
-    public var clientBootstrap: ClientBootstrap
-    public var tlsContext: TLSContext
-    public var logger: Logger
+    public let eventLoopGroup: EventLoopGroup
+    public let hostResolver: HostResolver
+    public let clientBootstrap: ClientBootstrap
+    public let tlsContext: TLSContext
+    public let logger: Logger
     
-    /// This class is responsible for setting up and tearing down the CommonRuntimeKit
-    /// This should only execute once per application life.
-    private struct CommonRuntimeExecuter {
-        init() {
-            CommonRuntimeKit.initialize()
-        }
-        func start() {
-            // no-op here, we just need to expose a method to call to ensure our
-            // static property gets assigned.
-        }
-    }
-    private static let commonRuntimeExecuter = CommonRuntimeExecuter()
+    /// Provide singleton access since we want to share and re-use the instance properties
+    public static let shared = SDKDefaultIO()
 
-    public init() throws {
-        SDKDefaultIO.commonRuntimeExecuter.start()
+    private init() {
+        CommonRuntimeKit.initialize()
         self.logger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
-        self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
-        self.hostResolver = try HostResolver.makeDefault(
-            eventLoopGroup: eventLoopGroup,
-            maxHosts: 8,
-            maxTTL: 30
-        )
+        
+        do {
+            self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
+        } catch {
+            fatalError("""
+            Event Loop Group failed to create. This should never happen. Please open a
+            Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+            """)
+        }
+        
+        do {
+            self.hostResolver = try HostResolver.makeDefault(
+                eventLoopGroup: eventLoopGroup,
+                maxHosts: 8,
+                maxTTL: 30
+            )
+        } catch {
+            fatalError("""
+            Host Resolver failed to create. This should never happen. Please open a
+            Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+            """)
+        }
         
         do {
             self.clientBootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup,

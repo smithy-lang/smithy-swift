@@ -14,7 +14,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
-        let crtEngine = try! CRTClientEngine(sdkIO: SDKDefaultIO())
+        let crtEngine = CRTClientEngine()
         httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
     
