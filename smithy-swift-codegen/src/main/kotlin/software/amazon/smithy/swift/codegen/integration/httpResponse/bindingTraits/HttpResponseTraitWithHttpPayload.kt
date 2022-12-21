@@ -29,7 +29,7 @@ class HttpResponseTraitWithHttpPayload(
         val isBinaryStream =
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         writer.openBlock("if case .stream(let reader) = httpResponse.body {", "} else {") {
-            val extension = if (!isBinaryStream) ".toBytes().toData()" else ""
+            val extension = if (!isBinaryStream) ".toBytes().getData()" else ""
             writer.write("let data = reader$extension")
             when (target.type) {
                 ShapeType.DOCUMENT -> {

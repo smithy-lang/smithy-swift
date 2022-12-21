@@ -48,7 +48,7 @@ class HttpResponseTraitWithoutHttpPayload(
             writer.write("if case .stream(let reader) = httpResponse.body,")
             writer.indent()
             writer.write("let responseDecoder = decoder {")
-            writer.write("let data = reader.toBytes().toData()")
+            writer.write("let data = reader.toBytes().getData()")
             writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: data)")
             bodyMembersWithoutQueryTraitMemberNames.sorted().forEach {
                 writer.write("self.$it = output.$it")
