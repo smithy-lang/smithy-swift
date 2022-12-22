@@ -22,13 +22,6 @@ public class SdkHttpClient {
     func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         return try await engine.execute(request: request)
     }
-    
-    public func close() {
-        Task {
-            await self.engine.close()
-        }
-    }
-    
 }
 
 struct ClientHandler<Output: HttpResponseBinding>: Handler {

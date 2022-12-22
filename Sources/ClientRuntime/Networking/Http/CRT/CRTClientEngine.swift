@@ -137,8 +137,4 @@ public class CRTClientEngine: HttpClientEngine {
         }
         return requestOptions
     }
-    
-    public func close() async {
-        // no-op
-    }
 }
