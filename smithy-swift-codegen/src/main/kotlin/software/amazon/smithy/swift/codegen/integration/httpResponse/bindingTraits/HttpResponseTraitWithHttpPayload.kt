@@ -60,7 +60,11 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = nil", memberName).closeBlock("}")
                 }
                 ShapeType.BLOB -> {
-                    writer.write("self.\$L = data", memberName)
+                    if (isBinaryStream) {
+                        writer.write("self.\$L = ByteStream.from(data: data)", memberName)
+                    } else {
+                        writer.write("self.\$L = data", memberName)
+                    }
                 }
                 ShapeType.STRUCTURE, ShapeType.UNION -> {
                     writer.openBlock("if let responseDecoder = decoder {", "} else {") {
