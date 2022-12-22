@@ -41,10 +41,6 @@ class HttpProtocolClientGeneratorTests {
                     self.init(config: config)
                 }
             
-                deinit {
-                    client.close()
-                }
-            
                 public class RestJsonProtocolClientConfiguration: RestJsonProtocolClientConfigurationProtocol {
                     public var clientLogMode: ClientRuntime.ClientLogMode
                     public var decoder: ClientRuntime.ResponseDecoder?

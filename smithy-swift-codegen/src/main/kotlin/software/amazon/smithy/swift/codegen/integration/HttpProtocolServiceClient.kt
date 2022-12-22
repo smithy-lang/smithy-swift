@@ -44,10 +44,6 @@ open class HttpProtocolServiceClient(
             writer.write("")
             renderConvenienceInit(serviceSymbol)
             writer.write("")
-            writer.openBlock("deinit {", "}") {
-                writer.write("client.close()")
-            }
-            writer.write("")
             renderConfig(serviceSymbol)
         }
         writer.write("")
