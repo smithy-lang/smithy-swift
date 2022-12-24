@@ -186,31 +186,31 @@ abstract class MemberShapeEncodeGenerator(
 
     // Render encoding of a member of Map type
     fun renderEncodeMapMember(targetShape: Shape, memberName: String, containerName: String, level: Int = 0) {
+        val keyName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey${level - 1})"
         when (targetShape) {
             is CollectionShape -> {
                 val topLevelContainerName = "${memberName}Container"
-                writer.write("var \$L = $containerName.nestedUnkeyedContainer(forKey: \$N($dictKey${level - 1}))", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
+                writer.write("var \$L = $containerName.nestedUnkeyedContainer(forKey: \$L)", topLevelContainerName, keyName)
                 renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"
                 writer.write(
-                    "var \$L = $containerName.nestedContainer(keyedBy: \$N.self, forKey: .\$L)",
+                    "var \$L = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$L)",
                     topLevelContainerName,
                     ClientRuntimeTypes.Serde.Key,
-                    memberName
+                    keyName
                 )
-                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape.value, level)
+                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             else -> {
                 val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
-                val keyEnumName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey${level - 1})"
-                if (isBoxed && level == 0) {
+                if (isBoxed) {
                     writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                        renderSimpleShape(targetShape, memberName, containerName, keyEnumName, isBoxed)
+                        renderSimpleShape(targetShape, memberName, containerName, keyName, isBoxed)
                     }
                 } else {
-                    renderSimpleShape(targetShape, memberName, containerName, keyEnumName, isBoxed)
+                    renderSimpleShape(targetShape, memberName, containerName, keyName, isBoxed)
                 }
             }
         }
