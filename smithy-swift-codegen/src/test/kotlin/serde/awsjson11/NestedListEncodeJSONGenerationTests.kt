@@ -37,27 +37,27 @@ class NestedListEncodeJSONGenerationTests {
         val contents = getFileContents(context.manifest, "/Example/models/ListOfMapsOperationInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-        extension ListOfMapsOperationInput: Swift.Encodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case targetMaps
-            }
-        
-            public func encode(to encoder: Swift.Encoder) throws {
-                var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                if let targetMaps = targetMaps {
-                    var targetMapsContainer = encodeContainer.nestedUnkeyedContainer(forKey: .targetMaps)
-                    for targetmap0 in targetMaps {
-                        var targetmap0Container = targetMapsContainer.nestedContainer(keyedBy: ClientRuntime.Key.self)
-                        for (dictKey1, targetMap1) in targetmap0 {
-                            var targetMap1Container = targetmap0Container.nestedUnkeyedContainer(forKey: ClientRuntime.Key(stringValue: dictKey1))
-                            for string2 in targetMap1 {
-                                try targetMap1Container.encode(string2)
+            extension ListOfMapsOperationInput: Swift.Encodable {
+                enum CodingKeys: Swift.String, Swift.CodingKey {
+                    case targetMaps
+                }
+            
+                public func encode(to encoder: Swift.Encoder) throws {
+                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
+                    if let targetMaps = targetMaps {
+                        var targetMapsContainer = encodeContainer.nestedUnkeyedContainer(forKey: .targetMaps)
+                        for targetmap0 in targetMaps {
+                            var targetmap0Container = targetMapsContainer.nestedContainer(keyedBy: ClientRuntime.Key.self)
+                            for (dictKey1, targetMap1) in targetmap0 {
+                                var targetMap1Container = targetmap0Container.nestedUnkeyedContainer(forKey: ClientRuntime.Key(stringValue: dictKey1))
+                                for string2 in targetMap1 {
+                                    try targetMap1Container.encode(string2)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
         """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
