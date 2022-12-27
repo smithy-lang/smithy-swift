@@ -14,6 +14,18 @@ public extension HttpBody {
     static var empty: HttpBody {
         .data(nil)
     }
+    
+    /// Returns true if the http body is `.none` or if the underlying data is nil or is empty.
+    var isEmpty: Bool {
+        switch self {
+        case let .data(data):
+            return data?.isEmpty ?? true
+        case let .stream(stream):
+            return stream.toBytes().toData().isEmpty
+        case .none:
+            return true
+        }
+    }
 }
 
 extension HttpBody {
