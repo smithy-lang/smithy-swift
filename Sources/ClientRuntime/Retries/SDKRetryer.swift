@@ -23,9 +23,8 @@ public class SDKRetryer: Retryer {
     }
     
     public func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken {
-        try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
-        // remove this return after CRT updates scheduleRetry to return a token
-        return token
+        let token = try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
+        return RetryToken(crtToken: token)
     }
     
     public func recordSuccess(token: RetryToken) {
