@@ -10,31 +10,30 @@ Waiters are a Smithy feature, and are defined in the Smithy specification at htt
 Waiters are defined in Smithy using the `@waitable` trait on an API operation.  Here is an example (from the Smithy spec document) that defines a waiter that polls until a S3 bucket exists:
 
 ```
-`@waitable``(`
-`    ``BucketExists``:`` ``{`
-`        documentation``:`` ``"Wait until a bucket exists"`
-`        acceptors``:`` ``[`
-`            ``{`
-`                state``:`` ``"success"`
-`                matcher``:`` ``{`
-`                    success``:`` ``true`
-`                ``}`
-`            ``}`
-`            ``{`
-`                state``:`` ``"retry"`
-`                matcher``:`` ``{`
-`                    errorType``:`` ``"NotFound"`
-`                ``}`
-`            ``}`
-`        ``]`
-`    ``}`
-`)``
+@waitable(
+    BucketExists: {
+        documentation: "Wait until a bucket exists"
+        acceptors: [
+            {
+                state: "success"
+                matcher: {
+                    success: true
+                }
+            }
+            {
+                state: "retry"
+                matcher: {
+                    errorType: "NotFound"
+                }
+            }
+        ]
+    }
+)
 operation HeadBucket {
     input: HeadBucketInput
     output: HeadBucketOutput
     errors: [NotFound]
 }
-`
 ```
 
 The waiter name (here, `BucketExists`) is just an alphanumeric name that can be used to identify waiters that wait for specific conditions.
