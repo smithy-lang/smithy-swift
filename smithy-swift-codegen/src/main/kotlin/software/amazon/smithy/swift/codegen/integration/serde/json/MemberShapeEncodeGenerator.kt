@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -29,6 +30,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfS
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /*
 Includes functions to help render conformance to Encodable protocol for shapes
@@ -86,28 +88,14 @@ abstract class MemberShapeEncodeGenerator(
                     renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 } else {
                     writer.write("var \$L = $containerName.nestedUnkeyedContainer()", topLevelContainerName)
-                    val isSparse = targetShape.hasTrait<SparseTrait>()
-                    if (isSparse) {
-                        writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                            renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
-                        }
-                    } else {
-                        renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
-                    }
+                    renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
                 }
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> {
                 val topLevelContainerName = "${memberName}Container"
                 writer.write("var \$L = $containerName.nestedContainer(keyedBy: \$N.self)", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
-                val isSparse = targetShape.hasTrait<SparseTrait>()
-                if (isSparse) {
-                    writer.openBlock("if let \$L = \$L {", "}", memberName, memberName) {
-                        renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
-                    }
-                } else {
-                    renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
-                }
+                renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             else -> {
                 renderSimpleShape(targetShape, memberName, containerName, null, false)
@@ -151,24 +139,25 @@ abstract class MemberShapeEncodeGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         collectionName: String,
         topLevelContainerName: String,
-        targetShape: Shape,
+        listShape: CollectionShape,
         level: Int = 0
     ) {
+        val listIsSparse = listShape.hasTrait<SparseTrait>()
+        val targetShape = ctx.model.expectShape(listShape.member.target)
         val iteratorName = "${targetShape.id.name.lowercase()}$level"
         writer.openBlock("for $iteratorName in $collectionName {", "}") {
+            if (listIsSparse) {
+                writer.openBlock("guard let \$L = \$L else {", "}", iteratorName, iteratorName) {
+                    writer.write("try \$L.encodeNil()", topLevelContainerName)
+                    writer.write("continue")
+                }
+            }
             when (targetShape) {
                 is CollectionShape -> {
-                    val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                    renderEncodeListMember(nestedTarget, iteratorName, topLevelContainerName, level + 1)
+                    renderEncodeListMember(targetShape, iteratorName, topLevelContainerName, level + 1)
                 }
                 is MapShape -> {
-                    val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                    renderEncodeMapMember(
-                        nestedTarget,
-                        "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey)",
-                        topLevelContainerName,
-                        level + 1
-                    )
+                    renderEncodeListMember(targetShape, iteratorName, topLevelContainerName, level + 1)
                 }
                 else -> {
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
@@ -221,29 +210,32 @@ abstract class MemberShapeEncodeGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         mapName: String,
         topLevelContainerName: String,
-        valueTargetShape: Shape,
+        mapShape: MapShape,
         level: Int = 0
     ) {
-        val valueIterator = "${valueTargetShape.id.name.toLowerCase()}$level"
-        val target = when (valueTargetShape) {
-            is MemberShape -> ctx.model.expectShape(valueTargetShape.target)
-            else -> valueTargetShape
-        }
-        writer.openBlock("for ($dictKey$level, $valueIterator) in $mapName {", "}") {
+        val keyIterator = "$dictKey$level"
+        val valueIterator = "${mapShape.id.name.toLowerCamelCase()}$level"
+        val target = ctx.model.expectShape(mapShape.value.target)
+        val mapIsSparse = mapShape.hasTrait<SparseTrait>()
+        writer.openBlock("for ($keyIterator, $valueIterator) in $mapName {", "}") {
+            if (mapIsSparse) {
+                writer.openBlock("guard let \$L = \$L else {", "}", valueIterator, valueIterator) {
+                    writer.write("try \$L.encodeNil(forKey: \$L(stringValue: \$L))", topLevelContainerName, ClientRuntimeTypes.Serde.Key, keyIterator)
+                    writer.write("continue")
+                }
+            }
             when (target) {
                 is CollectionShape -> {
-                    val nestedTarget = ctx.model.expectShape(target.member.target)
                     renderEncodeMapMember(
-                        nestedTarget,
+                        target,
                         valueIterator,
                         topLevelContainerName,
                         level + 1
                     )
                 }
                 is MapShape -> {
-                    val nestedTarget = ctx.model.expectShape(target.value.target)
                     renderEncodeMapMember(
-                        nestedTarget,
+                        target,
                         valueIterator,
                         topLevelContainerName,
                         level + 1
@@ -251,7 +243,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val keyEnumName = "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey$level)"
-                    renderSimpleShape(valueTargetShape, valueIterator, topLevelContainerName, keyEnumName, valueTargetShape.hasTrait(BoxTrait::class.java))
+                    renderSimpleShape(target, valueIterator, topLevelContainerName, keyEnumName, target.hasTrait(BoxTrait::class.java))
                 }
             }
         }
