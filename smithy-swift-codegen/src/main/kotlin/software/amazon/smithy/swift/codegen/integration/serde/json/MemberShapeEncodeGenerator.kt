@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -153,10 +152,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
             }
             when (targetShape) {
-                is CollectionShape -> {
-                    renderEncodeListMember(targetShape, iteratorName, topLevelContainerName, level + 1)
-                }
-                is MapShape -> {
+                is CollectionShape, is MapShape -> {
                     renderEncodeListMember(targetShape, iteratorName, topLevelContainerName, level + 1)
                 }
                 else -> {
@@ -225,21 +221,8 @@ abstract class MemberShapeEncodeGenerator(
                 }
             }
             when (target) {
-                is CollectionShape -> {
-                    renderEncodeMapMember(
-                        target,
-                        valueIterator,
-                        topLevelContainerName,
-                        level + 1
-                    )
-                }
-                is MapShape -> {
-                    renderEncodeMapMember(
-                        target,
-                        valueIterator,
-                        topLevelContainerName,
-                        level + 1
-                    )
+                is CollectionShape, is MapShape -> {
+                    renderEncodeMapMember(target, valueIterator, topLevelContainerName, level + 1)
                 }
                 else -> {
                     val keyEnumName = "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey$level)"
