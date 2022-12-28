@@ -46,14 +46,14 @@ public class DataStreamReader: StreamReader {
         withLockingClosure {
             let count = Int(maxBytes ?? availableForRead)
             let ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+            defer { ptr.deallocate() }
             let buffer = UnsafeMutableBufferPointer(start: ptr, count: count)
             let bytesRead = byteBuffer.read(buffer: buffer)
             data = Data(buffer)
-            ptr.deallocate()
-                        
+            
             if !rewind, let bytesRead = bytesRead {
-                _availableForRead -= UInt(truncatingIfNeeded: bytesRead)
-                offset += UInt(truncatingIfNeeded: bytesRead)
+                _availableForRead -= UInt(bytesRead)
+                offset += UInt(bytesRead)
             }
         }
         return ByteBuffer(data: data)
@@ -74,13 +74,13 @@ public class DataStreamReader: StreamReader {
         withLockingClosure {
             let data = byteBuffer.getData() + buffer.getData()
             byteBuffer = ByteBuffer(data: data)
-            _availableForRead += UInt(truncatingIfNeeded: buffer.length())
+            _availableForRead += UInt(buffer.length())
         }
     }
     
     public var contentLength: UInt? {
         withLockingClosure {
-            return UInt(truncatingIfNeeded: byteBuffer.length())
+            return UInt(byteBuffer.length())
         }
     }
 
