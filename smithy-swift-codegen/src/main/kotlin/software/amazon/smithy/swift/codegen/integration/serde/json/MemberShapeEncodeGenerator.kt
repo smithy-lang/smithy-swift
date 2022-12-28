@@ -157,7 +157,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
-                    if (isBoxed) {
+                    if (isBoxed && level == 0) {
                         writer.openBlock("if let \$L = \$L {", "}", iteratorName, iteratorName) {
                             renderSimpleShape(targetShape, iteratorName, topLevelContainerName, null, isBoxed)
                         }
