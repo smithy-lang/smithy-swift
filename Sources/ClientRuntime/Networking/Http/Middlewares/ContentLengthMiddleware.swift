@@ -23,6 +23,8 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
             switch stream {
             case .buffer(let bytes):
                 input.headers.update(name: "Content-Length", value: String(bytes.length()))
+            case .reader:
+                input.headers.update(name: "Transfer-Encoded", value: "Chunked")
             }
         default:
             input.headers.update(name: "Content-Length", value: "0")

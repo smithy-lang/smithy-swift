@@ -262,6 +262,8 @@ open class HttpRequestTestBase: XCTestCase {
             switch byteStream {
             case .buffer(let byteBuffer):
                 return .success(byteBuffer.getData())
+            case .reader(let streamReader):
+                return .success(streamReader.read(maxBytes: nil, rewind: false).getData())
             }
            
         case .none:

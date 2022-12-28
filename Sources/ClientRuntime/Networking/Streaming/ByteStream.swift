@@ -9,6 +9,7 @@ import class Foundation.FileHandle
 
 public enum ByteStream {
     case buffer(ByteBuffer)
+    case reader(StreamReader)
 }
 
 extension ByteStream {
@@ -30,11 +31,14 @@ extension ByteStream {
         switch self {
         case .buffer(let buffer):
             return buffer
+        case .reader(let reader):
+            let bytes = reader.read(maxBytes: nil, rewind: true)
+            return bytes
         }
     }
     
     public static func defaultReader() -> ByteStream {
-        return .buffer(ByteBuffer(size: 0))
+        return .reader(DataStreamReader())
     }
 }
 
@@ -43,6 +47,10 @@ extension ByteStream: Equatable {
         switch (lhs, rhs) {
         case (let .buffer(lhsBuffer), let .buffer(rhsBuffer)):
             return lhsBuffer.getData() == rhsBuffer.getData()
+        case (let .reader(lhsReader), let .reader(rhsReader)):
+            return lhsReader === rhsReader
+        default:
+            return false
         }
     }
 }

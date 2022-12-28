@@ -101,7 +101,7 @@ public class CRTClientEngine: HttpClientEngine {
     ) throws -> HTTPRequestOptions {
         let response = HttpResponse()
         let crtRequest = try request.toHttpRequest()
-        var responseData = Data()
+        let streamReader: StreamReader = DataStreamReader()
         
         let makeStatusCode: (HTTPStream) -> HttpStatusCode = { stream in
             guard
@@ -121,7 +121,8 @@ public class CRTClientEngine: HttpClientEngine {
         } onIncomingBody: { [self] (stream, data) in
             logger.debug("incoming data")
             response.statusCode = makeStatusCode(stream)
-            responseData.append(data)
+            let byteBuffer = ByteBuffer(data: data)
+            streamReader.write(buffer: byteBuffer)
         } onStreamComplete: { [self] (stream, error) in
             logger.debug("stream completed")
             if let error = error, error.code != 0 {
@@ -130,7 +131,7 @@ public class CRTClientEngine: HttpClientEngine {
                 return
             }
         
-            response.body = .stream(.buffer(ByteBuffer(data: responseData)))
+            response.body = .stream(.reader(streamReader))
             response.statusCode = makeStatusCode(stream)
 
             continuation.resume(returning: response)

@@ -74,7 +74,6 @@ extension SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
         host = originalRequest.endpoint.host
-        // TODO: remove extra slash if not needed
         let pathAndQueryItems = URLComponents(string: crtRequest.path)
         path = pathAndQueryItems?.path ?? "/"
         queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
