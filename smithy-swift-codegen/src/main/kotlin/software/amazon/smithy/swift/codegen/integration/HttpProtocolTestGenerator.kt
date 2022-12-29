@@ -20,8 +20,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
-import software.amazon.smithy.swift.codegen.model.capitalizedName
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import java.util.TreeSet
 import java.util.logging.Logger
 
@@ -96,7 +96,7 @@ class HttpProtocolTestGenerator(
             .orEmpty()
         val requestTestCases = filterProtocolTestCases(tempTestCases)
         if (requestTestCases.isNotEmpty()) {
-            val testClassName = "${operation.capitalizedName()}RequestTest"
+            val testClassName = "${operation.toUpperCamelCase()}RequestTest"
             val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
@@ -175,7 +175,7 @@ class HttpProtocolTestGenerator(
                 // multiple error (tests) may be associated with a single operation,
                 // use the operation name + error name as the class name
                 val opName = operation.id.name.capitalize()
-                val testClassName = "${opName}${error.capitalizedName()}Test"
+                val testClassName = "${opName}${error.toUpperCamelCase()}Test"
                 val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")

@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
@@ -43,8 +44,16 @@ class HttpResponseHeaders(
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {
-                    val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
-                    writer.write("self.\$L = $memberValue", memberName)
+                    if (memberTarget.isIntEnumShape) {
+                        val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+                        writer.write(
+                            "self.\$L = \$L(rawValue: \$L(\$L) ?? 0)",
+                            memberName, enumSymbol, SwiftTypes.Int, headerDeclaration
+                        )
+                    } else {
+                        val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
+                        writer.write("self.\$L = \$L", memberName, memberValue)
+                    }
                 }
                 is BlobShape -> {
                     val memberValue = "$headerDeclaration.data(using: .utf8)"
@@ -77,20 +86,7 @@ class HttpResponseHeaders(
                         defaultTimestampFormat
                     )
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
-                    if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                        memberValue = stringToDate("${headerDeclaration}Double", tsFormat)
-                        writer.write("if let ${headerDeclaration}Double = \$N(\$LHeaderValue) {", SwiftTypes.Double, memberName)
-                        writer.indent()
-                        writer.write("self.\$L = $memberValue", memberName)
-                        writer.dedent()
-                        writer.write("} else {")
-                        writer.indent()
-                        writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.invalidTimestampHeader(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, memberName)
-                        writer.dedent()
-                        writer.write("}")
-                    } else {
-                        writer.write("self.\$L = $memberValue", memberName)
-                    }
+                    writer.write("self.\$L = \$L", memberName, memberValue)
                 }
                 is ListShape -> {
                     // member > boolean, number, string, or timestamp
@@ -106,7 +102,14 @@ class HttpResponseHeaders(
                             invalidHeaderListErrorName = "invalidBooleanHeaderList"
                             "${SwiftTypes.Bool}(\$0)"
                         }
-                        is NumberShape -> "${stringToNumber(collectionMemberTarget, "\$0", false)}"
+                        is NumberShape -> {
+                            if (collectionMemberTarget.isIntEnumShape) {
+                                val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
+                                "${SwiftTypes.Int}(\$0).map({ intValue in $enumSymbol(rawValue: intValue) })"
+                            } else {
+                                "${stringToNumber(collectionMemberTarget, "\$0", false)}"
+                            }
+                        }
                         is TimestampShape -> {
                             val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
@@ -116,7 +119,6 @@ class HttpResponseHeaders(
                             )
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
-                                splitFnPrefix = "try "
                             }
                             invalidHeaderListErrorName = "invalidTimestampHeaderList"
                             "(${stringToDate("\$0", tsFormat)} ?? ${ClientRuntimeTypes.Core.Date}())"
@@ -146,7 +148,7 @@ class HttpResponseHeaders(
                     // render map function
                     val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                     val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
-                    if (!collectionMemberTargetSymbol.isBoxed()) {
+                    if (!collectionMemberTargetSymbol.isBoxed() || collectionMemberTargetShape.isIntEnumShape()) {
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                             val transformedHeaderDeclaration = "${memberName}Transformed"
                             writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
@@ -197,10 +199,8 @@ class HttpResponseHeaders(
         }
     }
 
-    private fun stringToDate(stringValue: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-        TimestampFormatTrait.Format.EPOCH_SECONDS -> "${ClientRuntimeTypes.Core.Date}(timeIntervalSince1970: $stringValue)"
-        TimestampFormatTrait.Format.DATE_TIME -> "DateFormatter.iso8601DateFormatterWithoutFractionalSeconds.date(from: $stringValue)"
-        TimestampFormatTrait.Format.HTTP_DATE -> "DateFormatter.rfc5322DateFormatter.date(from: $stringValue)"
-        else -> throw CodegenException("unknown timestamp format: $tsFmt")
+    private fun stringToDate(stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
+        val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
+        return "TimestampFormatter(format: .$timestampFormat).date(from: $stringValue)"
     }
 }

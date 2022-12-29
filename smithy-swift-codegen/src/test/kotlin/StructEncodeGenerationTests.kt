@@ -167,6 +167,7 @@ class StructEncodeGenerationTests {
                     case dateTime
                     case epochSeconds
                     case httpDate
+                    case inheritedTimestamp
                     case normal
                     case timestampList
                 }
@@ -174,21 +175,24 @@ class StructEncodeGenerationTests {
                 public func encode(to encoder: Swift.Encoder) throws {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let dateTime = self.dateTime {
-                        try encodeContainer.encode(dateTime.iso8601WithoutFractionalSeconds(), forKey: .dateTime)
+                        try encodeContainer.encodeTimestamp(dateTime, format: .dateTime, forKey: .dateTime)
                     }
                     if let epochSeconds = self.epochSeconds {
-                        try encodeContainer.encode(epochSeconds.timeIntervalSince1970, forKey: .epochSeconds)
+                        try encodeContainer.encodeTimestamp(epochSeconds, format: .epochSeconds, forKey: .epochSeconds)
                     }
                     if let httpDate = self.httpDate {
-                        try encodeContainer.encode(httpDate.rfc5322(), forKey: .httpDate)
+                        try encodeContainer.encodeTimestamp(httpDate, format: .httpDate, forKey: .httpDate)
+                    }
+                    if let inheritedTimestamp = self.inheritedTimestamp {
+                        try encodeContainer.encodeTimestamp(inheritedTimestamp, format: .httpDate, forKey: .inheritedTimestamp)
                     }
                     if let normal = self.normal {
-                        try encodeContainer.encode(normal.iso8601WithoutFractionalSeconds(), forKey: .normal)
+                        try encodeContainer.encodeTimestamp(normal, format: .dateTime, forKey: .normal)
                     }
                     if let timestampList = timestampList {
                         var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
                         for timestamplist0 in timestampList {
-                            try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
+                            try timestampListContainer.encodeTimestamp(timestamplist0, format: .dateTime)
                         }
                     }
                 }
@@ -223,7 +227,7 @@ class StructEncodeGenerationTests {
                     if let dateMap = dateMap {
                         var dateMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .dateMap)
                         for (dictKey0, datemap0) in dateMap {
-                            try dateMapContainer.encode(datemap0.rfc5322(), forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            try dateMapContainer.encodeTimestamp(datemap0, format: .httpDate, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
                     if let enumMap = enumMap {
@@ -434,7 +438,7 @@ extension JsonListsInput: Swift.Encodable {
         if let timestampList = timestampList {
             var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
             for timestamplist0 in timestampList {
-                try timestampListContainer.encode(timestamplist0.iso8601WithoutFractionalSeconds())
+                try timestampListContainer.encodeTimestamp(timestamplist0, format: .dateTime)
             }
         }
     }

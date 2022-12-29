@@ -18,6 +18,7 @@ service Example {
         ListInput,
         MapInput,
         EnumInput,
+        IndirectEnumOperation,
         TimestampInput,
         BlobInput,
         EmptyInputAndEmptyOutput,
@@ -38,7 +39,8 @@ service Example {
         IdempotencyTokenWithoutHttpPayloadTraitOnAnyMember,
         IdempotencyTokenWithoutHttpPayloadTraitOnToken,
         InlineDocument,
-        InlineDocumentAsPayload
+        InlineDocumentAsPayload,
+        RequiredHttpFields
     ]
 }
 
@@ -754,6 +756,9 @@ structure TimestampInputRequest {
     @timestampFormat("http-date")
     httpDate: Timestamp,
 
+    @required
+    inheritedTimestamp: CommonTimestamp,
+
     timestampList: TimestampList,
 
     @httpHeader("X-Date")
@@ -788,6 +793,9 @@ structure TimestampOutputResponse {
 
     @timestampFormat("http-date")
     httpDate: Timestamp,
+
+    @required
+    inheritedTimestamp: CommonTimestamp,
 
     nestedTimestampList: NestedTimestampList,
 
@@ -1023,6 +1031,15 @@ operation JsonUnions {
     output: UnionInputOutput,
 }
 
+@http(uri: "/IndirectEnumOperation", method: "POST")
+operation IndirectEnumOperation {
+    input: IndirectEnumInputOutput
+    output: IndirectEnumInputOutput
+}
+
+@timestampFormat("http-date")
+timestamp CommonTimestamp
+
 /// A shared structure that contains a single union member.
 structure UnionInputOutput {
     contents: MyUnion
@@ -1035,6 +1052,7 @@ union MyUnion {
     numberValue: Integer,
     blobValue: Blob,
     timestampValue: Timestamp,
+    inheritedTimestamp: CommonTimestamp,
     enumValue: FooEnum,
     listValue: StringList,
     mapValue: StringMap,
@@ -1352,4 +1370,44 @@ structure IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     @httpHeader("token")
     @idempotencyToken
     token: String,
+}
+
+union IndirectEnum {
+    some: IndirectEnum
+    other: String
+}
+
+structure IndirectEnumInputOutput {
+    value: IndirectEnum
+}
+
+@http(method: "POST", uri: "/RequiredHttpFields/{label1}/{label2}")
+operation RequiredHttpFields {
+    input: RequiredHttpFieldsInput
+}
+
+structure RequiredHttpFieldsInput {
+    @httpLabel
+    @required
+    label1: String,
+
+    @httpLabel
+    @required
+    label2: String,
+
+    @httpPayload
+    payload: String,
+
+    @httpQuery("Query1")
+    @required
+    query1: String
+
+    @httpQuery("Query2")
+    @required
+    query2: TimestampList,
+
+    @httpQuery("Query3")
+    @required
+    @length(min: 1)
+    query3: String
 }

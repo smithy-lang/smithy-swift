@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration.middlewares.handlers
 
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -12,6 +13,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
@@ -21,6 +23,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.steps.OperationSerializeStep
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class HttpBodyMiddleware(
@@ -107,12 +110,27 @@ class HttpBodyMiddleware(
                 writer.openBlock("do {", "} catch let err {") {
                     writer.write("let encoder = context.getEncoder()")
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
-                        writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+
+                        val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?: target.getTrait<XmlNameTrait>()
+                        if (ctx.protocol == RestXmlTrait.ID && xmlNameTrait != null) {
+                            val xmlName = xmlNameTrait.value
+                            writer.write("let xmlEncoder = encoder as! XMLEncoder")
+                            writer.write(
+                                "let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")",
+                                memberName, xmlName
+                            )
+                        } else {
+                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                        }
+
                         renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
                     }
                     writer.indent()
-                    writer.write("let $dataDeclaration = try encoder.encode(input.operationInput)")
-                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    writer.openBlock("if encoder is JSONEncoder {", "}") {
+                        writer.write("// Encode an empty body as an empty structure in JSON")
+                        writer.write("let \$L = \"{}\".data(using: .utf8)!", dataDeclaration)
+                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    }
                     writer.dedent()
                     writer.write("}")
                 }

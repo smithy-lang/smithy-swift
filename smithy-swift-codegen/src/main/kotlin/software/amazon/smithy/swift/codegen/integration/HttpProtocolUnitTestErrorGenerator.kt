@@ -7,7 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
-import software.amazon.smithy.swift.codegen.model.capitalizedName
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestResponseGenerator(builder) {
@@ -16,7 +16,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
-            val operationErrorType = "${operation.capitalizedName()}OutputError"
+            val operationErrorType = "${operation.toUpperCamelCase()}OutputError"
             writer.openBlock("do {", "} catch let err {") {
                 renderBuildHttpResponse(test)
                 writer.write("")

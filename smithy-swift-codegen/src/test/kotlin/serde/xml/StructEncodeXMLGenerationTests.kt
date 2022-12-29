@@ -39,13 +39,13 @@ class StructEncodeXMLGenerationTests {
                         try container.encode(byteValue, forKey: ClientRuntime.Key("byteValue"))
                     }
                     if let doubleValue = doubleValue {
-                        try container.encode(Swift.String(doubleValue), forKey: ClientRuntime.Key("DoubleDribble"))
+                        try container.encode(doubleValue, forKey: ClientRuntime.Key("DoubleDribble"))
                     }
                     if let falseBooleanValue = falseBooleanValue {
                         try container.encode(falseBooleanValue, forKey: ClientRuntime.Key("falseBooleanValue"))
                     }
                     if let floatValue = floatValue {
-                        try container.encode(Swift.String(floatValue), forKey: ClientRuntime.Key("floatValue"))
+                        try container.encode(floatValue, forKey: ClientRuntime.Key("floatValue"))
                     }
                     if let integerValue = integerValue {
                         try container.encode(integerValue, forKey: ClientRuntime.Key("integerValue"))

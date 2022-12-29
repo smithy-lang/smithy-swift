@@ -12,6 +12,7 @@ import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -88,7 +89,7 @@ fun formatHeaderOrQueryValue(
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName, roundEpoch = true), false)
+            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName), false)
         }
         is BlobShape -> {
             Pair("try $memberName.base64EncodedString()", true)
@@ -103,6 +104,7 @@ fun formatHeaderOrQueryValue(
             }
             Pair(formattedItemValue, requiresDoCatch)
         }
+        is IntEnumShape -> Pair("$memberName.rawValue", false)
         else -> Pair(memberName, false)
     }
 }
@@ -398,7 +400,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
 
-            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model))
+            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance))
 
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))

@@ -1,22 +1,36 @@
+# Finder config files
 .DS_Store
+
+# Build script products
 /dist
-/ideaSDK
-/android-studio/sdk
 out/
 /tmp
-workspace.xml
-*.versionsBackup
-.gradle/
-build/
+
+# IntelliJ config & temp files
+/ideaSDK
 *.iml
 .idea/
+/android-studio/sdk
+workspace.xml
+
+# Maven config (do we need this?)
+*.versionsBackup
+
+# Gradle config & temp
+.gradle/
 local.properties
-*/.build/
-ClientRuntime/*.xcodeproj
+
+# Swift/SPM config & temp
+.build/
+/Packages
 Package.resolved
 *.hprof
 **/xcuserdata
 **/*.xcuserdata
 xcuserdata
-.build/
+
+# Codegen build products
+build/
+
+# VS Code config files
 .vscode

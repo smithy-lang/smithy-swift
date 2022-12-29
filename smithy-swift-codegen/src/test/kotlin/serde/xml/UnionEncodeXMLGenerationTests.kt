@@ -37,7 +37,7 @@ class UnionEncodeXMLGenerationTests {
                         case let .datavalue(datavalue):
                             try container.encode(datavalue, forKey: ClientRuntime.Key("dataValue"))
                         case let .doublevalue(doublevalue):
-                            try container.encode(Swift.String(doublevalue), forKey: ClientRuntime.Key("doubleValue"))
+                            try container.encode(doublevalue, forKey: ClientRuntime.Key("doubleValue"))
                         case let .mapvalue(mapvalue):
                             var mapValueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("mapValue"))
                             for (stringKey0, stringValue0) in mapvalue {
@@ -55,7 +55,7 @@ class UnionEncodeXMLGenerationTests {
                         case let .structvalue(structvalue):
                             try container.encode(structvalue, forKey: ClientRuntime.Key("structValue"))
                         case let .timestampvalue(timestampvalue):
-                            try container.encode(ClientRuntime.TimestampWrapper(timestampvalue, format: .dateTime), forKey: ClientRuntime.Key("timeStampValue"))
+                            try container.encodeTimestamp(timestampvalue, format: .dateTime, forKey: ClientRuntime.Key("timeStampValue"))
                         case let .unionvalue(unionvalue):
                             try container.encode(unionvalue, forKey: ClientRuntime.Key("unionValue"))
                         case let .sdkUnknown(sdkUnknown):
@@ -74,8 +74,8 @@ class UnionEncodeXMLGenerationTests {
                             let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
                             self = .datavalue(datavalueDecoded)
                         case .unionvalue:
-                            let unionvalueDecoded = try containerValues.decode(Box<RestXmlProtocolClientTypes.XmlUnionShape>.self, forKey: .unionvalue)
-                            self = .unionvalue(unionvalueDecoded.value)
+                            let unionvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlUnionShape.self, forKey: .unionvalue)
+                            self = .unionvalue(unionvalueDecoded)
                         case .structvalue:
                             let structvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
                             self = .structvalue(structvalueDecoded)
@@ -112,9 +112,8 @@ class UnionEncodeXMLGenerationTests {
                                 self = .stringlist([])
                             }
                         case .timestampvalue:
-                            let timestampvalueDecoded = try containerValues.decode(Swift.String.self, forKey: .timestampvalue)
-                            let timestampvalueBuffer = try ClientRuntime.TimestampWrapperDecoder.parseDateStringValue(timestampvalueDecoded, format: .dateTime)
-                            self = .timestampvalue(timestampvalueBuffer)
+                            let timestampvalueDecoded = try containerValues.decodeTimestamp(.dateTime, forKey: .timestampvalue)
+                            self = .timestampvalue(timestampvalueDecoded)
                         default:
                             self = .sdkUnknown("")
                     }

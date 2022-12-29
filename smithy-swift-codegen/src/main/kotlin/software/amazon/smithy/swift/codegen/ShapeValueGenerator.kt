@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 
 /**
@@ -228,7 +229,7 @@ class ShapeValueGenerator(
             // this is important because when a struct is generated in swift it is generated with its members sorted by name.
             // when you instantiate that struct you have to call params in order with their param names. if you don't it won't compile
             // so we sort here before we write any of the members with their values
-            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value.lowercase() })
+            val sortedMembers = node.members.toSortedMap(compareBy<StringNode> { it.value.toLowerCamelCase() })
             sortedMembers.forEach { (keyNode, valueNode) ->
                 val memberShape: Shape
                 when (currShape) {
@@ -322,6 +323,14 @@ class ShapeValueGenerator(
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
                     writer.writeInline("Date(timeIntervalSince1970: \$L)", node.value)
+                }
+
+                ShapeType.INT_ENUM -> {
+                    val enumSymbol = generator.symbolProvider.toSymbol(currShape)
+                    writer.writeInline(
+                        "\$L(rawValue: \$L)",
+                        enumSymbol, node.value
+                    )
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,

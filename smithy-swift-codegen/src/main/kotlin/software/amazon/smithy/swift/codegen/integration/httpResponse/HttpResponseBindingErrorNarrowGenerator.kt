@@ -58,7 +58,7 @@ class HttpResponseBindingErrorNarrowGenerator(
                             var errorShapeEnumCase = errorShapeType.decapitalize()
                             writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeEnumCase, errorShapeType)
                         }
-                        writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID))")
+                        writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID, errorType: errorType))")
                         writer.write("}")
                     }
                 }

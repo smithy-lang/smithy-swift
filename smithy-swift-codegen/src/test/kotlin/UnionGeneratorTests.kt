@@ -99,6 +99,45 @@ class UnionGeneratorTests {
         contents.shouldContain(expectedGeneratedEnum)
     }
 
+    @Test
+    fun `it renders recursive union shape`() {
+        val simpleUnionShapeBuilder = createUnionShapeBuilderWithMembers(
+            MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.example#MyUnion").build(),
+            MemberShape.builder().id("smithy.example#MyUnion\$baz").target("smithy.api#Integer").build(),
+            MemberShape.builder().id("smithy.example#MyUnion\$bar")
+                .target("smithy.api#PrimitiveInteger")
+                .addTrait(DocumentationTrait("Documentation for bar"))
+                .build()
+        )
+        val simpleUnionShape = simpleUnionShapeBuilder.build()
+        val model = createModelFromShapes(simpleUnionShape)
+        val settings = model.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
+        val writer = SwiftWriter("MockPackage")
+
+        val generator = UnionGenerator(model, provider, writer, simpleUnionShape, settings)
+        generator.render()
+
+        val contents = writer.toString()
+
+        contents.shouldContain(SwiftWriter.staticHeader)
+
+        val expectedGeneratedEnum =
+            """
+            /// Really long multi-line Documentation for MyUnion
+            public indirect enum MyUnion: Swift.Equatable {
+                /// Really long multi-line Documentation for MyUnion
+                case foo(MyUnion)
+                case baz(Swift.Int)
+                /// Documentation for bar
+                case bar(Swift.Int)
+                case sdkUnknown(Swift.String)
+            }
+            """.trimIndent()
+
+        contents.shouldContain(expectedGeneratedEnum)
+    }
+
     private fun createUnionShapeBuilderWithMembers(vararg memberShapes: MemberShape): UnionShape.Builder {
         val unionShapeBuilder = UnionShape.builder()
         unionShapeBuilder.id("smithy.example#MyUnion").addTrait(

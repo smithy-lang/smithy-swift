@@ -51,6 +51,7 @@ import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.utils.clientName
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
 
@@ -94,7 +95,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
             val name = escaper.escapeMemberName(shape.memberName)
             return if (!name.equals("sdkUnknown")) lowerCase(name) else name
         }
-        return escaper.escapeMemberName(shape.memberName.decapitalize())
+        return escaper.escapeMemberName(shape.memberName.toLowerCamelCase())
     }
 
     override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int", "0")
@@ -241,6 +242,9 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
+        if (shape != null && shape.isIntEnumShape()) {
+            return createEnumSymbol(shape)
+        }
         return createSymbolBuilder(shape, typeName, "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
