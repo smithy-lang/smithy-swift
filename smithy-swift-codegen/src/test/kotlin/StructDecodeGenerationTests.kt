@@ -77,8 +77,7 @@ class StructDecodeGenerationTests {
     fun `it decodes nested documents with aggregate shapes`() {
         val contents = getModelFileContents("example", "Nested4+Codable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
             extension ExampleClientTypes.Nested4: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case intList
@@ -91,14 +90,14 @@ class StructDecodeGenerationTests {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let intList = intList {
                         var intListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .intList)
-                        for intlist0 in intList {
-                            try intListContainer.encode(intlist0)
+                        for integer0 in intList {
+                            try intListContainer.encode(integer0)
                         }
                     }
                     if let intMap = intMap {
                         var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
-                        for (dictKey0, intmap0) in intMap {
-                            try intMapContainer.encode(intmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                        for (dictKey0, intMap0) in intMap {
+                            try intMapContainer.encode(intMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                         }
                     }
                     if let member1 = self.member1 {
@@ -106,8 +105,11 @@ class StructDecodeGenerationTests {
                     }
                     if let stringMap = stringMap {
                         var stringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .stringMap)
-                        for (dictKey0, nestedstringmap0) in stringMap {
-                            try stringMapContainer.encode(nestedstringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                        for (dictKey0, nestedStringMap0) in stringMap {
+                            var nestedStringMap0Container = stringMapContainer.nestedUnkeyedContainer(forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            for string1 in nestedStringMap0 {
+                                try nestedStringMap0Container.encode(string1)
+                            }
                         }
                     }
                 }
@@ -158,7 +160,7 @@ class StructDecodeGenerationTests {
                     stringMap = stringMapDecoded0
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
