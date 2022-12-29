@@ -42,14 +42,14 @@ public class DataStreamReader: StreamReader {
     }
     
     public func read(maxBytes: UInt? = nil, rewind: Bool = false) -> ByteBuffer {
-        var data = Data()
+        let count = Int(maxBytes ?? availableForRead)
+        var data = Data(count: count)
         withLockingClosure {
-            let count = Int(maxBytes ?? availableForRead)
-            let ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-            defer { ptr.deallocate() }
-            let buffer = UnsafeMutableBufferPointer(start: ptr, count: count)
-            let bytesRead = byteBuffer.read(buffer: buffer)
-            data = Data(buffer)
+            var bytesRead: Int? = nil
+            data.withUnsafeMutableBytes { buffer in
+                let typedBuffer = buffer.bindMemory(to: UInt8.self)
+                bytesRead = byteBuffer.read(buffer: typedBuffer)
+            }
             
             if !rewind, let bytesRead = bytesRead {
                 _availableForRead -= UInt(bytesRead)
