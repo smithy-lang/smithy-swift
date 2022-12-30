@@ -64,8 +64,7 @@ class UnionDecodeGeneratorTests {
     fun `it decodes a union with various member shape types`() {
         val contents = getModelFileContents("example", "MyUnion+Codable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
             extension ExampleClientTypes.MyUnion: Swift.Codable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case blobvalue = "blobValue"
@@ -94,13 +93,13 @@ class UnionDecodeGeneratorTests {
                             try container.encodeTimestamp(inheritedtimestamp, format: .httpDate, forKey: .inheritedtimestamp)
                         case let .listvalue(listvalue):
                             var listvalueContainer = container.nestedUnkeyedContainer(forKey: .listvalue)
-                            for stringlist0 in listvalue {
-                                try listvalueContainer.encode(stringlist0)
+                            for string0 in listvalue {
+                                try listvalueContainer.encode(string0)
                             }
                         case let .mapvalue(mapvalue):
                             var mapvalueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .mapvalue)
-                            for (dictKey0, stringmap0) in mapvalue {
-                                try mapvalueContainer.encode(stringmap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
+                            for (dictKey0, stringMap0) in mapvalue {
+                                try mapvalueContainer.encode(stringMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
                             }
                         case let .numbervalue(numbervalue):
                             try container.encode(numbervalue, forKey: .numbervalue)
@@ -188,7 +187,7 @@ class UnionDecodeGeneratorTests {
                     self = .sdkUnknown("")
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

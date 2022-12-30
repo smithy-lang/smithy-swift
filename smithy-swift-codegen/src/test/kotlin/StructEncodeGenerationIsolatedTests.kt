@@ -96,8 +96,7 @@ class StructEncodeGenerationIsolatedTests {
         val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Encodable.swift")
         contents.shouldSyntacticSanityCheck()
 
-        val expectedContents =
-            """
+        val expectedContents = """
             extension JsonListsInput: Swift.Encodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedStringList
@@ -109,28 +108,28 @@ class StructEncodeGenerationIsolatedTests {
                     var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
                     if let nestedStringList = nestedStringList {
                         var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
-                        for nestedstringlist0 in nestedStringList {
-                            var nestedstringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
-                            for stringlist1 in nestedstringlist0 {
-                                try nestedstringlist0Container.encode(stringlist1)
+                        for stringlist0 in nestedStringList {
+                            var stringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
+                            for string1 in stringlist0 {
+                                try stringlist0Container.encode(string1)
                             }
                         }
                     }
                     if let stringList = stringList {
                         var stringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringList)
-                        for stringlist0 in stringList {
-                            try stringListContainer.encode(stringlist0)
+                        for string0 in stringList {
+                            try stringListContainer.encode(string0)
                         }
                     }
                     if let stringSet = stringSet {
                         var stringSetContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringSet)
-                        for stringset0 in stringSet {
-                            try stringSetContainer.encode(stringset0)
+                        for string0 in stringSet {
+                            try stringSetContainer.encode(string0)
                         }
                     }
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

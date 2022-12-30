@@ -71,15 +71,17 @@ abstract class MemberShapeDecodeGenerator(
     private fun determineSymbolForShape(currShape: Shape, topLevel: Boolean): String {
         var mappedSymbol = when (currShape) {
             is MapShape -> {
+                val mapIsSparse = currShape.hasTrait<SparseTrait>()
                 val targetShape = ctx.model.expectShape(currShape.value.target)
                 val valueEvaluated = determineSymbolForShape(targetShape, topLevel)
-                val terminator = if (topLevel) "?" else ""
+                val terminator = if (topLevel || mapIsSparse) "?" else ""
                 "[${SwiftTypes.String}: $valueEvaluated$terminator]"
             }
             is ListShape -> {
+                val listIsSparse = currShape.hasTrait<SparseTrait>()
                 val targetShape = ctx.model.expectShape(currShape.member.target)
                 val nestedShape = determineSymbolForShape(targetShape, topLevel)
-                val terminator = if (topLevel) "?" else ""
+                val terminator = if (topLevel || listIsSparse) "?" else ""
                 "[$nestedShape$terminator]"
             }
             is SetShape -> {
