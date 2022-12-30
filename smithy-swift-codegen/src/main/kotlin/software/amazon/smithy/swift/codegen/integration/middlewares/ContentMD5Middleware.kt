@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration.middlewares
 
+import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
@@ -10,6 +11,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class ContentMD5Middleware(
@@ -23,9 +25,13 @@ class ContentMD5Middleware(
     override val position = MiddlewarePosition.BEFORE
 
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+        if (op.isChecksumRequired()) {
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }
 }
+
+// TODO https://github.com/awslabs/aws-sdk-swift/issues/653
+private fun OperationShape.isChecksumRequired(): Boolean =
+    getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true || hasTrait<HttpChecksumRequiredTrait>()
