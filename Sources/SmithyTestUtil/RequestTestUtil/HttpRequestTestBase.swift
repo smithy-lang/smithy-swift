@@ -17,7 +17,7 @@ public typealias ValidateCallback = (Data, Data) -> Void
 open class HttpRequestTestBase: XCTestCase {
 
     open override func setUp() {
-        AwsCommonRuntimeKit.initialize()
+        CommonRuntimeKit.initialize()
     }
 
     /**
@@ -261,9 +261,9 @@ open class HttpRequestTestBase: XCTestCase {
         case .stream(let byteStream):
             switch byteStream {
             case .buffer(let byteBuffer):
-                return .success(byteBuffer.toData())
+                return .success(byteBuffer.getData())
             case .reader(let streamReader):
-                return .success(streamReader.read(maxBytes: nil, rewind: false).toData())
+                return .success(streamReader.read(maxBytes: nil, rewind: false).getData())
             }
            
         case .none:

@@ -14,7 +14,7 @@ public enum ExponentialBackOffJitterMode {
 }
 
 extension ExponentialBackOffJitterMode {
-    func toCRTType() -> CRTExponentialBackoffJitterMode {
+    func toCRTType() -> AwsCommonRuntimeKit.ExponentialBackoffJitterMode {
         switch self {
         case .default: return .default
         case .none: return .none

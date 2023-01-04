@@ -45,10 +45,10 @@ extension ByteStream {
 extension ByteStream: Equatable {
     public static func == (lhs: ByteStream, rhs: ByteStream) -> Bool {
         switch (lhs, rhs) {
-        case (let .reader(unwrappedLhsReader), let .reader(unwrappedRhsReader)):
-            return unwrappedLhsReader === unwrappedRhsReader
         case (let .buffer(lhsBuffer), let .buffer(rhsBuffer)):
-            return lhsBuffer.toByteArray() == rhsBuffer.toByteArray()
+            return lhsBuffer.getData() == rhsBuffer.getData()
+        case (let .reader(lhsReader), let .reader(rhsReader)):
+            return lhsReader === rhsReader
         default:
             return false
         }
@@ -64,6 +64,6 @@ extension ByteStream: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self.toBytes().toData())
+        try container.encode(self.toBytes().getData())
     }
 }

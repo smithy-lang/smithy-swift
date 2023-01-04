@@ -12,11 +12,11 @@ open class CrtXCBaseTestCase: XCTestCase {
     open override func setUp() {
         super.setUp()
 
-        AwsCommonRuntimeKit.initialize(allocator: self.allocator)
+        CommonRuntimeKit.initialize(allocator: self.allocator)
     }
 
     open override func tearDown() {
-        AwsCommonRuntimeKit.cleanUp()
+        CommonRuntimeKit.cleanUp()
 
         allocator.dump()
         XCTAssertEqual(allocator.count, 0,

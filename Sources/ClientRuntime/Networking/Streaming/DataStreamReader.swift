@@ -42,15 +42,21 @@ public class DataStreamReader: StreamReader {
     }
     
     public func read(maxBytes: UInt? = nil, rewind: Bool = false) -> ByteBuffer {
-        let buffer = ByteBuffer(size: Int(maxBytes ?? availableForRead))
+        let count = Int(maxBytes ?? availableForRead)
+        var data = Data(count: count)
         withLockingClosure {
-            buffer.put(byteBuffer, offset: offset, maxBytes: maxBytes)
-            if !rewind {
-                _availableForRead -= UInt(buffer.length)
-                offset += UInt(buffer.length)
+            var bytesRead: Int? = nil
+            data.withUnsafeMutableBytes { buffer in
+                let typedBuffer = buffer.bindMemory(to: UInt8.self)
+                bytesRead = byteBuffer.read(buffer: typedBuffer)
+            }
+            
+            if !rewind, let bytesRead = bytesRead {
+                _availableForRead -= UInt(bytesRead)
+                offset += UInt(bytesRead)
             }
         }
-        return buffer
+        return ByteBuffer(data: data)
     }
     
     public func seek(offset: Int) {
@@ -66,14 +72,15 @@ public class DataStreamReader: StreamReader {
     
     public func write(buffer: ByteBuffer) {
         withLockingClosure {
-            byteBuffer.put(buffer)
-            _availableForRead += UInt(buffer.length)
+            let data = byteBuffer.getData() + buffer.getData()
+            byteBuffer = ByteBuffer(data: data)
+            _availableForRead += UInt(buffer.length())
         }
     }
     
     public var contentLength: UInt? {
         withLockingClosure {
-            return byteBuffer.length
+            return UInt(byteBuffer.length())
         }
     }
 

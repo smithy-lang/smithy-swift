@@ -22,7 +22,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
         case .stream(let stream):
             switch stream {
             case .buffer(let bytes):
-                input.headers.update(name: "Content-Length", value: String(bytes.length))
+                input.headers.update(name: "Content-Length", value: String(bytes.length()))
             case .reader:
                 input.headers.update(name: "Transfer-Encoded", value: "Chunked")
             }

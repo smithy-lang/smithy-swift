@@ -14,28 +14,19 @@ public extension HttpBody {
     static var empty: HttpBody {
         .data(nil)
     }
-}
-
-extension HttpBody {
-    func toAwsInputStream() -> AwsInputStream? {
+    
+    func toBytes() -> ByteBuffer? {
         switch self {
-        case .data(let data):
-            guard let data = data else {
-                return nil
-            }
-            return AwsInputStream(ByteBuffer(data: data))
-        case .stream(let stream):
-            switch stream {
-            case .reader(let reader):
-                return AwsInputStream(reader.read(maxBytes: nil, rewind: false))
-            case .buffer(let byteBuffer):
-                return AwsInputStream(byteBuffer)
-            }
+        case let .data(data):
+            return data.map(ByteBuffer.init(data:))
+        case let .stream(stream):
+            return stream.toBytes()
         case .none:
             return nil
         }
     }
 }
+
 
 extension HttpBody: CustomDebugStringConvertible {
     public var debugDescription: String {
@@ -46,7 +37,7 @@ extension HttpBody: CustomDebugStringConvertible {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
         case .stream(let stream):
-            bodyAsString = String(data: stream.toBytes().toData(), encoding: .utf8)
+            bodyAsString = String(data: stream.toBytes().getData(), encoding: .utf8)
         default:
             bodyAsString = nil
         }

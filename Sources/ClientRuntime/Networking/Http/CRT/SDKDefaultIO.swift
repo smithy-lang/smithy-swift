@@ -14,32 +14,40 @@ import Darwin
 #endif
 
 public final class SDKDefaultIO {
-    static weak var privateShared: SDKDefaultIO?
+    public let eventLoopGroup: EventLoopGroup
+    public let hostResolver: HostResolver
+    public let clientBootstrap: ClientBootstrap
+    public let tlsContext: TLSContext
+    public let logger: Logger
     
-    // TODO: revisit this and verify that it is thread safe.
-    public static var shared: SDKDefaultIO {
-        if let shared = privateShared {
-            return shared
-        } else {
-            let shared = SDKDefaultIO()
-            privateShared = shared
-            return shared
-        }
-    }
-    
-    public var eventLoopGroup: EventLoopGroup
-    public var hostResolver: DefaultHostResolver
-    public var clientBootstrap: ClientBootstrap
-    public var tlsContext: TlsContext
-    public var logger: Logger
+    /// Provide singleton access since we want to share and re-use the instance properties
+    public static let shared = SDKDefaultIO()
 
     private init() {
-        AwsCommonRuntimeKit.initialize()
+        CommonRuntimeKit.initialize()
         self.logger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
-        self.eventLoopGroup = EventLoopGroup(threadCount: 0)
-        self.hostResolver = DefaultHostResolver(eventLoopGroup: eventLoopGroup,
-                                                maxHosts: 8,
-                                                maxTTL: 30)
+        
+        do {
+            self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
+        } catch {
+            fatalError("""
+            Event Loop Group failed to create. This should never happen. Please open a
+            Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+            """)
+        }
+        
+        do {
+            self.hostResolver = try HostResolver.makeDefault(
+                eventLoopGroup: eventLoopGroup,
+                maxHosts: 8,
+                maxTTL: 30
+            )
+        } catch {
+            fatalError("""
+            Host Resolver failed to create. This should never happen. Please open a
+            Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+            """)
+        }
         
         do {
             self.clientBootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup,
@@ -52,11 +60,11 @@ public final class SDKDefaultIO {
                        """)
         }
         
-        let tlsContextOptions = TlsContextOptions()
+        let tlsContextOptions = TLSContextOptions.makeDefault()
         tlsContextOptions.setVerifyPeer(true)
         
         do {
-            self.tlsContext = try TlsContext(options: tlsContextOptions,
+            self.tlsContext = try TLSContext(options: tlsContextOptions,
                                              mode: .client)
         } catch {
             fatalError("""
@@ -64,9 +72,5 @@ public final class SDKDefaultIO {
                         Github issue with us at https://github.com/awslabs/aws-sdk-swift.
                         """)
         }
-    }
-    
-    deinit {
-        AwsCommonRuntimeKit.cleanUp()
     }
 }

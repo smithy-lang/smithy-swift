@@ -16,7 +16,8 @@ public class CRTClientEngine: HttpClientEngine {
 
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
-        private var connectionPools: [Endpoint: HttpClientConnectionManager] = [:]
+        private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
+        private let sharedDefaultIO = SDKDefaultIO.shared
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
@@ -24,9 +25,9 @@ public class CRTClientEngine: HttpClientEngine {
             self.logger = SwiftLogger(label: "SerialExecutor")
         }
 
-        func getOrCreateConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
+        func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             guard let connectionPool = connectionPools[endpoint] else {
-                let newConnectionPool = createConnectionPool(endpoint: endpoint)
+                let newConnectionPool = try createConnectionPool(endpoint: endpoint)
                 connectionPools[endpoint] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
@@ -34,38 +35,31 @@ public class CRTClientEngine: HttpClientEngine {
             return connectionPool
         }
 
-        func closeAllPendingConnections() {
-            for (endpoint, value) in connectionPools {
-                logger.debug("Connection to endpoint: \(String(describing: endpoint.url?.absoluteString)) is closing")
-                value.closePendingConnections()
-            }
-        }
+        private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
+            let tlsConnectionOptions = TLSConnectionOptions(
+                context: sharedDefaultIO.tlsContext,
+                serverName: endpoint.host
+            )
 
-        private func createConnectionPool(endpoint: Endpoint) -> HttpClientConnectionManager {
-            let tlsConnectionOptions = SDKDefaultIO.shared.tlsContext.newConnectionOptions()
-            do {
-                try tlsConnectionOptions.setServerName(endpoint.host)
-            } catch let err {
-                logger.error("Server name was not able to be set in TLS Connection Options. TLS Negotiation will fail.")
-                logger.error("Error: \(err.localizedDescription)")
-            }
             let socketOptions = SocketOptions(socketType: .stream)
     #if os(iOS) || os(watchOS)
             socketOptions.connectTimeoutMs = 30_000
     #endif
-            let options = HttpClientConnectionOptions(clientBootstrap: SDKDefaultIO.shared.clientBootstrap,
-                                                      hostName: endpoint.host,
-                                                      initialWindowSize: windowSize,
-                                                      port: UInt16(endpoint.port),
-                                                      proxyOptions: nil,
-                                                      socketOptions: socketOptions,
-                                                      tlsOptions: tlsConnectionOptions,
-                                                      monitoringOptions: nil,
-                                                      maxConnections: maxConnectionsPerEndpoint,
-                                                      enableManualWindowManagement: false) // not using backpressure yet
+            let options = HTTPClientConnectionOptions(
+                clientBootstrap: sharedDefaultIO.clientBootstrap,
+                hostName: endpoint.host,
+                initialWindowSize: windowSize,
+                port: UInt16(endpoint.port),
+                proxyOptions: nil,
+                socketOptions: socketOptions,
+                tlsOptions: tlsConnectionOptions,
+                monitoringOptions: nil,
+                maxConnections: maxConnectionsPerEndpoint,
+                enableManualWindowManagement: false
+            ) // not using backpressure yet
             logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
                          "with max connections: \(maxConnectionsPerEndpoint)")
-            return HttpClientConnectionManager(options: options)
+            return try HTTPClientConnectionManager(options: options)
         }
     }
 
@@ -78,7 +72,6 @@ public class CRTClientEngine: HttpClientEngine {
     
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
-    private let sharedDefaultIO: SDKDefaultIO = SDKDefaultIO.shared
     
     init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
@@ -88,55 +81,58 @@ public class CRTClientEngine: HttpClientEngine {
     }
     
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
-        let connectionMgr = await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
+        let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
-            let requestOptions = makeHttpRequestStreamOptions(request, continuation)
-            let stream = connection.makeRequest(requestOptions: requestOptions)
-            stream.activate()
+            do {
+                let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
+                let stream = try connection.makeRequest(requestOptions: requestOptions)
+                try stream.activate()
+            } catch {
+                continuation.resume(throwing: error)
+            }
         })
-    }
-    
-    public func close() async {
-        await serialExecutor.closeAllPendingConnections()
     }
     
     public func makeHttpRequestStreamOptions(
         _ request: SdkHttpRequest,
         _ continuation: StreamContinuation
-    ) -> HttpRequestOptions {
+    ) throws -> HTTPRequestOptions {
         let response = HttpResponse()
-        let crtRequest = request.toHttpRequest(bufferSize: windowSize)
+        let crtRequest = try request.toHttpRequest()
         let streamReader: StreamReader = DataStreamReader()
+        
+        let makeStatusCode: (HTTPStream) -> HttpStatusCode = { stream in
+            guard
+                let statusCodeInt = try? stream.statusCode(),
+                let statusCode = HttpStatusCode(rawValue: statusCodeInt)
+            else { return .notFound }
+            return statusCode
+        }
 
-        let requestOptions = HttpRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
+        let requestOptions = HTTPRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
             logger.debug("headers were received")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            response.statusCode = makeStatusCode(stream)
             response.headers.addAll(httpHeaders: httpHeaders)
         } onIncomingHeadersBlockDone: { [self] (stream, _) in
             logger.debug("header block is done")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            response.statusCode = makeStatusCode(stream)
         } onIncomingBody: { [self] (stream, data) in
             logger.debug("incoming data")
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            response.statusCode = makeStatusCode(stream)
             let byteBuffer = ByteBuffer(data: data)
             streamReader.write(buffer: byteBuffer)
         } onStreamComplete: { [self] (stream, error) in
             logger.debug("stream completed")
-            streamReader.hasFinishedWriting = true
-            if case let CRTError.crtError(unwrappedError) = error {
-                if unwrappedError.errorCode != 0 {
-                    logger.error("Response encountered an error: \(error)")
-                    streamReader.onError(error: ClientError.crtError(error))
-                    continuation.resume(throwing: error)
-                    return
-                }
+            if let error = error, error.code != 0 {
+                logger.error("Response encountered an error: \(error)")
+                continuation.resume(throwing: CommonRunTimeError.crtError(error))
+                return
             }
-
+        
             response.body = .stream(.reader(streamReader))
-
-            response.statusCode = HttpStatusCode(rawValue: Int(stream.statusCode)) ?? HttpStatusCode.notFound
+            response.statusCode = makeStatusCode(stream)
 
             continuation.resume(returning: response)
         }

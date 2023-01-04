@@ -219,27 +219,20 @@ extension Header: Comparable {
 }
 
 extension Headers {
-    func toHttpHeaders() -> HttpHeaders {
-        let httpHeaders = HttpHeaders()
-        
-        for header in headers {
-            _ = httpHeaders.add(name: header.name, value: header.value.joined(separator: ","))
+    func toHttpHeaders() -> [HTTPHeader] {
+        headers.map {
+            HTTPHeader(name: $0.name, value: $0.value.joined(separator: ","))
         }
-        return httpHeaders
     }
     
-    init(httpHeaders: HttpHeaders) {
+    init(httpHeaders: [HTTPHeader]) {
         self.init()
-        let headers = httpHeaders.getAll()
-        headers.forEach { (header) in
-            add(name: header.name, value: header.value)
-        }
+        addAll(httpHeaders: httpHeaders)
     }
     
-    public mutating func addAll(httpHeaders: HttpHeaders) {
-        let headers = httpHeaders.getAll()
-        headers.forEach { (header) in
-            add(name: header.name, value: header.value)
+    public mutating func addAll(httpHeaders: [HTTPHeader]) {
+        httpHeaders.forEach {
+            add(name: $0.name, value: $0.value)
         }
     }
 }
