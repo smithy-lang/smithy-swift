@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
+import software.amazon.smithy.swift.codegen.testModuleName
 import java.util.TreeSet
 import java.util.logging.Logger
 
@@ -97,7 +98,7 @@ class HttpProtocolTestGenerator(
         val requestTestCases = filterProtocolTestCases(tempTestCases)
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
-            val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
+            val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
                 for (import in imports) {
@@ -134,7 +135,7 @@ class HttpProtocolTestGenerator(
         val responseTestCases = filterProtocolTestCases(tempResponseTests)
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
-            val testFilename = "./${ctx.settings.moduleName}Tests/$testClassName.swift"
+            val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
@@ -176,7 +177,7 @@ class HttpProtocolTestGenerator(
                 // use the operation name + error name as the class name
                 val opName = operation.id.name.capitalize()
                 val testClassName = "${opName}${error.toUpperCamelCase()}Test"
-                val testFilename = "./${ctx.settings.moduleName}Tests/${opName}ErrorTest.swift"
+                val testFilename = "./${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 

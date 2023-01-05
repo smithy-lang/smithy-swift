@@ -21,6 +21,7 @@ object SwiftTypes {
     val Float = builtInSymbol("Float")
     val Double = builtInSymbol("Double")
     val Bool = builtInSymbol("Bool")
+    val TimeInterval = builtInSymbol("TimeInterval")
 
     val List = builtInSymbol("List")
     val Set = builtInSymbol("Set")
