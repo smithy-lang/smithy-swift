@@ -29,10 +29,6 @@ class RetryMiddleware(
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(${middlewareParamsString()}))", ClientRuntimeTypes.Middleware.RetryerMiddleware, output, outputError)
-    }
-
-    private fun middlewareParamsString(): String {
-        return "retryer: config.retryer"
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(retryer: config.retryer))", ClientRuntimeTypes.Middleware.RetryerMiddleware, output, outputError)
     }
 }
