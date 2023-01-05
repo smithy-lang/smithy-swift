@@ -49,6 +49,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withOperation(value: \"${op.toLowerCamelCase()}\")")
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
+        writer.write("  .withPartitionID(value: config.partitionID)")
 
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)

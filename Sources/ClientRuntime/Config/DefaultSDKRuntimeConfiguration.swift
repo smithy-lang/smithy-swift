@@ -15,10 +15,12 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public let retryer: SDKRetryer
     public var clientLogMode: ClientLogMode
     public var endpoint: String?
+    public var partitionID: String?
     
     public init(
         _ clientName: String,
-        clientLogMode: ClientLogMode = .request
+        clientLogMode: ClientLogMode = .request,
+        partitionID: String? = nil
     ) throws {
         self.encoder = nil
         self.decoder = nil
@@ -28,5 +30,6 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
         self.retryer = try SDKRetryer()
         self.logger = SwiftLogger(label: clientName)
         self.clientLogMode = clientLogMode
+        self.partitionID = partitionID
     }
 }
