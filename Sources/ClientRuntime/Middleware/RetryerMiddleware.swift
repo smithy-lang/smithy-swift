@@ -30,24 +30,26 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
         // same partition ID will be "pooled" together for throttling purposes.
         let partitionID: String
         if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
-          // use custom partition ID provided by context
-          partitionID = customPartitionID
+            // use custom partition ID provided by context
+            partitionID = customPartitionID
         } else if !input.host.isEmpty {
-          // fall back to the hostname for partition ID, which is a "commonsense" default
+            // fall back to the hostname for partition ID, which is a "commonsense" default
             partitionID = input.host
         } else {
-          throw SdkError<OutputError>.client(ClientError.unknownError("Partition ID could not be determined"))
+            throw SdkError<OutputError>.client(ClientError.unknownError("Partition ID could not be determined"))
         }
 
         do {
-          let token = try await retryer.acquireToken(partitionId: partitionID)
-          return try await tryRequest(token: token,
-                                      partitionID: partitionID,
-                                      context: context,
-                                      input: input,
-                                      next: next)
+            let token = try await retryer.acquireToken(partitionId: partitionID)
+            return try await tryRequest(
+                token: token,
+                partitionID: partitionID,
+                context: context,
+                input: input,
+                next: next
+            )
         } catch {
-          throw SdkError<OutputError>.client(ClientError.retryError(error))
+            throw SdkError<OutputError>.client(ClientError.retryError(error))
         }
     }
     

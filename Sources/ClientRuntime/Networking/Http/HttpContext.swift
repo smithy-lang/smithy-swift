@@ -46,6 +46,10 @@ public struct HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKey<LogAgent>(name: "Logger"))
     }
 
+    /// The partition ID to be used for this context.
+    ///
+    /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
+    /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public func getPartitionID() -> String? {
         return attributes.get(key: AttributeKey<String>(name: "PartitionID"))
     }
@@ -146,6 +150,12 @@ public class HttpContextBuilder {
         return self
     }
 
+    /// Sets the partition ID on the context builder.
+    ///
+    /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
+    /// If no partition ID is provided, requests will be partitioned based on the hostname.
+    /// - Parameter value: The partition ID to be set on this builder, or `nil`.
+    /// - Returns: `self`, after the partition ID is set as specified.
     @discardableResult
     public func withPartitionID(value: String?) -> HttpContextBuilder {
         self.attributes.set(key: partitionID, value: value)

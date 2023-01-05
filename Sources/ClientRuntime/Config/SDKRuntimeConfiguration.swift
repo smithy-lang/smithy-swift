@@ -19,7 +19,8 @@ public protocol SDKRuntimeConfiguration {
     var retryer: SDKRetryer {get}
     var endpoint: String? {get set}
 
-    /// The partition ID to be used for this client.
+    /// The partition ID to be used for this configuration.
+    ///
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
     var partitionID: String? { get }

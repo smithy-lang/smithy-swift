@@ -15,6 +15,11 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public let retryer: SDKRetryer
     public var clientLogMode: ClientLogMode
     public var endpoint: String?
+
+    /// The partition ID to be used for this configuration.
+    ///
+    /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
+    /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public var partitionID: String?
     
     public init(
