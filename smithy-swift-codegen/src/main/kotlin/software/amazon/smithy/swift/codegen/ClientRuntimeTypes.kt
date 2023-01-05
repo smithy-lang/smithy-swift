@@ -62,6 +62,7 @@ object ClientRuntimeTypes {
         val QueryItemMiddleware = runtimeSymbol("QueryItemMiddleware")
         val HeaderMiddleware = runtimeSymbol("HeaderMiddleware")
         val SerializableBodyMiddleware = runtimeSymbol("SerializableBodyMiddleware")
+        val RetryerMiddleware = runtimeSymbol("RetryerMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
 
         object Providers {
