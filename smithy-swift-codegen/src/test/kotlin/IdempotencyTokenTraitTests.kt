@@ -19,6 +19,7 @@ class IdempotencyTokenTraitTests {
                                   .withOperation(value: "idempotencyTokenWithStructure")
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
+                                  .withPartitionID(value: config.partitionID)
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
                     operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse> in
                         let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()

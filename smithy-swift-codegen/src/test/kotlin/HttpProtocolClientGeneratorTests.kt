@@ -128,6 +128,7 @@ class HttpProtocolClientGeneratorTests {
                               .withOperation(value: "allocateWidget")
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
+                              .withPartitionID(value: config.partitionID)
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
                 operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<AllocateWidgetOutputResponse> in
                     let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
