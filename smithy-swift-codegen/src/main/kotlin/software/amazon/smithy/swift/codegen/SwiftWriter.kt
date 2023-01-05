@@ -113,7 +113,7 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
     // Adds an import statement that imports the individual type from the specified module
     // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
     fun addIndividualTypeImport(kind: String, module: String, type: String) {
-        imports.addImport("${kind} ${module}.${type}",false)
+        imports.addImport("$kind $module.$type", false)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
