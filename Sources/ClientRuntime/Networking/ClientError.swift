@@ -42,3 +42,18 @@ public enum ClientError: Error, Equatable {
         }
     }
 }
+
+extension ClientError: WaiterTypedError {
+
+    /// The Smithy identifier, without namespace, for the type of this error, or `nil` if the
+    /// error has no known type.
+    public var waiterErrorType: String? {
+        switch self {
+        case .networkError(let error), .deserializationFailed(let error), .retryError(let error):
+            return (error as? WaiterTypedError)?.waiterErrorType
+        case .crtError, .pathCreationFailed, .queryItemCreationFailed, .serializationFailed,
+            .dataNotFound, .unknownError, .authError:
+            return nil
+        }
+    }
+}
