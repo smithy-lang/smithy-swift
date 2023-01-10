@@ -107,7 +107,8 @@ class PaginatorGenerator : SwiftIntegration {
         val markerLiteral = paginationInfo.inputTokenMember.toLowerCamelCase()
         val markerLiteralShape = model.expectShape(paginationInfo.inputTokenMember.target)
         val markerLiteralSymbol = symbolProvider.toSymbol(markerLiteralShape)
-        val docBody = """
+        writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
+            val docBody = """
             Paginate over `[${outputSymbol.name}]` results.
             
             When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
@@ -116,13 +117,10 @@ class PaginatorGenerator : SwiftIntegration {
             - Parameters: 
                 - input: A `[${inputSymbol.name}]` to start pagination
             - Returns: An `AsyncSequence` that can iterate over `${outputSymbol.name}`
-        """.trimIndent()
-        writer.write("")
-        writer.writeSingleLineDocs {
-            this.write(docBody)
-        }
-
-        writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
+            """.trimIndent()
+            writer.writeSingleLineDocs {
+                this.write(docBody)
+            }
             writer.openBlock(
                 "public func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
                 operationShape.toLowerCamelCase(),
@@ -183,17 +181,16 @@ class PaginatorGenerator : SwiftIntegration {
     ) {
         writer.write("")
         val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
-        val docBody = """
+
+        writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
+            val docBody = """
         This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
         to access the nested member `${itemDesc.collectionLiteral}`
         - Returns: `${itemDesc.collectionLiteral}`
-        """.trimIndent()
-
-        writer.writeSingleLineDocs {
-            this.write(docBody)
-        }
-
-        writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
+            """.trimIndent()
+            writer.writeSingleLineDocs {
+                this.write(docBody)
+            }
             writer.openBlock("public func \$L() async throws -> \$L {", "}", itemDesc.itemLiteral, itemDesc.collectionLiteral) {
                 if (itemSymbolShape?.isListShape == true) {
                     writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
