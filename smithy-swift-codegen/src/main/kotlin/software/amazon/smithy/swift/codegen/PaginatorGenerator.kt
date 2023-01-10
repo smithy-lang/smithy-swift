@@ -117,7 +117,7 @@ class PaginatorGenerator : SwiftIntegration {
             - Parameters: 
                 - input: A `[${inputSymbol.name}]` to start pagination
             - Returns: An `AsyncSequence` that can iterate over `${outputSymbol.name}`
-        """.trimIndent()
+            """.trimIndent()
             writer.writeSingleLineDocs {
                 this.write(docBody)
             }
@@ -187,7 +187,7 @@ class PaginatorGenerator : SwiftIntegration {
         This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
         to access the nested member `${itemDesc.collectionLiteral}`
         - Returns: `${itemDesc.collectionLiteral}`
-        """.trimIndent()
+            """.trimIndent()
             writer.writeSingleLineDocs {
                 this.write(docBody)
             }
