@@ -156,3 +156,8 @@ class SwiftSettings(
 }
 
 class UnresolvableProtocolException(message: String) : CodegenException(message)
+
+val SwiftSettings.testModuleName: String
+    get() {
+        return "${this.moduleName}Tests"
+    }
