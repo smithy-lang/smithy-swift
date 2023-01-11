@@ -41,7 +41,7 @@ public class CRTClientEngine: HttpClientEngine {
                 serverName: endpoint.host
             )
 
-            let socketOptions = SocketOptions(socketType: .stream)
+            var socketOptions = SocketOptions(socketType: .stream)
     #if os(iOS) || os(watchOS)
             socketOptions.connectTimeoutMs = 30_000
     #endif
