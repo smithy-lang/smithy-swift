@@ -43,7 +43,7 @@ class StringExtensionsTests: XCTestCase {
         let escapedString = stringWithDots.escape([(".", "-")])
         XCTAssertTrue(escapedString == kebabCaseString)
     }
-    
+
     func testValidBase64EncodedString() {
         let normalString = "ABC"
         guard let base64EncodedString = try? normalString.base64EncodedString() else {
@@ -52,20 +52,20 @@ class StringExtensionsTests: XCTestCase {
         }
         XCTAssertEqual(base64EncodedString, "QUJD")
     }
-    
+
     func testTrimmingString() {
         let stringToTrim = "\t \n  ABC \n \t  "
         XCTAssertEqual(stringToTrim.trim(), "ABC")
     }
-    
+
     func testRemovingPrefixFromString() {
         let stringWithPrefix = "X-Foo-ABC"
         XCTAssertEqual(stringWithPrefix.removePrefix("X-Foo-"), "ABC")
-        
+
         let stringWithoutPrefix = "ABC"
         XCTAssertEqual(stringWithoutPrefix.removePrefix("X-Foo-"), "ABC")
     }
-    
+
     func testDecodingBase64EncodedString() {
         let base64EncodedString = "dHJ1ZQ=="
         guard let decodedString = try? base64EncodedString.base64DecodedString() else {
@@ -74,7 +74,7 @@ class StringExtensionsTests: XCTestCase {
         }
         XCTAssertEqual(decodedString, "true")
     }
-    
+
     func testSubstringAfter() {
         let stringsAndMatches = [
             "FooError": "FooError",
@@ -85,7 +85,7 @@ class StringExtensionsTests: XCTestCase {
             XCTAssertEqual(string.substringAfter("#"), match)
         }
     }
-    
+
     func testSubstringBefore() {
         let stringsAndMatches = [
             "FooError": "FooError",
@@ -110,7 +110,7 @@ class StringExtensionsTests: XCTestCase {
         let expected = "/foo/bar"
         XCTAssertEqual(path.appendingPathComponent(component), expected)
     }
-    
+
     func testAppendingPathComponent_SecondComponentPresent() {
         let path = ""
         let component = "/baz"

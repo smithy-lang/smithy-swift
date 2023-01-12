@@ -4,7 +4,7 @@
 public struct OperationStack<OperationStackInput,
                              OperationStackOutput: HttpResponseBinding,
                              OperationStackError: HttpResponseBinding> {
-    
+
     /// returns the unique id for the operation stack as middleware
     public var id: String
     public var initializeStep: InitializeStep<OperationStackInput, OperationStackOutput>
@@ -12,7 +12,7 @@ public struct OperationStack<OperationStackInput,
     public var buildStep: BuildStep<OperationStackOutput>
     public var finalizeStep: FinalizeStep<OperationStackOutput>
     public var deserializeStep: DeserializeStep<OperationStackOutput>
-    
+
     public init(id: String) {
         self.id = id
         self.initializeStep = InitializeStep<OperationStackInput,
@@ -22,9 +22,9 @@ public struct OperationStack<OperationStackInput,
         self.buildStep = BuildStep<OperationStackOutput>(id: BuildStepId)
         self.finalizeStep = FinalizeStep<OperationStackOutput>(id: FinalizeStepId)
         self.deserializeStep = DeserializeStep<OperationStackOutput>(id: DeserializeStepId)
-        
+
     }
-    
+
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handleMiddleware<H: Handler>(context: HttpContext,
                                              input: OperationStackInput,
@@ -32,13 +32,13 @@ public struct OperationStack<OperationStackInput,
     where H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput>,
           H.Context == HttpContext {
-              
+
               let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
               let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
               let build = compose(next: BuildStepHandler(handler: finalize), with: buildStep)
               let serialize = compose(next: SerializeStepHandler(handler: build), with: serializeStep)
               let initialize = compose(next: InitializeStepHandler(handler: serialize), with: initializeStep)
-              
+
               let result = try await initialize.handle(context: context, input: input)
               guard let output = result.output else {
                   let errorMessage = [
@@ -49,7 +49,7 @@ public struct OperationStack<OperationStackInput,
               }
               return output
           }
-    
+
     mutating public func presignedRequest<H: Handler>(
         context: HttpContext,
         input: OperationStackInput,
@@ -80,10 +80,10 @@ public struct OperationStack<OperationStackInput,
               let lastMiddleware = middlewares.last else {
             return handler.eraseToAnyHandler()
         }
-        
+
         let numberOfMiddlewares = middlewares.count
         var composedHandler = ComposedHandler(handler, lastMiddleware)
-        
+
         guard numberOfMiddlewares > 1 else {
             return composedHandler.eraseToAnyHandler()
         }
@@ -91,7 +91,7 @@ public struct OperationStack<OperationStackInput,
         for index in reversedCollection {
             composedHandler = ComposedHandler(composedHandler, middlewares[index])
         }
-        
+
         return composedHandler.eraseToAnyHandler()
     }
 }

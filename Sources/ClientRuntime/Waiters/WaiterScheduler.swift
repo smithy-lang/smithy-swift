@@ -25,7 +25,7 @@ final class WaiterScheduler {
 
     /// The Date when the next request should take place after a retry.
     var nextRequestDate = Date.distantPast
-    
+
     /// The number of requests ("attempts") that have been made by this waiter.
     private(set) var attempts = 0
 

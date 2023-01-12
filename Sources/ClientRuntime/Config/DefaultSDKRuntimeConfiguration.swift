@@ -21,7 +21,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public var partitionID: String?
-    
+
     public init(
         _ clientName: String,
         clientLogMode: ClientLogMode = .request,

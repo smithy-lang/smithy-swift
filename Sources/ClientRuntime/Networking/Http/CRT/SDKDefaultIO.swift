@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 import AwsCommonRuntimeKit
 import class Foundation.ProcessInfo
 #if os(Linux)
@@ -19,14 +19,14 @@ public final class SDKDefaultIO {
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TLSContext
     public let logger: Logger
-    
+
     /// Provide singleton access since we want to share and re-use the instance properties
     public static let shared = SDKDefaultIO()
 
     private init() {
         CommonRuntimeKit.initialize()
         self.logger = Logger(pipe: stdout, level: .none, allocator: defaultAllocator)
-        
+
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
         } catch {
@@ -35,7 +35,7 @@ public final class SDKDefaultIO {
             Github issue with us at https://github.com/awslabs/aws-sdk-swift.
             """)
         }
-        
+
         do {
             self.hostResolver = try HostResolver.makeDefault(
                 eventLoopGroup: eventLoopGroup,
@@ -48,7 +48,7 @@ public final class SDKDefaultIO {
             Github issue with us at https://github.com/awslabs/aws-sdk-swift.
             """)
         }
-        
+
         do {
             self.clientBootstrap = try ClientBootstrap(eventLoopGroup: eventLoopGroup,
                                                        hostResolver: hostResolver)
@@ -59,10 +59,10 @@ public final class SDKDefaultIO {
                        us at https://github.com/awslabs/aws-sdk-swift.
                        """)
         }
-        
+
         let tlsContextOptions = TLSContextOptions.makeDefault()
         tlsContextOptions.setVerifyPeer(true)
-        
+
         do {
             self.tlsContext = try TLSContext(options: tlsContextOptions,
                                              mode: .client)

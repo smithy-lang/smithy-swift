@@ -16,7 +16,7 @@ public enum ClientError: Error, Equatable {
     case unknownError(String)
     case authError(String)
     case retryError(Error)
-    
+
     public static func == (lhs: ClientError, rhs: ClientError) -> Bool {
         switch (lhs, rhs) {
         case let (.networkError(lhsError), .networkError(rhsError)):

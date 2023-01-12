@@ -16,11 +16,11 @@ extension ByteStream {
     public static func from(data: Data) -> ByteStream {
         return .buffer(ByteBuffer(data: data))
     }
-    
+
     public static func from(fileHandle: FileHandle) -> ByteStream {
         return .buffer(fileHandle.toByteBuffer())
     }
-    
+
     public static func from(stringValue: String) -> ByteStream {
         return .buffer(stringValue.toByteBuffer())
     }
@@ -36,7 +36,7 @@ extension ByteStream {
             return bytes
         }
     }
-    
+
     public static func defaultReader() -> ByteStream {
         return .reader(DataStreamReader())
     }
@@ -61,7 +61,7 @@ extension ByteStream: Codable {
         let data = try container.decode(Data.self)
         self = .buffer(ByteBuffer(data: data))
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.toBytes().getData())

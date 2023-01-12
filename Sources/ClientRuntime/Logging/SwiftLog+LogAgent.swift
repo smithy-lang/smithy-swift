@@ -28,7 +28,7 @@ public struct SwiftLogger: LogAgent {
     public var name: String {
         return label
     }
-    
+
     public func log(level: LogAgentLevel,
                     message: String,
                     metadata: [String: String]?,

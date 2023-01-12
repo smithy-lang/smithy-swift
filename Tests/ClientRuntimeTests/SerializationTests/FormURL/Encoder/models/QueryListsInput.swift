@@ -10,7 +10,7 @@
 public struct QueryListsInput: Equatable {
     public let flattenedListArg: [String]?
     public let listArg: [String]?
-    
+
     public init (
         flattenedListArg: [String]? = nil,
         listArg: [String]? = nil

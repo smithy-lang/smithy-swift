@@ -20,17 +20,17 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
                                      H: Handler>: Handler where H.Context == HttpContext,
                                                                 H.Input == SdkHttpRequest,
                                                                 H.Output == OperationOutput<OperationStackOutput> {
-    
+
     public typealias Input = SdkHttpRequest
-    
+
     public typealias Output = OperationOutput<OperationStackOutput>
-    
+
     let handler: H
-    
+
     public init(handler: H) {
         self.handler = handler
     }
-    
+
     public func handle(context: HttpContext, input: Input) async throws -> Output {
        return try await handler.handle(context: context, input: input)
     }
@@ -39,7 +39,7 @@ public struct DeserializeStepHandler<OperationStackOutput: HttpResponseBinding,
 public struct OperationOutput<Output: HttpResponseBinding> {
     public var httpResponse: HttpResponse
     public var output: Output?
-    
+
     public init(httpResponse: HttpResponse, output: Output? = nil) {
         self.httpResponse = httpResponse
         self.output = output

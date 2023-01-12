@@ -3,7 +3,7 @@
 
 public struct DeserializeMiddleware<Output: HttpResponseBinding,
                                     OutputError: HttpResponseBinding>: Middleware {
-    
+
     public var id: String = "Deserialize"
     public init() {}
     public func handle<H>(context: HttpContext,
@@ -13,7 +13,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              
+
           let decoder = context.getDecoder()
           let response = try await next.handle(context: context, input: input) // call handler to get http response
           var copiedResponse = response
@@ -26,9 +26,9 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
               throw SdkError.service(error, copiedResponse.httpResponse)
           }
     }
-    
+
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<Output>
     public typealias Context = HttpContext
-    
+
 }

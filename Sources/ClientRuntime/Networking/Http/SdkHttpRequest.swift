@@ -15,7 +15,7 @@ public class SdkHttpRequest {
     public let queryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
-    
+
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
                 headers: Headers,
@@ -52,15 +52,15 @@ extension SdkHttpRequest {
 }
 
 extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible {
-    
+
     public var debugDescriptionWithBody: String {
         return debugDescription + "\nRequestBody: \(body.debugDescription)"
     }
-    
+
     public var debugDescription: String {
         description
     }
-    
+
     public var description: String {
         let method = method.rawValue.uppercased()
         let protocolType = endpoint.protocolType ?? ProtocolType.https
@@ -80,14 +80,14 @@ extension SdkHttpRequestBuilder {
 
         return self
     }
-        
+
     func convertSignedHeadersToHeaders(crtRequest: HTTPRequest) -> Headers {
         return Headers(httpHeaders: crtRequest.getHeaders())
     }
 }
 
 public class SdkHttpRequestBuilder {
-    
+
     public init() {}
 
     var headers: Headers = Headers()
@@ -112,61 +112,61 @@ public class SdkHttpRequestBuilder {
         self.headers.addAll(headers: value)
         return self
     }
-    
+
     @discardableResult
     public func withHeader(name: String, value: String) -> SdkHttpRequestBuilder {
         self.headers.add(name: name, value: value)
         return self
     }
-    
+
     @discardableResult
     public func updateHeader(name: String, value: [String]) -> SdkHttpRequestBuilder {
         self.headers.update(name: name, value: value)
         return self
     }
-    
+
     @discardableResult
     public func withMethod(_ value: HttpMethodType) -> SdkHttpRequestBuilder {
         self.methodType = value
         return self
     }
-    
+
     @discardableResult
     public func withHost(_ value: String) -> SdkHttpRequestBuilder {
         self.host = value
         return self
     }
-    
+
     @discardableResult
     public func withPath(_ value: String) -> SdkHttpRequestBuilder {
         self.path = value
         return self
     }
-    
+
     @discardableResult
     public func withBody(_ value: HttpBody) -> SdkHttpRequestBuilder {
         self.body = value
         return self
     }
-    
+
     @discardableResult
     public func withQueryItems(_ value: [URLQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = value
         return self
     }
-    
+
     @discardableResult
     public func withQueryItem(_ value: URLQueryItem) -> SdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
-    
+
     @discardableResult
     public func withPort(_ value: Int16) -> SdkHttpRequestBuilder {
         self.port = value
         return self
     }
-    
+
     @discardableResult
     public func withProtocol(_ value: ProtocolType) -> SdkHttpRequestBuilder {
         self.protocolType = value

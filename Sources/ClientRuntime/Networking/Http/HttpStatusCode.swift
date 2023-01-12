@@ -138,7 +138,7 @@ public enum HttpStatusCode: Int, Equatable {
 
 extension HttpStatusCode: CustomStringConvertible {
     public var description: String {
-       
+
         return NSLocalizedString(
             "http_status_\(rawValue)",
             tableName: "HttpStatusEnum",

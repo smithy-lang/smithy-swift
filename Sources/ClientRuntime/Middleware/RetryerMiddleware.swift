@@ -7,15 +7,15 @@
 
 public struct RetryerMiddleware<Output: HttpResponseBinding,
                                 OutputError: HttpResponseBinding>: Middleware {
-    
+
     public var id: String = "Retryer"
-    
+
     let retryer: SDKRetryer
-    
+
     public init(retryer: SDKRetryer) {
         self.retryer = retryer
     }
-    
+
     public func handle<H>(
         context: Context,
         input: SdkHttpRequestBuilder,
@@ -52,7 +52,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             throw SdkError<OutputError>.client(ClientError.retryError(error))
         }
     }
-    
+
     func tryRequest<H>(
         token: RetryToken,
         errorType: RetryError? = nil,
@@ -83,7 +83,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             )
         }
     }
-    
+
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<Output>
     public typealias Context = HttpContext

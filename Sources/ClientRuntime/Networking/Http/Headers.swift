@@ -18,8 +18,8 @@ public struct Headers: Hashable {
 
         dictionary.forEach { add(name: $0.key, value: $0.value)}
     }
-    
-    /// Creates an instance from a `[String: [String]]`. 
+
+    /// Creates an instance from a `[String: [String]]`.
     public init(_ dictionary: [String: [String]]) {
         self.init()
 
@@ -35,7 +35,7 @@ public struct Headers: Hashable {
         let header = Header(name: name, value: value)
         add(header)
     }
-    
+
     /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header`
     /// into the instance using the provided `name` and `values`.
     ///
@@ -46,7 +46,7 @@ public struct Headers: Hashable {
         let header = Header(name: name, values: values)
         add(header)
     }
-    
+
     /// Case-insensitively updates the value of a `Header` by appending the new values to it or appends a `Header`
     /// into the instance using the provided `Header`.
     ///
@@ -59,7 +59,7 @@ public struct Headers: Hashable {
         }
         headers[index].value.append(contentsOf: header.value)
     }
-    
+
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
     /// into the instance if it does not exist using the provided `Header`.
     ///
@@ -72,7 +72,7 @@ public struct Headers: Hashable {
         }
         headers.replaceSubrange(index...index, with: [header])
     }
-    
+
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
     /// into the instance if it does not exist using the provided `Header`.
     ///
@@ -82,7 +82,7 @@ public struct Headers: Hashable {
         let header = Header(name: name, values: value)
         update(header)
     }
-    
+
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
     /// into the instance if it does not exist using the provided `Header`.
     ///
@@ -92,7 +92,7 @@ public struct Headers: Hashable {
         let header = Header(name: name, value: value)
         update(header)
     }
-    
+
     /// Case-insensitively adds all `Headers` into the instance using the provided `[Headers]` array.
     ///
     /// - Parameters:
@@ -109,7 +109,7 @@ public struct Headers: Hashable {
 
         headers.remove(at: index)
     }
-    
+
     /// Case-insensitively find a header's values by name.
     ///
     /// - Parameter name: The name of the header to search for, case-insensitively.
@@ -121,10 +121,10 @@ public struct Headers: Hashable {
         for index in indices {
             values.append(contentsOf: headers[index].value)
         }
-        
+
         return values
     }
-    
+
     /// Case-insensitively find a header's value by name.
     ///
     /// - Parameter name: The name of the header to search for, case-insensitively.
@@ -136,16 +136,16 @@ public struct Headers: Hashable {
         }
         return values.joined(separator: ",")
     }
-    
+
     public func exists(name: String) -> Bool {
         guard headers.index(of: name) != nil else {
             return false
         }
-        
+
         guard let value = value(for: name) else {
             return false
         }
-        
+
         return !value.isEmpty
     }
 
@@ -178,7 +178,7 @@ extension Array where Element == Header {
         let lowercasedName = name.lowercased()
         return firstIndex { $0.name.lowercased() == lowercasedName }
     }
-    
+
     /// Case-insensitively finds the indexes of an `Header` with the provided name, if it exists.
     func indices(of name: String) -> [Int]? {
         let lowercasedName = name.lowercased()
@@ -194,7 +194,7 @@ public struct Header: Hashable {
         self.name = name
         self.value = values
     }
-    
+
     public init(name: String, value: String) {
         self.name = name
         self.value = [value]
@@ -224,12 +224,12 @@ extension Headers {
             HTTPHeader(name: $0.name, value: $0.value.joined(separator: ","))
         }
     }
-    
+
     init(httpHeaders: [HTTPHeader]) {
         self.init()
         addAll(httpHeaders: httpHeaders)
     }
-    
+
     public mutating func addAll(httpHeaders: [HTTPHeader]) {
         httpHeaders.forEach {
             add(name: $0.name, value: $0.value)

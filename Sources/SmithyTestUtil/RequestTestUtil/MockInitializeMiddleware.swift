@@ -19,7 +19,7 @@ public struct MockInitializeMiddleware: Middleware {
         self.id = id
         self.callback = callback
     }
-    
+
     public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
@@ -30,7 +30,7 @@ public struct MockInitializeMiddleware: Middleware {
         }
         var copiedInput = input
         copiedInput.value = 1023
-        
+
         return try await next.handle(context: context, input: copiedInput)
     }
 }

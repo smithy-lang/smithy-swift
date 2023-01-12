@@ -3,7 +3,7 @@
 
 /// type erase the Middleware protocol
 public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {
-    
+
     private let _handle: (Context, MInput, AnyHandler<MInput, MOutput, Context>) async throws -> MOutput
 
     public var id: String
@@ -18,11 +18,11 @@ public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middle
         self.id = realMiddleware.id
         self._handle = realMiddleware.handle
     }
-    
+
     public init<H: Handler>(handler: H, id: String) where H.Input == MInput,
                                                           H.Output == MOutput,
                                                           H.Context == Context {
-        
+
         self._handle = { context, input, handler in
             try await handler.handle(context: context, input: input)
         }

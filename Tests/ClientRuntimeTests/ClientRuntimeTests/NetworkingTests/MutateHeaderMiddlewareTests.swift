@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 import XCTest
 @testable import ClientRuntime
 import SmithyTestUtil
@@ -32,7 +32,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
     }
-    
+
     func testOverridesHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
@@ -40,14 +40,14 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             return try await next.handle(context: context, input: input)
         }
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"]))
-        
+
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
-        
+
         XCTAssertEqual(output.headers.value(for: "foo"), "override")
         XCTAssertEqual(output.headers.value(for: "z"), "zebra")
         XCTAssertEqual(output.headers.value(for: "baz"), "qux")
     }
-    
+
     func testAppendsHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
@@ -57,12 +57,12 @@ class MutateHeaderMiddlewareTests: XCTestCase {
         stack.buildStep.intercept(position: .before, middleware: MutateHeadersMiddleware(additional: ["foo": "appended", "z": "zebra"]))
 
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
-        
+
         XCTAssertEqual(output.headers.values(for: "foo"), ["appended", "bar"])
         XCTAssertEqual(output.headers.value(for: "z"), "zebra")
         XCTAssertEqual(output.headers.value(for: "baz"), "qux")
     }
-    
+
     func testConditionallySetHeaders() async throws {
         stack.buildStep.intercept(position: .before, id: "AddHeaders") { (context, input, next) -> OperationOutput<MockOutput> in
             input.withHeader(name: "foo", value: "bar")
@@ -72,7 +72,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
         stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(conditionallySet: ["foo": "nope", "z": "zebra"]))
 
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
-        
+
         XCTAssertEqual(output.headers.value(for: "foo"), "bar")
         XCTAssertEqual(output.headers.value(for: "z"), "zebra")
         XCTAssertEqual(output.headers.value(for: "baz"), "qux")

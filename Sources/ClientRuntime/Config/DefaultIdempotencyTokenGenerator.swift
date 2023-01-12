@@ -6,9 +6,9 @@
 import Foundation
 
 public struct DefaultIdempotencyTokenGenerator: IdempotencyTokenGenerator {
-    
+
     public init() {}
-    
+
     public func generateToken() -> String {
         return UUID().uuidString
     }
