@@ -19,20 +19,20 @@ public struct InitializeStepHandler<OperationStackInput,
                                     H: Handler>: Handler where H.Context == HttpContext,
                                                                H.Input == SerializeStepInput<OperationStackInput>,
                                                                H.Output == OperationOutput<OperationStackOutput> {
-    
+
     public typealias Input = OperationStackInput
-    
+
     public typealias Output = OperationOutput<OperationStackOutput>
-    
+
     let handler: H
-    
+
     public init(handler: H) {
         self.handler = handler
     }
-    
+
     public func handle(context: HttpContext, input: Input) async throws -> Output {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
-        
+
         return try await handler.handle(context: context, input: serializeInput)
     }
 }

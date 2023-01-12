@@ -19,15 +19,15 @@ open class HttpResponseTestBase: XCTestCase {
                                   path: String? = nil,
                                   headers: [String: String]? = nil,
                                   content: HttpBody = HttpBody.empty) -> HttpResponse? {
-        
+
         var internalHeaders: Headers = Headers()
         if let headers = headers {
             internalHeaders = Headers(headers)
         }
-        
+
         return HttpResponse(headers: internalHeaders,
                             body: content,
                             statusCode: HttpStatusCode(rawValue: code) ?? HttpStatusCode.badRequest)
-        
+
     }
 }

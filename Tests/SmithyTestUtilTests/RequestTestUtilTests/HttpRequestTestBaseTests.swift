@@ -38,11 +38,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         public typealias MOutput = ClientRuntime.OperationOutput<MockOutput>
         public typealias Context = ClientRuntime.HttpContext
     }
-    
+
     struct SayHelloInputQueryItemMiddleware<StackOutput: HttpResponseBinding>: Middleware {
 
         var id: String = "SayHelloInputQueryItemMiddleware"
-        
+
         func handle<H>(context: HttpContext,
                        input: SerializeStepInput<SayHelloInput>,
                        next: H) async throws -> MOutput where H: Handler,
@@ -55,21 +55,21 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                 queryItem = URLQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
                 queryItems.append(queryItem)
             }
-            
+
             input.builder.withQueryItems(queryItems)
             return try await next.handle(context: context, input: input)
         }
-        
+
         typealias MInput = SerializeStepInput<SayHelloInput>
-        
+
         typealias MOutput = OperationOutput<StackOutput>
-        
+
         typealias Context = HttpContext
     }
-    
+
     struct SayHelloInputHeaderMiddleware<StackOutput: HttpResponseBinding>: Middleware {
         var id: String = "SayHelloInputHeaderMiddleware"
-        
+
         func handle<H>(context: HttpContext,
                        input: MInput,
                        next: H) async throws -> MOutput where H: Handler,
@@ -84,46 +84,46 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             input.builder.withHeaders(headers)
             return try await next.handle(context: context, input: input)
         }
-        
+
         typealias MInput = SerializeStepInput<SayHelloInput>
-        
+
         typealias MOutput = OperationOutput<StackOutput>
-        
+
         typealias Context = HttpContext
     }
-    
+
     struct SayHelloInputBodyMiddleware<StackOutput: HttpResponseBinding>: Middleware {
         var id: String = "SayHelloInputBodyMiddleware"
-        
+
         func handle<H>(context: HttpContext,
                        input: MInput,
                        next: H) async throws -> MOutput where H: Handler,
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            
+
             let encoder = context.getEncoder()
             let body = HttpBody.data(try encoder.encode(input.operationInput))
             input.builder.withBody(body)
             return try await next.handle(context: context, input: input)
 
         }
-        
+
         typealias MInput = SerializeStepInput<SayHelloInput>
-        
+
         typealias MOutput = OperationOutput<StackOutput>
-        
+
         typealias Context = HttpContext
     }
-    
+
     struct SayHelloInput: Encodable {
-        
+
         let greeting: String?
         let forbiddenQuery: String?
         let requiredQuery: String?
         let forbiddenHeader: String?
         let requiredHeader: String?
-        
+
         init(greeting: String?,
              forbiddenQuery: String?,
              requiredQuery: String?,
@@ -135,12 +135,12 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             self.forbiddenHeader = forbiddenHeader
             self.requiredHeader = requiredHeader
         }
-        
+
         private enum CodingKeys: String, CodingKey {
             case greeting
         }
     }
-    
+
     struct SayHelloInputBody: Decodable, Equatable {
         public let greeting: String?
 
@@ -165,7 +165,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                 body: "{\"greeting\": \"Hello There\"}",
                                                 host: HttpRequestTestBaseTests.host,
                                                 resolvedHost: nil)
-        
+
         let input = SayHelloInput(greeting: "Hello There",
                                   forbiddenQuery: "forbidden query",
                                   requiredQuery: "required query",
@@ -185,7 +185,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
             id: "TestDeserializeMiddleware") { _, actual in
-            
+
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
                 XCTAssertFalse(
@@ -198,19 +198,19 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                 XCTAssertFalse(self.headerExists(forbiddenHeader, in: actual.headers.headers),
                                "Forbidden Header:\(forbiddenHeader) exists in headers")
             }
-            
+
             let requiredQueryParams = ["RequiredQuery"]
             for requiredQueryParam in requiredQueryParams {
                 XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
                               "Required Query:\(requiredQueryParam) does not exist in query items")
             }
-            
+
             let requiredHeaders = ["RequiredHeader"]
             for requiredHeader in requiredHeaders {
                 XCTAssertTrue(self.headerExists(requiredHeader, in: actual.headers.headers),
                               "Required Header:\(requiredHeader) does not exist in headers")
             }
-            
+
             self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
@@ -225,14 +225,14 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                      }
                 }
             })
-            
+
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             deserializeMiddleware.fulfill()
             return output
            })
-        
+
         let context = HttpContextBuilder()
             .withEncoder(value: JSONEncoder())
             .withMethod(value: .post)
@@ -243,7 +243,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let mockServiceError = try! MockMiddlewareError(httpResponse: httpResponse)
             throw SdkError.service(mockServiceError, httpResponse)
         })
-        
+
         wait(for: [deserializeMiddleware], timeout: 2.0)
-    }        
+    }
 }

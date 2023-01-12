@@ -26,7 +26,7 @@ public struct MockSerializeMiddleware: Middleware {
         self.headerValue = headerValue
         self.callback = callback
     }
-    
+
     public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
@@ -44,8 +44,8 @@ public struct MockSerializeMiddleware: Middleware {
             .withHeader(name: "Host", value: host)
             .withPath(path)
             .withMethod(method)
-        
+
         return try await next.handle(context: context, input: input)
     }
- 
+
 }

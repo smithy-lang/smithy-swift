@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 public struct MapKeyValue<K, V, CustomKeyName, CustomValueName>: Codable where K: Codable, V: Codable {
     public let key: K
     public let value: V
@@ -12,7 +12,7 @@ public struct MapKeyValue<K, V, CustomKeyName, CustomValueName>: Codable where K
     public enum CodingKeys: String, CodingKey {
         case key
         case value
-        
+
         public var rawValue: String {
             switch self {
             case .key: return customKeyName()

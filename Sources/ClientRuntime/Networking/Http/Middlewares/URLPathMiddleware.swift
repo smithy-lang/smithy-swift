@@ -9,13 +9,13 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
                                 OperationStackOutput: HttpResponseBinding,
                                 OperationStackError: HttpResponseBinding>: ClientRuntime.Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
-    
+
     let urlPrefix: Swift.String?
-    
+
     public init(urlPrefix: Swift.String? = nil) {
         self.urlPrefix = urlPrefix
     }
-    
+
     public func handle<H>(context: Context,
                           input: MInput,
                           next: H) async throws -> MOutput
@@ -35,7 +35,7 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
               copiedContext.attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
               return try await next.handle(context: copiedContext, input: input)
           }
-    
+
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext

@@ -8,7 +8,7 @@ import ClientRuntime
 
 public struct MockStreamInput: Encodable {
     let body: ByteStream
-    
+
     public init(body: ByteStream) {
         self.body = body
     }

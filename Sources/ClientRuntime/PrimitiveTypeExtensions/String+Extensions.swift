@@ -88,7 +88,7 @@ extension String {
         let substring = self[range.upperBound...]
         return String(substring)
     }
-    
+
     /// Returns a substring before the first occurrence of `separator` or original string if `separator` is absent
     public func substringBefore(_ separator: String) -> String {
         guard let range = self.range(of: separator) else {

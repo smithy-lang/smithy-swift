@@ -5,11 +5,11 @@ import AwsCommonRuntimeKit
 
 public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "ContentMD5"
-    
+
     private let contentMD5HeaderName = "Content-MD5"
-    
+
     public init() {}
-    
+
     public func handle<H>(context: Context,
                           input: MInput,
                           next: H) async throws -> MOutput
@@ -17,7 +17,7 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: M
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
-        
+
         switch input.body {
         case .data(let data):
             guard
@@ -39,7 +39,7 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: M
             }
             logger.error("Unhandled case for Content-MD5")
         }
-        
+
         return try await next.handle(context: context, input: input)
     }
 

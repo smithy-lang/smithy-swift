@@ -8,7 +8,7 @@ import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
 extension FileHandle {
-    
+
     func toByteBuffer() -> ByteBuffer {
         return ByteBuffer(data: self.readDataToEndOfFile())
     }

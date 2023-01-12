@@ -8,15 +8,15 @@
 public struct URLHostMiddleware<OperationStackInput,
                                 OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
-    
+
     let host: String?
     let hostPrefix: String?
-    
+
     public init(host: String? = nil, hostPrefix: String? = nil) {
         self.host = host
         self.hostPrefix = hostPrefix
     }
-    
+
     public func handle<H>(context: Context,
                           input: MInput,
                           next: H) async throws -> MOutput
@@ -35,7 +35,7 @@ public struct URLHostMiddleware<OperationStackInput,
               }
               return try await next.handle(context: copiedContext, input: input)
           }
-    
+
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext

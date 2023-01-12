@@ -11,27 +11,27 @@ public struct Endpoint: Hashable {
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int16
-    
+
     public let headers: Headers?
     public let properties: [String: AnyHashable]
-    
+
     public init(urlString: String,
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let url = URL(string: urlString) else {
             throw ClientError.unknownError("invalid url \(urlString)")
         }
-        
+
         try self.init(url: url, headers: headers, properties: properties)
     }
-    
+
     public init(url: URL,
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let host = url.host else {
             throw ClientError.unknownError("invalid host \(String(describing: url.host))")
         }
-        
+
         self.init(host: host,
                   path: url.path,
                   port: Int16(url.port ?? 443),
@@ -40,7 +40,7 @@ public struct Endpoint: Hashable {
                   headers: headers,
                   properties: properties)
     }
-    
+
     public init(host: String,
                 path: String = "/",
                 port: Int16 = 443,
@@ -70,7 +70,7 @@ public extension Endpoint {
 
         return components.url
     }
-    
+
     var queryItemString: String {
         guard let queryItems = queryItems, !queryItems.isEmpty else {
             return ""

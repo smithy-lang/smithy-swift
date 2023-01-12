@@ -19,7 +19,7 @@ class MiddlewareStackTests: XCTestCase {
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestHeaderName1", headerValue: "TestHeaderValue1"))
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
-        
+
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
@@ -31,7 +31,7 @@ class MiddlewareStackTests: XCTestCase {
                                             }))
         XCTAssert(result.value == 200)
     }
-    
+
     func testMiddlewareStackConvenienceFunction() async throws {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
@@ -42,7 +42,7 @@ class MiddlewareStackTests: XCTestCase {
             .build()
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> OperationOutput<MockOutput> in
-            
+
             return try await next.handle(context: context, input: input)
         }
         stack.serializeStep.intercept(position: .after, id: "Serialize") { (context, input, next) -> OperationOutput<MockOutput> in
@@ -67,10 +67,10 @@ class MiddlewareStackTests: XCTestCase {
                                                                                          output: mockOutput)
                                                 return output
                                             }))
-        
+
         XCTAssert(result.value == 200)
     }
-    
+
     func testFullBlownOperationRequestWithClientHandler() async throws {
         let httpClientConfiguration = HttpClientConfiguration()
         let clientEngine = CRTClientEngine()
@@ -88,9 +88,9 @@ class MiddlewareStackTests: XCTestCase {
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,
                                         middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
-        
+
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
-        
+
         XCTAssert(result.value == 200)
         XCTAssert(result.headers.headers.contains(where: { (header) -> Bool in
             header.name == "Content-Length"

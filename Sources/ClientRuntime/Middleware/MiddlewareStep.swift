@@ -8,30 +8,30 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     public typealias Context = StepContext
     public typealias MInput = Input
     public typealias MOutput = Output
-    
+
     var orderedMiddleware: OrderedGroup<MInput,
                                         MOutput,
                                         Context> = OrderedGroup<MInput, MOutput, Context>()
-    
+
     public let id: String
-    
+
     public init(id: String) {
         self.id = id
     }
-    
+
     func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
         return orderedMiddleware.get(id: id)
     }
-    
+
     /// This execute will execute the stack and use your next as the last closure in the chain
     public func handle<H: Handler>(context: Context,
                                    input: MInput,
                                    next: H) async throws -> MOutput
     where H.Input == MInput, H.Output == MOutput, H.Context == Context {
-        
+
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
-        
+
         guard !order.isEmpty else {
             return try await handler.handle(context: context, input: input)
         }
@@ -41,15 +41,15 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
             let composedHandler = ComposedHandler(handler, order[index].value)
             handler = composedHandler.eraseToAnyHandler()
         }
-        
+
         return try await handler.handle(context: context, input: input)
     }
-    
+
     public mutating func intercept<M: Middleware>(position: Position, middleware: M)
     where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
-    
+
     /// Convenience function for passing a closure directly:
     ///
     /// ```

@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 /*
  * Used for decoding lists for RestXML
  */

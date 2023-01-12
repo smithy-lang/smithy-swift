@@ -20,7 +20,7 @@ class HttpClientTests: NetworkingTestUtils {
     override func tearDown() {
         super.tearDown()
     }
-    
+
     func testExecuteRequest() async throws {
         let resp = try await httpClient.execute(request: mockHttpDataRequest)
         XCTAssertNotNil(resp)

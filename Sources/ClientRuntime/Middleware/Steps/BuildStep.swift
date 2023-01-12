@@ -20,15 +20,15 @@ public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
                                                           H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SdkHttpRequestBuilder
-    
+
     public typealias Output = OperationOutput<OperationStackOutput>
-    
+
     let handler: H
-    
+
     public init(handler: H) {
         self.handler = handler
     }
-    
+
     public func handle(context: HttpContext, input: Input) async throws -> Output {
         return try await handler.handle(context: context, input: input)
     }

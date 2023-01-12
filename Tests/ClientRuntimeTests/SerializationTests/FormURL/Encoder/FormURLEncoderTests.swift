@@ -4,12 +4,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 import XCTest
 @testable import ClientRuntime
 
 class FormURLEncoderTests: XCTestCase {
-    
+
     func testFlattenedList() {
         let flattenedListArg = ["listArgFlat1", "listArgFlat2"]
         let payload = QueryListsInput(flattenedListArg: flattenedListArg)
@@ -37,7 +37,7 @@ class FormURLEncoderTests: XCTestCase {
         """
         XCTAssertEqual(expectedString, actualDataString)
     }
-    
+
     func testFlattenedMap() {
         let flattenedMap = ["first": "hello",
                             "second": "konnichiwa"]

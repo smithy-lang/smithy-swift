@@ -10,7 +10,7 @@ public enum SdkError<E>: Error {
   // error from the underlying client runtime
   case client(ClientError, HttpResponse? = nil)
 
-  // unknown error 
+  // unknown error
   case unknown(Error?)
 
 }

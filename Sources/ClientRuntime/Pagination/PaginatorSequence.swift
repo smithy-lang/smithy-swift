@@ -13,7 +13,7 @@ where Input.Token: Equatable {
     let inputKey: KeyPath<Input, Input.Token?>?
     let outputKey: KeyPath<Output, Input.Token?>
     let paginationFunction: (Input) async throws -> Output
-    
+
     public init(input: Input,
                 inputKey: KeyPath<Input, Input.Token?>? = nil,
                 outputKey: KeyPath<Output, Input.Token?>,
@@ -23,17 +23,17 @@ where Input.Token: Equatable {
         self.outputKey = outputKey
         self.paginationFunction = paginationFunction
     }
-    
+
     public struct PaginationIterator: AsyncIteratorProtocol {
         var input: Input
         let sequence: PaginatorSequence
         var token: Input.Token?
         var isFirstPage: Bool = true
-        
+
         // swiftlint:disable force_cast
         public mutating func next() async throws -> Output? {
             while token != nil || isFirstPage {
-                
+
                 if let token = token,
                    (token is String && !(token as! String).isEmpty) ||
                     (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
@@ -50,7 +50,7 @@ where Input.Token: Equatable {
             return nil
         }
     }
-    
+
     public func makeAsyncIterator() -> PaginationIterator {
         PaginationIterator(input: input, sequence: self)
     }
