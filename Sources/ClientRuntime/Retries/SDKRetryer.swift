@@ -101,7 +101,8 @@ extension AwsCommonRuntimeKit.RetryStrategy {
             maxRetries: options.maxRetries,
             backOffScaleFactor: options.backOffScaleFactor,
             jitterMode: options.jitterMode.toCRTType(),
-            generateRandom: nil // we should pass in the options.generateRandom but currently it fails since the underlying closure is a c closure
+            generateRandom: nil // we should pass in the options.generateRandom but currently
+                                // it fails since the underlying closure is a c closure
         )
     }
 }

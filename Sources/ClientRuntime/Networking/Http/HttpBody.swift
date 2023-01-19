@@ -39,7 +39,6 @@ public extension HttpBody {
     }
 }
 
-
 extension HttpBody: CustomDebugStringConvertible {
     public var debugDescription: String {
         var bodyAsString: String?
