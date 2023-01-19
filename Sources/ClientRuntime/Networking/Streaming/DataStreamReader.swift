@@ -45,7 +45,7 @@ public class DataStreamReader: StreamReader {
         let count = Int(maxBytes ?? availableForRead)
         var data = Data(count: count)
         withLockingClosure {
-            var bytesRead: Int? = nil
+            var bytesRead: Int?
             data.withUnsafeMutableBytes { buffer in
                 let typedBuffer = buffer.bindMemory(to: UInt8.self)
                 bytesRead = byteBuffer.read(buffer: typedBuffer)
