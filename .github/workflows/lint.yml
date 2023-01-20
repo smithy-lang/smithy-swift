@@ -15,7 +15,9 @@ jobs:
       - name: Run ktlint
         run: ./gradlew ktlint
   swiftlint:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/realm/swiftlint:0.50.3
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
