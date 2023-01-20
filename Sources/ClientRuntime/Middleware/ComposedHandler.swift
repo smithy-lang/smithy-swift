@@ -5,10 +5,10 @@
 public struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
     // the next handler to call
     let next: AnyHandler<MInput, MOutput, Context>
-    
+
     // the middleware decorating 'next'
     let with: AnyMiddleware<MInput, MOutput, Context>
-    
+
     public init<H: Handler, M: Middleware> (_ realNext: H, _ realWith: M)
     where H.Input == MInput,
           H.Output == MOutput,
@@ -16,7 +16,7 @@ public struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
           M.MOutput == MOutput,
           M.Context == Context,
           H.Context == Context {
-        
+
         self.next = AnyHandler(realNext)
         self.with = AnyMiddleware(realWith)
     }

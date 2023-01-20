@@ -52,12 +52,12 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             }
             if (generateTestTarget) {
                 writer.openBlock(".testTarget(", ")") {
-                    writer.write("name: \"${settings.moduleName}Tests\",")
+                    writer.write("name: \"${settings.testModuleName}\",")
                     writer.openBlock("dependencies: [", "],") {
                         writer.write("\$S,", settings.moduleName)
                         writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\")")
                     }
-                    writer.write("path: \"./${settings.moduleName}Tests\"")
+                    writer.write("path: \"./${settings.testModuleName}\"")
                 }
             }
         }

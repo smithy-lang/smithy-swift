@@ -22,7 +22,7 @@ extension Box: Codable where T: Codable {
         var container = encoder.singleValueContainer()
         try container.encode(value)
     }
-    
+
     public convenience init(from decoder: Decoder) throws {
         let values = try decoder.singleValueContainer()
         let value = try values.decode(T.self)

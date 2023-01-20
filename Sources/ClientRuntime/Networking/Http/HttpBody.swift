@@ -14,7 +14,7 @@ public extension HttpBody {
     static var empty: HttpBody {
         .data(nil)
     }
-    
+
     func toBytes() -> ByteBuffer? {
         switch self {
         case let .data(data):
@@ -25,7 +25,7 @@ public extension HttpBody {
             return nil
         }
     }
-    
+
     /// Returns true if the http body is `.none` or if the underlying data is nil or is empty.
     var isEmpty: Bool {
         switch self {
@@ -38,7 +38,6 @@ public extension HttpBody {
         }
     }
 }
-
 
 extension HttpBody: CustomDebugStringConvertible {
     public var debugDescription: String {

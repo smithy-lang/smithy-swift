@@ -19,11 +19,11 @@ public struct ContentTypeMiddleware<OperationStackInput,
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
-        
+
         if !input.builder.headers.exists(name: "Content-Type") {
             input.builder.withHeader(name: "Content-Type", value: contentType)
         }
-        
+
         return try await next.handle(context: context, input: input)
     }
 

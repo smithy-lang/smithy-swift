@@ -10,7 +10,7 @@ import ClientRuntime
 import SmithyTestUtil
 
 class OperationStackTests: HttpRequestTestBase {
-    
+
     func testMiddlewareInjectableInit() async throws {
         var currExpectCount = 1
         let defaultTimeout = 2.0
@@ -20,7 +20,7 @@ class OperationStackTests: HttpRequestTestBase {
         let expectFinalizeMiddleware = expectation(description: "finalizeMiddlware")
         let expectDeserializeMiddleware = expectation(description: "deserializeMiddleware")
         let expectHandler = expectation(description: "handler")
-        
+
         let addContextValues = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
@@ -33,7 +33,7 @@ class OperationStackTests: HttpRequestTestBase {
         stack.initializeStep.intercept(position: .before, middleware: MockInitializeMiddleware(id: "TestInitializeMiddleware", callback: { _, _ in
             currExpectCount = self.checkAndFulfill(currExpectCount, 1, expectation: expectInitializeMiddleware)
         }))
-        
+
         stack.serializeStep.intercept(position: .before, middleware: MockSerializeMiddleware(
                                         id: "TestSerializeMiddleware",
                                         headerName: "TestHeaderName1",
@@ -41,22 +41,22 @@ class OperationStackTests: HttpRequestTestBase {
                                         callback: { _, _ in
                                             currExpectCount = self.checkAndFulfill(currExpectCount, 2, expectation: expectSerializeMiddleware)
                                         }))
-        
+
         stack.buildStep.intercept(position: .before, middleware: MockBuildMiddleware(id: "TestBuildMiddleware", callback: { _, _ in
             currExpectCount = self.checkAndFulfill(currExpectCount, 3, expectation: expectBuildMiddleware)
         }))
-        
+
         stack.finalizeStep.intercept(position: .before, middleware: MockFinalizeMiddleware(id: "TestFinalizeMiddleware", callback: { _, _ in
             currExpectCount = self.checkAndFulfill(currExpectCount, 4, expectation: expectFinalizeMiddleware)
         }))
-        
+
         stack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
                                             id: "TestDeserializeMiddleware",
                                             callback: {_, _ in
                                                 currExpectCount = self.checkAndFulfill(currExpectCount, 5, expectation: expectDeserializeMiddleware)
                                                 return nil
                                             }))
-        
+
         let result = try await stack.handleMiddleware(context: builtContext,
                                             input: MockInput(),
                                             next: MockHandler { (_, request) in
@@ -66,7 +66,7 @@ class OperationStackTests: HttpRequestTestBase {
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })
-        
+
         wait(for: [expectInitializeMiddleware,
                    expectSerializeMiddleware,
                    expectBuildMiddleware,
@@ -74,11 +74,11 @@ class OperationStackTests: HttpRequestTestBase {
                    expectDeserializeMiddleware,
                    expectHandler],
              timeout: defaultTimeout)
-        
+
 
         XCTAssert(result.value == 200)
     }
-    
+
     private func checkAndFulfill(_ currCount: Int, _ expectedCount: Int, expectation: XCTestExpectation) -> Int {
         if currCount == expectedCount {
             expectation.fulfill()

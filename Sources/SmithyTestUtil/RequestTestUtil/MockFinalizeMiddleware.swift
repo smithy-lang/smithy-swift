@@ -20,7 +20,7 @@ public struct MockFinalizeMiddleware: Middleware {
         self.id = id
         self.callback = callback
     }
-    
+
     public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
@@ -29,8 +29,8 @@ public struct MockFinalizeMiddleware: Middleware {
         if let callback = self.callback {
             callback(context, input)
         }
-        
+
         return try await next.handle(context: context, input: input)
     }
-   
+
 }

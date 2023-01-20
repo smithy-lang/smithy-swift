@@ -5,7 +5,7 @@ public protocol Handler {
     associatedtype Input
     associatedtype Output
     associatedtype Context: MiddlewareContext
-       
+
     func handle(context: Context, input: Input) async throws -> Output
 }
 

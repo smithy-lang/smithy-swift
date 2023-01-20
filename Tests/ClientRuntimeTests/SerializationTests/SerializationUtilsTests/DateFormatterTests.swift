@@ -7,9 +7,9 @@ import XCTest
 @testable import ClientRuntime
 
 class DateFormatterTests: XCTestCase {
-    
+
     // MARK: - RFC5322 With Fractional Seconds
-    
+
     func test_rfc5322WithFractionalSeconds_returnsDateForValidRFC5322String() {
         let validDates = [
             // standard
@@ -38,9 +38,9 @@ class DateFormatterTests: XCTestCase {
              "Mon, 20 Nov 1993 4:2:7.1 GMT":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 4, minute: 2, second: 7, milliseconds: 100)
         ]
-        
+
         let formatter = DateFormatter.rfc5322WithFractionalSeconds
-        
+
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
                 XCTFail("could not parse RFC5322 string: \(dateString)")
@@ -49,7 +49,7 @@ class DateFormatterTests: XCTestCase {
             assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
         }
     }
-    
+
     func test_rfc5322WithFractionalSeconds_returnsNilForInvalidRFC5322String() {
         let inValidDates = [
             "Sun, 06 Nov 1994 08:49.000 GMT",
@@ -60,25 +60,25 @@ class DateFormatterTests: XCTestCase {
             "Mon, 32 Nov 1994 08:49:37.000 GMT",
             "Mon, 07 Nov 1994 14:62:37.000 GMT",
             "Mon, 07 Nov 1994 14:02:72.000 GMT",
-            
+
             // standard rfc5322 string but should fail since it excludes fractional seconds
             "Sun, 20 Nov 1993 05:45:1 GMT"
         ]
-        
+
         let formatter = DateFormatter.rfc5322WithFractionalSeconds
-        
+
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
             XCTAssertNil(constructedDate, "able to parse invalid RFC7231 string: \(dateString)")
         }
     }
-    
+
     func test_rfc5322WithFractionalSeconds_returnsStringInRFC5322Format() {
         let date = Date.makeDateForTests(day: 04, month: 05, year: 1991, hour: 10, minute: 12, second: 10, milliseconds: 123)
         let dateString = date.rfc5322WithFractionalSeconds()
         XCTAssertEqual(dateString, "Sat, 04 May 1991 10:12:10.123 GMT")
     }
-    
+
     // MARK: - RFC5322 Without Fractional Seconds
 
     func test_rfc5322WithoutFractionalSeconds_returnsDateForValidRFC5322String() {
@@ -109,9 +109,9 @@ class DateFormatterTests: XCTestCase {
              "Mon, 20 Nov 1993 4:2:7 GMT":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 4, minute: 2, second: 7)
         ]
-        
+
         let formatter = DateFormatter.rfc5322WithoutFractionalSeconds
-        
+
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
                 XCTFail("could not parse RFC5322 string: \(dateString)")
@@ -120,7 +120,7 @@ class DateFormatterTests: XCTestCase {
             assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
         }
     }
-    
+
     func test_rfc5322WithoutFractionalSeconds_returnsNilForInvalidRFC5322String() {
         let inValidDates = [
             "Sun, 06 Nov 1994 08:49 GMT",
@@ -131,27 +131,27 @@ class DateFormatterTests: XCTestCase {
             "Mon, 32 Nov 1994 08:49:37 GMT",
             "Mon, 07 Nov 1994 14:62:37 GMT",
             "Mon, 07 Nov 1994 14:02:72 GMT",
-            
+
             // standard rfc5322 string but should fail since it includes fractional seconds
             "Sun, 20 Nov 1993 05:45:1.000 GMT"
         ]
-        
+
         let formatter = DateFormatter.rfc5322WithoutFractionalSeconds
-        
+
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
             XCTAssertNil(constructedDate, "able to parse invalid RFC7231 string: \(dateString)")
         }
     }
-    
+
     func test_rfc5322WithoutFractionalSeconds_returnsStringInRFC5322Format() {
         let date = Date.makeDateForTests(day: 04, month: 05, year: 1991, hour: 10, minute: 12, second: 10)
         let dateString = date.rfc5322WithoutFractionalSeconds()
         XCTAssertEqual(dateString, "Sat, 04 May 1991 10:12:10 GMT")
     }
-    
+
     // MARK: - ISO8601 With Fractional Seconds
-    
+
     func test_iso8601WithFractionalSeconds_returnsDateForValidISO8601String() {
         let validDates = [
             // standard
@@ -172,9 +172,9 @@ class DateFormatterTests: XCTestCase {
             "1993-11-20T05:50:01.007 +005001":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, milliseconds: 7)
         ]
-        
+
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-        
+
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
                 XCTFail("could not parse ISO8601 string: \(dateString)")
@@ -183,7 +183,7 @@ class DateFormatterTests: XCTestCase {
             assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
         }
     }
-    
+
     func test_iso8601WithFractionalSeconds_returnsNilForInvalidISO8601String() {
         let inValidDates = [
             "1993-11-20",
@@ -193,27 +193,27 @@ class DateFormatterTests: XCTestCase {
             "2017-07-22T03::00Z",
             "2017-07-22T03:0f:00Z",
             "1993-11-20T05:45:01z+05:00",
-            
+
             // standard rfc5322 string but should fail since it excludes fractional seconds
             "1993-11-20T05:45:01Z"
         ]
-        
+
         let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
-        
+
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
             XCTAssertNil(constructedDate, "able to parse invalid ISO8601 string: \(dateString)")
         }
     }
-    
+
     func test_iso8601WithFractionalSeconds_returnsStringInISO8601Format() {
         let date = Date.makeDateForTests(day: 04, month: 05, year: 1991, hour: 10, minute: 12, second: 10, milliseconds: 123)
         let dateString = date.iso8601WithFractionalSeconds()
         XCTAssertEqual(dateString, "1991-05-04T10:12:10.123Z")
     }
-    
+
     // MARK: - ISO8601 Without Fractional Seconds
-    
+
     func test_iso8601WithoutFractionalSeconds_returnsDateForValidISO8601String() {
         let validDates = [
             // standard
@@ -238,9 +238,9 @@ class DateFormatterTests: XCTestCase {
             "193-7-022T05:00045:001 +005001":
                 ExpectedDateComponents(day: 22, month: 7, year: 193, hour: 4, minute: 55, second: 0)
         ]
-        
+
         let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-        
+
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
                 XCTFail("could not parse ISO8601 string: \(dateString)")
@@ -249,7 +249,7 @@ class DateFormatterTests: XCTestCase {
             assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
         }
     }
-    
+
     func test_iso8601WithoutFractionalSeconds_returnsNilForInvalidISO8601String() {
         let inValidDates = [
             "1993-11-20",
@@ -259,27 +259,27 @@ class DateFormatterTests: XCTestCase {
             "2017-07-22T03::00Z",
             "2017-07-22T03:0f:00Z",
             "1993-11-20T05:45:01z+05:00",
-            
+
             // standard rfc5322 string but should fail since it includes fractional seconds
             "1993-11-20T05:45:01.000Z"
         ]
-        
+
         let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
-        
+
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
             XCTAssertNil(constructedDate, "able to parse invalid ISO8601 string: \(dateString)")
         }
     }
-    
+
     func test_iso8601WithoutFractionalSeconds_returnsStringInISO8601Format() {
         let date = Date.makeDateForTests(day: 04, month: 05, year: 1991, hour: 10, minute: 12, second: 10)
         let dateString = date.iso8601WithoutFractionalSeconds()
         XCTAssertEqual(dateString, "1991-05-04T10:12:10Z")
     }
-    
+
     // MARK: - Test Helpers
-        
+
     struct ExpectedDateComponents {
         let day: Int
         let month: Int
@@ -288,7 +288,7 @@ class DateFormatterTests: XCTestCase {
         let minute: Int
         let second: Int
         let milliseconds: Int?
-        
+
         init(day: Int, month: Int, year: Int, hour: Int, minute: Int, second: Int, milliseconds: Int? = nil) {
             self.day = day
             self.month = month
@@ -299,7 +299,7 @@ class DateFormatterTests: XCTestCase {
             self.milliseconds = milliseconds
         }
     }
-    
+
     func assert(
         date: Date,
         hasComponents
@@ -309,49 +309,49 @@ class DateFormatterTests: XCTestCase {
     ) {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(abbreviation: "GMT")! // It is known that GMT exists
-        
+
         XCTAssertEqual(
             calendar.component(.day, from: date),
             components.day,
             "Failed to match day for \(dateString)",
             line: line
         )
-        
+
         XCTAssertEqual(
             calendar.component(.month, from: date),
             components.month,
             "Failed to match month for \(dateString)",
             line: line
         )
-        
+
         XCTAssertEqual(
             calendar.component(.year, from: date),
             components.year,
             "Failed to match year for \(dateString)",
             line: line
         )
-        
+
         XCTAssertEqual(
             calendar.component(.hour, from: date),
             components.hour,
             "Failed to match hour for \(dateString)",
             line: line
         )
-        
+
         XCTAssertEqual(
             calendar.component(.minute, from: date),
             components.minute,
             "Failed to match minute for \(dateString)",
             line: line
         )
-        
+
         XCTAssertEqual(
             calendar.component(.second, from: date),
             components.second,
             "Failed to match second for \(dateString)",
             line: line
         )
-        
+
         if components.milliseconds != nil {
             // The date formatters only support up-to milliseconds, so comparing nanoseconds is confusing
             // because the nanoseconds value will be rounded to only include milliseconds and the value itself

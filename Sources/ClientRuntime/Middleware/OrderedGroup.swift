@@ -3,7 +3,7 @@
 
 struct RelativeOrder {
     var order: [String] = []
-    
+
     mutating func add(position: Position, ids: String...) {
         if ids.isEmpty { return}
         var unDuplicatedList = ids
@@ -14,7 +14,7 @@ struct RelativeOrder {
                 unDuplicatedList.remove(at: index)
             }
         }
-        
+
         switch position {
         case .after:
             order.append(contentsOf: unDuplicatedList)
@@ -22,7 +22,7 @@ struct RelativeOrder {
             order.insert(contentsOf: unDuplicatedList, at: 0)
         }
     }
-    
+
     mutating func insert(relativeTo: String, position: Position, ids: String...) {
         if ids.isEmpty {return}
         let indexOfRelativeItem = order.firstIndex(of: relativeTo)
@@ -33,14 +33,14 @@ struct RelativeOrder {
             case .after:
                 order.insert(contentsOf: ids, at: indexOfRelativeItem)
             }
-    
+
         }
     }
-    
+
     func has(id: String) -> Bool {
        return order.contains(id)
     }
-    
+
     mutating func clear() {
         order.removeAll()
     }
@@ -51,9 +51,9 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
     var order = RelativeOrder()
     // key here is name of the middleware aka the id property of the middleware
     private var _items: [String: AnyMiddleware<Input, Output, Context>] = [:]
-    
+
     var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context>)] {
-        
+
         var sorted = [(key: String, value: AnyMiddleware<Input, Output, Context>)]()
         for key in order.order {
             guard let value = _items[key] else {
@@ -64,9 +64,9 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
         }
         return sorted
     }
-    
+
     public init() {}
-    
+
     mutating func add(middleware: AnyMiddleware<Input, Output, Context>,
                       position: Position) {
         if !middleware.id.isEmpty {
@@ -74,14 +74,14 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
             order.add(position: position, ids: middleware.id)
         }
     }
-    
+
     mutating func insert(middleware: AnyMiddleware<Input, Output, Context>,
                          relativeTo: String,
                          position: Position) {
         _items[middleware.id] = middleware
         order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
-    
+
     func get(id: String) -> AnyMiddleware<Input, Output, Context>? {
         return _items[id]
     }

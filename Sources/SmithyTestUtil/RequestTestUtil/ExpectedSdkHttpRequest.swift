@@ -6,7 +6,7 @@
 //
 
 import ClientRuntime
-	
+
 public struct ExpectedSdkHttpRequest {
     public var body: HttpBody
     public var headers: Headers?
@@ -17,7 +17,7 @@ public struct ExpectedSdkHttpRequest {
     public let requiredQueryItems: [URLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
-    
+
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
                 headers: Headers? = nil,
@@ -40,7 +40,7 @@ public struct ExpectedSdkHttpRequest {
 }
 
 public class ExpectedSdkHttpRequestBuilder {
-    
+
     public init() {}
 
     var headers = Headers()
@@ -65,73 +65,73 @@ public class ExpectedSdkHttpRequestBuilder {
         self.headers.add(name: name, values: values)
         return self
     }
-    
+
     @discardableResult
     public func withHeader(name: String, value: String) -> ExpectedSdkHttpRequestBuilder {
         self.headers.add(name: name, value: value)
         return self
     }
-    
+
     @discardableResult
     public func withRequiredHeader(name: String) -> ExpectedSdkHttpRequestBuilder {
         self.requiredHeaders.append(name)
         return self
     }
-    
+
     @discardableResult
     public func withForbiddenHeader(name: String) -> ExpectedSdkHttpRequestBuilder {
         self.forbiddenHeaders.append(name)
         return self
     }
-    
+
     @discardableResult
     public func withMethod(_ value: HttpMethodType) -> ExpectedSdkHttpRequestBuilder {
         self.methodType = value
         return self
     }
-    
+
     @discardableResult
     public func withHost(_ value: String) -> ExpectedSdkHttpRequestBuilder {
         self.host = value
         return self
     }
-    
+
     @discardableResult
     public func withPath(_ value: String) -> ExpectedSdkHttpRequestBuilder {
         self.path = value
         return self
     }
-    
+
     @discardableResult
     public func withBody(_ value: HttpBody) -> ExpectedSdkHttpRequestBuilder {
         self.body = value
         return self
     }
-    
+
     @discardableResult
     public func withQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
-    
+
     @discardableResult
     public func withForbiddenQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.forbiddenQueryItems.append(value)
         return self
     }
-    
+
     @discardableResult
     public func withRequiredQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.requiredQueryItems.append(value)
         return self
     }
-    
+
     @discardableResult
     public func withPort(_ value: Int16) -> ExpectedSdkHttpRequestBuilder {
         self.port = value
         return self
     }
-    
+
     @discardableResult
     public func withProtocol(_ value: ProtocolType) -> ExpectedSdkHttpRequestBuilder {
         self.protocolType = value
@@ -147,7 +147,7 @@ public class ExpectedSdkHttpRequestBuilder {
         let queryItems = !queryItems.isEmpty ? queryItems : nil
         let forbiddenQueryItems = !forbiddenQueryItems.isEmpty ? forbiddenQueryItems : nil
         let requiredQueryItems = !requiredQueryItems.isEmpty ? requiredQueryItems : nil
-        
+
         let headers = !headers.headers.isEmpty ? headers : nil
         let forbiddenHeaders = !forbiddenHeaders.isEmpty ? forbiddenHeaders : nil
         let requiredHeaders = !requiredHeaders.isEmpty ? requiredHeaders : nil

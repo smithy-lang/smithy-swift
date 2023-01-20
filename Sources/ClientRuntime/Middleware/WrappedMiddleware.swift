@@ -5,12 +5,12 @@
 struct WrappedMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {
     let _middleware: MiddlewareFunction<MInput, MOutput, Context>
     var id: String
-    
+
     init(_ middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>, id: String) {
         self._middleware = middleware
         self.id = id
     }
-    
+
     func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) async throws -> MOutput where H.Input == MInput,

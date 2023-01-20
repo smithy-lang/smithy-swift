@@ -13,7 +13,7 @@ public struct RetryOptions {
     public let backOffScaleFactor: TimeInterval
     public let jitterMode: ExponentialBackOffJitterMode
     public let generateRandom: (() -> UInt64)?
-    
+
     public init(
         initialBucketCapacity: Int = 500,
         maxRetries: Int = 10,

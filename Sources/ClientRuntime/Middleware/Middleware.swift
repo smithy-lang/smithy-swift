@@ -5,10 +5,10 @@ public protocol Middleware {
     associatedtype MInput
     associatedtype MOutput
     associatedtype Context: MiddlewareContext
-    
+
     /// The middleware ID
     var id: String { get }
-    
+
     func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) async throws -> MOutput

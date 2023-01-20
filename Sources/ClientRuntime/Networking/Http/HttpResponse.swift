@@ -9,7 +9,7 @@ public class HttpResponse: HttpUrlResponse {
     public var headers: Headers
     public var body: HttpBody
     public var statusCode: HttpStatusCode
-    
+
     init(headers: Headers = Headers(),
          statusCode: HttpStatusCode = HttpStatusCode.processing,
          body: HttpBody = HttpBody.none) {

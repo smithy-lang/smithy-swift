@@ -6,10 +6,10 @@
 public protocol LogAgent {
     /// name of the struct or class where the logger was instantiated from
     var name: String {get}
-    
+
     /// Get or set the configured log level.
     var level: LogAgentLevel {get set}
-    
+
     /// This method is called when a `LogAgent` must emit a log message.
     ///
     /// - parameters:
@@ -49,7 +49,7 @@ public extension LogAgent {
             String($0)
         } ?? "n/a"
     }
-    
+
     /// Log a message passing with the `.info` log level.
     func info(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .info,
@@ -60,7 +60,7 @@ public extension LogAgent {
                  function: function,
                  line: line)
     }
-    
+
     /// Log a message passing with the `LogLevel.warn` log level.
     func warn(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .warn,
@@ -71,7 +71,7 @@ public extension LogAgent {
                  function: function,
                  line: line)
     }
-    
+
     /// Log a message passing with the `.debug` log level.
     func debug(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .debug,
@@ -82,7 +82,7 @@ public extension LogAgent {
                  function: function,
                  line: line)
     }
-    
+
     /// Log a message passing with the `.error` log level.
     func error(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .error,
@@ -93,7 +93,7 @@ public extension LogAgent {
                  function: function,
                  line: line)
     }
-    
+
     /// Log a message passing with the `.trace` log level.
     func trace(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .trace,
@@ -104,7 +104,7 @@ public extension LogAgent {
                  function: function,
                  line: line)
     }
-    
+
     /// Log a message passing with the `.fatal` log level.
     func fatal(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .fatal,

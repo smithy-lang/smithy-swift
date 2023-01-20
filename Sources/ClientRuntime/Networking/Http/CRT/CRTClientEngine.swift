@@ -41,7 +41,7 @@ public class CRTClientEngine: HttpClientEngine {
                 serverName: endpoint.host
             )
 
-            let socketOptions = SocketOptions(socketType: .stream)
+            var socketOptions = SocketOptions(socketType: .stream)
     #if os(iOS) || os(watchOS)
             socketOptions.connectTimeoutMs = 30_000
     #endif
@@ -69,17 +69,17 @@ public class CRTClientEngine: HttpClientEngine {
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
-    
+
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
-    
+
     init(config: CRTClientEngineConfig = CRTClientEngineConfig()) {
         self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
         self.windowSize = config.windowSize
         self.logger = SwiftLogger(label: "CRTClientEngine")
         self.serialExecutor = SerialExecutor(config: config)
     }
-    
+
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
@@ -94,7 +94,7 @@ public class CRTClientEngine: HttpClientEngine {
             }
         })
     }
-    
+
     public func makeHttpRequestStreamOptions(
         _ request: SdkHttpRequest,
         _ continuation: StreamContinuation
@@ -102,7 +102,7 @@ public class CRTClientEngine: HttpClientEngine {
         let response = HttpResponse()
         let crtRequest = try request.toHttpRequest()
         let streamReader: StreamReader = DataStreamReader()
-        
+
         let makeStatusCode: (HTTPStream) -> HttpStatusCode = { stream in
             guard
                 let statusCodeInt = try? stream.statusCode(),
@@ -130,7 +130,7 @@ public class CRTClientEngine: HttpClientEngine {
                 continuation.resume(throwing: CommonRunTimeError.crtError(error))
                 return
             }
-        
+
             response.body = .stream(.reader(streamReader))
             response.statusCode = makeStatusCode(stream)
 

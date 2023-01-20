@@ -12,10 +12,10 @@ import func Foundation.floor
 public enum TimestampFormat: CaseIterable {
     /// Also known as Unix time, the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970, with optional fractional precision (for example, 1515531081.1234).
     case epochSeconds
-    
+
     /// Date time as defined by the date-time production in RFC3339 section 5.6 with no UTC offset and optional fractional precision (for example, 1985-04-12T23:20:50.52Z).
     case dateTime
-    
+
     /// An HTTP date as defined by the IMF-fixdate production in RFC 7231#section-7.1.1.1 (for example, Tue, 29 Apr 2014 18:30:38 GMT) with optional fractional seconds (for example, Sun, 02 Jan 2000 20:34:56.000 GMT).
     case httpDate
 }
@@ -24,12 +24,12 @@ public enum TimestampFormat: CaseIterable {
 public struct TimestampFormatter {
     /// The timestamp serialization format
     let format: TimestampFormat
-    
+
     /// Creates a formatter for the provided format
     public init(format: TimestampFormat) {
         self.format = format
     }
-    
+
     /// Creates and returns a smithy timestamp formatted string representation of the specified date.
     /// For each format, the string will only contain fractional seconds if a non-zero value exists for fractional seconds.
     ///
@@ -52,7 +52,7 @@ public struct TimestampFormatter {
             : date.rfc5322WithoutFractionalSeconds()
         }
     }
-    
+
     /// Creates and returns a date object from the specified smithy timestamp string representation.
     ///
     /// - Parameter string: The smithy timestamp formatted string representation of a date.
@@ -89,12 +89,12 @@ public struct TimestampFormatter {
 struct TimestampEncodable: Encodable {
     let date: Date
     let format: TimestampFormat
-    
+
     init(date: Date, format: TimestampFormat) {
         self.date = date
         self.format = format
     }
-    
+
     /// Encodes the date according to the format.
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -187,7 +187,7 @@ extension KeyedDecodingContainer {
             return try timestampStringAsDate(stringValue, format: format, forKey: key)
         }
     }
-    
+
     /// Decodes a date for the given key. It attempts to decode the date using the given format and throws an error if it fails.
     ///
     /// - Parameters:
@@ -212,7 +212,7 @@ extension KeyedDecodingContainer {
             return try timestampStringAsDate(stringValue, format: format, forKey: key)
         }
     }
-    
+
     /// Returns a date for the given string of the given format.
     /// Always use this function when decoding a timestamp.
     ///
@@ -269,7 +269,7 @@ extension ClientRuntime.Date {
         }
         return nil
     }
-    
+
     /// Returns true if the date contains non-zero values for fractional seconds, otherwise returns false.
     var hasFractionalSeconds: Bool {
         timeIntervalSince1970 != Foundation.floor(timeIntervalSince1970)

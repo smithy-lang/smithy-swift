@@ -8,7 +8,7 @@ import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
 class ClientErrorTests: XCTestCase {
-    
+
     func testNetworkErrorInEqualityWithoutDescription() throws {
         enum NetworkError: Error {
             case actual
@@ -16,10 +16,10 @@ class ClientErrorTests: XCTestCase {
         }
         let actualNetworkError = ClientError.networkError(NetworkError.actual)
         let expectedNetworkError = ClientError.networkError(NetworkError.expected)
-        
+
         XCTAssertNotEqual(actualNetworkError, expectedNetworkError)
     }
-    
+
     func testNetworkErrorInEqualityWithDescription() throws {
         enum NetworkError: Error, CustomStringConvertible {
             case actual
@@ -34,13 +34,13 @@ class ClientErrorTests: XCTestCase {
                 }
             }
         }
-        
+
         let actualNetworkError = ClientError.networkError(NetworkError.actual)
         let expectedNetworkError = ClientError.networkError(NetworkError.expected)
-        
+
         XCTAssertNotEqual(actualNetworkError, expectedNetworkError)
     }
-    
+
     func testNetworkErrorEqualityWithDescription() throws {
         enum NetworkError: Error, CustomStringConvertible {
             case actual
@@ -55,10 +55,10 @@ class ClientErrorTests: XCTestCase {
                 }
             }
         }
-        
+
         let actualNetworkError = ClientError.networkError(NetworkError.actual)
         let actualCopyNetworkError = ClientError.networkError(NetworkError.actualCopy)
-        
+
         XCTAssertEqual(actualNetworkError, actualCopyNetworkError)
     }
 

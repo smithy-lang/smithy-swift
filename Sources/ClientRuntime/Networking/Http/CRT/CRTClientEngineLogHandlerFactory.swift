@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 import Logging
 
 public struct CRTClientEngineLogHandlerFactory: SDKLogHandlerFactory {
@@ -16,7 +16,7 @@ public struct CRTClientEngineLogHandlerFactory: SDKLogHandlerFactory {
         handler.logLevel = logLevel.toLoggerType()
         return handler
     }
-    
+
     public init(logLevel: SDKLogLevel) {
         self.logLevel = logLevel
     }

@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-	
+
 public struct LoggerMiddleware<Output: HttpResponseBinding,
                                OutputError: HttpResponseBinding>: Middleware {
 
@@ -23,25 +23,25 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-        
+
         guard let logger = context.getLogger() else {
             return try await next.handle(context: context, input: input)
         }
-        
+
         if clientLogMode == .request || clientLogMode == .requestAndResponse {
             logger.debug("Request: \(input.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
             logger.debug("Request: \(input.debugDescriptionWithBody)")
         }
-        
+
         let response = try await next.handle(context: context, input: input)
-        
+
         if clientLogMode == .response || clientLogMode == .requestAndResponse {
             logger.debug("Response: \(response.httpResponse.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
             logger.debug("Response: \(response.httpResponse.debugDescriptionWithBody)")
         }
-        
+
         return response
     }
 

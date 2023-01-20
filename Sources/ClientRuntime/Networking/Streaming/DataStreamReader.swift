@@ -9,13 +9,13 @@ import Foundation
 
 public class DataStreamReader: StreamReader {
     private var _availableForRead: UInt
-    
+
     public var availableForRead: UInt {
         return _availableForRead
     }
-    
+
     private var _hasFinishedWriting: Bool
-    
+
     public var hasFinishedWriting: Bool {
         get {
             withLockingClosure {
@@ -40,17 +40,17 @@ public class DataStreamReader: StreamReader {
         self.offset = 0
         self._hasFinishedWriting = false
     }
-    
+
     public func read(maxBytes: UInt? = nil, rewind: Bool = false) -> ByteBuffer {
         let count = Int(maxBytes ?? availableForRead)
         var data = Data(count: count)
         withLockingClosure {
-            var bytesRead: Int? = nil
+            var bytesRead: Int?
             data.withUnsafeMutableBytes { buffer in
                 let typedBuffer = buffer.bindMemory(to: UInt8.self)
                 bytesRead = byteBuffer.read(buffer: typedBuffer)
             }
-            
+
             if !rewind, let bytesRead = bytesRead {
                 _availableForRead -= UInt(bytesRead)
                 offset += UInt(bytesRead)
@@ -58,7 +58,7 @@ public class DataStreamReader: StreamReader {
         }
         return ByteBuffer(data: data)
     }
-    
+
     public func seek(offset: Int) {
         withLockingClosure {
             let temp = Int(self.offset) + offset
@@ -69,7 +69,7 @@ public class DataStreamReader: StreamReader {
             }
         }
     }
-    
+
     public func write(buffer: ByteBuffer) {
         withLockingClosure {
             let data = byteBuffer.getData() + buffer.getData()
@@ -77,7 +77,7 @@ public class DataStreamReader: StreamReader {
             _availableForRead += UInt(buffer.length())
         }
     }
-    
+
     public var contentLength: UInt? {
         withLockingClosure {
             return UInt(byteBuffer.length())
@@ -89,7 +89,7 @@ public class DataStreamReader: StreamReader {
             self.error = error
         }
     }
-    
+
     private func withLockingClosure<T>(closure: () -> T) -> T {
         lock.lock()
         defer {

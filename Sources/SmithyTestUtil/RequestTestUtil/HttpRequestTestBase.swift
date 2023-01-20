@@ -41,32 +41,32 @@ open class HttpRequestTestBase: XCTestCase {
             builder.withHost(deconflictedHost)
         }
         builder.withPath(path)
-        
+
         if let queryParams = queryParams {
             addQueryItems(queryParams: queryParams, builder: builder)
         }
-        
+
         if let forbiddenQueryParams = forbiddenQueryParams {
             addForbiddenQueryItems(queryParams: forbiddenQueryParams, builder: builder)
         }
-        
+
         if let requiredQueryParams = requiredQueryParams {
             addRequiredQueryItems(queryParams: requiredQueryParams, builder: builder)
         }
-        
+
         if let headers = headers {
             for (headerName, headerValue) in headers {
                 let value = sanitizeStringForNonConformingValues(headerValue)
                 builder.withHeader(name: headerName, value: value)
             }
         }
-        
+
         if let forbiddenHeaders = forbiddenHeaders {
             for headerName in forbiddenHeaders {
                 builder.withForbiddenHeader(name: headerName)
             }
         }
-        
+
         if let requiredHeaders = requiredHeaders {
             for headerName in requiredHeaders {
                 builder.withRequiredHeader(name: headerName)
@@ -82,9 +82,9 @@ open class HttpRequestTestBase: XCTestCase {
             let httpBody = HttpBody.data(body.data(using: .utf8))
             builder.withBody(httpBody)
         }
-    
+
         return builder.build()
-        
+
     }
 
     func deconflictHost(host: String, resolvedHost: String?) -> String? {
@@ -115,7 +115,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         return hostOnly
     }
-    
+
     func addQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
@@ -129,7 +129,7 @@ open class HttpRequestTestBase: XCTestCase {
             }
         }
     }
-    
+
     func addForbiddenQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
@@ -143,7 +143,7 @@ open class HttpRequestTestBase: XCTestCase {
             }
         }
     }
-    
+
     func addRequiredQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
@@ -157,7 +157,7 @@ open class HttpRequestTestBase: XCTestCase {
             }
         }
     }
-    
+
     func sanitizeStringForNonConformingValues(_ input: String) -> String {
         switch input {
         case "Infinity": return "inf"
@@ -167,7 +167,7 @@ open class HttpRequestTestBase: XCTestCase {
             return input
         }
     }
-    
+
     /**
      Check if a Query Item with given name exists in array of `URLQueryItem`
      */
@@ -181,7 +181,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         return false
     }
-    
+
     /**
     Check if a header with given name exists in array of `Header`
     */
@@ -191,7 +191,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
         return false
     }
-    
+
     /**
      Asserts `HttpRequest` objects match
      /// - Parameter expected: Expected `HttpRequest`
@@ -207,27 +207,27 @@ open class HttpRequestTestBase: XCTestCase {
     ) {
         // assert headers match
         assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
-        
+
         assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers, file: file, line: line)
-        
+
         assertRequiredHeaders(expected.requiredHeaders, actual.headers, file: file, line: line)
-        
+
         assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
-        
+
         XCTAssertEqual(expected.endpoint.path, actual.endpoint.path, file: file, line: line)
         XCTAssertEqual(expected.endpoint.host, actual.endpoint.host, file: file, line: line)
         XCTAssertEqual(expected.method, actual.method, file: file, line: line)
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems, file: file, line: line)
-        
+
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems, file: file, line: line)
-        
+
         // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
         // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
         if let assertEqualHttpBody = assertEqualHttpBody {
             assertEqualHttpBody(expected.body, actual.body)
         }
     }
-    
+
     public func genericAssertEqualHttpBodyData(
         _ expected: HttpBody,
         _ actual: HttpBody,
@@ -265,7 +265,7 @@ open class HttpRequestTestBase: XCTestCase {
             case .reader(let streamReader):
                 return .success(streamReader.read(maxBytes: nil, rewind: false).getData())
             }
-           
+
         case .none:
             return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
         }
@@ -298,28 +298,28 @@ open class HttpRequestTestBase: XCTestCase {
         guard let expected = expected else {
             return
         }
-        
+
         guard let actual = actual else {
             XCTFail("There are expected headers and no actual headers.", file: file, line: line)
             return
         }
-        
+
         expected.headers.forEach { header in
             XCTAssertTrue(actual.exists(name: header.name), file: file, line: line)
-            
+
             guard actual.values(for: header.name) != header.value else {
                 XCTAssertEqual(actual.values(for: header.name), header.value, file: file, line: line)
                 return
             }
-            
+
             let actualValue = actual.values(for: header.name)?.joined(separator: ", ")
             XCTAssertNotNil(actualValue, file: file, line: line)
-            
+
             let expectedValue = header.value.joined(separator: ", ")
             XCTAssertEqual(actualValue, expectedValue, file: file, line: line)
         }
     }
-    
+
     public func assertForbiddenHeaders(
         _ expected: [String]?,
         _ actual: Headers,
@@ -341,7 +341,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
         }
     }
-    
+
     public func assertRequiredHeaders(
         _ expected: [String]?,
         _ actual: Headers,
@@ -363,7 +363,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
         }
     }
-    
+
     public func assertQueryItems(
         _ expected: [URLQueryItem]?,
         _ actual: [URLQueryItem]?,
@@ -377,7 +377,7 @@ open class HttpRequestTestBase: XCTestCase {
             XCTFail("actual query items in Endpoint is nil but expected are not", file: file, line: line)
             return
         }
-        
+
         for expectedQueryItem in expectedQueryItems {
             let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
             XCTAssertNotNil(
@@ -397,7 +397,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
         }
     }
-    
+
     public func assertForbiddenQueryItems(
         _ expected: [URLQueryItem]?,
         _ actual: [URLQueryItem]?,
@@ -410,7 +410,7 @@ open class HttpRequestTestBase: XCTestCase {
         guard let actualQueryItems = actual else {
             return
         }
-        
+
         for forbiddenQueryItem in forbiddenQueryItems {
             XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name &&
                 $0.value == forbiddenQueryItem.value}),
@@ -420,7 +420,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
         }
     }
-    
+
     public func assertRequiredQueryItems(
         _ expected: [URLQueryItem]?,
         _ actual: [URLQueryItem]?,
@@ -434,7 +434,7 @@ open class HttpRequestTestBase: XCTestCase {
             XCTFail("actual query items in Endpoint is nil but required are not", file: file, line: line)
             return
         }
-        
+
         for requiredQueryItem in requiredQueryItems {
             XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name &&
                 $0.value == requiredQueryItem.value}),
@@ -444,7 +444,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
         }
     }
-    
+
     struct InternalHttpRequestTestBaseError: Error {
         let localizedDescription: String
         public init(_ description: String) {

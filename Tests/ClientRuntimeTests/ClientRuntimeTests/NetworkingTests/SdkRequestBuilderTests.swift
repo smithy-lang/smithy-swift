@@ -15,7 +15,7 @@ class SdkRequestBuilderTests: XCTestCase {
         let originalRequest = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "stehlibstoragebucket144955-dev.s3.us-east-1.amazonaws.com", path: "/", port: 80, queryItems: queryItems, protocolType: .https), headers: Headers())
         let crtRequest = try HTTPRequest()
         crtRequest.path = pathToMatch
-        
+
         let updatedRequest = SdkHttpRequestBuilder().update(from: crtRequest, originalRequest: originalRequest).build()
         let updatedPath = updatedRequest.endpoint.path + updatedRequest.endpoint.queryItemString
         XCTAssertEqual(pathToMatch, updatedPath)
