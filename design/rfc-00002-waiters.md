@@ -1,4 +1,8 @@
-# Waiters Design
+# Waiters
+
+* Proposal: **RFC-00002**
+* Author: [Josh Elkins](https://github.com/jbelkins)
+* Status: **Implemented**
 
 ## Introduction
 
