@@ -1,6 +1,6 @@
 # Waiters
 
-* Proposal: **RFC-00001**
+* Proposal: **RFC-00002**
 * Author: [Josh Elkins](https://github.com/jbelkins)
 * Status: **Implemented**
 
