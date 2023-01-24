@@ -73,13 +73,9 @@ class HttpQueryItemProvider(
         writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.QueryItemProvider) {
             writer.openBlock("public var queryItems: [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
                 writer.openBlock("get throws {", "}") {
-                    if (queryLiterals.isNotEmpty() || queryBindings.isNotEmpty()) {
-                        writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
-                        generateQueryItems()
-                        writer.write("return items")
-                    } else {
-                        writer.write("return []")
-                    }
+                    writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
+                    generateQueryItems()
+                    writer.write("return items")
                 }
             }
         }
