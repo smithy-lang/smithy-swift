@@ -24,7 +24,7 @@ extension SdkError: WaiterTypedError {
         case .service(let error, _):
             return (error as? WaiterTypedError)?.waiterErrorType
         case .client(let error, _):
-            return (error as? WaiterTypedError)?.waiterErrorType
+            return error.waiterErrorType
         case .unknown(let error):
             return (error as? WaiterTypedError)?.waiterErrorType
         }
