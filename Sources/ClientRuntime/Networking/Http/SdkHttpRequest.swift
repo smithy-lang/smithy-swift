@@ -70,18 +70,19 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
 }
 
 extension SdkHttpRequestBuilder {
-    public func update(from crtRequest: HTTPRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+    public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
         host = originalRequest.endpoint.host
-        let pathAndQueryItems = URLComponents(string: crtRequest.path)
-        path = pathAndQueryItems?.path ?? "/"
-        queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
-
+        if let crtRequest = crtRequest as? HTTPRequest {
+            let pathAndQueryItems = URLComponents(string: crtRequest.path)
+            path = pathAndQueryItems?.path ?? "/"
+            queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
+        }
         return self
     }
 
-    func convertSignedHeadersToHeaders(crtRequest: HTTPRequest) -> Headers {
+    func convertSignedHeadersToHeaders(crtRequest: HTTPRequestBase) -> Headers {
         return Headers(httpHeaders: crtRequest.getHeaders())
     }
 }

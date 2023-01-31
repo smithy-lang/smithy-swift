@@ -7,7 +7,7 @@ import AwsCommonRuntimeKit
 
 public enum ClientError: Error, Equatable {
     case networkError(Error)
-    case crtError(CRTError)
+    case crtError(CommonRunTimeError)
     case pathCreationFailed(String)
     case queryItemCreationFailed(String)
     case serializationFailed(String)

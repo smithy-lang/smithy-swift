@@ -103,39 +103,38 @@ public class CRTClientEngine: HttpClientEngine {
         let crtRequest = try request.toHttpRequest()
         let streamReader: StreamReader = DataStreamReader()
 
-        let makeStatusCode: (HTTPStream) -> HttpStatusCode = { stream in
-            guard
-                let statusCodeInt = try? stream.statusCode(),
-                let statusCode = HttpStatusCode(rawValue: statusCodeInt)
-            else { return .notFound }
-            return statusCode
-        }
-
-        let requestOptions = HTTPRequestOptions(request: crtRequest) { [self] (stream, _, httpHeaders) in
-            logger.debug("headers were received")
-            response.statusCode = makeStatusCode(stream)
-            response.headers.addAll(httpHeaders: httpHeaders)
-        } onIncomingHeadersBlockDone: { [self] (stream, _) in
-            logger.debug("header block is done")
-            response.statusCode = makeStatusCode(stream)
-        } onIncomingBody: { [self] (stream, data) in
-            logger.debug("incoming data")
-            response.statusCode = makeStatusCode(stream)
-            let byteBuffer = ByteBuffer(data: data)
-            streamReader.write(buffer: byteBuffer)
-        } onStreamComplete: { [self] (stream, error) in
-            logger.debug("stream completed")
-            if let error = error, error.code != 0 {
-                logger.error("Response encountered an error: \(error)")
-                continuation.resume(throwing: CommonRunTimeError.crtError(error))
-                return
+        let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
+            guard let httpStatusCode = HttpStatusCode(rawValue: Int(statusCode)) else {
+                return .notFound
             }
+            return httpStatusCode
+         }
 
-            response.body = .stream(.reader(streamReader))
-            response.statusCode = makeStatusCode(stream)
-
-            continuation.resume(returning: response)
+        let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
+            response.statusCode = makeStatusCode(statusCode)
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+        } onResponse: { statusCode, headers in
+            response.statusCode = makeStatusCode(statusCode)
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+        } onIncomingBody: { bodyChunk in
+            let byteBuffer = ByteBuffer(data: bodyChunk)
+            streamReader.write(buffer: byteBuffer)
+        } onTrailer: { headers in
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+        } onStreamComplete: { result in
+            streamReader.hasFinishedWriting = true
+            switch result {
+            case .success(let statusCode):
+                response.statusCode = makeStatusCode(statusCode)
+                continuation.resume(returning: response)
+            case .failure(let error):
+                self.logger.error("Response encountered an error: \(error)")
+                streamReader.onError(error: .crtError(error))
+                continuation.resume(throwing: error)
+            }
         }
+
+        response.body = .stream(.reader(streamReader))
         return requestOptions
     }
 }
