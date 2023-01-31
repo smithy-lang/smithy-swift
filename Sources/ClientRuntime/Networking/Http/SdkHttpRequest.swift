@@ -84,7 +84,7 @@ extension SdkHttpRequestBuilder {
             let pathAndQueryItems = URLComponents(string: crtRequest.path)
             path = pathAndQueryItems?.path ?? "/"
             queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
-        } else if let _ = crtRequest as? HTTP2Request {
+        } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
             assertionFailure("Unknown request type")
