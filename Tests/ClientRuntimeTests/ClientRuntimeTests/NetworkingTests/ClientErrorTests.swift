@@ -101,7 +101,7 @@ class ClientErrorTests: XCTestCase {
     }
 
     func test_waiterErrorType_returnsNilForCRTError() async throws {
-        let crtError = CRTError(code: 2)
+        let crtError = CommonRunTimeError.crtError(.init(code: 2))
         let subject = ClientError.crtError(crtError)
         XCTAssertNil(subject.waiterErrorType)
     }

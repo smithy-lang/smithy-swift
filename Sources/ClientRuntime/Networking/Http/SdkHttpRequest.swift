@@ -70,18 +70,29 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
 }
 
 extension SdkHttpRequestBuilder {
-    public func update(from crtRequest: HTTPRequest, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+
+    /// Update the builder with the values from the CRT request
+    /// - Parameters:
+    ///   - crtRequest: the CRT request, this can be either a `HTTPRequest` or a `HTTP2Request`
+    ///   - originalRequest: the SDK request that is used to hold the original values
+    /// - Returns: the builder
+    public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
         host = originalRequest.endpoint.host
-        let pathAndQueryItems = URLComponents(string: crtRequest.path)
-        path = pathAndQueryItems?.path ?? "/"
-        queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
-
+        if let crtRequest = crtRequest as? HTTPRequest {
+            let pathAndQueryItems = URLComponents(string: crtRequest.path)
+            path = pathAndQueryItems?.path ?? "/"
+            queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
+        } else if crtRequest as? HTTP2Request != nil {
+            assertionFailure("HTTP2Request not supported")
+        } else {
+            assertionFailure("Unknown request type")
+        }
         return self
     }
 
-    func convertSignedHeadersToHeaders(crtRequest: HTTPRequest) -> Headers {
+    func convertSignedHeadersToHeaders(crtRequest: HTTPRequestBase) -> Headers {
         return Headers(httpHeaders: crtRequest.getHeaders())
     }
 }
