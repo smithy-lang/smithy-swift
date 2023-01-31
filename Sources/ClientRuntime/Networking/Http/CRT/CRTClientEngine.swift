@@ -104,10 +104,7 @@ public class CRTClientEngine: HttpClientEngine {
         let streamReader: StreamReader = DataStreamReader()
 
         let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
-            guard let httpStatusCode = HttpStatusCode(rawValue: Int(statusCode)) else {
-                return .notFound
-            }
-            return httpStatusCode
+            HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
          }
 
         let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
