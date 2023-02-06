@@ -9,6 +9,8 @@
 // https://stackoverflow.com/questions/45169254/custom-swift-encoder-decoder-for-the-strings-resource-format
 
 public class FormURLEncoder: RequestEncoder {
+    public var messageEncoder: MessageEncoder? = nil
+    
     public init() {}
 
     public func encode<T>(_ value: T) throws -> Data where T: Encodable {

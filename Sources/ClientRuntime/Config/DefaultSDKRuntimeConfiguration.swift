@@ -6,6 +6,8 @@
 //
 
 public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
+    public var messageEncoder: MessageEncoder?
+    public var messageDecoder: MessageDecoder?
     public var encoder: RequestEncoder?
     public var decoder: ResponseDecoder?
     public var httpClientEngine: HttpClientEngine
@@ -29,6 +31,8 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     ) throws {
         self.encoder = nil
         self.decoder = nil
+        self.messageDecoder = nil
+        self.messageDecoder = nil
         self.httpClientEngine = CRTClientEngine()
         self.httpClientConfiguration = HttpClientConfiguration()
         self.idempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()

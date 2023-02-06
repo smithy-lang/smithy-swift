@@ -100,6 +100,7 @@ public class CRTClientEngine: HttpClientEngine {
         _ continuation: StreamContinuation
     ) throws -> HTTPRequestOptions {
         let response = HttpResponse()
+        print("request: \(request.debugDescription)")
         let crtRequest = try request.toHttpRequest()
         let streamReader: StreamReader = DataStreamReader()
 
@@ -110,25 +111,31 @@ public class CRTClientEngine: HttpClientEngine {
         let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+//            print(response.debugDescriptionWithBody)
         } onResponse: { statusCode, headers in
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+            continuation.resume(returning: response)
+//            print(response.debugDescriptionWithBody)
         } onIncomingBody: { bodyChunk in
             let byteBuffer = ByteBuffer(data: bodyChunk)
             streamReader.write(buffer: byteBuffer)
+            print("bodyChunk: \(byteBuffer.length())")
+//            print(response.debugDescriptionWithBody)
         } onTrailer: { headers in
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+//            print(response.debugDescriptionWithBody)
         } onStreamComplete: { result in
             streamReader.hasFinishedWriting = true
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
-                continuation.resume(returning: response)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
                 streamReader.onError(error: .crtError(error))
                 continuation.resume(throwing: error)
             }
+//            print(response.debugDescriptionWithBody)
         }
 
         response.body = .stream(.reader(streamReader))

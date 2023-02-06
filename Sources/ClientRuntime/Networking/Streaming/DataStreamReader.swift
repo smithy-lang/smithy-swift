@@ -34,7 +34,7 @@ public class DataStreamReader: StreamReader {
     private let lock = NSLock()
     private var error: ClientError?
 
-    init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
+    public init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
         self.byteBuffer = byteBuffer
         self._availableForRead = 0
         self.offset = 0

@@ -12,4 +12,8 @@ extension XMLDecoder: ResponseDecoder {
     public func decode<T>(responseBody: Data) throws -> T where T: Decodable {
         return try decode(T.self, from: responseBody)
     }
+    
+    public var messageDecoder: MessageDecoder? {
+        return AWSMessageDecoder()
+    }
 }

@@ -8,6 +8,17 @@ public enum HttpBody: Equatable {
     case data(Data?)
     case stream(ByteStream)
     case none
+    case channel(ChannelContent)
+}
+
+public struct ChannelContent: Equatable, IStreamable {
+    public func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
+        fatalError()
+    }
+    
+    public func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
+        fatalError()
+    }
 }
 
 public extension HttpBody {
@@ -23,6 +34,25 @@ public extension HttpBody {
             return stream.toBytes()
         case .none:
             return nil
+        case .channel(_):
+            fatalError()
+        }
+    }
+    
+    func toStreamable() -> IStreamable {
+        switch self {
+        case .stream(let stream):
+            switch stream {
+            case .reader(let streamReader):
+                guard let streamable = streamReader as? IStreamable else {
+                    fatalError()
+                }
+                return streamable
+            default:
+                fatalError()
+            }
+        default:
+            fatalError()
         }
     }
 
@@ -32,7 +62,9 @@ public extension HttpBody {
         case let .data(data):
             return data?.isEmpty ?? true
         case let .stream(stream):
-            return stream.toBytes().getData().isEmpty
+            fatalError()
+        case .channel(_):
+            fatalError()
         case .none:
             return true
         }

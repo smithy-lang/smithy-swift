@@ -6,6 +6,8 @@ public struct HttpContext: MiddlewareContext {
     public var attributes: Attributes
     var response: HttpResponse?
 
+    public static var signature: String = ""
+
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
@@ -20,6 +22,14 @@ public struct HttpContext: MiddlewareContext {
 
     public func getEncoder() -> RequestEncoder {
         return attributes.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
+    }
+    
+    public func getMessageSigner() -> MessageSigner {
+        return attributes.get(key: AttributeKey<MessageSigner>(name: "MessageSigner"))!
+    }
+    
+    public func getRequestSignature() -> String {
+        return attributes.get(key: AttributeKey<String>(name: "Signature"))!
     }
 
     public func getDecoder() -> ResponseDecoder {
@@ -72,6 +82,7 @@ public class HttpContextBuilder {
     let hostPrefix = AttributeKey<String>(name: "HostPrefix")
     let logger = AttributeKey<LogAgent>(name: "Logger")
     let partitionID = AttributeKey<String>(name: "PartitionID")
+    let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -147,6 +158,12 @@ public class HttpContextBuilder {
     @discardableResult
     public func withLogger(value: LogAgent) -> HttpContextBuilder {
         self.attributes.set(key: logger, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withMessageSigner(value: MessageSigner?) -> HttpContextBuilder {
+        self.attributes.set(key: messageSigner, value: value)
         return self
     }
 

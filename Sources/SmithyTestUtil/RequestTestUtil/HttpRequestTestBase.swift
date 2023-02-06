@@ -265,7 +265,8 @@ open class HttpRequestTestBase: XCTestCase {
             case .reader(let streamReader):
                 return .success(streamReader.read(maxBytes: nil, rewind: false).getData())
             }
-
+        case .channel(_):
+            fatalError()
         case .none:
             return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
         }
