@@ -81,16 +81,16 @@ open class HttpProtocolServiceClient(
         val serviceConfigs = serviceConfig.serviceConfigProperties()
         writer.openBlock("public class \$L: \$L {", "}", serviceConfig.typeName, serviceConfig.typeProtocol) {
             sdkConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.variableType)
             }
             writer.write("")
             otherConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.variableType)
             }
 
             writer.write("")
             serviceConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
+                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.variableType)
             }
 
             writer.write("")

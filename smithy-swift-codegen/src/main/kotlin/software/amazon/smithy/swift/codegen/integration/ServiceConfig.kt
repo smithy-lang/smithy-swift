@@ -13,7 +13,16 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val memberName: String?, val type: Symbol, val propFormatter: String = "\$N", private val documentation: String? = null, val paramFormatter: String = "\$D")
+data class ConfigField(
+    val memberName: String?,
+    val concreteType: Symbol,
+    val protocolType: Symbol? = null,
+    val propFormatter: String = "\$N",
+    private val documentation: String? = null,
+    val paramFormatter: String = "\$D"
+) {
+    val variableType: Symbol = protocolType ?: concreteType
+}
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
@@ -32,7 +41,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryer", ClientRuntimeTypes.Core.SDKRetryer),
+            ConfigField("retryer", ClientRuntimeTypes.Core.SDKRetryer, ClientRuntimeTypes.Core.Retryer),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }

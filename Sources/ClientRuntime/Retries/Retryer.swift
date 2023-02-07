@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-protocol Retryer {
+public protocol Retryer {
     func acquireToken(partitionId: String) async throws -> RetryToken
     func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken
     func recordSuccess(token: RetryToken)

@@ -12,7 +12,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var httpClientConfiguration: HttpClientConfiguration
     public var idempotencyTokenGenerator: IdempotencyTokenGenerator
     public var logger: LogAgent
-    public let retryer: SDKRetryer
+    public let retryer: Retryer
     public var clientLogMode: ClientLogMode
     public var endpoint: String?
 

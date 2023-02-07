@@ -10,9 +10,9 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
 
     public var id: String = "Retryer"
 
-    let retryer: SDKRetryer
+    public let retryer: Retryer
 
-    public init(retryer: SDKRetryer) {
+    public init(retryer: Retryer) {
         self.retryer = retryer
     }
 

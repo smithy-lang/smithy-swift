@@ -16,7 +16,7 @@ public protocol SDKRuntimeConfiguration {
     var idempotencyTokenGenerator: IdempotencyTokenGenerator {get}
     var logger: LogAgent {get}
     var clientLogMode: ClientLogMode {get}
-    var retryer: SDKRetryer {get}
+    var retryer: Retryer {get}
     var endpoint: String? {get set}
 
     /// The partition ID to be used for this configuration.

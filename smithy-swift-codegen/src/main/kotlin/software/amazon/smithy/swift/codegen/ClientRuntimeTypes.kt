@@ -88,6 +88,7 @@ object ClientRuntimeTypes {
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
+        val Retryer = runtimeSymbol("Retryer")
         val SDKRetryer = runtimeSymbol("SDKRetryer")
         val ErrorType = runtimeSymbol("ErrorType")
         val SDKRuntimeConfiguration = runtimeSymbol("SDKRuntimeConfiguration")
