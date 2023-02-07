@@ -8,12 +8,22 @@ import AwsCommonRuntimeKit
 import Foundation
 
 public class DataStreamReader: StreamReader {
-    private var _availableForRead: UInt
-
     public var availableForRead: UInt {
-        return _availableForRead
+        get {
+            withLockingClosure {
+                return _availableForRead
+            }
+        }
+        set {
+            withLockingClosure {
+                _availableForRead = newValue
+            }
+        }
     }
-
+    
+    
+    private var _availableForRead: UInt
+    
     private var _hasFinishedWriting: Bool
 
     public var hasFinishedWriting: Bool {

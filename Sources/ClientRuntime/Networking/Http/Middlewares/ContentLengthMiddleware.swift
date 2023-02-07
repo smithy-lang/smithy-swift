@@ -25,7 +25,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
                 input.headers.update(name: "Content-Length", value: String(bytes.length()))
             case .reader:
                 break
-//                input.headers.update(name: "Transfer-Encoded", value: "Chunked")
+                input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             }
         default:
             input.headers.update(name: "Content-Length", value: "0")

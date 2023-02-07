@@ -85,12 +85,14 @@ public class CRTClientEngine: HttpClientEngine {
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
-            do {
-                let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
-                let stream = try connection.makeRequest(requestOptions: requestOptions)
-                try stream.activate()
-            } catch {
-                continuation.resume(throwing: error)
+            Task {
+                do {
+                    let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
+                    let stream = try connection.makeRequest(requestOptions: requestOptions)
+                    try stream.activate()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
         })
     }
@@ -112,7 +114,18 @@ public class CRTClientEngine: HttpClientEngine {
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
 //            print(response.debugDescriptionWithBody)
+            if case .stream(let stream) = request.body {
+                if case .reader(let reader) = stream {
+                    reader.availableForRead = 1
+                }
+            }
         } onResponse: { statusCode, headers in
+            if case .stream(let stream) = request.body {
+                if case .reader(let reader) = stream {
+                    reader.availableForRead = 1
+                }
+            }
+            print("HTTP Response: \(statusCode)")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
             continuation.resume(returning: response)
@@ -127,7 +140,7 @@ public class CRTClientEngine: HttpClientEngine {
 //            print(response.debugDescriptionWithBody)
         } onStreamComplete: { result in
             streamReader.hasFinishedWriting = true
-            switch result {
+        switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):

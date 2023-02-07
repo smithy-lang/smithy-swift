@@ -85,9 +85,9 @@ extension Date {
         Int64((self.timeIntervalSince1970 * 1000.0).rounded())
     }
 
-    public init(millisecondsSince1970: Int64) {
-        self = Date(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1000)
-    }
+//    public init(millisecondsSince1970: Int64) {
+//        self = Date(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1000)
+//    }
 }
 
 extension EventStreams {
@@ -124,8 +124,8 @@ extension EventStreams.Header {
 
 extension EventStreams {
     public struct Header {
-        let name: String
-        let value: HeaderValue
+        public let name: String
+        public let value: HeaderValue
         
         public init(name: String, value: HeaderValue) {
             self.name = name
@@ -334,7 +334,7 @@ public struct AsyncResponseStream<Element>: AsyncSequence, Equatable {
     }
 }
 
-enum EventStreamError: Error {
+public enum EventStreamError: Error {
     case decoding(Int32, String)
 }
 
@@ -354,8 +354,31 @@ public struct AWSMessageDecoder: MessageDecoder {
     
     public func decode(data: ClientRuntime.Data) async throws -> EventStreams.Message {
         return try await withCheckedThrowingContinuation { continuation in
+            let decoder: EventStreamMessageDecoder
             do {
-                let decoder = try decoder(contiuation: continuation)
+                var decodedPayload = Data()
+                var headers: [EventStreamHeader] = []
+                decoder = EventStreamMessageDecoder(
+                    onPayloadSegment: { payload, finalSegment in
+                        decodedPayload.append(payload)
+                    },
+                    onPreludeReceived: { totalLength, headersLength in
+                        
+                    },
+                    onHeaderReceived: { header in
+                        headers.append(header)
+                    },
+                    onComplete: {
+                        let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
+                        print(crtMessage)
+                        continuation.resume(returning: crtMessage)
+                        print("onComplete")
+                    },
+                    onError: { code, message in
+//                        completion(.failure(EventStreamError.decoding(code, message)))
+                        continuation.resume(throwing: EventStreamError.decoding(code, message))
+                        print("onError")
+                    })
                 try decoder.decode(data: data)
             } catch {
                 continuation.resume(throwing: error)
@@ -363,7 +386,7 @@ public struct AWSMessageDecoder: MessageDecoder {
         }
     }
     
-    func decoder(contiuation: CheckedContinuation<EventStreams.Message, Error>) throws -> EventStreamMessageDecoder {
+    public func decoder(completion: @escaping (Result<EventStreams.Message, EventStreamError>) -> Void) throws -> EventStreamMessageDecoder {
         var decodedPayload = Data()
         var headers: [EventStreamHeader] = []
         let decoder = EventStreamMessageDecoder(
@@ -379,10 +402,13 @@ public struct AWSMessageDecoder: MessageDecoder {
             onComplete: {
                 let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
                 print(crtMessage)
-                contiuation.resume(returning: crtMessage)
+                completion(.success(crtMessage))
+                print("onComplete")
             },
             onError: { code, message in
-                contiuation.resume(throwing: EventStreamError.decoding(code, message))
+                completion(.failure(EventStreamError.decoding(code, message)))
+//                contiuation.resume(throwing: EventStreamError.decoding(code, message))
+                print("onError")
             })
         return decoder
     }
@@ -399,7 +425,9 @@ public struct AWSMessageDecoder: MessageDecoder {
 
 extension EventStreams.Message {
     func toCRTMessage() -> EventStreamMessage {
-        let crtHeaders = headers.map { header in
+        let crtHeaders = headers.sorted(by: { h1, h2 in
+            h1.name < h2.name
+        }).map { header in
             header.toCRTHeader()
         }
         return EventStreamMessage(headers: crtHeaders, payload: payload)
@@ -462,4 +490,3 @@ extension AsyncStream {
         }
     }
 }
-
