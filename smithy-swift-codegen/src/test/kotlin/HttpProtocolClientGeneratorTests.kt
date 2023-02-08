@@ -49,7 +49,7 @@ class HttpProtocolClientGeneratorTests {
                     public var httpClientEngine: ClientRuntime.HttpClientEngine
                     public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
                     public var logger: ClientRuntime.LogAgent
-                    public var retryer: ClientRuntime.SDKRetryer
+                    public var retryer: ClientRuntime.Retryer
             
                     public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
