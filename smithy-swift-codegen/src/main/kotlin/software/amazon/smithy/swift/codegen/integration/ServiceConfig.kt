@@ -15,12 +15,25 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
  */
 data class ConfigField(
     val memberName: String?,
+
+    /**
+     * The type that is to be used to instantiate this config field.
+     * If no protocol type is provided, this is also the type of the property that provides this config field.
+     */
     val concreteType: Symbol,
+
+    /**
+     * The protocol that should be used for this config field's property type.
+     * If protocol type is null, the concrete type is used instead.
+     */
     val protocolType: Symbol? = null,
     val propFormatter: String = "\$N",
     private val documentation: String? = null,
     val paramFormatter: String = "\$D"
 ) {
+    /**
+     * The type to be used for the property holding this config field.
+     */
     val variableType: Symbol = protocolType ?: concreteType
 }
 
