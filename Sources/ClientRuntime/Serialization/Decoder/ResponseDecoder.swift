@@ -7,5 +7,4 @@ import Foundation
 
 public protocol ResponseDecoder {
     func decode<T: Decodable>(responseBody: Data) throws -> T
-    var messageDecoder: MessageDecoder? {get}
 }

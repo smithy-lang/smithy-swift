@@ -91,7 +91,60 @@ extension Date {
 }
 
 extension EventStreams {
-    public struct Message: SignableMessage, CustomDebugStringConvertible {
+    public typealias DecoderContinuation = CheckedContinuation<EventStreams.Message, Error>
+
+    public struct Message: SignableMessage, CustomDebugStringConvertible, MessageDecoder, MessageEncoder {
+
+        var continuation: DecoderContinuation? = nil
+
+        public init(data: Data) async throws {
+            var decoder: EventStreamMessageDecoder! = nil
+            self = try await withCheckedThrowingContinuation { continuation in
+                var decodedPayload = Data()
+                var decodededHeaders: [EventStreamHeader] = []
+                decoder = EventStreamMessageDecoder(
+                    onPayloadSegment: { payload, finalSegment in
+                        print("Message: onPayloadSegment")
+                        decodedPayload.append(payload)
+                    },
+                    onPreludeReceived: { totalLength, headersLength in
+                        print("Message: onPreludeReceived")
+                    },
+                    onHeaderReceived: { header in
+                        print("Message: onHeaderReceived")
+                        decodededHeaders.append(header)
+                    },
+                    onComplete: {
+                        print("Message: onComplete")
+                        let crtMessage = EventStreams.Message(headers: decodededHeaders.toHeaders(), payload: decodedPayload)
+                        print(crtMessage)
+                        continuation.resume(returning: crtMessage)
+                    },
+                    onError: { code, message in
+                        print("Message: onError")
+                        continuation.resume(throwing: EventStreamError.decoding(code, message))
+                    })
+                do {
+                    try decoder.decode(data: data)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+        
+        public func decode(data: Data) async throws -> EventStreams.Message {
+            fatalError()
+        }
+        
+        public func encode(message: EventStreams.Message) throws -> Data {
+            fatalError()
+        }
+        
+        public func encode() throws -> Data {
+            let crtMessage = self.toCRTMessage()
+            return try crtMessage.getEncoded()
+        }
+        
         static let preludeLength: UInt = 8
         static let preludeLenghtWithCRC: UInt = preludeLength + 4
         
@@ -106,12 +159,6 @@ extension EventStreams {
         public var debugDescription: String {
             "headers: \(headers), payload: \(String(data: payload, encoding: .utf8))"
         }
-    }
-}
-
-extension EventStreams.Message {
-    public func encode() -> Data {
-        fatalError()
     }
 }
 
@@ -246,13 +293,12 @@ extension EventStreams.Message {
 }
 
 public protocol MessageDecoder {
+    init(data: Data) async throws
     func decode(data: Data) async throws -> EventStreams.Message
 }
 
-public extension MessageDecoder {
-}
-
 public protocol MessageEncoder {
+    func encode() throws -> Data
     func encode(message: EventStreams.Message) throws -> Data
 }
 
@@ -338,80 +384,84 @@ public enum EventStreamError: Error {
     case decoding(Int32, String)
 }
 
-public struct AWSMessageEncoder : MessageEncoder {
-    public init() {}
-    
-    public func encode(message: EventStreams.Message) throws -> ClientRuntime.Data {
-        let crtMessage = message.toCRTMessage()
-        return try crtMessage.getEncoded()
-    }
+public struct AWSMessageEncoder  {
+//    public init() {}
+//
+//    public func encode(message: EventStreams.Message) throws -> ClientRuntime.Data {
+//        let crtMessage = message.toCRTMessage()
+//        return try crtMessage.getEncoded()
+//    }
 }
 
-public struct AWSMessageDecoder: MessageDecoder {
+public struct AWSMessageDecoder {
+//    public init(data: Data) async throws {
+//        fatalError()
+//    }
+//
     static let messageLengthBytesCount: UInt = 4
-    
-    public init() {}
-    
-    public func decode(data: ClientRuntime.Data) async throws -> EventStreams.Message {
-        return try await withCheckedThrowingContinuation { continuation in
-            let decoder: EventStreamMessageDecoder
-            do {
-                var decodedPayload = Data()
-                var headers: [EventStreamHeader] = []
-                decoder = EventStreamMessageDecoder(
-                    onPayloadSegment: { payload, finalSegment in
-                        decodedPayload.append(payload)
-                    },
-                    onPreludeReceived: { totalLength, headersLength in
-                        
-                    },
-                    onHeaderReceived: { header in
-                        headers.append(header)
-                    },
-                    onComplete: {
-                        let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
-                        print(crtMessage)
-                        continuation.resume(returning: crtMessage)
-                        print("onComplete")
-                    },
-                    onError: { code, message in
-//                        completion(.failure(EventStreamError.decoding(code, message)))
-                        continuation.resume(throwing: EventStreamError.decoding(code, message))
-                        print("onError")
-                    })
-                try decoder.decode(data: data)
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
-    }
-    
-    public func decoder(completion: @escaping (Result<EventStreams.Message, EventStreamError>) -> Void) throws -> EventStreamMessageDecoder {
-        var decodedPayload = Data()
-        var headers: [EventStreamHeader] = []
-        let decoder = EventStreamMessageDecoder(
-            onPayloadSegment: { payload, finalSegment in
-                decodedPayload.append(payload)
-            },
-            onPreludeReceived: { totalLength, headersLength in
-                
-            },
-            onHeaderReceived: { header in
-                headers.append(header)
-            },
-            onComplete: {
-                let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
-                print(crtMessage)
-                completion(.success(crtMessage))
-                print("onComplete")
-            },
-            onError: { code, message in
-                completion(.failure(EventStreamError.decoding(code, message)))
-//                contiuation.resume(throwing: EventStreamError.decoding(code, message))
-                print("onError")
-            })
-        return decoder
-    }
+//
+//    public init() {}
+//
+//    public func decode(data: ClientRuntime.Data) async throws -> EventStreams.Message {
+//        return try await withCheckedThrowingContinuation { continuation in
+//            let decoder: EventStreamMessageDecoder
+//            do {
+//                var decodedPayload = Data()
+//                var headers: [EventStreamHeader] = []
+//                decoder = EventStreamMessageDecoder(
+//                    onPayloadSegment: { payload, finalSegment in
+//                        decodedPayload.append(payload)
+//                    },
+//                    onPreludeReceived: { totalLength, headersLength in
+//
+//                    },
+//                    onHeaderReceived: { header in
+//                        headers.append(header)
+//                    },
+//                    onComplete: {
+//                        let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
+//                        print(crtMessage)
+//                        continuation.resume(returning: crtMessage)
+//                        print("onComplete")
+//                    },
+//                    onError: { code, message in
+////                        completion(.failure(EventStreamError.decoding(code, message)))
+//                        continuation.resume(throwing: EventStreamError.decoding(code, message))
+//                        print("onError")
+//                    })
+//                try decoder.decode(data: data)
+//            } catch {
+//                continuation.resume(throwing: error)
+//            }
+//        }
+//    }
+//
+//    public func decoder(completion: @escaping (Result<EventStreams.Message, EventStreamError>) -> Void) throws -> EventStreamMessageDecoder {
+//        var decodedPayload = Data()
+//        var headers: [EventStreamHeader] = []
+//        let decoder = EventStreamMessageDecoder(
+//            onPayloadSegment: { payload, finalSegment in
+//                decodedPayload.append(payload)
+//            },
+//            onPreludeReceived: { totalLength, headersLength in
+//
+//            },
+//            onHeaderReceived: { header in
+//                headers.append(header)
+//            },
+//            onComplete: {
+//                let crtMessage = EventStreams.Message(headers: headers.toHeaders(), payload: decodedPayload)
+//                print(crtMessage)
+//                completion(.success(crtMessage))
+//                print("onComplete")
+//            },
+//            onError: { code, message in
+//                completion(.failure(EventStreamError.decoding(code, message)))
+////                contiuation.resume(throwing: EventStreamError.decoding(code, message))
+//                print("onError")
+//            })
+//        return decoder
+//    }
     
     public static func readMessage(streamReader: StreamReader) -> Data {
         let messageLengthBuffer = streamReader.read(maxBytes: messageLengthBytesCount, rewind: true).getData()
@@ -487,6 +537,105 @@ extension AsyncStream {
                 }
                 continuation.finish()
             }
+        }
+    }
+}
+
+public struct ResponseStream: AsyncSequence {
+    public typealias AsyncIterator = Iterator
+    
+    public typealias Element = EventStreams.Message
+
+    public let stream: AsyncThrowingStream<EventStreams.Message, Error>
+    
+    public init(streamReader: StreamReader) {
+        stream = AsyncThrowingStream<EventStreams.Message, Error> { continuation in
+            Task {
+                var decodedPayload = Data()
+                var decodededHeaders: [EventStreamHeader] = []
+                
+                let decoder = EventStreamMessageDecoder(
+                    onPayloadSegment: { payload, finalSegment in
+//                        print("Message: onPayloadSegment")
+                        decodedPayload.append(payload)
+                    },
+                    onPreludeReceived: { totalLength, headersLength in
+//                        print("Message: onPreludeReceived")
+                        decodedPayload = Data()
+                        decodededHeaders = []
+                    },
+                    onHeaderReceived: { header in
+//                        print("Message: onHeaderReceived")
+                        decodededHeaders.append(header)
+                    },
+                    onComplete: {
+//                        print("Message: onComplete")
+                        let message = EventStreams.Message(headers: decodededHeaders.toHeaders(), payload: decodedPayload)
+//                        print(message)
+                        continuation.yield(message)
+                    },
+                    onError: { code, message in
+//                        print("Message: onError")
+                        continuation.finish(throwing: EventStreamError.decoding(code, message))
+                    })
+                
+                while true {
+                    let data = streamReader.read(maxBytes: 1024, rewind: true)
+                    try decoder.decode(data: data.getData())
+                }
+                continuation.finish()
+            }
+        }
+    }
+    
+//    public init(data: Data) async throws {
+//        var decoder: EventStreamMessageDecoder! = nil
+//        self = try await withCheckedThrowingContinuation { continuation in
+//            var decodedPayload = Data()
+//            var decodededHeaders: [EventStreamHeader] = []
+//            decoder = EventStreamMessageDecoder(
+//                onPayloadSegment: { payload, finalSegment in
+//                    print("Message: onPayloadSegment")
+//                    decodedPayload.append(payload)
+//                },
+//                onPreludeReceived: { totalLength, headersLength in
+//                    print("Message: onPreludeReceived")
+//                },
+//                onHeaderReceived: { header in
+//                    print("Message: onHeaderReceived")
+//                    decodededHeaders.append(header)
+//                },
+//                onComplete: {
+//                    print("Message: onComplete")
+//                    let crtMessage = EventStreams.Message(headers: decodededHeaders.toHeaders(), payload: decodedPayload)
+//                    print(crtMessage)
+//                    continuation.resume(returning: crtMessage)
+//                },
+//                onError: { code, message in
+//                    print("Message: onError")
+//                    continuation.resume(throwing: EventStreamError.decoding(code, message))
+//                })
+//            do {
+//                try decoder.decode(data: data)
+//            } catch {
+//                continuation.resume(throwing: error)
+//            }
+//        }
+//    }
+    
+    public func makeAsyncIterator() -> Iterator {
+        return AsyncIterator(iterator: self.stream.makeAsyncIterator())
+    }
+    
+    public struct Iterator: AsyncIteratorProtocol {
+        var iterator: AsyncThrowingStream<EventStreams.Message, Error>.Iterator
+        
+        init(iterator: AsyncThrowingStream<EventStreams.Message, Error>.Iterator) {
+            self.iterator = iterator
+        }
+        
+        mutating public func next() async throws -> EventStreams.Message? {
+            return try await iterator.next()
         }
     }
 }

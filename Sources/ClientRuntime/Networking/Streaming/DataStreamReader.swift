@@ -65,6 +65,12 @@ public class DataStreamReader: StreamReader {
                 _availableForRead -= UInt(bytesRead)
                 offset += UInt(bytesRead)
             }
+            
+            if let bytesRead = bytesRead {
+                data = data.prefix(bytesRead)
+            } else {
+                data = .init()
+            }
         }
         return ByteBuffer(data: data)
     }

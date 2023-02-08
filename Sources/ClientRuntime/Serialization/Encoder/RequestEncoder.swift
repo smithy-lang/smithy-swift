@@ -6,8 +6,5 @@
 import Foundation
 
 public protocol RequestEncoder {
-
     func encode<T>(_ value: T) throws -> Data where T: Encodable
-
-    var messageEncoder: MessageEncoder? {get}
 }

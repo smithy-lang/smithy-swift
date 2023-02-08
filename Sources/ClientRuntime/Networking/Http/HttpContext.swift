@@ -6,7 +6,7 @@ public struct HttpContext: MiddlewareContext {
     public var attributes: Attributes
     var response: HttpResponse?
 
-    public static var signature: String = ""
+    public static var signature: String?
 
     public init(attributes: Attributes) {
         self.attributes = attributes

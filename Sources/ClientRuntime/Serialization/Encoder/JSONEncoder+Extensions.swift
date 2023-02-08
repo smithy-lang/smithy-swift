@@ -7,7 +7,4 @@ import Foundation
 
 public typealias JSONEncoder = Foundation.JSONEncoder
 extension JSONEncoder: RequestEncoder {
-    public var messageEncoder: MessageEncoder? {
-        return AWSMessageEncoder()
-    }
 }

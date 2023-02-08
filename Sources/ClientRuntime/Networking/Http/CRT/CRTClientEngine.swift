@@ -125,7 +125,7 @@ public class CRTClientEngine: HttpClientEngine {
                     reader.availableForRead = 1
                 }
             }
-            print("HTTP Response: \(statusCode)")
+//            print("HTTP Response: \(statusCode)")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
             continuation.resume(returning: response)
@@ -133,7 +133,7 @@ public class CRTClientEngine: HttpClientEngine {
         } onIncomingBody: { bodyChunk in
             let byteBuffer = ByteBuffer(data: bodyChunk)
             streamReader.write(buffer: byteBuffer)
-            print("bodyChunk: \(byteBuffer.length())")
+//            print("bodyChunk: \(byteBuffer.length())")
 //            print(response.debugDescriptionWithBody)
         } onTrailer: { headers in
             response.headers.addAll(headers: Headers(httpHeaders: headers))
