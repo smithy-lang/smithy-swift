@@ -83,18 +83,119 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
-        self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
-        return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
-            Task {
-                do {
-                    let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
-                    let stream = try connection.makeRequest(requestOptions: requestOptions)
-                    try stream.activate()
-                } catch {
-                    continuation.resume(throwing: error)
+        switch connection.httpVersion {
+        case .version_1_1:
+            self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+            return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
+                Task {
+                    do {
+                        let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
+                        let stream = try connection.makeRequest(requestOptions: requestOptions)
+                        try stream.activate()
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            })
+        case .version_2:
+            guard let connection = connection as? HTTP2ClientConnection else {
+                fatalError()
+            }
+            self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+            let response = try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<HttpResponse, Error>) in
+                Task {
+                    do {
+                        let requestOptions = try makeHttp2RequestStreamOptions(request, continuation)
+                        let h2Stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
+                        try h2Stream.activate()
+
+                        switch request.body {
+                        case .data(_):
+                            fatalError()
+                        case .stream(_):
+                            fatalError()
+                        case .none:
+                            fatalError()
+                        case .asyncThrowingStream(let stream):
+             
+                            var iterator = stream.makeAsyncIterator()
+                            while let data = try await iterator.next() {
+                                self.logger.debug("[nj] sending: \(data.count)")
+                                try await h2Stream.writeData(data: data, endOfStream: false)
+                            }
+                            self.logger.debug("[nj] endOfStream")
+                            try await h2Stream.writeData(data: .init(), endOfStream: true)
+                        }
+                    } catch {
+                        fatalError("This is bad, must never hit here")
+//                        continuation.resume(throwing: error)
+                    }
+                }
+            })
+            return response
+        case .unknown:
+            fatalError()
+        }
+
+    }
+
+    public func makeHttp2RequestStreamOptions(
+        _ request: SdkHttpRequest,
+        _ continuation: CheckedContinuation<HttpResponse, Error>
+    ) throws -> HTTPRequestOptions {
+        let response = HttpResponse()
+        print("request: \(request.debugDescription)")
+        let crtRequest = try request.toHttpRequest()
+        let streamReader: StreamReader = DataStreamReader()
+
+        let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
+            HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
+         }
+
+        var requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
+            response.statusCode = makeStatusCode(statusCode)
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+//            print(response.debugDescriptionWithBody)
+            if case .stream(let stream) = request.body {
+                if case .reader(let reader) = stream {
+                    reader.availableForRead = 1
                 }
             }
-        })
+        } onResponse: { statusCode, headers in
+            if case .stream(let stream) = request.body {
+                if case .reader(let reader) = stream {
+                    reader.availableForRead = 1
+                }
+            }
+            print("HTTP Response: \(statusCode)")
+            response.statusCode = makeStatusCode(statusCode)
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+            continuation.resume(returning: response)
+//            print(response.debugDescriptionWithBody)
+        } onIncomingBody: { bodyChunk in
+            let byteBuffer = ByteBuffer(data: bodyChunk)
+            streamReader.write(buffer: byteBuffer)
+            print("bodyChunk: \(byteBuffer.length())")
+//            print(response.debugDescriptionWithBody)
+        } onTrailer: { headers in
+            response.headers.addAll(headers: Headers(httpHeaders: headers))
+//            print(response.debugDescriptionWithBody)
+        } onStreamComplete: { result in
+            streamReader.hasFinishedWriting = true
+        switch result {
+            case .success(let statusCode):
+                response.statusCode = makeStatusCode(statusCode)
+            case .failure(let error):
+                self.logger.error("Response encountered an error: \(error)")
+                streamReader.onError(error: .crtError(error))
+//                continuation.resume(throwing: error)
+            }
+//            print(response.debugDescriptionWithBody)
+        }
+
+        response.body = .stream(.reader(streamReader))
+        requestOptions.http2ManualDataWrites = true
+        return requestOptions
     }
 
     public func makeHttpRequestStreamOptions(
