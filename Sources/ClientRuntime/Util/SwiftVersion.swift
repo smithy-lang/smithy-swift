@@ -14,14 +14,14 @@ public var swiftVersion: String {
      
      TODO add handling for Swift 8.x versions when Swift 6.0 is released.
      */
-    return swift5Versions()
-    ?? swift6Versions()
-    ?? swift7Versions()
+    return swift5Version()
+    ?? swift6Version()
+    ?? swift7Version()
     ?? "unknown"
 }
 
 
-fileprivate func swift5Versions() -> String? {
+fileprivate func swift5Version() -> String? {
     #if swift(>=6.0)
     return nil
     #elseif swift(>=5.9)
@@ -49,7 +49,7 @@ fileprivate func swift5Versions() -> String? {
     #endif
 }
 
-fileprivate func swift6Versions() -> String? {
+fileprivate func swift6Version() -> String? {
     #if swift(>=7.0)
     return nil
     #elseif swift(>=6.9)
@@ -77,7 +77,7 @@ fileprivate func swift6Versions() -> String? {
     #endif
 }
 
-fileprivate func swift7Versions() -> String? {
+fileprivate func swift7Version() -> String? {
     #if swift(>=8.0)
     return nil
     #elseif swift(>=7.9)
