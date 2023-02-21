@@ -98,6 +98,7 @@ public class CRTClientEngine: HttpClientEngine {
                 }
             })
         case .version_2:
+            assertionFailure("HTTP/2 is not supported yet")
             return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<HttpResponse, Error>) in
                 Task {
                     do {
