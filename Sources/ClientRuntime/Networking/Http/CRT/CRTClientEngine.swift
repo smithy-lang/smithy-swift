@@ -84,35 +84,63 @@ public class CRTClientEngine: HttpClientEngine {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
-        return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
-            do {
-                let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
-                let stream = try connection.makeRequest(requestOptions: requestOptions)
-                try stream.activate()
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        })
+        switch connection.httpVersion {
+        case .version_1_1:
+            return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
+                Task {
+                    do {
+                        let requestOptions = try makeHttpRequestStreamOptions(request: request, continuation: continuation)
+                        let stream = try connection.makeRequest(requestOptions: requestOptions)
+                        try stream.activate()
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            })
+        case .version_2:
+            return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<HttpResponse, Error>) in
+                Task {
+                    do {
+                        let requestOptions = try makeHttpRequestStreamOptions(request: request,
+                                                                              http2ManualDataWrites: true,
+                                                                              continuation: continuation)
+                        let h2Stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
+                        try h2Stream.activate()
+                        try await h2Stream.write(body: request.body)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            })
+        case .unknown:
+            fatalError("Unknown HTTP version")
+        }
+
     }
 
     public func makeHttpRequestStreamOptions(
-        _ request: SdkHttpRequest,
-        _ continuation: StreamContinuation
+        request: SdkHttpRequest,
+        http2ManualDataWrites: Bool = false,
+        continuation: CheckedContinuation<HttpResponse, Error>
     ) throws -> HTTPRequestOptions {
         let response = HttpResponse()
         let crtRequest = try request.toHttpRequest()
         let streamReader: StreamReader = DataStreamReader()
 
         let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
-            HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
+            self.logger.debug("Response status code: \(statusCode)")
+            return HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
          }
 
-        let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
+        var requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onResponse: { statusCode, headers in
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+            // resume the continuation as soon as the response headers are received
+            // this allows the user to start reading the response body without waiting for the entire body to be received
+            continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
             let byteBuffer = ByteBuffer(data: bodyChunk)
             streamReader.write(buffer: byteBuffer)
@@ -123,15 +151,44 @@ public class CRTClientEngine: HttpClientEngine {
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
-                continuation.resume(returning: response)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
                 streamReader.onError(error: .crtError(error))
-                continuation.resume(throwing: error)
             }
         }
 
+        requestOptions.http2ManualDataWrites = http2ManualDataWrites
         response.body = .stream(.reader(streamReader))
         return requestOptions
+    }
+}
+
+extension HTTP2Stream {
+    /// Writes the body to the HTTP2Stream
+    /// - Parameter body: The body to write to the stream
+    func write(body: HttpBody) async throws {
+        switch body {
+        case .data(let data):
+            guard let data = data else {
+                break
+            }
+            try await writeData(data: data, endOfStream: false)
+        case .stream(let stream):
+            switch stream {
+            case .buffer(let buffer):
+                try await writeData(data: buffer.getData(), endOfStream: false)
+            case .reader(let reader):
+                while !reader.hasFinishedWriting {
+                    guard let data = try await reader.read(upToCount: nil) else {
+                        continue
+                    }
+                    try await writeData(data: data, endOfStream: false)
+                }
+            }
+        case .none:
+            break
+        }
+
+        try await writeData(data: .init(), endOfStream: true)
     }
 }

@@ -11,4 +11,8 @@ extension XMLEncoder: RequestEncoder {
     public func encode<T>(_ value: T) throws -> Data where T: Encodable {
         return try encode(value, withRootKey: nil, rootAttributes: nil, header: nil)
     }
+    
+    public var messageEncoder: MessageEncoder? {
+        return nil
+    }
 }
