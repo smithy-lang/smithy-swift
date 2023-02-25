@@ -61,11 +61,12 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     private fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            // depending on the shape of the output, we may need to wrap the body in a stream
             operation.output.ifPresent {
                 val outputShape = model.expectShape(it) as StructureShape
+                // depending on the shape of the output, we may need to wrap the body in a stream
                 if (outputShape.hasStreamingMember(model)) {
-                    writer.write("content: .stream(BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true))", test.body.get().replace("\\\"", "\\\\\""))
+                    // wrapping to CachingStream required for test asserts which reads body multiple times
+                    writer.write("content: .stream(CachingStream(base: BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true)))", test.body.get().replace("\\\"", "\\\\\""))
                 } else {
                     writer.write("content: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)", test.body.get().replace("\\\"", "\\\\\""))
                 }

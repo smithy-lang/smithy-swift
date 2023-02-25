@@ -230,14 +230,8 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) throws {
-        guard case .success(let expectedData) = try extractData(expected) else {
-            XCTFail("Failed to extract data from httpbody for expected", file: file, line: line)
-            return
-        }
-        guard case .success(let actualData) = try extractData(actual) else {
-            XCTFail("Failed to extract data from httpbody for actual", file: file, line: line)
-            return
-        }
+        let expectedData = try expected.toData()
+        let actualData = try actual.toData()
         if shouldCompareData(expectedData, actualData) {
             if encoder is XMLEncoder {
                 XCTAssertXMLDataEqual(actualData!, expectedData!, file: file, line: line)

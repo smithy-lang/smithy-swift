@@ -10,18 +10,18 @@ import Foundation
 /// A stream that caches data read from the base stream.
 /// This allows the stream to be read multiple times without having to re-read the data from the base stream.
 /// - Note: This is thread-safe.
-class CachingStream: Stream {
+public class CachingStream: Stream {
 
     /// The current position in the stream.
-    var position: Data.Index
+    public var position: Data.Index
 
     /// The length of the stream, if known.
-    var length: Int? {
+    public var length: Int? {
         base.length
     }
 
     /// Whether the stream is empty.
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         base.isEmpty
     }
 
@@ -32,7 +32,7 @@ class CachingStream: Stream {
 
     /// Initializes a new `CachingStream` instance.
     /// - Parameter base: The base stream to read from.
-    init(base: Stream) {
+    public init(base: Stream) {
         self.base = base
         self.position = base.position
     }
@@ -41,7 +41,7 @@ class CachingStream: Stream {
     /// Depending on the current position in the stream, this may read from the cache or the base stream.
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
-    func read(upToCount count: Int) throws -> Data? {
+    public func read(upToCount count: Int) throws -> Data? {
         try lock.withLockingThrowingClosure {
             var data = Data()
             var remaining = count
@@ -83,7 +83,7 @@ class CachingStream: Stream {
     /// Reads all data from the stream.
     /// Depending on the current position in the stream, this may read from the cache or the base stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
-    func readToEnd() throws -> Data? {
+    public func readToEnd() throws -> Data? {
         try lock.withLockingThrowingClosure {
             var data = Data()
 
@@ -117,7 +117,7 @@ class CachingStream: Stream {
 
     /// Seeks to the specified offset in the stream.
     /// - Parameter offset: The offset to seek to.
-    func seek(toOffset offset: Int) throws {
+    public func seek(toOffset offset: Int) throws {
         try lock.withLockingThrowingClosure {
             let newPosition = cache.startIndex.advanced(by: offset)
 
@@ -132,12 +132,12 @@ class CachingStream: Stream {
 
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
-    func write(contentsOf data: Data) throws {
+    public func write(contentsOf data: Data) throws {
         try base.write(contentsOf: data)
     }
 
     /// Closes the stream.
-    func close() throws {
+    public func close() throws {
         try base.close()
     }
 }
