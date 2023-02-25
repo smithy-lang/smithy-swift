@@ -26,14 +26,14 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     "X-Amzn-Errortype": "ComplexError",
                     "X-Header": "Header"
                 ],
-                content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+                content: .data( ""${'"'}
                 {
                     "TopLevel": "Top level",
                     "Nested": {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!))
+                ""${'"'}.data(using: .utf8)!)
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return
@@ -88,14 +88,14 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     "X-Amzn-Errortype": "ComplexError",
                     "X-Header": "Header"
                 ],
-                content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+                content: .data( ""${'"'}
                 {
                     "TopLevel": "Top level",
                     "Nested": {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!))
+                ""${'"'}.data(using: .utf8)!)
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return

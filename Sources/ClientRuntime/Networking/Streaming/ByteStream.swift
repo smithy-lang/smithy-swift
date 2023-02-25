@@ -8,50 +8,29 @@ import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
 public enum ByteStream {
-    case buffer(ByteBuffer)
-    case reader(StreamReader)
+    case data(Data?)
+    case stream(Stream)
 }
 
 extension ByteStream {
     public static func from(data: Data) -> ByteStream {
-        return .buffer(ByteBuffer(data: data))
+        return .data(data)
     }
 
     public static func from(fileHandle: FileHandle) -> ByteStream {
-        return .buffer(fileHandle.toByteBuffer())
+        return .stream(FileStream(fileHandle: fileHandle))
     }
 
     public static func from(stringValue: String) -> ByteStream {
-        return .buffer(stringValue.toByteBuffer())
+        return .data(stringValue.data(using: .utf8) ?? Data())
     }
-}
 
-extension ByteStream {
-    public func toBytes() -> ByteBuffer {
-        switch self {
-        case .buffer(let buffer):
-            return buffer
-        case .reader(let reader):
-            let bytes = reader.read(maxBytes: nil, rewind: true)
-            return bytes
-        }
+    public static func stream(from data: Data) -> ByteStream {
+        return .stream(BufferedStream(data: data))
     }
 
     public static func defaultReader() -> ByteStream {
-        return .reader(DataStreamReader())
-    }
-}
-
-extension ByteStream: Equatable {
-    public static func == (lhs: ByteStream, rhs: ByteStream) -> Bool {
-        switch (lhs, rhs) {
-        case (let .buffer(lhsBuffer), let .buffer(rhsBuffer)):
-            return lhsBuffer.getData() == rhsBuffer.getData()
-        case (let .reader(lhsReader), let .reader(rhsReader)):
-            return lhsReader === rhsReader
-        default:
-            return false
-        }
+        return .stream(BufferedStream())
     }
 }
 
@@ -59,11 +38,26 @@ extension ByteStream: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
-        self = .buffer(ByteBuffer(data: data))
+        self = .data(data)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self.toBytes().getData())
+        try container.encode(self)
+    }
+}
+
+extension ByteStream: Equatable {
+    public static func == (lhs: ByteStream, rhs: ByteStream) -> Bool {
+        switch (lhs, rhs) {
+        case (.data(let lhsData), .data(let rhsData)):
+            return lhsData == rhsData
+        case (.stream(let lhsStream), .stream(let rhsStream)):
+            let lhsData = try? lhsStream.readToEnd()
+            let rhsData = try? rhsStream.readToEnd()
+            return lhsData == rhsData
+        default:
+            return false
+        }
     }
 }

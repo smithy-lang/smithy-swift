@@ -31,7 +31,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          queryParams: [String]? = nil,
                                          forbiddenQueryParams: [String]? = nil,
                                          requiredQueryParams: [String]? = nil,
-                                         body: String?,
+                                         body: HttpBody?,
                                          host: String,
                                          resolvedHost: String?) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
@@ -73,14 +73,8 @@ open class HttpRequestTestBase: XCTestCase {
             }
         }
 
-        guard let body = body else {
-            return builder.build()
-        }
-        // handle empty string body cases that should still create a request
-        // without the body
-        if body != "" {
-            let httpBody = HttpBody.data(body.data(using: .utf8))
-            builder.withBody(httpBody)
+        if let body = body {
+            builder.withBody(body)
         }
 
         return builder.build()
@@ -201,10 +195,10 @@ open class HttpRequestTestBase: XCTestCase {
     public func assertEqual(
         _ expected: ExpectedSdkHttpRequest,
         _ actual: SdkHttpRequest,
-        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) -> Void)? = nil,
+        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) throws -> Void)? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) {
+    ) throws {
         // assert headers match
         assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
 
@@ -224,7 +218,7 @@ open class HttpRequestTestBase: XCTestCase {
         // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
         // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
         if let assertEqualHttpBody = assertEqualHttpBody {
-            assertEqualHttpBody(expected.body, actual.body)
+            try assertEqualHttpBody(expected.body, actual.body)
         }
     }
 
@@ -235,12 +229,12 @@ open class HttpRequestTestBase: XCTestCase {
         _ callback: (Data, Data) -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) {
-        guard case .success(let expectedData) = extractData(expected) else {
+    ) throws {
+        guard case .success(let expectedData) = try extractData(expected) else {
             XCTFail("Failed to extract data from httpbody for expected", file: file, line: line)
             return
         }
-        guard case .success(let actualData) = extractData(actual) else {
+        guard case .success(let actualData) = try extractData(actual) else {
             XCTFail("Failed to extract data from httpbody for actual", file: file, line: line)
             return
         }
@@ -254,18 +248,13 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
 
-    private func extractData(_ httpBody: HttpBody) -> Result<Data?, Error> {
+    private func extractData(_ httpBody: HttpBody) throws -> Result<Data?, Error> {
         switch httpBody {
         case .data(let actualData):
             return .success(actualData)
         case .stream(let byteStream):
-            switch byteStream {
-            case .buffer(let byteBuffer):
-                return .success(byteBuffer.getData())
-            case .reader(let streamReader):
-                return .success(streamReader.read(maxBytes: nil, rewind: false).getData())
-            }
-
+            let data = try byteStream.readToEnd()
+            return .success(data)
         case .none:
             return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
         }

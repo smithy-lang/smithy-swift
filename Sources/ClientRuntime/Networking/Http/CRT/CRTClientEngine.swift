@@ -101,37 +101,38 @@ public class CRTClientEngine: HttpClientEngine {
     ) throws -> HTTPRequestOptions {
         let response = HttpResponse()
         let crtRequest = try request.toHttpRequest()
-        let streamReader: StreamReader = DataStreamReader()
+        let stream = BufferedStream()
 
         let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
             HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
          }
 
         let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
+            self.logger.debug("headers were received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onResponse: { statusCode, headers in
+            self.logger.debug("header block is done")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+            continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
-            let byteBuffer = ByteBuffer(data: bodyChunk)
-            streamReader.write(buffer: byteBuffer)
+            self.logger.debug("incoming data")
+            try stream.write(contentsOf: bodyChunk)
         } onTrailer: { headers in
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onStreamComplete: { result in
-            streamReader.hasFinishedWriting = true
+            self.logger.debug("stream completed")
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
-                continuation.resume(returning: response)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
-                streamReader.onError(error: .crtError(error))
-                continuation.resume(throwing: error)
             }
+            try stream.close()
         }
 
-        response.body = .stream(.reader(streamReader))
+        response.body = .stream(stream)
         return requestOptions
     }
 }

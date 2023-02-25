@@ -28,59 +28,70 @@ class HttpResponseTraitWithHttpPayload(
         // TODO: properly support event streams and other binary stream types besides blob
         val isBinaryStream =
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
-        writer.openBlock("if let data = httpResponse.body.toBytes()?.getData() {", "} else {") {
-            when (target.type) {
-                ShapeType.DOCUMENT -> {
-                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
-                        writer.write(
-                            "let output: \$N = try responseDecoder.decode(responseBody: data)",
-                            symbol
-                        )
-                        writer.write("self.\$L = output", memberName)
-                    }
-                    writer.indent()
-                    writer.write("self.\$L = nil", memberName).closeBlock("}")
+        when (target.type) {
+            ShapeType.DOCUMENT -> {
+                writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
+                    writer.write(
+                        "let output: \$N = try responseDecoder.decode(responseBody: data)",
+                        symbol
+                    )
+                    writer.write("self.\$L = output", memberName)
                 }
-                ShapeType.STRING -> {
-                    writer.openBlock("if let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
-                        if (target.isEnum) {
-                            writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
-                        } else {
-                            writer.write("self.\$L = output", memberName)
-                        }
-                    }
-                    writer.indent()
-                    writer.write("self.\$L = nil", memberName).closeBlock("}")
-                }
-                ShapeType.ENUM -> {
-                    writer.openBlock("if let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
-                        writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
-                    }
-                    writer.indent()
-                    writer.write("self.\$L = nil", memberName).closeBlock("}")
-                }
-                ShapeType.BLOB -> {
-                    if (isBinaryStream) {
-                        writer.write("self.\$L = ByteStream.from(data: data)", memberName)
-                    } else {
-                        writer.write("self.\$L = data", memberName)
-                    }
-                }
-                ShapeType.STRUCTURE, ShapeType.UNION -> {
-                    writer.openBlock("if let responseDecoder = decoder {", "} else {") {
-                        writer.write(
-                            "let output: \$N = try responseDecoder.decode(responseBody: data)",
-                            symbol
-                        )
-                        writer.write("self.\$L = output", memberName)
-                    }
-                    writer.indent()
-                    writer.write("self.\$L = nil", memberName).closeBlock("}")
-                }
-                else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
+                writer.indent()
+                writer.write("self.\$L = nil", memberName).closeBlock("}")
             }
+            ShapeType.STRING -> {
+                writer.openBlock("if let data = try httpResponse.body.toData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
+                    if (target.isEnum) {
+                        writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
+                    } else {
+                        writer.write("self.\$L = output", memberName)
+                    }
+                }
+                writer.indent()
+                writer.write("self.\$L = nil", memberName).closeBlock("}")
+            }
+            ShapeType.ENUM -> {
+                writer.openBlock("if let data = try httpResponse.body.toData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
+                    writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
+                }
+                writer.indent()
+                writer.write("self.\$L = nil", memberName).closeBlock("}")
+            }
+            ShapeType.BLOB -> {
+                writer.write("switch httpResponse.body {")
+                    .write("case .data(let data):")
+                    .indent()
+                if (isBinaryStream) {
+                    writer.write("self.\$L = .data(data)", memberName)
+                } else {
+                    writer.write("self.\$L = data", memberName)
+                }
+                writer.dedent()
+                    .write("case .stream(let stream):")
+                    .indent()
+                if (isBinaryStream) {
+                    writer.write("self.\$L = .stream(stream)", memberName)
+                } else {
+                    writer.write("self.\$L = try stream.readToEnd()", memberName)
+                }
+                writer.dedent()
+                    .write("case .none:")
+                    .indent()
+                    .write("self.\$L = nil", memberName).closeBlock("}")
+            }
+            ShapeType.STRUCTURE, ShapeType.UNION -> {
+                writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
+                    writer.write(
+                        "let output: \$N = try responseDecoder.decode(responseBody: data)",
+                        symbol
+                    )
+                    writer.write("self.\$L = output", memberName)
+                }
+                writer.indent()
+                writer.write("self.\$L = nil", memberName).closeBlock("}")
+            }
+            else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
         }
-        writer.indent()
-        writer.write("self.\$L = nil", memberName).closeBlock("}")
     }
 }
