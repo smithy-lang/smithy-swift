@@ -71,12 +71,14 @@ final class CachingStreamTests: XCTestCase {
         let sut = CachingStream(base: base)
         
         // seek to 2
+        XCTAssertThrowsError(try sut.seek(toOffset: 2))
+
+        // read next two bytes to update cache
+        _ = try sut.read(upToCount: 2)
+
+        // seek to 2
         try! sut.seek(toOffset: 2)
         XCTAssertEqual(2, sut.position)
-
-        // seek to 4
-        try! sut.seek(toOffset: 4)
-        XCTAssertEqual(4, sut.position)
     }
 
     func testWrite() throws {
