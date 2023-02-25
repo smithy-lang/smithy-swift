@@ -7,30 +7,36 @@
 import AwsCommonRuntimeKit
 import class Foundation.FileHandle
 
+/// A stream of bytes.
 public enum ByteStream {
+    /// A stream of bytes represented as a `Data` object.
     case data(Data?)
+
+    /// A stream of bytes represented as a `Stream` object.
+    /// - Note: This representation is recommended for large streams of bytes.
     case stream(Stream)
 }
 
 extension ByteStream {
+    /// Returns ByteStream from a Data object.
+    /// - Parameter data: Data object to be converted to ByteStream.
+    /// - Returns: ByteStream representation of the Data object.
     public static func from(data: Data) -> ByteStream {
         return .data(data)
     }
 
+    /// Returns ByteStream from a FileHandle object.
+    /// - Parameter fileHandle: FileHandle object to be converted to ByteStream.
+    /// - Returns: ByteStream representation of the FileHandle object.
     public static func from(fileHandle: FileHandle) -> ByteStream {
         return .stream(FileStream(fileHandle: fileHandle))
     }
 
+    /// Returns ByteStream from a String object.
+    /// - Parameter stringValue: String object to be converted to ByteStream.
+    /// - Returns: ByteStream representation of the String object.
     public static func from(stringValue: String) -> ByteStream {
         return .data(stringValue.data(using: .utf8) ?? Data())
-    }
-
-    public static func stream(from data: Data) -> ByteStream {
-        return .stream(BufferedStream(data: data))
-    }
-
-    public static func defaultReader() -> ByteStream {
-        return .stream(BufferedStream())
     }
 }
 

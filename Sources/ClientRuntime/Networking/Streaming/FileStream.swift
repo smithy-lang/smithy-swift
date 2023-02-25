@@ -7,7 +7,11 @@
 
 import Foundation
 
+/// A `Stream` that wraps a `FileHandle`.
+/// - Note: This class is thread-safe.
 class FileStream: Stream {
+
+    /// The length of the stream, if known.
     public var length: Int? {
         guard let len = try? fileHandle.length() else {
             return nil
@@ -17,17 +21,23 @@ class FileStream: Stream {
 
     let fileHandle: FileHandle
     var position: Data.Index
+
+    /// Whether the stream is empty.
     var isEmpty: Bool {
         return length == 0
     }
 
     let lock = NSLock()
 
+    /// Initializes a new `FileStream` instance.
     init(fileHandle: FileHandle) {
         self.fileHandle = fileHandle
         self.position = fileHandle.availableData.startIndex
     }
 
+    /// Reads up to `count` bytes from the stream.
+    /// - Parameter count: The maximum number of bytes to read.
+    /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     func read(upToCount count: Int) throws -> Data? {
         try lock.withLockingThrowingClosure {
             let data: Data?
@@ -41,6 +51,8 @@ class FileStream: Stream {
         }
     }
 
+    /// Reads all remaining bytes from the stream.
+    /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     func readToEnd() throws -> Data? {
         try lock.withLockingThrowingClosure {
             let data: Data?
@@ -54,6 +66,8 @@ class FileStream: Stream {
         }
     }
 
+    /// Seeks to the specified offset in the stream.
+    /// - Parameter offset: The offset to seek to.
     func seek(toOffset offset: Int) throws {
         try lock.withLockingThrowingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
@@ -65,6 +79,8 @@ class FileStream: Stream {
         }
     }
 
+    /// Writes the specified data to the stream.
+    /// - Parameter data: The data to write.
     func write(contentsOf data: Data) throws {
         try lock.withLockingThrowingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
@@ -75,6 +91,7 @@ class FileStream: Stream {
         }
     }
 
+    /// Closes the stream.
     func close() throws {
        try lock.withLockingThrowingClosure {
            if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {

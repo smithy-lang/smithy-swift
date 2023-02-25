@@ -7,6 +7,8 @@
 
 import AwsCommonRuntimeKit
 
+/// A class that implements the `IStreamable` protocol for `HttpBody`.
+/// It acts as a bridge between AWS SDK and CRT.
 class HttpContent: IStreamable {
 
     var position: Data.Index
@@ -25,9 +27,13 @@ class HttpContent: IStreamable {
             position = .min
         }
 
-        logger = SwiftLogger(label: "StreamableHttpBody")
+        /// TODO: simplify logger creation
+        logger = SwiftLogger(label: "HttpContent")
     }
 
+    /// Returns the length of the stream
+    /// - Returns: The length of the stream
+    /// if not available, returns 0
     func length() throws -> UInt64 {
         switch body {
         case .data(let data):
@@ -39,7 +45,15 @@ class HttpContent: IStreamable {
         }
     }
 
+    /// Seeks to the specified offset in the stream
+    /// - Parameters:
+    ///   - offset: offset to seek to
+    ///   - streamSeekType: type of seek
     func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
+        guard streamSeekType == .begin else {
+            throw StreamError.notSupported("Seeking from end is not supported. Only seeking from beginning is supported.")
+        }
+
         switch body {
         case .data(let data):
             guard let data = data else {
