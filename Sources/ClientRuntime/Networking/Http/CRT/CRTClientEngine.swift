@@ -115,6 +115,10 @@ public class CRTClientEngine: HttpClientEngine {
             self.logger.debug("header block is done")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+
+            // resume the continuation as soon as we have all the initial headers
+            // this allows callers to start reading the response as it comes in
+            // instead of waiting for the entire response to be received
             continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
             self.logger.debug("incoming data")
@@ -129,6 +133,9 @@ public class CRTClientEngine: HttpClientEngine {
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
             }
+
+            // closing the stream is required to signal to the caller that the response is complete
+            // and no more data will be received in this stream
             try stream.close()
         }
 
