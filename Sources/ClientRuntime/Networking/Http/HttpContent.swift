@@ -62,14 +62,14 @@ class HttpContent: IStreamable {
             guard let data = data else {
                 return nil
             }
-            let count = min(buffer.count, data.count - position)
-            data.copyBytes(to: buffer, from: position..<position.advanced(by: count))
-            position = position.advanced(by: count)
-            logger.debug("read \(count) bytes from data")
-            if count == 0 && data.endIndex == position {
+            let toRead = min(buffer.count, data.count - position)
+            data.copyBytes(to: buffer, from: position..<position.advanced(by: toRead))
+            position = position.advanced(by: toRead)
+            logger.debug("read \(toRead) bytes from data")
+            if toRead == 0 && data.endIndex == position {
                 return nil
             }
-            return count
+            return toRead
         case .stream(let stream):
             guard let data = try stream.read(upToCount: buffer.count) else {
                 return nil
