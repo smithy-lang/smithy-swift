@@ -49,6 +49,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderExpectedBody(test: HttpRequestTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
+            // depending on the shape of the input, wrap the expected body in a stream or not
             operation.input.ifPresent {
                 val inputShape = model.expectShape(it) as StructureShape
                 if (inputShape.hasStreamingMember(model)) {

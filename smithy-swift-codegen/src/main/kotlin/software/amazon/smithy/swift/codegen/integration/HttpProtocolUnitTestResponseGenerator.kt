@@ -61,6 +61,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     private fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
+            // depending on the shape of the output, we may need to wrap the body in a stream
             operation.output.ifPresent {
                 val outputShape = model.expectShape(it) as StructureShape
                 if (outputShape.hasStreamingMember(model)) {

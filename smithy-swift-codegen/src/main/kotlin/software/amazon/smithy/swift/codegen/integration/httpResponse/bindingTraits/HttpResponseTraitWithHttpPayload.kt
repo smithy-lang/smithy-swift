@@ -25,7 +25,6 @@ class HttpResponseTraitWithHttpPayload(
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
-        // TODO: properly support event streams and other binary stream types besides blob
         val isBinaryStream =
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
@@ -67,6 +66,10 @@ class HttpResponseTraitWithHttpPayload(
                 } else {
                     writer.write("self.\$L = data", memberName)
                 }
+
+                // For binary streams, we need to set the member to the stream directly.
+                // this allows us to stream the data directly to the user
+                // without having to buffer it in memory.
                 writer.dedent()
                     .write("case .stream(let stream):")
                     .indent()
