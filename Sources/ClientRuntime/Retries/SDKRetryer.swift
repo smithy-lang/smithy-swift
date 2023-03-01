@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 
-public class SDKRetryer: Retryer {
+public class SDKRetryer: RetryStrategy {
     let crtRetryStrategy: AwsCommonRuntimeKit.RetryStrategy
     private let sharedDefaultIO = SDKDefaultIO.shared
 
@@ -17,8 +17,8 @@ public class SDKRetryer: Retryer {
         )
     }
 
-    public func acquireToken(partitionId: String) async throws -> RetryToken {
-        let token = try await crtRetryStrategy.acquireToken(partitionId: partitionId)
+    public func acquireToken(partitionID: String) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.acquireToken(partitionId: partitionID)
         return RetryToken(crtToken: token)
     }
 
