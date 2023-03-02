@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -29,7 +30,8 @@ import software.amazon.smithy.swift.codegen.model.HashableShapeTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import java.util.ServiceLoader
+import software.amazon.smithy.swift.codegen.restjson.MockHttpRestJsonProtocolGenerator
+import java.util.*
 import java.util.logging.Logger
 
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
@@ -99,7 +101,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         service: ServiceShape,
         settings: SwiftSettings
     ): ProtocolGenerator? {
-        val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
+
+        val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }.toMutableMap()
+        if (generators.isEmpty()) {
+            LOGGER.warning("No protocol generators found on classpath. Defaulting to RestJson1")
+            generators[RestJson1Trait.ID] = MockHttpRestJsonProtocolGenerator()
+        }
+
         val serviceIndex = ServiceIndex.of(model)
 
         try {
@@ -188,3 +196,4 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 }
+

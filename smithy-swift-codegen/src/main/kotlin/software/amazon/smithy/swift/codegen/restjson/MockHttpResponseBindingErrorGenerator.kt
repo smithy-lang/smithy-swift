@@ -1,9 +1,4 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-
-package mocks
+package software.amazon.smithy.swift.codegen.restjson
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
@@ -27,8 +22,11 @@ class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratabl
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.openBlock("extension \$L: \$N {", "}", operationErrorName, ClientRuntimeTypes.Http.HttpResponseBinding) {
-                writer.openBlock("public init(httpResponse: \$N, decoder: \$D) throws {", "}", ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder) {
+            writer.openBlock("extension \$L {", "}", operationErrorName) {
+                writer.openBlock("public init(httpResponse: \$N, decoder: \$D) throws {", "}",
+                    ClientRuntimeTypes.Http.HttpResponse,
+                    ClientRuntimeTypes.Serde.ResponseDecoder
+                ) {
                     writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
                 }
             }

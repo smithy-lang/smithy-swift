@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "plugins": {
+    "swift-codegen": {
+      "service": "example.weather#Weather",
+      "module": "weather",
+      "moduleVersion": "0.0.1",
+      "build": {
+        "rootProject": true
+      },
+      "gitRepo": "https://github.com/aws-amplify/smithy-swift.git",
+      "author": "Amazon Web Services",
+      "homepage": "https://docs.amplify.aws/",
+      "swiftVersion": "5.5.0"
+    }
+  }
+}
