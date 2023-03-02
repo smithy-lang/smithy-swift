@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
+import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
@@ -64,7 +65,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
-        // Intentionally empty
+        operationMiddleware.appendMiddleware(operation, EndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
     }
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {

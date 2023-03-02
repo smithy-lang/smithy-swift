@@ -73,6 +73,7 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val EndpointResolverMiddleware = runtimeSymbol("EndpointResolverMiddleware")
         val PartitionID = swiftSymbol("String")
         val Endpoint = swiftSymbol("String")
         val ByteStream = runtimeSymbol("ByteStream")
