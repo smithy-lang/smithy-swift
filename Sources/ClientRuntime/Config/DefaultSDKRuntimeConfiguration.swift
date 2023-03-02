@@ -25,7 +25,8 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public init(
         _ clientName: String,
         clientLogMode: ClientLogMode = .request,
-        partitionID: String? = nil
+        partitionID: String? = nil,
+        endpoint: String? = nil
     ) throws {
         self.encoder = nil
         self.decoder = nil
@@ -36,5 +37,6 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
         self.logger = SwiftLogger(label: clientName)
         self.clientLogMode = clientLogMode
         self.partitionID = partitionID
+        self.endpoint = endpoint
     }
 }
