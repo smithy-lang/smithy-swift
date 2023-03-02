@@ -34,7 +34,10 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
             ConfigField("retryer", ClientRuntimeTypes.Core.SDKRetryer),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
-            ConfigField("logger", ClientRuntimeTypes.Core.Logger)
+            ConfigField("logger", ClientRuntimeTypes.Core.Logger),
+            ConfigField("endpoint", ClientRuntimeTypes.Core.Endpoint, propFormatter = "\$T"),
+            ConfigField("partitionID", ClientRuntimeTypes.Core.PartitionID, propFormatter = "\$T"),
+
         ).sortedBy { it.memberName }
         return configFields
     }

@@ -16,6 +16,8 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
     public var _message: String?
 
     public var _retryable: Bool = false
+    
+    public var _requestID: String?
 
     public var _type: ErrorType = .unknown
 }
@@ -27,11 +29,12 @@ extension UnknownHttpServiceError {
     ///   - httpResponse: The `HttpResponse` for this error.
     ///   - message: The message associated with this error. Defaults to `nil`.
     ///   - errorType: The error type associated with this error.  Defaults to `nil`.
-    public init(httpResponse: HttpResponse, message: String? = nil, errorType: String? = nil) {
+    public init(httpResponse: HttpResponse, message: String? = nil, requestID: String?, errorType: String? = nil) {
         self._statusCode = httpResponse.statusCode
         self._headers = httpResponse.headers
         self._message = message
         self._errorType = errorType
+        self._requestID = requestID
     }
 }
 

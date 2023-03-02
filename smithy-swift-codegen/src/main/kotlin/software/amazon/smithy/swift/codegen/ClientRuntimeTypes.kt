@@ -73,7 +73,8 @@ object ClientRuntimeTypes {
     }
 
     object Core {
-        val Endpoint = runtimeSymbol("Endpoint")
+        val PartitionID = swiftSymbol("String")
+        val Endpoint = swiftSymbol("String")
         val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
@@ -102,6 +103,10 @@ object ClientRuntimeTypes {
             name = "CrtXCBaseTestCase"
         }
     }
+}
+
+private fun swiftSymbol(name: String): Symbol = buildSymbol {
+    this.name = name
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
