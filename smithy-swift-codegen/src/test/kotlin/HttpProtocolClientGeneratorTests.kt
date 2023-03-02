@@ -45,20 +45,24 @@ class HttpProtocolClientGeneratorTests {
                     public var clientLogMode: ClientRuntime.ClientLogMode
                     public var decoder: ClientRuntime.ResponseDecoder?
                     public var encoder: ClientRuntime.RequestEncoder?
+                    public var endpoint: String?
                     public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
                     public var httpClientEngine: ClientRuntime.HttpClientEngine
                     public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
                     public var logger: ClientRuntime.LogAgent
+                    public var partitionID: String?
                     public var retryer: ClientRuntime.SDKRetryer
             
                     public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
                         self.decoder = runtimeConfig.decoder
                         self.encoder = runtimeConfig.encoder
+                        self.endpoint = runtimeConfig.endpoint
                         self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
                         self.httpClientEngine = runtimeConfig.httpClientEngine
                         self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
                         self.logger = runtimeConfig.logger
+                        self.partitionID = runtimeConfig.partitionID
                         self.retryer = runtimeConfig.retryer
                     }
             
