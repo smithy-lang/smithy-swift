@@ -18,7 +18,7 @@ class IntEnumGeneratorTests {
 
         var expectedGeneratedEnum =
             """
-                public enum Abcs: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+                public enum Abcs: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
                     case a
                     case b
                     case c

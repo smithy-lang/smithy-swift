@@ -35,7 +35,6 @@ object SwiftTypes {
 
     object Protocols {
         val Equatable = builtInSymbol("Equatable")
-        val Hashable = builtInSymbol("Hashable")
         val RawRepresentable = builtInSymbol("RawRepresentable")
         val Codable = builtInSymbol("Codable")
         val Encodable = builtInSymbol("Encodable")
