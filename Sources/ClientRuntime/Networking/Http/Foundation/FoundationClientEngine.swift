@@ -33,6 +33,8 @@ public struct FoundationHttpClientEngine {
         case nonHttpResponse(URLResponse)
     }
 
+    public init() {}
+
     private func url(request: ClientRuntime.SdkHttpRequest) throws -> URL {
         let endpoint = request.endpoint
         var urlString = "\(endpoint.protocolType ?? .https)://\(endpoint.host):\(endpoint.port)\(endpoint.path)"
