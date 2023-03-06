@@ -23,6 +23,10 @@ public class BufferedStream: Stream {
         return buffer.isEmpty
     }
 
+    /// Whether the stream is seekable.
+    /// Although this stream is seekable, seeking to a position that is not in the buffer will cause the stream to throw an error.
+    public var isSeekable: Bool = false
+
     var isClosed: Bool
 
     var buffer = Data()

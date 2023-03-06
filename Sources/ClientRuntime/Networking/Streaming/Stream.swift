@@ -18,6 +18,9 @@ public protocol ReadableStream: AnyObject {
     /// Whether the stream is empty
     var isEmpty: Bool { get }
 
+    /// Whether the stream is seekable
+    var isSeekable: Bool { get }
+
     /// Read up to `count` bytes from the stream
     /// - Parameter count: maximum number of bytes to read
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available

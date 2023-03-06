@@ -25,6 +25,9 @@ public class CachingStream: Stream {
         base.isEmpty
     }
 
+    /// Whether the stream is seekable.
+    public var isSeekable: Bool = true
+
     let base: Stream
     var cache = Data()
 

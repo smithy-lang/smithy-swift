@@ -75,10 +75,17 @@ extension HttpBody: CustomDebugStringConvertible {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
         case .stream(let stream):
-        // swiftlint:disable:next force_try
-            let data = try! stream.readToEnd()
-        // swiftlint:disable:next force_try
-            bodyAsString = String(data: data ?? .init(), encoding: .utf8)
+            // reading a non-seekable stream will consume the stream
+            // which will impact the ability to read the stream later
+            // so we only read the stream if it is seekable
+            if stream.isSeekable {
+                try? stream.seek(toOffset: 0)
+                if let data = try? stream.readToEnd() {
+                    bodyAsString = String(data: data, encoding: .utf8)
+                }
+            } else {
+                bodyAsString = "Position: \(stream.position), Length: \(stream.length ?? -1), IsEmpty: \(stream.isEmpty), IsSeekable: \(stream.isSeekable)"
+            }
         default:
             bodyAsString = nil
         }

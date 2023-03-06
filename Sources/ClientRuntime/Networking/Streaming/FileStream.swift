@@ -27,6 +27,9 @@ class FileStream: Stream {
         return length == 0
     }
 
+    /// Whether the stream is seekable.
+    public var isSeekable: Bool = true
+
     let lock = NSLock()
 
     /// Initializes a new `FileStream` instance.
