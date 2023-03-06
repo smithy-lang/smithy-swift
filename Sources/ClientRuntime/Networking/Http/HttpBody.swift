@@ -79,10 +79,11 @@ extension HttpBody: CustomDebugStringConvertible {
             // which will impact the ability to read the stream later
             // so we only read the stream if it is seekable
             if stream.isSeekable {
-                try? stream.seek(toOffset: 0)
+                let currentPosition = stream.position
                 if let data = try? stream.readToEnd() {
                     bodyAsString = String(data: data, encoding: .utf8)
                 }
+                try? stream.seek(toOffset: currentPosition)
             } else {
                 bodyAsString = "Position: \(stream.position), Length: \(stream.length ?? -1), IsEmpty: \(stream.isEmpty), IsSeekable: \(stream.isSeekable)"
             }
