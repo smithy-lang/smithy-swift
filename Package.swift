@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", branch: "jangirg/refactor/streams"),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", branch: "jangirg/refactor/streams"), // TODO: change to exact version before merging to main
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.13.0")
     ],
