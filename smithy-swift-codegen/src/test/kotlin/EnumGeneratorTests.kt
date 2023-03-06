@@ -40,7 +40,7 @@ class EnumGeneratorTests {
         val expectedGeneratedEnum =
             """
             /// Really long multi-line Documentation for the enum
-            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// Documentation for BAR
                 case bar
                 case fooBazXap
@@ -105,7 +105,7 @@ class EnumGeneratorTests {
         val expectedGeneratedEnum =
             """
             /// Really long multi-line Documentation for the enum
-            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 /// ""${'"'} T2 instances are Burstable Performance Instances that provide a baseline level of CPU performance with the ability to burst above the baseline.""${'"'}
                 case t2Micro
                 case t2Nano
@@ -153,7 +153,7 @@ class EnumGeneratorTests {
         var expectedGeneratedEnum =
             """
             extension ExampleClientTypes {
-                public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+                public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                     case club
                     case diamond
                     case heart

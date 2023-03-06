@@ -14,7 +14,7 @@ class ReservedWordsGeneratorTests {
         val expectedContents =
             """
         extension ExampleClientTypes {
-            public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+            public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 case any
                 case `open`
                 case `self`
@@ -62,7 +62,7 @@ class ReservedWordsGeneratorTests {
         val expectedContents =
             """
         extension ExampleClientTypes {
-            public enum ModelType: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+            public enum ModelType: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                 case foo
                 case test
                 case sdkUnknown(Swift.String)
@@ -103,7 +103,7 @@ class ReservedWordsGeneratorTests {
         val expectedContents =
             """
             extension ExampleClientTypes {
-                public enum ModelProtocol: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable {
+                public enum ModelProtocol: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
                     case bar
                     case foo
                     case sdkUnknown(Swift.String)

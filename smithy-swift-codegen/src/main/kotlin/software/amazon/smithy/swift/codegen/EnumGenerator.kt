@@ -35,7 +35,7 @@ import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
  * }
  *
  *
- * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
+ * extension TypedYesNo : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
  *     static var allCases: [TypedYesNo] {
  *         return [.yep, .nope, .sdkUnknown("")]
  *     }
@@ -77,7 +77,7 @@ import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
  * }
  *
  *
- * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable {
+ * extension SimpleYesNo : Equatable, RawRepresentable, Codable, CaseIterable, Hashable {
  *     static var allCases: [SimpleYesNo] {
  *         return [.yes, .no, .sdkUnknown("")]
  *     }
@@ -140,7 +140,7 @@ class EnumGenerator(
     private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable) {
+        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
