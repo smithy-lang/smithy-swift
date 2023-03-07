@@ -52,3 +52,18 @@ extension ByteStream: Codable {
         try container.encode(self)
     }
 }
+
+extension ByteStream: Equatable {
+    public static func == (lhs: ByteStream, rhs: ByteStream) -> Bool {
+        switch (lhs, rhs) {
+        case (.data(let lhsData), .data(let rhsData)):
+            return lhsData == rhsData
+        case (.stream(let lhsStream), .stream(let rhsStream)):
+            let lhsData = try? lhsStream.readToEnd()
+            let rhsData = try? rhsStream.readToEnd()
+            return lhsData == rhsData
+        default:
+            return false
+        }
+    }
+}
