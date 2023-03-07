@@ -10,6 +10,8 @@ import Foundation
 /// A `Stream` implementation that buffers data in memory.
 /// The buffer size depends on the amount of data written and read.
 /// Note: This class is thread-safe.
+/// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
+///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
 
     /// The length of the stream, if known.
