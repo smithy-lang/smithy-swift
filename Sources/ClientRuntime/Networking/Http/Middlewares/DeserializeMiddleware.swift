@@ -26,7 +26,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                 /// error deserialization reads the stream multiple times to first deserialize the protocol error
                 /// eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
                 /// and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
-                if case let .stream(stream) = copiedResponse.httpResponse.body {
+                if case let .stream(stream) = copiedResponse.httpResponse.body, !stream.isSeekable {
                     copiedResponse.httpResponse.body = .stream(CachingStream(base: stream))
                 }
                 let error = try OutputError(httpResponse: copiedResponse.httpResponse, decoder: decoder)
