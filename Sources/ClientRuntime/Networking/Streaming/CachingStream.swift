@@ -12,20 +12,20 @@ import Foundation
 /// - Note: This is thread-safe.
 public class CachingStream: Stream {
 
-    /// The current position in the stream.
+    /// Returns the current position in the stream
     public private(set) var position: Data.Index
 
-    /// The length of the stream, if known.
+    /// Returns the length of the stream, if known
     public var length: Int? {
         base.length
     }
 
-    /// Whether the stream is empty.
+    /// Returns true if the base stream is empty, false otherwise
     public var isEmpty: Bool {
         base.isEmpty
     }
 
-    /// Whether the stream is seekable.
+    /// Returns true if the base stream is seekable, false otherwise
     public var isSeekable: Bool {
         return true
     }

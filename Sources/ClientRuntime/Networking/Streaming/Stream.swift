@@ -9,39 +9,39 @@ import AwsCommonRuntimeKit
 
 /// Protocol that provides reading data from a stream
 public protocol ReadableStream: AnyObject {
-    /// The current position within the stream
+    /// Returns the current position in the stream
     var position: Data.Index { get }
 
-    /// The length of the stream in bytes, if known
+    /// Returns the length of the stream, if known
     var length: Int? { get }
 
-    /// Whether the stream is empty
+    /// Returns true if the stream is empty, false otherwise
     var isEmpty: Bool { get }
 
-    /// Whether the stream is seekable
+    /// Returns true if the stream is seekable, false otherwise
     var isSeekable: Bool { get }
 
-    /// Read up to `count` bytes from the stream
+    /// Reads up to `count` bytes from the stream
     /// - Parameter count: maximum number of bytes to read
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
     func read(upToCount count: Int) throws -> Data?
 
-    /// Read all remaining bytes from the stream
+    /// Reads all remaining bytes from the stream
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
     func readToEnd() throws -> Data?
 
-    /// Seek to the specified offset within the stream
+    /// Seeks to the specified offset within the stream
     /// - Parameter offset: offset to seek to
     func seek(toOffset offset: Int) throws
 }
 
 /// Protocol that provides writing data to a stream
 public protocol WriteableStream: AnyObject {
-    ///  Write the contents of `data` to the stream
+    ///  Writes the contents of `data` to the stream
     /// - Parameter data: data to write
     func write(contentsOf data: Data) throws
 
-    /// Close the stream
+    /// Closes the stream
     func close() throws
 }
 

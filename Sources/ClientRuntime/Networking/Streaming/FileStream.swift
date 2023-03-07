@@ -11,7 +11,7 @@ import Foundation
 /// - Note: This class is thread-safe.
 class FileStream: Stream {
 
-    /// The length of the stream, if known.
+    /// Returns the length of the stream, if known
     var length: Int? {
         guard let len = try? fileHandle.length() else {
             return nil
@@ -20,14 +20,16 @@ class FileStream: Stream {
     }
 
     let fileHandle: FileHandle
+
+    /// Returns the current position of the stream.
     var position: Data.Index
 
-    /// Whether the stream is empty.
+    /// Returns true if length is zero, false otherwise.
     var isEmpty: Bool {
         return length == 0
     }
 
-    /// Whether the stream is seekable.
+    /// Returns true if the stream is seekable, false otherwise
     var isSeekable: Bool = true
 
     private let lock = NSRecursiveLock()

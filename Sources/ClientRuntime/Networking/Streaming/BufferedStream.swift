@@ -14,19 +14,19 @@ import Foundation
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
 
-    /// The length of the stream, if known.
+    /// Returns the length of the stream, if known
     public private(set) var length: Int?
 
-    /// The current position in the stream.
+    /// Returns the current position in the stream
     public private(set) var position: Data.Index
 
-    /// Whether the stream is empty.
+    /// Returns true if the stream is empty, false otherwise
     public var isEmpty: Bool {
         return buffer.isEmpty
     }
 
-    /// Whether the stream is seekable.
-    /// Although this stream is seekable, seeking to a position that is not in the buffer will cause the stream to throw an error.
+    /// Returns true if the stream is seekable, false otherwise
+    /// Note: This stream is seekable, but seeking to a position that is not in the buffer will cause the stream to throw an error.
     public var isSeekable: Bool {
         return false
     }
