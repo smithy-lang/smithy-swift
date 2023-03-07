@@ -15,7 +15,7 @@ import Foundation
 public class BufferedStream: Stream {
 
     /// The length of the stream, if known.
-    public var length: Int?
+    public private(set) var length: Int?
 
     /// The current position in the stream.
     public private(set) var position: Data.Index
@@ -27,12 +27,14 @@ public class BufferedStream: Stream {
 
     /// Whether the stream is seekable.
     /// Although this stream is seekable, seeking to a position that is not in the buffer will cause the stream to throw an error.
-    public var isSeekable: Bool = false
+    public var isSeekable: Bool {
+        return false
+    }
 
     private var isClosed: Bool
 
     private(set) var buffer = Data()
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:

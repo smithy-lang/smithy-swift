@@ -28,9 +28,9 @@ class FileStream: Stream {
     }
 
     /// Whether the stream is seekable.
-    public var isSeekable: Bool = true
+    var isSeekable: Bool = true
 
-    let lock = NSLock()
+    private let lock = NSRecursiveLock()
 
     /// Initializes a new `FileStream` instance.
     init(fileHandle: FileHandle) {

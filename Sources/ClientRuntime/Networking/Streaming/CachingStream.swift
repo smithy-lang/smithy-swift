@@ -26,12 +26,14 @@ public class CachingStream: Stream {
     }
 
     /// Whether the stream is seekable.
-    public var isSeekable: Bool = true
+    public var isSeekable: Bool {
+        return true
+    }
 
     let base: Stream
     public private(set) var cache = Data()
 
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
 
     /// Initializes a new `CachingStream` instance.
     /// - Parameter base: The base stream to read from.

@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension NSLock {
+extension NSRecursiveLock {
      /// Executes a closure while holding the lock
      /// - Parameter closure: A closure to execute while holding the lock
      /// - Returns: The return value of the closure
