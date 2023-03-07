@@ -53,3 +53,11 @@ public enum StreamError: Error {
     case invalidOffset(String)
     case notSupported(String)
 }
+
+extension Stream {
+    func isEqual(to other: Stream) throws -> Bool {
+        let selfData = try readToEnd()
+        let otherData = try other.readToEnd()
+        return selfData == otherData
+    }
+}

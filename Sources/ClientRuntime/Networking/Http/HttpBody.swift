@@ -16,9 +16,7 @@ extension HttpBody: Equatable {
         case (.data(let lhsData), .data(let rhsData)):
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
-            let lhsData = try? lhsStream.readToEnd()
-            let rhsData = try? rhsStream.readToEnd()
-            return lhsData == rhsData
+            return try! lhsStream.isEqual(to: rhsStream)
         default:
             return false
         }
