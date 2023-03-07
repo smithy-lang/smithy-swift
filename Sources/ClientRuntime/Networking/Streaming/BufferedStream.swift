@@ -16,7 +16,7 @@ public class BufferedStream: Stream {
     public var length: Int?
 
     /// The current position in the stream.
-    public var position: Data.Index
+    public private(set) var position: Data.Index
 
     /// Whether the stream is empty.
     public var isEmpty: Bool {
@@ -27,10 +27,10 @@ public class BufferedStream: Stream {
     /// Although this stream is seekable, seeking to a position that is not in the buffer will cause the stream to throw an error.
     public var isSeekable: Bool = false
 
-    var isClosed: Bool
+    private var isClosed: Bool
 
-    var buffer = Data()
-    let lock = NSLock()
+    private(set) var buffer = Data()
+    private let lock = NSLock()
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:

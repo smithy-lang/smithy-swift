@@ -12,7 +12,7 @@ import Foundation
 class FileStream: Stream {
 
     /// The length of the stream, if known.
-    public var length: Int? {
+    var length: Int? {
         guard let len = try? fileHandle.length() else {
             return nil
         }

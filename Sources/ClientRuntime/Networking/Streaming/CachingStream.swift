@@ -13,7 +13,7 @@ import Foundation
 public class CachingStream: Stream {
 
     /// The current position in the stream.
-    public var position: Data.Index
+    public private(set) var position: Data.Index
 
     /// The length of the stream, if known.
     public var length: Int? {
@@ -29,9 +29,9 @@ public class CachingStream: Stream {
     public var isSeekable: Bool = true
 
     let base: Stream
-    var cache = Data()
+    public private(set) var cache = Data()
 
-    let lock = NSLock()
+    private let lock = NSLock()
 
     /// Initializes a new `CachingStream` instance.
     /// - Parameter base: The base stream to read from.
