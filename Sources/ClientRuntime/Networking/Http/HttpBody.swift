@@ -85,7 +85,12 @@ extension HttpBody: CustomDebugStringConvertible {
                 }
                 try? stream.seek(toOffset: currentPosition)
             } else {
-                bodyAsString = "Position: \(stream.position), Length: \(stream.length ?? -1), IsEmpty: \(stream.isEmpty), IsSeekable: \(stream.isSeekable)"
+                bodyAsString = """
+                Position: \(stream.position)
+                Length: \(stream.length ?? -1)
+                IsEmpty: \(stream.isEmpty)
+                IsSeekable: \(stream.isSeekable)
+                """
             }
         default:
             bodyAsString = nil
