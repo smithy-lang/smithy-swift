@@ -10,21 +10,6 @@ public enum HttpBody {
     case none
 }
 
-extension HttpBody: Equatable {
-    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
-        switch (lhs, rhs) {
-        case (.data(let lhsData), .data(let rhsData)):
-            return lhsData == rhsData
-        case (.stream(let lhsStream), .stream(let rhsStream)):
-            let lhsData = try? lhsStream.readToEnd()
-            let rhsData = try? rhsStream.readToEnd()
-            return lhsData == rhsData
-        default:
-            return false
-        }
-    }
-}
-
 extension HttpBody {
     public init(byteStream: ByteStream) {
         switch byteStream {
