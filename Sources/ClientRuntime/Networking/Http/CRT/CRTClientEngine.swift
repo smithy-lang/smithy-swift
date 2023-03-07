@@ -108,11 +108,11 @@ public class CRTClientEngine: HttpClientEngine {
          }
 
         let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
-            self.logger.debug("headers were received")
+            self.logger.debug("Interim response received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onResponse: { statusCode, headers in
-            self.logger.debug("header block is done")
+            self.logger.debug("Main headers received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
 
@@ -121,12 +121,13 @@ public class CRTClientEngine: HttpClientEngine {
             // instead of waiting for the entire response to be received
             continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
-            self.logger.debug("incoming data")
+            self.logger.debug("Body chunk received")
             try stream.write(contentsOf: bodyChunk)
         } onTrailer: { headers in
+            self.logger.debug("Trailer headers received")
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onStreamComplete: { result in
-            self.logger.debug("stream completed")
+            self.logger.debug("Request/response completed")
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
