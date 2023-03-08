@@ -61,3 +61,11 @@ extension Stream {
         return selfData == otherData
     }
 }
+
+extension Stream {
+    public func seek(toOffset offset: Int) throws {
+        guard isSeekable else {
+            throw StreamError.notSupported("Seeking is not supported.")
+        }
+    }
+}

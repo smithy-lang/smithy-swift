@@ -93,21 +93,6 @@ public class BufferedStream: Stream {
         }
     }
 
-    /// Seeks to the specified offset in the stream.
-    /// - Parameter offset: The offset to seek to.
-    public func seek(toOffset offset: Int) throws {
-        try lock.withLockingThrowingClosure {
-            let newPosition = buffer.startIndex.advanced(by: offset)
-
-            // make sure the new position is within the bounds of the buffer
-            guard newPosition >= buffer.startIndex && newPosition <= buffer.endIndex else {
-                throw StreamError.invalidOffset("Invalid offset: \(offset)")
-            }
-
-            position = newPosition
-        }
-    }
-
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
     public func write(contentsOf data: Data) throws {

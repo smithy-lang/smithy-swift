@@ -63,6 +63,10 @@ class HttpContent: IStreamable {
             position = data.startIndex.advanced(by: Int(offset))
             logger.debug("seeking to offset \(offset) in data")
         case .stream(let stream):
+            guard stream.isSeekable else {
+                logger.debug("stream doesn't support seeking, skip seeking.")
+                return
+            }
             logger.debug("seeking to offset \(offset) in data")
             try stream.seek(toOffset: Int(offset))
         case .none:

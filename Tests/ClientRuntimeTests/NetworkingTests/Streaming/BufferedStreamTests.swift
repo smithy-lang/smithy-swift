@@ -58,18 +58,6 @@ final class BufferedStreamTests: XCTestCase {
         XCTAssertNil(readData2)
     }
 
-    func testSeek() throws {
-        let sut = BufferedStream(data: testData)
-
-        // seek to 2
-        try! sut.seek(toOffset: 2)
-        XCTAssertEqual(2, sut.position)
-
-        // seek to 4
-        try! sut.seek(toOffset: 4)
-        XCTAssertEqual(4, sut.position)
-    }
-
     func testWrite() throws {
         let sut = BufferedStream(data: testData)
         try sut.write(contentsOf: .init([0x0B, 0x0C, 0x0D, 0x0E]))
