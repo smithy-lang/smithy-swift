@@ -9,12 +9,12 @@ import XCTest
 @testable import ClientRuntime
 import AwsCommonRuntimeKit
 
-final class HttpContentTests: XCTestCase {
+final class StreamableHttpBodyTests: XCTestCase {
 
     let testData = Data([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A])
 
     func testRead() throws {
-        let sut = HttpContent(body: .data(testData))
+        let sut = StreamableHttpBody(body: .data(testData))
 
         // read first 4 bytes
         let buffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: 4)
@@ -43,7 +43,7 @@ final class HttpContentTests: XCTestCase {
     }
 
     func testSeek() throws {
-        let sut = HttpContent(body: .data(testData))
+        let sut = StreamableHttpBody(body: .data(testData))
 
         // read first 4 bytes
         let buffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: 4)

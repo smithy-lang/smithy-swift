@@ -9,7 +9,7 @@ import AwsCommonRuntimeKit
 
 /// A class that implements the `IStreamable` protocol for `HttpBody`.
 /// It acts as a bridge between AWS SDK and CRT.
-class HttpContent: IStreamable {
+class StreamableHttpBody: IStreamable {
 
     var position: Data.Index
     let body: HttpBody
