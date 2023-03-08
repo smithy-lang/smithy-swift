@@ -46,7 +46,9 @@ public extension HttpBody {
         case .data(let data):
             return data
         case .stream(let stream):
-            try stream.seek(toOffset: 0)
+            if stream.isSeekable {
+                try stream.seek(toOffset: 0)
+            }
             return try stream.readToEnd()
         case .none:
             return nil
