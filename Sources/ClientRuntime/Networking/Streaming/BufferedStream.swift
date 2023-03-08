@@ -76,13 +76,13 @@ public class BufferedStream: Stream {
     /// It uses `read(upToCount:)` to read data in chunks.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func readToEnd() throws -> Data? {
-        var data = Data()
+        try lock.withLockingThrowingClosure {
+            var data = Data()
 
-        while let next = try read(upToCount: Int.max) {
-            data.append(next)
-        }
+            while let next = try read(upToCount: Int.max) {
+                data.append(next)
+            }
 
-        return lock.withLockingClosure {
             // if we're closed and there's no data left, return nil
             // this will signal the end of the stream
             if isClosed && data.isEmpty {
@@ -91,6 +91,7 @@ public class BufferedStream: Stream {
 
             return data
         }
+       
     }
 
     /// Writes the specified data to the stream.
