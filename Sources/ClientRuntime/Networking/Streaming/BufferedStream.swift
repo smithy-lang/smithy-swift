@@ -22,7 +22,7 @@ public class BufferedStream: Stream {
 
     /// Returns true if the stream is empty, false otherwise
     public var isEmpty: Bool {
-        return buffer.isEmpty
+        return buffer?.isEmpty == true
     }
 
     /// Returns true if the stream is seekable, false otherwise
@@ -33,17 +33,17 @@ public class BufferedStream: Stream {
 
     private var isClosed: Bool
 
-    private(set) var buffer = Data()
+    private(set) var buffer: Data?
     private let lock = NSRecursiveLock()
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:
     ///   - data: The initial data to buffer.
     ///   - isClosed: Whether the stream is closed.
-    public init(data: Data = .init(), isClosed: Bool = false) {
+    public init(data: Data? = .init(), isClosed: Bool = false) {
         self.buffer = data
-        self.position = data.startIndex
-        self.length = data.count
+        self.position = data?.startIndex ?? 0
+        self.length = data?.count
         self.isClosed = isClosed
     }
 
@@ -52,19 +52,19 @@ public class BufferedStream: Stream {
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func read(upToCount count: Int) throws -> Data? {
         lock.withLockingClosure {
-            let toRead = min(count, buffer.count)
+            let toRead = min(count, buffer?.count ?? 0)
             let endPosition = position.advanced(by: toRead)
-            let chunk = buffer[position..<endPosition]
+            let chunk = buffer?[position..<endPosition]
 
             // remove the data we just read
-            buffer.removeFirst(toRead)
+            buffer?.removeFirst(toRead)
 
             // update position
             position = endPosition
 
             // if we're closed and there's no data left, return nil
             // this will signal the end of the stream
-            if isClosed && chunk.isEmpty {
+            if isClosed && chunk?.isEmpty == true {
                 return nil
             }
 
@@ -99,7 +99,7 @@ public class BufferedStream: Stream {
         lock.withLockingClosure {
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
-            buffer.append(data)
+            buffer?.append(data)
             length = (length ?? 0) + data.count
         }
     }
