@@ -16,9 +16,11 @@ extension HttpBody: Equatable {
         case (.data(let lhsData), .data(let rhsData)):
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
-            // swiftlint:disable force_try
-            return try! lhsStream.isEqual(to: rhsStream)
-            // swiftlint:enable force_try
+            do {
+                return try lhsStream.isEqual(to: rhsStream)
+            } catch {
+                return false
+            }
         default:
             return false
         }
