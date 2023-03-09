@@ -25,10 +25,8 @@ public class CachingStream: Stream {
         base.isEmpty
     }
 
-    /// Returns true if the base stream is seekable, false otherwise
-    public let isSeekable: Bool  = true
-        return true
-    }
+    /// Returns true, caching streams are always seekable
+    public var isSeekable: Bool = true
 
     let base: Stream
     public private(set) var cache = Data()
