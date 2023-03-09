@@ -26,7 +26,6 @@ public class BufferedStream: Stream {
     }
 
     /// Returns true if the stream is seekable, false otherwise
-    /// Note: This stream is seekable, but seeking to a position that is not in the buffer will cause the stream to throw an error.
     public let isSeekable: Bool = false
         return false
     }
