@@ -26,7 +26,7 @@ public class CachingStream: Stream {
     }
 
     /// Returns true if the base stream is seekable, false otherwise
-    public var isSeekable: Bool {
+    public let isSeekable: Bool  = true
         return true
     }
 
