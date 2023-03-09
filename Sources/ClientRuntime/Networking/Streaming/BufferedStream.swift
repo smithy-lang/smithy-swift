@@ -25,10 +25,8 @@ public class BufferedStream: Stream {
         return buffer?.isEmpty == true
     }
 
-    /// Returns true if the stream is seekable, false otherwise
+    /// Returns false, buffered streams are not seekable
     public let isSeekable: Bool = false
-        return false
-    }
 
     private var isClosed: Bool
 
@@ -90,7 +88,7 @@ public class BufferedStream: Stream {
 
             return data
         }
-       
+
     }
 
     /// Writes the specified data to the stream.
