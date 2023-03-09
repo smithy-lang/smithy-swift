@@ -30,7 +30,7 @@ class FileStream: Stream {
     }
 
     /// Returns true if the stream is seekable, false otherwise
-    var isSeekable: Bool = true
+    let isSeekable: Bool = true
 
     private let lock = NSRecursiveLock()
 
