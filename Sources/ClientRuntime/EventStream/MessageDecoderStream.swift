@@ -6,5 +6,5 @@
 //
 
 /// Stream adapter that decodes input data into `EventStream.Message` objects.
-public protocol MessageDecoderStream: AsyncSequence where Element == EventStream.Message {
+public protocol MessageDecoderStream: AsyncSequence {
 }
