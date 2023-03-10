@@ -61,7 +61,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.stream(ByteStream.defaultReader()))
+                                     body: HttpBody.stream(BufferedStream()))
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
@@ -76,11 +76,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024"),
                                      headers: headers,
-                                     body: HttpBody.stream(ByteStream.defaultReader()))
+                                     body: HttpBody.stream(BufferedStream()))
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length() == 1024)
+            XCTAssert(try unwrappedStream.readToEnd()?.count == 1024)
         } else {
             XCTFail("Bytes not received")
         }
@@ -96,11 +96,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1"),
                                      headers: headers,
-                                     body: HttpBody.stream(ByteStream.defaultReader()))
+                                     body: HttpBody.stream(BufferedStream()))
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length() == 1)
+            XCTAssert(try unwrappedStream.readToEnd()?.count == 1)
         } else {
             XCTFail("Bytes not received")
         }
@@ -116,11 +116,11 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000"),
                                      headers: headers,
-                                     body: HttpBody.stream(ByteStream.defaultReader()))
+                                     body: HttpBody.stream(BufferedStream()))
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(unwrappedStream.toBytes().length() == 3000)
+            XCTAssert(try unwrappedStream.readToEnd()?.count == 3000)
         } else {
             XCTFail("Bytes not received")
         }
@@ -139,7 +139,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post"),
                                      headers: headers,
-                                     body: HttpBody.stream(.buffer(ByteBuffer(data: encodedData))))
+                                     body: HttpBody.stream(BufferedStream(data: encodedData)))
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)

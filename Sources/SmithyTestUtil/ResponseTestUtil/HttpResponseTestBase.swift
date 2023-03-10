@@ -18,7 +18,7 @@ open class HttpResponseTestBase: XCTestCase {
     public func buildHttpResponse(code: Int,
                                   path: String? = nil,
                                   headers: [String: String]? = nil,
-                                  content: HttpBody = HttpBody.empty) -> HttpResponse? {
+                                  content: HttpBody?) -> HttpResponse? {
 
         var internalHeaders: Headers = Headers()
         if let headers = headers {
@@ -26,7 +26,7 @@ open class HttpResponseTestBase: XCTestCase {
         }
 
         return HttpResponse(headers: internalHeaders,
-                            body: content,
+                            body: content ?? .none,
                             statusCode: HttpStatusCode(rawValue: Int(code)) ?? HttpStatusCode.badRequest)
 
     }

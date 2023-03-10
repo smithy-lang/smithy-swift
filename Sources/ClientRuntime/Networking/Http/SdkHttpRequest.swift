@@ -46,7 +46,7 @@ extension SdkHttpRequest {
         let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
         httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
-        httpRequest.body = body.toBytes()
+        httpRequest.body = StreamableHttpBody(body: body)
         return httpRequest
     }
 }
