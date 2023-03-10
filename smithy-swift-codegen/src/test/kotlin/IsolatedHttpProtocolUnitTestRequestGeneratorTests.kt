@@ -115,7 +115,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
                 "X-Double": "NaN",
                 "X-Float": "NaN"
             ],
-            content: HttpBody.empty
+            content: nil
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -154,7 +154,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             headers: [
                 "Content-Type": "application/json"
             ],
-            body: ""${'"'}
+            body: .data( ""${'"'}
             {
                 "stringValue": "string",
                 "documentValue": [
@@ -174,7 +174,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                     }
                 ]
             }
-            ""${'"'},
+            ""${'"'}.data(using: .utf8)!),
             host: "",
             resolvedHost: ""
         )

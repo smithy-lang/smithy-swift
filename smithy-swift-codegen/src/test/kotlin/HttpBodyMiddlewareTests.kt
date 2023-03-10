@@ -44,9 +44,9 @@ class HttpBodyMiddlewareTests {
                 Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let payload1data = payload1.data(using: .utf8)
-                        let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                        input.builder.withBody(payload1body)
+                        let payload1Data = payload1.data(using: .utf8)
+                        let payload1Body = ClientRuntime.HttpBody.data(payload1Data)
+                        input.builder.withBody(payload1Body)
                     }
                     return try await next.handle(context: context, input: input)
                 }
@@ -79,9 +79,9 @@ class HttpBodyMiddlewareTests {
                 Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let payload1data = payload1
-                        let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                        input.builder.withBody(payload1body)
+                        let payload1Data = payload1
+                        let payload1Body = ClientRuntime.HttpBody.data(payload1Data)
+                        input.builder.withBody(payload1Body)
                     }
                     return try await next.handle(context: context, input: input)
                 }
@@ -114,9 +114,8 @@ class HttpBodyMiddlewareTests {
                 Self.Context == H.Context
                 {
                     if let payload1 = input.operationInput.payload1 {
-                        let payload1data = payload1
-                        let payload1body = ClientRuntime.HttpBody.stream(payload1data)
-                        input.builder.withBody(payload1body)
+                        let payload1Body = ClientRuntime.HttpBody(byteStream: payload1)
+                        input.builder.withBody(payload1Body)
                     }
                     return try await next.handle(context: context, input: input)
                 }
@@ -151,15 +150,15 @@ class HttpBodyMiddlewareTests {
                     do {
                         let encoder = context.getEncoder()
                         if let payload1 = input.operationInput.payload1 {
-                            let payload1data = try encoder.encode(payload1)
-                            let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                            input.builder.withBody(payload1body)
+                            let payload1Data = try encoder.encode(payload1)
+                            let payload1Body = ClientRuntime.HttpBody.data(payload1Data)
+                            input.builder.withBody(payload1Body)
                         } else {
                             if encoder is JSONEncoder {
                                 // Encode an empty body as an empty structure in JSON
-                                let payload1data = "{}".data(using: .utf8)!
-                                let payload1body = ClientRuntime.HttpBody.data(payload1data)
-                                input.builder.withBody(payload1body)
+                                let payload1Data = "{}".data(using: .utf8)!
+                                let payload1Body = ClientRuntime.HttpBody.data(payload1Data)
+                                input.builder.withBody(payload1Body)
                             }
                         }
                     } catch let err {

@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -15,6 +16,7 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
@@ -47,10 +49,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderExpectedBody(test: HttpRequestTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            writer.write(
-                "body: \"\"\"\n\$L\n\"\"\",",
-                test.body.get().replace("\\\"", "\\\\\"")
-            )
+            operation.input.ifPresent {
+                val inputShape = model.expectShape(it) as StructureShape
+                // depending on the shape of the input, wrap the expected body in a stream or not
+                if (inputShape.hasStreamingMember(model)) {
+                    // wrapping to CachingStream required for test asserts which reads body multiple times
+                    writer.write("body: .stream(CachingStream(base: BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true))),", test.body.get().replace("\\\"", "\\\\\""))
+                } else {
+                    writer.write("body: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!),", test.body.get().replace("\\\"", "\\\\\""))
+                }
+            }
         } else {
             writer.write("body: nil,")
         }
@@ -140,14 +148,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
-                "self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                "try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
+                writer.openBlock("try self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {
@@ -167,7 +175,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "self.assertEqual(expected, actual)"
+                "try self.assertEqual(expected, actual)"
             )
         }
     }

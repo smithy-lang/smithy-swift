@@ -72,13 +72,9 @@ class HttpBindingProtocolGeneratorTests {
             """
 extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
     public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
-        if let data = httpResponse.body.toBytes()?.getData() {
-            if let responseDecoder = decoder {
-                let output: Nested2 = try responseDecoder.decode(responseBody: data)
-                self.payload1 = output
-            } else {
-                self.payload1 = nil
-            }
+        if let data = try httpResponse.body.toData(), let responseDecoder = decoder {
+            let output: Nested2 = try responseDecoder.decode(responseBody: data)
+            self.payload1 = output
         } else {
             self.payload1 = nil
         }
@@ -118,13 +114,9 @@ extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
             """
 extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBinding {
     public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
-        if let data = httpResponse.body.toBytes()?.getData() {
-            if let responseDecoder = decoder {
-                let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
-                self.documentValue = output
-            } else {
-                self.documentValue = nil
-            }
+        if let data = try httpResponse.body.toData(), let responseDecoder = decoder {
+            let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
+            self.documentValue = output
         } else {
             self.documentValue = nil
         }

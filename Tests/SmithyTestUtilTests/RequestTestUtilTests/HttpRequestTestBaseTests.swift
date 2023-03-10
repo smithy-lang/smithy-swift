@@ -162,7 +162,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                 headers: ["Content-Type": "application/json",
                                                           "RequiredHeader": "required header"],
                                                 requiredQueryParams: ["RequiredQuery=required%20query"],
-                                                body: "{\"greeting\": \"Hello There\"}",
+                                                body: .data("{\"greeting\": \"Hello There\"}".data(using: .utf8)!),
                                                 host: HttpRequestTestBaseTests.host,
                                                 resolvedHost: nil)
 
@@ -211,10 +211,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                               "Required Header:\(requiredHeader) does not exist in headers")
             }
 
-            self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, JSONEncoder()) { (expectedData, actualData) in
+                try self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, JSONEncoder()) { (expectedData, actualData) in
                     do {
                          let decoder = JSONDecoder()
                          let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
