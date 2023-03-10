@@ -6,5 +6,5 @@
 //
 
 /// Namespace for event stream types.
-public struct EventStream {
+public enum EventStream {
 }
