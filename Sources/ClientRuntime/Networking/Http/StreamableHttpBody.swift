@@ -51,7 +51,10 @@ class StreamableHttpBody: IStreamable {
     ///   - streamSeekType: type of seek
     func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
         guard streamSeekType == .begin else {
-            throw StreamError.notSupported("Seeking from end is not supported. Only seeking from beginning is supported.")
+            throw StreamError.notSupported("""
+            Seeking from end is not supported.
+            Only seeking from beginning is supported.
+            """)
         }
 
         switch body {
