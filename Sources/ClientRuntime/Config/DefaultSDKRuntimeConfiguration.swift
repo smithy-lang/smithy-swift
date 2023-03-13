@@ -12,7 +12,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
     public var httpClientConfiguration: HttpClientConfiguration
     public var idempotencyTokenGenerator: IdempotencyTokenGenerator
     public var logger: LogAgent
-    public let retryer: Retryer
+    public let retryStrategy: RetryStrategy
     public var clientLogMode: ClientLogMode
     public var endpoint: String?
 
@@ -32,7 +32,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
         self.httpClientEngine = CRTClientEngine()
         self.httpClientConfiguration = HttpClientConfiguration()
         self.idempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()
-        self.retryer = try SDKRetryer()
+        self.retryStrategy = try LegacyRetryStrategy()
         self.logger = SwiftLogger(label: clientName)
         self.clientLogMode = clientLogMode
         self.partitionID = partitionID

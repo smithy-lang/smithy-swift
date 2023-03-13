@@ -5,34 +5,31 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import AwsCommonRuntimeKit
+import struct Foundation.TimeInterval
 
-public class SDKRetryer: RetryStrategy {
+public class LegacyRetryStrategy: RetryStrategy {
     let crtRetryStrategy: AwsCommonRuntimeKit.RetryStrategy
     private let sharedDefaultIO = SDKDefaultIO.shared
 
-    public init(options: RetryOptions = RetryOptions()) throws {
+    public required init(retryStrategyOptions: RetryStrategyOptions = .standard) throws {
         self.crtRetryStrategy = try AwsCommonRuntimeKit.RetryStrategy(
-            options: options,
+            retryStrategyOptions: retryStrategyOptions,
             eventLoopGroup: sharedDefaultIO.eventLoopGroup
         )
     }
 
-    public func acquireToken(partitionID: String) async throws -> RetryToken {
-        let token = try await crtRetryStrategy.acquireToken(partitionId: partitionID)
+    public func acquireInitialRetryToken(tokenScope: String) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.acquireToken(partitionId: tokenScope)
         return RetryToken(crtToken: token)
     }
 
-    public func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken {
-        let token = try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
+    public func refreshRetryTokenForRetry(tokenToRenew: RetryToken, errorInfo: RetryErrorInfo) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.scheduleRetry(token: tokenToRenew.crtToken, errorType: errorInfo.errorType.toCRTType())
         return RetryToken(crtToken: token)
     }
 
     public func recordSuccess(token: RetryToken) {
         crtRetryStrategy.recordSuccess(token: token.crtToken)
-    }
-
-    @available(*, deprecated, message: "This function will be removed soon.")
-    public func releaseToken(token: RetryToken) {
     }
 
     public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
@@ -62,45 +59,45 @@ public class SDKRetryer: RetryStrategy {
         }
     }
 
-    public func getErrorType<E>(error: SdkError<E>) -> RetryError {
+    public func getErrorInfo<E>(error: SdkError<E>) -> RetryErrorInfo {
         switch error {
         case .client(let clientError, _):
             if case ClientError.crtError = clientError {
-                return .transient
+                return RetryErrorInfo(errorType: .transient, retryAfterHint: nil)
             }
-            return .clientError
-
+            return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
         case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.exists(name: "x-amz-retry-after") {
-                return .serverError
+            if let retryAfter = httpResponse.headers.value(for: "x-amz-retry-after") {
+                let hint = TimeInterval(retryAfter)
+                return RetryErrorInfo(errorType: .serverError, retryAfterHint: hint)
             }
 
             if let serviceError = serviceError as? ServiceError {
                 if serviceError._isThrottling {
-                    return .throttling
+                    return RetryErrorInfo(errorType: .throttling, retryAfterHint: nil)
                 }
-                return .serverError
+                return RetryErrorInfo(errorType: .serverError, retryAfterHint: nil)
             }
 
             if httpResponse.statusCode.isRetryable {
-                return .transient
+                return RetryErrorInfo(errorType: .transient, retryAfterHint: nil)
             }
-
-            return .serverError
+            return RetryErrorInfo(errorType: .serverError, retryAfterHint: nil)
         case .unknown:
-            return .clientError
+            return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
         }
     }
 }
 
 extension AwsCommonRuntimeKit.RetryStrategy {
-    convenience init(options: RetryOptions, eventLoopGroup: EventLoopGroup) throws {
+
+    convenience init(retryStrategyOptions: RetryStrategyOptions, eventLoopGroup: EventLoopGroup) throws {
        try self.init(
             eventLoopGroup: eventLoopGroup,
-            initialBucketCapacity: options.initialBucketCapacity,
-            maxRetries: options.maxRetries,
-            backOffScaleFactor: options.backOffScaleFactor,
-            jitterMode: options.jitterMode.toCRTType(),
+            initialBucketCapacity: 500,
+            maxRetries: retryStrategyOptions.maxRetriesBase,
+            backOffScaleFactor: 0.025,
+            jitterMode: ExponentialBackOffJitterType.default.toCRTType(),
             generateRandom: nil // we should pass in the options.generateRandom but currently
                                 // it fails since the underlying closure is a c closure
         )

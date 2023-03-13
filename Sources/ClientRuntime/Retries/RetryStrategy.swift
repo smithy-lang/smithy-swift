@@ -6,8 +6,10 @@
 //
 
 /// `RetryStrategy` defines the interface for a type that controls the operation's retry behavior.
-/// `RetryStrategy` is based on the Smithy reference architecture type of the same name.
+/// > Note: Based on _The Design and Implementation of the AWS SDKs_ section 3.2.1, The Smithy Retry Interface, `RetryStrategy`.
 public protocol RetryStrategy {
+
+    init(retryStrategyOptions: RetryStrategyOptions) throws
 
     /// Obtains a retry token for the performance of this operation.
     ///
@@ -23,12 +25,12 @@ public protocol RetryStrategy {
     /// However, adding it here offers us a lot of future flexibility
     /// for outage detection. For example , it could be "us-east -1"
     /// on a shared retry strategy, or "us-west-2-c:dynamodb".
-    /// - Parameter partitionID: The string identifier for the pool of tokens from which to obtain a refresh token.  Tokens obtained using different partition IDs do not count against each other for congestion control purposes.
+    /// - Parameter tokenScope: The string identifier for the pool of tokens from which to obtain a refresh token. (Sometimes referred to as `partitionID`). Tokens obtained using different token scopes do not count against each other for congestion control purposes.
     /// - Returns: A `RetryToken`.
-    /// - Throws: Error if a token could not be obtained.
-    func acquireInitialRetryToken(partitionID: String) async throws -> RetryToken
+    /// - Throws: Error if a retry token could not be obtained.
+    func acquireInitialRetryToken(tokenScope: String) async throws -> RetryToken
 
-    /// Renews a retry token so that a retry may be safely performed.
+    /// Renews a retry token so that a retry may be safely performed.  For Swift, a new, refreshed retry token is returned rather than modifying the original that was passed into this method.
     ///
     /// From Smithy Reference Architecture docs:
     ///
@@ -40,8 +42,8 @@ public protocol RetryStrategy {
     /// - Parameters:
     ///   - tokenToRenew: The `RetryToken` that was obtained before the initial attempt of this operation.
     ///   - errorInfo: The `RetryErrorInfo` for the error that prompted this retry.
-    /// - Returns: The refreshed `RetryToken`.
-    /// - Throws: Error if the token could not be refreshed.
+    /// - Returns: A `RetryToken` that is refreshed for re-performance of the passed retry token.
+    /// - Throws: Error if `tokenToRenew` could not be refreshed.
     func refreshRetryTokenForRetry(tokenToRenew: RetryToken, errorInfo: RetryErrorInfo) async throws -> RetryToken
 
     /// Indicates that the operation for this `RetryToken` was completed successfully so that the associated resources may be returned to the pool.
@@ -53,5 +55,5 @@ public protocol RetryStrategy {
     /// - Parameter token: The token for the operation that was completed successfully.
     func recordSuccess(token: RetryToken)
     func isErrorRetryable<E>(error: SdkError<E>) -> Bool
-    func getErrorType<E>(error: SdkError<E>) -> RetryError
+    func getErrorInfo<E>(error: SdkError<E>) -> RetryErrorInfo
 }

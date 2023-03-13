@@ -40,7 +40,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
         }
 
         do {
-            let token = try await retryStrategy.acquireToken(partitionId: partitionID)
+            let token = try await retryStrategy.acquireInitialRetryToken(tokenScope: partitionID)
             return try await tryRequest(
                 token: token,
                 partitionID: partitionID,
@@ -55,7 +55,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
 
     func tryRequest<H>(
         token: RetryToken,
-        errorType: RetryError? = nil,
+        errorType: RetryErrorType? = nil,
         partitionID: String,
         context: Context,
         input: SdkHttpRequestBuilder,
@@ -71,8 +71,8 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             retryStrategy.recordSuccess(token: token)
             return serviceResponse
         } catch let error as SdkError<OutputError> where retryStrategy.isErrorRetryable(error: error) {
-            let errorType = retryStrategy.getErrorType(error: error)
-            let newToken = try await retryStrategy.scheduleRetry(token: token, error: errorType)
+            let errorInfo = retryStrategy.getErrorInfo(error: error)
+            let newToken = try await retryStrategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             // TODO: rewind the stream once streaming is properly implemented
             return try await tryRequest(
                 token: newToken,
