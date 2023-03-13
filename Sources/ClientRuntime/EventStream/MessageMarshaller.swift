@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Marshals a event stream event into a `Message`.
+/// Marshals an event stream event into a `Message`.
 /// Codgegen generates a conformance to this protocol for each event stream event.
 public protocol MessageMarshaller {
     /// Marshals a event stream event into a `Message`.
