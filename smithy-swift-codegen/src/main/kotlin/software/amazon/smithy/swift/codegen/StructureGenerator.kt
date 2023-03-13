@@ -14,7 +14,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
-import software.amazon.smithy.swift.codegen.customtraits.HashableTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -109,10 +108,7 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-//        val needsHashable = if (shape.hasTrait<HashableTrait>()) ", ${SwiftTypes.Protocols.Hashable}" else ""
-        val needsHashable = ""
-//        writer.openBlock("public struct \$struct.name:L: \$N$needsHashable {", SwiftTypes.Protocols.Equatable)
-        writer.openBlock("public struct \$struct.name:L: $needsHashable {")
+        writer.openBlock("public struct \$struct.name:L: \$N {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
