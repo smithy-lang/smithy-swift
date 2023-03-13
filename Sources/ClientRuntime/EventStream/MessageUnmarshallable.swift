@@ -6,7 +6,8 @@
 //
 
 /// Unmarshals a `Message` into a event stream event.
-public protocol MessageUnmarshaller {
+/// Codgegen generates a conformance to this protocol for each event stream event output.
+public protocol MessageUnmarshallable {
     /// Unmarshals a `Message` into a event stream event.
     /// - Parameters:
     ///   - message: The message to unmarshal.

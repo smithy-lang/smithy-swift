@@ -6,8 +6,8 @@
 //
 
 /// Marshals an event stream event into a `Message`.
-/// Codgegen generates a conformance to this protocol for each event stream event.
-public protocol MessageMarshaller {
+/// Codgegen generates a conformance to this protocol for each event stream event input.
+public protocol MessageMarshallable {
     /// Marshals a event stream event into a `Message`.
     /// - Parameters:
     ///   - encoder: RequestEncoder to use to encode the event stream event.
