@@ -23,8 +23,14 @@ public class LegacyRetryStrategy: RetryStrategy {
         return RetryToken(crtToken: token)
     }
 
-    public func refreshRetryTokenForRetry(tokenToRenew: RetryToken, errorInfo: RetryErrorInfo) async throws -> RetryToken {
-        let token = try await crtRetryStrategy.scheduleRetry(token: tokenToRenew.crtToken, errorType: errorInfo.errorType.toCRTType())
+    public func refreshRetryTokenForRetry(
+        tokenToRenew: RetryToken,
+        errorInfo: RetryErrorInfo
+    ) async throws -> RetryToken {
+        let token = try await crtRetryStrategy.scheduleRetry(
+            token: tokenToRenew.crtToken,
+            errorType: errorInfo.errorType.toCRTType()
+        )
         return RetryToken(crtToken: token)
     }
 

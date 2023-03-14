@@ -21,7 +21,6 @@ public struct RetryStrategyOptions {
     }
 }
 
-
 public extension RetryStrategyOptions {
 
     static var standard = RetryStrategyOptions(backoffStrategy: LegacyRetryBackoffStrategy())

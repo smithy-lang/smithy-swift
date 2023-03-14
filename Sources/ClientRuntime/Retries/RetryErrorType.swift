@@ -33,7 +33,7 @@ public enum RetryErrorType {
 }
 
 extension RetryErrorType {
-    
+
     func toCRTType() -> AwsCommonRuntimeKit.RetryError {
         switch self {
         case .transient: return .transient
