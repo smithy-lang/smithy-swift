@@ -233,6 +233,7 @@ class StructureGenerator(
         writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
         writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
         writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
+        writer.write("public var _smithyErrorTypeName: \$T { \$S }", SwiftTypes.String, shape.id.name)
 
         writer.declareSection(AdditionalErrorMembers)
 

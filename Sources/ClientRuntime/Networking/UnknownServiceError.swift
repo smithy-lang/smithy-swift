@@ -10,10 +10,13 @@ public struct UnknownServiceError: ServiceError, Equatable {
     public var _isThrottling: Bool = false
     public var _type: ErrorType = .unknown
     public var _message: String?
+    public var _errorType: String?
+    public var _smithyErrorTypeName: String? { nil }
 }
 
 extension UnknownServiceError {
-    public init(message: String? = nil) {
+    public init(errorType: String? = nil, message: String? = nil) {
+        self._errorType = errorType
         self._message = message
     }
 }

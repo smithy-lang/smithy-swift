@@ -10,6 +10,10 @@ public protocol ServiceError {
     var _isThrottling: Bool { get set}
     var _type: ErrorType { get set }
     var _message: String? { get set }
+
+    /// The non-namespaced name of the Smithy shape for this error,
+    /// or `nil` if the Smithy type is not known.
+    var _smithyErrorTypeName: String? { get }
 }
 
 public enum ErrorType: Equatable {

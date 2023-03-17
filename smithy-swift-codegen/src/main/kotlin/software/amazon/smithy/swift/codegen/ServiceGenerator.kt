@@ -171,6 +171,21 @@ class ServiceGenerator(
                 val unknownServiceErrorType = unknownServiceErrorSymbol.name
                 writer.write("case unknown($unknownServiceErrorType)")
             }
+            writer.write("")
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.openBlock("extension $operationErrorName {", "}") {
+                writer.write("")
+                writer.openBlock("public var serviceError: ServiceError {", "}") {
+                    writer.write("switch self {")
+                    for (errorShape in errorShapes) {
+                        val errorShapeName = symbolProvider.toSymbol(errorShape).name
+                        writer.write("case .\$L(let error): return error", errorShapeName.decapitalize())
+                    }
+                    val unknownServiceErrorType = unknownServiceErrorSymbol.name
+                    writer.write("case .unknown(let error): return error")
+                    writer.write("}")
+                }
+            }
         }
     }
 }
