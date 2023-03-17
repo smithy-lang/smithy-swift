@@ -267,6 +267,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                     public var _retryable: Swift.Bool = true
                     public var _isThrottling: Swift.Bool = false
                     public var _type: ClientRuntime.ErrorType = .client
+                    public var _smithyErrorTypeName: Swift.String? { "MyError" }
                     /// This is documentation about the member.
                     public var baz: Swift.Int?
                     public var message: Swift.String?
