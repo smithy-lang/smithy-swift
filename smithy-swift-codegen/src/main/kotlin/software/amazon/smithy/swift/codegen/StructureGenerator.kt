@@ -204,7 +204,9 @@ class StructureGenerator(
         }
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)
+        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N, \$N {",
+            ClientRuntimeTypes.Core.NamedModel,
+            SwiftTypes.Protocols.Equatable)
             .call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure() }
@@ -217,6 +219,7 @@ class StructureGenerator(
     object AdditionalErrorMembers : SectionId
 
     private fun generateErrorStructMembers() {
+        writer.write("public static var modelName: \$L { \$S }", SwiftTypes.String, shape.id.name)
         val errorTrait = shape.getTrait<ErrorTrait>()
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null
@@ -233,7 +236,6 @@ class StructureGenerator(
         writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
         writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
         writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
-        writer.write("public var _smithyErrorTypeName: \$T { \$S }", SwiftTypes.String, shape.id.name)
 
         writer.declareSection(AdditionalErrorMembers)
 

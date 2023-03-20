@@ -18,8 +18,6 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
     public var _retryable: Bool = false
 
     public var _type: ErrorType = .unknown
-
-    public var _smithyErrorTypeName: String? { nil }
 }
 
 extension UnknownHttpServiceError {
