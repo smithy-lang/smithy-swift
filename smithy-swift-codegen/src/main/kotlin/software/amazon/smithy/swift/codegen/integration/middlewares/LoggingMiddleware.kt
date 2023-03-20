@@ -24,7 +24,7 @@ class LoggingMiddleware(
 
     override val middlewareStep = MiddlewareStep.DESERIALIZESTEP
 
-    override val position = MiddlewarePosition.BEFORE
+    override val position = MiddlewarePosition.AFTER
 
     override fun render(
         writer: SwiftWriter,
