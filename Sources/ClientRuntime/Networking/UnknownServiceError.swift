@@ -10,6 +10,9 @@ public struct UnknownServiceError: ServiceError, Equatable {
     public var _isThrottling: Bool = false
     public var _type: ErrorType = .unknown
     public var _message: String?
+
+    /// A string that identifies the type of this error.  For an unknown error, this will be some
+    /// value that could not be matched to a known error type, and may be `nil`.
     public var _errorType: String?
 
     /// The name (without namespace) of the model this error is based upon.

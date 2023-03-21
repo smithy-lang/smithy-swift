@@ -175,6 +175,11 @@ class ServiceGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension $operationErrorName {", "}") {
                 writer.write("")
+                writer.write("/// Returns the underlying service error enclosed by this enumeration.")
+                writer.write("///")
+                writer.write("/// Will return either one of this operation's predefined service errors,")
+                writer.write("/// or a value representing an unknown error if no predefined type could")
+                writer.write("/// be matched.")
                 writer.openBlock("public var serviceError: ServiceError {", "}") {
                     writer.write("switch self {")
                     for (errorShape in errorShapes) {
