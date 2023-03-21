@@ -46,12 +46,7 @@ class ServiceGeneratorTests {
 
     @Test
     fun `it renders swift protocols in separate file`() {
-        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-        val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
-
-        SwiftCodegenPlugin().execute(context)
-
+        val manifest = setupTest("service-generator-test-operations.smithy")
         Assertions.assertTrue(manifest.hasFile("example/ExampleClientProtocol.swift"))
     }
 
@@ -107,16 +102,50 @@ class ServiceGeneratorTests {
 
     @Test
     fun `deprecated trait on an operation`() {
-        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-        val manifest = MockManifest()
-        val context = buildMockPluginContext(model, manifest)
-        SwiftCodegenPlugin().execute(context)
-
+        val manifest = setupTest("service-generator-test-operations.smithy")
         val exampleClientProtocol = manifest
             .getFileString("example/ExampleClientProtocol.swift").get()
         val operationWithDeprecatedTrait = """
         @available(*, deprecated)
         """.trimIndent()
         exampleClientProtocol.shouldContain(operationWithDeprecatedTrait)
+    }
+
+    @Test
+    fun `it renders an operation output error`() {
+        val manifest = setupTest("service-generator-test-operations.smithy")
+        val renderedError = manifest.getFileString("example/models/GetFooOutputError.swift").get()
+        val expected = """
+        import ClientRuntime
+        
+        public enum GetFooOutputError: Swift.Error, Swift.Equatable {
+            case getFooError(GetFooError)
+            case unknown(UnknownHttpServiceError)
+        }
+        
+        extension GetFooOutputError {
+        
+            /// Returns the underlying service error enclosed by this enumeration.
+            ///
+            /// Will return either one of this operation's predefined service errors,
+            /// or a value representing an unknown error if no predefined type could
+            /// be matched.
+            public var serviceError: ServiceError {
+                switch self {
+                case .getFooError(let error): return error
+                case .unknown(let error): return error
+                }
+            }
+        }
+        """.trimIndent()
+        renderedError.shouldContain(expected)
+    }
+
+    private fun setupTest(modelName: String): MockManifest {
+        val model = javaClass.getResource(modelName).asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "com.test#Example")
+        SwiftCodegenPlugin().execute(context)
+        return manifest
     }
 }

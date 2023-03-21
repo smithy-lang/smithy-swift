@@ -257,7 +257,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val expectedGeneratedStructure =
             """
                 import ClientRuntime
-
+                
                 /// This is documentation about the shape.
                 public struct MyError: ClientRuntime.ServiceError, Swift.Equatable {
                     public var _headers: ClientRuntime.Headers?
@@ -267,6 +267,9 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                     public var _retryable: Swift.Bool = true
                     public var _isThrottling: Swift.Bool = false
                     public var _type: ClientRuntime.ErrorType = .client
+                    /// The name (without namespace) of the model this error is based upon.
+                    public static var _modelName: Swift.String { "MyError" }
+                
                     /// This is documentation about the member.
                     public var baz: Swift.Int?
                     public var message: Swift.String?

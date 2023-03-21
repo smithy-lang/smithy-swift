@@ -10,6 +10,10 @@ public protocol ServiceError {
     var _isThrottling: Bool { get set}
     var _type: ErrorType { get set }
     var _message: String? { get set }
+
+    /// The name (without namespace) of the model this error is based upon.
+    /// For an unknown error, this is an empty string.
+    static var _modelName: String { get }
 }
 
 public enum ErrorType: Equatable {
