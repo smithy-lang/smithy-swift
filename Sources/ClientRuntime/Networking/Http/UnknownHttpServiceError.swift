@@ -18,6 +18,10 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
     public var _retryable: Bool = false
 
     public var _type: ErrorType = .unknown
+
+    /// The name (without namespace) of the model this error is based upon.
+    /// For an unknown error, this is an empty string.
+    public var _modelName: String { "" }
 }
 
 extension UnknownHttpServiceError {

@@ -11,7 +11,10 @@ public struct UnknownServiceError: ServiceError, Equatable {
     public var _type: ErrorType = .unknown
     public var _message: String?
     public var _errorType: String?
-    public var _smithyErrorTypeName: String? { nil }
+
+    /// The name (without namespace) of the model this error is based upon.
+    /// For an unknown error, this is an empty string.
+    public var _modelName: String { "" }
 }
 
 extension UnknownServiceError {

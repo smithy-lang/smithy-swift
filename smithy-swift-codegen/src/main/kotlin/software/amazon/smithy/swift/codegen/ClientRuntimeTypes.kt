@@ -83,7 +83,6 @@ object ClientRuntimeTypes {
         val ClientError = runtimeSymbol("ClientError")
         val SdkError = runtimeSymbol("SdkError")
         val ServiceError = runtimeSymbol("ServiceError")
-        val NamedModel = runtimeSymbol("NamedModel")
         val Logger = runtimeSymbol("LogAgent")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
