@@ -235,7 +235,7 @@ class StructureGenerator(
         writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
         writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
         writer.write("/// The name (without namespace) of the model this error is based upon.")
-        writer.write("public var _modelName: \$L { \$S }", SwiftTypes.String, shape.id.name)
+        writer.write("public static var _modelName: \$L { \$S }", SwiftTypes.String, shape.id.name)
         writer.write("")
 
         writer.declareSection(AdditionalErrorMembers)

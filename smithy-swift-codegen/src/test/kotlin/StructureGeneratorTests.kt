@@ -268,7 +268,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                     public var _isThrottling: Swift.Bool = false
                     public var _type: ClientRuntime.ErrorType = .client
                     /// The name (without namespace) of the model this error is based upon.
-                    public var _modelName: Swift.String { "MyError" }
+                    public static var _modelName: Swift.String { "MyError" }
                 
                     /// This is documentation about the member.
                     public var baz: Swift.Int?

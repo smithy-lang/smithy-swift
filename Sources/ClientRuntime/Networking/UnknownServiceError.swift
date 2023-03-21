@@ -17,7 +17,7 @@ public struct UnknownServiceError: ServiceError, Equatable {
 
     /// The name (without namespace) of the model this error is based upon.
     /// For an unknown error, this is an empty string.
-    public var _modelName: String { "" }
+    public static var _modelName: String { "" }
 }
 
 extension UnknownServiceError {

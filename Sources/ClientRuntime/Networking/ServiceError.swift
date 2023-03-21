@@ -13,7 +13,7 @@ public protocol ServiceError {
 
     /// The name (without namespace) of the model this error is based upon.
     /// For an unknown error, this is an empty string.
-    var _modelName: String { get }
+    static var _modelName: String { get }
 }
 
 public enum ErrorType: Equatable {
