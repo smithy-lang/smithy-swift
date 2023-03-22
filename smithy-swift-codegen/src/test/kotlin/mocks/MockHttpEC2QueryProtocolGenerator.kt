@@ -108,14 +108,6 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         // Intentionally empty
     }
 
-    override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        // Intentionally empty
-    }
-
-    override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        // Intentionally empty
-    }
-
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
         HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx, defaultContentType)
 
