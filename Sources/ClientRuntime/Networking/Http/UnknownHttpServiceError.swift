@@ -5,6 +5,9 @@
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
+
+    /// A string that identifies the type of this error.  For an unknown error, this will be some
+    /// value that could not be matched to a known error type, and may be `nil`.
     public var _errorType: String?
 
     public var _isThrottling: Bool = false
@@ -18,6 +21,10 @@ public struct UnknownHttpServiceError: HttpServiceError, Swift.Equatable {
     public var _retryable: Bool = false
 
     public var _type: ErrorType = .unknown
+
+    /// The name (without namespace) of the model this error is based upon.
+    /// For an unknown error, this is an empty string.
+    public static var _modelName: String { "" }
 }
 
 extension UnknownHttpServiceError {

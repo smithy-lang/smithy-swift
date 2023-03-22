@@ -204,12 +204,16 @@ class StructureGenerator(
         }
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$error.protocol:L, \$N {", SwiftTypes.Protocols.Equatable)
-            .call { generateErrorStructMembers() }
-            .write("")
-            .call { generateInitializerForStructure() }
-            .closeBlock("}")
-            .write("")
+        writer.openBlock(
+            "public struct \$struct.name:L: \$error.protocol:L, \$N {",
+            "}",
+            SwiftTypes.Protocols.Equatable
+        ) {
+            generateErrorStructMembers()
+            writer.write("")
+            generateInitializerForStructure()
+        }
+        writer.write("")
 
         writer.removeContext("error.protocol")
     }
@@ -233,6 +237,9 @@ class StructureGenerator(
         writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
         writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
         writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
+        writer.write("/// The name (without namespace) of the model this error is based upon.")
+        writer.write("public static var _modelName: \$L { \$S }", SwiftTypes.String, shape.id.name)
+        writer.write("")
 
         writer.declareSection(AdditionalErrorMembers)
 
