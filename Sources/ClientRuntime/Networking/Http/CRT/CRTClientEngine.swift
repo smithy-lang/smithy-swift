@@ -105,9 +105,19 @@ public class CRTClientEngine: HttpClientEngine {
                 let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
                                                                   continuation: continuation,
                                                                   http2ManualDataWrites: true)
-                Task {
-                    let stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
+                let stream: HTTP2Stream
+                do {
+                    stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
                     try stream.activate()
+                } catch {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                // At this point, continuation is resumed when the initial headers are received
+                // it is now safe to write the body
+                // writing is done in a separate task to avoid blocking the continuation
+                Task {
                     do {
                         try await stream.write(body: request.body)
                     } catch {
