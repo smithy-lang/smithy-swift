@@ -26,6 +26,11 @@ public protocol ReadableStream: AnyObject {
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
     func read(upToCount count: Int) throws -> Data?
 
+    /// Reads up to `count` bytes from the stream asynchronously
+    /// - Parameter count: maximum number of bytes to read
+    /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
+    func readAsync(upToCount count: Int) async throws -> Data?
+
     /// Reads all remaining bytes from the stream
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
     func readToEnd() throws -> Data?
@@ -66,6 +71,26 @@ extension Stream {
     public func seek(toOffset offset: Int) throws {
         guard isSeekable else {
             throw StreamError.notSupported("Seeking is not supported.")
+        }
+    }
+}
+
+extension Stream {
+    /// Reads up to `count` bytes from the stream asynchronously.
+    /// This is a default implementation that calls `read(upToCount:)` using Swift Concurrency.
+    /// Depending on the current position in the stream, this may read from the cache or the base stream.
+    /// - Parameter count: The maximum number of bytes to read.
+    /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
+    public func readAsync(upToCount count: Int) async throws -> Data? {
+        try await withUnsafeThrowingContinuation { continuation in
+            Task {
+                do {
+                    let data = try read(upToCount: count)
+                    continuation.resume(returning: data)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
 }

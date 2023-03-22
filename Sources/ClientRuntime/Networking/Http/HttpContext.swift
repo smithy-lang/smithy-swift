@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /// this struct implements middleware context and will serve as the context for all http middleware operations
-public struct HttpContext: MiddlewareContext {
+public class HttpContext: MiddlewareContext {
     public var attributes: Attributes
     var response: HttpResponse?
 
@@ -53,6 +53,29 @@ public struct HttpContext: MiddlewareContext {
     public func getPartitionID() -> String? {
         return attributes.get(key: AttributeKey<String>(name: "PartitionID"))
     }
+
+    public func getMessageEncoder() -> MessageEncoder? {
+        return attributes.get(key: HttpContext.messageEncoder)
+    }
+
+    public func getMessageDecoder() -> MessageDecoder? {
+        return attributes.get(key: HttpContext.messageDecoder)
+    }
+
+    public func getMessageSigner() -> MessageSigner? {
+        return attributes.get(key: HttpContext.messageSigner)
+    }
+
+    public func isBidiStreamingEnabled() -> Bool {
+        return attributes.get(key: HttpContext.bidirectionalStreaming) ?? false
+    }
+}
+
+extension HttpContext {
+    public static let messageEncoder = AttributeKey<MessageEncoder>(name: "MessageEncoder")
+    public static let messageDecoder = AttributeKey<MessageDecoder>(name: "MessageDecoder")
+    public static let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
+    public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
 }
 
 public class HttpContextBuilder {

@@ -97,6 +97,16 @@ interface ProtocolGenerator {
     fun generateDeserializers(ctx: GenerationContext)
 
     /**
+     * Generate message marshallable required by the protocol
+     */
+    fun generateMessageMarshallable(ctx: GenerationContext)
+
+    /**
+     * Generate message unmarshallable required by the protocol
+     */
+    fun generateMessageUnmarshallable(ctx: GenerationContext)
+
+    /**
      * Generate serializers or deserializers for any nested types referenced by operation inputs/outputs
      */
     fun generateCodableConformanceForNestedTypes(ctx: GenerationContext)

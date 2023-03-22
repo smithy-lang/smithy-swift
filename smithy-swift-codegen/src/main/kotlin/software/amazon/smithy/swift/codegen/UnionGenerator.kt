@@ -11,6 +11,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
@@ -73,7 +74,12 @@ class UnionGenerator(
         val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
         val hashable = hashableIfPossible()
         writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: \$N$hashable {", "}\n", SwiftTypes.Protocols.Equatable) {
-            shape.allMembers.values.forEach {
+            // event streams (@streaming union) MAY have variants that target errors.
+            // These errors if encountered on the stream will be thrown as an exception rather
+            // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).
+            val members = shape.eventStreamEvents(model)
+
+            members.forEach {
                 writer.writeMemberDocs(model, it)
                 val enumCaseName = symbolProvider.toMemberName(it)
                 val enumCaseAssociatedType = symbolProvider.toSymbol(it)

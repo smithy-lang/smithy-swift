@@ -42,9 +42,9 @@ public class CRTClientEngine: HttpClientEngine {
             )
 
             var socketOptions = SocketOptions(socketType: .stream)
-    #if os(iOS) || os(watchOS)
+#if os(iOS) || os(watchOS)
             socketOptions.connectTimeoutMs = 30_000
-    #endif
+#endif
             let options = HTTPClientConnectionOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
@@ -84,30 +84,55 @@ public class CRTClientEngine: HttpClientEngine {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
-        return try await withCheckedThrowingContinuation({ (continuation: StreamContinuation) in
-            do {
-                let requestOptions = try makeHttpRequestStreamOptions(request, continuation)
-                let stream = try connection.makeRequest(requestOptions: requestOptions)
-                try stream.activate()
-            } catch {
-                continuation.resume(throwing: error)
+        switch connection.httpVersion {
+        case .version_1_1:
+            self.logger.debug("Using HTTP/1.1 connection")
+            let crtRequest = try request.toHttpRequest()
+            return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
+                let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
+                                                                  continuation: continuation)
+                do {
+                    let stream = try connection.makeRequest(requestOptions: requestOptions)
+                    try stream.activate()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
-        })
+        case .version_2:
+            self.logger.debug("Using HTTP/2 connection")
+            let crtRequest = try request.toHttp2Request()
+            return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
+                let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
+                                                                  continuation: continuation,
+                                                                  http2ManualDataWrites: true)
+                Task {
+                    let stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
+                    try stream.activate()
+                    do {
+                        try await stream.write(body: request.body)
+                    } catch {
+                        self.logger.error(error.localizedDescription)
+                    }
+                }
+            }
+        case .unknown:
+            fatalError()
+        }
     }
 
-    public func makeHttpRequestStreamOptions(
-        _ request: SdkHttpRequest,
-        _ continuation: StreamContinuation
-    ) throws -> HTTPRequestOptions {
+    private func makeHttpRequestStreamOptions(
+        request: HTTPRequestBase,
+        continuation: StreamContinuation,
+        http2ManualDataWrites: Bool = false
+    ) -> HTTPRequestOptions {
         let response = HttpResponse()
-        let crtRequest = try request.toHttpRequest()
         let stream = BufferedStream()
 
         let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
             HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
-         }
+        }
 
-        let requestOptions = HTTPRequestOptions(request: crtRequest) { statusCode, headers in
+        var requestOptions = HTTPRequestOptions(request: request) { statusCode, headers in
             self.logger.debug("Interim response received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
@@ -143,6 +168,8 @@ public class CRTClientEngine: HttpClientEngine {
                 self.logger.error("Failed to close stream: \(error)")
             }
         }
+
+        requestOptions.http2ManualDataWrites = http2ManualDataWrites
 
         response.body = .stream(stream)
         return requestOptions

@@ -117,15 +117,40 @@ class HttpBodyMiddleware(
                         if (ctx.protocol == RestXmlTrait.ID && xmlNameTrait != null) {
                             val xmlName = xmlNameTrait.value
                             writer.write("let xmlEncoder = encoder as! XMLEncoder")
-                            writer.write(
-                                "let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")",
-                                memberName, xmlName
-                            )
+                            if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
+                                writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
+                                    writer.write("fatalError(\"Message encoder is required for streaming payload\")")
+                                }
+                                writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
+                                    writer.write("fatalError(\"Message signer is required for streaming payload\")")
+                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: xmlEncoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
+                                writer.write("input.builder.withBody(.stream(encoderStream))")
+                            } else {
+                                writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")", memberName, xmlName)
+                                renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
+                            }
                         } else {
-                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                            if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
+                                writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
+                                    writer.write("fatalError(\"Message encoder is required for streaming payload\")")
+                                }
+                                writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
+                                    writer.write("fatalError(\"Message signer is required for streaming payload\")")
+                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
+                                writer.write("input.builder.withBody(.stream(encoderStream))")
+                            } else {
+                                writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                                renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
+                            }
                         }
-
-                        renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                     }
                     writer.indent()
                     writer.openBlock("if encoder is JSONEncoder {", "}") {

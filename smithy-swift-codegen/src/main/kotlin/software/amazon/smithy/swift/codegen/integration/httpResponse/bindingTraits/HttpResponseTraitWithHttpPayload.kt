@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -84,12 +85,16 @@ class HttpResponseTraitWithHttpPayload(
                     .write("self.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
-                writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
-                    writer.write(
-                        "let output: \$N = try responseDecoder.decode(responseBody: data)",
-                        symbol
-                    )
-                    writer.write("self.\$L = output", memberName)
+                if (target.hasTrait<StreamingTrait>()) {
+                    writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder, let messageDecoder = messageDecoder {", "} else {") {
+                        writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
+                        writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
+                    }
+                } else {
+                    writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
+                        writer.write("let output: \$N = try responseDecoder.decode(responseBody: data)", symbol)
+                        writer.write("self.\$L = output", memberName)
+                    }
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")

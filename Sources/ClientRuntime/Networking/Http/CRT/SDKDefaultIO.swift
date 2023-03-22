@@ -62,6 +62,7 @@ public final class SDKDefaultIO {
 
         let tlsContextOptions = TLSContextOptions.makeDefault()
         tlsContextOptions.setVerifyPeer(true)
+        tlsContextOptions.setAlpnList(["h2", "http/1.1"])
 
         do {
             self.tlsContext = try TLSContext(options: tlsContextOptions,

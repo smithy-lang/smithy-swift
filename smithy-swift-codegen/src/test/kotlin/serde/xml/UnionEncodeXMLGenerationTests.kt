@@ -19,106 +19,81 @@ class UnionEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
         val expectedContents =
             """
-            extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case datavalue = "dataValue"
-                    case doublevalue = "doubleValue"
-                    case mapvalue = "mapValue"
-                    case sdkUnknown
-                    case stringlist = "stringList"
-                    case structvalue = "structValue"
-                    case timestampvalue = "timeStampValue"
-                    case unionvalue = "unionValue"
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    switch self {
-                        case let .datavalue(datavalue):
-                            try container.encode(datavalue, forKey: ClientRuntime.Key("dataValue"))
-                        case let .doublevalue(doublevalue):
-                            try container.encode(doublevalue, forKey: ClientRuntime.Key("doubleValue"))
-                        case let .mapvalue(mapvalue):
-                            var mapValueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("mapValue"))
-                            for (stringKey0, stringValue0) in mapvalue {
-                                var entryContainer0 = mapValueContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("K"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("V"))
-                                try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
-                            }
-                        case let .stringlist(stringlist):
-                            var stringlistContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("stringList"))
-                            for string0 in stringlist {
-                                try stringlistContainer.encode(string0, forKey: ClientRuntime.Key("member"))
-                            }
-                        case let .structvalue(structvalue):
-                            try container.encode(structvalue, forKey: ClientRuntime.Key("structValue"))
-                        case let .timestampvalue(timestampvalue):
-                            try container.encodeTimestamp(timestampvalue, format: .dateTime, forKey: ClientRuntime.Key("timeStampValue"))
-                        case let .unionvalue(unionvalue):
-                            try container.encode(unionvalue, forKey: ClientRuntime.Key("unionValue"))
-                        case let .sdkUnknown(sdkUnknown):
-                            try container.encode(sdkUnknown, forKey: ClientRuntime.Key("sdkUnknown"))
-                    }
-                }
-            
-                public init (from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let key = containerValues.allKeys.first
-                    switch key {
-                        case .doublevalue:
-                            let doublevalueDecoded = try containerValues.decode(Swift.Double.self, forKey: .doublevalue)
-                            self = .doublevalue(doublevalueDecoded)
-                        case .datavalue:
-                            let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
-                            self = .datavalue(datavalueDecoded)
-                        case .unionvalue:
-                            let unionvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlUnionShape.self, forKey: .unionvalue)
-                            self = .unionvalue(unionvalueDecoded)
-                        case .structvalue:
-                            let structvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
-                            self = .structvalue(structvalueDecoded)
-                        case .mapvalue:
-                            struct KeyVal0{struct K{}; struct V{}}
-                            let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
-                            if let mapvalueWrappedContainer = mapvalueWrappedContainer {
-                                let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
-                                var mapvalueBuffer: [Swift.String:Swift.String]? = nil
-                                if let mapvalueContainer = mapvalueContainer {
-                                    mapvalueBuffer = [Swift.String:Swift.String]()
-                                    for stringContainer0 in mapvalueContainer {
-                                        mapvalueBuffer?[stringContainer0.key] = stringContainer0.value
-                                    }
-                                }
-                                self = .mapvalue(mapvalueBuffer)
-                            } else {
-                                self = .mapvalue([:])
-                            }
-                        case .stringlist:
-                            struct KeyVal0{struct member{}}
-                            let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
-                            if let stringlistWrappedContainer = stringlistWrappedContainer {
-                                let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                                var stringlistBuffer:[Swift.String]? = nil
-                                if let stringlistContainer = stringlistContainer {
-                                    stringlistBuffer = [Swift.String]()
-                                    for stringContainer0 in stringlistContainer {
-                                        stringlistBuffer?.append(stringContainer0)
-                                    }
-                                }
-                                self = .stringlist(stringlistBuffer)
-                            } else {
-                                self = .stringlist([])
-                            }
-                        case .timestampvalue:
-                            let timestampvalueDecoded = try containerValues.decodeTimestamp(.dateTime, forKey: .timestampvalue)
-                            self = .timestampvalue(timestampvalueDecoded)
-                        default:
-                            self = .sdkUnknown("")
-                    }
-                }
+// Code generated by smithy-swift-codegen. DO NOT EDIT!
+
+import ClientRuntime
+
+extension EventStreamTestClientTypes.TestStream: ClientRuntime.MessageMarshallable {
+    public func marshall(encoder: ClientRuntime.RequestEncoder) throws -> ClientRuntime.EventStream.Message {
+        var headers: [ClientRuntime.EventStream.Header] = [.init(name: ":message-type", value: .string("event"))]
+        var payload: ClientRuntime.Data? = nil
+        switch self {
+        case .messagewithblob(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithBlob")))
+            headers.append(.init(name: ":content-type", value: .string("application/octet-stream")))
+            payload = value.data
+        case .messagewithstring(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithString")))
+            headers.append(.init(name: ":content-type", value: .string("text/plain")))
+            payload = value.data?.data(using: .utf8)
+        case .messagewithstruct(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithStruct")))
+            headers.append(.init(name: ":content-type", value: .string("application/json")))
+            payload = try encoder.encode(value)
+        case .messagewithunion(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithUnion")))
+            headers.append(.init(name: ":content-type", value: .string("application/json")))
+            payload = try encoder.encode(value)
+        case .messagewithheaders(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithHeaders")))
+            if let headerValue = value.blob {
+                headers.append(.init(name: "blob", value: .data(headerValue)))
             }
+            if let headerValue = value.boolean {
+                headers.append(.init(name: "boolean", value: .bool(headerValue)))
+            }
+            if let headerValue = value.byte {
+                headers.append(.init(name: "byte", value: .byte(headerValue)))
+            }
+            if let headerValue = value.int {
+                headers.append(.init(name: "int", value: .int32(headerValue)))
+            }
+            if let headerValue = value.long {
+                headers.append(.init(name: "long", value: .int64(headerValue)))
+            }
+            if let headerValue = value.short {
+                headers.append(.init(name: "short", value: .int16(headerValue)))
+            }
+            if let headerValue = value.string {
+                headers.append(.init(name: "string", value: .string(headerValue)))
+            }
+            if let headerValue = value.timestamp {
+                headers.append(.init(name: "timestamp", value: .timestamp(headerValue)))
+            }
+        case .messagewithheaderandpayload(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithHeaderAndPayload")))
+            if let headerValue = value.header {
+                headers.append(.init(name: "header", value: .string(headerValue)))
+            }
+            headers.append(.init(name: ":content-type", value: .string("application/octet-stream")))
+            payload = value.payload
+        case .messagewithnoheaderpayloadtraits(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithNoHeaderPayloadTraits")))
+            headers.append(.init(name: ":content-type", value: .string("application/json")))
+            payload = try encoder.encode(value)
+        case .messagewithunboundpayloadtraits(let value):
+            headers.append(.init(name: ":event-type", value: .string("MessageWithUnboundPayloadTraits")))
+            if let headerValue = value.header {
+                headers.append(.init(name: "header", value: .string(headerValue)))
+            }
+            headers.append(.init(name: ":content-type", value: .string("application/json")))
+            payload = try encoder.encode(value)
+        case .sdkUnknown(_):
+            throw ClientRuntime.ClientError.serializationFailed("cannot serialize the unknown event type!")
+        }
+        return ClientRuntime.EventStream.Message(headers: headers, payload: payload ?? .init())
+    }
+}
             """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedContents)

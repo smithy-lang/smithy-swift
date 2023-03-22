@@ -49,6 +49,17 @@ extension SdkHttpRequest {
         httpRequest.body = StreamableHttpBody(body: body)
         return httpRequest
     }
+
+    public func toHttp2Request() throws -> HTTPRequestBase {
+        let httpHeaders = headers.toHttpHeaders()
+        let httpRequest = try HTTPRequest()
+        httpRequest.method = method.rawValue
+        let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
+        httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
+        httpRequest.addHeaders(headers: httpHeaders)
+        httpRequest.body = nil
+        return httpRequest
+    }
 }
 
 extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible {
@@ -195,5 +206,15 @@ public class SdkHttpRequestBuilder {
                               headers: headers,
                               queryItems: queryItems,
                               body: body)
+    }
+}
+
+extension HTTPRequestBase {
+    public var signature: String? {
+        let authHeader = getHeaderValue(name: "Authorization")
+        guard let signatureSequence = authHeader?.split(separator: "=").last else {
+            return nil
+        }
+        return String(signatureSequence)
     }
 }

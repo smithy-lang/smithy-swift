@@ -23,6 +23,8 @@ object SymbolProperty {
 
     // Boolean property indicating this symbol should be boxed
     const val BOXED_KEY: String = "boxed"
+
+    const val NESTED_SYMBOL: String = "nestedSymbol"
 }
 
 /**

@@ -4,5 +4,5 @@
  */
 
 public protocol HttpResponseBinding {
-    init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws
+    init(httpResponse: HttpResponse, decoder: ResponseDecoder?, messageDecoder: MessageDecoder?) throws
 }

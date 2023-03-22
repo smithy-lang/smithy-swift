@@ -55,6 +55,11 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
 
+private val Shape.isStreaming: Boolean
+    get() {
+        return this.hasTrait<StreamingTrait>()
+    }
+
 class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
@@ -201,6 +206,13 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
         var symbol = toSymbol(targetShape)
         if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1)) {
             symbol = symbol.toBuilder().boxed().build()
+        }
+
+        val isEventStream = targetShape.isStreaming && targetShape.isUnionShape
+        if (isEventStream) {
+            return createSymbolBuilder(shape, "AsyncThrowingStream<${symbol.fullName}, Swift.Error>", true)
+                .putProperty(SymbolProperty.NESTED_SYMBOL, symbol)
+                .build()
         }
         return symbol
     }

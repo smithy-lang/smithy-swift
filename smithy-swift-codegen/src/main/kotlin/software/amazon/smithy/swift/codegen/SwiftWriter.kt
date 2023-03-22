@@ -266,4 +266,10 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
             writeDocs(it)
         }
     }
+
+    fun indent(function: () -> Unit) {
+        indent()
+        function()
+        dedent()
+    }
 }
