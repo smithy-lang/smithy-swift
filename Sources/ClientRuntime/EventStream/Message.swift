@@ -38,35 +38,8 @@ extension EventStream.Message: CustomDebugStringConvertible {
 }
 
 extension Array where Element == EventStream.Header {
-    public func toHeaders() -> Headers {
-        var headers = Headers()
-        for header in self {
-            switch header.value {
-            case .bool(let value):
-                headers.add(name: header.name, value: "\(value)")
-            case .byte(let value):
-                headers.add(name: header.name, value: "\(value)")
-            case .int16(let value):
-                headers.add(name: header.name, value: "\(value)")
-            case .int32(let value):
-                headers.add(name: header.name, value: "\(value)")
-            case .int64(let value):
-                headers.add(name: header.name, value: "\(value)")
-            case .byteArray(let value):
-                headers.add(name: header.name, value: value.base64EncodedString())
-            case .string(let value):
-                headers.add(name: header.name, value: value)
-            case .timestamp(let value):
-                headers.add(name: header.name, value: "\(value.timeIntervalSince1970)")
-            case .uuid(let value):
-                headers.add(name: header.name, value: value.uuidString)
-            }
-        }
-        return headers
-    }
-}
-
-extension Array where Element == EventStream.Header {
+    /// Returns the value of the header with the given name if it exists.
+    /// - Parameter name: The name of the header to retrieve.
     public func value(name: String) -> EventStream.HeaderValue? {
         return self.first(where: { $0.name == name })?.value
     }

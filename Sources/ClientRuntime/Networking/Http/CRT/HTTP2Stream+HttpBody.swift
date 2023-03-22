@@ -8,6 +8,12 @@
 import AwsCommonRuntimeKit
 
 extension HTTP2Stream {
+    /// Returns the recommended size for the data to write
+    /// when using manual writes to HTTP2Stream
+    var manualWriteBufferSize: Int {
+        return 1024
+    }
+
     /// Writes the HttpBody to the stream asynchronously
     /// There is not recommended size for the data to write. The data will be written in chunks of 1024 bytes.
     /// - Parameter body: The body to write
@@ -17,7 +23,7 @@ extension HTTP2Stream {
         case .data(let data):
             try await writeData(data: data ?? .init(), endOfStream: true)
         case .stream(let stream):
-            while let data = try await stream.readAsync(upToCount: 1024) {
+            while let data = try await stream.readAsync(upToCount: manualWriteBufferSize) {
                 try await writeData(data: data, endOfStream: false)
             }
             try await writeData(data: .init(), endOfStream: true)

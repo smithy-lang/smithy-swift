@@ -32,9 +32,10 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
               handler(input)
               let httpResponse = HttpResponse(body: .none, statusCode: .ok)
               do {
-                  let output: OperationStackOutput? = try OperationStackOutput(httpResponse: httpResponse,
-                                                                               decoder: nil,
-                                                                               messageDecoder: nil)
+                  let output: OperationStackOutput? = try OperationStackOutput(
+                    httpResponse: httpResponse,
+                    decoder: nil,
+                    messageDecoder: nil)
                   return .init(httpResponse: httpResponse, output: output)
               } catch {
                   throw SdkError<OperationStackError>.unknown(
