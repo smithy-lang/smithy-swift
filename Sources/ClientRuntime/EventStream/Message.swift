@@ -43,23 +43,23 @@ extension Array where Element == EventStream.Header {
         for header in self {
             switch header.value {
             case .bool(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: "\(value)")
             case .byte(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: "\(value)")
             case .int16(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: "\(value)")
             case .int32(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: "\(value)")
             case .int64(let value):
-                headers.add(name: header.name, value: value.description)
-            case .data(let value):
+                headers.add(name: header.name, value: "\(value)")
+            case .byteArray(let value):
                 headers.add(name: header.name, value: value.base64EncodedString())
             case .string(let value):
                 headers.add(name: header.name, value: value)
             case .timestamp(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: "\(value.timeIntervalSince1970)")
             case .uuid(let value):
-                headers.add(name: header.name, value: value.description)
+                headers.add(name: header.name, value: value.uuidString)
             }
         }
         return headers

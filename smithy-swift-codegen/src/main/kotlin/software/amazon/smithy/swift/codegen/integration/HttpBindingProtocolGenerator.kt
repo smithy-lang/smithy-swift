@@ -62,6 +62,7 @@ import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.utils.OptionalUtils
+import java.util.*
 import java.util.logging.Logger
 
 private val Shape.isStreaming: Boolean
