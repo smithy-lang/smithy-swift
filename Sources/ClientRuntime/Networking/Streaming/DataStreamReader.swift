@@ -36,7 +36,7 @@ public class DataStreamReader: StreamReader {
 
     init(byteBuffer: ByteBuffer = ByteBuffer(size: 0)) {
         self.byteBuffer = byteBuffer
-        self._availableForRead = 0
+        self._availableForRead = UInt(byteBuffer.length())
         self.offset = 0
         self._hasFinishedWriting = false
     }
@@ -51,9 +51,16 @@ public class DataStreamReader: StreamReader {
                 bytesRead = byteBuffer.read(buffer: typedBuffer)
             }
 
-            if !rewind, let bytesRead = bytesRead {
-                _availableForRead -= UInt(bytesRead)
-                offset += UInt(bytesRead)
+            if let bytesRead = bytesRead {
+                if rewind {
+                    try? byteBuffer.seek(
+                        offset: Int64(offset),
+                        streamSeekType: .begin
+                    )
+                } else {
+                    _availableForRead -= UInt(bytesRead)
+                    offset += UInt(bytesRead)
+                }
             }
         }
         return ByteBuffer(data: data)
