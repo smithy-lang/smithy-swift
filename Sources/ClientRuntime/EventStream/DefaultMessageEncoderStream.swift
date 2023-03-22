@@ -80,14 +80,20 @@ extension EventStream {
 
         // MARK: Stream
 
+        /// Returns the current position in the stream
         public var position: ClientRuntime.Data.Index = 0
 
+        /// Returns nil because the length of async stream is not known
         public var length: Int?
 
+        /// Returns false because the length of async stream is not known
+        /// and therefore cannot be empty
         public var isEmpty: Bool = false
 
+        /// Returns false because async stream is not seekable
         public var isSeekable: Bool = false
 
+        /// Internal buffer to store excess data read from async stream
         var buffer = Data()
 
         public func read(upToCount count: Int) throws -> ClientRuntime.Data? {
@@ -98,6 +104,9 @@ extension EventStream {
             fatalError("readToEnd() is not supported by AsyncStream backed streams")
         }
 
+        /// Reads up to `count` bytes from the stream asynchronously
+        /// - Parameter count: maximum number of bytes to read
+        /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
         public func readAsync(upToCount count: Int) async throws -> Data? {
             var data = Data()
             var remaining = count
@@ -144,6 +153,7 @@ extension EventStream {
             fatalError("write(contentsOf:) is not supported by AsyncStream backed streams")
         }
 
+        /// Closing the stream is a no-op because the underlying async stream is not owned by this stream
         public func close() throws {
             // no-op
         }
