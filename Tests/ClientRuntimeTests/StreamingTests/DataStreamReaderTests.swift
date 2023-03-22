@@ -34,4 +34,21 @@ class DataStreamReaderTests: XCTestCase {
         let secondRead = dataStreamReader.read().getData()
         XCTAssertEqual(secondRead, testData)
     }
+    
+    func testWriteThenReadWithRewind() {
+        let dataStreamReader = DataStreamReader()
+        
+        let byteBuffer = ByteBuffer(data: testData)
+        dataStreamReader.write(buffer: byteBuffer)
+        
+        let firstRead = dataStreamReader.read(rewind: true).getData()
+        XCTAssertEqual(firstRead, testData)
+        
+        let secondRead = dataStreamReader.read().getData()
+        XCTAssertEqual(secondRead, testData)
+        
+        let thirdRead = dataStreamReader.read().getData()
+        XCTAssertNotEqual(thirdRead, testData)
+        XCTAssertEqual(thirdRead, Data())
+    }
 }
