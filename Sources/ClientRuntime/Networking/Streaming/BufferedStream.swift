@@ -70,6 +70,7 @@ public class BufferedStream: Stream {
 
     /// Reads all data from the stream.
     /// It uses `read(upToCount:)` to read data in chunks.
+    /// This function will block and wait until the stream is closed before returning the data read from the stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func readToEnd() throws -> Data? {
         var data = Data()
