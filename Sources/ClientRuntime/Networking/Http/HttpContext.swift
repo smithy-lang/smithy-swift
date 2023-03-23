@@ -58,10 +58,6 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: HttpContext.messageEncoder)
     }
 
-    public func getMessageDecoder() -> MessageDecoder? {
-        return attributes.get(key: HttpContext.messageDecoder)
-    }
-
     public func getMessageSigner() -> MessageSigner? {
         return attributes.get(key: HttpContext.messageSigner)
     }
@@ -73,7 +69,6 @@ public class HttpContext: MiddlewareContext {
 
 extension HttpContext {
     public static let messageEncoder = AttributeKey<MessageEncoder>(name: "MessageEncoder")
-    public static let messageDecoder = AttributeKey<MessageDecoder>(name: "MessageDecoder")
     public static let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
 }

@@ -12,7 +12,7 @@ extension EventStream {
         let messageEncoder: MessageEncoder
         let messageSinger: MessageSigner
         let requestEncoder: RequestEncoder
-        var readAsyncIterator: AsyncIterator? = nil
+        var readAsyncIterator: AsyncIterator?
 
         public init(stream: AsyncThrowingStream<Event, Error>,
                     messageEncoder: MessageEncoder,

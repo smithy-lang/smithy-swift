@@ -33,7 +33,6 @@ object ClientRuntimeTypes {
     object Serde {
         val RequestEncoder = runtimeSymbol("RequestEncoder")
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
-        val MessageDecoder = runtimeSymbol("MessageDecoder")
         val Key = runtimeSymbol("Key")
         val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
         val DynamicNodeEncoding = runtimeSymbol("DynamicNodeEncoding")
@@ -52,6 +51,7 @@ object ClientRuntimeTypes {
     }
 
     object EventStream {
+        val MessageDecoder = runtimeSymbol("MessageDecoder")
         val ExceptionParams = runtimeSymbol("EventStream.MessageType.ExceptionParams")
         val Header = runtimeSymbol("EventStream.Header")
         val Message = runtimeSymbol("EventStream.Message")

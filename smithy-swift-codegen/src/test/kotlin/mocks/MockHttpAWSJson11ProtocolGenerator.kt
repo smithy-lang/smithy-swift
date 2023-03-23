@@ -116,11 +116,11 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        // Intentionally empty
+        TODO("Not yet implemented")
     }
 
     override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        // Intentionally empty
+        TODO("Not yet implemented")
     }
 
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):

@@ -19,8 +19,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
                 let output = try Output(httpResponse: copiedResponse.httpResponse,
-                                        decoder: decoder,
-                                        messageDecoder: context.getMessageDecoder())
+                                        decoder: decoder)
                 copiedResponse.output = output
                 return copiedResponse
             } else {
@@ -32,8 +31,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                     copiedResponse.httpResponse.body = .stream(CachingStream(base: stream))
                 }
                 let error = try OutputError(httpResponse: copiedResponse.httpResponse,
-                                            decoder: decoder,
-                                            messageDecoder: context.getMessageDecoder())
+                                            decoder: decoder)
                 throw SdkError.service(error, copiedResponse.httpResponse)
           }
     }

@@ -11,8 +11,10 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
@@ -22,6 +24,9 @@ class HttpResponseTraitWithHttpPayload(
     val binding: HttpBindingDescriptor,
     val writer: SwiftWriter
 ) : HttpResponseBindingRenderable {
+
+    object MessageDecoderSectionId : SectionId
+
     override fun render() {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
@@ -86,7 +91,10 @@ class HttpResponseTraitWithHttpPayload(
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
-                    writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder, let messageDecoder = messageDecoder {", "} else {") {
+                    writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {", "} else {") {
+                        writer.declareSection(MessageDecoderSectionId) {
+                            writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
+                        }
                         writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
                         writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
                     }
