@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 
 extension HTTP2Stream {
-    /// Returns the recommended size for the data to write
+    /// Returns the recommended size, in bytes, for the data to write
     /// when using manual writes to HTTP2Stream
     var manualWriteBufferSize: Int {
         return 1024
