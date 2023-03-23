@@ -62,7 +62,7 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: HttpContext.messageSigner)
     }
 
-    public func isBidiStreamingEnabled() -> Bool {
+    public func isBidirectionalStreamingEnabled() -> Bool {
         return attributes.get(key: HttpContext.bidirectionalStreaming) ?? false
     }
 }
