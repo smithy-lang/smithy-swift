@@ -135,7 +135,7 @@ public class CRTClientEngine: HttpClientEngine {
     ///   - request: The `HTTPRequestBase` object that contains the request information
     ///   - continuation: The continuation that will be resumed when the request is complete
     ///   - http2ManualDataWrites: Whether or not the request is using HTTP/2 manual data writes, defaults to `false`
-    ///     If not set to true, HTTP/2 manual data writes will be disabled and result in a runtime error.
+    ///     If set to false, HTTP/2 manual data writes will be disabled and result in a runtime error.
     /// - Returns: A `HTTPRequestOptions` object that can be used to make a HTTP request
     private func makeHttpRequestStreamOptions(
         request: HTTPRequestBase,
