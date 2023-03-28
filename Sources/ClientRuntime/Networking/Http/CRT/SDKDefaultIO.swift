@@ -73,7 +73,7 @@ public final class SDKDefaultIO {
                         """)
         }
     }
-    
+
     public func setAlpnList(_ alpnList: [String]) throws {
         let tlsContextOptions = TLSContextOptions.makeDefault()
         tlsContextOptions.setVerifyPeer(true)
