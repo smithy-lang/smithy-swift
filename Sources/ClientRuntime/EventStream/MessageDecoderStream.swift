@@ -12,7 +12,7 @@ public protocol MessageDecoderStream: AsyncSequence where Event == Element {
 
 extension MessageDecoderStream {
     /// Returns an `AsyncThrowingStream` that decodes input data into `Event` objects.
-    public func toAsyncStream() -> AsyncThrowingStream<Event, Error> {
+    public func toAsyncStream() -> AsyncThrowingStream<Event, Error> where Event == Element {
         let stream = AsyncThrowingStream { continuation in
             Task {
                 do {
