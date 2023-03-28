@@ -27,11 +27,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         Self.MOutput == H.Output,
         Self.Context == H.Context
         {
-            var copiedContext = context
             if let host = host {
-                copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+                context.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
             }
-            return try await next.handle(context: copiedContext, input: input)
+            return try await next.handle(context: context, input: input)
         }
 
         public typealias MInput = SayHelloInput
