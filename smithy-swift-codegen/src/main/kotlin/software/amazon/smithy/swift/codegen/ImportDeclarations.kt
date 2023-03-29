@@ -9,6 +9,20 @@ class ImportDeclarations {
     private val imports = mutableSetOf<ImportStatement>()
 
     fun addImport(packageName: String, isTestable: Boolean = false, internalSPIName: String? = null) {
+        val existingImport = imports.find { it.packageName == packageName }
+        if (existingImport != null) {
+            // If we have an existing import with the same package name, then replace the existing one
+            val newImport = ImportStatement(
+                packageName,
+                isTestable || existingImport.isTestable,
+                internalSPIName ?: existingImport.internalSPIName
+            )
+            imports.remove(existingImport)
+            imports.add(newImport)
+            return
+        }
+
+        // Otherwise, we have a new import so add it
         imports.add(ImportStatement(packageName, isTestable, internalSPIName))
     }
 
@@ -18,8 +32,8 @@ class ImportDeclarations {
         }
 
         return imports
+            .sortedBy { it.packageName }
             .map(ImportStatement::statement)
-            .sorted()
             .joinToString(separator = "\n")
     }
 }
