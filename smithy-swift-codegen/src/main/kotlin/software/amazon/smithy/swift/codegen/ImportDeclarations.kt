@@ -9,6 +9,13 @@ class ImportDeclarations {
     private val imports = mutableSetOf<ImportStatement>()
 
     fun addImport(packageName: String, isTestable: Boolean = false, internalSPIName: String? = null) {
+        if (internalSPIName != null && internalSPIName != "Internal") {
+            throw IllegalArgumentException("""
+                We currently only support usage of a single spiName 'Internal'. 
+                If you'd like to use another name then please update the logic below to fully support multiple spiNames.
+                """)
+        }
+
         val existingImport = imports.find { it.packageName == packageName }
         if (existingImport != null) {
             // If we have an existing import with the same package name, then replace the existing one
