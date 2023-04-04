@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import AwsCommonRuntimeKit
 import struct Foundation.TimeInterval
 
@@ -11,7 +12,7 @@ public class LegacyRetryStrategy: RetryStrategy {
     let crtRetryStrategy: AwsCommonRuntimeKit.RetryStrategy
     private let sharedDefaultIO = SDKDefaultIO.shared
 
-    public required init(retryStrategyOptions: RetryStrategyOptions = .standard) throws {
+    public required init(retryStrategyOptions: RetryStrategyOptions = RetryStrategyOptions()) throws {
         self.crtRetryStrategy = try AwsCommonRuntimeKit.RetryStrategy(
             retryStrategyOptions: retryStrategyOptions,
             eventLoopGroup: sharedDefaultIO.eventLoopGroup
@@ -67,11 +68,14 @@ public class LegacyRetryStrategy: RetryStrategy {
 
     public func getErrorInfo<E>(error: SdkError<E>) -> RetryErrorInfo {
         switch error {
-        case .client(let clientError, _):
-            if case ClientError.crtError = clientError {
-                return RetryErrorInfo(errorType: .transient, retryAfterHint: nil)
+        case .client(let clientError, let httpResponse):
+            let hint = hint(for: httpResponse)
+            switch clientError {
+            case .crtError:
+                return RetryErrorInfo(errorType: .transient, retryAfterHint: hint)
+            default:
+                return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
             }
-            return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
         case .service(let serviceError, let httpResponse):
             if let retryAfter = httpResponse.headers.value(for: "x-amz-retry-after") {
                 let hint = TimeInterval(retryAfter)
@@ -92,6 +96,12 @@ public class LegacyRetryStrategy: RetryStrategy {
         case .unknown:
             return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
         }
+    }
+
+    private func hint(for httpResponse: HttpResponse?) -> TimeInterval? {
+        guard let retryAfter = httpResponse?.headers.value(for: "x-amz-retry-after") else { return nil }
+        guard let hint = TimeInterval(retryAfter) else { return nil }
+        return hint
     }
 }
 

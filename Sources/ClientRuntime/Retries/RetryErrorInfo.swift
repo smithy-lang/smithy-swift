@@ -12,6 +12,11 @@ import Foundation
 /// > Note: Based on _The Design and Implementation of the AWS SDKs_ section 3.2.1, The Smithy Retry Interface, `RetryErrorInfo`.
 public struct RetryErrorInfo {
 
+    public init(errorType: RetryErrorType, retryAfterHint: TimeInterval?) {
+        self.errorType = errorType
+        self.retryAfterHint = retryAfterHint
+    }
+
     /// The error type for the described error.
     public let errorType: RetryErrorType
 

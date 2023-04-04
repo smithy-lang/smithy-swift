@@ -15,27 +15,11 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
  */
 data class ConfigField(
     val memberName: String?,
-
-    /**
-     * The type that is to be used to instantiate this config field.
-     * If no protocol type is provided, this is also the type of the property that provides this config field.
-     */
-    val concreteType: Symbol,
-
-    /**
-     * The protocol that should be used for this config field's property type.
-     * If protocol type is null, the concrete type is used instead.
-     */
-    val protocolType: Symbol? = null,
+    val type: Symbol,
     val propFormatter: String = "\$N",
     private val documentation: String? = null,
-    val paramFormatter: String = "\$D"
-) {
-    /**
-     * The type to be used for the property holding this config field.
-     */
-    val variableType: Symbol = protocolType ?: concreteType
-}
+    val paramFormatter: String = "\$D",
+)
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
@@ -54,7 +38,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryStrategy", ClientRuntimeTypes.Core.LegacyRetryStrategy, ClientRuntimeTypes.Core.RetryStrategy),
+            ConfigField("retryConfig", ClientRuntimeTypes.Core.RetryStrategy),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }
