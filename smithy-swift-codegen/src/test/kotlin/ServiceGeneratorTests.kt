@@ -118,7 +118,7 @@ class ServiceGeneratorTests {
         val expected = """
         import ClientRuntime
         
-        public enum GetFooOutputError: Swift.Error, Swift.Equatable {
+        public enum GetFooOutputError: Swift.Error, Swift.Equatable, ClientRuntime.ServiceErrorProviding {
             case getFooError(GetFooError)
             case unknown(UnknownHttpServiceError)
         }

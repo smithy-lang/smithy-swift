@@ -6,7 +6,7 @@
 //
 
 public struct RetryerMiddleware<Output: HttpResponseBinding,
-                                OutputError: HttpResponseBinding>: Middleware {
+                                OutputError: HttpResponseBinding & ServiceErrorProviding>: Middleware {
 
     public var id: String = "Retryer"
 
@@ -61,17 +61,18 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
         input: SdkHttpRequestBuilder,
         next: H
     ) async throws -> OperationOutput<Output> where
-        H: Handler,
-        Self.MInput == H.Input,
-        Self.MOutput == H.Output,
-        Self.Context == H.Context {
+H: Handler,
+    Self.MInput == H.Input,
+    Self.MOutput == H.Output,
+    Self.Context == H.Context {
 
+        let errorClassifier: RetryErrorClassifier<OutputError> = retryStrategy.makeErrorClassifier()
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
             retryStrategy.recordSuccess(token: token)
             return serviceResponse
-        } catch let error as SdkError<OutputError> where retryStrategy.isErrorRetryable(error: error) {
-            let errorInfo = retryStrategy.getErrorInfo(error: error)
+        } catch let error as SdkError<OutputError> {
+            guard let errorInfo = errorClassifier.retryErrorInfo(error: error) else { throw error }
             let newToken = try await retryStrategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             // TODO: rewind the stream once streaming is properly implemented
             return try await tryRequest(

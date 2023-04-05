@@ -7,22 +7,23 @@
 
 import struct Foundation.TimeInterval
 
+public protocol RetryErrorClassifying {
+    associatedtype ServiceErrorWrapper: ServiceErrorProviding
+
+    func retryErrorInfo(error: SdkError<ServiceErrorWrapper>) -> RetryErrorInfo?
+}
+
 /// Returns `ErrorInfo` for the passed error, expressing the error's
-public struct RetryErrorClassifier<T> {
+public struct RetryErrorClassifier<T: ServiceErrorProviding>: RetryErrorClassifying {
 
-    static var defaultBlock: (SdkError<T>) -> RetryErrorInfo? = {
-
-    }
-
-    var block: (SdkError<T>) -> RetryErrorInfo? = { _ in nil }
+    public typealias ServiceErrorWrapper = T
 
     public init() {}
 
-    public func errorType<T>(error: SdkError<T>) -> RetryErrorInfo? {
+    public func retryErrorInfo(error: SdkError<T>) -> RetryErrorInfo? {
         switch error {
         case .service(let serviceErrorProvider, let httpResponse):
-            guard let serviceError = (serviceErrorProvider as? ServiceErrorProviding)?.serviceError else { return nil }
-            guard let errorType = process(serviceError: serviceError) else { return nil }
+            guard let errorType = process(serviceError: serviceErrorProvider.serviceError) else { return nil }
             let hint = process(httpResponse: httpResponse)
             return RetryErrorInfo(errorType: errorType, retryAfterHint: hint)
         case .client(let error, let httpResponse):
@@ -37,7 +38,7 @@ public struct RetryErrorClassifier<T> {
     }
 
     private func process(serviceError: ServiceError) -> RetryErrorType? {
-        // TODO: fill in
+        // TODO: fill in & test
         if serviceError._isThrottling {
             return .throttling
         } else if serviceError._retryable {
@@ -47,7 +48,7 @@ public struct RetryErrorClassifier<T> {
     }
 
     private func process(error: Error) -> RetryErrorType? {
-        // TODO: fill in
+        // TODO: fill in & test
         return nil
     }
 

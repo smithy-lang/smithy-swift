@@ -98,6 +98,11 @@ public class LegacyRetryStrategy: RetryStrategy {
         }
     }
 
+    public func makeErrorClassifier<RetryOutputError>() -> RetryErrorClassifier<RetryOutputError> where RetryOutputError : ServiceErrorProviding {
+        // TODO: fill in the block
+        return RetryErrorClassifier<RetryOutputError>()
+    }
+
     private func hint(for httpResponse: HttpResponse?) -> TimeInterval? {
         guard let retryAfter = httpResponse?.headers.value(for: "x-amz-retry-after") else { return nil }
         guard let hint = TimeInterval(retryAfter) else { return nil }

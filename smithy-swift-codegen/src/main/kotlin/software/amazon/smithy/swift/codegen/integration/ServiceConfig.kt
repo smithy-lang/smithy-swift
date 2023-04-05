@@ -38,7 +38,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryConfig", ClientRuntimeTypes.Core.RetryStrategy),
+            ConfigField("retryStrategy", ClientRuntimeTypes.Core.RetryStrategy),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }

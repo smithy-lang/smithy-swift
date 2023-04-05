@@ -54,6 +54,8 @@ public protocol RetryStrategy {
     /// function to record that the operation was successful.
     /// - Parameter token: The token for the operation that was completed successfully.
     func recordSuccess(token: RetryToken)
-    func isErrorRetryable<E>(error: SdkError<E>) -> Bool
-    func getErrorInfo<E>(error: SdkError<E>) -> RetryErrorInfo
+
+    /// Returns an error classifier that can be used to classify operation errors for purposes of determining how & if to retry the request.
+    /// - Returns: An instance of `RetryErrorClassifier` that should be used with this retry strategy.
+    func makeErrorClassifier<RetryOutputError: ServiceErrorProviding>() -> RetryErrorClassifier<RetryOutputError>
 }
