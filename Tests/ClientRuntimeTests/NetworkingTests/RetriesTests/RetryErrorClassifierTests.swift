@@ -14,7 +14,7 @@ class RetryErrorClassifierTests: XCTestCase {
     func test_serviceError_isRetryableIfRetryableIsTrue() {
         let serviceError = TestServiceError(_retryable: true)
         let sdkError = sdkError(from: serviceError)
-        let subject = RetryErrorClassifier<TestOutputError>({ _ in return nil })
+        let subject = RetryErrorClassifier()
         let errorInfo = subject.retryErrorInfo(error: sdkError)
         XCTAssertEqual(errorInfo?.errorType, .transient)
         XCTAssertEqual(errorInfo?.retryAfterHint, nil)
@@ -23,7 +23,7 @@ class RetryErrorClassifierTests: XCTestCase {
     func test_serviceError_isThrottleableIfIsThrottlingIsTrue() {
         let serviceError = TestServiceError(_retryable: true, _isThrottling: true)
         let sdkError = sdkError(from: serviceError)
-        let subject = RetryErrorClassifier<TestOutputError>({ _ in return nil })
+        let subject = RetryErrorClassifier()
         let errorInfo = subject.retryErrorInfo(error: sdkError)
         XCTAssertEqual(errorInfo?.errorType, .throttling)
         XCTAssertEqual(errorInfo?.retryAfterHint, nil)

@@ -98,9 +98,9 @@ public class LegacyRetryStrategy: RetryStrategy {
         }
     }
 
-    public func makeErrorClassifier<RetryOutputError>() -> RetryErrorClassifier<RetryOutputError> where RetryOutputError : ServiceErrorProviding {
+    public func makeErrorClassifier() -> RetryErrorClassifying {
         // TODO: fill in the block
-        return RetryErrorClassifier<RetryOutputError>()
+        return RetryErrorClassifier()
     }
 
     private func hint(for httpResponse: HttpResponse?) -> TimeInterval? {

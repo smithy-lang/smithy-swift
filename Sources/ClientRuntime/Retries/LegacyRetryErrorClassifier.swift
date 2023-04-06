@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
-//  Created by Elkins, Josh on 3/23/23.
+// SPDX-License-Identifier: Apache-2.0
 //
 
 import Foundation

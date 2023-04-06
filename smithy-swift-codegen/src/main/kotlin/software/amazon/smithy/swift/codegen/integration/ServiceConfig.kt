@@ -38,7 +38,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryStrategy", ClientRuntimeTypes.Core.RetryStrategy),
+            ConfigField("retryOptions", ClientRuntimeTypes.Core.RetryOptions),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }
@@ -55,7 +55,14 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         writer.openBlock("public init(runtimeConfig: \$N) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
             val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
-                writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
+                when (it.memberName) {
+                    "retryOptions" -> {
+                        writer.write("self.${it.memberName} = DefaultRetryOptions(retryOptions: runtimeConfig.${it.memberName})")
+                    }
+                    else -> {
+                        writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
+                    }
+                }
             }
         }
         writer.write("")

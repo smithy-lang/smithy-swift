@@ -32,7 +32,7 @@ public enum RetryErrorType {
     case clientError
 }
 
-extension RetryErrorType {
+public extension RetryErrorType {
 
     func toCRTType() -> AwsCommonRuntimeKit.RetryError {
         switch self {

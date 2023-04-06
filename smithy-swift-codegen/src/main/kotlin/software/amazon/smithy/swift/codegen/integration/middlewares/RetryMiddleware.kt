@@ -29,7 +29,14 @@ class RetryMiddleware(
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("let errorClassifier")
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(retryStrategy: config.retryStrategy))", ClientRuntimeTypes.Middleware.RetryerMiddleware, output, outputError)
+        writer.write("let retryFactory = config.retryOptions.makeRetryFactory()")
+        writer.write("let retryStrategy = try retryFactory.makeRetryStrategy()")
+        writer.write("let retryErrorClassifier = try retryFactory.makeRetryErrorClassifier()")
+        writer.write(
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(retryStrategy: retryStrategy, retryErrorClassifier: retryErrorClassifier))",
+            ClientRuntimeTypes.Middleware.RetryerMiddleware,
+            output,
+            outputError
+        )
     }
 }

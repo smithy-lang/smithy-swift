@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.TimeInterval
-import AwsCommonRuntimeKit
-
 public struct RetryStrategyOptions {
+    public let retryMode: RetryMode
     public let maxRetriesBase: Int
 
     public init(
+        retryMode: RetryMode = .legacy,
         maxRetriesBase: Int = 10
     ) {
+        self.retryMode = retryMode
         self.maxRetriesBase = maxRetriesBase
     }
 }
