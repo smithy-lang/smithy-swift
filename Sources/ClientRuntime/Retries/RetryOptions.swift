@@ -13,14 +13,19 @@ public enum RetryMode {
     case adaptive
 }
 
-public protocol RetryOptions {
-    var maxAttempts: Int { get }
-    var retryMode: RetryMode { get }
+public struct RetryOptions {
+    public let retryMode: RetryMode
+    public let maxAttempts: Int
+    public var retryStrategy: RetryStrategy?
+    public var retryErrorClassifier: RetryErrorClassifier?
 
-    func makeRetryFactory() -> RetryFactory
-}
+    public init(retryOptions: RetryOptions) {
+        self.retryMode = retryOptions.retryMode
+        self.maxAttempts = retryOptions.maxAttempts
+    }
 
-public protocol RetryFactory {
-    func makeRetryStrategy() throws -> RetryStrategy
-    func makeRetryErrorClassifier() throws -> RetryErrorClassifying
+    public init(retryMode: RetryMode = .legacy, maxAttempts: Int = 3) {
+        self.retryMode = retryMode
+        self.maxAttempts = maxAttempts
+    }
 }

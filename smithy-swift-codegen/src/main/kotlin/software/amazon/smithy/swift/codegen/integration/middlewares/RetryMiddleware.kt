@@ -29,9 +29,8 @@ class RetryMiddleware(
     override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("let retryFactory = config.retryOptions.makeRetryFactory()")
-        writer.write("let retryStrategy = try retryFactory.makeRetryStrategy()")
-        writer.write("let retryErrorClassifier = try retryFactory.makeRetryErrorClassifier()")
+        writer.write("let retryStrategy = try config.retryOptions.retryStrategy ?? DefaultRetryStrategy(retryStrategyOptions: RetryStrategyOptions(retryMode: config.retryOptions.retryMode, maxRetriesBase: config.retryOptions.maxAttempts))")
+        writer.write("let retryErrorClassifier = config.retryOptions.retryErrorClassifier ?? DefaultRetryErrorClassifier()")
         writer.write(
             "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(retryStrategy: retryStrategy, retryErrorClassifier: retryErrorClassifier))",
             ClientRuntimeTypes.Middleware.RetryerMiddleware,

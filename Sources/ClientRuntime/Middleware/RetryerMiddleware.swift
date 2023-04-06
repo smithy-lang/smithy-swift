@@ -11,9 +11,9 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
     public var id: String = "Retryer"
 
     public let retryStrategy: RetryStrategy
-    public let retryErrorClassifier: RetryErrorClassifying
+    public let retryErrorClassifier: RetryErrorClassifier
 
-    public init(retryStrategy: RetryStrategy, retryErrorClassifier: RetryErrorClassifying) {
+    public init(retryStrategy: RetryStrategy, retryErrorClassifier: RetryErrorClassifier) {
         self.retryStrategy = retryStrategy
         self.retryErrorClassifier = retryErrorClassifier
     }

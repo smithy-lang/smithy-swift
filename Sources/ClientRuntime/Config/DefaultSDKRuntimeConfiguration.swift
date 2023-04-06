@@ -32,7 +32,7 @@ public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
         self.httpClientEngine = CRTClientEngine()
         self.httpClientConfiguration = HttpClientConfiguration()
         self.idempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()
-        self.retryOptions = DefaultRetryOptions()
+        self.retryOptions = RetryOptions()
         self.logger = SwiftLogger(label: clientName)
         self.clientLogMode = clientLogMode
         self.partitionID = partitionID

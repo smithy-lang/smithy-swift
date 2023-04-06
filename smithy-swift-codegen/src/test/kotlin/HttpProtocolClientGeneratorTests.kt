@@ -49,7 +49,7 @@ class HttpProtocolClientGeneratorTests {
                     public var httpClientEngine: ClientRuntime.HttpClientEngine
                     public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
                     public var logger: ClientRuntime.LogAgent
-                    public var retryStrategy: ClientRuntime.RetryStrategy
+                    public var retryOptions: ClientRuntime.RetryOptions
             
                     public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
                         self.clientLogMode = runtimeConfig.clientLogMode
@@ -59,7 +59,11 @@ class HttpProtocolClientGeneratorTests {
                         self.httpClientEngine = runtimeConfig.httpClientEngine
                         self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
                         self.logger = runtimeConfig.logger
-                        self.retryStrategy = runtimeConfig.retryStrategy
+                        var retryOptions = runtimeConfig.retryOptions
+                        let retryStrategyOptions = RetryStrategyOptions(retryMode: retryOptions.retryMode, maxRetriesBase: retryOptions.maxAttempts)
+                        retryOptions.retryStrategy = try DefaultRetryStrategy(retryStrategyOptions: retryStrategyOptions)
+                        retryOptions.retryErrorClassifier = DefaultRetryErrorClassifier()
+                        self.retryOptions = retryOptions
                     }
             
                     public convenience init() throws {
@@ -143,7 +147,9 @@ class HttpProtocolClientGeneratorTests {
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>(xmlName: "AllocateWidgetInput"))
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(retryStrategy: config.retryStrategy))
+                let retryStrategy = try config.retryOptions.retryStrategy ?? DefaultRetryStrategy(retryStrategyOptions: RetryStrategyOptions(retryMode: config.retryOptions.retryMode, maxRetriesBase: config.retryOptions.maxAttempts))
+                let retryErrorClassifier = config.retryOptions.retryErrorClassifier ?? DefaultRetryErrorClassifier()
+                operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(retryStrategy: retryStrategy, retryErrorClassifier: retryErrorClassifier))
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
                 let result = try await operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())

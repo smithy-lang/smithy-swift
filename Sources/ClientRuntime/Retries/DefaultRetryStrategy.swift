@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 import struct Foundation.TimeInterval
 
-public class LegacyRetryStrategy: RetryStrategy {
+public class DefaultRetryStrategy: RetryStrategy {
     let crtRetryStrategy: AwsCommonRuntimeKit.RetryStrategy
     private let sharedDefaultIO = SDKDefaultIO.shared
 
@@ -96,11 +96,6 @@ public class LegacyRetryStrategy: RetryStrategy {
         case .unknown:
             return RetryErrorInfo(errorType: .clientError, retryAfterHint: nil)
         }
-    }
-
-    public func makeErrorClassifier() -> RetryErrorClassifying {
-        // TODO: fill in the block
-        return RetryErrorClassifier()
     }
 
     private func hint(for httpResponse: HttpResponse?) -> TimeInterval? {

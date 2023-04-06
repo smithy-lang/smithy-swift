@@ -57,7 +57,11 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             configFields.forEach {
                 when (it.memberName) {
                     "retryOptions" -> {
-                        writer.write("self.${it.memberName} = DefaultRetryOptions(retryOptions: runtimeConfig.${it.memberName})")
+                        writer.write("var retryOptions = runtimeConfig.\$L", it.memberName)
+                        writer.write("let retryStrategyOptions = RetryStrategyOptions(retryMode: retryOptions.retryMode, maxRetriesBase: retryOptions.maxAttempts)")
+                        writer.write("retryOptions.retryStrategy = try DefaultRetryStrategy(retryStrategyOptions: retryStrategyOptions)")
+                        writer.write("retryOptions.retryErrorClassifier = DefaultRetryErrorClassifier()")
+                        writer.write("self.\$L = retryOptions", it.memberName)
                     }
                     else -> {
                         writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
