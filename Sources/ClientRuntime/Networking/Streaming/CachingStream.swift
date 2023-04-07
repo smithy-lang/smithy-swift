@@ -11,7 +11,6 @@ import Foundation
 /// This allows the stream to be read multiple times without having to re-read the data from the base stream.
 /// - Note: This is thread-safe.
 public class CachingStream: Stream {
-
     /// Returns the current position in the stream
     public private(set) var position: Data.Index
 

@@ -27,7 +27,7 @@ class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratabl
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension \$L {", "}", operationErrorName) {
-                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {", "}") {
+                writer.openBlock("public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil, messageDecoder: MessageDecoder? = nil) throws {", "}") {
                     writer.write("throw ClientError.deserializationFailed(ClientError.dataNotFound(\"Invalid information in current codegen context to resolve the ErrorType\"))")
                 }
             }

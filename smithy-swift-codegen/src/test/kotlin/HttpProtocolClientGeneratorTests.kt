@@ -129,6 +129,7 @@ class HttpProtocolClientGeneratorTests {
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
                               .withPartitionID(value: config.partitionID)
+                              .build()
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(id: "allocateWidget")
                 operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<AllocateWidgetOutputResponse> in
                     let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
@@ -146,7 +147,7 @@ class HttpProtocolClientGeneratorTests {
                 operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(retryer: config.retryer))
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
-                let result = try await operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
+                let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
                 return result
             }
         """.trimIndent()

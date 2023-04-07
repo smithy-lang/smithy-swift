@@ -27,11 +27,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         Self.MOutput == H.Output,
         Self.Context == H.Context
         {
-            var copiedContext = context
             if let host = host {
-                copiedContext.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+                context.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
             }
-            return try await next.handle(context: copiedContext, input: input)
+            return try await next.handle(context: context, input: input)
         }
 
         public typealias MInput = SayHelloInput
@@ -240,7 +239,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
             let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
-            let mockServiceError = try! MockMiddlewareError(httpResponse: httpResponse)
+            let mockServiceError = try! MockMiddlewareError(httpResponse: httpResponse, decoder: context.getDecoder())
             throw SdkError.service(mockServiceError, httpResponse)
         })
 

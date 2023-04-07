@@ -31,9 +31,8 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
               if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
                   urlPath = "\(urlPrefix)\(urlPath)"
               }
-              var copiedContext = context
-              copiedContext.attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
-              return try await next.handle(context: copiedContext, input: input)
+              context.attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
+              return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = OperationStackInput

@@ -47,7 +47,16 @@ class MockJsonHttpBindingResolver(
             .build()
     }
 }
-class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
+class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizations() {
+    override fun renderEventStreamAttributes(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+    ) {
+        TODO("Not yet implemented")
+    }
+}
+
 class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
@@ -104,6 +113,14 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
         // Intentionally empty
+    }
+
+    override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        TODO("Not yet implemented")
+    }
+
+    override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        TODO("Not yet implemented")
     }
 
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):

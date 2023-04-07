@@ -13,7 +13,6 @@ import Foundation
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
-
     /// Returns the length of the stream, if known
     public private(set) var length: Int?
 
@@ -71,15 +70,16 @@ public class BufferedStream: Stream {
 
     /// Reads all data from the stream.
     /// It uses `read(upToCount:)` to read data in chunks.
+    /// This function will block and wait until the stream is closed before returning the data read from the stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func readToEnd() throws -> Data? {
-        try lock.withLockingThrowingClosure {
-            var data = Data()
+        var data = Data()
 
-            while let next = try read(upToCount: Int.max) {
-                data.append(next)
-            }
+        while let next = try read(upToCount: Int.max) {
+            data.append(next)
+        }
 
+        return lock.withLockingClosure {
             // if we're closed and there's no data left, return nil
             // this will signal the end of the stream
             if isClosed && data.isEmpty {
@@ -88,7 +88,6 @@ public class BufferedStream: Stream {
 
             return data
         }
-
     }
 
     /// Writes the specified data to the stream.

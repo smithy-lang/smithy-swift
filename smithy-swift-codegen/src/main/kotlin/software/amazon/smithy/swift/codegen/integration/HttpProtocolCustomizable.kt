@@ -26,6 +26,12 @@ interface HttpProtocolCustomizable {
         // Default implementation is no-op
     }
 
+    fun renderEventStreamAttributes(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    )
+
     fun getClientProperties(): List<ClientProperty> {
         return emptyList()
     }

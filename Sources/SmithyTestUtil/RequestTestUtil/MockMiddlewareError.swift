@@ -12,7 +12,7 @@ public enum MockMiddlewareError: Error {
 }
 
 extension MockMiddlewareError: HttpResponseBinding {
-    public init(httpResponse: HttpResponse, decoder: ResponseDecoder? = nil) throws {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) throws {
         self = .unknown(ClientError.unknownError(httpResponse.debugDescription))
     }
 }

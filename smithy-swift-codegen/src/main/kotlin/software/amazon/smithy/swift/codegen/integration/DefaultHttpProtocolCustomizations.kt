@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
@@ -15,5 +16,13 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
     ): HttpProtocolServiceClient {
         val clientProperties = getClientProperties()
         return HttpProtocolServiceClient(ctx, writer, clientProperties, serviceConfig)
+    }
+
+    override fun renderEventStreamAttributes(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
+        // Default implementation is no-op
     }
 }
