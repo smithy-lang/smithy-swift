@@ -168,7 +168,11 @@ public class CRTClientEngine: HttpClientEngine {
             continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
             self.logger.debug("Body chunk received")
-            try stream.write(contentsOf: bodyChunk)
+            do {
+                try stream.write(contentsOf: bodyChunk)
+            } catch {
+                self.logger.error("Failed to write to stream: \(error)")
+            }
         } onTrailer: { headers in
             self.logger.debug("Trailer headers received")
             response.headers.addAll(headers: Headers(httpHeaders: headers))
