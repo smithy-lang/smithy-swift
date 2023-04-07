@@ -121,6 +121,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
                 LOGGER.info("[${service.id}] Generating serde for protocol ${protocolGenerator.protocol}")
                 generateSerializers(ctx)
                 generateDeserializers(ctx)
+                generateMessageMarshallable(ctx)
+                generateMessageUnmarshallable(ctx)
                 generateCodableConformanceForNestedTypes(ctx)
 
                 initializeMiddleware(ctx)

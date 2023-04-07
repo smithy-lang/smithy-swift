@@ -22,3 +22,25 @@ extension EventStream {
         }
     }
 }
+
+extension EventStream.Message: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        let headers = self.headers.map { "\($0.name): \($0.value)" }.joined(separator: "\n")
+        return """
+        EventStream.Message(
+            headers: [
+            \(headers)
+            ],
+            payload: \(String(data: payload, encoding: .utf8) ?? "<invalid>"
+        )
+        """
+    }
+}
+
+extension Array where Element == EventStream.Header {
+    /// Returns the value of the header with the given name if it exists.
+    /// - Parameter name: The name of the header to retrieve.
+    public func value(name: String) -> EventStream.HeaderValue? {
+        return self.first(where: { $0.name == name })?.value
+    }
+}

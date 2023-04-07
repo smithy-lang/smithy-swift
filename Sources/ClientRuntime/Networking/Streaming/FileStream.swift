@@ -10,7 +10,6 @@ import Foundation
 /// A `Stream` that wraps a `FileHandle`.
 /// - Note: This class is thread-safe.
 class FileStream: Stream {
-
     /// Returns the length of the stream, if known
     var length: Int? {
         guard let len = try? fileHandle.length() else {

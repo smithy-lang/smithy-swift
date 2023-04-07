@@ -17,7 +17,7 @@ public final class SDKDefaultIO {
     public let eventLoopGroup: EventLoopGroup
     public let hostResolver: HostResolver
     public let clientBootstrap: ClientBootstrap
-    public let tlsContext: TLSContext
+    public var tlsContext: TLSContext
     public let logger: Logger
 
     /// Provide singleton access since we want to share and re-use the instance properties
@@ -62,6 +62,7 @@ public final class SDKDefaultIO {
 
         let tlsContextOptions = TLSContextOptions.makeDefault()
         tlsContextOptions.setVerifyPeer(true)
+        tlsContextOptions.setAlpnList(["h2", "http/1.1"])
 
         do {
             self.tlsContext = try TLSContext(options: tlsContextOptions,
@@ -72,5 +73,12 @@ public final class SDKDefaultIO {
                         Github issue with us at https://github.com/awslabs/aws-sdk-swift.
                         """)
         }
+    }
+
+    public func setAlpnList(_ alpnList: [String]) throws {
+        let tlsContextOptions = TLSContextOptions.makeDefault()
+        tlsContextOptions.setVerifyPeer(true)
+        tlsContextOptions.setAlpnList(alpnList)
+        SDKDefaultIO.shared.tlsContext = try TLSContext(options: tlsContextOptions, mode: .client)
     }
 }

@@ -46,6 +46,17 @@ object ClientRuntimeTypes {
         val JSONEncoder = runtimeSymbol("JSONEncoder")
         val XMLEncoder = runtimeSymbol("XMLEncoder")
         val XMLDecoder = runtimeSymbol("XMLDecoder")
+        val MessageMarshallable = runtimeSymbol("MessageMarshallable")
+        val MessageUnmarshallable = runtimeSymbol("MessageUnmarshallable")
+    }
+
+    object EventStream {
+        val MessageDecoder = runtimeSymbol("MessageDecoder")
+        val ExceptionParams = runtimeSymbol("EventStream.MessageType.ExceptionParams")
+        val Header = runtimeSymbol("EventStream.Header")
+        val Message = runtimeSymbol("EventStream.Message")
+        val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
+        val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
     }
 
     object Middleware {
@@ -73,6 +84,7 @@ object ClientRuntimeTypes {
     }
 
     object Core {
+        val AttributeKey = runtimeSymbol("AttributeKey")
         val Endpoint = runtimeSymbol("Endpoint")
         val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date")

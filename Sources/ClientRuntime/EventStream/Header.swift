@@ -36,7 +36,7 @@ extension EventStream {
         case int16(Int16)
         case int32(Int32)
         case int64(Int64)
-        case data(Data)
+        case byteArray(Data)
         case string(String)
         case timestamp(Date)
         case uuid(UUID)
