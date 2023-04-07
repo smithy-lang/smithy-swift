@@ -81,8 +81,16 @@ public class CRTClientEngine: HttpClientEngine {
     }
 
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+//        if h2 {
+//            // USER STREAM MANAGER
+//        } else {
+//            let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
+//            let connection = try await connectionMgr.acquireConnection()
+//        }
+        
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
+        
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         switch connection.httpVersion {
         case .version_1_1:
