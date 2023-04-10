@@ -9,30 +9,19 @@ class ImportDeclarations {
     private val imports = mutableSetOf<ImportStatement>()
 
     fun addImport(packageName: String, isTestable: Boolean = false, internalSPIName: String? = null) {
-        if (internalSPIName != null && internalSPIName != "Internal") {
-            throw IllegalArgumentException(
-                """
-                We currently only support usage of a single spiName 'Internal'. 
-                If you'd like to use another name then please update the logic below to fully support multiple spiNames.
-                """
-            )
-        }
-
         val existingImport = imports.find { it.packageName == packageName }
         if (existingImport != null) {
-            // If we have an existing import with the same package name, then replace the existing one
-            val newImport = ImportStatement(
-                packageName,
-                isTestable || existingImport.isTestable,
-                internalSPIName ?: existingImport.internalSPIName
-            )
-            imports.remove(existingImport)
-            imports.add(newImport)
-            return
+            // Update isTestable to true if needed
+            existingImport.isTestable = existingImport.isTestable || isTestable
+            // If we have an existing import with the same package name, then add the SPI name to the existing list
+            if (internalSPIName != null) {
+                existingImport.internalSPINames.add(internalSPIName)
+            }
+        } else {
+            // Otherwise, we have a new package to import, so add it
+            val internalSPINames = listOf(internalSPIName).mapNotNull { it }.toMutableSet()
+            imports.add(ImportStatement(packageName, isTestable, internalSPINames))
         }
-
-        // Otherwise, we have a new import so add it
-        imports.add(ImportStatement(packageName, isTestable, internalSPIName))
     }
 
     override fun toString(): String {
@@ -47,11 +36,11 @@ class ImportDeclarations {
     }
 }
 
-private data class ImportStatement(val packageName: String, val isTestable: Boolean, val internalSPIName: String?) {
+private data class ImportStatement(val packageName: String, var isTestable: Boolean, val internalSPINames: MutableSet<String>) {
     val statement: String
         get() {
             var import = "import $packageName"
-            if (internalSPIName != null) {
+            for (internalSPIName in internalSPINames.sorted().reversed()) {
                 import = "@_spi($internalSPIName) $import"
             }
             if (isTestable) {
