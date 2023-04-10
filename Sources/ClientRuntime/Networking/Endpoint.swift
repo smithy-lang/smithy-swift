@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct Endpoint: Hashable {
+public struct Endpoint: Hashable, Equatable {
     public let path: String
     public let queryItems: [URLQueryItem]?
     public let protocolType: ProtocolType?
@@ -78,4 +78,10 @@ public extension Endpoint {
         let queryString = queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
         return "?\(queryString)"
     }
+}
+func x () throws {
+    let a = try Endpoint(url: URL(string: "https://abc.com")!)
+    let b = try Endpoint(url: URL(string: "https://abc.com")!)
+
+    print(a == b)
 }

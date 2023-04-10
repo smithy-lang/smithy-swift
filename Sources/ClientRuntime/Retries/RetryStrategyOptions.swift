@@ -10,7 +10,7 @@ public struct RetryStrategyOptions {
     public let maxRetriesBase: Int
 
     public init(
-        retryMode: RetryMode = .legacy,
+        retryMode: RetryMode = .standard,
         maxRetriesBase: Int = 10
     ) {
         self.retryMode = retryMode

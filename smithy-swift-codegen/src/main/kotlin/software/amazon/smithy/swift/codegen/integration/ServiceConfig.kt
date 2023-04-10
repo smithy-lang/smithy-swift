@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -52,14 +53,14 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
     }
 
     open fun renderInitializers(serviceSymbol: Symbol) {
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target, false, "RetryOptions")
         writer.openBlock("public init(runtimeConfig: \$N) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
             val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
                 when (it.memberName) {
                     "retryOptions" -> {
                         writer.write("var retryOptions = runtimeConfig.\$L", it.memberName)
-                        writer.write("let retryStrategyOptions = RetryStrategyOptions(retryMode: retryOptions.retryMode, maxRetriesBase: retryOptions.maxAttempts)")
-                        writer.write("retryOptions.retryStrategy = try DefaultRetryStrategy(retryStrategyOptions: retryStrategyOptions)")
+                        writer.write("retryOptions.retryStrategy = try DefaultRetryStrategy(retryOptions: retryOptions)")
                         writer.write("retryOptions.retryErrorClassifier = DefaultRetryErrorClassifier()")
                         writer.write("self.\$L = retryOptions", it.memberName)
                     }

@@ -7,7 +7,7 @@
 
 import struct Foundation.TimeInterval
 
-/// Returns retry error info for the passed error, or `nil` if the error is not retryable.
+/// This type analyzes a passed-in error 
 public struct DefaultRetryErrorClassifier: RetryErrorClassifier {
 
     public init() {}
