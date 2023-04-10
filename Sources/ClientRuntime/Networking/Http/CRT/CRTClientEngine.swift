@@ -189,14 +189,11 @@ public class CRTClientEngine: HttpClientEngine {
                 continuation: continuation,
                 http2ManualDataWrites: true
             )
-            print("epau: --- Created Request Options")
             Task {
                 let stream: HTTP2Stream
                 do {
                     stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
-                    print("epau: --- Acquired Stream")
                 } catch {
-                    print("epau: --- Acquiring Stream FAILED")
                     continuation.resume(throwing: error)
                     return
                 }
@@ -206,7 +203,6 @@ public class CRTClientEngine: HttpClientEngine {
                 // writing is done in a separate task to avoid blocking the continuation
                 Task { [logger] in
                     do {
-                        print("epau: --- Writing Body")
                         try await stream.write(body: request.body)
                     } catch {
                         logger.error(error.localizedDescription)
@@ -243,19 +239,16 @@ public class CRTClientEngine: HttpClientEngine {
             self.logger.debug("Interim response received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
-            print("epau: --- Received Interim Response")
         } onResponse: { statusCode, headers in
             self.logger.debug("Main headers received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
 
-            print("epau: --- Received Response")
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
             continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
-            print("epau: --- Recieved Body")
             self.logger.debug("Body chunk received")
             do {
                 try stream.write(contentsOf: bodyChunk)
@@ -263,11 +256,9 @@ public class CRTClientEngine: HttpClientEngine {
                 self.logger.error("Failed to write to stream: \(error)")
             }
         } onTrailer: { headers in
-            print("epau: --- Received Trailer Headers")
             self.logger.debug("Trailer headers received")
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onStreamComplete: { result in
-            print("epau: --- Stream Complete")
             self.logger.debug("Request/response completed")
             switch result {
             case .success(let statusCode):
