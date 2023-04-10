@@ -10,11 +10,14 @@ import AwsCommonRuntimeKit
 class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 
     var httpClient: SdkHttpClient!
+    
+    var crtHttpClient: CRTClientEngine!
 
     override func setUp() {
         super.setUp()
         let httpClientConfiguration = HttpClientConfiguration()
         let crtEngine = CRTClientEngine()
+        crtHttpClient = crtEngine
         httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
 
@@ -141,8 +144,42 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
+    
+    func testMakeHttp2StreamRequest() async throws {
+        // using http://nghttp2.org/httpbin/#/
+        var headers = Headers()
+        headers.add(name: "Content-type", value: "application/json")
+        headers.add(name: "Host", value: "nghttp2.org")
+        let body = TestBody(test: "testval")
+        let encoder = JSONEncoder()
+        let encodedData = try encoder.encode(body)
+        
+        let request = SdkHttpRequest(
+            method: .put,
+            endpoint: Endpoint(host: "nghttp2.org", path: "/httpbin/put"),
+            headers: headers,
+            body: .data(encodedData)
+        )
+        
+        let response = try await crtHttpClient.executeHTTP2Request(request: request)
+        switch response.body {
+        case let .stream(stream):
+            var data = Data()
+            while let next = try stream.read(upToCount: Int.max) {
+                data.append(next)
+            }
+            let decodedBody = try JSONDecoder().decode(ResponseWrapper.self, from: data)
+            XCTAssertEqual(decodedBody.json, body)
+        case .data, .none:
+            XCTFail("Unexpected response body type")
+        }
+    }
 }
 
-struct TestBody: Codable {
+struct TestBody: Codable, Equatable {
     let test: String
+}
+
+struct ResponseWrapper: Decodable {
+    let json: TestBody
 }

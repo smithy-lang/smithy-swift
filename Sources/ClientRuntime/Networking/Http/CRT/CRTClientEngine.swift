@@ -17,11 +17,14 @@ public class CRTClientEngine: HttpClientEngine {
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
         private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
+        private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
+        private let alpnList: [ALPNProtocol]
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
+            self.alpnList = config.alpnList
             self.logger = SwiftLogger(label: "SerialExecutor")
         }
 
@@ -34,10 +37,21 @@ public class CRTClientEngine: HttpClientEngine {
 
             return connectionPool
         }
+        
+        func getOrCreateHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
+            guard let connectionPool = http2ConnectionPools[endpoint] else {
+                let newConnectionPool = try createHTTP2ConnectionPool(endpoint: endpoint)
+                http2ConnectionPools[endpoint] = newConnectionPool // save in dictionary
+                return newConnectionPool
+            }
+
+            return connectionPool
+        }
 
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
+                alpnList: alpnList.map(\.rawValue),
                 serverName: endpoint.host
             )
 
@@ -57,9 +71,39 @@ public class CRTClientEngine: HttpClientEngine {
                 maxConnections: maxConnectionsPerEndpoint,
                 enableManualWindowManagement: false
             ) // not using backpressure yet
-            logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
-                         "with max connections: \(maxConnectionsPerEndpoint)")
+            logger.debug("""
+            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            with max connections: \(maxConnectionsPerEndpoint)
+            """)
             return try HTTPClientConnectionManager(options: options)
+        }
+        
+        private func createHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
+            var socketOptions = SocketOptions(socketType: .stream)
+#if os(iOS) || os(watchOS)
+            socketOptions.connectTimeoutMs = 30_000
+#endif
+            let tlsConnectionOptions = TLSConnectionOptions(
+                context: sharedDefaultIO.tlsContext,
+                alpnList: [ALPNProtocol.http2.rawValue],
+                serverName: endpoint.host
+            )
+            
+            let options = HTTP2StreamManagerOptions(
+                clientBootstrap: sharedDefaultIO.clientBootstrap,
+                hostName: endpoint.host,
+                port: UInt16(endpoint.port),
+                maxConnections: maxConnectionsPerEndpoint,
+                socketOptions: socketOptions,
+                tlsOptions: tlsConnectionOptions,
+                enableStreamManualWindowManagement: false
+            )
+            logger.debug("""
+            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            with max connections: \(maxConnectionsPerEndpoint)
+            """)
+            
+            return try HTTP2StreamManager(options: options)
         }
     }
 
@@ -81,13 +125,6 @@ public class CRTClientEngine: HttpClientEngine {
     }
 
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
-//        if h2 {
-//            // USER STREAM MANAGER
-//        } else {
-//            let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
-//            let connection = try await connectionMgr.acquireConnection()
-//        }
-        
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
         
@@ -125,16 +162,57 @@ public class CRTClientEngine: HttpClientEngine {
                 // At this point, continuation is resumed when the initial headers are received
                 // it is now safe to write the body
                 // writing is done in a separate task to avoid blocking the continuation
-                Task {
+                Task { [logger] in
                     do {
                         try await stream.write(body: request.body)
                     } catch {
-                        self.logger.error(error.localizedDescription)
+                        logger.error(error.localizedDescription)
                     }
                 }
             }
         case .unknown:
             fatalError("Unknown HTTP version")
+        }
+    }
+    
+    // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
+    // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
+    func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
+        let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
+        
+        self.logger.debug("Using HTTP/2 connection")
+        let crtRequest = try request.toHttp2Request()
+        
+        return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
+            let requestOptions = makeHttpRequestStreamOptions(
+                request: crtRequest,
+                continuation: continuation,
+                http2ManualDataWrites: true
+            )
+            print("epau: --- Created Request Options")
+            Task {
+                let stream: HTTP2Stream
+                do {
+                    stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                    print("epau: --- Acquired Stream")
+                } catch {
+                    print("epau: --- Acquiring Stream FAILED")
+                    continuation.resume(throwing: error)
+                    return
+                }
+                
+                // At this point, continuation is resumed when the initial headers are received
+                // it is now safe to write the body
+                // writing is done in a separate task to avoid blocking the continuation
+                Task { [logger] in
+                    do {
+                        print("epau: --- Writing Body")
+                        try await stream.write(body: request.body)
+                    } catch {
+                        logger.error(error.localizedDescription)
+                    }
+                }
+            }
         }
     }
 
@@ -165,16 +243,19 @@ public class CRTClientEngine: HttpClientEngine {
             self.logger.debug("Interim response received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
+            print("epau: --- Received Interim Response")
         } onResponse: { statusCode, headers in
             self.logger.debug("Main headers received")
             response.statusCode = makeStatusCode(statusCode)
             response.headers.addAll(headers: Headers(httpHeaders: headers))
 
+            print("epau: --- Received Response")
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
             continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
+            print("epau: --- Recieved Body")
             self.logger.debug("Body chunk received")
             do {
                 try stream.write(contentsOf: bodyChunk)
@@ -182,9 +263,11 @@ public class CRTClientEngine: HttpClientEngine {
                 self.logger.error("Failed to write to stream: \(error)")
             }
         } onTrailer: { headers in
+            print("epau: --- Received Trailer Headers")
             self.logger.debug("Trailer headers received")
             response.headers.addAll(headers: Headers(httpHeaders: headers))
         } onStreamComplete: { result in
+            print("epau: --- Stream Complete")
             self.logger.debug("Request/response completed")
             switch result {
             case .success(let statusCode):

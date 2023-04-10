@@ -16,12 +16,18 @@ struct CRTClientEngineConfig {
     /// you're testing and don't want to fool around with CA trust stores.
     /// If you set this in server mode, it enforces client authentication.
     let verifyPeer: Bool
-
-    public init(maxConnectionsPerEndpoint: Int = 50,
-                windowSize: Int = 16 * 1024 * 1024,
-                verifyPeer: Bool = true) {
+    
+    let alpnList: [ALPNProtocol]
+    
+    public init(
+        maxConnectionsPerEndpoint: Int = 50,
+        windowSize: Int = 16 * 1024 * 1024,
+        verifyPeer: Bool = true,
+        alpnList: [ALPNProtocol] = [.http1]
+    ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer
+        self.alpnList = alpnList
     }
 }
