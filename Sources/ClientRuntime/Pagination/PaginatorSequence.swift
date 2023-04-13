@@ -49,6 +49,7 @@ where Input.Token: Equatable {
             }
             return nil
         }
+        // swiftlint:enable force_cast
     }
 
     public func makeAsyncIterator() -> PaginationIterator {
