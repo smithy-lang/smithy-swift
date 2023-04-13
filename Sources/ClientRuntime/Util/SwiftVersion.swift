@@ -20,8 +20,7 @@ public var swiftVersion: String {
     ?? "unknown"
 }
 
-
-fileprivate func swift5Version() -> String? {
+private func swift5Version() -> String? {
     #if swift(>=6.0)
     return nil
     #elseif swift(>=5.9)
@@ -49,7 +48,7 @@ fileprivate func swift5Version() -> String? {
     #endif
 }
 
-fileprivate func swift6Version() -> String? {
+private func swift6Version() -> String? {
     #if swift(>=7.0)
     return nil
     #elseif swift(>=6.9)
@@ -77,7 +76,7 @@ fileprivate func swift6Version() -> String? {
     #endif
 }
 
-fileprivate func swift7Version() -> String? {
+private func swift7Version() -> String? {
     #if swift(>=8.0)
     return nil
     #elseif swift(>=7.9)
