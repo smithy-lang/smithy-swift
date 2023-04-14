@@ -34,10 +34,10 @@ public class CRTClientEngine: HttpClientEngine {
                 connectionPools[endpoint] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
-
+            
             return connectionPool
         }
-        
+
         func getOrCreateHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
             guard let connectionPool = http2ConnectionPools[endpoint] else {
                 let newConnectionPool = try createHTTP2ConnectionPool(endpoint: endpoint)
@@ -47,7 +47,7 @@ public class CRTClientEngine: HttpClientEngine {
 
             return connectionPool
         }
-
+        
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
@@ -77,7 +77,7 @@ public class CRTClientEngine: HttpClientEngine {
             """)
             return try HTTPClientConnectionManager(options: options)
         }
-        
+
         private func createHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
             var socketOptions = SocketOptions(socketType: .stream)
 #if os(iOS) || os(watchOS)
@@ -88,7 +88,7 @@ public class CRTClientEngine: HttpClientEngine {
                 alpnList: [ALPNProtocol.http2.rawValue],
                 serverName: endpoint.host
             )
-            
+
             let options = HTTP2StreamManagerOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
@@ -102,7 +102,7 @@ public class CRTClientEngine: HttpClientEngine {
             Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
             with max connections: \(maxConnectionsPerEndpoint)
             """)
-            
+
             return try HTTP2StreamManager(options: options)
         }
     }
@@ -127,7 +127,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
-        
+
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         switch connection.httpVersion {
         case .version_1_1:
@@ -174,15 +174,15 @@ public class CRTClientEngine: HttpClientEngine {
             fatalError("Unknown HTTP version")
         }
     }
-    
+
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
     func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
-        
+
         self.logger.debug("Using HTTP/2 connection")
         let crtRequest = try request.toHttp2Request()
-        
+
         return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
             let requestOptions = makeHttpRequestStreamOptions(
                 request: crtRequest,
@@ -197,7 +197,7 @@ public class CRTClientEngine: HttpClientEngine {
                     continuation.resume(throwing: error)
                     return
                 }
-                
+
                 // At this point, continuation is resumed when the initial headers are received
                 // it is now safe to write the body
                 // writing is done in a separate task to avoid blocking the continuation
@@ -277,7 +277,7 @@ public class CRTClientEngine: HttpClientEngine {
         }
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites
-
+        
         response.body = .stream(stream)
         return requestOptions
     }

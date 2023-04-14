@@ -4,7 +4,7 @@
  */
 
 struct CRTClientEngineConfig {
-
+    
     /// Max connections the manager can contain per endpoint
     let maxConnectionsPerEndpoint: Int
 
@@ -16,9 +16,9 @@ struct CRTClientEngineConfig {
     /// you're testing and don't want to fool around with CA trust stores.
     /// If you set this in server mode, it enforces client authentication.
     let verifyPeer: Bool
-    
+
     let alpnList: [ALPNProtocol]
-    
+
     public init(
         maxConnectionsPerEndpoint: Int = 50,
         windowSize: Int = 16 * 1024 * 1024,
