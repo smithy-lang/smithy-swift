@@ -19,12 +19,10 @@ public class CRTClientEngine: HttpClientEngine {
         private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
         private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
-        private let alpnList: [ALPNProtocol]
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
-            self.alpnList = config.alpnList
             self.logger = SwiftLogger(label: "SerialExecutor")
         }
 
@@ -51,7 +49,6 @@ public class CRTClientEngine: HttpClientEngine {
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
-                alpnList: alpnList.map(\.rawValue),
                 serverName: endpoint.host
             )
 
