@@ -44,7 +44,7 @@ extension EventStream {
                     // feed the data to the decoder
                     // this may result in a message being returned
                     try messageDecoder.feed(data: data)
-                    
+
                     // if we have a message in the decoder buffer, return it
                     if let message = try messageDecoder.message() {
                         let event = try Element(message: message, decoder: responseDecoder)
@@ -58,7 +58,7 @@ extension EventStream {
                 return nil
             }
         }
-        
+
         public func makeAsyncIterator() -> AsyncIterator {
             AsyncIterator(
                 stream: stream,

@@ -59,7 +59,7 @@ extension EventStream {
                         lastMessageSent = true
                         return data
                     }
-                    
+
                     // mark the stream as complete
                     return nil
                 }
@@ -122,13 +122,13 @@ extension EventStream {
             if !buffer.isEmpty {
                 let toRead = Swift.min(remaining, buffer.count)
                 data.append(buffer.subdata(in: 0..<toRead))
-                
+
                 // reset buffer to remaining data
                 buffer = Data(buffer.subdata(in: toRead..<buffer.count))
-                
+
                 // update remaining bytes to read
                 remaining -= toRead
-                
+
                 // update position
                 position = position.advanced(by: toRead)
             }
@@ -138,10 +138,10 @@ extension EventStream {
                 let toRead = Swift.min(remaining, next.count)
                 data.append(next[0..<toRead])
                 remaining -= toRead
-                
+
                 // update position
                 position += toRead
-                
+
                 // if we have more data, add it to the buffer
                 if next.count > toRead {
                     buffer.append(next[toRead..<next.count])

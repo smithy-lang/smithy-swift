@@ -34,7 +34,7 @@ public class CRTClientEngine: HttpClientEngine {
                 connectionPools[endpoint] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
-            
+
             return connectionPool
         }
 
