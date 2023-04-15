@@ -186,7 +186,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header: Hashable {
+public struct Header {
     public var name: String
     public var value: [String]
 
@@ -204,6 +204,14 @@ public struct Header: Hashable {
 extension Header: Equatable {
     public static func == (lhs: Header, rhs: Header) -> Bool {
         return lhs.name == rhs.name && lhs.value.sorted() == rhs.value.sorted()
+    }
+}
+
+extension Header: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(value.sorted())
     }
 }
 
