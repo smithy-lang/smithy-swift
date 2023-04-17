@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct Headers: Hashable {
+public struct Headers {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -169,6 +169,13 @@ extension Headers: Equatable {
     /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
         return lhs.headers.sorted() == rhs.headers.sorted()
+    }
+}
+
+extension Headers: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(headers.sorted())
     }
 }
 

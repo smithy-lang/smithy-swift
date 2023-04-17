@@ -64,4 +64,62 @@ class HttpHeadersTests: XCTestCase {
 
         XCTAssertEqual(httpHeaders.dictionary.count, 0)
     }
+
+    // MARK: - Equatable & Hashable implementations
+
+    func test_headers_equatableAndHashable_nonIdenticalHeaders() {
+        var headersA = Headers()
+        headersA.add(name: "A", values: ["X", "Y"])
+        var headersB = Headers()
+        headersB.add(name: "B", values: ["X", "Y"])
+
+        XCTAssertNotEqual(headersA, headersB)
+    }
+
+    func test_headers_equatableAndHashable_identicalHeaders() {
+        var headersA = Headers()
+        headersA.add(name: "A", values: ["X", "Y"])
+        headersA.add(name: "B", values: ["X", "Y"])
+        var headersB = Headers()
+        headersB.add(name: "A", values: ["X", "Y"])
+        headersB.add(name: "B", values: ["X", "Y"])
+
+        XCTAssertEqual(headersA, headersB)
+        XCTAssertEqual(headersA.hashValue, headersB.hashValue)
+    }
+
+    func test_headers_equatableAndHashable_outOfOrderHeaders() {
+        var headersA = Headers()
+        headersA.add(name: "A", values: ["X", "Y"])
+        headersA.add(name: "B", values: ["X", "Y"])
+        var headersB = Headers()
+        headersB.add(name: "B", values: ["X", "Y"])
+        headersB.add(name: "A", values: ["X", "Y"])
+
+        XCTAssertEqual(headersA, headersB)
+        XCTAssertEqual(headersA.hashValue, headersB.hashValue)
+    }
+
+    func test_header_equatableAndHashable_nonIdenticalValues() {
+        let headerA = Header(name: "A", values: ["X", "Y"])
+        let headerB = Header(name: "B", values: ["X", "Y"])
+
+        XCTAssertNotEqual(headerA, headerB)
+    }
+
+    func test_header_equatableAndHashable_identicalValues() {
+        let headerA = Header(name: "A", values: ["X", "Y"])
+        let headerB = Header(name: "A", values: ["X", "Y"])
+
+        XCTAssertEqual(headerA, headerB)
+        XCTAssertEqual(headerA.hashValue, headerB.hashValue)
+    }
+
+    func test_header_equatableAndHashable_outOfOrderValues() {
+        let headerA = Header(name: "A", values: ["X", "Y"])
+        let headerB = Header(name: "A", values: ["Y", "X"])
+
+        XCTAssertEqual(headerA, headerB)
+        XCTAssertEqual(headerA.hashValue, headerB.hashValue)
+    }
 }
