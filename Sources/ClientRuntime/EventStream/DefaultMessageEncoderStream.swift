@@ -13,11 +13,13 @@ extension EventStream {
         let messageSinger: MessageSigner
         let requestEncoder: RequestEncoder
         var readAsyncIterator: AsyncIterator?
-
-        public init(stream: AsyncThrowingStream<Event, Error>,
-                    messageEncoder: MessageEncoder,
-                    requestEncoder: RequestEncoder,
-                    messageSinger: MessageSigner) {
+        
+        public init(
+            stream: AsyncThrowingStream<Event, Error>,
+            messageEncoder: MessageEncoder,
+            requestEncoder: RequestEncoder,
+            messageSinger: MessageSigner
+        ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
             self.messageSinger = messageSinger
@@ -32,20 +34,23 @@ extension EventStream {
             let requestEncoder: RequestEncoder
 
             private var lastMessageSent: Bool = false
+            private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
 
-            init(stream: AsyncThrowingStream<Event, Error>,
-                 messageEncoder: MessageEncoder,
-                 requestEncoder: RequestEncoder,
-                 messageSinger: MessageSigner) {
+            init(
+                stream: AsyncThrowingStream<Event, Error>,
+                messageEncoder: MessageEncoder,
+                requestEncoder: RequestEncoder,
+                messageSinger: MessageSigner
+            ) {
                 self.stream = stream
+                self.streamIterator = stream.makeAsyncIterator()
                 self.messageEncoder = messageEncoder
                 self.messageSinger = messageSinger
                 self.requestEncoder = requestEncoder
             }
 
             mutating public func next() async throws -> Data? {
-                var iterator = stream.makeAsyncIterator()
-                guard let event = try await iterator.next() else {
+                guard let event = try await streamIterator.next() else {
                     // There are no more messages in the base stream
                     // if we have not sent the last message, send it now
                     guard lastMessageSent else {
@@ -72,10 +77,12 @@ extension EventStream {
         }
 
         public func makeAsyncIterator() -> AsyncIterator {
-            AsyncIterator(stream: stream,
-                          messageEncoder: messageEncoder,
-                          requestEncoder: requestEncoder,
-                          messageSinger: messageSinger)
+            AsyncIterator(
+                stream: stream,
+                messageEncoder: messageEncoder,
+                requestEncoder: requestEncoder,
+                messageSinger: messageSinger
+            )
         }
 
         // MARK: Stream

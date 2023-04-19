@@ -17,6 +17,7 @@ public class CRTClientEngine: HttpClientEngine {
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
         private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
+        private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
 
         init(config: CRTClientEngineConfig) {
@@ -35,6 +36,16 @@ public class CRTClientEngine: HttpClientEngine {
             return connectionPool
         }
 
+        func getOrCreateHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
+            guard let connectionPool = http2ConnectionPools[endpoint] else {
+                let newConnectionPool = try createHTTP2ConnectionPool(endpoint: endpoint)
+                http2ConnectionPools[endpoint] = newConnectionPool // save in dictionary
+                return newConnectionPool
+            }
+
+            return connectionPool
+        }
+        
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
@@ -57,9 +68,39 @@ public class CRTClientEngine: HttpClientEngine {
                 maxConnections: maxConnectionsPerEndpoint,
                 enableManualWindowManagement: false
             ) // not using backpressure yet
-            logger.debug("Creating connection pool for \(String(describing: endpoint.url?.absoluteString))" +
-                         "with max connections: \(maxConnectionsPerEndpoint)")
+            logger.debug("""
+            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            with max connections: \(maxConnectionsPerEndpoint)
+            """)
             return try HTTPClientConnectionManager(options: options)
+        }
+
+        private func createHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
+            var socketOptions = SocketOptions(socketType: .stream)
+#if os(iOS) || os(watchOS)
+            socketOptions.connectTimeoutMs = 30_000
+#endif
+            let tlsConnectionOptions = TLSConnectionOptions(
+                context: sharedDefaultIO.tlsContext,
+                alpnList: [ALPNProtocol.http2.rawValue],
+                serverName: endpoint.host
+            )
+
+            let options = HTTP2StreamManagerOptions(
+                clientBootstrap: sharedDefaultIO.clientBootstrap,
+                hostName: endpoint.host,
+                port: UInt16(endpoint.port),
+                maxConnections: maxConnectionsPerEndpoint,
+                socketOptions: socketOptions,
+                tlsOptions: tlsConnectionOptions,
+                enableStreamManualWindowManagement: false
+            )
+            logger.debug("""
+            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            with max connections: \(maxConnectionsPerEndpoint)
+            """)
+
+            return try HTTP2StreamManager(options: options)
         }
     }
 
@@ -83,6 +124,7 @@ public class CRTClientEngine: HttpClientEngine {
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
+
         self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
         switch connection.httpVersion {
         case .version_1_1:
@@ -117,16 +159,53 @@ public class CRTClientEngine: HttpClientEngine {
                 // At this point, continuation is resumed when the initial headers are received
                 // it is now safe to write the body
                 // writing is done in a separate task to avoid blocking the continuation
-                Task {
+                Task { [logger] in
                     do {
                         try await stream.write(body: request.body)
                     } catch {
-                        self.logger.error(error.localizedDescription)
+                        logger.error(error.localizedDescription)
                     }
                 }
             }
         case .unknown:
             fatalError("Unknown HTTP version")
+        }
+    }
+
+    // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
+    // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
+    func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
+        let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
+
+        self.logger.debug("Using HTTP/2 connection")
+        let crtRequest = try request.toHttp2Request()
+
+        return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
+            let requestOptions = makeHttpRequestStreamOptions(
+                request: crtRequest,
+                continuation: continuation,
+                http2ManualDataWrites: true
+            )
+            Task {
+                let stream: HTTP2Stream
+                do {
+                    stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                } catch {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                // At this point, continuation is resumed when the initial headers are received
+                // it is now safe to write the body
+                // writing is done in a separate task to avoid blocking the continuation
+                Task { [logger] in
+                    do {
+                        try await stream.write(body: request.body)
+                    } catch {
+                        logger.error(error.localizedDescription)
+                    }
+                }
+            }
         }
     }
 
@@ -195,7 +274,7 @@ public class CRTClientEngine: HttpClientEngine {
         }
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites
-
+        
         response.body = .stream(stream)
         return requestOptions
     }

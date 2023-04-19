@@ -65,6 +65,11 @@ public class HttpContext: MiddlewareContext {
     public func isBidirectionalStreamingEnabled() -> Bool {
         return attributes.get(key: HttpContext.bidirectionalStreaming) ?? false
     }
+    
+    /// Returns `true` if the request should use `http2` and only `http2` without falling back to `http1`
+    public func shouldForceH2() -> Bool {
+        return isBidirectionalStreamingEnabled()
+    }
 }
 
 extension HttpContext {

@@ -60,7 +60,11 @@ extension EventStream {
         }
 
         public func makeAsyncIterator() -> AsyncIterator {
-            AsyncIterator(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)
+            AsyncIterator(
+                stream: stream,
+                messageDecoder: messageDecoder,
+                responseDecoder: responseDecoder
+            )
         }
     }
 }
