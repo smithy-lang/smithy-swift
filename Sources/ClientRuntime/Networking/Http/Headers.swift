@@ -5,7 +5,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct Headers: Hashable {
+public struct Headers {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -172,6 +172,13 @@ extension Headers: Equatable {
     }
 }
 
+extension Headers: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(headers.sorted())
+    }
+}
+
 extension Array where Element == Header {
     /// Case-insensitively finds the index of an `Header` with the provided name, if it exists.
     func index(of name: String) -> Int? {
@@ -186,7 +193,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header: Hashable {
+public struct Header {
     public var name: String
     public var value: [String]
 
@@ -204,6 +211,14 @@ public struct Header: Hashable {
 extension Header: Equatable {
     public static func == (lhs: Header, rhs: Header) -> Bool {
         return lhs.name == rhs.name && lhs.value.sorted() == rhs.value.sorted()
+    }
+}
+
+extension Header: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(value.sorted())
     }
 }
 

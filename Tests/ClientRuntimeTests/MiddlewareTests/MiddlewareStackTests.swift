@@ -71,7 +71,10 @@ class MiddlewareStackTests: XCTestCase {
         XCTAssert(result.value == 200)
     }
 
-    func testFullBlownOperationRequestWithClientHandler() async throws {
+    // This test is disabled because unreliability of httpbin.org is causing spurious failures.
+    // Github issue to track correction of these tests: https://github.com/awslabs/aws-sdk-swift/issues/962
+
+    func xtestFullBlownOperationRequestWithClientHandler() async throws {
         let httpClientConfiguration = HttpClientConfiguration()
         let clientEngine = CRTClientEngine()
         let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
