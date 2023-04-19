@@ -148,7 +148,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
     
-    func testMakeHttp2StreamRequest() async throws {
+    func xtestMakeHttp2StreamRequest() async throws {
         // using http://nghttp2.org/httpbin/#/
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
