@@ -79,30 +79,32 @@ class HttpBodyMiddleware(
     private fun renderExplicitPayload(binding: HttpBindingDescriptor) {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
-        val dataDeclaration = "${memberName}data"
-        val bodyDeclaration = "${memberName}body"
+        val dataDeclaration = "${memberName}Data"
+        val bodyDeclaration = "${memberName}Body"
 
         when (target.type) {
             ShapeType.BLOB -> {
                 val isBinaryStream =
                     ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>()
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
-                    writer.write("let $dataDeclaration = \$L", memberName)
-                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration, isBinaryStream)
+                    if (!isBinaryStream) {
+                        writer.write("let $dataDeclaration = \$L", memberName)
+                    }
+                    renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration, isBinaryStream)
                 }
             }
             ShapeType.STRING -> {
                 val contents = if (target.hasTrait<EnumTrait>()) "$memberName.rawValue" else memberName
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                     writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
-                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                 }
             }
             ShapeType.ENUM -> {
                 val contents = "$memberName.rawValue"
                 writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                     writer.write("let $dataDeclaration = \$L.data(using: .utf8)", contents)
-                    renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                    renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                 }
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -115,21 +117,46 @@ class HttpBodyMiddleware(
                         if (ctx.protocol == RestXmlTrait.ID && xmlNameTrait != null) {
                             val xmlName = xmlNameTrait.value
                             writer.write("let xmlEncoder = encoder as! XMLEncoder")
-                            writer.write(
-                                "let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")",
-                                memberName, xmlName
-                            )
+                            if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
+                                writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
+                                    writer.write("fatalError(\"Message encoder is required for streaming payload\")")
+                                }
+                                writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
+                                    writer.write("fatalError(\"Message signer is required for streaming payload\")")
+                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: xmlEncoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
+                                writer.write("input.builder.withBody(.stream(encoderStream))")
+                            } else {
+                                writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")", memberName, xmlName)
+                                renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
+                            }
                         } else {
-                            writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                            if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
+                                writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
+                                    writer.write("fatalError(\"Message encoder is required for streaming payload\")")
+                                }
+                                writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
+                                    writer.write("fatalError(\"Message signer is required for streaming payload\")")
+                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
+                                writer.write("input.builder.withBody(.stream(encoderStream))")
+                            } else {
+                                writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
+                                renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
+                            }
                         }
-
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
                     }
                     writer.indent()
                     writer.openBlock("if encoder is JSONEncoder {", "}") {
                         writer.write("// Encode an empty body as an empty structure in JSON")
                         writer.write("let \$L = \"{}\".data(using: .utf8)!", dataDeclaration)
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                        renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                     }
                     writer.dedent()
                     writer.write("}")
@@ -141,7 +168,7 @@ class HttpBodyMiddleware(
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "}") {
                         writer.write("let encoder = context.getEncoder()")
                         writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
-                        renderEncodedBodyAddedToRequest(bodyDeclaration, dataDeclaration)
+                        renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                     }
                 }
                 renderErrorCase()
@@ -150,9 +177,17 @@ class HttpBodyMiddleware(
         }
     }
 
-    private fun renderEncodedBodyAddedToRequest(bodyDeclaration: String, dataDeclaration: String, isBinaryStream: Boolean = false) {
-        val bodyType = if (isBinaryStream) ".stream" else ".data"
-        writer.write("let $bodyDeclaration = \$N$bodyType($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+    private fun renderEncodedBodyAddedToRequest(
+        memberName: String,
+        bodyDeclaration: String,
+        dataDeclaration: String,
+        isBinaryStream: Boolean = false
+    ) {
+        if (isBinaryStream) {
+            writer.write("let $bodyDeclaration = \$N(byteStream: $memberName)", ClientRuntimeTypes.Http.HttpBody)
+        } else {
+            writer.write("let $bodyDeclaration = \$N.data($dataDeclaration)", ClientRuntimeTypes.Http.HttpBody)
+        }
         writer.write("input.builder.withBody($bodyDeclaration)")
     }
 

@@ -34,6 +34,7 @@ class MiddlewareExecutionGenerator(
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op)
         }
+        httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.toLowerCamelCase()}\")", OperationStack)
         renderMiddlewares(op, operationStackName)
     }
@@ -53,6 +54,7 @@ class MiddlewareExecutionGenerator(
 
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
+        writer.write("  .build()")
     }
 
     private fun resolveHttpMethod(op: OperationShape): String {

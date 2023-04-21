@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
@@ -15,6 +16,7 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasStreamingMember
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
 /**
@@ -57,22 +59,27 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("}")
     }
 
+    private fun renderExpectedBody(test: HttpResponseTestCase) {
+        if (test.body.isPresent && test.body.get().isNotBlank()) {
+            operation.output.ifPresent {
+                val outputShape = model.expectShape(it) as StructureShape
+                // depending on the shape of the output, we may need to wrap the body in a stream
+                if (outputShape.hasStreamingMember(model)) {
+                    // wrapping to CachingStream required for test asserts which reads body multiple times
+                    writer.write("content: .stream(CachingStream(base: BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true)))", test.body.get().replace("\\\"", "\\\\\""))
+                } else {
+                    writer.write("content: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)", test.body.get().replace("\\\"", "\\\\\""))
+                }
+            }
+        } else {
+            writer.write("content: nil")
+        }
+    }
+
     private fun renderBuildHttpResponseParams(test: HttpResponseTestCase) {
         writer.write("code: \$L,", test.code)
         renderExpectedHeaders(test)
-        test.body.ifPresentOrElse(
-            {
-                body ->
-                if (body.isNotBlank() && body.isNotEmpty()) {
-                    writer.write("content: HttpBody.stream(ByteStream.from(data: \"\"\"\n${body.replace(".000", "")}\n\"\"\".data(using: .utf8)!))")
-                } else {
-                    writer.write("content: HttpBody.empty")
-                }
-            },
-            {
-                writer.write("content: HttpBody.empty")
-            }
-        )
+        renderExpectedBody(test)
     }
 
     private fun renderExpectedHeaders(test: HttpResponseTestCase) {

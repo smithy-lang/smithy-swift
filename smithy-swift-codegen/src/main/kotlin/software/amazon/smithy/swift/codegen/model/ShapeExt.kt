@@ -17,6 +17,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -84,6 +85,7 @@ fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
         StringUtils.capitalize(this.id.name)
     }
 }
+fun MemberShape.defaultName(): String = memberName.toLowerCamelCase()
 fun MemberShape.toLowerCamelCase(): String = this.memberName.toLowerCamelCase()
 fun Shape.toLowerCamelCase(): String = this.id.name.toLowerCamelCase()
 
@@ -121,4 +123,57 @@ fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
     return Selector
         .parse("service [id=${serviceShape.id }] ~> :is(structure, union, string [trait|enum]) :not(<-[input, output, error]-)")
         .select(this)
+}
+
+/**
+ * Test if an operation input is an event stream
+ */
+fun OperationShape.isInputEventStream(model: Model): Boolean {
+    val reqShape = model.expectShape<StructureShape>(input.get())
+    return reqShape.hasEventStreamMember(model)
+}
+
+/**
+ * Test if an operation output is an event stream
+ */
+fun OperationShape.isOutputEventStream(model: Model): Boolean {
+    val respShape = model.expectShape<StructureShape>(output.get())
+    return respShape.hasEventStreamMember(model)
+}
+
+/**
+ * Test if a member targets an event stream
+ */
+fun Shape.hasEventStreamMember(model: Model): Boolean {
+    val streamingMember = findStreamingMember(model) ?: return false
+    val target = model.expectShape(streamingMember.target)
+    return target.isUnionShape
+}
+
+/**
+ * Returns the member of this structure targeted with streaming trait (if it exists).
+ *
+ * A structure must have at most one streaming member.
+ */
+fun Shape.findStreamingMember(model: Model): MemberShape? = findMemberWithTrait<StreamingTrait>(model)
+
+inline fun <reified T : Trait> Shape.findMemberWithTrait(model: Model): MemberShape? =
+    members().find { it.getMemberTrait(model, T::class.java).isPresent }
+
+fun UnionShape.eventStreamEvents(model: Model): Collection<MemberShape> {
+    if (!hasTrait<StreamingTrait>()) return members()
+
+    return members().filterNot {
+        val target = model.expectShape(it.target)
+        target.isError
+    }
+}
+
+fun UnionShape.eventStreamErrors(model: Model): Collection<MemberShape> {
+    if (!hasTrait<StreamingTrait>()) return members()
+
+    return members().filter {
+        val target = model.expectShape(it.target)
+        target.isError
+    }
 }

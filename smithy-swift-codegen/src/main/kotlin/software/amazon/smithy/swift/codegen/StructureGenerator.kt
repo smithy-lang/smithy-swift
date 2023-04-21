@@ -205,15 +205,15 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$error.protocol:L, \$N {",
-            "}",
-            SwiftTypes.Protocols.Equatable
-        ) {
-            generateErrorStructMembers()
-            writer.write("")
-            generateInitializerForStructure()
-        }
-        writer.write("")
+            "public struct \$struct.name:L: \$error.protocol:L, \$N, \$N {",
+            SwiftTypes.Protocols.Equatable,
+            SwiftTypes.Error
+        )
+            .call { generateErrorStructMembers() }
+            .write("")
+            .call { generateInitializerForStructure() }
+            .closeBlock("}")
+            .write("")
 
         writer.removeContext("error.protocol")
     }

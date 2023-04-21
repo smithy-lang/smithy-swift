@@ -259,7 +259,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 import ClientRuntime
                 
                 /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ServiceError, Swift.Equatable {
+                public struct MyError: ClientRuntime.ServiceError, Swift.Equatable, Swift.Error {
                     public var _headers: ClientRuntime.Headers?
                     public var _statusCode: ClientRuntime.HttpStatusCode?
                     public var _message: Swift.String?

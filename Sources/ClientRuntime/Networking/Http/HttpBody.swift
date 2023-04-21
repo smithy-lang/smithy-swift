@@ -4,10 +4,38 @@
  */
 import AwsCommonRuntimeKit
 
-public enum HttpBody: Equatable {
+public enum HttpBody {
     case data(Data?)
-    case stream(ByteStream)
+    case stream(Stream)
     case none
+}
+
+extension HttpBody: Equatable {
+    public static func == (lhs: HttpBody, rhs: HttpBody) -> Bool {
+        switch (lhs, rhs) {
+        case (.data(let lhsData), .data(let rhsData)):
+            return lhsData == rhsData
+        case (.stream(let lhsStream), .stream(let rhsStream)):
+            do {
+                return try lhsStream.isEqual(to: rhsStream)
+            } catch {
+                return false
+            }
+        default:
+            return false
+        }
+    }
+}
+
+extension HttpBody {
+    public init(byteStream: ByteStream) {
+        switch byteStream {
+        case .data(let data):
+            self = .data(data)
+        case .stream(let stream):
+            self = .stream(stream)
+        }
+    }
 }
 
 public extension HttpBody {
@@ -15,12 +43,15 @@ public extension HttpBody {
         .data(nil)
     }
 
-    func toBytes() -> ByteBuffer? {
+    func toData() throws -> Data? {
         switch self {
-        case let .data(data):
-            return data.map(ByteBuffer.init(data:))
-        case let .stream(stream):
-            return stream.toBytes()
+        case .data(let data):
+            return data
+        case .stream(let stream):
+            if stream.isSeekable {
+                try stream.seek(toOffset: 0)
+            }
+            return try stream.readToEnd()
         case .none:
             return nil
         }
@@ -32,7 +63,7 @@ public extension HttpBody {
         case let .data(data):
             return data?.isEmpty ?? true
         case let .stream(stream):
-            return stream.toBytes().getData().isEmpty
+            return stream.isEmpty
         case .none:
             return true
         }
@@ -48,7 +79,23 @@ extension HttpBody: CustomDebugStringConvertible {
                 bodyAsString = String(data: data, encoding: .utf8)
             }
         case .stream(let stream):
-            bodyAsString = String(data: stream.toBytes().getData(), encoding: .utf8)
+            // reading a non-seekable stream will consume the stream
+            // which will impact the ability to read the stream later
+            // so we only read the stream if it is seekable
+            if stream.isSeekable {
+                let currentPosition = stream.position
+                if let data = try? stream.readToEnd() {
+                    bodyAsString = String(data: data, encoding: .utf8)
+                }
+                try? stream.seek(toOffset: currentPosition)
+            } else {
+                bodyAsString = """
+                Position: \(stream.position)
+                Length: \(stream.length ?? -1)
+                IsEmpty: \(stream.isEmpty)
+                IsSeekable: \(stream.isSeekable)
+                """
+            }
         default:
             bodyAsString = nil
         }

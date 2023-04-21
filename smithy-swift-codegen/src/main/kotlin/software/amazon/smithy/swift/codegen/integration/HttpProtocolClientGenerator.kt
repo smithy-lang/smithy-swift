@@ -58,7 +58,7 @@ open class HttpProtocolClientGenerator(
                     generator.render(it) { writer, labelMemberName ->
                         writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))", MiddlewareShapeUtils.outputErrorSymbolName(it), ClientRuntimeTypes.Core.ClientError)
                     }
-                    writer.write("let result = try await $operationStackName.handleMiddleware(context: context.build(), input: input, next: client.getHandler())")
+                    writer.write("let result = try await $operationStackName.handleMiddleware(context: context, input: input, next: client.getHandler())")
                     writer.write("return result")
                 }
                 writer.write("")

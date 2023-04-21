@@ -22,6 +22,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open val typeName: String = "${serviceName.toUpperCamelCase()}Configuration"
     open val typeProtocol: Symbol = Symbol.builder().name("${typeName}Protocol").build()
+    open val typeError: Symbol = Symbol.builder().name("${typeName}Error").build()
 
     open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
 
