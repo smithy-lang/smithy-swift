@@ -20,6 +20,7 @@ class IdempotencyTokenTraitTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                                   .withPartitionID(value: config.partitionID)
+                                  .build()
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
                     operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutputResponse> in
                         let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
@@ -37,7 +38,7 @@ class IdempotencyTokenTraitTests {
                     operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryerMiddleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(retryer: config.retryer))
                     operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>())
                     operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<IdempotencyTokenWithStructureOutputResponse, IdempotencyTokenWithStructureOutputError>(clientLogMode: config.clientLogMode))
-                    let result = try await operation.handleMiddleware(context: context.build(), input: input, next: client.getHandler())
+                    let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
                     return result
                 }
 

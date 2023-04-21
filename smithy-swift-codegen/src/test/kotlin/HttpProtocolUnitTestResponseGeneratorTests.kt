@@ -37,7 +37,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Int": "1",
                 "X-String": "Hello"
             ],
-            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+            content: .data( ""${'"'}
             {
               "payload1": "explicit string",
               "payload2": 1,
@@ -47,7 +47,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.data(using: .utf8)!))
+            ""${'"'}.data(using: .utf8)!)
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -96,7 +96,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Foo-abc": "ABC",
                 "X-Foo-xyz": "XYZ"
             ],
-            content: HttpBody.empty
+            content: nil
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -132,7 +132,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             headers: [
                 "X-Foo": "Foo"
             ],
-            content: HttpBody.empty
+            content: nil
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -164,13 +164,13 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+            content: .data( ""${'"'}
             {
                 "contents": {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.data(using: .utf8)!))
+            ""${'"'}.data(using: .utf8)!)
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -206,7 +206,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+            content: .data( ""${'"'}
             {
                 "nested": {
                     "foo": "Foo1",
@@ -221,7 +221,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.data(using: .utf8)!))
+            ""${'"'}.data(using: .utf8)!)
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -272,14 +272,14 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         headers: [
                             "Content-Type": "application/json"
                         ],
-                        content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+                        content: .data( ""${'"'}
                         {
                             "stringValue": "string",
                             "documentValue": {
                                 "foo": "bar"
                             }
                         }
-                        ""${'"'}.data(using: .utf8)!))
+                        ""${'"'}.data(using: .utf8)!)
                     ) else {
                         XCTFail("Something is wrong with the created http response")
                         return
@@ -324,11 +324,11 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                         headers: [
                             "Content-Type": "application/json"
                         ],
-                        content: HttpBody.stream(ByteStream.from(data: ""${'"'}
+                        content: .data( ""${'"'}
                         {
                             "foo": "bar"
                         }
-                        ""${'"'}.data(using: .utf8)!))
+                        ""${'"'}.data(using: .utf8)!)
                     ) else {
                         XCTFail("Something is wrong with the created http response")
                         return

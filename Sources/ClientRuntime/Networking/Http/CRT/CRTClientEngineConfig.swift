@@ -17,9 +17,11 @@ struct CRTClientEngineConfig {
     /// If you set this in server mode, it enforces client authentication.
     let verifyPeer: Bool
 
-    public init(maxConnectionsPerEndpoint: Int = 50,
-                windowSize: Int = 16 * 1024 * 1024,
-                verifyPeer: Bool = true) {
+    public init(
+        maxConnectionsPerEndpoint: Int = 50,
+        windowSize: Int = 16 * 1024 * 1024,
+        verifyPeer: Bool = true
+    ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer

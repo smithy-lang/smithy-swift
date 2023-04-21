@@ -29,6 +29,7 @@ import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -58,9 +59,14 @@ import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGenerat
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
+import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
+
+private val Shape.isStreaming: Boolean
+    get() = hasTrait<StreamingTrait>() && isUnionShape
 
 /**
  * Checks to see if shape is in the body of the http request
@@ -141,6 +147,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         val inputShapesWithMetadata = resolveInputShapes(ctx)
+            .filter { !it.key.hasEventStreamMember(ctx.model) }
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
@@ -182,6 +189,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
 
         val outputShapesWithMetadata = resolveOutputShapes(ctx)
+            .filter { !it.key.hasEventStreamMember(ctx.model) }
 
         for ((shape, metadata) in outputShapesWithMetadata) {
             if (shape.members().any { it.isInHttpBody() }) {
@@ -199,6 +207,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
         val nestedShapes = resolveShapesNeedingCodableConformance(ctx)
+            .filter { !it.isStreaming }
         for (shape in nestedShapes) {
             renderCodableExtension(ctx, shape)
         }
@@ -246,6 +255,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape, metadata: Map<ShapeMetadata, Any>) {
         val bodySymbol: Symbol = ctx.symbolProvider.toSymbol(shape).bodySymbol()
         val rootNamespace = ctx.settings.moduleName
+        val isEventStream = shape.hasEventStreamMember(ctx.model)
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
         val decodeSymbol = Symbol.builder()
@@ -463,6 +473,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         return containedOperations
     }
+
+    abstract override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext)
+
+    abstract override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext)
 }
 
 class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)

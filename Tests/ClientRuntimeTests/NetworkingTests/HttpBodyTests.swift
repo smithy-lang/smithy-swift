@@ -28,13 +28,13 @@ class HttpBodyTests: XCTestCase {
     }
 
     func testWhenStreamIsEmptyThenIsEmptyIsTrue() {
-        let stream = ByteStream.from(data: Data())
-        let body = HttpBody.stream(stream)
+        _ = BufferedStream(data: .init())
+        let body = HttpBody.stream(BufferedStream())
         XCTAssertTrue(body.isEmpty)
     }
 
     func testWhenStreamIsNotEmptyThenIsEmptyIsFalse() {
-        let stream = ByteStream.from(data: "foo".data(using: .utf8)!)
+        let stream = BufferedStream(data: .init("foo".data(using: .utf8)!))
         let body = HttpBody.stream(stream)
         XCTAssertFalse(body.isEmpty)
     }

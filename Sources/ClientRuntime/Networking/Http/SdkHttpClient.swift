@@ -27,8 +27,14 @@ public class SdkHttpClient {
 struct ClientHandler<Output: HttpResponseBinding>: Handler {
     let engine: HttpClientEngine
     func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
-        let httpResponse = try await engine.execute(request: input)
-
+        let httpResponse: HttpResponse
+        
+        if context.shouldForceH2(), let crtEngine = engine as? CRTClientEngine {
+            httpResponse = try await crtEngine.executeHTTP2Request(request: input)
+        } else {
+            httpResponse = try await engine.execute(request: input)
+        }
+        
         return OperationOutput<Output>(httpResponse: httpResponse)
     }
 

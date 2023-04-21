@@ -46,7 +46,24 @@ extension SdkHttpRequest {
         let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
         httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
-        httpRequest.body = body.toBytes()
+        httpRequest.body = StreamableHttpBody(body: body)
+        return httpRequest
+    }
+
+    /// Convert the SDK request to a CRT HTTPRequestBase
+    /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
+    /// - Returns: the CRT request
+    public func toHttp2Request() throws -> HTTPRequestBase {
+        let httpHeaders = headers.toHttpHeaders()
+        let httpRequest = try HTTPRequest()
+        httpRequest.method = method.rawValue
+        let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
+        httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
+        httpRequest.addHeaders(headers: httpHeaders)
+
+        // HTTP2Request used with manual writes hence we need to set the body to nil
+        // so that CRT does not write the body for us (we will write it manually)
+        httpRequest.body = nil
         return httpRequest
     }
 }
@@ -195,5 +212,15 @@ public class SdkHttpRequestBuilder {
                               headers: headers,
                               queryItems: queryItems,
                               body: body)
+    }
+}
+
+extension HTTPRequestBase {
+    public var signature: String? {
+        let authHeader = getHeaderValue(name: "Authorization")
+        guard let signatureSequence = authHeader?.split(separator: "=").last else {
+            return nil
+        }
+        return String(signatureSequence)
     }
 }
