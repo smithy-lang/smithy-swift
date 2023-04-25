@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct Endpoint: Hashable {
+public struct Endpoint {
     public let path: String
     public let queryItems: [URLQueryItem]?
     public let protocolType: ProtocolType?
@@ -77,5 +77,36 @@ public extension Endpoint {
         }
         let queryString = queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
         return "?\(queryString)"
+    }
+}
+
+// It was discovered that in Swift 5.8 and earlier versions, the URLQueryItem type does not correctly implement
+// Hashable: namely, multiple URLQueryItems with the same name & value and that are equal by the == operator will have
+// different hash values.
+//
+// Github issue filed against open-source Foundation:
+// https://github.com/apple/swift-corelibs-foundation/issues/4737
+//
+// This extension is intended to correct this problem for the Endpoint type by substituting a
+// different structure with the same properties as URLQueryItem when the Endpoint is hashed.
+//
+// This extension may be removed, and the compiler-generated Hashable compliance may be used instead, once the
+// URLQueryItem's Hashable implementation is fixed in open-source Foundation.
+extension Endpoint: Hashable {
+
+    private struct QueryItem: Hashable {
+        let name: String
+        let value: String?
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(path)
+        let queryItemElements = queryItems?.map { QueryItem(name: $0.name, value: $0.value) }
+        hasher.combine(queryItemElements)
+        hasher.combine(protocolType)
+        hasher.combine(host)
+        hasher.combine(port)
+        hasher.combine(headers)
+        hasher.combine(properties)
     }
 }
