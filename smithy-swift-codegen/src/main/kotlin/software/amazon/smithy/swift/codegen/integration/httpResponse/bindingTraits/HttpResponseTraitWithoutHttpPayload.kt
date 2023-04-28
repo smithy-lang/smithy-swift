@@ -13,7 +13,6 @@ import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.LongShape
-import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShortShape
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -60,7 +59,7 @@ class HttpResponseTraitWithoutHttpPayload(
         val shape = ctx.model.expectShape(streamingMember.member.target)
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
-        when(shape.type) {
+        when (shape.type) {
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {", "} else {") {
                     writer.declareSection(HttpResponseTraitWithHttpPayload.MessageDecoderSectionId) {
