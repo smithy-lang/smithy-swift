@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+
 extension EventStream {
 
     /// A message in an event stream that can be sent or received.

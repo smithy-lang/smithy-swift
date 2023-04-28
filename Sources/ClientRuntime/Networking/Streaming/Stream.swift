@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+
 import AwsCommonRuntimeKit
 
 /// Protocol that provides reading data from a stream
