@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+
 extension EventStream {
     /// Stream adapter that encodes input into `Data` objects.
     public class DefaultMessageEncoderStream<Event: MessageMarshallable>: MessageEncoderStream, Stream {
