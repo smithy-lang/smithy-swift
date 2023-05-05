@@ -47,24 +47,38 @@ public class BufferedStream: Stream {
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func read(upToCount count: Int) throws -> Data? {
-        lock.withLockingClosure {
-            let toRead = min(count, buffer?.count ?? 0)
-            let endPosition = position.advanced(by: toRead)
-            let chunk = buffer?[position..<endPosition]
+        try lock.withLockingThrowingClosure {
+            try _read(upToCount: count)
+        }
+    }
 
-            // remove the data we just read
-            buffer?.removeFirst(toRead)
+    private func _read(upToCount count: Int) throws -> Data? {
+        let toRead = min(count, buffer?.count ?? 0)
+        let endPosition = position.advanced(by: toRead)
+        let chunk = buffer?[position..<endPosition]
 
-            // update position
-            position = endPosition
+        // remove the data we just read
+        buffer?.removeFirst(toRead)
 
-            // if we're closed and there's no data left, return nil
-            // this will signal the end of the stream
-            if isClosed && chunk?.isEmpty == true {
-                return nil
+        // update position
+        position = endPosition
+
+        // if we're closed and there's no data left, return nil
+        // this will signal the end of the stream
+        if isClosed && chunk?.isEmpty == true {
+            return nil
+        }
+
+        return chunk
+    }
+
+    var clients: [(UnsafeContinuation<Data?, Error>, Int)] = []
+
+    public func readAsync(upToCount count: Int) async throws -> Data? {
+        try await withUnsafeThrowingContinuation { continuation in
+            lock.withLockingClosure {
+                clients.insert((continuation, count), at: 0)
             }
-
-            return chunk
         }
     }
 
@@ -93,11 +107,12 @@ public class BufferedStream: Stream {
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
     public func write(contentsOf data: Data) throws {
-        lock.withLockingClosure {
+        try lock.withLockingThrowingClosure {
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
             buffer?.append(data)
             length = (length ?? 0) + data.count
+            try _flushToNextClient()
         }
     }
 
@@ -106,5 +121,13 @@ public class BufferedStream: Stream {
         lock.withLockingClosure {
             isClosed = true
         }
+    }
+
+    private func _flushToNextClient() throws {
+        guard clients.count > 0 else { return }
+        let (continuation, count) = clients[0]
+        guard let data = try _read(upToCount: count) else { return }
+        _ = clients.popLast()
+        continuation.resume(returning: data)
     }
 }
