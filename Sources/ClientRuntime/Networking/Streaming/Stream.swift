@@ -87,12 +87,22 @@ extension Stream {
         try await withUnsafeThrowingContinuation { continuation in
             Task {
                 do {
-                    let data = try read(upToCount: count)
+                    func getData() async throws -> Data? {
+                        while let data = try read(upToCount: count) {
+                            guard !data.isEmpty else {
+                                try await Task.sleep(nanoseconds: 1_000_000)
+                                continue
+                            }
+                            return data
+                        }
+                        return nil
+                    }
+                    let data = try await getData()
                     continuation.resume(returning: data)
                 } catch {
                     continuation.resume(throwing: error)
                 }
-            }
+           }
         }
     }
 }

@@ -40,7 +40,7 @@ extension EventStream {
                 }
 
                 // read until the end of the stream
-                while let data = try stream.read(upToCount: Int.max) {
+                while let data = try await stream.readAsync(upToCount: Int.max) {
                     // feed the data to the decoder
                     // this may result in a message being returned
                     try messageDecoder.feed(data: data)
