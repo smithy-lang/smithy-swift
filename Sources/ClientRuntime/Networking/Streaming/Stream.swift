@@ -102,7 +102,7 @@ extension Stream {
                 } catch {
                     continuation.resume(throwing: error)
                 }
-           }
+            }
         }
     }
 }
