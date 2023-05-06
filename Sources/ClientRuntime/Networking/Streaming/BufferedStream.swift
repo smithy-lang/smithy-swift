@@ -115,7 +115,7 @@ public class BufferedStream: Stream {
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
     public func write(contentsOf data: Data) throws {
-        try lock.withLockingThrowingClosure {
+        lock.withLockingClosure {
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
             buffer?.append(data)
