@@ -32,6 +32,10 @@ public class BufferedStream: Stream {
     private(set) var buffer: Data?
     private let lock = NSRecursiveLock()
 
+    /// Continuations that are awaiting data, and the byte count to be delivered to each.
+    /// Access to this value should only occur while `lock` is locked.
+    private var clients: [(UnsafeContinuation<Data?, Error>, Int)] = []
+
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:
     ///   - data: The initial data to buffer.
@@ -72,12 +76,16 @@ public class BufferedStream: Stream {
         return chunk
     }
 
-    var clients: [(UnsafeContinuation<Data?, Error>, Int)] = []
-
+    /// Reads from the stream asynchronously.  Readers will suspend if no data is currently available.
+    /// - Parameter count: The maximum number of bytes to be returned to the caller.
+    /// - Returns: A chunk of data from the stream.
     public func readAsync(upToCount count: Int) async throws -> Data? {
         try await withUnsafeThrowingContinuation { continuation in
             lock.withLockingClosure {
-                clients.insert((continuation, count), at: 0)
+                // Add a new client to the list, then service the next client if any data is waiting.
+                let client = (continuation, count)
+                clients.append(client)
+                _flushToNextClient()
             }
         }
     }
@@ -112,7 +120,8 @@ public class BufferedStream: Stream {
             // this will increase the in-memory size of the buffer
             buffer?.append(data)
             length = (length ?? 0) + data.count
-            try _flushToNextClient()
+            // If any clients are waiting to read data, service them.
+            _flushToNextClient()
         }
     }
 
@@ -123,11 +132,20 @@ public class BufferedStream: Stream {
         }
     }
 
-    private func _flushToNextClient() throws {
-        guard clients.count > 0 else { return }
-        let (continuation, count) = clients[0]
-        guard let data = try _read(upToCount: count) else { return }
-        _ = clients.popLast()
-        continuation.resume(returning: data)
+    // If there is a client waiting to read data, and there is unread data remaining in the buffer,
+    // read the data and pass it to the reader via the continuation.
+    // Continue until there are no clients or no data.
+    private func _flushToNextClient() {
+        while !clients.isEmpty {
+            let (continuation, count) = clients[0]  // Don't remove the client from the array yet
+            do {
+                guard let data = try _read(upToCount: count), !data.isEmpty else { return }
+                _ = clients.removeFirst()
+                continuation.resume(returning: data)
+            } catch {
+                _ = clients.removeFirst()
+                continuation.resume(throwing: error)
+            }
+        }
     }
 }
