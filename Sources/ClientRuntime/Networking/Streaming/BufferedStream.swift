@@ -32,9 +32,24 @@ public class BufferedStream: Stream {
     private(set) var buffer: Data?
     private let lock = NSRecursiveLock()
 
-    /// Continuations that are awaiting data, and the byte count to be delivered to each.
-    /// Access to this value should only occur while `lock` is locked.
-    private var clients: [(UnsafeContinuation<Data?, Error>, Int)] = []
+    /// Holds a continuation and the requested byte count for a stream reader.
+    /// Readers are stored in the `readers` queue until data is available to return.
+    private struct SuspendedReader {
+        /// The continuation for this reader.
+        let continuation: CheckedContinuation<Data?, Error>
+        /// The maximum number of bytes to be returned to this reader.
+        /// This is just the `count` parameter to `read(upToCount:)` for the suspended read.
+        let byteCount: Int
+    }
+
+    /// Contains suspended readers that are awaiting data from the stream, if any.
+    /// This array is maintained as a first-in, first-out queue,
+    /// where the newest reader is at the end of the array,
+    /// and the oldest / next reader is at the beginning.
+    ///
+    /// Access to this array should only occur while `lock` is locked to prevent simultaneous
+    /// access to `readers`.
+    private var readers: [SuspendedReader] = []
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:
@@ -80,12 +95,12 @@ public class BufferedStream: Stream {
     /// - Parameter count: The maximum number of bytes to be returned to the caller.
     /// - Returns: A chunk of data from the stream.
     public func readAsync(upToCount count: Int) async throws -> Data? {
-        try await withUnsafeThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             lock.withLockingClosure {
-                // Add a new client to the list, then service the next client if any data is waiting.
-                let client = (continuation, count)
-                clients.append(client)
-                _flushToNextClient()
+                // Add a new reader to the queue, then service the first reader if any data is waiting.
+                let reader = SuspendedReader(continuation: continuation, byteCount: count)
+                readers.append(reader)
+                _serviceFirstReaderIfPossible()
             }
         }
     }
@@ -113,6 +128,7 @@ public class BufferedStream: Stream {
     }
 
     /// Writes the specified data to the stream.
+    /// Then, continues a suspended reader (if any) to read the data.
     /// - Parameter data: The data to write.
     public func write(contentsOf data: Data) throws {
         lock.withLockingClosure {
@@ -121,7 +137,7 @@ public class BufferedStream: Stream {
             buffer?.append(data)
             length = (length ?? 0) + data.count
             // If any clients are waiting to read data, service them.
-            _flushToNextClient()
+            _serviceFirstReaderIfPossible()
         }
     }
 
@@ -135,16 +151,16 @@ public class BufferedStream: Stream {
     // If there is a client waiting to read data, and there is unread data remaining in the buffer,
     // read the data and pass it to the reader via the continuation.
     // Continue until there are no clients or no data.
-    private func _flushToNextClient() {
-        while !clients.isEmpty {
-            let (continuation, count) = clients[0]  // Don't remove the client from the array yet
+    private func _serviceFirstReaderIfPossible() {
+        while !readers.isEmpty {
+            let suspendedReader = readers[0]  // Don't remove the client from the array yet
             do {
-                guard let data = try _read(upToCount: count), !data.isEmpty else { return }
-                _ = clients.removeFirst()
-                continuation.resume(returning: data)
+                guard let data = try _read(upToCount: suspendedReader.byteCount), !data.isEmpty else { return }
+                _ = readers.removeFirst()
+                suspendedReader.continuation.resume(returning: data)
             } catch {
-                _ = clients.removeFirst()
-                continuation.resume(throwing: error)
+                _ = readers.removeFirst()
+                suspendedReader.continuation.resume(throwing: error)
             }
         }
     }
