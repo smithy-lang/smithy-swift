@@ -43,7 +43,7 @@ class FileStream: Stream {
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     func read(upToCount count: Int) throws -> Data? {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             let data: Data?
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 data = try fileHandle.read(upToCount: count)
@@ -58,7 +58,7 @@ class FileStream: Stream {
     /// Reads all remaining bytes from the stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     func readToEnd() throws -> Data? {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             let data: Data?
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 data = try fileHandle.readToEnd()
@@ -73,7 +73,7 @@ class FileStream: Stream {
     /// Seeks to the specified offset in the stream.
     /// - Parameter offset: The offset to seek to.
     func seek(toOffset offset: Int) throws {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 try fileHandle.seek(toOffset: UInt64(offset))
             } else {
@@ -86,7 +86,7 @@ class FileStream: Stream {
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
     func write(contentsOf data: Data) throws {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 try fileHandle.write(contentsOf: data)
             } else {
@@ -97,7 +97,7 @@ class FileStream: Stream {
 
     /// Closes the stream.
     func close() throws {
-       try lock.withLockingThrowingClosure {
+       try lock.withLockingClosure {
            if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                try fileHandle.close()
            } else {

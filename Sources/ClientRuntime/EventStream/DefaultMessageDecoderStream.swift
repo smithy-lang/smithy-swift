@@ -33,24 +33,21 @@ extension EventStream {
             }
 
             mutating public func next() async throws -> Event? {
-                // if we have a message in the decoder buffer, return it
-                if let message = try messageDecoder.message() {
-                    let event = try Event(message: message, decoder: responseDecoder)
-                    return event
-                }
-
+                var data: Data?
                 // read until the end of the stream
-                while let data = try await stream.readAsync(upToCount: Int.max) {
+                repeat {
                     // feed the data to the decoder
                     // this may result in a message being returned
-                    try messageDecoder.feed(data: data)
+                    try messageDecoder.feed(data: data ?? Data())
 
                     // if we have a message in the decoder buffer, return it
                     if let message = try messageDecoder.message() {
                         let event = try Element(message: message, decoder: responseDecoder)
                         return event
                     }
-                }
+
+                    data = try await stream.readAsync(upToCount: Int.max)
+                } while data != nil
 
                 // this is the end of the stream
                 // notify the decoder that the stream has ended

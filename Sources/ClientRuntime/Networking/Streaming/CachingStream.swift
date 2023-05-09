@@ -44,7 +44,7 @@ public class CachingStream: Stream {
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func read(upToCount count: Int) throws -> Data? {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             var data = Data()
             var remaining = count
 
@@ -86,7 +86,7 @@ public class CachingStream: Stream {
     /// Depending on the current position in the stream, this may read from the cache or the base stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func readToEnd() throws -> Data? {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             var data = Data()
 
             if position < base.position {
@@ -120,7 +120,7 @@ public class CachingStream: Stream {
     /// Seeks to the specified offset in the stream.
     /// - Parameter offset: The offset to seek to.
     public func seek(toOffset offset: Int) throws {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             let newPosition = cache.startIndex.advanced(by: offset)
 
             // make sure the new position is within the bounds of the cache

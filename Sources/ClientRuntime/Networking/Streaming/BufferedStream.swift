@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct Foundation.Data
+import class Foundation.NSRecursiveLock
 
 /// A `Stream` implementation that buffers data in memory.
 /// The buffer size depends on the amount of data written and read.
@@ -13,23 +14,41 @@ import Foundation
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
-    /// Returns the length of the stream, if known
+    /// Returns the cumulative length of all data so far written to the stream, if known
     public private(set) var length: Int?
 
     /// Returns the current position in the stream
     public private(set) var position: Data.Index
 
-    /// Returns true if the stream is empty, false otherwise
+    /// Returns true if the in-memory buffer is empty, false otherwise
     public var isEmpty: Bool {
-        return buffer?.isEmpty == true
+        lock.withLockingClosure {
+            return buffer?.isEmpty == true
+        }
     }
 
-    /// Returns false, buffered streams are not seekable
-    public let isSeekable: Bool = false
+    /// Returns false, buffered streams are not seekable.
+    public var isSeekable: Bool { false }
 
-    private var isClosed: Bool
+    /// Returns whether the stream has been closed.  Defaults to `false` on stream creation.
+    public var isClosed: Bool {
+        lock.withLockingClosure {
+            return _isClosed
+        }
+    }
 
-    private(set) var buffer: Data?
+    /// Returns whether the stream has been closed.  Defaults to `false` on stream creation.
+    ///
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
+    private var _isClosed: Bool
+
+    /// Contains data that has been written to this stream, but not yet read.
+    ///
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
+    private var buffer: Data?
+
+    /// When locked, this `NSRecursiveLock` grants safe, exclusive access to the properties on this type.
+    /// Note: `NSRecursiveLock` is `@Sendable` so it is safe to use with Swift concurrency.
     private let lock = NSRecursiveLock()
 
     /// Holds a continuation and the requested byte count for a stream reader.
@@ -47,26 +66,31 @@ public class BufferedStream: Stream {
     /// where the newest reader is at the end of the array,
     /// and the oldest / next reader is at the beginning.
     ///
-    /// Access to this array should only occur while `lock` is locked to prevent simultaneous
-    /// access to `readers`.
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var readers: [SuspendedReader] = []
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:
     ///   - data: The initial data to buffer.
     ///   - isClosed: Whether the stream is closed.
-    public init(data: Data? = .init(), isClosed: Bool = false) {
+    public init(data: Data? = Data(), isClosed: Bool = false) {
         self.buffer = data
         self.position = data?.startIndex ?? 0
         self.length = data?.count
-        self.isClosed = isClosed
+        self._isClosed = isClosed
+    }
+
+    /// If this task is released while it still has suspended readers, continue all readers with nil data
+    /// so no continuations are left un-continued.
+    deinit {
+        readers.forEach { $0.continuation.resume(returning: nil) }
     }
 
     /// Reads up to `count` bytes from the stream.
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     public func read(upToCount count: Int) throws -> Data? {
-        try lock.withLockingThrowingClosure {
+        try lock.withLockingClosure {
             try _read(upToCount: count)
         }
     }
@@ -97,10 +121,10 @@ public class BufferedStream: Stream {
     public func readAsync(upToCount count: Int) async throws -> Data? {
         try await withCheckedThrowingContinuation { continuation in
             lock.withLockingClosure {
-                // Add a new reader to the queue, then service the first reader if any data is waiting.
+                // Add a new reader to the queue, then service the readers if any data is waiting.
                 let reader = SuspendedReader(continuation: continuation, byteCount: count)
                 readers.append(reader)
-                _serviceFirstReaderIfPossible()
+                _serviceReadersIfPossible()
             }
         }
     }
@@ -137,25 +161,26 @@ public class BufferedStream: Stream {
             buffer?.append(data)
             length = (length ?? 0) + data.count
             // If any clients are waiting to read data, service them.
-            _serviceFirstReaderIfPossible()
+            _serviceReadersIfPossible()
         }
     }
 
     /// Closes the stream.
     public func close() throws {
         lock.withLockingClosure {
-            isClosed = true
+            _isClosed = true
         }
     }
 
     // If there is a client waiting to read data, and there is unread data remaining in the buffer,
     // read the data and pass it to the reader via the continuation.
     // Continue until there are no clients or no data.
-    private func _serviceFirstReaderIfPossible() {
+    private func _serviceReadersIfPossible() {
         while !readers.isEmpty {
             let suspendedReader = readers[0]  // Don't remove the client from the array yet
             do {
-                guard let data = try _read(upToCount: suspendedReader.byteCount), !data.isEmpty else { return }
+                let data = try _read(upToCount: suspendedReader.byteCount)
+                if data == Data() { return }
                 _ = readers.removeFirst()
                 suspendedReader.continuation.resume(returning: data)
             } catch {

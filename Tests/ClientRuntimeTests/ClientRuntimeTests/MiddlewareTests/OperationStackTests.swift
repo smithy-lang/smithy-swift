@@ -67,14 +67,16 @@ class OperationStackTests: HttpRequestTestBase {
                                                 return output
                                             })
 
-        wait(for: [expectInitializeMiddleware,
-                   expectSerializeMiddleware,
-                   expectBuildMiddleware,
-                   expectFinalizeMiddleware,
-                   expectDeserializeMiddleware,
-                   expectHandler],
-             timeout: defaultTimeout)
-
+        await fulfillment(of:
+            [
+                expectInitializeMiddleware,
+                expectSerializeMiddleware,
+                expectBuildMiddleware,
+                expectFinalizeMiddleware,
+                expectDeserializeMiddleware,
+                expectHandler
+            ],
+        timeout: defaultTimeout)
 
         XCTAssert(result.value == 200)
     }
