@@ -108,12 +108,6 @@ object ClientRuntimeTypes {
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
     }
-
-    object Test {
-        val CrtXCBaseTestCase = buildSymbol {
-            name = "CrtXCBaseTestCase"
-        }
-    }
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
