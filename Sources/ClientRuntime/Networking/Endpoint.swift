@@ -65,7 +65,7 @@ public extension Endpoint {
         var components = URLComponents()
         components.scheme = protocolType?.rawValue
         components.host = host
-        components.path = path
+        components.percentEncodedPath = path
         components.percentEncodedQueryItems = queryItems
 
         return components.url
