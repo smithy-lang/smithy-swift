@@ -129,7 +129,7 @@ public class CRTClientEngine: HttpClientEngine {
         switch connection.httpVersion {
         case .version_1_1:
             self.logger.debug("Using HTTP/1.1 connection")
-            let crtRequest = try request.toHttpRequest()
+            let crtRequest = try request.toHttpRequest(escaping: false)
             return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
                 let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
                                                                   continuation: continuation)

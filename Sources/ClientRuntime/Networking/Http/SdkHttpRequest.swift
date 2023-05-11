@@ -39,11 +39,12 @@ public class SdkHttpRequest {
 private let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "/_-.~"))
 
 extension SdkHttpRequest {
-    public func toHttpRequest() throws -> HTTPRequest {
+
+    public func toHttpRequest(escaping: Bool = true) throws -> HTTPRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
+        let encodedPath = escaping ? self.encodedPath : endpoint.path
         httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
         httpRequest.body = StreamableHttpBody(body: body)
@@ -65,6 +66,10 @@ extension SdkHttpRequest {
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil
         return httpRequest
+    }
+
+    private var encodedPath: String {
+        endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
     }
 }
 
@@ -99,7 +104,7 @@ extension SdkHttpRequestBuilder {
         host = originalRequest.endpoint.host
         if let crtRequest = crtRequest as? HTTPRequest {
             let pathAndQueryItems = URLComponents(string: crtRequest.path)
-            path = pathAndQueryItems?.path ?? "/"
+            path = pathAndQueryItems?.percentEncodedPath ?? "/"
             queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
