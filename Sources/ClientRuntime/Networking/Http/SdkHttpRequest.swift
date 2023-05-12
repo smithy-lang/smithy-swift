@@ -40,7 +40,7 @@ private let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn
 
 extension SdkHttpRequest {
 
-    public func toHttpRequest(escaping: Bool = true) throws -> HTTPRequest {
+    public func toHttpRequest(escaping: Bool = false) throws -> HTTPRequest {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
@@ -54,7 +54,7 @@ extension SdkHttpRequest {
     /// Convert the SDK request to a CRT HTTPRequestBase
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
-    public func toHttp2Request(escaping: Bool = true) throws -> HTTPRequestBase {
+    public func toHttp2Request(escaping: Bool = false) throws -> HTTPRequestBase {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
