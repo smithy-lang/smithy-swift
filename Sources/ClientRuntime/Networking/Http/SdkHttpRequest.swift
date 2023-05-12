@@ -54,11 +54,11 @@ extension SdkHttpRequest {
     /// Convert the SDK request to a CRT HTTPRequestBase
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
-    public func toHttp2Request() throws -> HTTPRequestBase {
+    public func toHttp2Request(escaping: Bool = true) throws -> HTTPRequestBase {
         let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
+        let encodedPath = escaping ? self.encodedPath : endpoint.path
         httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
         httpRequest.addHeaders(headers: httpHeaders)
 

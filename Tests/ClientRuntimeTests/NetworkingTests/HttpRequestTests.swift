@@ -101,6 +101,15 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssertEqual(httpRequest.path, escapedPath)
     }
 
+    func testPathInInHttpRequestIsNotEscapedPerRFC3986WhenNotDesired() throws {
+        let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "xctest.amazon.com")
+            .withPath(path)
+        let httpRequest = try builder.build().toHttpRequest(escaping: false)
+        XCTAssertEqual(httpRequest.path, path)
+    }
+
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // TODO:: When is the endpoint invalid or endpoint.url nil?
         _ = Endpoint(host: "", path: "", protocolType: nil)
