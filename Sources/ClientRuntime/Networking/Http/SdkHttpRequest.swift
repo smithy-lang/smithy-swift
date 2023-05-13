@@ -10,43 +10,31 @@ import AwsCommonRuntimeKit
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public var body: HttpBody
-    public var headers: Headers
-    public let queryItems: [URLQueryItem]?
+    public let body: HttpBody
     public let endpoint: Endpoint
     public let method: HttpMethodType
+    public var headers: Headers { endpoint.headers ?? Headers() }
+    public var path: String { endpoint.path }
+    public var host: String { endpoint.host }
+    public var queryItems: [URLQueryItem]? { endpoint.queryItems }
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
-                headers: Headers,
-                queryItems: [URLQueryItem]? = nil,
                 body: HttpBody = HttpBody.none) {
         self.method = method
         self.endpoint = endpoint
-        self.headers = headers
         self.body = body
-        self.queryItems = queryItems
     }
 }
-
-// Create a `CharacterSet` of the characters that need not be percent encoded in the
-// resulting URL.  This set consists of alphanumerics plus underscore, dash, tilde, and
-// period.  Any other character should be percent-encoded when used in a path segment.
-// Forward-slash is added as well because the segments have already been joined into a path.
-//
-// See, for URL-allowed characters:
-// https://www.rfc-editor.org/rfc/rfc3986#section-2.3
-private let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "/_-.~"))
 
 extension SdkHttpRequest {
 
     public func toHttpRequest(escaping: Bool = false) throws -> HTTPRequest {
-        let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? self.encodedPath : endpoint.path
-        httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
-        httpRequest.addHeaders(headers: httpHeaders)
+        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
+        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = StreamableHttpBody(body: body)
         return httpRequest
     }
@@ -55,21 +43,16 @@ extension SdkHttpRequest {
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
     public func toHttp2Request(escaping: Bool = false) throws -> HTTPRequestBase {
-        let httpHeaders = headers.toHttpHeaders()
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? self.encodedPath : endpoint.path
-        httpRequest.path = "\(encodedPath)\(endpoint.queryItemString)"
-        httpRequest.addHeaders(headers: httpHeaders)
+        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
+        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
         // HTTP2Request used with manual writes hence we need to set the body to nil
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil
         return httpRequest
-    }
-
-    private var encodedPath: String {
-        endpoint.path.addingPercentEncoding(withAllowedCharacters: allowed) ?? endpoint.path
     }
 }
 
@@ -101,11 +84,10 @@ extension SdkHttpRequestBuilder {
     public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         methodType = originalRequest.method
-        host = originalRequest.endpoint.host
-        if let crtRequest = crtRequest as? HTTPRequest {
-            let pathAndQueryItems = URLComponents(string: crtRequest.path)
-            path = pathAndQueryItems?.percentEncodedPath ?? "/"
-            queryItems = pathAndQueryItems?.percentEncodedQueryItems ?? [URLQueryItem]()
+        host = originalRequest.host
+        if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
+            path = components.percentEncodedPath
+            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) } ?? [URLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
@@ -128,11 +110,11 @@ public class SdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: HttpBody = .none
-    var queryItems = [URLQueryItem]()
+    var queryItems: [URLQueryItem]? = nil
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
-    public var currentQueryItems: [URLQueryItem] {
+    public var currentQueryItems: [URLQueryItem]? {
         return queryItems
     }
 
@@ -184,14 +166,14 @@ public class SdkHttpRequestBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [URLQueryItem]) -> SdkHttpRequestBuilder {
-        self.queryItems = value
+        self.queryItems = self.queryItems ?? []
+        self.queryItems?.append(contentsOf: value)
         return self
     }
 
     @discardableResult
     public func withQueryItem(_ value: URLQueryItem) -> SdkHttpRequestBuilder {
-        self.queryItems.append(value)
-        return self
+        withQueryItems([value])
     }
 
     @discardableResult
@@ -211,11 +193,10 @@ public class SdkHttpRequestBuilder {
                                 path: path,
                                 port: port,
                                 queryItems: queryItems,
-                                protocolType: protocolType)
+                                protocolType: protocolType,
+                                headers: headers)
         return SdkHttpRequest(method: methodType,
                               endpoint: endpoint,
-                              headers: headers,
-                              queryItems: queryItems,
                               body: body)
     }
 }

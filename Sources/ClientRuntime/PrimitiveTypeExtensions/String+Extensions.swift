@@ -101,10 +101,7 @@ extension String {
 
 extension String {
     public func urlPercentEncoding() -> String {
-        if let encodedString = self.addingPercentEncoding(withAllowedCharacters: .singleUrlQueryAllowed) {
-            return encodedString
-        }
-        return self
+        self.urlPercentEncodedForQuery
     }
 }
 

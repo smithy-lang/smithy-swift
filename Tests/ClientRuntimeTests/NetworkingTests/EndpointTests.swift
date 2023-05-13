@@ -15,7 +15,7 @@ class EndpointTests: XCTestCase {
     func test_queryItems_setsQueryItemsFromURLInOrder() throws {
         let endpoint = try Endpoint(url: url)
         let expectedQueryItems = [
-            URLQueryItem(name: "abc", value: "def"),
+            ClientRuntime.URLQueryItem(name: "abc", value: "def"),
             URLQueryItem(name: "ghi", value: "jkl"),
             URLQueryItem(name: "mno", value: "pqr")
         ]

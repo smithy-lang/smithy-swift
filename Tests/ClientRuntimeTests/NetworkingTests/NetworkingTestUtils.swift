@@ -27,35 +27,32 @@ class NetworkingTestUtils: XCTestCase {
      Create a mock HttpRequest with valid data payload
      */
     func setMockHttpDataRequest() {
-        let endpoint = getMockEndpoint()
-        var headers = Headers()
-
-        headers.add(name: "header-item-name", value: "header-item-value")
+        var headers = Headers(["header-item-name": "header-item-value"])
+        let endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = HttpBody.data(expectedMockRequestData)
-        mockHttpDataRequest = SdkHttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        mockHttpDataRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
     /*
      Create a mock HttpRequest with valid InputStream
      */
     func setMockHttpStreamRequest() {
-        let endpoint = getMockEndpoint()
-        var headers = Headers()
-        headers.add(name: "header-item-name", value: "header-item-value")
+        var headers = Headers(["header-item-name": "header-item-value"])
+        var endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = HttpBody(byteStream: ByteStream.from(data: expectedMockRequestData))
-        mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
-    func getMockEndpoint() -> Endpoint {
+    func getMockEndpoint(headers: Headers) -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
-        var queryItems: [URLQueryItem] = []
+        var queryItems: [ClientRuntime.URLQueryItem] = []
         let endpoint: Endpoint!
 
         queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
-        endpoint = Endpoint(host: host, path: path, queryItems: queryItems)
+        endpoint = Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
         return endpoint
     }
 

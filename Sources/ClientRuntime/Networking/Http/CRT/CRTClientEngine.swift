@@ -69,7 +69,7 @@ public class CRTClientEngine: HttpClientEngine {
                 enableManualWindowManagement: false
             ) // not using backpressure yet
             logger.debug("""
-            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            Creating connection pool for \(String(describing: endpoint.host)) \
             with max connections: \(maxConnectionsPerEndpoint)
             """)
             return try HTTPClientConnectionManager(options: options)
@@ -96,7 +96,7 @@ public class CRTClientEngine: HttpClientEngine {
                 enableStreamManualWindowManagement: false
             )
             logger.debug("""
-            Creating connection pool for \(String(describing: endpoint.url?.absoluteString)) \
+            Creating connection pool for \(String(describing: endpoint.host)) \
             with max connections: \(maxConnectionsPerEndpoint)
             """)
 
