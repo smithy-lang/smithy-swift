@@ -34,7 +34,7 @@ extension EventStream {
 
             mutating public func next() async throws -> Event? {
                 var data: Data?
-                // read until the end of the stream
+                // read until the end of the stream, starting with data already in the buffer, if any
                 repeat {
                     // feed the data to the decoder
                     // this may result in a message being returned
@@ -47,6 +47,7 @@ extension EventStream {
                     }
 
                     data = try await stream.readAsync(upToCount: Int.max)
+                // nil data from stream indicates stream has closed, so stop reading it & stop async iterating
                 } while data != nil
 
                 // this is the end of the stream
