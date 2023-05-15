@@ -202,9 +202,9 @@ open class HttpRequestTestBase: XCTestCase {
         // assert headers match
         assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
 
-        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers ?? Headers(), file: file, line: line)
+        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers, file: file, line: line)
 
-        assertRequiredHeaders(expected.requiredHeaders, actual.headers ?? Headers(), file: file, line: line)
+        assertRequiredHeaders(expected.requiredHeaders, actual.headers, file: file, line: line)
 
         assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
 

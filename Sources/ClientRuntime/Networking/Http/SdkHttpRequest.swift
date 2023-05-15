@@ -87,7 +87,8 @@ extension SdkHttpRequestBuilder {
         host = originalRequest.host
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
             path = components.percentEncodedPath
-            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) } ?? [URLQueryItem]()
+            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) }
+                ?? [URLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
