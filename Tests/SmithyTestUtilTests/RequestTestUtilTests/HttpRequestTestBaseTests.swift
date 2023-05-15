@@ -48,8 +48,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            var queryItems: [URLQueryItem] = []
-            var queryItem: URLQueryItem
+            var queryItems: [ClientRuntime.URLQueryItem] = []
+            var queryItem: ClientRuntime.URLQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
                 queryItem = URLQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
                 queryItems.append(queryItem)
