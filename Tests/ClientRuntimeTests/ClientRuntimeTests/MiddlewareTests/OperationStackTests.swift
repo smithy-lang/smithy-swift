@@ -66,17 +66,19 @@ class OperationStackTests: HttpRequestTestBase {
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })
-
-        await fulfillment(of:
-            [
-                expectInitializeMiddleware,
-                expectSerializeMiddleware,
-                expectBuildMiddleware,
-                expectFinalizeMiddleware,
-                expectDeserializeMiddleware,
-                expectHandler
-            ],
-        timeout: defaultTimeout)
+        let expectations = [
+            expectInitializeMiddleware,
+            expectSerializeMiddleware,
+            expectBuildMiddleware,
+            expectFinalizeMiddleware,
+            expectDeserializeMiddleware,
+            expectHandler
+        ]
+#if swift(>=5.8)
+        await fulfillment(of: expectations, timeout: defaultTimeout)
+#else
+        wait(for: expectations, timeout: defaultTimeout)
+#endif
 
         XCTAssert(result.value == 200)
     }
