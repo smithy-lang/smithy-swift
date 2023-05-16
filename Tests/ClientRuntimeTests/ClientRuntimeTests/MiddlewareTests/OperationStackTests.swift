@@ -11,7 +11,7 @@ import SmithyTestUtil
 
 class OperationStackTests: HttpRequestTestBase {
 
-    #if swift(>=5.7) && !os(Linux)
+    #if swift(>=5.5)
     func testMiddlewareInjectableInit() async throws {
         var currExpectCount = 1
         let defaultTimeout = 2.0
