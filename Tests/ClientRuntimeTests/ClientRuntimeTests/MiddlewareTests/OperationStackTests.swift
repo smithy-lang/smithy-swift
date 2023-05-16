@@ -24,7 +24,7 @@ class OperationStackTests: HttpRequestTestBase {
 
         var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, middleware: MockInitializeMiddleware(id: "TestInitializeMiddleware", callback: { _, _ in
-            currExpectCount = self.checkAndFulfill(currExpectCount, 1)
+            self.checkOrder(&currExpectCount, 1)
         }))
 
         stack.serializeStep.intercept(position: .before, middleware: MockSerializeMiddleware(
@@ -32,42 +32,42 @@ class OperationStackTests: HttpRequestTestBase {
                                         headerName: "TestHeaderName1",
                                         headerValue: "TestHeaderValue1",
                                         callback: { _, _ in
-                                            currExpectCount = self.checkAndFulfill(currExpectCount, 2)
+                                            self.checkOrder(&currExpectCount, 2)
                                         }))
 
         stack.buildStep.intercept(position: .before, middleware: MockBuildMiddleware(id: "TestBuildMiddleware", callback: { _, _ in
-            currExpectCount = self.checkAndFulfill(currExpectCount, 3)
+            self.checkOrder(&currExpectCount, 3)
         }))
 
         stack.finalizeStep.intercept(position: .before, middleware: MockFinalizeMiddleware(id: "TestFinalizeMiddleware", callback: { _, _ in
-            currExpectCount = self.checkAndFulfill(currExpectCount, 4)
+            self.checkOrder(&currExpectCount, 4)
         }))
 
         stack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
                                             id: "TestDeserializeMiddleware",
                                             callback: {_, _ in
-                                                currExpectCount = self.checkAndFulfill(currExpectCount, 5)
+                                                self.checkOrder(&currExpectCount, 5)
                                                 return nil
                                             }))
 
         let result = try await stack.handleMiddleware(context: builtContext,
                                             input: MockInput(),
                                             next: MockHandler { (_, request) in
-                                                currExpectCount = self.checkAndFulfill(currExpectCount, 6)
+                                                self.checkOrder(&currExpectCount, 6)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })
-        XCTAssert(result.value == 200)
+        XCTAssertEqual(result.value, 200)
+        XCTAssertEqual(currExpectCount, 7)
     }
 
-    private func checkAndFulfill(_ currCount: Int, _ expectedCount: Int) -> Int {
+    private func checkOrder(_ currCount: inout Int, _ expectedCount: Int) {
         if currCount == expectedCount {
-            return currCount + 1
+            currCount += 1
         } else {
             XCTFail("Expected count: \(expectedCount) actual count: \(currCount)")
         }
-        return currCount
     }
 }
