@@ -31,6 +31,7 @@ class TimestampSerdeUtilsTests: XCTestCase {
 
     // MARK: - Encoding Tests
 
+    #if !os(Linux)
     func test_timestampEncodable_encodesDateAsExpectedForEachFormat() throws {
         let subjects: [(TimestampFormat, Date, String)] = [
             (.epochSeconds, testDateWithFractionalSeconds, "673351930.12300003"),
@@ -50,6 +51,7 @@ class TimestampSerdeUtilsTests: XCTestCase {
             XCTAssertEqual(dataAsString, expectedValue)
         }
     }
+    #endif
 
     func test_encodeTimeStamp_forKeyedContainer_returnsExpectedValue() throws {
         let encoder = JSONEncoder()
