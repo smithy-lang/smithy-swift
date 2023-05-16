@@ -79,9 +79,9 @@ jobs:
         with:
           path: |
             ~/Library/Caches/org.swift.swiftpm
-          key: 2-${{ runner.os }}-${{ matrix.swift }}-spm-${{ hashFiles('Package.swift', '**/Package.swift') }}
+          key: 2-${{ runner.os }}-${{ matrix.swift }}-spm-${{ hashFiles('Package.swift') }}
           restore-keys: |
-            2-${{ runner.os }}-${{ matrix.swift }}-spm-${{ hashFiles('Package.swift', '**/Package.swift') }}
+            2-${{ runner.os }}-${{ matrix.swift }}-spm-${{ hashFiles('Package.swift') }}
             2-${{ runner.os }}-${{ matrix.swift }}-spm-
       - name: Build and Test
         run: swift test
