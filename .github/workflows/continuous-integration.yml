@@ -48,12 +48,12 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.5
-          - 5.6
-          - 5.7
-          - 5.8
+          - 5.5-focal
+          - 5.6-focal
+          - 5.7-jammy
+          - 5.8-jammy
     container:
-      image: swift:${{ matrix.swift }}-jammy
+      image: swift:${{ matrix.swift }}
     steps:
       - name: Install openssl
         run: |
