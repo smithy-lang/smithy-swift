@@ -53,7 +53,7 @@ jobs:
           - 5.7
           - 5.8
     container:
-      image: swift:${{ matrix.swift }}-amazonlinux2
+      image: swift:${{ matrix.swift }}-jammy
     steps:
       - name: Install openssl
         run: |
