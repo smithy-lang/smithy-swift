@@ -154,6 +154,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     }
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
+    #if swift(>=5.7) && !os(Linux)
     func testSayHello() async throws {
         let deserializeMiddleware = expectation(description: "deserializeMiddleware")
         let expected = buildExpectedHttpRequest(method: .post,
@@ -243,8 +244,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             throw SdkError.service(mockServiceError, httpResponse)
         })
 
-        #if swift(>=5.7)
         await fulfillment(of: [deserializeMiddleware], timeout: 2.0)
-        #endif
     }
+    #endif
 }

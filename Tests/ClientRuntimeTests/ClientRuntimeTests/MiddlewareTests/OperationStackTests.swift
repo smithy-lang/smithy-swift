@@ -11,6 +11,7 @@ import SmithyTestUtil
 
 class OperationStackTests: HttpRequestTestBase {
 
+    #if swift(>=5.7) && !os(Linux)
     func testMiddlewareInjectableInit() async throws {
         var currExpectCount = 1
         let defaultTimeout = 2.0
@@ -66,7 +67,6 @@ class OperationStackTests: HttpRequestTestBase {
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })
-        #if swift(>=5.7)
         await fulfillment(of: [expectInitializeMiddleware,
                    expectSerializeMiddleware,
                    expectBuildMiddleware,
@@ -75,8 +75,8 @@ class OperationStackTests: HttpRequestTestBase {
                    expectHandler],
              timeout: defaultTimeout)
         XCTAssert(result.value == 200)
-        #endif
     }
+    #endif
 
     private func checkAndFulfill(_ currCount: Int, _ expectedCount: Int, expectation: XCTestExpectation) -> Int {
         if currCount == expectedCount {
