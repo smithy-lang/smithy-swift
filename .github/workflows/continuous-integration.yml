@@ -48,10 +48,10 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.5-focal
-          - 5.6-focal
-          - 5.7-jammy
-          - 5.8-jammy
+          - 5.5-amazonlinux2
+          - 5.6-amazonlinux2
+          - 5.7-amazonlinux2
+          - 5.8-amazonlinux2
     container:
       image: swift:${{ matrix.swift }}
     steps:
@@ -64,10 +64,5 @@ jobs:
           fi
       - name: Checkout Sources
         uses: actions/checkout@v3
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: corretto
-          java-version: 17
       - name: Build and Test
         run: swift test
