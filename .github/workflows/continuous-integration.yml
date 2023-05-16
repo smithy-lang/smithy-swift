@@ -42,3 +42,32 @@ jobs:
           python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
           chmod a+x builder
           AWS_CRT_SWIFT_CI_DIR="${{ env.AWS_CRT_SWIFT_CI_DIR }}" AWS_SDK_SWIFT_CI_DIR="${{ env.AWS_SDK_SWIFT_CI_DIR }}" SMITHY_SWIFT_CI_DIR="${{ env.SMITHY_SWIFT_CI_DIR }}" AWS_SWIFT_SDK_USE_LOCAL_DEPS=1 ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        swift:
+          - 5.5
+          - 5.6
+          - 5.7
+          - 5.8
+    container:
+      image: swift:${{ matrix.swift }}-amazonlinux2
+    steps:
+      - name: Install openssl
+        run: |
+          if [ -x "$(command -v apt)" ]; then
+            apt-get update && apt-get install -y libssl-dev
+          else
+            yum install -y openssl-devel
+          fi
+      - name: Checkout Sources
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+      - name: Build and Test
+        run: swift test
