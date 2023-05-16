@@ -104,7 +104,7 @@ extension MockInput: URLPathProvider, QueryItemProvider, HeaderProvider {
         var items = [ClientRuntime.URLQueryItem]()
 
         if let value = value {
-            let valueQueryItem = URLQueryItem(name: "test", value: "\(value)")
+            let valueQueryItem = ClientRuntime.URLQueryItem(name: "test", value: "\(value)")
             items.append(valueQueryItem)
         }
         return items

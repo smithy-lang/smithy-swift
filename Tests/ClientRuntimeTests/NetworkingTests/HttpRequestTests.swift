@@ -15,13 +15,11 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkHttpRequestToHttpRequest() throws {
-        let endpoint = Endpoint(host: "host.com", path: "/")
-        var headers = Headers()
-
-        headers.add(name: "header-item-name", value: "header-item-value")
+        var headers = Headers(["header-item-name": "header-item-value"])
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = HttpBody.data(expectedMockRequestData)
-        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, headers: headers, body: httpBody)
+        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
         let httpRequest = try mockHttpRequest.toHttpRequest()
 
         XCTAssertNotNil(httpRequest)
@@ -57,8 +55,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
-        let queryItem1 = URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = URLQueryItem(name: "quz", value: "baz")
+        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -70,8 +68,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
-        let queryItem1 = URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = URLQueryItem(name: "quz", value: "bar")
+        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "bar")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -79,26 +77,35 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
 
-        XCTAssert(builder.queryItems.count == 2)
+        XCTAssert(builder.queryItems?.count == 2)
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
         XCTAssert(updatedRequest.path == "/hello")
-        XCTAssert(updatedRequest.queryItems.count == 3)
-        XCTAssert(updatedRequest.queryItems.contains(queryItem1))
-        XCTAssert(updatedRequest.queryItems.contains(queryItem2))
-        XCTAssert(updatedRequest.queryItems.contains(URLQueryItem(name: "signedthing", value: "signed")))
+        XCTAssert(updatedRequest.queryItems?.count == 3)
+        XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
+        XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
+        XCTAssert(updatedRequest.queryItems?.contains(ClientRuntime.URLQueryItem(name: "signedthing", value: "signed")) ?? false)
     }
 
     func testPathInInHttpRequestIsEscapedPerRFC3986() throws {
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
             .withPath("/space /colon:/dollar$/tilde~/dash-/underscore_/period.")
-        let httpRequest = try builder.build().toHttpRequest()
+        let httpRequest = try builder.build().toHttpRequest(escaping: true)
         let escapedPath = "/space%20/colon%3A/dollar%24/tilde~/dash-/underscore_/period."
         XCTAssertEqual(httpRequest.path, escapedPath)
+    }
+
+    func testPathInInHttpRequestIsNotEscapedPerRFC3986WhenNotDesired() throws {
+        let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
+        let builder = SdkHttpRequestBuilder()
+            .withHeader(name: "Host", value: "xctest.amazon.com")
+            .withPath(path)
+        let httpRequest = try builder.build().toHttpRequest()
+        XCTAssertEqual(httpRequest.path, path)
     }
 
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {

@@ -165,7 +165,7 @@ open class HttpRequestTestBase: XCTestCase {
     /**
      Check if a Query Item with given name exists in array of `URLQueryItem`
      */
-    public func queryItemExists(_ queryItemName: String, in queryItems: [URLQueryItem]?) -> Bool {
+    public func queryItemExists(_ queryItemName: String, in queryItems: [ClientRuntime.URLQueryItem]?) -> Bool {
         guard let queryItems = queryItems else {
             return false
         }
@@ -208,8 +208,8 @@ open class HttpRequestTestBase: XCTestCase {
 
         assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
 
-        XCTAssertEqual(expected.endpoint.path, actual.endpoint.path, file: file, line: line)
-        XCTAssertEqual(expected.endpoint.host, actual.endpoint.host, file: file, line: line)
+        XCTAssertEqual(expected.endpoint.path, actual.path, file: file, line: line)
+        XCTAssertEqual(expected.endpoint.host, actual.host, file: file, line: line)
         XCTAssertEqual(expected.method, actual.method, file: file, line: line)
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems, file: file, line: line)
 
@@ -348,8 +348,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertQueryItems(
-        _ expected: [URLQueryItem]?,
-        _ actual: [URLQueryItem]?,
+        _ expected: [ClientRuntime.URLQueryItem]?,
+        _ actual: [ClientRuntime.URLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -382,8 +382,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertForbiddenQueryItems(
-        _ expected: [URLQueryItem]?,
-        _ actual: [URLQueryItem]?,
+        _ expected: [ClientRuntime.URLQueryItem]?,
+        _ actual: [ClientRuntime.URLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -405,8 +405,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertRequiredQueryItems(
-        _ expected: [URLQueryItem]?,
-        _ actual: [URLQueryItem]?,
+        _ expected: [ClientRuntime.URLQueryItem]?,
+        _ actual: [ClientRuntime.URLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
