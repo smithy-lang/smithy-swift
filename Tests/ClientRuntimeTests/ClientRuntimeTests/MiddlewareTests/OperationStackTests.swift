@@ -66,17 +66,16 @@ class OperationStackTests: HttpRequestTestBase {
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })
-
-        wait(for: [expectInitializeMiddleware,
+        #if swift(>=5.7)
+        await fulfillment(of: [expectInitializeMiddleware,
                    expectSerializeMiddleware,
                    expectBuildMiddleware,
                    expectFinalizeMiddleware,
                    expectDeserializeMiddleware,
                    expectHandler],
              timeout: defaultTimeout)
-
-
         XCTAssert(result.value == 200)
+        #endif
     }
 
     private func checkAndFulfill(_ currCount: Int, _ expectedCount: Int, expectation: XCTestExpectation) -> Int {

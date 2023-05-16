@@ -243,6 +243,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             throw SdkError.service(mockServiceError, httpResponse)
         })
 
-        wait(for: [deserializeMiddleware], timeout: 2.0)
+        #if swift(>=5.7)
+        await fulfillment(of: [deserializeMiddleware], timeout: 2.0)
+        #endif
     }
 }
