@@ -31,6 +31,7 @@ class TimestampSerdeUtilsTests: XCTestCase {
 
     // MARK: - Encoding Tests
 
+    // TODO: Fix this test on Linux
     #if !os(Linux)
     func test_timestampEncodable_encodesDateAsExpectedForEachFormat() throws {
         let subjects: [(TimestampFormat, Date, String)] = [

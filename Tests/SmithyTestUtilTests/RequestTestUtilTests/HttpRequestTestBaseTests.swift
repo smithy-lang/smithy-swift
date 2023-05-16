@@ -154,7 +154,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     }
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
-    #if swift(>=5.5)
     func testSayHello() async throws {
         let expected = buildExpectedHttpRequest(method: .post,
                                                 path: "/",
@@ -242,5 +241,4 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             throw SdkError.service(mockServiceError, httpResponse)
         })
     }
-    #endif
 }
