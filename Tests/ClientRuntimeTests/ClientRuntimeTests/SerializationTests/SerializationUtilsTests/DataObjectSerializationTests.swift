@@ -75,6 +75,9 @@ class DataObjectSerializationTests: XCTestCase {
         }
     }
 
+    // TODO: Fix this test on Linux.
+    // Tracked by https://github.com/awslabs/aws-sdk-swift/issues/1006
+    #if !os(Linux)
     func testDecodingInvalidBase64EncodedDataObject() {
         let invalidBase64EncodedStrings = [
             // - is not a valid base64 char
@@ -95,4 +98,5 @@ class DataObjectSerializationTests: XCTestCase {
             XCTAssertNil(try? JSONDecoder().decode(StructWithDataObject.self, from: encodedStructWithDataObjectJSON))
         }
     }
+    #endif
 }

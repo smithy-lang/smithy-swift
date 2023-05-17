@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import XCTest
 import ClientRuntime
 
@@ -19,12 +20,12 @@ extension HttpRequestTestBase {
         assertQueryItems(expectedQueryItems, actualQueryItems, file: file, line: line)
     }
 
-    private func convertToQueryItems(data: Data) -> [URLQueryItem] {
+    private func convertToQueryItems(data: Data) -> [ClientRuntime.URLQueryItem] {
         guard let queryString = String(data: data, encoding: .utf8) else {
             XCTFail("Failed to decode data")
             return []
         }
-        var queryItems: [URLQueryItem] = []
+        var queryItems: [ClientRuntime.URLQueryItem] = []
         let sanitizedQueryString = queryString.replacingOccurrences(of: "\n", with: "")
         let keyValuePairs = sanitizedQueryString.components(separatedBy: "&")
         for keyValue in keyValuePairs {

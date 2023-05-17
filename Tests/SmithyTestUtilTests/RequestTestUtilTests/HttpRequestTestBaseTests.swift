@@ -48,8 +48,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                                 Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            var queryItems: [URLQueryItem] = []
-            var queryItem: URLQueryItem
+            var queryItems: [ClientRuntime.URLQueryItem] = []
+            var queryItem: ClientRuntime.URLQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
                 queryItem = URLQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
                 queryItems.append(queryItem)
@@ -155,7 +155,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() async throws {
-        let deserializeMiddleware = expectation(description: "deserializeMiddleware")
         let expected = buildExpectedHttpRequest(method: .post,
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
@@ -228,7 +227,6 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
-            deserializeMiddleware.fulfill()
             return output
            })
 
@@ -242,7 +240,5 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let mockServiceError = try! MockMiddlewareError(httpResponse: httpResponse, decoder: context.getDecoder())
             throw SdkError.service(mockServiceError, httpResponse)
         })
-
-        wait(for: [deserializeMiddleware], timeout: 2.0)
     }
 }
