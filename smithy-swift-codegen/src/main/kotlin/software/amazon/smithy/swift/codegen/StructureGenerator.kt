@@ -82,7 +82,7 @@ class StructureGenerator(
      * public struct Person {
      *     public let name: String
      *     public let age: Int?
-     *     public init (
+     *     public init(
      *         name: String,
      *         age: int? = nil
      *     )
@@ -134,7 +134,7 @@ class StructureGenerator(
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
-            writer.openBlock("public init (", ")") {
+            writer.openBlock("public init(", ")") {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
@@ -150,7 +150,7 @@ class StructureGenerator(
                 }
             }
         } else {
-            writer.write("public init () { }")
+            writer.write("public init() { }")
         }
     }
 
@@ -182,7 +182,7 @@ class StructureGenerator(
      *     public var _type: ErrorType = .client
      *     public var message: String?
      *
-     *     public init (
+     *     public init(
      *         message: String
      *     )
      *     {

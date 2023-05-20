@@ -61,7 +61,7 @@ class HttpResponseBindingErrorInitGenerator(
             writer.openBlock("extension \$L {", "}", errorShapeName) {
                 writer.declareSection(HttpResponseBindingErrorInit) {
                     writer.write(
-                        "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
+                        "public init(httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
                         ClientRuntimeTypes.Http.HttpResponse,
                         ClientRuntimeTypes.Serde.ResponseDecoder,
                         SwiftTypes.String,

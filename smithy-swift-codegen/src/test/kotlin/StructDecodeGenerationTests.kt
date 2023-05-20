@@ -59,7 +59,7 @@ class StructDecodeGenerationTests {
                     case payload3
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let payload1Decoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .payload1)
                     payload1 = payload1Decoded
@@ -114,7 +114,7 @@ class StructDecodeGenerationTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let member1Decoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .member1)
                     member1 = member1Decoded
@@ -192,7 +192,7 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
         case timestampList
     }
 
-    public init (from decoder: Swift.Decoder) throws {
+    public init(from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let normalDecoded = try containerValues.decodeTimestampIfPresent(.dateTime, forKey: .normal)
         normal = normalDecoded
@@ -264,7 +264,7 @@ extension MapInputOutputResponseBody: Swift.Decodable {
         case structMap
     }
 
-    public init (from decoder: Swift.Decoder) throws {
+    public init(from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let intMapContainer = try containerValues.decodeIfPresent([Swift.String: Swift.Int?].self, forKey: .intMap)
         var intMapDecoded0: [Swift.String:Swift.Int]? = nil
@@ -364,7 +364,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
         case nestedListOfListInDict
     }
 
-    public init (from decoder: Swift.Decoder) throws {
+    public init(from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let nestedListInDictContainer = try containerValues.decodeIfPresent([Swift.String: [Swift.String?]?].self, forKey: .nestedListInDict)
         var nestedListInDictDecoded0: [Swift.String:[ClientRuntime.Date]]? = nil
@@ -462,7 +462,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded
@@ -500,7 +500,7 @@ extension NestedShapesOutputResponseBody: Swift.Decodable {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let barDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .bar)
                     bar = barDecoded

@@ -50,7 +50,7 @@ class UnionDecodeGeneratorTests {
                     case contents
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let contentsDecoded = try containerValues.decodeIfPresent(ExampleClientTypes.MyUnion.self, forKey: .contents)
                     contents = contentsDecoded
@@ -114,7 +114,7 @@ class UnionDecodeGeneratorTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let stringvalueDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .stringvalue)
                     if let stringvalue = stringvalueDecoded {

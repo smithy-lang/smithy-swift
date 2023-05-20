@@ -118,7 +118,7 @@ class UnionEncodeGeneratorTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let stringvalueDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .stringvalue)
                     if let stringvalue = stringvalueDecoded {
@@ -220,7 +220,7 @@ class UnionEncodeGeneratorTests {
                     }
                 }
 
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let values = try decoder.container(keyedBy: CodingKeys.self)
                     let someDecoded = try values.decodeIfPresent(ExampleClientTypes.IndirectEnum.self, forKey: .some)
                     if let some = someDecoded {

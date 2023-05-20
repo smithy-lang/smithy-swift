@@ -24,7 +24,7 @@ class ServiceRenamesTests {
             public struct MyTestOperationInput: Swift.Equatable {
                 public var bar: ExampleClientTypes.RenamedGreeting?
             
-                public init (
+                public init(
                     bar: ExampleClientTypes.RenamedGreeting? = nil
                 )
                 {
@@ -52,7 +52,7 @@ class ServiceRenamesTests {
             public struct MyTestOperationOutputResponse: Swift.Equatable {
                 public var baz: ExampleClientTypes.GreetingStruct?
             
-                public init (
+                public init(
                     baz: ExampleClientTypes.GreetingStruct? = nil
                 )
                 {
@@ -81,7 +81,7 @@ class ServiceRenamesTests {
                 public struct GreetingStruct: Swift.Equatable {
                     public var hi: Swift.String?
             
-                    public init (
+                    public init(
                         hi: Swift.String? = nil
                     )
                     {
@@ -113,7 +113,7 @@ class ServiceRenamesTests {
                 public struct RenamedGreeting: Swift.Equatable {
                     public var salutation: Swift.String?
             
-                    public init (
+                    public init(
                         salutation: Swift.String? = nil
                     )
                     {
@@ -153,7 +153,7 @@ class ServiceRenamesTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let salutationDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .salutation)
                     salutation = salutationDecoded
