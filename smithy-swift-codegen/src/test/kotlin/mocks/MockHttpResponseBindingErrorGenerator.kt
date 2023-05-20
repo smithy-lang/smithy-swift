@@ -15,7 +15,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape
+        op: OperationShape,
+        unknownServiceErrorSymbol: Symbol
     ) {
         val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         val rootNamespace = ctx.settings.moduleName
