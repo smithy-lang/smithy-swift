@@ -6,3 +6,7 @@
 public protocol HttpResponseBinding {
     init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws
 }
+
+public protocol HttpResponseErrorBinding {
+    static func makeError(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws -> ServiceError
+}

@@ -5,10 +5,11 @@
 
 /// General networking protocol independent service error structure used when exact error
 /// could not be deduced during deserialization
-public struct UnknownServiceError: ServiceError, Equatable {
+public struct UnknownServiceError: ServiceError {
+    public var _errorType: String?
     public var _retryable: Bool = false
     public var _isThrottling: Bool = false
-    public var _type: ErrorType = .unknown
+//    public var _type: ErrorType = .unknown
     public var _message: String?
 }
 

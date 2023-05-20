@@ -87,6 +87,7 @@ class ServiceGenerator(
         // generate protocol
         renderSwiftProtocol()
     }
+
     /**
      * Generates an appropriate Swift Protocol for a Smithy Service shape.
      *
@@ -128,7 +129,6 @@ class ServiceGenerator(
             .call {
                 operations.forEach { op ->
                     renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
-                    renderOperationErrorEnum(op)
                 }
             }
             .closeBlock("}")
@@ -140,39 +140,17 @@ class ServiceGenerator(
             "protocolGenerationContext" to protocolGenerationContext
         )
         writer.declareSection(ConfigurationProtocolSectionId, sectionContext) {
-            writer.openBlock("public protocol \$L : \$L {", "}", serviceConfig.typeProtocol, serviceConfig.getTypeInheritance()) {
+            writer.openBlock(
+                "public protocol \$L : \$L {",
+                "}",
+                serviceConfig.typeProtocol,
+                serviceConfig.getTypeInheritance()
+            ) {
             }
         }.write("")
     }
 
     object ConfigurationProtocolSectionId : SectionId
-
-    /*
-        Renders the Operation Error enum
-    */
-    private fun renderOperationErrorEnum(
-        op: OperationShape
-    ) {
-        val errorShapes = op.errors.map { model.expectShape(it) as StructureShape }.toSet().sorted()
-        val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        val operationErrorSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
-            .name(operationErrorName)
-            .build()
-        val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol
-
-        delegator.useShapeWriter(operationErrorSymbol) { writer ->
-            writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName: \$N, \$N {", "}", SwiftTypes.Error, SwiftTypes.Protocols.Equatable) {
-                for (errorShape in errorShapes) {
-                    val errorShapeName = symbolProvider.toSymbol(errorShape).name
-                    writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)
-                }
-                val unknownServiceErrorType = unknownServiceErrorSymbol.name
-                writer.write("case unknown($unknownServiceErrorType)")
-            }
-        }
-    }
 }
 
 /**

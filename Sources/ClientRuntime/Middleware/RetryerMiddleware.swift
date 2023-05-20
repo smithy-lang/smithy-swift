@@ -6,7 +6,7 @@
 //
 
 public struct RetryerMiddleware<Output: HttpResponseBinding,
-                                OutputError: HttpResponseBinding>: Middleware {
+                                OutputError: HttpResponseErrorBinding>: Middleware {
 
     public var id: String = "Retryer"
 

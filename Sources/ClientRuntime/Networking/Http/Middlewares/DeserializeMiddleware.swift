@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public struct DeserializeMiddleware<Output: HttpResponseBinding,
-                                    OutputError: HttpResponseBinding>: Middleware {
+                                    OutputError: HttpResponseErrorBinding>: Middleware {
 
     public var id: String = "Deserialize"
     public init() {}
@@ -30,7 +30,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                 if case let .stream(stream) = copiedResponse.httpResponse.body, !stream.isSeekable {
                     copiedResponse.httpResponse.body = .stream(CachingStream(base: stream))
                 }
-                let error = try OutputError(httpResponse: copiedResponse.httpResponse,
+                let error = try OutputError.makeError(httpResponse: copiedResponse.httpResponse,
                                             decoder: decoder)
                 throw SdkError.service(error, copiedResponse.httpResponse)
           }

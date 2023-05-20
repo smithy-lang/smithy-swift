@@ -8,7 +8,7 @@
 typealias PresignerShimHandler = (SdkHttpRequestBuilder) -> Void
 
 struct PresignerShim<OperationStackOutput: HttpResponseBinding,
-                     OperationStackError: HttpResponseBinding>: Middleware {
+                     OperationStackError: HttpResponseErrorBinding>: Middleware {
     public let id: String = "PresignerShim"
 
     private let handler: PresignerShimHandler

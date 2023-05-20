@@ -6,7 +6,7 @@
 //
 
 public struct LoggerMiddleware<Output: HttpResponseBinding,
-                               OutputError: HttpResponseBinding>: Middleware {
+                               OutputError: HttpResponseErrorBinding>: Middleware {
 
     public let id: String = "Logger"
 

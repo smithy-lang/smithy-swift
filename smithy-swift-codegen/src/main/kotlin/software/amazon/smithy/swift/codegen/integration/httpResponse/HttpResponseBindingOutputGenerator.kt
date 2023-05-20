@@ -44,7 +44,7 @@ class HttpResponseBindingOutputGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension $outputShapeName: \$N {", "}", ClientRuntimeTypes.Http.HttpResponseBinding) {
                 writer.openBlock(
-                    "public init (httpResponse: \$N, decoder: \$D) throws {",
+                    "public init(httpResponse: \$N, decoder: \$D) throws {",
                     "}",
                     ClientRuntimeTypes.Http.HttpResponse,
                     ClientRuntimeTypes.Serde.ResponseDecoder

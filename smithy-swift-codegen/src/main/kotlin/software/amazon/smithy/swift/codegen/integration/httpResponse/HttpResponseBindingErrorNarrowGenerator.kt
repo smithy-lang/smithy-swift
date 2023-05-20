@@ -30,7 +30,7 @@ class HttpResponseBindingErrorNarrowGenerator(
         val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseBinding.swift")
+            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseErrorBinding.swift")
             .name(operationErrorName)
             .build()
 
@@ -46,19 +46,18 @@ class HttpResponseBindingErrorNarrowGenerator(
                 "errorShapes" to errorShapes
             )
             writer.declareSection(HttpResponseBindingErrorNarrowGeneratorSectionId, context) {
-                writer.openBlock("extension \$L {", "}", operationErrorName) {
+                writer.openBlock("extension \$L: \$T {", "}", operationErrorName, ClientRuntimeTypes.Http.HttpResponseErrorBinding) {
                     writer.openBlock(
-                        "public init(errorType: \$T, httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {", "}",
+                        "public static func makeError(errorType: \$T, httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws -> ServiceError {", "}",
                         SwiftTypes.String, ClientRuntimeTypes.Http.HttpResponse, ClientRuntimeTypes.Serde.ResponseDecoder, SwiftTypes.String, SwiftTypes.String
                     ) {
                         writer.write("switch errorType {")
                         for (errorShape in errorShapes) {
                             var errorShapeName = resolveErrorShapeName(errorShape)
                             var errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
-                            var errorShapeEnumCase = errorShapeType.decapitalize()
-                            writer.write("case \$S : self = .\$L(try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID))", errorShapeName, errorShapeEnumCase, errorShapeType)
+                            writer.write("case \$S: return try \$L(httpResponse: httpResponse, decoder: decoder, message: message, requestID: requestID)", errorShapeName, errorShapeType)
                         }
-                        writer.write("default : self = .unknown($unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID, errorType: errorType))")
+                        writer.write("default: return try $unknownServiceErrorType(httpResponse: httpResponse, message: message, requestID: requestID, errorType: errorType)")
                         writer.write("}")
                     }
                 }

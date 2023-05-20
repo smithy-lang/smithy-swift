@@ -3,7 +3,7 @@
 
 public struct OperationStack<OperationStackInput,
                              OperationStackOutput: HttpResponseBinding,
-                             OperationStackError: HttpResponseBinding> {
+                             OperationStackError: HttpResponseErrorBinding> {
 
     /// returns the unique id for the operation stack as middleware
     public var id: String
