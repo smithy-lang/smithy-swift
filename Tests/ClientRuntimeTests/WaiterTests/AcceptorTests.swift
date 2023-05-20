@@ -14,7 +14,7 @@ fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 class AcceptorTests: XCTestCase {
     let input = "input"
     let output = "output"
-    let error = ClientError.unknownError("XCTestError")
+    let error = UnknownClientError("XCTestError")
 
     // MARK: - .success state
 

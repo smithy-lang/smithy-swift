@@ -32,7 +32,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                 }
                 let error = try OutputError.makeError(httpResponse: copiedResponse.httpResponse,
                                             decoder: decoder)
-                throw SdkError.service(error, copiedResponse.httpResponse)
+                throw error
           }
     }
 

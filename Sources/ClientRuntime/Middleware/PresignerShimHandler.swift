@@ -20,7 +20,7 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OperationStackError>
+    public typealias MError = OperationStackError
 
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequestBuilder,
@@ -37,9 +37,7 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
                     decoder: nil)
                   return .init(httpResponse: httpResponse, output: output)
               } catch {
-                  throw SdkError<OperationStackError>.unknown(
-                    ClientError.unknownError("PresignerShimHandler: This code should not execute")
-                  )
+                  throw UnknownClientError("PresignerShimHandler: This code should not execute")
               }
           }
 }

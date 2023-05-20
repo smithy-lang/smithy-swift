@@ -11,6 +11,6 @@ protocol Retryer {
     func recordSuccess(token: RetryToken)
     @available(*, deprecated, message: "This function will be removed soon.")
     func releaseToken(token: RetryToken)
-    func isErrorRetryable<E>(error: SdkError<E>) -> Bool
-    func getErrorType<E>(error: SdkError<E>) -> RetryError
+    func isErrorRetryable<E: Error>(error: E) -> Bool
+    func getErrorType<E: Error>(error: E) -> RetryError
 }

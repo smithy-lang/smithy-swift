@@ -6,8 +6,6 @@
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHttpServiceError: HttpServiceError {
     public var _errorType: String?
-//
-//    public var _errorType: String?
 
     public var _isThrottling: Bool = false
 
@@ -18,8 +16,6 @@ public struct UnknownHttpServiceError: HttpServiceError {
     public var _message: String?
 
     public var _retryable: Bool = false
-
-//    public var _type: ErrorType = .unknown
 }
 
 extension UnknownHttpServiceError {
@@ -35,11 +31,4 @@ extension UnknownHttpServiceError {
         self._message = message
         self._errorType = errorType
     }
-}
-
-extension UnknownHttpServiceError: WaiterTypedError {
-
-    /// The Smithy identifier, without namespace, for the type of this error, or `nil` if the
-    /// error has no known type.
-    public var waiterErrorType: String? { _errorType }
 }

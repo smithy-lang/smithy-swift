@@ -35,61 +35,65 @@ public class SDKRetryer: Retryer {
     public func releaseToken(token: RetryToken) {
     }
 
-    public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
-        switch error {
-        case .client(let clientError, _):
-            switch clientError {
-            case .networkError, .crtError:
-                return true
-            default:
-                return false
-            }
-        case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.exists(name: "x-amz-retry-after") {
-                return true
-            }
-
-            if let serviceError = serviceError as? ServiceError {
-                return serviceError._retryable
-            }
-
-            if httpResponse.statusCode.isRetryable {
-                return true
-            }
-            return false
-        case .unknown:
-            return false
-        }
+    public func isErrorRetryable<E: Error>(error: E) -> Bool {
+        // TODO: fix this logic
+        return false
+//        switch error {
+//        case .client(let clientError, _):
+//            switch clientError {
+//            case .networkError, .crtError:
+//                return true
+//            default:
+//                return false
+//            }
+//        case .service(let serviceError, let httpResponse):
+//            if httpResponse.headers.exists(name: "x-amz-retry-after") {
+//                return true
+//            }
+//
+//            if let serviceError = serviceError as? ServiceError {
+//                return serviceError._retryable
+//            }
+//
+//            if httpResponse.statusCode.isRetryable {
+//                return true
+//            }
+//            return false
+//        case .unknown:
+//            return false
+//        }
     }
 
-    public func getErrorType<E>(error: SdkError<E>) -> RetryError {
-        switch error {
-        case .client(let clientError, _):
-            if case ClientError.crtError = clientError {
-                return .transient
-            }
-            return .clientError
-
-        case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.exists(name: "x-amz-retry-after") {
-                return .serverError
-            }
-
-            if let serviceError = serviceError as? ServiceError {
-                if serviceError._isThrottling {
-                    return .throttling
-                }
-                return .serverError
-            }
-
-            if httpResponse.statusCode.isRetryable {
-                return .transient
-            }
-
-            return .serverError
-        case .unknown:
-            return .clientError
-        }
+    public func getErrorType<E: Error>(error: E) -> RetryError {
+        // TODO: fix this logic
+        return .serverError
+//        switch error {
+//        case .client(let clientError, _):
+//            if case ClientError.crtError = clientError {
+//                return .transient
+//            }
+//            return .clientError
+//
+//        case .service(let serviceError, let httpResponse):
+//            if httpResponse.headers.exists(name: "x-amz-retry-after") {
+//                return .serverError
+//            }
+//
+//            if let serviceError = serviceError as? ServiceError {
+//                if serviceError._isThrottling {
+//                    return .throttling
+//                }
+//                return .serverError
+//            }
+//
+//            if httpResponse.statusCode.isRetryable {
+//                return .transient
+//            }
+//
+//            return .serverError
+//        case .unknown:
+//            return .clientError
+//        }
     }
 }
 

@@ -8,7 +8,7 @@
 import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                        OperationStackError: HttpResponseBinding>: Middleware {
+                                        OperationStackError: HttpResponseErrorBinding>: Middleware {
     // swiftlint:disable line_length
     public typealias MockDeserializeMiddlewareCallback = (Context,
                                                           SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?

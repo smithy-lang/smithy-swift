@@ -45,7 +45,7 @@ public struct OperationStack<OperationStackInput,
                     "Something went terribly wrong where the output was not set on the response.",
                     "Please open a ticket with us at https://github.com/awslabs/aws-sdk-swift"
                   ].joined(separator: " ")
-                  throw ClientError.unknownError(errorMessage)
+                  throw UnknownClientError(errorMessage)
               }
               return output
           }

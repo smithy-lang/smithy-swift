@@ -9,11 +9,8 @@ public struct UnknownServiceError: ServiceError {
     public var _errorType: String?
     public var _retryable: Bool = false
     public var _isThrottling: Bool = false
-//    public var _type: ErrorType = .unknown
     public var _message: String?
-}
 
-extension UnknownServiceError {
     public init(message: String? = nil) {
         self._message = message
     }

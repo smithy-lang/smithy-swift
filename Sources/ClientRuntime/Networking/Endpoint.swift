@@ -19,7 +19,7 @@ public struct Endpoint: Hashable {
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let url = URL(string: urlString) else {
-            throw ClientError.unknownError("invalid url \(urlString)")
+            throw UnknownClientError("invalid url \(urlString)")
         }
 
         try self.init(url: url, headers: headers, properties: properties)
@@ -29,7 +29,7 @@ public struct Endpoint: Hashable {
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) throws {
         guard let host = url.host else {
-            throw ClientError.unknownError("invalid host \(String(describing: url.host))")
+            throw UnknownClientError("invalid host \(String(describing: url.host))")
         }
 
         self.init(host: host,
