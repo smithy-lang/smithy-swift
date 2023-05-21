@@ -12,4 +12,3 @@ fun StructureShape.errorShapeName(symbolProvider: SymbolProvider): String {
         return symbolProvider.toSymbol(this).name
     }
 }
-
