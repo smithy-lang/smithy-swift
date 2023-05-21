@@ -17,6 +17,6 @@ public protocol ServiceError: RetryableError {
 //    case unknown
 //}
 public protocol RetryableError: Error {
-    var _retryable: Bool { get set }
-    var _isThrottling: Bool { get set }
+    var _retryable: Bool { get }
+    var _isThrottling: Bool { get }
 }

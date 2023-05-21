@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 class StructureGenerator(
@@ -220,7 +221,8 @@ class StructureGenerator(
     object AdditionalErrorMembers : SectionId
 
     private fun generateErrorStructMembers() {
-        writer.write("public var _errorType: String? { \$struct.name:S }")
+        val errorTypeString = shape.errorShapeName(symbolProvider)
+        writer.write("public var _errorType: String? { \$S }", errorTypeString)
         val errorTrait = shape.getTrait<ErrorTrait>()
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         val hasErrorTrait = httpErrorTrait != null || errorTrait != null

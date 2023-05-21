@@ -16,6 +16,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Core.UnknownClientError
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -27,7 +28,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.model.isRequired
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 
@@ -143,7 +143,7 @@ class HttpQueryItemProvider(
                         "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
                         memberName
                     )
-                    writer.write("throw ClientRuntime.ClientError.queryItemCreationFailed(message)")
+                    writer.write("throw \$L(message)", UnknownClientError)
                 }
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)

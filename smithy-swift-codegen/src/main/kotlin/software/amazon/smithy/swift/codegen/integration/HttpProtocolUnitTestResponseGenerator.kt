@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -39,7 +40,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val symbol = symbolProvider.toSymbol(it)
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput(test, symbol.name)
+            renderActualOutput(test, symbol)
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -107,13 +108,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         return needsDecoder
     }
 
-    private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
+    private fun renderActualOutput(test: HttpResponseTestCase, outputStruct: Symbol) {
         val needsResponseDecoder = needsResponseDecoder(test)
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
         val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
-        writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStructName, decoderParameter)
+        writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStruct.name, decoderParameter)
     }
 
     protected fun renderResponseDecoder() {

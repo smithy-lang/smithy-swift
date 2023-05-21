@@ -114,8 +114,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
                 writer.write("let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)")
-                writer.write("let serviceError = try! $outputErrorName(httpResponse: httpResponse)")
-                writer.write("throw SdkError<$outputErrorName>.service(serviceError, httpResponse)")
+                writer.write("let serviceError = try $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
+                writer.write("throw serviceError")
             }
         }
     }
