@@ -42,9 +42,9 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
 
-            if case .complexError(let actual) = greetingWithErrorsOutputError {
+            if let actual = greetingWithErrorsOutputError as? ComplexError {
 
                 let expected = ComplexError(
                     header: "Header",
@@ -104,9 +104,9 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
 
-            if case .complexError(let actual) = greetingWithErrorsOutputError {
+            if let actual = greetingWithErrorsOutputError as? ComplexError {
 
                 let expected = ComplexError(
                     header: "Header",
