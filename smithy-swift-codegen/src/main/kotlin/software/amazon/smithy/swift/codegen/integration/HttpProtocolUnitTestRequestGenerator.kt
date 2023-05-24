@@ -54,7 +54,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 // depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("body: .stream(CachingStream(base: BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true))),", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("body: .stream(BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true)),", test.body.get().replace("\\\"", "\\\\\""))
                 } else {
                     writer.write("body: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!),", test.body.get().replace("\\\"", "\\\\\""))
                 }
