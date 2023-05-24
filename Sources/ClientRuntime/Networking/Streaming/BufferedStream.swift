@@ -10,7 +10,7 @@ import class Foundation.NSRecursiveLock
 
 /// A `Stream` implementation that buffers data in memory.
 /// The buffer size depends on the amount of data written and read.
-/// Note: This class is thread-safe.
+/// Note: This class is thread-safe and async-safe.
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
@@ -70,7 +70,9 @@ public class BufferedStream: Stream {
         /// The continuation for this reader.
         let continuation: CheckedContinuation<Data?, Error>
         /// The maximum number of bytes to be returned to this reader.
+        ///
         /// This is just the `count` parameter to `read(upToCount:)` for the suspended read.
+        /// This is set to `Int.max` when reading to end-of-stream.
         let byteCount: Int
         /// `true` if this reader should read to the end, `false` otherwise.
         let readsToEnd: Bool
@@ -96,7 +98,7 @@ public class BufferedStream: Stream {
     }
 
     /// If this task is released while it still has suspended readers, continue all readers with nil data
-    /// so no continuations are left un-continued.
+    /// so no continuations are left un-continued and readers are informed that the stream is closed.
     deinit {
         _readers.forEach { $0.continuation.resume(returning: nil) }
     }
@@ -110,6 +112,7 @@ public class BufferedStream: Stream {
         }
     }
 
+    /// Call this function only while `lock` is locked, to prevent simultaneous access.
     private func _read(upToCount count: Int) throws -> Data? {
         let toRead = min(count, _buffer.count)
         let endPosition = position.advanced(by: toRead)
@@ -199,9 +202,11 @@ public class BufferedStream: Stream {
         }
     }
 
-    // If there is a client waiting to read data, and there is unread data remaining in the buffer,
-    // read the data and pass it to the reader via the continuation.
-    // Continue until there are no clients or no data.
+    /// If there is a client waiting to read data, and there is unread data remaining in the buffer,
+    /// read the data and pass it to the reader via the continuation.
+    /// Continue until there are no clients or no data.
+    ///
+    /// Call this function only while `lock` is locked, to prevent simultaneous access.
     private func _serviceReadersIfPossible() {
         while !_readers.isEmpty {
             let suspendedReader = _readers[0]  // Don't remove the client from the array yet

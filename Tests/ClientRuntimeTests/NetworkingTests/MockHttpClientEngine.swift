@@ -9,7 +9,7 @@ import AwsCommonRuntimeKit
 
 class MockHttpClientEngine: HttpClientEngine {
     func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
-        return HttpResponse(headers: request.headers, body: HttpBody.data(Data()), statusCode: HttpStatusCode.ok)
+        return HttpResponse(headers: request.headers, body: HttpBody.empty, statusCode: HttpStatusCode.ok)
     }
 
     func execute(request: SdkHttpRequest) async throws -> HttpResponse {
