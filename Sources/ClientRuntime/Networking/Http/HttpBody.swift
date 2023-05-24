@@ -16,11 +16,7 @@ extension HttpBody: Equatable {
         case (.data(let lhsData), .data(let rhsData)):
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
-            do {
-                return try lhsStream.isEqual(to: rhsStream)
-            } catch {
-                return false
-            }
+            return lhsStream === rhsStream
         default:
             return false
         }
@@ -39,8 +35,28 @@ extension HttpBody {
 }
 
 public extension HttpBody {
+
     static var empty: HttpBody {
         .data(nil)
+    }
+
+    /// Returns the data for this `HttpBody`.
+    ///
+    /// If the `HttpBody` encloses a `Stream`, the enclosed stream is read to
+    /// the end and the data is stored in this `ByteStream` for future use.  If it is seekable,
+    /// it seeks to the start of the stream and replays all available data.
+    func readAllData() async throws -> Data? {
+        switch self {
+        case .data(let data):
+            return data
+        case .stream(let stream):
+            if stream.isSeekable {
+                try stream.seek(toOffset: 0)
+            }
+            return try await stream.readToEndAsync()
+        case .none:
+            return nil
+        }
     }
 
     func toData() throws -> Data? {
@@ -71,12 +87,15 @@ public extension HttpBody {
 }
 
 extension HttpBody: CustomDebugStringConvertible {
+    
     public var debugDescription: String {
         var bodyAsString: String?
         switch self {
         case .data(let data):
             if let data = data {
                 bodyAsString = String(data: data, encoding: .utf8)
+            } else {
+                bodyAsString = "nil"
             }
         case .stream(let stream):
             // reading a non-seekable stream will consume the stream
@@ -97,8 +116,8 @@ extension HttpBody: CustomDebugStringConvertible {
                 """
             }
         default:
-            bodyAsString = nil
+            bodyAsString = "nil"
         }
-        return bodyAsString ?? ""
+        return bodyAsString ?? "<not UTF-8>"
     }
 }

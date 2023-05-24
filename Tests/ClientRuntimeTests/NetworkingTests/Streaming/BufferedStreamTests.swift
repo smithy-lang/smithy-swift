@@ -82,6 +82,20 @@ final class BufferedStreamTests: XCTestCase {
         XCTAssertNil(readData2)
     }
 
+    // MARK: - readToEndAsync()
+
+    func test_readToEndAsync_readsToEnd() async throws {
+        let subject = BufferedStream(data: testData)
+        try subject.close()
+
+        let readData = try await subject.readToEndAsync()
+        XCTAssertEqual(readData, testData)
+
+        // read again, should return nil
+        let readData2 = try await subject.readToEndAsync()
+        XCTAssertNil(readData2)
+    }
+
     // MARK: - readAsync(upToCount:)
 
     func test_readAsync_readsAsynchronously() async throws {

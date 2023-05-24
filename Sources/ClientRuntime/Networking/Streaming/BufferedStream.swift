@@ -14,16 +14,31 @@ import class Foundation.NSRecursiveLock
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
+
     /// Returns the cumulative length of all data so far written to the stream, if known
-    public private(set) var length: Int?
+    public var length: Int? {
+        lock.withLockingClosure {
+            _length
+        }
+    }
+
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
+    private var _length: Int?
 
     /// Returns the current position in the stream
-    public private(set) var position: Data.Index
+    public var position: Data.Index {
+        lock.withLockingClosure {
+            _position
+        }
+    }
+
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
+    private var _position: Data.Index
 
     /// Returns true if the in-memory buffer is empty, false otherwise
     public var isEmpty: Bool {
         lock.withLockingClosure {
-            return buffer?.isEmpty == true
+            return _buffer.isEmpty == true
         }
     }
 
@@ -37,15 +52,13 @@ public class BufferedStream: Stream {
         }
     }
 
-    /// Returns whether the stream has been closed.  Defaults to `false` on stream creation.
-    ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var _isClosed: Bool
 
     /// Contains data that has been written to this stream, but not yet read.
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
-    private var buffer: Data?
+    private var _buffer: Data
 
     /// When locked, this `NSRecursiveLock` grants safe, exclusive access to the properties on this type.
     /// Note: `NSRecursiveLock` is `@Sendable` so it is safe to use with Swift concurrency.
@@ -59,6 +72,8 @@ public class BufferedStream: Stream {
         /// The maximum number of bytes to be returned to this reader.
         /// This is just the `count` parameter to `read(upToCount:)` for the suspended read.
         let byteCount: Int
+        /// `true` if this reader should read to the end, `false` otherwise.
+        let readsToEnd: Bool
     }
 
     /// Contains suspended readers that are awaiting data from the stream, if any.
@@ -67,23 +82,23 @@ public class BufferedStream: Stream {
     /// and the oldest / next reader is at the beginning.
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
-    private var readers: [SuspendedReader] = []
+    private var _readers: [SuspendedReader] = []
 
     /// Initializes a new `BufferedStream` instance.
     /// - Parameters:
     ///   - data: The initial data to buffer.
     ///   - isClosed: Whether the stream is closed.
-    public init(data: Data? = Data(), isClosed: Bool = false) {
-        self.buffer = data
-        self.position = data?.startIndex ?? 0
-        self.length = data?.count
+    public init(data: Data? = nil, isClosed: Bool = false) {
+        self._buffer = data ?? Data()
+        self._position = _buffer.startIndex
+        self._length = _buffer.count
         self._isClosed = isClosed
     }
 
     /// If this task is released while it still has suspended readers, continue all readers with nil data
     /// so no continuations are left un-continued.
     deinit {
-        readers.forEach { $0.continuation.resume(returning: nil) }
+        _readers.forEach { $0.continuation.resume(returning: nil) }
     }
 
     /// Reads up to `count` bytes from the stream.
@@ -96,19 +111,19 @@ public class BufferedStream: Stream {
     }
 
     private func _read(upToCount count: Int) throws -> Data? {
-        let toRead = min(count, buffer?.count ?? 0)
+        let toRead = min(count, _buffer.count)
         let endPosition = position.advanced(by: toRead)
-        let chunk = buffer?[position..<endPosition]
+        let chunk = _buffer[position..<endPosition]
 
         // remove the data we just read
-        buffer?.removeFirst(toRead)
+        _buffer.removeFirst(toRead)
 
         // update position
-        position = endPosition
+        _position = endPosition
 
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
-        if isClosed && chunk?.isEmpty == true {
+        if isClosed && chunk.isEmpty == true {
             return nil
         }
 
@@ -122,8 +137,8 @@ public class BufferedStream: Stream {
         try await withCheckedThrowingContinuation { continuation in
             lock.withLockingClosure {
                 // Add a new reader to the queue, then service the readers if any data is waiting.
-                let reader = SuspendedReader(continuation: continuation, byteCount: count)
-                readers.append(reader)
+                let reader = SuspendedReader(continuation: continuation, byteCount: count, readsToEnd: false)
+                _readers.append(reader)
                 _serviceReadersIfPossible()
             }
         }
@@ -151,6 +166,17 @@ public class BufferedStream: Stream {
         }
     }
 
+    public func readToEndAsync() async throws -> Data? {
+        try await withCheckedThrowingContinuation { continuation in
+            lock.withLockingClosure {
+                // Add a new reader to the queue, then service the readers if any data is waiting.
+                let reader = SuspendedReader(continuation: continuation, byteCount: Int.max, readsToEnd: true)
+                _readers.append(reader)
+                _serviceReadersIfPossible()
+            }
+        }
+    }
+
     /// Writes the specified data to the stream.
     /// Then, continues a suspended reader (if any) to read the data.
     /// - Parameter data: The data to write.
@@ -158,8 +184,8 @@ public class BufferedStream: Stream {
         lock.withLockingClosure {
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
-            buffer?.append(data)
-            length = (length ?? 0) + data.count
+            _buffer.append(data)
+            _length = (_length ?? 0) + data.count
             // If any clients are waiting to read data, service them.
             _serviceReadersIfPossible()
         }
@@ -169,6 +195,7 @@ public class BufferedStream: Stream {
     public func close() throws {
         lock.withLockingClosure {
             _isClosed = true
+            _serviceReadersIfPossible()
         }
     }
 
@@ -176,15 +203,22 @@ public class BufferedStream: Stream {
     // read the data and pass it to the reader via the continuation.
     // Continue until there are no clients or no data.
     private func _serviceReadersIfPossible() {
-        while !readers.isEmpty {
-            let suspendedReader = readers[0]  // Don't remove the client from the array yet
+        while !_readers.isEmpty {
+            let suspendedReader = _readers[0]  // Don't remove the client from the array yet
             do {
-                let data = try _read(upToCount: suspendedReader.byteCount)
-                if data == Data() { return }
-                _ = readers.removeFirst()
+                let data: Data?
+                if suspendedReader.readsToEnd {
+                    guard _isClosed else { return }  // Don't read until the stream closes when reading to end
+                    data = try _read(upToCount: suspendedReader.byteCount)
+                    _ = _readers.removeFirst()
+                } else {
+                    data = try _read(upToCount: suspendedReader.byteCount)
+                    if data == Data() { return }
+                    _ = _readers.removeFirst()
+                }
                 suspendedReader.continuation.resume(returning: data)
             } catch {
-                _ = readers.removeFirst()
+                _ = _readers.removeFirst()
                 suspendedReader.continuation.resume(throwing: error)
             }
         }

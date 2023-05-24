@@ -27,7 +27,7 @@ class NetworkingTestUtils: XCTestCase {
      Create a mock HttpRequest with valid data payload
      */
     func setMockHttpDataRequest() {
-        var headers = Headers(["header-item-name": "header-item-value"])
+        let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = HttpBody.data(expectedMockRequestData)
@@ -38,8 +38,8 @@ class NetworkingTestUtils: XCTestCase {
      Create a mock HttpRequest with valid InputStream
      */
     func setMockHttpStreamRequest() {
-        var headers = Headers(["header-item-name": "header-item-value"])
-        var endpoint = getMockEndpoint(headers: headers)
+        let headers = Headers(["header-item-name": "header-item-value"])
+        let endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = HttpBody(byteStream: ByteStream.from(data: expectedMockRequestData))
         mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)

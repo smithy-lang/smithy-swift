@@ -55,6 +55,17 @@ class FileStream: Stream {
         }
     }
 
+    func readAsync(upToCount count: Int) async throws -> Data? {
+        try await withCheckedThrowingContinuation { continuation in
+            do {
+                let data = try read(upToCount: count)
+                continuation.resume(returning: data)
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
+    }
+
     /// Reads all remaining bytes from the stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
     func readToEnd() throws -> Data? {
@@ -67,6 +78,17 @@ class FileStream: Stream {
             }
             position = position.advanced(by: data?.count ?? 0)
             return data
+        }
+    }
+
+    func readToEndAsync() async throws -> Data? {
+        try await withCheckedThrowingContinuation { continuation in
+            do {
+                let data = try readToEnd()
+                continuation.resume(returning: data)
+            } catch {
+                continuation.resume(throwing: error)
+            }
         }
     }
 
