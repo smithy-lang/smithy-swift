@@ -151,8 +151,8 @@ fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, membe
     for (member in members) {
         val shape = model.expectShape(member.target.toShapeId())
         val baseVarName = symbolProvider.toMemberName(member)
-        val expectedMemberName = "$expected.${baseVarName}"
-        val actualMemberName = "$actual.${baseVarName}"
+        val expectedMemberName = "$expected.$baseVarName"
+        val actualMemberName = "$actual.$baseVarName"
         val suffix = if (symbolProvider.toSymbol(member).isBoxed()) "?" else ""
         if (member.isStructureShape) {
             writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
@@ -168,9 +168,9 @@ fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, membe
             val actualVarName = "${actual}${baseVarName.toUpperCamelCase()}Data"
             writer.write("")
             writer.write("// Compare blobs by reading them both to data")
-            writer.write("let ${expectedVarName} = try await ${expectedMemberName}${suffix}.readData()")
-            writer.write("let ${actualVarName} = try await ${actualMemberName}${suffix}.readData()")
-            writer.write("XCTAssertEqual(${expectedVarName}, ${actualVarName})")
+            writer.write("let $expectedVarName = try await $expectedMemberName$suffix.readData()")
+            writer.write("let $actualVarName = try await $actualMemberName$suffix.readData()")
+            writer.write("XCTAssertEqual(\$L, \$L)", expectedVarName, actualVarName)
         } else {
             writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
         }
